@@ -8,6 +8,19 @@ document.addEventListener('DOMContentLoaded', function() {
   // === i18n 初始化 ===
   if (typeof initLanguage === 'function') initLanguage();
 
+  // === 首页照片背景（安全兜底，inline script 可能因网络延迟未生效） ===
+  var hero = document.querySelector('.hero-section');
+  if (hero && !hero.classList.contains('hero-photo-bg')) {
+    var hbg = localStorage.getItem('xie_hero_bg');
+    var hstyle = localStorage.getItem('xie_hero_style') || 'clean';
+    if (hbg && hstyle === 'photo') {
+      hero.classList.add('hero-photo-bg');
+      hero.style.backgroundImage = 'url(' + hbg + ')';
+      hero.style.backgroundSize = 'cover';
+      hero.style.backgroundPosition = 'center';
+    }
+  }
+
   // === 移动端导航切换 ===
   var toggle = document.querySelector('.nav-toggle');
   var nav = document.querySelector('.main-nav');

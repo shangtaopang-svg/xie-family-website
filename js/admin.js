@@ -1134,7 +1134,12 @@ function uploadHeroBg(input) {
     if (result && result.url) {
       localStorage.setItem('xie_hero_bg', result.url);
       saveHeroSetting('hero_bg', result.url);
-      showToast('背景图片已上传，已同步到服务器');
+      // Auto switch to photo mode if not already
+      var curStyle = localStorage.getItem('xie_hero_style') || 'clean';
+      if (curStyle !== 'photo') {
+        setHeroStyle('photo');
+      }
+      showToast('背景图片已上传');
       renderSettings();
     } else {
       console.error('Hero BG upload failed — server returned:', JSON.stringify(result));
