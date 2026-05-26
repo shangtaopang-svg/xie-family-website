@@ -1012,6 +1012,8 @@ function deleteItem(mod, id) {
 
 // ===== Settings =====
 function renderSettings(area) {
+  if (!area) area = document.getElementById('admin-content-area');
+  if (!area) return;
   var settings = getData('settings');
   var currentTheme = localStorage.getItem('xie_theme') || 'light';
   var currentLang = localStorage.getItem('xie_lang') || 'zh';
