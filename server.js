@@ -2,6 +2,8 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const crypto = require('crypto');
+const { exec } = require('child_process');
 
 const PORT = 80;
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
@@ -199,6 +201,28 @@ const server = http.createServer(async (req, res) => {
     }
 
     return sendJson(req, res, 405, { error: 'Method not allowed' });
+  }
+
+  // === GitHub webhook for auto-deploy ===
+  if (url === '/api/webhook' && req.method === 'POST') {
+    const body = await collectBody(req);
+    const sig = req.headers['x-hub-signature-256'] || '';
+    const secret = process.env.WEBHOOK_SECRET || 'xie-family-deploy-2026';
+    const expected = 'sha256=' + crypto.createHmac('sha256', secret).update(body).digest('hex');
+    // Use timing-safe comparison
+    if (sig.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
+      return sendJson(req, res, 403, { error: 'Invalid signature' });
+    }
+    // Run deploy asynchronously, don't block response
+    const deployScript = path.join(__dirname, 'deploy.sh');
+    exec('bash ' + deployScript, { cwd: __dirname }, (err, stdout, stderr) => {
+      if (err) {
+        console.error('Deploy failed:', stderr);
+        return;
+      }
+      console.log('Deploy success:', stdout);
+    });
+    return sendJson(req, res, 200, { ok: true, message: 'Deploy started' });
   }
 
   // === Static file serving ===

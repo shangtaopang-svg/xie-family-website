@@ -9,6 +9,7 @@ module.exports = {
     max_memory_restart: '200M',
     env: {
       NODE_ENV: 'production',
+      WEBHOOK_SECRET: 'xie-family-deploy-2026',
     }
   }]
 };
