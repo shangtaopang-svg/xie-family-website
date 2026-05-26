@@ -11,7 +11,7 @@
     /* Activity card photo carousel */
     .ac-photo-wrap {
       position: relative;
-      min-height: 220px;
+      min-height: 240px;
       height: 100%;
       overflow: hidden;
     }
@@ -99,7 +99,7 @@
     }
 
     @media (max-width: 800px) {
-      .ac-photo-wrap { min-height: 220px; }
+      .ac-photo-wrap { min-height: 240px; }
       .ac-photo-wrap .ac-photo-nav { display: flex; width: 28px; height: 28px; font-size: 14px; }
     }
   </style>
@@ -206,7 +206,7 @@
             html += '<div class="ac-photo-count">' + photos.length + '张</div>';
             for (var pi = 0; pi < photos.length; pi++) {
               html += '<div class="ac-photo-slide' + (pi === 0 ? ' active' : '') + '" data-pidx="' + pi + '">';
-              html += '<img src="' + photos[pi] + '" alt="" onclick="handleActivityPhotoClick(' + i + ',' + pi + ')" onerror="this.parentElement.innerHTML=\'' + esc(a.icon || '🎉') + '\'">';
+              html += '<img' + (pi === 0 ? ' src="' + photos[pi] + '"' : ' data-src="' + photos[pi] + '"') + ' src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" onclick="handleActivityPhotoClick(' + i + ',' + pi + ')" onerror="this.parentElement.innerHTML=\'' + esc(a.icon || '🎉') + '\'">';
               html += '</div>';
             }
             html += '<button class="ac-photo-nav ac-photo-prev" onclick="event.stopPropagation();navActivityCarousel(' + i + ',-1)">‹</button>';
@@ -302,6 +302,20 @@
       if (next >= slides.length) next = 0;
       slides[current].classList.remove('active');
       slides[next].classList.add('active');
+      // Lazy-load slide image + preload next
+      var loadImg = function(slideEl) {
+        var img = slideEl.querySelector('img');
+        if (img && img.getAttribute('data-src')) {
+          img.src = img.getAttribute('data-src');
+          img.removeAttribute('data-src');
+        }
+      };
+      loadImg(slides[next]);
+      // Preload the one after next
+      var preloadIdx = next + dir;
+      if (preloadIdx < 0) preloadIdx = slides.length - 1;
+      if (preloadIdx >= slides.length) preloadIdx = 0;
+      if (preloadIdx !== next) loadImg(slides[preloadIdx]);
       if (dots.length) { dots[current].classList.remove('active'); dots[next].classList.add('active'); }
     }
 
