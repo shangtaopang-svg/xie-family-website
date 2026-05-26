@@ -1016,12 +1016,20 @@ function renderSettings(area) {
   var currentTheme = localStorage.getItem('xie_theme') || 'light';
   var currentLang = localStorage.getItem('xie_lang') || 'zh';
 
+  // Load hero settings from server-synced data with localStorage fallback
+  var heroStyle = 'clean';
+  var heroBg = '';
+  for (var i = 0; i < settings.length; i++) {
+    if (settings[i].key === 'hero_style') heroStyle = settings[i].value;
+    if (settings[i].key === 'hero_bg') heroBg = settings[i].value;
+  }
+  heroStyle = localStorage.getItem('xie_hero_style') || heroStyle || 'clean';
+  heroBg = localStorage.getItem('xie_hero_bg') || heroBg || '';
+
   var html = '<div class="admin-module">';
   html += '<div class="admin-module-header"><h3>⚙️ 系统设置</h3></div>';
 
   html += '<div class="glass-card" style="padding:24px;max-width:600px;margin:0 auto;">';
-
-  var heroStyle = localStorage.getItem('xie_hero_style') || 'clean';
   html += '<div style="margin-top:24px;">';
   html += '<h4 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:12px;font-weight:500;">首页首屏风格</h4>';
   html += '<div style="display:flex;gap:12px;margin-bottom:12px;">';
@@ -1030,7 +1038,6 @@ function renderSettings(area) {
   html += '</div>';
 
   // Hero background image upload
-  var heroBg = localStorage.getItem('xie_hero_bg') || '';
   html += '<div style="background:var(--glass-bg);padding:16px;border-radius:8px;">';
   html += '<label style="display:block;font-size:13px;color:var(--text-secondary);margin-bottom:8px;">🏞️ 背景图片</label>';
   if (heroBg) {
@@ -1107,6 +1114,7 @@ function saveSettings() {
 
 function setHeroStyle(style) {
   localStorage.setItem('xie_hero_style', style);
+  saveHeroSetting('hero_style', style);
   var cleanBtn = document.getElementById('hero-style-clean');
   var photoBtn = document.getElementById('hero-style-photo');
   if (cleanBtn) { cleanBtn.className = 'btn' + (style === 'clean' ? ' btn-accent' : ''); }
@@ -1123,7 +1131,8 @@ function uploadHeroBg(input) {
   uploadToServer(prefix, file).then(function(result) {
     if (result && result.url) {
       localStorage.setItem('xie_hero_bg', result.url);
-      showToast('背景图片已上传');
+      saveHeroSetting('hero_bg', result.url);
+      showToast('背景图片已上传，已同步到服务器');
       renderSettings();
     } else {
       console.error('Hero BG upload failed — server returned:', JSON.stringify(result));
@@ -1143,8 +1152,27 @@ function removeHeroBg() {
     if (filename) deleteFromServer(filename);
   }
   localStorage.removeItem('xie_hero_bg');
+  saveHeroSetting('hero_bg', '');
   renderSettings();
   showToast('背景图片已移除');
+}
+
+// ===== Hero settings sync helper (saves to server for cross-device sync) =====
+function saveHeroSetting(key, value) {
+  var settings = getData('settings');
+  var found = false;
+  for (var i = 0; i < settings.length; i++) {
+    if (settings[i].key === key) {
+      settings[i].value = value;
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
+    var obj = { key: key, value: value };
+    settings.push(obj);
+  }
+  saveData('settings', settings);
 }
 
 function resetAllData() {
@@ -1358,6 +1386,12 @@ function loadFromSupabase() {
   return dbLoadAll().then(function(count) {
     if (count > 0) {
       console.log('已从服务器加载 ' + count + ' 条数据');
+      // Sync hero settings from server data to localStorage keys
+      var settings = getData('settings');
+      for (var si = 0; si < settings.length; si++) {
+        if (settings[si].key === 'hero_bg') localStorage.setItem('xie_hero_bg', settings[si].value || '');
+        if (settings[si].key === 'hero_style') localStorage.setItem('xie_hero_style', settings[si].value || 'clean');
+      }
       if (document.getElementById('admin-content-area') && document.getElementById('admin-content-area').innerHTML) {
         renderModule(currentModule);
         updateStats();

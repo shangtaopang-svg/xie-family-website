@@ -558,10 +558,8 @@ body {
 .hero-section.hero-photo-bg::before {
   content: '';
   position: absolute;
-  inset: 24px;
-  background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.7));
-  border-radius: var(--radius-xl);
-  box-shadow: 0 4px 40px rgba(0,0,0,0.15);
+  inset: 0;
+  background: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.7));
   z-index: -1;
 }
 .hero-section.hero-photo-bg .hero-motto { color: #fff; text-shadow: 0 2px 16px rgba(0,0,0,0.4); }
@@ -582,8 +580,7 @@ body {
 }
 
 @media (max-width: 800px) {
-  .hero-section.hero-photo-bg::before { inset: 12px; border-radius: var(--radius); }
-  .hero-bg-img { inset: 12px; border-radius: var(--radius); }
+  .hero-section.hero-photo-bg { min-height: 65vh; }
 }
 
 /* ===== Glass Card ===== */

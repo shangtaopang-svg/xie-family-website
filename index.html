@@ -11,7 +11,7 @@
 
   
   
-  <link rel="stylesheet" href="css/style.css?v=13">
+  <link rel="stylesheet" href="css/style.css?v=14">
   <script src="js/i18n.js?v=6"></script>
   <script src="js/file-store.js?v=3"></script>
 </head>
@@ -88,14 +88,30 @@
     (function() {
       var hero = document.querySelector('.hero-section');
       if (!hero) return;
+      function applyHero(bg, style) {
+        if (bg && style === 'photo') {
+          hero.classList.add('hero-photo-bg');
+          hero.style.backgroundImage = 'url(' + bg + ')';
+          hero.style.backgroundSize = 'cover';
+          hero.style.backgroundPosition = 'center';
+        }
+      }
       var bg = localStorage.getItem('xie_hero_bg');
       var style = localStorage.getItem('xie_hero_style') || 'clean';
-      if (bg && style === 'photo') {
-        hero.classList.add('hero-photo-bg');
-        hero.style.backgroundImage = 'url(' + bg + ')';
-        hero.style.backgroundSize = 'cover';
-        hero.style.backgroundPosition = 'center';
-      }
+      applyHero(bg, style);
+      fetch('/api/data/settings').then(function(r) { return r.json(); }).then(function(data) {
+        if (!data || !data.length) return;
+        var sbg = '', sstyle = 'clean';
+        for (var i = 0; i < data.length; i++) {
+          if (data[i].key === 'hero_bg') sbg = data[i].value;
+          if (data[i].key === 'hero_style') sstyle = data[i].value;
+        }
+        if (sbg !== bg || sstyle !== style) {
+          localStorage.setItem('xie_hero_bg', sbg);
+          localStorage.setItem('xie_hero_style', sstyle);
+          applyHero(sbg, sstyle);
+        }
+      }).catch(function() {});
     })();
     </script>
   </section>
@@ -414,7 +430,7 @@
     <button class="weather-btn" data-weather="meteor" title="流星">☄</button>
   </div>
 
-  <script src="js/main.js?v=4"></script>
+  <script src="js/main.js?v=5"></script>
   <script>
     // Canvas animated background
     const canvas = document.getElementById('bg-canvas');

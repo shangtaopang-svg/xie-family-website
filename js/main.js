@@ -8,22 +8,6 @@ document.addEventListener('DOMContentLoaded', function() {
   // === i18n 初始化 ===
   if (typeof initLanguage === 'function') initLanguage();
 
-  // === 首页首屏风格（纯色 / 照片背景） ===
-  var heroSection = document.querySelector('.hero-section');
-  if (heroSection) {
-    var heroStyle = localStorage.getItem('xie_hero_style') || 'clean';
-    if (heroStyle === 'photo') {
-      heroSection.classList.add('hero-photo-bg');
-      var heroBg = localStorage.getItem('xie_hero_bg');
-      if (heroBg) {
-        var bgDiv = document.createElement('div');
-        bgDiv.className = 'hero-bg-img';
-        bgDiv.style.background = 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.7)), url("' + heroBg + '") center 30% / cover no-repeat';
-        heroSection.appendChild(bgDiv);
-      }
-    }
-  }
-
   // === 移动端导航切换 ===
   var toggle = document.querySelector('.nav-toggle');
   var nav = document.querySelector('.main-nav');
