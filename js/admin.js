@@ -213,13 +213,17 @@ function getData(module) {
 
 function saveData(module, data) {
   localStorage.setItem('xie_admin_' + module, JSON.stringify(data));
-  // Background sync to Supabase for data safety
-  if (window.dbSyncModule) {
-    setTimeout(function() {
-      dbSyncModule(module, data).catch(function(e) {
-        console.warn('Supabase sync failed for ' + module + ': ' + e.message);
-      });
-    }, 50);
+  // Sync to server (fire-and-forget, don't block UI)
+  if (window.serverSaveAll) {
+    window.serverSaveAll(module, data).catch(function(e) {
+      console.warn('Server sync failed for ' + module + ': ' + e.message);
+      // Fallback: try dbSyncModule
+      if (window.dbSyncModule) {
+        dbSyncModule(module, data).catch(function(e2) {});
+      }
+    });
+  } else if (window.dbSyncModule) {
+    dbSyncModule(module, data).catch(function(e) {});
   }
 }
 

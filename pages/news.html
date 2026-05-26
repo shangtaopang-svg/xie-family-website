@@ -224,15 +224,22 @@
     }
 
     renderNews();
-    // Try loading from Supabase for up-to-date data across devices
-    if (window.dbGetAll) {
-      dbGetAll('news', { order: 'date.desc' }).then(function(supabaseData) {
-        if (supabaseData && supabaseData.length > 0) {
-          localStorage.setItem('xie_admin_news', JSON.stringify(supabaseData));
-          renderNews();
-        }
-      }).catch(function() {});
-    }
+    // Fetch from server for up-to-date data
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "/api/data/news", true);
+    xhr.timeout = 20000;
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        try {
+          var serverData = JSON.parse(xhr.responseText);
+          if (serverData && Array.isArray(serverData) && serverData.length > 0) {
+            localStorage.setItem("xie_admin_news", JSON.stringify(serverData));
+            renderNews();
+          }
+        } catch(e) {}
+      }
+    };
+    xhr.send();
   </script>
   <audio id="bg-music" loop src="../music/background.mp3"></audio>
   <div class="music-player"><button class="music-btn" id="music-toggle">🔈</button><span class="music-label" data-i18n="music.label">背景音乐</span></div>
