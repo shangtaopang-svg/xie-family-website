@@ -1,0 +1,234 @@
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+
+const PORT = 80;
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+const DATA_DIR = path.join(__dirname, 'data');
+
+const MIME = {
+  '.html': 'text/html;charset=utf-8',
+  '.css': 'text/css;charset=utf-8',
+  '.js': 'application/javascript;charset=utf-8',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.webp': 'image/webp',
+  '.mp3': 'audio/mpeg',
+  '.mp4': 'video/mp4',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.pdf': 'application/pdf',
+};
+
+try { fs.mkdirSync(UPLOADS_DIR, { recursive: true }); } catch (e) {}
+try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (e) {}
+
+function collectBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => resolve(body));
+    req.on('error', reject);
+  });
+}
+
+function sendJson(res, status, data) {
+  const body = JSON.stringify(data);
+  const len = Buffer.byteLength(body);
+  res.writeHead(status, {
+    'Content-Type': 'application/json',
+    'Content-Length': String(len)
+  });
+  res.end(body);
+}
+
+const server = http.createServer(async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204);
+    return res.end();
+  }
+
+  let url = req.url.split('?')[0];
+
+  // === API: File upload (binary or base64) ===
+  if (url === '/api/upload' && req.method === 'POST') {
+    try {
+      const body = await collectBody(req);
+      const { name, data } = JSON.parse(body);
+      const matches = data.match(/^data:([^;]+);base64,(.+)$/);
+      if (!matches) {
+        return sendJson(res, 400, { error: 'Invalid data URL' });
+      }
+      const mimeType = matches[1];
+      const raw = matches[2];
+      const buffer = Buffer.from(raw, 'base64');
+      const extMap = {
+        'image/jpeg': '.jpg', 'image/png': '.png', 'image/gif': '.gif',
+        'image/webp': '.webp', 'image/svg+xml': '.svg',
+        'video/mp4': '.mp4', 'video/webm': '.webm',
+        'audio/mpeg': '.mp3',
+        'application/pdf': '.pdf',
+      };
+      const ext = extMap[mimeType] || '.bin';
+      const safeName = name.replace(/[^a-zA-Z0-9_-]/g, '_');
+      const filename = safeName + '_' + Date.now() + ext;
+      const filePath = path.join(UPLOADS_DIR, filename);
+
+      fs.writeFile(filePath, buffer, err => {
+        if (err) {
+          return sendJson(res, 500, { error: 'Write failed' });
+        }
+        sendJson(res, 200, { url: '/uploads/' + filename });
+      });
+      return;
+    } catch (e) {
+      return sendJson(res, 400, { error: e.message });
+    }
+  }
+
+  // === API: Binary file upload (more efficient, no base64) ===
+  if (url.startsWith('/api/upload/bin/') && req.method === 'POST') {
+    try {
+      const name = decodeURIComponent(url.replace('/api/upload/bin/', ''));
+      const safeName = name.replace(/[^a-zA-Z0-9_-]/g, '_');
+      const filename = safeName + '_' + Date.now();
+      const filePath = path.join(UPLOADS_DIR, filename);
+
+      const chunks = [];
+      req.on('data', chunk => chunks.push(chunk));
+      req.on('end', () => {
+        const buffer = Buffer.concat(chunks);
+        // Detect file type from magic bytes
+        let ext = '.bin';
+        if (buffer[0] === 0xFF && buffer[1] === 0xD8) ext = '.jpg';
+        else if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) ext = '.png';
+        else if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46) ext = '.gif';
+        else if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46) ext = '.webp';
+        else if (buffer[0] === 0x66 && buffer[1] === 0x74 && buffer[2] === 0x79 && buffer[3] === 0x70) ext = '.mp4'; // ftyp box (may need heuristic for mp4/webm)
+        else if (buffer[0] === 0x1A && buffer[1] === 0x45 && buffer[2] === 0xDF && buffer[3] === 0xA3) ext = '.webm'; // EBML header
+
+        const finalPath = filePath + ext;
+        fs.writeFile(finalPath, buffer, err => {
+          if (err) {
+            return sendJson(res, 500, { error: 'Write failed' });
+          }
+          sendJson(res, 200, { url: '/uploads/' + path.basename(finalPath) });
+        });
+      });
+      return;
+    } catch (e) {
+      return sendJson(res, 400, { error: e.message });
+    }
+  }
+
+  // === API: File delete ===
+  const deleteMatch = url.match(/^\/api\/upload\/(.+)$/);
+  if (deleteMatch && req.method === 'DELETE') {
+    const filename = decodeURIComponent(deleteMatch[1]);
+    const filePath = path.join(UPLOADS_DIR, path.basename(filename));
+    fs.unlink(filePath, () => {
+      sendJson(res, 200, { ok: true });
+    });
+    return;
+  }
+
+  // === API: Data read/write (local JSON storage, replaces Supabase) ===
+  const dataMatch = url.match(/^\/api\/data\/([a-zA-Z_]+)$/);
+  if (dataMatch) {
+    const module = dataMatch[1];
+    const filePath = path.join(DATA_DIR, module + '.json');
+
+    if (req.method === 'GET') {
+      fs.readFile(filePath, 'utf-8', (err, content) => {
+        if (err) {
+          return sendJson(res, 200, []);
+        }
+        try {
+          sendJson(res, 200, JSON.parse(content));
+        } catch (e) {
+          sendJson(res, 200, []);
+        }
+      });
+      return;
+    }
+
+    if (req.method === 'POST') {
+      try {
+        const body = await collectBody(req);
+        // Validate it's a valid JSON array (or object)
+        const data = JSON.parse(body);
+        fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8', err => {
+          if (err) {
+            return sendJson(res, 500, { error: 'Write failed' });
+          }
+          sendJson(res, 200, { ok: true, count: Array.isArray(data) ? data.length : 1 });
+        });
+      } catch (e) {
+        return sendJson(res, 400, { error: e.message });
+      }
+      return;
+    }
+
+    return sendJson(res, 405, { error: 'Method not allowed' });
+  }
+
+  // === Static file serving ===
+  if (url === '/') url = '/index.html';
+
+  const filePath = path.join(__dirname, url);
+  const ext = path.extname(filePath);
+
+  if (!filePath.startsWith(__dirname)) {
+    res.writeHead(403);
+    return res.end('Forbidden');
+  }
+
+  fs.readFile(filePath, (err, data) => {
+    if (err) {
+      if (ext === '.html') {
+        return fs.readFile(path.join(__dirname, 'index.html'), (err2, data2) => {
+          if (err2) {
+            res.writeHead(404, { 'Content-Length': '9' });
+            return res.end('404 Not Found');
+          }
+          res.writeHead(200, {
+            'Content-Type': 'text/html;charset=utf-8',
+            'Content-Length': Buffer.byteLength(data2)
+          });
+          res.end(data2);
+        });
+      }
+      const msg = '404 Not Found';
+      res.writeHead(404, { 'Content-Length': Buffer.byteLength(msg) });
+      return res.end(msg);
+    }
+    const cacheExts = ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.ico', '.svg', '.webp', '.woff', '.woff2', '.mp3', '.mp4', '.pdf'];
+    const headers = {
+      'Content-Type': MIME[ext] || 'application/octet-stream',
+      'Content-Length': data.length
+    };
+    if (ext === '.html') {
+      headers['Cache-Control'] = 'no-cache';
+    } else if (cacheExts.includes(ext)) {
+      headers['Cache-Control'] = 'public, max-age=604800, immutable';
+    }
+    res.writeHead(200, headers);
+    res.end(data);
+  });
+});
+
+server.keepAliveTimeout = 65000;
+server.headersTimeout = 66000;
+
+server.listen(PORT, '0.0.0.0', () => {
+  console.log('Xie Family site running at http://0.0.0.0:' + PORT);
+});

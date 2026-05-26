@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title data-i18n="site.title">宁海下枫槎村 · 谢氏家族</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+
+  
+  
+  <link rel="stylesheet" href="css/style.css?v=12">
+  <script src="js/i18n.js?v=6"></script>
+  <script src="js/file-store.js?v=3"></script>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<canvas id="weather-canvas"></canvas>
+
+<div class="content">
+
+  <!-- ===== Header ===== -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <div class="logo-icon">谢</div>
+        <div class="logo-text">
+          <h1 data-i18n="logo.title">下枫槎谢氏</h1>
+          <small data-i18n="logo.subtitle">宁海 · 下枫槎村</small>
+        </div>
+      </a>
+      <button class="nav-toggle" data-i18n-aria="nav.toggle" aria-label="菜单">☰</button>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="index.html" class="active" data-i18n="nav.home">首页</a></li>
+          <li><a href="pages/history.html" data-i18n="nav.history">家族历史</a></li>
+          <li><a href="pages/celebrities.html" data-i18n="nav.celebrities">名人事迹</a></li>
+          <li><a href="pages/news.html" data-i18n="nav.news">消息发布</a></li>
+          <li><a href="pages/members.html" data-i18n="nav.members">家族成员</a></li>
+          <li><a href="pages/activities.html" data-i18n="nav.activities">家族活动</a></li>
+          <li><a href="pages/today.html" data-i18n="nav.today">今日下枫槎</a></li>
+          <li><a href="pages/reports.html" data-i18n="nav.reports">新闻报道</a></li>
+          <li><a href="pages/contact.html" data-i18n="nav.contact">联系我们</a></li>
+          <li><a href="pages/admin.html" style="color:var(--accent-orange);" data-i18n="nav.admin">🔐 管理后台</a></li>
+        </ul>
+        <div class="nav-actions">
+          <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
+          <button class="nav-action-btn lang-btn" id="lang-toggle" data-i18n-title="nav.lang" title="中英文切换">EN</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===== Hero ===== -->
+  <section class="hero-section">
+    <div class="hero-info">
+      <div class="hero-date-box">
+      <div class="hero-date">
+        <div class="hero-date-day" id="hero-date-day">25</div>
+        <div class="hero-date-detail">
+          <div class="hero-date-month" id="hero-date-month">5月</div>
+          <div class="hero-date-weekday" id="hero-date-weekday">星期一</div>
+          <div class="hero-date-lunar" id="hero-date-lunar">农历四月初十</div>
+          <div class="hero-date-year" id="hero-date-year">2026年</div>
+        </div>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-weather">
+        <div class="hero-weather-icon">🌤</div>
+        <div class="hero-weather-info">
+          <div class="hero-weather-location" id="weather-location" data-i18n="weather.location">宁波宁海</div>
+          <div class="hero-weather-desc" id="hero-weather-desc" data-i18n="weather.fetching">获取天气中...</div>
+        </div>
+        <div class="hero-weather-temp" id="hero-weather-temp"></div>
+      </div>
+      </div>
+    </div>
+    <div class="hero-motto" data-i18n="hero.motto">乌衣世泽 宝树家声</div>
+    <div class="hero-sub" data-i18n="hero.sub">—— 宁海下枫槎村 · 谢氏家族 ——</div>
+    <div class="hero-desc">
+      <span data-i18n="hero.desc1">谢氏出自姬姓，以邑为氏。自周宣王封申伯于谢邑，谢氏一脉源远流长。</span><br>
+      <span data-i18n="hero.desc2">下枫槎村谢氏世代耕读传家，诗书继世，今建宗族官网以续文脉、联宗亲。</span>
+    </div>
+    <script>
+    (function() {
+      var hero = document.querySelector('.hero-section');
+      if (!hero) return;
+      var bg = localStorage.getItem('xie_hero_bg');
+      var style = localStorage.getItem('xie_hero_style') || 'clean';
+      if (bg && style === 'photo') {
+        hero.style.backgroundImage = 'url(' + bg + ')';
+        hero.style.backgroundSize = 'cover';
+        hero.style.backgroundPosition = 'center';
+      }
+    })();
+    </script>
+  </section>
+
+  <!-- ===== 宣传片 + 村貌掠影（双栏媒体） ===== -->
+  <section class="media-pair-section">
+    <div class="media-pair">
+      <!-- 左：视频 -->
+      <div class="media-item">
+        <div class="media-item-title">
+          <h2 data-i18n="section.video">视频</h2>
+          <div class="divider"></div>
+          <p data-i18n="section.video.sub">影像记录 · 家族记忆</p>
+        </div>
+        <div class="media-frame">
+          <div class="video-carousel" id="video-carousel">
+            <div class="video-carousel-track" id="video-carousel-track"></div>
+            <button class="vc-btn vc-prev" id="vc-prev">‹</button>
+            <button class="vc-btn vc-next" id="vc-next">›</button>
+          </div>
+          <div class="vc-dots" id="vc-dots"></div>
+        </div>
+      </div>
+      <!-- 右：摄影 -->
+      <div class="media-item">
+        <div class="media-item-title">
+          <h2 data-i18n="section.carousel">摄影</h2>
+          <div class="divider"></div>
+          <p data-i18n="section.carousel.sub">下枫槎村风光 · 宗祠 · 家族活动</p>
+        </div>
+        <div class="media-frame">
+          <div class="carousel-container">
+            <div class="carousel-track" id="carousel-track">
+              <div class="carousel-slide">
+                <img src="images/carousel/01-zongci.jpg" alt="谢氏宗祠" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;">
+                <span class="slide-label">谢氏宗祠 · 始建于清乾隆年间</span>
+              </div>
+              <div class="carousel-slide">
+                <img src="images/carousel/02-gushu.jpg" alt="古树参天" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;">
+                <span class="slide-label">古树参天 · 下枫槎村口古枫树</span>
+              </div>
+              <div class="carousel-slide">
+                <img src="images/carousel/03-qingshan.jpg" alt="青山环绕" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;">
+                <span class="slide-label">青山环绕 · 下枫槎村全景</span>
+              </div>
+              <div class="carousel-slide">
+                <img src="images/carousel/04-guju.jpg" alt="明清古居" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;">
+                <span class="slide-label">明清古民居 · 石板路蜿蜒</span>
+              </div>
+              <div class="carousel-slide">
+                <img src="images/carousel/05-jizu.jpg" alt="清明祭祖" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;">
+                <span class="slide-label">清明祭祖 · 合族共祭先祖</span>
+              </div>
+              <div class="carousel-slide">
+                <img src="images/carousel/06-tuanbai.jpg" alt="宗亲团拜" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;">
+                <span class="slide-label">新春团拜 · 宗亲欢聚一堂</span>
+              </div>
+            </div>
+            <button class="carousel-btn carousel-prev" onclick="moveCarousel(-1)">‹</button>
+            <button class="carousel-btn carousel-next" onclick="moveCarousel(1)">›</button>
+          </div>
+          <div class="carousel-dots" id="carousel-dots"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 家族新闻 ===== -->
+  <section class="section-wrap">
+    <div class="section-title">
+      <h2 data-i18n="section.news">家族动态</h2>
+      <div class="divider"></div>
+      <p data-i18n="section.news.sub">了解下枫槎谢氏最新消息与活动</p>
+    </div>
+    <div class="news-list" style="max-width:700px;margin:0 auto;">
+      <div class="news-item fade-in">
+        <div class="news-date"><span class="day">15</span><span class="month">2026.05</span></div>
+        <div class="news-content">
+          <h4><a href="pages/news.html" data-i18n="news.1.title">下枫槎村谢氏宗祠修缮工程启动</a></h4>
+          <p data-i18n="news.1.desc">宗祠始建于清乾隆年间，历经两百余年风雨。本次修缮将秉持"修旧如旧"原则，预计年底前完成。</p>
+        </div>
+      </div>
+      <div class="news-item fade-in">
+        <div class="news-date"><span class="day">01</span><span class="month">2026.05</span></div>
+        <div class="news-content">
+          <h4><a href="pages/news.html" data-i18n="news.2.title">2026年清明祭祖大典圆满举行</a></h4>
+          <p data-i18n="news.2.desc">百余位宗亲齐聚下枫槎，共祭先祖。今年新增了年轻一代主祭环节，传承家族文化。</p>
+        </div>
+      </div>
+      <div class="news-item fade-in">
+        <div class="news-date"><span class="day">20</span><span class="month">2026.04</span></div>
+        <div class="news-content">
+          <h4><a href="pages/news.html" data-i18n="news.3.title">《下枫槎谢氏宗谱》电子版编纂启动</a></h4>
+          <p data-i18n="news.3.desc">家族理事会决定启动宗谱数字化工程，将纸质老谱整理为可检索的电子版族谱。</p>
+        </div>
+      </div>
+      <div class="news-item fade-in">
+        <div class="news-date"><span class="day">10</span><span class="month">2026.03</span></div>
+        <div class="news-content">
+          <h4><a href="pages/news.html" data-i18n="news.4.title">谢氏家族网站"数字宗祠"正式上线</a></h4>
+          <p data-i18n="news.4.desc">下枫槎谢氏数字宗祠今日上线，旨在通过互联网平台传承家族文化、联络宗亲情谊。</p>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:24px;">
+      <a href="pages/news.html" class="btn" data-i18n="btn.more">查看更多 →</a>
+    </div>
+  </section>
+
+  <!-- ===== 引用分隔 ===== -->
+  <section class="section-wrap" style="padding:0;">
+    <div class="fullwidth-quote">
+      <div class="quote-line"></div>
+      <div class="quote-text" data-i18n="home.quote">旧时王谢堂前燕，飞入寻常百姓家</div>
+      <div class="quote-author">—— 唐 · 刘禹锡《乌衣巷》</div>
+      <div class="quote-line"></div>
+    </div>
+  </section>
+
+  <!-- ===== 家族名人 ===== -->
+  <section class="section-wrap" style="padding-top:0;">
+    <div class="section-title">
+      <h2 data-i18n="section.celebrities">家族名人</h2>
+      <div class="divider"></div>
+      <p data-i18n="section.celebrities.sub">历代谢氏先贤与当代精英</p>
+    </div>
+    <div class="celebrity-grid">
+      <div class="celebrity-card-sm fade-in">
+        <div class="icon" style="font-size:32px;margin-bottom:10px;">🎓</div>
+        <h3 data-i18n="celeb.1.name">谢安（320-385）</h3>
+        <p data-i18n="celeb.1.desc">东晋著名政治家、军事家，淝水之战中以少胜多，功勋卓著。谢氏家族史上最具代表性人物之一。</p>
+      </div>
+      <div class="celebrity-card-sm fade-in">
+        <div class="icon" style="font-size:32px;margin-bottom:10px;">📝</div>
+        <h3 data-i18n="celeb.2.name">谢灵运（385-433）</h3>
+        <p data-i18n="celeb.2.desc">南朝宋著名诗人，中国山水诗派创始人。曾任永嘉太守，其诗作开山水诗之先河。</p>
+      </div>
+      <div class="celebrity-card-sm fade-in">
+        <div class="icon" style="font-size:32px;margin-bottom:10px;">⚔️</div>
+        <h3 data-i18n="celeb.3.name">谢玄（343-388）</h3>
+        <p data-i18n="celeb.3.desc">东晋名将，谢安之侄。组建北府兵，在淝水之战中担任前锋，大破前秦苻坚百万大军。</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:24px;">
+      <a href="pages/celebrities.html" class="btn" data-i18n="btn.more">查看更多 →</a>
+    </div>
+  </section>
+
+  <!-- ===== 村荣誉 ===== -->
+  <section class="section-wrap" style="padding-top:0;">
+    <div class="section-title">
+      <h2 data-i18n="section.honors">村荣誉</h2>
+      <div class="divider"></div>
+      <p data-i18n="section.honors.sub">下枫槎村的荣耀时刻</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
+      <div class="glass-card fade-in" style="padding:24px;border-top:3px solid var(--accent-orange);text-align:center;">
+        <div style="font-size:36px;margin-bottom:10px;">🏆</div>
+        <h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:15px;font-weight:500;margin-bottom:6px;" data-i18n="honor.1.title">浙江省美丽乡村示范村</h3>
+        <p style="font-size:12px;color:var(--text-tertiary);">2025年 · 浙江省农业农村厅</p>
+      </div>
+      <div class="glass-card fade-in" style="padding:24px;border-top:3px solid var(--accent-orange);text-align:center;">
+        <div style="font-size:36px;margin-bottom:10px;">🥇</div>
+        <h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:15px;font-weight:500;margin-bottom:6px;" data-i18n="honor.2.title">宁海县文明村</h3>
+        <p style="font-size:12px;color:var(--text-tertiary);">2025年 · 宁海县人民政府</p>
+      </div>
+      <div class="glass-card fade-in" style="padding:24px;border-top:3px solid var(--accent-orange);text-align:center;">
+        <div style="font-size:36px;margin-bottom:10px;">📜</div>
+        <h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:15px;font-weight:500;margin-bottom:6px;" data-i18n="honor.3.title">谢氏宗祠文物保护单位</h3>
+        <p style="font-size:12px;color:var(--text-tertiary);">2024年 · 宁海县文广旅体局</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:24px;">
+      <a href="pages/today.html#honors" class="btn" data-i18n="btn.more">查看更多 →</a>
+    </div>
+  </section>
+
+  <!-- ===== 新闻报道 ===== -->
+  <section class="section-wrap" style="padding-top:0;">
+    <div class="section-title">
+      <h2 data-i18n="section.reports">新闻报道</h2>
+      <div class="divider"></div>
+      <p data-i18n="section.reports.sub">媒体眼中的下枫槎</p>
+    </div>
+    <div class="news-grid">
+      <div class="news-list">
+        <div class="news-item fade-in">
+          <div class="news-date"><span class="day">25</span><span class="month">2026.05</span></div>
+          <div class="news-content">
+            <h4><a href="pages/reports.html" data-i18n="report.4.title">艺探新乡村 | 最是茶香抚人心——宁海县跃龙街道下枫槎村</a></h4>
+            <p data-i18n="report.4.desc">宁波市文联"艺探新乡村"专栏报道下枫槎村，以茶文化为主线，讲述艺术赋能乡村振兴的生动故事。</p>
+          </div>
+        </div>
+        <div class="news-item fade-in">
+          <div class="news-date"><span class="day">20</span><span class="month">2026.04</span></div>
+          <div class="news-content">
+            <h4><a href="pages/reports.html" data-i18n="report.1.title">宁海下枫槎村：古村焕新颜 数字宗祠传家风</a></h4>
+            <p data-i18n="report.1.desc">下枫槎村依托数字宗祠平台，将传统家族文化融入现代数字技术，探索传统文化传承新路径。</p>
+          </div>
+        </div>
+        <div class="news-item fade-in">
+          <div class="news-date"><span class="day">15</span><span class="month">2026.03</span></div>
+          <div class="news-content">
+            <h4><a href="pages/reports.html" data-i18n="report.2.title">下枫槎村乡村振兴纪实：古村落的美丽蝶变</a></h4>
+            <p data-i18n="report.2.desc">下枫槎村在保持古村落风貌的同时，大力发展乡村旅游和特色农业，实现从偏远山村到美丽乡村的华丽转身。</p>
+          </div>
+        </div>
+        <div class="news-item fade-in">
+          <div class="news-date"><span class="day">08</span><span class="month">2026.02</span></div>
+          <div class="news-content">
+            <h4><a href="pages/reports.html" data-i18n="report.3.title">谢氏后人的文化坚守：老祠堂变身新课堂</a></h4>
+            <p data-i18n="report.3.desc">谢氏族人将百年宗祠改造成传统文化课堂，定期组织青少年学习国学经典、书法礼仪，让老祠堂焕发新活力。</p>
+          </div>
+        </div>
+        <div class="news-item fade-in">
+          <div class="news-date"><span class="day">20</span><span class="month">2023.03</span></div>
+          <div class="news-content">
+            <h4><a href="pages/reports.html" data-i18n="report.5.title">望府山下清"枫"徐来</a></h4>
+            <p data-i18n="report.5.desc">浙江省纪委监委"清风之旅"专栏报道下枫槎村，以茶为媒打造"茶廉枫香"廉洁文化品牌，实现从城郊乡村到城市后花园的"美丽蝶变"。</p>
+          </div>
+        </div>
+        <div class="news-item fade-in">
+          <div class="news-date"><span class="day">08</span><span class="month">2022.12</span></div>
+          <div class="news-content">
+            <h4><a href="pages/reports.html" data-i18n="report.6.title">宁波宁海：农家爱艺术 废物尽"奇"用</a></h4>
+            <p data-i18n="report.6.desc">央广网报道下枫槎村"尽奇用——废物不废"行动，村民利用废旧物品改造家庭空间为公共文化空间，探索艺术赋能乡村振兴新路径。</p>
+          </div>
+        </div>
+        <div class="news-item fade-in">
+          <div class="news-date"><span class="day">27</span><span class="month">2022.06</span></div>
+          <div class="news-content">
+            <h4><a href="pages/reports.html" data-i18n="report.8.title">宁海跃龙：以艺术激活乡村振兴的"一池春水"</a></h4>
+            <p data-i18n="report.8.desc">浙江日报报道宁海跃龙街道以艺术激活乡村振兴，下枫槎村引入艺术家团队打造茶文化IP，建成艺术节点17个，推动"美丽颜值"向"发展产值"转变。</p>
+          </div>
+        </div>
+        <div class="news-item fade-in">
+          <div class="news-date"><span class="day">16</span><span class="month">2022.06</span></div>
+          <div class="news-content">
+            <h4><a href="pages/reports.html" data-i18n="report.7.title">宁海下枫槎村｜"茶文化"艺术村展露风姿</a></h4>
+            <p data-i18n="report.7.desc">宁海下枫槎村依托望府楼山和望府茶产区优势，打造"望府茶飨、自在曲水"IP，建成艺术节点17个、培育产业项目5个，总投资超千万元。</p>
+          </div>
+        </div>
+      </div>
+      <div class="news-cards">
+        <div class="glass-card fade-in" style="padding:20px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+          <div class="icon" style="font-size:36px;margin-bottom:8px;">📰</div>
+          <h3 style="font-size:15px;color:var(--text-primary);font-weight:500;margin-bottom:4px;" data-i18n="card.report.title">媒体报道</h3>
+          <p style="font-size:12px;color:var(--text-tertiary);" data-i18n="card.report.desc">汇集各类媒体关于下枫槎村及谢氏家族的新闻报道。</p>
+        </div>
+        <div class="glass-card fade-in" style="padding:20px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+          <div class="icon" style="font-size:36px;margin-bottom:8px;">🔗</div>
+          <h3 style="font-size:15px;color:var(--text-primary);font-weight:500;margin-bottom:4px;" data-i18n="card.link.title">媒体链接</h3>
+          <p style="font-size:12px;color:var(--text-tertiary);" data-i18n="card.link.desc">宁海新闻网 · 宁波日报 · 浙江新闻</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:24px;">
+      <a href="pages/reports.html" class="btn" data-i18n="btn.more">查看更多 →</a>
+    </div>
+  </section>
+
+  <!-- ===== 底部引用 ===== -->
+  <section class="section-wrap" style="padding:0;">
+    <div class="fullwidth-quote">
+      <div class="quote-line"></div>
+      <div class="quote-text">乌衣世泽，宝树家声</div>
+      <div class="quote-author">—— 下枫槎谢氏家族楹联</div>
+      <div class="quote-line"></div>
+    </div>
+  </section>
+
+</div>
+
+  <!-- ===== Footer ===== -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-section">
+        <h4 data-i18n="footer.section1.title">下枫槎谢氏</h4>
+        <p data-i18n="footer.desc">宁海下枫槎村谢氏家族数字宗祠，致力于家族文化传承与宗亲联络。网站内容版权归谢氏家族所有。</p>
+        <p style="margin-top:12px;"><span id="visit-stat"><span data-i18n="visit.label">访问人数</span>: <span id="visit-count">0</span></span></p>
+      </div>
+      <div class="footer-section">
+        <h4 data-i18n="footer.section2.title">快捷链接</h4>
+        <a href="pages/history.html" data-i18n="nav.history">家族历史</a>
+        <a href="pages/genealogy.html" data-i18n="footer.link.genealogy">族谱查询</a>
+        <a href="pages/celebrities.html" data-i18n="nav.celebrities">名人事迹</a>
+        <a href="pages/news.html" data-i18n="nav.news">消息发布</a>
+      </div>
+      <div class="footer-section">
+        <h4 data-i18n="footer.section3.title">家族活动</h4>
+        <a href="pages/activities.html" data-i18n="footer.link.review">活动回顾</a>
+        <a href="pages/activities.html#upcoming" data-i18n="footer.link.upcoming">活动预告</a>
+        <a href="pages/today.html" data-i18n="nav.today">今日下枫槎</a>
+        <a href="pages/reports.html" data-i18n="footer.link.reports">新闻报道</a>
+      </div>
+      <div class="footer-section">
+        <h4 data-i18n="footer.section4.title">后台管理</h4>
+        <a href="pages/admin.html" data-i18n="footer.link.admin">🔐 管理后台</a>
+        <a href="pages/genealogy.html" data-i18n="footer.link.genealogy.mgmt">族谱管理</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p data-i18n="footer.copyright">© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p>
+    </div>
+  </footer>
+
+  <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
+
+  <!-- ===== 天气特效控件 ===== -->
+  <div class="weather-controls" id="weather-controls">
+    <button class="weather-btn" data-weather="off" title="关闭特效">✕</button>
+    <button class="weather-btn" data-weather="sunny" title="晴天">☀</button>
+    <button class="weather-btn" data-weather="rain" title="下雨">🌧</button>
+    <button class="weather-btn" data-weather="snow" title="下雪">❄</button>
+    <button class="weather-btn" data-weather="meteor" title="流星">☄</button>
+  </div>
+
+  <script src="js/main.js?v=4"></script>
+  <script>
+    // Canvas animated background
+    const canvas = document.getElementById('bg-canvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let w, h;
+      function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+      resize(); window.addEventListener('resize', resize);
+
+      const dots = [];
+      const DOT_COUNT = 80;
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const dotColor = isDark ? '255,255,255' : '100,100,100';
+
+      for (let i = 0; i < DOT_COUNT; i++) {
+        dots.push({
+          x: Math.random() * w, y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: (Math.random() - 0.5) * 0.3,
+          r: Math.random() * 2 + 1,
+          a: Math.random() * 0.3 + 0.1
+        });
+      }
+
+      const orbs = [
+        { x: 0.2, y: 0.3, r: 0.35, color: 'rgba(212,119,58,0.04)' },
+        { x: 0.8, y: 0.7, r: 0.3, color: 'rgba(58,157,171,0.03)' },
+        { x: 0.5, y: 0.1, r: 0.25, color: 'rgba(212,119,58,0.03)' }
+      ];
+
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+
+        // gradient orbs
+        orbs.forEach(o => {
+          const grad = ctx.createRadialGradient(o.x * w, o.y * h, 0, o.x * w, o.y * h, o.r * w);
+          grad.addColorStop(0, o.color);
+          grad.addColorStop(1, 'transparent');
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, w, h);
+        });
+
+        // dots
+        dots.forEach(d => {
+          d.x += d.vx; d.y += d.vy;
+          if (d.x < 0) d.x = w; if (d.x > w) d.x = 0;
+          if (d.y < 0) d.y = h; if (d.y > h) d.y = 0;
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${dotColor},${d.a})`;
+          ctx.fill();
+        });
+
+        // connections
+        for (let i = 0; i < dots.length; i++) {
+          for (let j = i + 1; j < dots.length; j++) {
+            const dx = dots[i].x - dots[j].x, dy = dots[i].y - dots[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 150) {
+              ctx.beginPath();
+              ctx.moveTo(dots[i].x, dots[i].y);
+              ctx.lineTo(dots[j].x, dots[j].y);
+              ctx.strokeStyle = `rgba(${dotColor},${(1 - dist / 150) * 0.08})`;
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+  </script>
+
+  <!-- ===== 天气特效粒子引擎 ===== -->
+  <script>
+  (function() {
+    var canvas = document.getElementById('weather-canvas');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var W, H;
+    function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+
+    var currentEffect = localStorage.getItem('xie_weather_effect') || 'off';
+    var particles = [];
+    var animId = null;
+
+    // --- 雨 ---
+    function makeRain(count) {
+      var arr = [];
+      for (var i = 0; i < count; i++) {
+        arr.push({
+          x: Math.random() * W, y: Math.random() * H * -1,
+          len: Math.random() * 15 + 10,
+          speed: Math.random() * 6 + 4,
+          opacity: Math.random() * 0.4 + 0.2
+        });
+      }
+      return arr;
+    }
+    function drawRain(ctx, arr) {
+      ctx.strokeStyle = 'rgba(174,194,224,0.6)';
+      ctx.lineWidth = 1.2;
+      for (var i = 0; i < arr.length; i++) {
+        var p = arr[i];
+        p.y += p.speed;
+        p.x += 1.5;
+        if (p.y > H + 20) { p.y = -20; p.x = Math.random() * W; }
+        if (p.x > W + 20) p.x = -20;
+        ctx.globalAlpha = p.opacity;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p.x - 4, p.y - p.len);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // --- 晴 ---
+    function makeSunny(count) {
+      var arr = [];
+      for (var i = 0; i < count; i++) {
+        arr.push({
+          x: Math.random() * W, y: Math.random() * H,
+          r: Math.random() * 2.5 + 0.5,
+          speed: Math.random() * 0.3 + 0.1,
+          angle: Math.random() * Math.PI * 2,
+          drift: Math.random() * 0.3 - 0.15,
+          opacity: Math.random() * 0.3 + 0.05
+        });
+      }
+      return arr;
+    }
+    function drawSunny(ctx, arr) {
+      for (var i = 0; i < arr.length; i++) {
+        var p = arr[i];
+        p.y -= p.speed;
+        p.x += Math.sin(p.angle) * p.drift;
+        p.angle += 0.005;
+        if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; }
+        if (p.x < -10) p.x = W + 10;
+        if (p.x > W + 10) p.x = -10;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,200,120,' + p.opacity + ')';
+        ctx.fill();
+        // glow
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,200,120,' + (p.opacity * 0.2) + ')';
+        ctx.fill();
+      }
+    }
+
+    // --- 雪 ---
+    function makeSnow(count) {
+      var arr = [];
+      for (var i = 0; i < count; i++) {
+        arr.push({
+          x: Math.random() * W, y: Math.random() * H * -1,
+          r: Math.random() * 3 + 1,
+          speed: Math.random() * 1.2 + 0.4,
+          sway: Math.random() * 2 + 0.5,
+          phase: Math.random() * Math.PI * 2,
+          opacity: Math.random() * 0.5 + 0.2
+        });
+      }
+      return arr;
+    }
+    function drawSnow(ctx, arr) {
+      for (var i = 0; i < arr.length; i++) {
+        var p = arr[i];
+        p.y += p.speed;
+        p.x += Math.sin(p.phase) * 0.3;
+        p.phase += 0.02;
+        if (p.y > H + 10) { p.y = -10; p.x = Math.random() * W; }
+        if (p.x < -10) p.x = W + 10;
+        if (p.x > W + 10) p.x = -10;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,' + p.opacity + ')';
+        ctx.fill();
+      }
+    }
+
+    // --- 流星 ---
+    function makeMeteors(max) {
+      var arr = [];
+      for (var i = 0; i < max; i++) {
+        arr.push(spawnMeteor(true));
+      }
+      return arr;
+    }
+    function spawnMeteor(randomY) {
+      return {
+        x: Math.random() * W,
+        y: randomY ? Math.random() * H * 0.4 : -20,
+        vx: Math.random() * -8 - 4,
+        vy: Math.random() * 4 + 3,
+        len: Math.random() * 40 + 30,
+        opacity: Math.random() * 0.6 + 0.4,
+        life: 1
+      };
+    }
+    function drawMeteors(ctx, arr) {
+      var meteorTimer = arr._timer || 0;
+      meteorTimer++;
+      // spawn new
+      if (meteorTimer > 80 + Math.random() * 120) {
+        var active = arr.filter(function(m) { return m.life > 0; }).length;
+        if (active < 4) {
+          arr.push(spawnMeteor(false));
+        }
+        meteorTimer = 0;
+      }
+      arr._timer = meteorTimer;
+
+      for (var i = arr.length - 1; i >= 0; i--) {
+        var m = arr[i];
+        if (m.life <= 0) { arr.splice(i, 1); continue; }
+        m.x += m.vx;
+        m.y += m.vy;
+        m.life -= 0.008;
+        if (m.life < 0) m.life = 0;
+        if (m.x < -100 || m.y > H + 50) { arr.splice(i, 1); continue; }
+
+        var grad = ctx.createLinearGradient(m.x, m.y, m.x - m.vx * 2, m.y - m.vy * 2);
+        grad.addColorStop(0, 'rgba(255,255,255,' + (m.life * m.opacity) + ')');
+        grad.addColorStop(0.5, 'rgba(200,220,255,' + (m.life * m.opacity * 0.4) + ')');
+        grad.addColorStop(1, 'transparent');
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(m.x, m.y);
+        ctx.lineTo(m.x - m.vx * 3, m.y - m.vy * 3);
+        ctx.stroke();
+
+        // head glow
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,' + (m.life * 0.8) + ')';
+        ctx.fill();
+      }
+    }
+
+    // --- 引擎循环 ---
+    function startEffect(type) {
+      stopEffect();
+      currentEffect = type;
+      localStorage.setItem('xie_weather_effect', type);
+      updateActiveBtn(type);
+
+      switch (type) {
+        case 'rain':  particles = makeRain(300); break;
+        case 'sunny': particles = makeSunny(80); break;
+        case 'snow':  particles = makeSnow(180); break;
+        case 'meteor': particles = makeMeteors(2); break;
+        default: return;
+      }
+      loop();
+    }
+
+    function loop() {
+      ctx.clearRect(0, 0, W, H);
+      switch (currentEffect) {
+        case 'rain':  drawRain(ctx, particles); break;
+        case 'sunny': drawSunny(ctx, particles); break;
+        case 'snow':  drawSnow(ctx, particles); break;
+        case 'meteor': drawMeteors(ctx, particles); break;
+      }
+      animId = requestAnimationFrame(loop);
+    }
+
+    function stopEffect() {
+      if (animId) { cancelAnimationFrame(animId); animId = null; }
+      ctx.clearRect(0, 0, W, H);
+      particles = [];
+    }
+
+    // --- 按钮控制 ---
+    function updateActiveBtn(type) {
+      var btns = document.querySelectorAll('.weather-btn');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.toggle('active', btns[i].getAttribute('data-weather') === type);
+      }
+    }
+
+    // --- 初始化 ---
+    // 恢复上次效果
+    var saved = localStorage.getItem('xie_weather_effect') || 'off';
+    if (saved && saved !== 'off') startEffect(saved);
+    else updateActiveBtn('off');
+
+    // 绑定按钮
+    document.addEventListener('click', function(e) {
+      var btn = e.target.closest('.weather-btn');
+      if (!btn) return;
+      var type = btn.getAttribute('data-weather');
+      if (type === currentEffect && type === 'off') return;
+      if (type === 'off') { stopEffect(); currentEffect = 'off'; localStorage.setItem('xie_weather_effect', 'off'); updateActiveBtn('off'); return; }
+      if (type === currentEffect) { stopEffect(); currentEffect = 'off'; localStorage.setItem('xie_weather_effect', 'off'); updateActiveBtn('off'); return; }
+      startEffect(type);
+    });
+  })();
+  </script>
+
+  <!-- ===== 全屏查看 ===== -->
+  <script>
+  // 图片全屏
+  function viewFullscreen(imgSrc, label) {
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+    overlay.onclick = function() { overlay.remove(); };
+    var img = document.createElement('img');
+    img.src = imgSrc;
+    img.style.cssText = 'max-width:92vw;max-height:90vh;object-fit:contain;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+    overlay.appendChild(img);
+    if (label) {
+      var cap = document.createElement('div');
+      cap.textContent = label;
+      cap.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);color:#ccc;font-size:14px;background:rgba(0,0,0,0.6);padding:8px 20px;border-radius:6px;pointer-events:none;';
+      overlay.appendChild(cap);
+    }
+    document.body.appendChild(overlay);
+  }
+
+  // 视频全屏
+  function viewVideoFullscreen(src, title) {
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;';
+    overlay.onclick = function(e) { if (e.target === overlay) { closeVid(); } };
+
+    function closeVid() {
+      if (video) { video.pause(); video.src = ''; }
+      overlay.remove();
+    }
+
+    var closeBtn = document.createElement('button');
+    closeBtn.textContent = '✕';
+    closeBtn.style.cssText = 'position:fixed;top:20px;right:24px;background:none;border:none;color:#fff;font-size:28px;cursor:pointer;z-index:10;opacity:0.7;';
+    closeBtn.onclick = closeVid;
+    overlay.appendChild(closeBtn);
+
+    var video = document.createElement('video');
+    video.controls = true;
+    video.autoplay = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+    video.style.cssText = 'max-width:92vw;max-height:85vh;width:auto;height:auto;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+    video.src = src;
+    overlay.appendChild(video);
+
+    if (title) {
+      var cap = document.createElement('div');
+      cap.textContent = title;
+      cap.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);color:#aaa;font-size:13px;background:rgba(0,0,0,0.5);padding:6px 16px;border-radius:4px;pointer-events:none;';
+      overlay.appendChild(cap);
+    }
+
+    document.addEventListener('keydown', function escHandler(e) {
+      if (e.key === 'Escape') { closeVid(); document.removeEventListener('keydown', escHandler); }
+    });
+    document.body.appendChild(overlay);
+  }
+
+  // 点击照片轮播→全屏
+  document.addEventListener('click', function(e) {
+    var slide = e.target.closest('.carousel-slide');
+    if (slide) {
+      var img = slide.querySelector('img');
+      if (img) {
+        var labelEl = slide.querySelector('.slide-label');
+        viewFullscreen(img.src, labelEl ? labelEl.textContent : '');
+      }
+    }
+  });
+  </script>
+
+  <!-- ===== 动态加载 ===== -->
+  <script>
+  (function() {
+    // 1. 照片轮播 - 从管理后台加载已上传图片
+    function loadCarouselPhotos() {
+      var track = document.getElementById('carousel-track');
+      if (!track) return;
+      try {
+        var adminPhotos = JSON.parse(localStorage.getItem('xie_admin_photos') || '[]');
+        if (!adminPhotos.length) return;
+
+        getAllFiles('photo_').then(function(files) {
+          var fileMap = {};
+          files.forEach(function(f) {
+            var id = parseInt(f.name.replace('photo_', ''));
+            fileMap[id] = f.dataUrl;
+          });
+          renderCarouselPhotos(adminPhotos, fileMap);
+        }).catch(function() {
+          renderCarouselPhotos(adminPhotos, {});
+        });
+
+        function renderCarouselPhotos(photos, fileMap) {
+          var hasAnyFile = photos.some(function(p) { return fileMap[p.id] || p.file_url; });
+          if (!hasAnyFile) return;
+
+          track.innerHTML = '';
+          photos.forEach(function(photo) {
+            var src = photo.file_url || fileMap[photo.id] || '';
+            var slide = document.createElement('div');
+            slide.className = 'carousel-slide';
+            if (src) {
+              slide.innerHTML = '<img src="' + src + '" alt="' + (photo.title || '') + '" style="width:100%;height:100%;object-fit:cover;">';
+            } else {
+              slide.innerHTML = '<div style="font-size:60px;opacity:0.5;">' + (photo.icon || '🖼️') + '</div>';
+            }
+            var label = document.createElement('span');
+            label.className = 'slide-label';
+            label.textContent = photo.title || '';
+            slide.appendChild(label);
+            track.appendChild(slide);
+          });
+
+          if (typeof carouselIndex !== 'undefined') {
+            carouselIndex = 0;
+            stopAutoPlay();
+            var dotsContainer = document.getElementById('carousel-dots');
+            if (dotsContainer) {
+              dotsContainer.innerHTML = '';
+              photos.forEach(function(_, i) {
+                var dot = document.createElement('div');
+                dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+                dot.setAttribute('data-index', i);
+                dot.addEventListener('click', function() { goToCarousel(parseInt(this.getAttribute('data-index'))); });
+                dotsContainer.appendChild(dot);
+              });
+            }
+            startAutoPlay();
+          }
+        }
+      } catch(e) { /* silent */ }
+    }
+
+    // ===== 视频轮播 =====
+    var vcIndex = 0, vcTimer = null;
+
+    function initVideoCarousel() {
+      var track = document.getElementById('video-carousel-track');
+      var dotsContainer = document.getElementById('vc-dots');
+      var prevBtn = document.getElementById('vc-prev');
+      var nextBtn = document.getElementById('vc-next');
+      if (!track) return;
+
+      var allVideos = [];
+
+      function checkDefaultVideo(callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('HEAD', 'video/promo.mp4', true);
+        xhr.onload = function() { callback(xhr.status !== 404); };
+        xhr.onerror = function() { callback(false); };
+        xhr.send();
+      }
+
+      function buildCarousel(videos) {
+        if (!videos.length) {
+          track.innerHTML = '<div class="vc-slide"><div style="color:#666;font-size:14px;display:flex;align-items:center;justify-content:center;height:100%;background:var(--glass-bg);">暂无视频</div></div>';
+          return;
+        }
+
+        track.innerHTML = '';
+        videos.forEach(function(v, i) {
+          var slide = document.createElement('div');
+          slide.className = 'vc-slide';
+          slide.setAttribute('data-index', i);
+
+          if (v.embed && v.embed.trim()) {
+            var iframeMatch = v.embed.match(/<iframe[\s\S]*?<\/iframe>/i);
+            var embedHtml = iframeMatch ? iframeMatch[0] : v.embed;
+            slide.innerHTML = '<div style="width:100%;height:100%;">' + embedHtml + '</div>';
+            var iframe = slide.querySelector('iframe');
+            if (iframe) { iframe.style.width = '100%'; iframe.style.height = '100%'; iframe.style.border = '0'; }
+          } else if (v.src) {
+            var thumb = document.createElement('img');
+            thumb.className = 'vc-slide-thumb';
+            thumb.src = v.poster || 'images/carousel/01-zongci.jpg';
+            thumb.alt = v.title || '';
+            thumb.onerror = function() { this.style.display = 'none'; };
+            slide.appendChild(thumb);
+
+            var overlay = document.createElement('div');
+            overlay.className = 'vc-play-overlay';
+            overlay.innerHTML = '<div class="vc-play-btn">▶</div>';
+            overlay.onclick = function() { viewVideoFullscreen(v.src, v.title); };
+            slide.appendChild(overlay);
+
+            if (v.title) {
+              var titleEl = document.createElement('div');
+              titleEl.className = 'vc-slide-title';
+              titleEl.textContent = v.title;
+              slide.appendChild(titleEl);
+            }
+          } else if (v.url) {
+            slide.innerHTML = '<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:40px;color:#666;cursor:pointer;">'
+              + '<div style="font-size:60px;opacity:0.3;margin-bottom:8px;">🎬</div>'
+              + '<div style="font-size:13px;">' + (v.title || '点击观看') + '</div></div>';
+            slide.onclick = function() { window.open(v.url, '_blank'); };
+          }
+
+          track.appendChild(slide);
+        });
+
+        if (videos.length <= 1) {
+          if (prevBtn) prevBtn.style.display = 'none';
+          if (nextBtn) nextBtn.style.display = 'none';
+        } else {
+          if (prevBtn) { prevBtn.style.display = 'flex'; prevBtn.onclick = function() { moveVC(-1); }; }
+          if (nextBtn) { nextBtn.style.display = 'flex'; nextBtn.onclick = function() { moveVC(1); }; }
+        }
+
+        if (dotsContainer) {
+          dotsContainer.innerHTML = '';
+          if (videos.length > 1) {
+            dotsContainer.style.display = 'flex';
+            videos.forEach(function(_, i) {
+              var dot = document.createElement('button');
+              dot.className = 'vc-dot' + (i === 0 ? ' active' : '');
+              dot.setAttribute('data-index', i);
+              dot.onclick = function() { goToVC(parseInt(this.getAttribute('data-index'))); };
+              dotsContainer.appendChild(dot);
+            });
+          } else {
+            dotsContainer.style.display = 'none';
+          }
+        }
+
+        startVCAutoPlay();
+      }
+
+      function moveVC(dir) {
+        var count = getVCCount();
+        if (!count) return;
+        vcIndex = (vcIndex + dir + count) % count;
+        updateVC();
+      }
+
+      function goToVC(idx) { vcIndex = idx; updateVC(); }
+
+      function getVCCount() {
+        var t = document.getElementById('video-carousel-track');
+        return t ? t.querySelectorAll('.vc-slide').length : 0;
+      }
+
+      function updateVC() {
+        var t = document.getElementById('video-carousel-track');
+        var d = document.getElementById('vc-dots');
+        if (!t) return;
+        var total = getVCCount();
+        if (!total) return;
+        t.style.transform = 'translateX(-' + (vcIndex * 100) + '%)';
+        if (d) {
+          d.querySelectorAll('.vc-dot').forEach(function(dot, i) {
+            dot.classList.toggle('active', i === vcIndex);
+          });
+        }
+      }
+
+      function startVCAutoPlay() {
+        stopVCAutoPlay();
+        if (getVCCount() <= 1) return;
+        vcTimer = setInterval(function() { moveVC(1); }, 5000);
+      }
+
+      function stopVCAutoPlay() {
+        if (vcTimer) { clearInterval(vcTimer); vcTimer = null; }
+      }
+
+      checkDefaultVideo(function(exists) {
+        if (exists) {
+          allVideos.push({ id: 0, src: 'video/promo.mp4', title: '家族宣传片', poster: 'images/carousel/01-zongci.jpg' });
+        }
+        // 艺术农场视频
+        allVideos.push({ id: -1, src: 'video/douyin_art_farm.mp4', title: '宁海滩涂边的下枫槎艺术农场', poster: 'images/carousel/01-zongci.jpg' });
+        try {
+          var adminVideos = JSON.parse(localStorage.getItem('xie_admin_videos') || '[]');
+          if (adminVideos.length) {
+            // Check for server file_url first, then fallback to IndexedDB
+            var hasServerUrls = adminVideos.some(function(v) { return v.file_url; });
+            if (hasServerUrls) {
+              adminVideos.forEach(function(v) {
+                if (v.file_url || (v.embed && v.embed.trim()) || v.url) {
+                  allVideos.push({ id: v.id, src: v.file_url || v.url, embed: v.embed || '', title: v.title || '', desc: v.desc || '' });
+                }
+              });
+              buildCarousel(allVideos);
+            } else {
+              getAllFiles('video_').then(function(files) {
+                var fileMap = {};
+                files.forEach(function(f) {
+                  var id = parseInt(f.name.replace('video_', ''));
+                  if (f.blob) { fileMap[id] = URL.createObjectURL(f.blob); }
+                  else if (f.dataUrl) { fileMap[id] = f.dataUrl; }
+                });
+                adminVideos.forEach(function(v) {
+                  var fileUrl = fileMap[v.id];
+                  if (fileUrl || (v.embed && v.embed.trim()) || v.url) {
+                    allVideos.push({ id: v.id, src: fileUrl || v.url, embed: v.embed || '', title: v.title || '', desc: v.desc || '' });
+                  }
+                });
+                buildCarousel(allVideos);
+              });
+            }
+            return;
+          }
+        } catch(e) {}
+        buildCarousel(allVideos);
+      });
+    }
+
+    // 3. 加载后台背景音乐
+    function loadAdminMusic() {
+      getMusicFile().then(function(f) {
+        if (f && f.dataUrl) {
+          var audioEl = document.getElementById('bg-music');
+          if (audioEl) {
+            audioEl.src = f.dataUrl;
+            audioEl.load();
+          }
+        }
+      }).catch(function() {});
+    }
+
+    // 页面加载完成后执行（DOMContentLoaded，不等待图片/视频加载）
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      loadCarouselPhotos();
+      initVideoCarousel();
+      loadAdminMusic();
+    } else {
+      document.addEventListener('DOMContentLoaded', function() {
+        loadCarouselPhotos();
+        initVideoCarousel();
+        loadAdminMusic();
+      });
+    }
+  })();
+  </script>
+
+  <audio id="bg-music" loop src="music/background.mp3"></audio>
+  <div class="music-player"><button class="music-btn" id="music-toggle">🔈</button><span class="music-label" data-i18n="music.label">背景音乐</span></div>
+</body>
+</html>

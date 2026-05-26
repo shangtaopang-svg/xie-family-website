@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="page.reports.title">新闻报道 · 下枫槎谢氏</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+
+  
+  <link rel="stylesheet" href="../css/style.css?v=3">
+  <script src="../js/i18n.js?v=6"></script>
+  <script src="../js/file-store.js?v=3"></script>
+  <script src="../js/supabase.js?v=3"></script>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="content">
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        <div class="logo-icon">谢</div>
+        <div class="logo-text"><h1 data-i18n="logo.title">下枫槎谢氏</h1><small data-i18n="logo.subtitle">宁海 · 下枫槎村</small></div>
+      </a>
+      <button class="nav-toggle" data-i18n-aria="nav.toggle" aria-label="菜单">☰</button>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="../index.html" data-i18n="nav.home">首页</a></li>
+          <li><a href="history.html" data-i18n="nav.history">家族历史</a></li>
+          <li><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a></li>
+          <li><a href="news.html" data-i18n="nav.news">消息发布</a></li>
+          <li><a href="members.html" data-i18n="nav.members">家族成员</a></li>
+          <li><a href="activities.html" data-i18n="nav.activities">家族活动</a></li>
+          <li><a href="today.html" data-i18n="nav.today">今日下枫槎</a></li>
+          <li><a href="reports.html" class="active" data-i18n="nav.reports">新闻报道</a></li>
+          <li><a href="contact.html" data-i18n="nav.contact">联系我们</a></li>
+          <li><a href="admin.html" style="color:var(--accent-orange);">🔐 管理后台</a></li>
+        <div class="nav-actions">
+          <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
+          <button class="nav-action-btn lang-btn" id="lang-toggle" data-i18n-title="nav.lang" title="中英文切换">EN</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- weather moved to hero on index -->
+
+  <div class="page-wrap">
+    <div class="page-title">
+      <h2 data-i18n="nav.reports">新闻报道</h2>
+      <p data-i18n="page.reports">媒体报道 · 新闻聚焦</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:36px;">
+      <div>
+        <div class="section-title" style="text-align:left;"><h2 style="font-size:22px;">媒体报道</h2><div class="divider" style="margin:8px 0;"></div></div>
+        <div id="reports-list">
+          <!-- 由 JS 动态渲染 -->
+        </div>
+      </div>
+
+      <!-- 侧边栏 -->
+      <div>
+        <div class="glass-card" style="padding:20px;margin-bottom:20px;">
+          <h4 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:12px;font-size:15px;font-weight:500;">📰 关于报道</h4>
+          <p style="font-size:13px;color:var(--text-tertiary);line-height:1.8;">本栏目汇集各类媒体关于下枫槎村及谢氏家族的新闻报道，包括报刊、电视、网络等渠道的公开报道。欢迎族人提供相关报道线索。</p>
+        </div>
+
+        <div class="glass-card" style="padding:20px;">
+          <h4 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:12px;font-size:15px;font-weight:500;">🔗 媒体链接</h4>
+          <div style="font-size:13px;">
+            <p style="padding:6px 0;color:var(--text-tertiary);"><a href="#" style="color:var(--accent-orange);" onclick="alert('外部链接，将跳转到宁海新闻网');">宁海新闻网</a></p>
+            <p style="padding:6px 0;color:var(--text-tertiary);"><a href="#" style="color:var(--accent-orange);" onclick="alert('外部链接，将跳转到宁波日报');">宁波日报</a></p>
+            <p style="padding:6px 0;color:var(--text-tertiary);"><a href="#" style="color:var(--accent-orange);" onclick="alert('外部链接，将跳转到浙江新闻');">浙江新闻</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-section"><h4 data-i18n="footer.section1.title">下枫槎谢氏</h4><p data-i18n="footer.desc">宁海下枫槎村谢氏家族数字宗祠</p></div>
+      <div class="footer-section"><h4 data-i18n="footer.section2.title">快捷链接</h4><a href="../index.html" data-i18n="nav.home">首页</a><a href="history.html" data-i18n="nav.history">家族历史</a><a href="genealogy.html" data-i18n="footer.link.genealogy">族谱查询</a></div>
+      <div class="footer-section"><h4 data-i18n="footer.section.content">内容</h4><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a><a href="news.html" data-i18n="nav.news">消息发布</a><a href="activities.html" data-i18n="nav.activities">家族活动</a><a href="today.html" data-i18n="nav.today">今日下枫槎</a><a href="reports.html" class="active" data-i18n="nav.reports">新闻报道</a></div>
+      <div class="footer-section"><h4 data-i18n="footer.section.contact">联系</h4><a href="contact.html" data-i18n="nav.contact">联系我们</a></div>
+    </div>
+    <div class="footer-bottom">
+      <p data-i18n="footer.copyright">© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p>
+    </div>
+  </footer>
+
+  <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
+  <script src="../js/main.js?v=3"></script>
+  <script>
+    // Canvas animated background
+    const canvas = document.getElementById('bg-canvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let w, h;
+      function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+      resize(); window.addEventListener('resize', resize);
+      const dots = [];
+      for (let i = 0; i < 80; i++) dots.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, r: Math.random() * 2 + 1, a: Math.random() * 0.3 + 0.1 });
+      const orbs = [
+        { x: 0.2, y: 0.3, r: 0.35, color: 'rgba(251,146,60,0.06)' },
+        { x: 0.8, y: 0.7, r: 0.3, color: 'rgba(34,211,238,0.05)' },
+        { x: 0.5, y: 0.1, r: 0.25, color: 'rgba(251,146,60,0.04)' }
+      ];
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const dotRgb = isDark ? '255,255,255' : '100,100,100';
+        orbs.forEach(o => {
+          const grad = ctx.createRadialGradient(o.x * w, o.y * h, 0, o.x * w, o.y * h, o.r * w);
+          grad.addColorStop(0, o.color); grad.addColorStop(1, 'transparent');
+          ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+        });
+        dots.forEach(d => {
+          d.x += d.vx; d.y += d.vy;
+          if (d.x < 0) d.x = w; if (d.x > w) d.x = 0;
+          if (d.y < 0) d.y = h; if (d.y > h) d.y = 0;
+          ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${dotRgb},${d.a})`; ctx.fill();
+        });
+        for (let i = 0; i < dots.length; i++) {
+          for (let j = i + 1; j < dots.length; j++) {
+            const dx = dots[i].x - dots[j].x, dy = dots[i].y - dots[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 150) {
+              ctx.beginPath(); ctx.moveTo(dots[i].x, dots[i].y); ctx.lineTo(dots[j].x, dots[j].y);
+              ctx.strokeStyle = `rgba(${dotRgb},${(1 - dist / 150) * 0.08})`;
+              ctx.lineWidth = 0.5; ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    // Render reports from admin data
+    function escapeHtml(text) {
+      if (!text) return '';
+      var d = document.createElement('div');
+      d.textContent = text;
+      return d.innerHTML;
+    }
+
+    function escapeAttr(text) {
+      if (!text) return '';
+      return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    // ===== 阅读全文弹窗 =====
+    function showFullArticle(link, title, source, date, content) {
+      var overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+      var box = document.createElement('div');
+      box.style.cssText = 'background:var(--bg-primary);border:1px solid var(--glass-border);border-radius:12px;max-width:720px;width:100%;max-height:80vh;overflow-y:auto;padding:36px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
+      box.innerHTML = '<button onclick="this.parentElement.parentElement.remove()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-tertiary);">✕</button>'
+        + '<h2 style="font-family:var(--font-title);color:var(--text-primary);font-size:20px;font-weight:600;margin-bottom:12px;padding-right:30px;">' + escapeHtml(title) + '</h2>'
+        + '<div style="font-size:13px;color:var(--text-tertiary);margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--divider);">'
+        + (date ? '<span>' + date + '</span>' : '')
+        + (source ? ' 来源：' + escapeHtml(source) : '')
+        + '</div>'
+        + '<div style="font-size:14px;color:var(--text-secondary);line-height:2;">' + escapeHtml(content).replace(/\n/g, '<br>') + '</div>';
+      overlay.appendChild(box);
+      overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+      document.body.appendChild(overlay);
+    }
+
+    function renderReports() {
+      var defaults = [
+        { id: 5, title: '望府山下清"枫"徐来', date: '2023-03-20', source: '浙江省纪委省监委网站', url: 'http://www.zjsjw.gov.cn/zhuantizhuanlan/qinglianwenhua/qingfengzhilv/202303/t20230307_8816170.shtml', content: '浙江省纪委监委"清风之旅"专栏报道下枫槎村。文章描绘了下枫槎村依托望府楼山风景和望府茶产区优势，打造"望府茶飨 自在曲水"IP，深挖"茶廉"文化。村内兴枫亭、茶廉枫香长廊、"廉在一起"会客厅、清枫舍等场所，将茶文化与廉洁教育有机结合。从村规民约"三字经"到"监督一点通"二维码，下枫槎以清廉村居建设赋能乡村振兴，实现了从城郊乡村到城市后花园的"美丽蝶变"。' },
+        { id: 4, title: '艺探新乡村 | 最是茶香抚人心——宁海县跃龙街道下枫槎村', date: '2026-05-25', source: '宁波文艺', url: 'https://mp.weixin.qq.com/s?__biz=MzI1NTY0MDQ0Ng==&mid=2247592668&idx=2&sn=f746455c81ccf6518134817815fa5cca', content: '宁波市文联"艺探新乡村"专栏报道下枫槎村。文章以茶文化为线索，从望府银毫、望府楼山到村庄蝶变，描绘了下枫槎村以茶为媒、艺术赋能乡村振兴的生动故事。村内仿古凉亭、小桥流水、音乐喷泉与茶廊、茶宿交相辉映，废弃房屋改造成的"蜂巢乐园"、电线杆艺术品等展现了化腐朽为神奇的乡村艺术。"四知堂""墨香斋""明德堂""清枫舍"等文化空间，让这个曾经"藏在深闺"的村子蝶变为远近闻名的后花园。' },
+        { id: 1, title: '宁海下枫槎村：古村焕新颜 数字宗祠传家风', date: '2026-04-20', source: '宁海新闻网', url: '', content: '宁海县下枫槎村依托数字宗祠平台，将传统家族文化融入现代数字技术，让在外游子能够随时了解家乡动态、参与家族事务，探索出一条传统文化传承的新路径。' },
+        { id: 2, title: '下枫槎村乡村振兴纪实：古村落的美丽蝶变', date: '2026-03-15', source: '宁波日报', url: '', content: '近年来，下枫槎村在保持古村落风貌的同时，大力发展乡村旅游和特色农业，实现了从偏远山村到美丽乡村的华丽转身。' },
+        { id: 3, title: '谢氏后人的文化坚守：老祠堂变身新课堂', date: '2026-02-08', source: '浙江新闻', url: '', content: '在宁海下枫槎村，谢氏族人将百年宗祠改造成传统文化课堂，定期组织青少年学习国学经典、书法礼仪，让老祠堂焕发新活力。' },
+        { id: 6, title: '宁波宁海：农家爱艺术 废物尽"奇"用', date: '2022-12-08', source: '央广网', url: 'https://www.163.com/dy/article/HO3MLPH00514R9NP.html', content: '央广网宁波12月8日报道，"尽奇用——废物不废"行动在宁海跃龙街道下枫槎村持续开展。村民沈玉燕利用老家具、旧衣服、树桩竹梢等将自家小院改造成公共文化空间，计划带领妇女刺绣团队打响"燕姐绣坊"品牌。村民陈掌娟的"一面结缘"面馆也成了邻里共创空间，大家用废布料勾画江南水乡图。中国人民大学"小裤脚教授"丛志强团队驻村指导，将家庭私人空间转化为公共文化服务空间，探索乡村公共文化服务助力共同富裕的有效路径。' },
+        { id: 7, title: '宁海下枫槎村｜"茶文化"艺术村展露风姿', date: '2022-06-16', source: '宁海新闻网', url: 'https://www.x163.com.cn/article-2129-1.html', content: '宁海跃龙街道下枫槎村依托望府楼山优美风景和望府茶主产区优势，打造"望府茶飨、自在曲水"IP，以茶廊、茶学、茶史、茶艺、茶宿、茶美"六茶"为内容，建设仿古凉亭、音乐喷泉、小桥流水等景观。村内建成"阿拉崖谷奶茶杯""巾帼茶席"等艺术节点17个，培育青枫蜜茶、"老十堂"养生姜膏等产业项目5个，总投资超千万元。前不久举办的"望府茶飨"文化节吸引大量游客，田也甜品店开张首日卖出奶茶300多杯。' },
+        { id: 8, title: '宁海跃龙：以艺术激活乡村振兴的"一池春水"', date: '2022-06-27', source: '浙江日报', url: 'http://zjrb.zjol.com.cn/html/2022-06/27/content_3566527.htm', content: '浙江日报报道宁海跃龙街道以艺术激活乡村振兴。下枫槎村引入中国人民大学丛志强团队和乡建艺术家驻村，依托望府楼山千亩茶园优势打造"望府茶飨、自在曲水"IP，建成艺术节点17个、培育产业项目5个，总投资超千万元。跃龙街道出台1号文件扶持艺术振兴乡村，规划打造休闲娱乐、绿色生态、产业活力三条精品线，推动乡村振兴从"美丽颜值"向"发展产值"转变。' },
+      ];
+      var data = JSON.parse(localStorage.getItem('xie_admin_reports'));
+      if (!data || !data.length) {
+        data = defaults;
+      } else {
+        // Merge missing defaults so newly added items always appear
+        var existingIds = {};
+        data.forEach(function(item) { existingIds[item.id] = true; });
+        defaults.forEach(function(item) {
+          if (!existingIds[item.id]) data.push(item);
+        });
+      }
+      // Sort newest first
+      data.sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
+      var html = '';
+      data.forEach(function(item) {
+        var hasUrl = item.url && item.url.trim() !== '';
+        var fullContent = item.content || '';
+        html += '<div class="article-card fade-in">'
+          + '<h3>' + escapeHtml(item.title) + '</h3>'
+          + '<div class="meta">' + item.date + ' 来源：' + escapeHtml(item.source) + '</div>'
+          + '<p>' + escapeHtml(fullContent.length > 120 ? fullContent.substring(0, 120) + '...' : fullContent) + '</p>'
+          + (hasUrl
+              ? '<a href="' + escapeAttr(item.url) + '" target="_blank" class="read-more-link">查看全文 →</a>'
+              : '<a href="javascript:void(0)" class="read-more-link" onclick="showFullArticle(this, \'' + escapeAttr(item.title) + '\', \'' + escapeAttr(item.source || '') + '\', \'' + escapeAttr(item.date || '') + '\', \'' + escapeAttr(fullContent.replace(/'/g, "\\'").replace(/"/g, '&quot;')) + '\')">阅读全文 →</a>')
+          + '</div>';
+      });
+      document.getElementById('reports-list').innerHTML = html;
+    }
+    renderReports(); // Initial render from localStorage or defaults
+    // Try loading from Supabase for up-to-date data across devices
+    if (window.dbGetAll) {
+      dbGetAll('reports', { order: 'date.desc' }).then(function(supabaseData) {
+        if (supabaseData && supabaseData.length > 0) {
+          localStorage.setItem('xie_admin_reports', JSON.stringify(supabaseData));
+          renderReports();
+        }
+      }).catch(function() {});
+    }
+  </script>
+  <audio id="bg-music" loop src="../music/background.mp3"></audio>
+  <div class="music-player"><button class="music-btn" id="music-toggle">🔈</button><span class="music-label" data-i18n="music.label">背景音乐</span></div>
+</body>
+</html>

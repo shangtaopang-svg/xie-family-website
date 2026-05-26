@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="page.activities.title">家族活动 · 下枫槎谢氏</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+
+  
+  <link rel="stylesheet" href="../css/style.css?v=2">
+  <script src="../js/i18n.js"></script>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="content">
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        <div class="logo-icon">谢</div>
+        <div class="logo-text"><h1 data-i18n="logo.title">下枫槎谢氏</h1><small data-i18n="logo.subtitle">宁海 · 下枫槎村</small></div>
+      </a>
+      <button class="nav-toggle" data-i18n-aria="nav.toggle" aria-label="菜单">☰</button>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="../index.html" data-i18n="nav.home">首页</a></li>
+          <li><a href="history.html" data-i18n="nav.history">家族历史</a></li>
+          <li><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a></li>
+          <li><a href="news.html" data-i18n="nav.news">消息发布</a></li>
+          <li><a href="members.html" data-i18n="nav.members">家族成员</a></li>
+          <li><a href="activities.html" class="active" data-i18n="nav.activities">家族活动</a></li>
+          <li><a href="today.html" data-i18n="nav.today">今日下枫槎</a></li>
+          <li><a href="reports.html" data-i18n="nav.reports">新闻报道</a></li>
+          <li><a href="contact.html" data-i18n="nav.contact">联系我们</a></li>
+        </ul>
+        <div class="nav-actions">
+          <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
+          <button class="nav-action-btn lang-btn" id="lang-toggle" data-i18n-title="nav.lang" title="中英文切换">EN</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- weather moved to hero on index -->
+
+  <div class="page-wrap">
+    <div class="page-title">
+      <h2 data-i18n="nav.activities">家族活动</h2>
+      <p data-i18n="page.activities">凝聚宗亲 · 传承文化</p>
+    </div>
+
+    <!-- 活动回顾 -->
+    <section style="margin-bottom:50px;">
+      <div class="section-title"><h2>活动回顾</h2><div class="divider"></div></div>
+
+      <div class="activity-card fade-in">
+        <div class="activity-img" style="font-size:60px;">🌿</div>
+        <div class="activity-details">
+          <span class="date-tag">2026年4月4日</span>
+          <h3>丙午年清明祭祖大典</h3>
+          <p>百余位宗亲齐聚下枫槎谢氏宗祠，依古礼举行清明祭祖仪式。今年首次增设"青年主祭"环节，由年轻一代代表担任主祭，寓意家族文化薪火相传。祭后设宴，合族共叙亲情。</p>
+          <a href="news.html" class="btn" style="font-size:12px;padding:6px 16px;">查看详情</a>
+        </div>
+      </div>
+
+      <div class="activity-card fade-in">
+        <div class="activity-img" style="font-size:60px;">🎊</div>
+        <div class="activity-details">
+          <span class="date-tag">2026年2月12日</span>
+          <h3>丙午年新春团拜会</h3>
+          <p>农历正月初一，下枫槎谢氏在宗祠举行新春团拜活动。族人互致新春祝福，共话家族发展。现场还举行了传统戏曲表演和灯谜竞猜活动，气氛热烈。</p>
+          <a href="news.html" class="btn" style="font-size:12px;padding:6px 16px;">查看详情</a>
+        </div>
+      </div>
+
+      <div class="activity-card fade-in">
+        <div class="activity-img" style="font-size:60px;">📚</div>
+        <div class="activity-details">
+          <span class="date-tag">2025年10月2日</span>
+          <h3>下枫槎谢氏文化研讨会</h3>
+          <p>家族文化研究会在宗祠召开首届谢氏文化研讨会，会议围绕族谱编纂、宗祠修缮、家族文化传承等议题展开深入讨论。会议决定启动族谱数字化工程和宗祠修缮计划。</p>
+          <a href="news.html" class="btn" style="font-size:12px;padding:6px 16px;">查看详情</a>
+        </div>
+      </div>
+
+      <div class="activity-card fade-in">
+        <div class="activity-img" style="font-size:60px;">🏆</div>
+        <div class="activity-details">
+          <span class="date-tag">2025年8月15日</span>
+          <h3>谢氏优秀学子表彰大会</h3>
+          <p>家族教育基金会对本年度考入重点大学和获得重要奖项的谢氏子弟进行表彰和奖励。本年度共有8位优秀学子获得奖学金，激励更多家族晚辈勤奋向学。</p>
+          <a href="news.html" class="btn" style="font-size:12px;padding:6px 16px;">查看详情</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 活动预告 -->
+    <section id="upcoming" style="margin-bottom:50px;">
+      <div class="section-title"><h2>活动预告</h2><div class="divider"></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div class="glass-card" style="padding:24px;border-top:3px solid var(--accent-orange);" class="fade-in">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <span style="background:var(--accent-orange);color:#000;padding:2px 10px;border-radius:3px;font-size:12px;">即将举行</span>
+            <span style="font-size:12px;color:var(--text-tertiary);">2026年 · 冬至</span>
+          </div>
+          <h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:17px;font-weight:500;">丙午年冬至祭祖</h3>
+          <p style="font-size:13px;color:var(--text-tertiary);margin:8px 0;">每年冬至为下枫槎谢氏秋祭之日，将在宗祠举行祭祖仪式，敬请各位宗亲提前安排时间参加。</p>
+          <p style="font-size:12px;color:var(--text-tertiary);">地点：下枫槎谢氏宗祠</p>
+        </div>
+        <div class="glass-card" style="padding:24px;border-top:3px solid var(--accent-orange);" class="fade-in">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <span style="background:var(--accent-orange-dim);color:var(--accent-orange);padding:2px 10px;border-radius:3px;font-size:12px;font-weight:500;">筹备中</span>
+            <span style="font-size:12px;color:var(--text-tertiary);">时间待定</span>
+          </div>
+          <h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:17px;font-weight:500;">下枫槎谢氏宗亲联谊会</h3>
+          <p style="font-size:13px;color:var(--text-tertiary);margin:8px 0;">计划举办第三届宗亲联谊会，邀请各地宗亲回乡团聚。具体时间和安排将另行通知，敬请期待。</p>
+          <p style="font-size:12px;color:var(--text-tertiary);">地点：下枫槎村</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 活动相册 -->
+    <section id="gallery" style="margin-bottom:50px;">
+      <div class="section-title"><h2>活动相册</h2><div class="divider"></div></div>
+      <div class="photo-grid">
+        <div class="photo-item fade-in">
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,#0f0f1a,#1a1a2e);">🏛️</div>
+          <div class="caption">宗祠全景</div>
+        </div>
+        <div class="photo-item fade-in">
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,#1a1a2e,#0f0f1a);">🌿</div>
+          <div class="caption">清明祭祖</div>
+        </div>
+        <div class="photo-item fade-in">
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,#0f0f1a,#1a1a2e);">🎊</div>
+          <div class="caption">新春团拜</div>
+        </div>
+        <div class="photo-item fade-in">
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,#1a1a2e,#0f0f1a);">📚</div>
+          <div class="caption">文化研讨</div>
+        </div>
+        <div class="photo-item fade-in">
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,#0f0f1a,#1a1a2e);">🏆</div>
+          <div class="caption">学子表彰</div>
+        </div>
+        <div class="photo-item fade-in">
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,#1a1a2e,#0f0f1a);">📸</div>
+          <div class="caption">宗亲合影</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 祭祀传统 -->
+    <section id="ritual">
+      <div class="section-title"><h2>祭祀传统</h2><div class="divider"></div></div>
+      <div class="glass-card" style="padding:30px;" class="fade-in">
+        <p style="font-size:14px;line-height:2;color:var(--text-secondary);margin-bottom:12px;">
+          <strong style="color:var(--text-primary);">下枫槎谢氏祭祀</strong>遵循传统礼仪，每年春秋两祭：
+        </p>
+        <p style="font-size:14px;line-height:2;color:var(--text-secondary);margin-bottom:8px;">
+          <strong style="color:var(--text-primary);">🌱 春祭（清明）</strong> —— 清明前后，族人前往先祖墓地扫墓，除草培土，供奉祭品，焚香烧纸，行跪拜礼。清明祭祖是下枫槎谢氏最重要的祭祀活动，在外族人一般都会回乡参加。
+        </p>
+        <p style="font-size:14px;line-height:2;color:var(--text-secondary);margin-bottom:8px;">
+          <strong style="color:var(--text-primary);">🪔 秋祭（冬至）</strong> —— 冬至前后，在宗祠举行合族大祭。宗祠内张灯结彩，设三牲祭品，燃烛焚香。族人按辈分列队，在司仪引导下行三献礼，庄严肃穆。祭后设宴，合族共叙亲情。
+        </p>
+        <p style="font-size:14px;line-height:2;color:var(--text-secondary);">
+          祭祀的意义不仅在于追思先祖，更在于凝聚宗亲、传承家风。通过庄严的仪式，让年轻一代了解家族传统，增强家族认同感和归属感。
+        </p>
+      </div>
+    </section>
+  </div>
+
+</div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-section"><h4 data-i18n="footer.section1.title">下枫槎谢氏</h4><p data-i18n="footer.desc">宁海下枫槎村谢氏家族数字宗祠</p></div>
+      <div class="footer-section"><h4 data-i18n="footer.section2.title">快捷链接</h4><a href="../index.html" data-i18n="nav.home">首页</a><a href="history.html" data-i18n="nav.history">家族历史</a><a href="genealogy.html" data-i18n="footer.link.genealogy">族谱查询</a></div>
+      <div class="footer-section"><h4 data-i18n="footer.section.content">内容</h4><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a><a href="news.html" data-i18n="nav.news">消息发布</a><a href="activities.html" data-i18n="nav.activities">家族活动</a><a href="today.html" data-i18n="nav.today">今日下枫槎</a><a href="reports.html" data-i18n="nav.reports">新闻报道</a></div>
+      <div class="footer-section"><h4 data-i18n="footer.section.contact">联系</h4><a href="contact.html" data-i18n="nav.contact">联系我们</a></div>
+    </div>
+    <div class="footer-bottom">
+      <p data-i18n="footer.copyright">© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p>
+    </div>
+  </footer>
+
+  <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
+  <script src="../js/main.js?v=3"></script>
+  <script>
+    const canvas = document.getElementById('bg-canvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let w, h;
+      function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+      resize(); window.addEventListener('resize', resize);
+      const dots = [];
+      for (let i = 0; i < 80; i++) dots.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, r: Math.random() * 2 + 1, a: Math.random() * 0.3 + 0.1 });
+      const orbs = [
+        { x: 0.2, y: 0.3, r: 0.35, color: 'rgba(251,146,60,0.06)' },
+        { x: 0.8, y: 0.7, r: 0.3, color: 'rgba(34,211,238,0.05)' },
+        { x: 0.5, y: 0.1, r: 0.25, color: 'rgba(251,146,60,0.04)' }
+      ];
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const dotRgb = isDark ? '255,255,255' : '100,100,100';
+        orbs.forEach(o => {
+          const grad = ctx.createRadialGradient(o.x * w, o.y * h, 0, o.x * w, o.y * h, o.r * w);
+          grad.addColorStop(0, o.color); grad.addColorStop(1, 'transparent');
+          ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+        });
+        dots.forEach(d => {
+          d.x += d.vx; d.y += d.vy;
+          if (d.x < 0) d.x = w; if (d.x > w) d.x = 0;
+          if (d.y < 0) d.y = h; if (d.y > h) d.y = 0;
+          ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${dotRgb},${d.a})`; ctx.fill();
+        });
+        for (let i = 0; i < dots.length; i++) {
+          for (let j = i + 1; j < dots.length; j++) {
+            const dx = dots[i].x - dots[j].x, dy = dots[i].y - dots[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 150) {
+              ctx.beginPath(); ctx.moveTo(dots[i].x, dots[i].y); ctx.lineTo(dots[j].x, dots[j].y);
+              ctx.strokeStyle = `rgba(${dotRgb},${(1 - dist / 150) * 0.08})`;
+              ctx.lineWidth = 0.5; ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+  </script>
+  <audio id="bg-music" loop src="../music/background.mp3"></audio>
+  <div class="music-player"><button class="music-btn" id="music-toggle">🔈</button><span class="music-label" data-i18n="music.label">背景音乐</span></div>
+</body>
+</html>

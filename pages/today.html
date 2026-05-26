@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="page.today.title">今日下枫槎 · 下枫槎谢氏</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+
+  <meta name="description" content="下枫槎村今日风貌：村组织架构、特色物产、村荣誉展示">
+  
+  <link rel="stylesheet" href="../css/style.css?v=2">
+  <script src="../js/i18n.js"></script>
+  <script src="../js/file-store.js?v=3"></script>
+  <script src="../js/supabase.js?v=3"></script>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="content">
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        <div class="logo-icon">谢</div>
+        <div class="logo-text"><h1 data-i18n="logo.title">下枫槎谢氏</h1><small data-i18n="logo.subtitle">宁海 · 下枫槎村</small></div>
+      </a>
+      <button class="nav-toggle" data-i18n-aria="nav.toggle" aria-label="菜单">☰</button>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="../index.html" data-i18n="nav.home">首页</a></li>
+          <li><a href="history.html" data-i18n="nav.history">家族历史</a></li>
+          <li><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a></li>
+          <li><a href="news.html" data-i18n="nav.news">消息发布</a></li>
+          <li><a href="members.html" data-i18n="nav.members">家族成员</a></li>
+          <li><a href="activities.html" data-i18n="nav.activities">家族活动</a></li>
+          <li><a href="today.html" class="active" data-i18n="nav.today">今日下枫槎</a></li>
+          <li><a href="reports.html" data-i18n="nav.reports">新闻报道</a></li>
+          <li><a href="contact.html" data-i18n="nav.contact">联系我们</a></li>
+        </ul>
+        <div class="nav-actions">
+          <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
+          <button class="nav-action-btn lang-btn" id="lang-toggle" data-i18n-title="nav.lang" title="中英文切换">EN</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrap">
+    <div class="page-title">
+      <h2 data-i18n="page.today">今日下枫槎</h2>
+      <p data-i18n="page.today.sub">荣誉 · 组织 · 物产</p>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- 第一部分：村荣誉                               -->
+    <!-- ============================================ -->
+    <section id="honors" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2 data-i18n="nav.honors">村荣誉</h2>
+        <div class="divider"></div>
+        <p data-i18n="page.honors">荣耀时刻 · 砥砺前行</p>
+      </div>
+      <div id="honors-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px;">
+        <!-- 由 JS 动态渲染 -->
+      </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- 第二部分：村组织架构                           -->
+    <!-- ============================================ -->
+    <section id="organization" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>组织架构</h2>
+        <div class="divider"></div>
+        <p>下枫槎村两委组织体系</p>
+      </div>
+      <div class="org-chart">
+        <div class="org-level">
+          <div class="org-node org-node-primary">
+            <div class="org-icon">🚩</div>
+            <div class="org-name">中共下枫槎村支部委员会</div>
+            <div class="org-role">党支部</div>
+          </div>
+          <div class="org-arrow">↓</div>
+        </div>
+        <div class="org-level org-level-two">
+          <div class="org-node org-node-secondary">
+            <div class="org-icon">👤</div>
+            <div class="org-name">村党支部书记</div>
+            <div class="org-role">主持全面工作</div>
+          </div>
+          <div class="org-node org-node-secondary">
+            <div class="org-icon">🏛️</div>
+            <div class="org-name">村民委员会</div>
+            <div class="org-role">村委会</div>
+          </div>
+        </div>
+        <div class="org-arrow">↓</div>
+        <div class="org-level org-level-three">
+          <div class="org-node org-node-tertiary">
+            <div class="org-name">村委会主任（村长）</div>
+            <div class="org-role">村务行政全面管理</div>
+          </div>
+          <div class="org-node org-node-tertiary">
+            <div class="org-name">村党支部副书记</div>
+            <div class="org-role">协助书记工作</div>
+          </div>
+          <div class="org-node org-node-tertiary">
+            <div class="org-name">村委会副主任（副村长）</div>
+            <div class="org-role">分管专项工作</div>
+          </div>
+        </div>
+        <div class="org-arrow">↓</div>
+        <div class="org-level org-level-four">
+          <div class="org-node org-node-leaf"><div class="org-name">组织委员</div><div class="org-role">党建·组织</div></div>
+          <div class="org-node org-node-leaf"><div class="org-name">宣传委员</div><div class="org-role">宣传·文化</div></div>
+          <div class="org-node org-node-leaf"><div class="org-name">纪检委员</div><div class="org-role">纪律·监督</div></div>
+          <div class="org-node org-node-leaf"><div class="org-name">治保主任</div><div class="org-role">治安·调解</div></div>
+          <div class="org-node org-node-leaf"><div class="org-name">妇女主任</div><div class="org-role">妇女·计生</div></div>
+          <div class="org-node org-node-leaf"><div class="org-name">民兵连长</div><div class="org-role">民兵·应急</div></div>
+          <div class="org-node org-node-leaf"><div class="org-name">村会计</div><div class="org-role">财务·统计</div></div>
+          <div class="org-node org-node-leaf"><div class="org-name">村民代表</div><div class="org-role">民意·议事</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 村委会成员 -->
+    <section id="committee-members" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>村委会成员</h2>
+        <div class="divider"></div>
+        <p>下枫槎村第十一届村委会成员</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
+        <div class="glass-card committee-card fade-in">
+          <div class="committee-avatar" style="background:var(--accent-red-dim, rgba(201,74,74,0.12));color:var(--accent-red);">🚩</div>
+          <div class="committee-info">
+            <h3>党支部书记 <span style="font-weight:400;font-size:13px;color:var(--text-tertiary);">（信息更新中）</span></h3>
+            <div class="committee-badge party-badge">中共党员</div>
+            <p class="committee-desc">主持村党支部全面工作，负责党的建设、乡村振兴、重大决策等工作。</p>
+            <div class="committee-meta"><span>📋 任期：2024-2027</span></div>
+          </div>
+        </div>
+        <div class="glass-card committee-card fade-in">
+          <div class="committee-avatar" style="background:var(--accent-orange-dim);color:var(--accent-orange);">🏛️</div>
+          <div class="committee-info">
+            <h3>村委会主任（村长） <span style="font-weight:400;font-size:13px;color:var(--text-tertiary);">（信息更新中）</span></h3>
+            <div class="committee-badge party-badge">中共党员</div>
+            <p class="committee-desc">主持村委会全面工作，负责村务行政、经济发展、基础设施建设等。</p>
+            <div class="committee-meta"><span>📋 任期：2024-2027</span></div>
+          </div>
+        </div>
+        <div class="glass-card committee-card fade-in">
+          <div class="committee-avatar" style="background:var(--accent-cyan-dim, rgba(58,157,171,0.12));color:var(--accent-cyan);">👥</div>
+          <div class="committee-info">
+            <h3>村委会副主任（副村长） <span style="font-weight:400;font-size:13px;color:var(--text-tertiary);">（信息更新中）</span></h3>
+            <div class="committee-badge">村委委员</div>
+            <p class="committee-desc">协助村长工作，分管农业、林业、水利、环境卫生等专项工作。</p>
+            <div class="committee-meta"><span>📋 任期：2024-2027</span></div>
+          </div>
+        </div>
+        <div class="glass-card committee-card fade-in">
+          <div class="committee-avatar" style="background:var(--accent-green-dim, rgba(90,158,111,0.12));color:var(--accent-green);">📊</div>
+          <div class="committee-info">
+            <h3>村会计 <span style="font-weight:400;font-size:13px;color:var(--text-tertiary);">（信息更新中）</span></h3>
+            <div class="committee-badge">村委委员</div>
+            <p class="committee-desc">负责村集体财务管理、村务公开、统计报表、集体经济核算等工作。</p>
+            <div class="committee-meta"><span>📋 任期：2024-2027</span></div>
+          </div>
+        </div>
+        <div class="glass-card committee-card fade-in">
+          <div class="committee-avatar" style="background:var(--accent-orange-dim);color:var(--accent-orange);">🛡️</div>
+          <div class="committee-info">
+            <h3>治保主任 <span style="font-weight:400;font-size:13px;color:var(--text-tertiary);">（信息更新中）</span></h3>
+            <div class="committee-badge">村委委员</div>
+            <p class="committee-desc">负责村社会治安综合治理、民事调解、消防安全、信访稳定等工作。</p>
+            <div class="committee-meta"><span>📋 任期：2024-2027</span></div>
+          </div>
+        </div>
+        <div class="glass-card committee-card fade-in">
+          <div class="committee-avatar" style="background:var(--accent-pink-dim, rgba(232,121,249,0.12));color:var(--accent-pink, #e879f9);">🌸</div>
+          <div class="committee-info">
+            <h3>妇女主任 <span style="font-weight:400;font-size:13px;color:var(--text-tertiary);">（信息更新中）</span></h3>
+            <div class="committee-badge">村委委员</div>
+            <p class="committee-desc">负责妇女权益保障、计划生育、儿童工作、精神文明建设等。</p>
+            <div class="committee-meta"><span>📋 任期：2024-2027</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 党员风采 -->
+    <section id="party-members" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>党员风采</h2>
+        <div class="divider"></div>
+        <p>中共下枫槎村支部 · 先锋力量</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;">
+        <div class="glass-card party-card fade-in">
+          <div class="party-icon">🚩</div>
+          <div class="party-name">（信息征集中）</div>
+          <div class="party-title">中共党员</div>
+          <div class="party-slogan">不忘初心 牢记使命</div>
+        </div>
+        <div class="glass-card party-card fade-in">
+          <div class="party-icon">🚩</div>
+          <div class="party-name">（信息征集中）</div>
+          <div class="party-title">中共党员</div>
+          <div class="party-slogan">全心全意为人民服务</div>
+        </div>
+        <div class="glass-card party-card fade-in">
+          <div class="party-icon">🚩</div>
+          <div class="party-name">（信息征集中）</div>
+          <div class="party-title">中共党员</div>
+          <div class="party-slogan">发挥先锋作用 永葆先进本色</div>
+        </div>
+        <div class="glass-card party-card fade-in">
+          <div class="party-icon">🚩</div>
+          <div class="party-name">（信息征集中）</div>
+          <div class="party-title">中共党员</div>
+          <div class="party-slogan">扎根基层 服务群众</div>
+        </div>
+        <div class="glass-card party-card fade-in">
+          <div class="party-icon">🚩</div>
+          <div class="party-name">（信息征集中）</div>
+          <div class="party-title">中共党员</div>
+          <div class="party-slogan">带头致富 振兴乡村</div>
+        </div>
+        <div class="glass-card party-card fade-in">
+          <div class="party-icon">🚩</div>
+          <div class="party-name">（信息征集中）</div>
+          <div class="party-title">中共党员</div>
+          <div class="party-slogan">恪尽职守 勤勉工作</div>
+        </div>
+      </div>
+      <div class="glass-card" style="padding:24px;text-align:center;margin-top:20px;">
+        <p style="font-size:13px;color:var(--text-tertiary);">下枫槎村党支部现有党员信息正在整理中，后续将逐一展示党员风采。</p>
+      </div>
+    </section>
+
+    <!-- 村务监督 -->
+    <section id="supervision" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>村务监督委员会</h2>
+        <div class="divider"></div>
+        <p>民主监督 · 阳光村务</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div class="glass-card" style="padding:24px;">
+          <h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:16px;font-weight:500;margin-bottom:10px;">📋 监督职责</h3>
+          <ul style="font-size:13px;color:var(--text-secondary);line-height:2;padding-left:18px;">
+            <li>监督村务决策和执行情况</li>
+            <li>监督村集体财务管理</li>
+            <li>监督村务公开制度落实</li>
+            <li>监督村干部廉洁自律情况</li>
+            <li>收集和反映村民意见建议</li>
+          </ul>
+        </div>
+        <div class="glass-card" style="padding:24px;">
+          <h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:16px;font-weight:500;margin-bottom:10px;">📅 村务公开</h3>
+          <ul style="font-size:13px;color:var(--text-secondary);line-height:2;padding-left:18px;">
+            <li>财务收支情况（每季度公开）</li>
+            <li>惠民政策落实情况（即时公开）</li>
+            <li>村集体资产处置（专题公开）</li>
+            <li>工程项目招投标（全过程公开）</li>
+            <li>低保五保评定（年度公开）</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================ -->
+    
+
+    <!-- ============================================ -->
+    <!-- 第三部分：乡村物产                             -->
+    <!-- ============================================ -->
+    <section id="products" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>乡村物产</h2>
+        <div class="divider"></div>
+        <p>绿水青山 · 物华天宝</p>
+      </div>
+
+      <div class="glass-card" style="padding:30px;margin-bottom:30px;border-left:3px solid var(--accent-green);">
+        <p style="font-size:14px;line-height:2;color:var(--text-secondary);">
+          下枫槎村地处宁海山区，群山环抱，溪水长流，气候温和湿润，土壤肥沃，得天独厚的自然环境孕育了丰富的物产。自古以来，村民以农耕为本，兼营林、茶、烟等产业。近年来，在乡村振兴战略的引领下，下枫槎村大力发展特色农业和生态产业，各类物产品质优良，远近闻名。
+        </p>
+      </div>
+
+      <!-- 茶叶 -->
+      <div style="margin-bottom:40px;">
+        <div class="section-subtitle">
+          <h3>🍵 望海茶 · 下枫槎云雾茶</h3>
+          <p style="font-size:13px;color:var(--text-tertiary);margin-top:4px;">高山云雾出好茶 · 下枫槎村的绿色名片</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <div class="glass-card" style="padding:24px;">
+            <div style="font-size:36px;text-align:center;margin-bottom:10px;">🍃</div>
+            <h4 style="font-family:var(--font-title);color:var(--text-primary);font-size:15px;font-weight:500;margin-bottom:8px;">茶韵悠长</h4>
+            <p style="font-size:13px;line-height:1.9;color:var(--text-secondary);">下枫槎村茶园多分布在海拔300-600米的山坡上，终年云雾缭绕，昼夜温差大，出产的望海茶色泽翠绿、香气清高、滋味鲜爽，是宁海茶叶中的上品。每年清明前后采摘春茶，一叶一芽，手工炒制，品质极佳。</p>
+          </div>
+          <div class="glass-card" style="padding:24px;">
+            <div style="font-size:36px;text-align:center;margin-bottom:10px;">🌱</div>
+            <h4 style="font-family:var(--font-title);color:var(--text-primary);font-size:15px;font-weight:500;margin-bottom:8px;">采摘与制作</h4>
+            <p style="font-size:13px;line-height:1.9;color:var(--text-secondary);">坚持传统农法种植，不施化肥、不打农药。严格遵循"一芽一叶"标准，传承宁海传统炒青技法：杀青、揉捻、烘干。年产量约2000斤，多为老客户预订，供不应求。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 烤烟 -->
+      <div style="margin-bottom:40px;">
+        <div class="section-subtitle">
+          <h3>🌿 烤烟种植</h3>
+          <p style="font-size:13px;color:var(--text-tertiary);margin-top:4px;">传统经济支柱 · 匠心烘烤</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <div class="glass-card" style="padding:24px;">
+            <h4 style="font-family:var(--font-title);color:var(--text-primary);font-size:15px;font-weight:500;margin-bottom:8px;">📋 产业概况</h4>
+            <p style="font-size:13px;line-height:1.9;color:var(--text-secondary);">烤烟是下枫槎村的传统经济作物，有着数十年的种植历史。村内拥有标准化烤房设施，烟叶种植、烘烤技术成熟，为村民提供了稳定的收入来源。</p>
+          </div>
+          <div class="glass-card" style="padding:24px;">
+            <h4 style="font-family:var(--font-title);color:var(--text-primary);font-size:15px;font-weight:500;margin-bottom:8px;">🔥 烘烤工艺</h4>
+            <p style="font-size:13px;line-height:1.9;color:var(--text-secondary);">采用先进的密集烤房烘烤技术，严格把控温湿度曲线。从鲜烟叶采摘到烘烤完成约7-8天。烤后烟叶色泽金黄、油润丰满、香气醇和，品质优良。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 高山作物 -->
+      <div style="margin-bottom:40px;">
+        <div class="section-subtitle">
+          <h3>🌾 高山生态农业</h3>
+          <p style="font-size:13px;color:var(--text-tertiary);margin-top:4px;">绿色有机 · 健康本味</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+          <div class="glass-card fade-in" style="padding:20px;text-align:center;border-top:3px solid var(--accent-orange);">
+            <div style="font-size:36px;margin-bottom:8px;">🌽</div>
+            <h4 style="font-family:var(--font-title);color:var(--text-primary);font-size:15px;font-weight:500;margin-bottom:6px;">高山玉米</h4>
+            <p style="font-size:12px;color:var(--text-tertiary);line-height:1.8;">生长在海拔400米以上山坡地，昼夜温差大、光照充足，颗粒饱满、香甜可口。每年夏秋两季收获。</p>
+          </div>
+          <div class="glass-card fade-in" style="padding:20px;text-align:center;border-top:3px solid var(--accent-green);">
+            <div style="font-size:36px;margin-bottom:8px;">🫘</div>
+            <h4 style="font-family:var(--font-title);color:var(--text-primary);font-size:15px;font-weight:500;margin-bottom:6px;">高山黄豆</h4>
+            <p style="font-size:12px;color:var(--text-tertiary);line-height:1.8;">传统品种，不施化肥农药。豆粒饱满、蛋白质含量高。可制作豆腐、豆浆、豆酱等传统豆制品。</p>
+          </div>
+          <div class="glass-card fade-in" style="padding:20px;text-align:center;border-top:3px solid var(--accent-cyan);">
+            <div style="font-size:36px;margin-bottom:8px;">🎋</div>
+            <h4 style="font-family:var(--font-title);color:var(--text-primary);font-size:15px;font-weight:500;margin-bottom:6px;">竹笋山珍</h4>
+            <p style="font-size:12px;color:var(--text-tertiary);line-height:1.8;">竹林资源丰富，春笋鲜嫩爽脆，冬笋细腻甘甜。村民将竹笋制成笋干、酸笋等特产，四季皆可享用。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 农家特产 -->
+      <div style="margin-bottom:40px;">
+        <div class="section-subtitle">
+          <h3>🏡 农家特产</h3>
+          <p style="font-size:13px;color:var(--text-tertiary);margin-top:4px;">地道农家味 · 纯手工制作</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;">
+          <div class="glass-card fade-in" style="padding:18px;">
+            <div style="font-size:28px;margin-bottom:6px;">🍯</div>
+            <h4 style="font-family:var(--font-title);color:var(--text-primary);font-size:14px;font-weight:500;margin-bottom:4px;">高山蜂蜜</h4>
+            <p style="font-size:12px;color:var(--text-tertiary);line-height:1.8;">山中放养土蜂，采集百花精华，蜜质浓郁，每年割蜜两次，产量稀少。</p>
+          </div>
+          <div class="glass-card fade-in" style="padding:18px;">
+            <div style="font-size:28px;margin-bottom:6px;">🥜</div>
+            <h4 style="font-family:var(--font-title);color:var(--text-primary);font-size:14px;font-weight:500;margin-bottom:4px;">山茶油</h4>
+            <p style="font-size:12px;color:var(--text-tertiary);line-height:1.8;">野生山茶籽压榨而成，色泽金黄透亮，营养丰富，有"东方橄榄油"之美誉。</p>
+          </div>
+          <div class="glass-card fade-in" style="padding:18px;">
+            <div style="font-size:28px;margin-bottom:6px;">🥬</div>
+            <h4 style="font-family:var(--font-title);color:var(--text-primary);font-size:14px;font-weight:500;margin-bottom:4px;">农家腌菜</h4>
+            <p style="font-size:12px;color:var(--text-tertiary);line-height:1.8;">古法腌制的雪里蕻、酸菜等传统腌菜，风味独特，是下枫槎人家餐桌上的必备小菜。</p>
+          </div>
+          <div class="glass-card fade-in" style="padding:18px;">
+            <div style="font-size:28px;margin-bottom:6px;">🍶</div>
+            <h4 style="font-family:var(--font-title);color:var(--text-primary);font-size:14px;font-weight:500;margin-bottom:4px;">农家米酒</h4>
+            <p style="font-size:12px;color:var(--text-tertiary);line-height:1.8;">高山糯米和山泉水，传统工艺酿造，酒色清澈，入口甘甜醇厚，是节庆待客的佳酿。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 产业振兴 -->
+      <div class="glass-card" style="padding:30px;">
+        <h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:16px;font-weight:600;margin-bottom:12px;">📈 产业振兴</h3>
+        <p style="font-size:14px;line-height:2;color:var(--text-secondary);">
+          近年来，下枫槎村依托良好的生态环境和特色农产品资源，积极探索"农业+旅游+品牌"的发展模式。通过注册农产品商标、建设电商平台、发展乡村旅游等方式，让深山里的优质农产品走出大山。未来将继续坚持绿色发展理念，让乡村物产成为村民增收致富的"金钥匙"。
+        </p>
+      </div>
+    </section>
+
+  </div>
+
+</div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-section"><h4 data-i18n="footer.section1.title">下枫槎谢氏</h4><p data-i18n="footer.desc">宁海下枫槎村谢氏家族数字宗祠</p></div>
+      <div class="footer-section"><h4 data-i18n="footer.section2.title">快捷链接</h4><a href="../index.html" data-i18n="nav.home">首页</a><a href="history.html" data-i18n="nav.history">家族历史</a><a href="genealogy.html" data-i18n="footer.link.genealogy">族谱查询</a></div>
+      <div class="footer-section"><h4 data-i18n="footer.section.content">内容</h4><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a><a href="news.html" data-i18n="nav.news">消息发布</a><a href="activities.html" data-i18n="nav.activities">家族活动</a><a href="today.html" data-i18n="nav.today">今日下枫槎</a><a href="reports.html" data-i18n="nav.reports">新闻报道</a></div>
+      <div class="footer-section"><h4 data-i18n="footer.section.contact">联系</h4><a href="contact.html" data-i18n="nav.contact">联系我们</a></div>
+    </div>
+    <div class="footer-bottom">
+      <p data-i18n="footer.copyright">© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p>
+    </div>
+  </footer>
+
+  <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
+  <script src="../js/main.js?v=3"></script>
+  <style>
+    .org-chart { display:flex;flex-direction:column;align-items:center;gap:8px;padding:30px 0; }
+    .org-level { display:flex;gap:20px;justify-content:center;flex-wrap:wrap; }
+    .org-level-two { gap:40px; }
+    .org-level-three { gap:20px; }
+    .org-level-four { gap:12px; }
+    .org-arrow { font-size:24px;color:var(--text-tertiary);text-align:center;line-height:1; }
+    .org-node {
+      padding:16px 24px;border-radius:12px;text-align:center;min-width:160px;
+      font-family:var(--font-title);
+    }
+    .org-node-primary {
+      background:var(--accent-orange);color:#000;font-size:17px;font-weight:600;
+      padding:18px 36px;border-radius:16px;
+    }
+    .org-node-primary .org-icon { font-size:28px;margin-bottom:4px; }
+    .org-node-secondary {
+      background:var(--accent-orange-dim);border:1px solid var(--accent-orange);min-width:200px;
+    }
+    .org-node-secondary .org-icon { font-size:24px;margin-bottom:4px; }
+    .org-node-secondary .org-name { font-size:15px;font-weight:600;color:var(--text-primary); }
+    .org-node-tertiary {
+      background:var(--glass-bg);border:1px solid var(--glass-border);min-width:170px;
+    }
+    .org-node-tertiary .org-name { font-size:14px;font-weight:500;color:var(--text-primary); }
+    .org-node-leaf {
+      background:var(--glass-bg);border:1px solid var(--glass-border);min-width:120px;
+      padding:12px 16px;
+    }
+    .org-node-leaf .org-name { font-size:13px;font-weight:400;color:var(--text-primary); }
+    .org-role { font-size:11px;color:var(--text-tertiary);margin-top:2px;font-family:var(--font-body); }
+    .committee-card { padding:20px;display:flex;gap:16px;align-items:flex-start; }
+    .committee-avatar {
+      width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+      font-size:24px;flex-shrink:0;
+    }
+    .committee-info { flex:1;min-width:0; }
+    .committee-info h3 { font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:6px;font-family:var(--font-title); }
+    .committee-badge {
+      display:inline-block;font-size:11px;padding:2px 10px;border-radius:4px;
+      background:var(--glass-bg);color:var(--text-secondary);margin-bottom:8px;
+    }
+    .party-badge { background:var(--accent-red-dim, rgba(201,74,74,0.12));color:var(--accent-red);font-weight:500; }
+    .committee-desc { font-size:13px;color:var(--text-secondary);line-height:1.7;margin-bottom:6px; }
+    .committee-meta { font-size:12px;color:var(--text-tertiary); }
+    .party-card {
+      padding:20px;text-align:center;border-top:3px solid var(--accent-red);
+      display:flex;flex-direction:column;align-items:center;gap:6px;
+    }
+    .party-icon { font-size:32px; }
+    .party-name { font-size:15px;font-weight:600;color:var(--text-primary);margin-top:4px; }
+    .party-title { font-size:12px;color:var(--accent-red);background:var(--accent-red-dim, rgba(201,74,74,0.08));padding:2px 12px;border-radius:4px; }
+    .party-slogan { font-size:12px;color:var(--text-tertiary);font-style:italic; }
+    .section-subtitle { margin-bottom:16px; }
+    .section-subtitle h3 { font-family:var(--font-title);color:var(--text-primary);font-size:18px;font-weight:500; }
+  </style>
+  <script>
+    const canvas = document.getElementById('bg-canvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let w, h;
+      function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+      resize(); window.addEventListener('resize', resize);
+      const dots = [];
+      for (let i = 0; i < 80; i++) dots.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, r: Math.random() * 2 + 1, a: Math.random() * 0.3 + 0.1 });
+      const orbs = [
+        { x: 0.2, y: 0.3, r: 0.35, color: 'rgba(251,146,60,0.06)' },
+        { x: 0.8, y: 0.7, r: 0.3, color: 'rgba(34,211,238,0.05)' },
+        { x: 0.5, y: 0.1, r: 0.25, color: 'rgba(251,146,60,0.04)' }
+      ];
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const dotRgb = isDark ? '255,255,255' : '100,100,100';
+        orbs.forEach(o => {
+          const grad = ctx.createRadialGradient(o.x * w, o.y * h, 0, o.x * w, o.y * h, o.r * w);
+          grad.addColorStop(0, o.color); grad.addColorStop(1, 'transparent');
+          ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+        });
+        dots.forEach(d => {
+          d.x += d.vx; d.y += d.vy;
+          if (d.x < 0) d.x = w; if (d.x > w) d.x = 0;
+          if (d.y < 0) d.y = h; if (d.y > h) d.y = 0;
+          ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${dotRgb},${d.a})`; ctx.fill();
+        });
+        for (let i = 0; i < dots.length; i++) {
+          for (let j = i + 1; j < dots.length; j++) {
+            const dx = dots[i].x - dots[j].x, dy = dots[i].y - dots[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 150) {
+              ctx.beginPath(); ctx.moveTo(dots[i].x, dots[i].y); ctx.lineTo(dots[j].x, dots[j].y);
+              ctx.strokeStyle = `rgba(${dotRgb},${(1 - dist / 150) * 0.08})`;
+              ctx.lineWidth = 0.5; ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      var d = document.createElement('div');
+      d.textContent = text;
+      return d.innerHTML;
+    }
+    function escapeAttr(text) {
+      if (!text) return '';
+      return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    function showFullArticle(link, title, awarder, date, content) {
+      var overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+      var box = document.createElement('div');
+      box.style.cssText = 'background:var(--bg-primary);border:1px solid var(--glass-border);border-radius:12px;max-width:720px;width:100%;max-height:80vh;overflow-y:auto;padding:36px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
+      box.innerHTML = '<button onclick="this.parentElement.parentElement.remove()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-tertiary);">✕</button>'
+        + '<h2 style="font-family:var(--font-title);color:var(--text-primary);font-size:20px;font-weight:600;margin-bottom:12px;padding-right:30px;">' + escapeHtml(title) + '</h2>'
+        + '<div style="font-size:13px;color:var(--text-tertiary);margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--divider);">'
+        + (date ? '<span>' + date + '</span>' : '')
+        + (awarder ? ' · 颁发：' + escapeHtml(awarder) : '')
+        + '</div>'
+        + '<div style="font-size:14px;color:var(--text-secondary);line-height:2;">' + escapeHtml(content).replace(/\n/g, '<br>') + '</div>';
+      overlay.appendChild(box);
+      overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+      document.body.appendChild(overlay);
+    }
+
+    function renderHonors() {
+      var data = JSON.parse(localStorage.getItem('xie_admin_honors'));
+      if (!data || !data.length) {
+        data = [
+          { id: 1, title: '浙江省美丽乡村示范村', date: '2025-12-01', awarder: '浙江省农业农村厅', icon: '🏆', url: '', content: '下枫槎村凭借优美的自然风光、整洁的村容村貌和深厚的文化底蕴，被评为浙江省美丽乡村示范村。这一荣誉是对全村人民共同努力的肯定。' },
+          { id: 2, title: '宁海县文明村', date: '2025-06-15', awarder: '宁海县人民政府', icon: '🥇', url: '', content: '下枫槎村在精神文明建设方面成效显著，村民自治有序、邻里和睦、文化活跃，获评宁海县文明村称号。' },
+          { id: 3, title: '谢氏宗祠文物保护单位', date: '2024-03-20', awarder: '宁海县文化和广电旅游体育局', icon: '📜', url: '', content: '下枫槎谢氏宗祠始建于清乾隆年间，三进两厢格局，雕梁画栋，具有较高的历史、艺术和科学价值，被列为县级文物保护单位。' }
+        ];
+      }
+      data.sort(function(a, b) { return (a.date || '').localeCompare(b.date || ''); });
+      var html = '';
+      data.forEach(function(item) {
+        var hasUrl = item.url && item.url.trim() !== '';
+        var fullContent = item.content || '';
+        html += '<div class="glass-card fade-in" style="padding:28px;border-top:3px solid var(--accent-orange);">'
+          + '<div style="font-size:36px;margin-bottom:12px;">' + (item.icon || '🏆') + '</div>'
+          + '<h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:17px;font-weight:500;margin-bottom:8px;">' + escapeHtml(item.title) + '</h3>'
+          + '<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">'
+          + '<span>📅 ' + item.date + '</span>'
+          + '&nbsp;&nbsp;—&nbsp;&nbsp;'
+          + '<span>🏛️ ' + escapeHtml(item.awarder) + '</span>'
+          + '</div>'
+          + '<p style="font-size:13px;color:var(--text-secondary);line-height:1.8;">' + escapeHtml(fullContent.length > 100 ? fullContent.substring(0, 100) + '…' : fullContent) + '</p>'
+          + (hasUrl
+              ? '<a href="' + escapeAttr(item.url) + '" target="_blank" class="read-more-link">查看详情 →</a>'
+              : '<a href="javascript:void(0)" class="read-more-link" onclick="showFullArticle(this, \'' + escapeAttr(item.title) + '\', \'' + escapeAttr(item.awarder || '') + '\', \'' + escapeAttr(item.date || '') + '\', \'' + escapeAttr(fullContent.replace(/'/g, "\\'").replace(/"/g, '&quot;')) + '\')">阅读全文 →</a>')
+          + '</div>';
+      });
+      document.getElementById('honors-grid').innerHTML = html;
+    }
+    renderHonors();
+    // Try loading from Supabase for up-to-date honors data across devices
+    if (window.dbGetAll) {
+      dbGetAll('honors', { order: 'date.asc' }).then(function(supabaseData) {
+        if (supabaseData && supabaseData.length > 0) {
+          localStorage.setItem('xie_admin_honors', JSON.stringify(supabaseData));
+          renderHonors();
+        }
+      }).catch(function() {});
+    }
+  </script>
+  <audio id="bg-music" loop src="../music/background.mp3"></audio>
+  <div class="music-player"><button class="music-btn" id="music-toggle">🔈</button><span class="music-label" data-i18n="music.label">背景音乐</span></div>
+</body>
+</html>

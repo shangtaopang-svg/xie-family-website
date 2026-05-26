@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="page.celebrities.title">名人事迹 · 下枫槎谢氏</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+
+  
+  <link rel="stylesheet" href="../css/style.css?v=2">
+  <script src="../js/i18n.js"></script>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="content">
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        <div class="logo-icon">谢</div>
+        <div class="logo-text"><h1 data-i18n="logo.title">下枫槎谢氏</h1><small data-i18n="logo.subtitle">宁海 · 下枫槎村</small></div>
+      </a>
+      <button class="nav-toggle" data-i18n-aria="nav.toggle" aria-label="菜单">☰</button>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="../index.html" data-i18n="nav.home">首页</a></li>
+          <li><a href="history.html" data-i18n="nav.history">家族历史</a></li>
+          <li><a href="celebrities.html" class="active" data-i18n="nav.celebrities">名人事迹</a></li>
+          <li><a href="news.html" data-i18n="nav.news">消息发布</a></li>
+          <li><a href="members.html" data-i18n="nav.members">家族成员</a></li>
+          <li><a href="activities.html" data-i18n="nav.activities">家族活动</a></li>
+          <li><a href="today.html" data-i18n="nav.today">今日下枫槎</a></li>
+          <li><a href="reports.html" data-i18n="nav.reports">新闻报道</a></li>
+          <li><a href="contact.html" data-i18n="nav.contact">联系我们</a></li>
+        </ul>
+        <div class="nav-actions">
+          <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
+          <button class="nav-action-btn lang-btn" id="lang-toggle" data-i18n-title="nav.lang" title="中英文切换">EN</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- weather moved to hero on index -->
+
+  <div class="page-wrap">
+    <div class="page-title">
+      <h2 data-i18n="nav.celebrities">名人事迹</h2>
+      <p data-i18n="page.celebrities">先贤风范 · 后世楷模</p>
+    </div>
+
+    <!-- 古代先贤 -->
+    <section style="margin-bottom:50px;">
+      <div class="section-title"><h2>古代先贤</h2><div class="divider"></div></div>
+
+      <div class="celebrity-card fade-in">
+        <div class="celebrity-avatar" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/xiean.jpg" alt="谢安像" style="width:100%;height:100%;object-fit:cover;"></div>
+        <div class="celebrity-info">
+          <h3>谢安（320-385）</h3>
+          <div class="era">东晋 · 政治家 · 军事家</div>
+          <p>字安石，陈郡阳夏人。东晋著名政治家、军事家，官至宰相。太元八年（383年），前秦苻坚率百万大军南侵，谢安临危受命，以征讨大都督身份坐镇建康，运筹帷幄，以八万北府兵大破秦军于淝水，创造了中国军事史上以少胜多的经典战例。谢安性情温和，风雅飘逸，其"东山再起"的典故流传千古。谢氏家族因谢安而达到鼎盛，与王氏并称"王谢"。</p>
+        </div>
+      </div>
+
+      <div class="celebrity-card fade-in">
+        <div class="celebrity-avatar" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/xielingyun.jpg" alt="谢灵运像" style="width:100%;height:100%;object-fit:cover;"></div>
+        <div class="celebrity-info">
+          <h3>谢灵运（385-433）</h3>
+          <div class="era">南朝宋 · 诗人</div>
+          <p>谢玄之孙，袭封康乐公。中国山水诗派的开创者，其诗作以描绘自然山水见长，语言精丽，意境深远。代表作有《登池上楼》《石壁精舍还湖中作》等。曾任永嘉太守，在任期间寄情山水，创作了大量山水诗篇。谢灵运以其文学成就对后世诗歌发展产生了深远影响，被誉为"山水诗祖"。</p>
+        </div>
+      </div>
+
+      <div class="celebrity-card fade-in">
+        <div class="celebrity-avatar" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/xiexuan.jpg" alt="谢玄像" style="width:100%;height:100%;object-fit:cover;"></div>
+        <div class="celebrity-info">
+          <h3>谢玄（343-388）</h3>
+          <div class="era">东晋 · 名将</div>
+          <p>字幼度，谢安之侄。东晋名将，以擅长治军著称。组建北府兵，训练精锐。淝水之战中，谢玄担任前锋都督，率北府兵奋勇杀敌，大破前秦军队。战后因功封康乐公。谢玄治军严谨，爱护士卒，深得军心，是东晋中期最重要的军事将领之一。</p>
+        </div>
+      </div>
+
+      <div class="celebrity-card fade-in">
+        <div class="celebrity-avatar" style="background:var(--accent-orange-dim);">🎨</div>
+        <div class="celebrity-info">
+          <h3>谢赫（南朝齐梁）</h3>
+          <div class="era">南朝 · 画家 · 绘画理论家</div>
+          <p>中国绘画史上最重要的理论家之一。所著《古画品录》提出了"六法"论（气韵生动、骨法用笔、应物象形、随类赋彩、经营位置、传移模写），成为中国绘画批评和创作的核心理论体系。谢赫对中国绘画理论的发展做出了奠基性贡献，影响深远。</p>
+        </div>
+      </div>
+
+      <div class="celebrity-card fade-in">
+        <div class="celebrity-avatar" style="background:var(--accent-orange-dim);">📖</div>
+        <div class="celebrity-info">
+          <h3>谢枋得（1226-1289）</h3>
+          <div class="era">南宋 · 文学家 · 爱国志士</div>
+          <p>字君直，号叠山。南宋末年著名文学家、爱国诗人。与文天祥同年进士，曾任江东制置使。元军南侵时，谢枋得率军抗元，兵败后隐居福建，誓不仕元。后被元朝强征至大都，绝食而死，以身殉国。其《叠山集》流传后世，民族气节令人敬仰。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 下枫槎谢氏先祖 -->
+    <section style="margin-bottom:50px;">
+      <div class="section-title"><h2>下枫槎谢氏先祖</h2><div class="divider"></div></div>
+
+      <div class="celebrity-card fade-in">
+        <div class="celebrity-avatar" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/wengaogong.jpg" alt="文杲公像" style="width:100%;height:100%;object-fit:cover;"></div>
+        <div class="celebrity-info">
+          <h3>文杲公（北宋）</h3>
+          <div class="era">枫槎始迁祖 · 字克源 · 约1125年</div>
+          <p>文杲公，字克源，北宋宣和年间（约公元1125年）任越溪司巡检，始居岩下，为枫槎谢氏之始迁祖。公以一官一职而肇基，后世以耕读传家而昌炽，至今近九百载，传三十六世，瓜瓞绵绵。二世祖攒公、撰公析居后枫槎与前枫槎，两支并茂，各立门户。公实为下枫槎谢氏一脉之源头。</p>
+        </div>
+      </div>
+
+      <div class="celebrity-card fade-in">
+        <div class="celebrity-avatar" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/bingong.jpg" alt="彬公像" style="width:100%;height:100%;object-fit:cover;"></div>
+        <div class="celebrity-info">
+          <h3>乾公 · 彬公（明）</h3>
+          <div class="era">下枫槎开基祖 · 十六世 · 1572年</div>
+          <p>乾公、彬公昆仲，下枫槎谢氏十六世祖。明隆庆壬申年（公元1572年），山洪暴发，岩下庐舍为墟。二公相度地势，遂率族迁于双枫古槎之下，斩荆棘、辟草莱，筑室开基，因名其地曰下枫槎。自此一脉繁衍，枝分派衍，奠定了今日下枫槎村之基业。</p>
+        </div>
+      </div>
+
+      <div class="celebrity-card fade-in">
+        <div class="celebrity-avatar" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/shenbo.jpg" alt="申伯像" style="width:100%;height:100%;object-fit:cover;"></div>
+        <div class="celebrity-info">
+          <h3>申伯（西周）</h3>
+          <div class="era">谢姓得姓始祖 · 约前827年</div>
+          <p>申伯，周宣王母舅，因辅佐周室中兴有功，被封于谢邑（今河南南阳），建立谢国。其后子孙以国为氏，是为谢氏得姓之始。申伯被尊为谢氏得姓始祖，距今已两千八百余年。吾下枫槎谢氏亦奉申伯为远祖，源远流长。</p>
+        </div>
+      </div>
+
+      <div class="celebrity-card fade-in">
+        <div class="celebrity-avatar" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/xiaosigong.jpg" alt="小四公像" style="width:100%;height:100%;object-fit:cover;"></div>
+        <div class="celebrity-info">
+          <h3>小四公（宋）</h3>
+          <div class="era">石马始祖 · 宋靖康年间</div>
+          <p>小四公，会稽人，宋靖康年间（1126-1127年）迁居石马（今三门），为石马谢氏之始祖，亦为下枫槎谢氏之直系近祖。公乃朝奉郎谢奕信之孙、将仕郎兼文学家谢在纲之子。由石马传十二世至文杲公，始迁岩下，开枫槎一脉。</p>
+        </div>
+      </div>
+
+      <div class="celebrity-card fade-in">
+        <div class="celebrity-avatar" style="background:var(--accent-orange-dim);">📜</div>
+        <div class="celebrity-info">
+          <h3>彭龟年（宋）</h3>
+          <div class="era">族谱序作者 · 绍兴五年（1135）</div>
+          <p>彭龟年，字子寿，南宋著名儒臣。绍兴五年（1135年）为下枫槎谢氏族谱撰序，是现存族谱中年代最早的序文，为研究谢氏早期世系留下了宝贵文献。此后，清嘉庆五年（1800年）胡宗韶、嘉庆六年张铸、道光七年（1827年）章有莘等亦先后为族谱作序，彰显了下枫槎谢氏历代修谱之传统。</p>
+        </div>
+      </div>
+
+      <div class="celebrity-card fade-in">
+        <div class="celebrity-avatar" style="background:var(--accent-orange-dim);">🏛️</div>
+        <div class="celebrity-info">
+          <h3>云先公（清）</h3>
+          <div class="era">宗祠首创者 · 乾隆二十七年（1762）</div>
+          <p>云先公，名大性，行先，下枫槎谢氏西大房二份之祖。乾隆二十七年（1762年），公首倡并主持修建下枫槎谢氏宗祠，为阖族创造了祭祀先祖、凝聚宗亲之圣地。祠堂三进两厢，门悬谢氏宗祠匾额，堂号敦睦堂，至今已历二百六十余年，历经修缮而保存完好，公之功也。</p>
+        </div>
+      </div>
+
+      <div class="celebrity-card fade-in">
+        <div class="celebrity-avatar" style="background:var(--accent-orange-dim);">👨‍🌾</div>
+        <div class="celebrity-info">
+          <h3>伟中公（现代）</h3>
+          <div class="era">水利工作者 · 宗祠修缮首事</div>
+          <p>伟中公，性秉醇良，曾任宁海县水利局水利工作者，兼乡镇水利管理人员。为家族宗祠修缮、修谱及文化礼堂建设热心助修，为家族事业之首要推动者之一。其事迹载于族谱世芳篇，为下枫槎谢氏现代人物之代表。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 近现代名人 -->
+    <section style="margin-bottom:50px;">
+      <div class="section-title"><h2>近现代名人</h2><div class="divider"></div></div>
+
+      <div class="celebrity-card fade-in">
+        <div class="celebrity-avatar" style="background:var(--accent-orange-dim);">🎓</div>
+        <div class="celebrity-info">
+          <h3>谢侠逊（1888-1987）</h3>
+          <div class="era">近代 · 象棋棋王 · 爱国人士</div>
+          <p>浙江温州人（祖籍宁海），著名象棋大师。一生致力于象棋文化的推广，被誉为"象棋总司令"。抗战期间，曾以象棋为武器，远赴南洋为抗日募捐，表现出了崇高的爱国情怀。著有《象棋谱大全》等，对象棋理论发展贡献卓著。</p>
+        </div>
+      </div>
+
+      <div class="celebrity-card fade-in">
+        <div class="celebrity-avatar" style="background:var(--accent-orange-dim);">🔬</div>
+        <div class="celebrity-info">
+          <h3>谢希德（1921-2000）</h3>
+          <div class="era">现代 · 物理学家 · 教育家</div>
+          <p>福建泉州人，著名固体物理学家。曾任复旦大学校长，是中国半导体物理学的开拓者之一。在表面物理和半导体物理领域做出了重要贡献，培养了一大批优秀人才。她是新中国第一位女大学校长，为中国的教育事业和科学研究做出了卓越贡献。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 当代精英 -->
+    <section style="margin-bottom:50px;">
+      <div class="section-title"><h2>当代精英</h2><div class="divider"></div><p>下枫槎谢氏当代优秀代表（持续更新中）</p></div>
+
+      <div class="glass-card" style="padding:32px;text-align:center;" class="fade-in">
+        <div style="font-size:48px;margin-bottom:12px;">🌟</div>
+        <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:8px;font-size:18px;font-weight:400;">当代族人 · 持续更新中</h3>
+        <p style="font-size:14px;color:var(--text-secondary);max-width:600px;margin:0 auto 16px;">
+          下枫槎谢氏自十九世起行第字辈为：<strong>一、懋、之、嘉、永、孝、思、台、邦、令、序、善、道、开、时、天</strong>，凡十六字，周而复始。今已传至"天"字辈。
+        </p>
+        <p style="font-size:13px;color:var(--text-tertiary);">当代族人精英名录正在征集整理中。如果您或您了解的家族成员在各行各业取得了优异成绩，欢迎通过<a href="contact.html" style="color:var(--accent-orange);">联系我们</a>页面提供信息。</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:24px;">
+        <div class="glass-card fade-in" style="padding:24px;text-align:center;">
+          <div style="font-size:36px;margin-bottom:8px;">👨‍⚕️</div>
+          <h3 style="font-size:15px;color:var(--text-primary);font-weight:500;margin-bottom:6px;">医疗领域</h3>
+          <p style="font-size:13px;color:var(--text-tertiary);">下枫槎谢氏有多位族人从事医疗卫生工作，悬壶济世，服务乡里。</p>
+        </div>
+        <div class="glass-card fade-in" style="padding:24px;text-align:center;">
+          <div style="font-size:36px;margin-bottom:8px;">👨‍🏫</div>
+          <h3 style="font-size:15px;color:var(--text-primary);font-weight:500;margin-bottom:6px;">教育领域</h3>
+          <p style="font-size:13px;color:var(--text-tertiary);">谢氏族人秉承"耕读传家"祖训，多位族人投身教育事业，教书育人。</p>
+        </div>
+        <div class="glass-card fade-in" style="padding:24px;text-align:center;">
+          <div style="font-size:36px;margin-bottom:8px;">👨‍💼</div>
+          <h3 style="font-size:15px;color:var(--text-primary);font-weight:500;margin-bottom:6px;">工商领域</h3>
+          <p style="font-size:13px;color:var(--text-tertiary);">谢氏族人亦有多人在工商界奋斗创业，展现了谢氏子孙的进取精神。</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+</div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-section"><h4 data-i18n="footer.section1.title">下枫槎谢氏</h4><p data-i18n="footer.desc">宁海下枫槎村谢氏家族数字宗祠</p></div>
+      <div class="footer-section"><h4 data-i18n="footer.section2.title">快捷链接</h4><a href="../index.html" data-i18n="nav.home">首页</a><a href="history.html" data-i18n="nav.history">家族历史</a><a href="genealogy.html" data-i18n="footer.link.genealogy">族谱查询</a></div>
+      <div class="footer-section"><h4 data-i18n="footer.section.content">内容</h4><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a><a href="news.html" data-i18n="nav.news">消息发布</a><a href="activities.html" data-i18n="nav.activities">家族活动</a><a href="today.html" data-i18n="nav.today">今日下枫槎</a><a href="reports.html" data-i18n="nav.reports">新闻报道</a></div>
+      <div class="footer-section"><h4 data-i18n="footer.section.contact">联系</h4><a href="contact.html" data-i18n="nav.contact">联系我们</a></div>
+    </div>
+    <div class="footer-bottom">
+      <p data-i18n="footer.copyright">© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p>
+    </div>
+  </footer>
+
+  <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
+  <script src="../js/main.js?v=3"></script>
+  <script>
+    const canvas = document.getElementById('bg-canvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let w, h;
+      function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+      resize(); window.addEventListener('resize', resize);
+      const dots = [];
+      for (let i = 0; i < 80; i++) dots.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, r: Math.random() * 2 + 1, a: Math.random() * 0.3 + 0.1 });
+      const orbs = [
+        { x: 0.2, y: 0.3, r: 0.35, color: 'rgba(251,146,60,0.06)' },
+        { x: 0.8, y: 0.7, r: 0.3, color: 'rgba(34,211,238,0.05)' },
+        { x: 0.5, y: 0.1, r: 0.25, color: 'rgba(251,146,60,0.04)' }
+      ];
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const dotRgb = isDark ? '255,255,255' : '100,100,100';
+        orbs.forEach(o => {
+          const grad = ctx.createRadialGradient(o.x * w, o.y * h, 0, o.x * w, o.y * h, o.r * w);
+          grad.addColorStop(0, o.color); grad.addColorStop(1, 'transparent');
+          ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+        });
+        dots.forEach(d => {
+          d.x += d.vx; d.y += d.vy;
+          if (d.x < 0) d.x = w; if (d.x > w) d.x = 0;
+          if (d.y < 0) d.y = h; if (d.y > h) d.y = 0;
+          ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${dotRgb},${d.a})`; ctx.fill();
+        });
+        for (let i = 0; i < dots.length; i++) {
+          for (let j = i + 1; j < dots.length; j++) {
+            const dx = dots[i].x - dots[j].x, dy = dots[i].y - dots[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 150) {
+              ctx.beginPath(); ctx.moveTo(dots[i].x, dots[i].y); ctx.lineTo(dots[j].x, dots[j].y);
+              ctx.strokeStyle = `rgba(${dotRgb},${(1 - dist / 150) * 0.08})`;
+              ctx.lineWidth = 0.5; ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+  </script>
+  <audio id="bg-music" loop src="../music/background.mp3"></audio>
+  <div class="music-player"><button class="music-btn" id="music-toggle">🔈</button><span class="music-label" data-i18n="music.label">背景音乐</span></div>
+</body>
+</html>

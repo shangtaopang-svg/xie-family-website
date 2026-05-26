@@ -1,0 +1,400 @@
+{
+  "news": [
+    {
+      "id": 1,
+      "title": "下枫槎村谢氏宗祠修缮工程启动",
+      "category": "家族事务",
+      "date": "2026-05-15",
+      "author": "家族理事会",
+      "url": "",
+      "content": "下枫槎谢氏宗祠始建于清乾隆年间，历经两百余年风雨，部分建筑出现老化。经家族理事会研究决定，正式启动宗祠修缮工程。本次修缮将严格遵循\"修旧如旧\"原则，尽可能保留原有建筑构件和工艺，恢复宗祠的历史风貌。工程预计工期六个月，总投资约80万元，由家族成员共同筹资。欢迎各位宗亲积极建言献策，共同守护我们的精神家园。"
+    },
+    {
+      "id": 2,
+      "title": "2026年清明祭祖大典圆满举行",
+      "category": "家族活动",
+      "date": "2026-05-01",
+      "author": "家族理事会",
+      "url": "",
+      "content": "今年清明，下枫槎谢氏在宗祠举行了隆重的祭祖大典。百余位宗亲从各地赶来参加，其中包括多位首次参与祭祖的年轻一代。本次祭祖新增了\"青年主祭\"环节，由家族年轻一辈代表担任主祭人，寓意家族文化薪火相传。祭祖仪式后，全体宗亲在宗祠前合影留念，共进清明宴。现场气氛庄重而热烈，充分展现了谢氏家族的凝聚力。"
+    },
+    {
+      "id": 3,
+      "title": "《下枫槎谢氏宗谱》电子版编纂启动",
+      "category": "通知公告",
+      "date": "2026-04-20",
+      "author": "家族理事会",
+      "url": "",
+      "content": "为更好地保护和传承家族文化，家族理事会决定正式启动《下枫槎谢氏宗谱》数字化工程。本次编纂将对现有纸质老谱进行高清扫描、文字识别和校对整理，最终形成可检索的电子版族谱。电子版族谱将包含世系图、人物传记、家族大事记等内容，并通过本网站向家族成员提供查询服务。请各房派积极配合资料收集工作。"
+    },
+    {
+      "id": 4,
+      "title": "谢氏家族网站\"数字宗祠\"正式上线",
+      "category": "网站公告",
+      "date": "2026-03-10",
+      "author": "网站管理团队",
+      "url": "",
+      "content": "经过数月的筹备和建设，下枫槎谢氏家族网站——\"数字宗祠\"今日正式上线。本网站旨在通过互联网平台，系统整理和展示家族历史文化，搭建家族成员交流互动的桥梁，成为家族文化传承的数字化载体。网站目前开设了家族历史、名人事迹、消息发布、家族成员、家族活动、联系我们等板块。后续还将逐步完善族谱查询、在线祭祀、活动报名等功能。欢迎各位宗亲提出宝贵意见和建议。"
+    },
+    {
+      "id": 5,
+      "title": "丙午年新春贺词",
+      "category": "节日祝福",
+      "date": "2026-02-16",
+      "author": "家族理事会",
+      "url": "",
+      "content": "值此丙午马年新春佳节，下枫槎谢氏家族理事会向全体宗亲致以最诚挚的节日问候！愿大家在新的一年里，龙马精神，阖家安康，万事如意！过去一年，在全体宗亲的共同努力下，家族事务有序推进，宗祠维护、族谱编纂等工作取得了积极进展。新的一年，让我们继续携手同心，传承家族文化，共筑美好未来！"
+    }
+  ],
+  "genealogy": [
+    {
+      "id": 1,
+      "generation_num": 1,
+      "name": "谢氏始祖",
+      "gender": "男",
+      "generation": "—",
+      "father_id": null,
+      "mother_id": null,
+      "spouse_ids": "始祖夫人",
+      "adopted": "否",
+      "branch": "—",
+      "birth_date": "南宋",
+      "death_date": "",
+      "is_alive": "否",
+      "address": "下枫槎",
+      "biography": "南宋迁居下枫槎，为下枫槎谢氏始祖。"
+    },
+    {
+      "id": 2,
+      "generation_num": 1,
+      "name": "始祖夫人",
+      "gender": "女",
+      "generation": "—",
+      "father_id": null,
+      "mother_id": null,
+      "spouse_ids": "谢氏始祖",
+      "adopted": "否",
+      "branch": "—",
+      "birth_date": "南宋",
+      "death_date": "",
+      "is_alive": "否",
+      "address": "下枫槎",
+      "biography": ""
+    },
+    {
+      "id": 3,
+      "generation_num": 2,
+      "name": "二世祖",
+      "gender": "男",
+      "generation": "世",
+      "father_id": "1",
+      "mother_id": "2",
+      "spouse_ids": "二世祖夫人",
+      "adopted": "否",
+      "branch": "—",
+      "birth_date": "",
+      "death_date": "",
+      "is_alive": "否",
+      "address": "",
+      "biography": ""
+    },
+    {
+      "id": 4,
+      "generation_num": 2,
+      "name": "二世祖夫人",
+      "gender": "女",
+      "generation": "世",
+      "father_id": null,
+      "mother_id": null,
+      "spouse_ids": "二世祖",
+      "adopted": "否",
+      "branch": "—",
+      "birth_date": "",
+      "death_date": "",
+      "is_alive": "否",
+      "address": "",
+      "biography": ""
+    },
+    {
+      "id": 5,
+      "generation_num": 3,
+      "name": "三世祖",
+      "gender": "男",
+      "generation": "代",
+      "father_id": "3",
+      "mother_id": "4",
+      "spouse_ids": "三世祖夫人",
+      "adopted": "否",
+      "branch": "—",
+      "birth_date": "",
+      "death_date": "",
+      "is_alive": "否",
+      "address": "",
+      "biography": ""
+    },
+    {
+      "id": 6,
+      "generation_num": 3,
+      "name": "三世祖夫人",
+      "gender": "女",
+      "generation": "代",
+      "father_id": null,
+      "mother_id": null,
+      "spouse_ids": "三世祖",
+      "adopted": "否",
+      "branch": "—",
+      "birth_date": "",
+      "death_date": "",
+      "is_alive": "否",
+      "address": "",
+      "biography": ""
+    },
+    {
+      "id": 7,
+      "generation_num": 4,
+      "name": "长房祖",
+      "gender": "男",
+      "generation": "文",
+      "father_id": "5",
+      "mother_id": "6",
+      "spouse_ids": "",
+      "adopted": "否",
+      "branch": "长房",
+      "birth_date": "",
+      "death_date": "",
+      "is_alive": "否",
+      "address": "",
+      "biography": "长房支系始祖"
+    },
+    {
+      "id": 8,
+      "generation_num": 4,
+      "name": "二房祖",
+      "gender": "男",
+      "generation": "文",
+      "father_id": "5",
+      "mother_id": "6",
+      "spouse_ids": "",
+      "adopted": "否",
+      "branch": "二房",
+      "birth_date": "",
+      "death_date": "",
+      "is_alive": "否",
+      "address": "",
+      "biography": "二房支系始祖"
+    },
+    {
+      "id": 9,
+      "generation_num": 4,
+      "name": "三房祖",
+      "gender": "男",
+      "generation": "文",
+      "father_id": "5",
+      "mother_id": "6",
+      "spouse_ids": "",
+      "adopted": "否",
+      "branch": "三房",
+      "birth_date": "",
+      "death_date": "",
+      "is_alive": "否",
+      "address": "",
+      "biography": "三房支系始祖"
+    },
+    {
+      "id": 10,
+      "generation_num": 4,
+      "name": "四房祖",
+      "gender": "男",
+      "generation": "文",
+      "father_id": "5",
+      "mother_id": "6",
+      "spouse_ids": "",
+      "adopted": "否",
+      "branch": "四房",
+      "birth_date": "",
+      "death_date": "",
+      "is_alive": "否",
+      "address": "",
+      "biography": "四房支系始祖"
+    }
+  ],
+  "members": [
+    {
+      "id": 1,
+      "name": "谢XX",
+      "branch": "长房",
+      "generation": "世",
+      "avatar": "👴",
+      "note": ""
+    },
+    {
+      "id": 2,
+      "name": "谢XX",
+      "branch": "长房",
+      "generation": "世",
+      "avatar": "👵",
+      "note": ""
+    },
+    {
+      "id": 3,
+      "name": "谢XX",
+      "branch": "二房",
+      "generation": "代",
+      "avatar": "👨",
+      "note": ""
+    }
+  ],
+  "activities": [
+    {
+      "id": 1,
+      "title": "丙午年清明祭祖大典",
+      "date": "2026-04-04",
+      "status": "已举办",
+      "icon": "🌿",
+      "content": "百余位宗亲齐聚下枫槎谢氏宗祠，依古礼举行清明祭祖仪式。",
+      "location": "下枫槎谢氏宗祠"
+    },
+    {
+      "id": 2,
+      "title": "丙午年新春团拜会",
+      "date": "2026-02-12",
+      "status": "已举办",
+      "icon": "🎊",
+      "content": "农历正月初一，下枫槎谢氏在宗祠举行新春团拜活动。",
+      "location": "下枫槎谢氏宗祠"
+    },
+    {
+      "id": 3,
+      "title": "丙午年冬至祭祖",
+      "date": "2026-12-21",
+      "status": "即将举行",
+      "icon": "🏛️",
+      "content": "每年冬至为下枫槎谢氏秋祭之日。",
+      "location": "下枫槎谢氏宗祠"
+    }
+  ],
+  "templeCarousel": [
+    {
+      "id": 1,
+      "title": "宗祠外景",
+      "hasFile": false
+    },
+    {
+      "id": 2,
+      "title": "宗祠戏台",
+      "hasFile": false
+    },
+    {
+      "id": 3,
+      "title": "祖堂",
+      "hasFile": false
+    },
+    {
+      "id": 4,
+      "title": "横厢",
+      "hasFile": false
+    },
+    {
+      "id": 5,
+      "title": "谢氏牌匾",
+      "hasFile": false
+    },
+    {
+      "id": 6,
+      "title": "为国立功",
+      "hasFile": false
+    }
+  ],
+  "honors": [
+    {
+      "id": 1,
+      "title": "浙江省美丽乡村示范村",
+      "date": "2025-12-01",
+      "awarder": "浙江省农业农村厅",
+      "icon": "🏆",
+      "url": "",
+      "content": "下枫槎村荣获浙江省美丽乡村示范村称号，这是对全村环境整治、生态保护和文明建设工作的肯定。"
+    },
+    {
+      "id": 2,
+      "title": "宁海县文明村",
+      "date": "2025-03-15",
+      "awarder": "宁海县人民政府",
+      "icon": "🥇",
+      "url": "",
+      "content": "下枫槎村被评为宁海县文明村，体现了全村精神文明建设成果。"
+    },
+    {
+      "id": 3,
+      "title": "谢氏宗祠文物保护单位",
+      "date": "2024-06-20",
+      "awarder": "宁海县文物局",
+      "icon": "🎖️",
+      "url": "",
+      "content": "下枫槎谢氏宗祠被列为县级文物保护单位，宗祠建筑具有重要历史和文化价值。"
+    }
+  ],
+  "reports": [
+    {
+      "id": 1,
+      "title": "宁海下枫槎村：古村焕新颜 数字宗祠传家风",
+      "date": "2026-04-20",
+      "source": "宁海新闻网",
+      "url": "",
+      "content": "近日，宁海县下枫槎村谢氏\"数字宗祠\"正式上线，这是宁海首个以家族文化为主题的数字化平台，为传统宗祠文化注入了新的活力。"
+    },
+    {
+      "id": 2,
+      "title": "一座数字宗祠背后的文化传承",
+      "date": "2026-04-25",
+      "source": "宁波日报",
+      "url": "",
+      "content": "在宁海县下枫槎村，谢氏家族通过建设数字宗祠，将传统家族文化搬到互联网上，让年轻一代能够更方便地了解家族历史。"
+    },
+    {
+      "id": 3,
+      "title": "下枫槎谢氏宗祠修缮工程获多方支持",
+      "date": "2026-05-10",
+      "source": "浙江新闻",
+      "url": "",
+      "content": "下枫槎谢氏宗祠修缮工程启动以来，得到了家族成员和社会各界的广泛关注和支持，目前已筹集修缮资金超过50万元。"
+    }
+  ],
+  "photos": [
+    {
+      "id": 1,
+      "title": "宗祠全景",
+      "icon": "🏛️",
+      "color": "#0f0f1a",
+      "hasFile": false
+    },
+    {
+      "id": 2,
+      "title": "清明祭祖",
+      "icon": "🌿",
+      "color": "#1a1a2e",
+      "hasFile": false
+    },
+    {
+      "id": 3,
+      "title": "新春团拜",
+      "icon": "🎊",
+      "color": "#0f0f1a",
+      "hasFile": false
+    }
+  ],
+  "videos": [
+    {
+      "title": "2026圆谱大典",
+      "url": "—",
+      "embed": "—",
+      "poster": "🎬",
+      "desc": "—",
+      "id": 1,
+      "hasFile": true,
+      "fileName": "promo.mp4"
+    }
+  ],
+  "messages": [],
+  "settings": []
+}

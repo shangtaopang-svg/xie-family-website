@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="page.contact.title">联系我们 · 下枫槎谢氏</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+
+  
+  <link rel="stylesheet" href="../css/style.css?v=2">
+  <script src="../js/i18n.js"></script>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="content">
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        <div class="logo-icon">谢</div>
+        <div class="logo-text"><h1 data-i18n="logo.title">下枫槎谢氏</h1><small data-i18n="logo.subtitle">宁海 · 下枫槎村</small></div>
+      </a>
+      <button class="nav-toggle" data-i18n-aria="nav.toggle" aria-label="菜单">☰</button>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="../index.html" data-i18n="nav.home">首页</a></li>
+          <li><a href="history.html" data-i18n="nav.history">家族历史</a></li>
+          <li><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a></li>
+          <li><a href="news.html" data-i18n="nav.news">消息发布</a></li>
+          <li><a href="members.html" data-i18n="nav.members">家族成员</a></li>
+          <li><a href="activities.html" data-i18n="nav.activities">家族活动</a></li>
+          <li><a href="today.html" data-i18n="nav.today">今日下枫槎</a></li>
+          <li><a href="reports.html" data-i18n="nav.reports">新闻报道</a></li>
+          <li><a href="contact.html" class="active" data-i18n="nav.contact">联系我们</a></li>
+          <li><a href="admin.html" style="color:var(--accent-orange);">🔐 管理后台</a></li>
+        </ul>
+        <div class="nav-actions">
+          <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
+          <button class="nav-action-btn lang-btn" id="lang-toggle" data-i18n-title="nav.lang" title="中英文切换">EN</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- weather moved to hero on index -->
+
+  <div class="page-wrap">
+    <div class="page-title">
+      <h2 data-i18n="nav.contact">联系我们</h2>
+      <p data-i18n="page.contact">沟通 · 交流 · 共建</p>
+    </div>
+
+    <div class="contact-grid">
+      <div>
+        <div class="section-title" style="text-align:left;"><h2 style="font-size:22px;">联系方式</h2><div class="divider" style="margin:8px 0;"></div></div>
+
+        <div class="contact-item">
+          <div class="icon">📍</div>
+          <div>
+            <h4>地址</h4>
+            <p>浙江省宁波市宁海县下枫槎村</p>
+            <p style="font-size:12px;color:var(--text-tertiary);">谢氏宗祠位于村中央</p>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="icon">📞</div>
+          <div>
+            <h4>联系电话</h4>
+            <p>（信息更新中，敬请期待）</p>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="icon">📧</div>
+          <div>
+            <h4>电子邮箱</h4>
+            <p>（信息更新中，敬请期待）</p>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="icon">💬</div>
+          <div>
+            <h4>家族微信群</h4>
+            <p>请联系管理员邀请加入</p>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="icon">👥</div>
+          <div>
+            <h4>家族理事会</h4>
+            <p>下枫槎谢氏家族理事会负责家族日常事务管理</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title" style="text-align:left;"><h2 style="font-size:22px;">在线留言</h2><div class="divider" style="margin:8px 0;"></div></div>
+        <form id="contact-form" class="glass-card" style="padding:24px;">
+          <div class="form-group">
+            <label for="name">姓名 *</label>
+            <input type="text" id="name" required placeholder="您的姓名">
+          </div>
+          <div class="form-group">
+            <label for="phone">联系方式（电话/微信）</label>
+            <input type="text" id="phone" placeholder="方便我们回复您">
+          </div>
+          <div class="form-group">
+            <label for="subject">主题 *</label>
+            <select id="subject">
+              <option>意见反馈</option>
+              <option>寻亲求助</option>
+              <option>投稿分享</option>
+              <option>活动报名</option>
+              <option>捐款咨询</option>
+              <option>族谱查询</option>
+              <option>其他</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="message">留言内容 *</label>
+            <textarea id="message" required placeholder="请详细描述您的需求或建议..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-accent">提交留言</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 捐款通道 -->
+    <section id="donate" style="margin-top:50px;">
+      <div class="section-title"><h2>捐款通道</h2><div class="divider"></div><p>支持家族文化建设</p></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <div class="glass-card" style="padding:30px;text-align:center;" class="fade-in">
+          <div style="font-size:48px;margin-bottom:12px;">🏛️</div>
+          <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:8px;font-size:17px;font-weight:500;">宗祠修缮基金</h3>
+          <p style="font-size:13px;color:var(--text-tertiary);margin-bottom:16px;">用于宗祠日常维护和修缮工程</p>
+          <p style="font-size:13px;color:var(--text-muted);">捐款方式正在建设中...</p>
+        </div>
+        <div class="glass-card" style="padding:30px;text-align:center;" class="fade-in">
+          <div style="font-size:48px;margin-bottom:12px;">📚</div>
+          <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:8px;font-size:17px;font-weight:500;">教育基金</h3>
+          <p style="font-size:13px;color:var(--text-tertiary);margin-bottom:16px;">用于奖励优秀学子，资助困难学生</p>
+          <p style="font-size:13px;color:var(--text-muted);">捐款方式正在建设中...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 友情链接 -->
+    <section id="links" style="margin-top:50px;">
+      <div class="section-title"><h2>友情链接</h2><div class="divider"></div></div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+        <a href="#" class="btn" style="padding:10px 24px;font-size:13px;">宁海县地方志</a>
+        <a href="#" class="btn" style="padding:10px 24px;font-size:13px;">宁海新闻网</a>
+        <a href="#" class="btn" style="padding:10px 24px;font-size:13px;">浙江谢氏宗亲会</a>
+        <a href="#" class="btn" style="padding:10px 24px;font-size:13px;">中华谢氏联谊总会</a>
+      </div>
+    </section>
+  </div>
+
+</div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-section"><h4 data-i18n="footer.section1.title">下枫槎谢氏</h4><p data-i18n="footer.desc">宁海下枫槎村谢氏家族数字宗祠</p></div>
+      <div class="footer-section"><h4 data-i18n="footer.section2.title">快捷链接</h4><a href="../index.html" data-i18n="nav.home">首页</a><a href="history.html" data-i18n="nav.history">家族历史</a><a href="genealogy.html" data-i18n="footer.link.genealogy">族谱查询</a></div>
+      <div class="footer-section"><h4 data-i18n="footer.section.content">内容</h4><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a><a href="news.html" data-i18n="nav.news">消息发布</a><a href="activities.html" data-i18n="nav.activities">家族活动</a><a href="today.html" data-i18n="nav.today">今日下枫槎</a><a href="reports.html" data-i18n="nav.reports">新闻报道</a></div>
+      <div class="footer-section"><h4 data-i18n="footer.section.contact">联系</h4><a href="contact.html" data-i18n="nav.contact">联系我们</a></div>
+    </div>
+    <div class="footer-bottom">
+      <p data-i18n="footer.copyright">© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p>
+    </div>
+  </footer>
+
+  <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
+  <script src="../js/main.js?v=3"></script>
+  <script>
+    const canvas = document.getElementById('bg-canvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let w, h;
+      function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+      resize(); window.addEventListener('resize', resize);
+      const dots = [];
+      for (let i = 0; i < 80; i++) dots.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, r: Math.random() * 2 + 1, a: Math.random() * 0.3 + 0.1 });
+      const orbs = [
+        { x: 0.2, y: 0.3, r: 0.35, color: 'rgba(251,146,60,0.06)' },
+        { x: 0.8, y: 0.7, r: 0.3, color: 'rgba(34,211,238,0.05)' },
+        { x: 0.5, y: 0.1, r: 0.25, color: 'rgba(251,146,60,0.04)' }
+      ];
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const dotRgb = isDark ? '255,255,255' : '100,100,100';
+        orbs.forEach(o => {
+          const grad = ctx.createRadialGradient(o.x * w, o.y * h, 0, o.x * w, o.y * h, o.r * w);
+          grad.addColorStop(0, o.color); grad.addColorStop(1, 'transparent');
+          ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+        });
+        dots.forEach(d => {
+          d.x += d.vx; d.y += d.vy;
+          if (d.x < 0) d.x = w; if (d.x > w) d.x = 0;
+          if (d.y < 0) d.y = h; if (d.y > h) d.y = 0;
+          ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${dotRgb},${d.a})`; ctx.fill();
+        });
+        for (let i = 0; i < dots.length; i++) {
+          for (let j = i + 1; j < dots.length; j++) {
+            const dx = dots[i].x - dots[j].x, dy = dots[i].y - dots[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 150) {
+              ctx.beginPath(); ctx.moveTo(dots[i].x, dots[i].y); ctx.lineTo(dots[j].x, dots[j].y);
+              ctx.strokeStyle = `rgba(${dotRgb},${(1 - dist / 150) * 0.08})`;
+              ctx.lineWidth = 0.5; ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+  </script>
+  <audio id="bg-music" loop src="../music/background.mp3"></audio>
+  <div class="music-player"><button class="music-btn" id="music-toggle">🔈</button><span class="music-label" data-i18n="music.label">背景音乐</span></div>
+</body>
+</html>

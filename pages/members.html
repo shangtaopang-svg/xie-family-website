@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="page.members.title">家族成员 · 下枫槎谢氏</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+
+  
+  <link rel="stylesheet" href="../css/style.css?v=2">
+  <script src="../js/i18n.js"></script>
+  <script src="../js/supabase.js?v=3"></script>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="content">
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        <div class="logo-icon">谢</div>
+        <div class="logo-text"><h1 data-i18n="logo.title">下枫槎谢氏</h1><small data-i18n="logo.subtitle">宁海 · 下枫槎村</small></div>
+      </a>
+      <button class="nav-toggle" data-i18n-aria="nav.toggle" aria-label="菜单">☰</button>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="../index.html" data-i18n="nav.home">首页</a></li>
+          <li><a href="history.html" data-i18n="nav.history">家族历史</a></li>
+          <li><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a></li>
+          <li><a href="news.html" data-i18n="nav.news">消息发布</a></li>
+          <li><a href="members.html" class="active" data-i18n="nav.members">家族成员</a></li>
+          <li><a href="activities.html" data-i18n="nav.activities">家族活动</a></li>
+          <li><a href="today.html" data-i18n="nav.today">今日下枫槎</a></li>
+          <li><a href="reports.html" data-i18n="nav.reports">新闻报道</a></li>
+          <li><a href="contact.html" data-i18n="nav.contact">联系我们</a></li>
+        </ul>
+        <div class="nav-actions">
+          <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
+          <button class="nav-action-btn lang-btn" id="lang-toggle" data-i18n-title="nav.lang" title="中英文切换">EN</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrap">
+    <div class="page-title">
+      <h2 data-i18n="nav.members">家族成员</h2>
+      <p data-i18n="page.members">枝繁叶茂 · 奕世其昌</p>
+    </div>
+
+    <!-- 统计概览 -->
+    <section style="margin-bottom:30px;">
+      <div id="members-stats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;"></div>
+    </section>
+
+    <!-- 支系筛选 -->
+    <section style="margin-bottom:30px;">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <span style="font-size:13px;color:var(--text-tertiary);">支系：</span>
+        <div id="branch-tabs" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+        <span style="font-size:13px;color:var(--text-tertiary);margin-left:20px;">世代：</span>
+        <div id="gen-tabs" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+      </div>
+    </section>
+
+    <!-- 成员卡片列表 -->
+    <section>
+      <div id="members-search-box" style="margin-bottom:20px;">
+        <input type="text" id="members-search" placeholder="搜索姓名、字辈、支系..." style="width:100%;max-width:400px;padding:10px 16px;border:1px solid var(--glass-border);border-radius:8px;background:var(--glass-bg);color:var(--text-primary);font-size:14px;outline:none;">
+      </div>
+      <div id="members-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;"></div>
+      <div id="members-empty" style="display:none;text-align:center;padding:60px 20px;">
+        <div style="font-size:48px;margin-bottom:12px;">📭</div>
+        <p style="color:var(--text-tertiary);font-size:14px;">暂无成员数据，请先通过管理后台录入族谱信息</p>
+        <a href="admin.html" class="btn btn-accent" style="margin-top:16px;display:inline-block;">前往管理后台 →</a>
+      </div>
+    </section>
+
+    <!-- 入口到完整世系图谱 -->
+    <section style="margin-top:40px;">
+      <div class="glass-card" style="padding:30px;text-align:center;">
+        <div style="font-size:40px;margin-bottom:12px;">🌳</div>
+        <h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:18px;font-weight:400;margin-bottom:8px;">完整世系图谱</h3>
+        <p style="font-size:13px;color:var(--text-tertiary);margin-bottom:16px;">查看完整家族世系树状图，包含所有世代和支系关系</p>
+        <a href="genealogy.html" class="btn btn-accent">进入世系图谱 →</a>
+      </div>
+    </section>
+
+  </div>
+
+</div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-section"><h4 data-i18n="footer.section1.title">下枫槎谢氏</h4><p data-i18n="footer.desc">宁海下枫槎村谢氏家族数字宗祠</p></div>
+      <div class="footer-section"><h4 data-i18n="footer.section2.title">快捷链接</h4><a href="../index.html" data-i18n="nav.home">首页</a><a href="history.html" data-i18n="nav.history">家族历史</a><a href="genealogy.html" data-i18n="footer.link.genealogy">族谱查询</a></div>
+      <div class="footer-section"><h4 data-i18n="footer.section.content">内容</h4><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a><a href="news.html" data-i18n="nav.news">消息发布</a><a href="activities.html" data-i18n="nav.activities">家族活动</a><a href="today.html" data-i18n="nav.today">今日下枫槎</a><a href="reports.html" data-i18n="nav.reports">新闻报道</a></div>
+      <div class="footer-section"><h4 data-i18n="footer.section.contact">联系</h4><a href="contact.html" data-i18n="nav.contact">联系我们</a></div>
+    </div>
+    <div class="footer-bottom">
+      <p data-i18n="footer.copyright">© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p>
+    </div>
+  </footer>
+
+  <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
+  <script src="../js/main.js?v=3"></script>
+  <script>
+    function getGenealogyData() {
+      try { return JSON.parse(localStorage.getItem('xie_admin_genealogy') || '[]'); } catch(e) { return []; }
+    }
+
+    function escapeHtml(text) {
+      if (!text && text !== 0) return '';
+      var d = document.createElement('div');
+      d.textContent = text;
+      return d.innerHTML;
+    }
+
+    function getPersonNameById(id, data) {
+      if (!id && id !== 0) return null;
+      for (var i = 0; i < data.length; i++) {
+        if (data[i].id === id) return data[i].name;
+      }
+      return null;
+    }
+
+    function getSpouseNames(personId, data) {
+      var p = null;
+      for (var i = 0; i < data.length; i++) {
+        if (data[i].id === personId) { p = data[i]; break; }
+      }
+      if (!p || !p.spouse_ids) return [];
+      var names = p.spouse_ids.toString().split(',').map(function(n) { return n.trim(); }).filter(function(n) { return n; });
+      var result = [];
+      names.forEach(function(name) {
+        for (var j = 0; j < data.length; j++) {
+          if (data[j].name === name) { result.push(data[j]); return; }
+        }
+        result.push({ name: name, id: null });
+      });
+      return result;
+    }
+
+    function showMemberDetail(id) {
+      var data = getGenealogyData();
+      var person = null;
+      for (var i = 0; i < data.length; i++) {
+        if (data[i].id === id) { person = data[i]; break; }
+      }
+      if (!person) return;
+
+      var overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+      var box = document.createElement('div');
+      box.style.cssText = 'background:var(--bg-primary);border:1px solid var(--glass-border);border-radius:12px;max-width:560px;width:100%;max-height:80vh;overflow-y:auto;padding:32px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
+
+      var html = '<button onclick="this.parentElement.parentElement.remove()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-tertiary);">✕</button>';
+
+      html += '<div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">';
+      html += '<div style="font-size:36px;">' + (person.gender === '男' ? '👤' : '👩') + '</div>';
+      html += '<div>';
+      html += '<h2 style="font-family:var(--font-title);color:var(--text-primary);font-size:20px;font-weight:600;">' + escapeHtml(person.name) + '</h2>';
+      html += '<div style="font-size:12px;color:var(--text-tertiary);">';
+      if (person.generation && person.generation !== '—') html += escapeHtml(person.generation) + '字辈 ';
+      if (person.generation_num) html += '第' + person.generation_num + '世 ';
+      if (person.branch && person.branch !== '—') html += '· ' + escapeHtml(person.branch);
+      html += '</div></div></div>';
+
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:13px;color:var(--text-secondary);margin-bottom:16px;padding:14px;background:var(--glass-bg);border-radius:8px;">';
+      html += '<div>性别：' + (person.gender || '—') + '</div>';
+      if (person.birth_date) html += '<div>出生：' + person.birth_date + '</div>';
+      if (person.death_date) html += '<div>逝世：' + person.death_date + '</div>';
+      html += '<div>状态：' + (person.is_alive === '是' ? '在世' : (person.is_alive === '否' ? '已故' : '—')) + '</div>';
+      if (person.adopted && person.adopted !== '否') html += '<div>过继：' + escapeHtml(person.adopted) + '</div>';
+      if (person.address) html += '<div style="grid-column:1/-1;">居住地：' + escapeHtml(person.address) + '</div>';
+      if (person.father_id) {
+        var fn = getPersonNameById(parseInt(person.father_id), data);
+        if (fn) html += '<div>父亲：' + escapeHtml(fn) + '</div>';
+      }
+      if (person.mother_id) {
+        var mn = getPersonNameById(parseInt(person.mother_id), data) || person.mother_id;
+        if (mn) html += '<div>母亲：' + escapeHtml(mn) + '</div>';
+      }
+      var spNames = getSpouseNames(person.id, data).map(function(s) { return s.name; }).join('、');
+      if (spNames) html += '<div>配偶：' + escapeHtml(spNames) + '</div>';
+      html += '</div>';
+
+      if (person.biography) {
+        html += '<div style="font-size:13px;color:var(--text-secondary);line-height:1.8;padding:14px;background:var(--glass-bg);border-radius:8px;">';
+        html += '<h4 style="font-family:var(--font-title);color:var(--text-primary);font-size:14px;font-weight:500;margin-bottom:6px;">📝 生平简介</h4>';
+        html += '<p style="margin:0;">' + escapeHtml(person.biography).replace(/\n/g, '<br>') + '</p></div>';
+      }
+
+      box.innerHTML = html;
+      overlay.appendChild(box);
+      overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+      document.body.appendChild(overlay);
+    }
+
+    function renderMembers() {
+      var data = getGenealogyData();
+      var container = document.getElementById('members-grid');
+      var emptyEl = document.getElementById('members-empty');
+      var statsEl = document.getElementById('members-stats');
+
+      if (!data || data.length === 0) {
+        container.innerHTML = '';
+        statsEl.innerHTML = '';
+        emptyEl.style.display = 'block';
+        return;
+      }
+      emptyEl.style.display = 'none';
+
+      // Stats
+      var total = data.length;
+      var males = 0, females = 0;
+      var genSet = {}, branchSet = {};
+      data.forEach(function(p) {
+        if (p.gender === '男') males++;
+        if (p.gender === '女') females++;
+        if (p.generation_num) genSet[p.generation_num] = true;
+        if (p.branch && p.branch !== '—') branchSet[p.branch] = true;
+      });
+      statsEl.innerHTML = ''
+        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);">' + total + '</div><div style="font-size:11px;color:var(--text-tertiary);">成员总数</div></div>'
+        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--text-primary);">' + males + '</div><div style="font-size:11px;color:var(--text-tertiary);">男</div></div>'
+        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--text-primary);">' + females + '</div><div style="font-size:11px;color:var(--text-tertiary);">女</div></div>'
+        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--text-primary);">' + Object.keys(genSet).length + '</div><div style="font-size:11px;color:var(--text-tertiary);">世代</div></div>'
+        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--text-primary);">' + Object.keys(branchSet).length + '</div><div style="font-size:11px;color:var(--text-tertiary);">支系</div></div>';
+
+      // Branch tabs
+      var branches = Object.keys(branchSet).sort();
+      var branchHtml = '<button class="btn btn-sm branch-tab active-tab" data-branch="" onclick="setBranchFilter(this,\'\')">全部</button>';
+      branches.forEach(function(b) {
+        branchHtml += '<button class="btn btn-sm branch-tab" data-branch="' + escapeHtml(b) + '" onclick="setBranchFilter(this,\'' + escapeHtml(b).replace(/'/g, "\\'") + '\')">' + escapeHtml(b) + '</button>';
+      });
+      document.getElementById('branch-tabs').innerHTML = branchHtml;
+
+      // Gen tabs
+      var gens = Object.keys(genSet).map(Number).sort(function(a,b){return a-b;});
+      var genHtml = '<button class="btn btn-sm gen-tab active-tab" data-gen="" onclick="setGenFilter(this,\'\')">全部</button>';
+      gens.forEach(function(g) {
+        genHtml += '<button class="btn btn-sm gen-tab" data-gen="' + g + '" onclick="setGenFilter(this,' + g + ')">第' + g + '世</button>';
+      });
+      document.getElementById('gen-tabs').innerHTML = genHtml;
+
+      // Store data for filters
+      window._membersData = data;
+
+      // Initial render
+      applyFilters(data);
+    }
+
+    var _branchFilter = '';
+    var _genFilter = '';
+    var _searchFilter = '';
+
+    function setBranchFilter(btn, branch) {
+      document.querySelectorAll('.branch-tab').forEach(function(b) { b.classList.remove('active-tab'); });
+      btn.classList.add('active-tab');
+      _branchFilter = branch;
+      applyFilters(window._membersData);
+    }
+
+    function setGenFilter(btn, gen) {
+      document.querySelectorAll('.gen-tab').forEach(function(b) { b.classList.remove('active-tab'); });
+      btn.classList.add('active-tab');
+      _genFilter = gen;
+      applyFilters(window._membersData);
+    }
+
+    function applyFilters(data) {
+      if (!data) return;
+      var filtered = data.filter(function(p) {
+        if (_branchFilter && (p.branch !== _branchFilter)) return false;
+        if (_genFilter !== '' && _genFilter !== null && _genFilter !== undefined) {
+          if ((p.generation_num || 0) !== _genFilter) return false;
+        }
+        if (_searchFilter) {
+          var q = _searchFilter.toLowerCase();
+          var match = (p.name && p.name.toLowerCase().indexOf(q) !== -1)
+            || (p.generation && p.generation.toLowerCase().indexOf(q) !== -1)
+            || (p.branch && p.branch.toLowerCase().indexOf(q) !== -1);
+          if (!match) return false;
+        }
+        return true;
+      });
+
+      var container = document.getElementById('members-grid');
+      if (filtered.length === 0) {
+        container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-tertiary);font-size:14px;">未找到匹配的成员</div>';
+        return;
+      }
+
+      filtered.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0) || (a.name || '').localeCompare(b.name || ''); });
+
+      var html = '';
+      filtered.forEach(function(p) {
+        var genStr = p.generation_num ? '第' + p.generation_num + '世' : '';
+        var branchStr = (p.branch && p.branch !== '—') ? escapeHtml(p.branch) : '';
+        var spouseStr = getSpouseNames(p.id, data).map(function(s) { return s.name; }).join('、');
+        var hasBiography = p.biography && p.biography.trim() !== '';
+
+        html += '<div class="glass-card member-card" onclick="showMemberDetail(' + p.id + ')" style="padding:18px;cursor:pointer;border-left:3px solid ' + (p.gender === '男' ? 'var(--accent-orange)' : 'var(--accent-pink, #e879f9)') + ';transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 8px 24px rgba(0,0,0,0.15)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\'">';
+        html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">';
+        html += '<div style="font-size:30px;">' + (p.gender === '男' ? '👤' : '👩') + '</div>';
+        html += '<div style="flex:1;min-width:0;">';
+        html += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">';
+        html += '<span style="font-size:16px;font-weight:600;color:var(--text-primary);">' + escapeHtml(p.name) + '</span>';
+        if (p.adopted && p.adopted !== '否') html += '<span style="font-size:10px;background:var(--accent-orange-dim);color:var(--accent-orange);padding:1px 6px;border-radius:3px;font-weight:500;">嗣</span>';
+        if (hasBiography) html += '<span style="font-size:10px;color:var(--text-muted);">📄</span>';
+        html += '</div>';
+        html += '<div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">';
+        var meta = [];
+        if (genStr) meta.push(genStr);
+        if (branchStr) meta.push(branchStr);
+        html += meta.join(' · ') + '</div></div></div>';
+        if (spouseStr) {
+          html += '<div style="font-size:12px;color:var(--text-secondary);padding-top:8px;border-top:1px solid var(--divider);">配：' + escapeHtml(spouseStr) + '</div>';
+        }
+        html += '</div>';
+      });
+      container.innerHTML = html;
+    }
+
+    // Search
+    document.addEventListener('DOMContentLoaded', function() {
+      renderMembers();
+
+      // Try loading from Supabase for up-to-date genealogy data
+      if (window.dbGetAll) {
+        dbGetAll('genealogy', { order: 'id.asc' }).then(function(supabaseData) {
+          if (supabaseData && supabaseData.length > 0) {
+            localStorage.setItem('xie_admin_genealogy', JSON.stringify(supabaseData));
+            renderMembers();
+          }
+        }).catch(function() {});
+      }
+
+      var searchInput = document.getElementById('members-search');
+      if (searchInput) {
+        var timer;
+        searchInput.addEventListener('input', function() {
+          clearTimeout(timer);
+          timer = setTimeout(function() {
+            _searchFilter = searchInput.value.trim();
+            applyFilters(window._membersData);
+          }, 200);
+        });
+      }
+    });
+  </script>
+  <style>
+    .btn-sm {
+      padding:4px 12px;font-size:12px;border:1px solid var(--glass-border);border-radius:4px;
+      background:var(--glass-bg);color:var(--text-secondary);cursor:pointer;transition:all 0.2s;
+    }
+    .btn-sm:hover { border-color:var(--accent-orange);color:var(--accent-orange); }
+    .btn-sm.active-tab { background:var(--accent-orange);color:#000;border-color:var(--accent-orange);font-weight:500; }
+    .member-card { transition:transform 0.2s,box-shadow 0.2s; }
+    #members-grid { min-height:200px; }
+    .branch-tab, .gen-tab { font-family:var(--font-body); }
+  </style>
+  <script>
+    const canvas = document.getElementById('bg-canvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let w, h;
+      function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+      resize(); window.addEventListener('resize', resize);
+      const dots = [];
+      for (let i = 0; i < 80; i++) dots.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, r: Math.random() * 2 + 1, a: Math.random() * 0.3 + 0.1 });
+      const orbs = [
+        { x: 0.2, y: 0.3, r: 0.35, color: 'rgba(251,146,60,0.06)' },
+        { x: 0.8, y: 0.7, r: 0.3, color: 'rgba(34,211,238,0.05)' },
+        { x: 0.5, y: 0.1, r: 0.25, color: 'rgba(251,146,60,0.04)' }
+      ];
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const dotRgb = isDark ? '255,255,255' : '100,100,100';
+        orbs.forEach(o => {
+          const grad = ctx.createRadialGradient(o.x * w, o.y * h, 0, o.x * w, o.y * h, o.r * w);
+          grad.addColorStop(0, o.color); grad.addColorStop(1, 'transparent');
+          ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+        });
+        dots.forEach(d => {
+          d.x += d.vx; d.y += d.vy;
+          if (d.x < 0) d.x = w; if (d.x > w) d.x = 0;
+          if (d.y < 0) d.y = h; if (d.y > h) d.y = 0;
+          ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${dotRgb},${d.a})`; ctx.fill();
+        });
+        for (let i = 0; i < dots.length; i++) {
+          for (let j = i + 1; j < dots.length; j++) {
+            const dx = dots[i].x - dots[j].x, dy = dots[i].y - dots[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 150) {
+              ctx.beginPath(); ctx.moveTo(dots[i].x, dots[i].y); ctx.lineTo(dots[j].x, dots[j].y);
+              ctx.strokeStyle = `rgba(${dotRgb},${(1 - dist / 150) * 0.08})`;
+              ctx.lineWidth = 0.5; ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+  </script>
+  <audio id="bg-music" loop src="../music/background.mp3"></audio>
+  <div class="music-player"><button class="music-btn" id="music-toggle">🔈</button><span class="music-label" data-i18n="music.label">背景音乐</span></div>
+</body>
+</html>

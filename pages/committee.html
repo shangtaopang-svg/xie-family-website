@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="page.committee.title">村组织架构 · 下枫槎谢氏</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+
+  <meta name="description" content="下枫槎村村委会组织架构、两委成员介绍、党员风采展示">
+  
+  <link rel="stylesheet" href="../css/style.css?v=2">
+  <script src="../js/i18n.js"></script>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="content">
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        <div class="logo-icon">谢</div>
+        <div class="logo-text"><h1>下枫槎谢氏</h1><small>宁海 · 下枫槎村</small></div>
+      </a>
+      <button class="nav-toggle" aria-label="菜单">☰</button>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="../index.html">首页</a></li>
+          <li><a href="history.html">家族历史</a></li>
+          <li><a href="celebrities.html">名人事迹</a></li>
+          <li><a href="news.html">消息发布</a></li>
+          <li><a href="members.html">家族成员</a></li>
+          <li><a href="activities.html">家族活动</a></li>
+          <li><a href="today.html" data-i18n="nav.today">今日下枫槎</a></li>
+          <li><a href="reports.html">新闻报道</a></li>
+          <li><a href="contact.html">联系我们</a></li>
+          <li><a href="admin.html" style="color:var(--accent-orange);">🔐 管理后台</a></li>
+        </ul>
+        <div class="nav-actions">
+          <button class="nav-action-btn" id="theme-toggle" title="切换主题">☀️</button>
+          <button class="nav-action-btn lang-btn" id="lang-toggle" title="中英文切换">EN</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrap">
+    <div class="page-title">
+      <h2 data-i18n="page.committee">村组织架构</h2>
+      <p data-i18n="page.committee.sub">党建引领 · 乡村振兴</p>
+    </div>
+
+    <!-- 组织架构图 -->
+    <section id="organization" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>组织架构</h2>
+        <div class="divider"></div>
+        <p>下枫槎村两委组织体系</p>
+      </div>
+      <div class="org-chart">
+        <!-- 党支部 -->
+        <div class="org-level">
+          <div class="org-node org-node-primary">
+            <div class="org-icon">🚩</div>
+            <div class="org-name">中共下枫槎村支部委员会</div>
+            <div class="org-role">党支部</div>
+          </div>
+          <div class="org-arrow">↓</div>
+        </div>
+
+        <div class="org-level org-level-two">
+          <div class="org-node org-node-secondary">
+            <div class="org-icon">👤</div>
+            <div class="org-name">村党支部书记</div>
+            <div class="org-role">主持全面工作</div>
+          </div>
+          <div class="org-node org-node-secondary">
+            <div class="org-icon">🏛️</div>
+            <div class="org-name">村民委员会</div>
+            <div class="org-role">村委会</div>
+          </div>
+        </div>
+
+        <div class="org-arrow">↓</div>
+
+        <div class="org-level org-level-three">
+          <div class="org-node org-node-tertiary">
+            <div class="org-name">村委会主任（村长）</div>
+            <div class="org-role">村务行政全面管理</div>
+          </div>
+          <div class="org-node org-node-tertiary">
+            <div class="org-name">村党支部副书记</div>
+            <div class="org-role">协助书记工作</div>
+          </div>
+          <div class="org-node org-node-tertiary">
+            <div class="org-name">村委会副主任（副村长）</div>
+            <div class="org-role">分管专项工作</div>
+          </div>
+        </div>
+
+        <div class="org-arrow">↓</div>
+
+        <div class="org-level org-level-four">
+          <div class="org-node org-node-leaf">
+            <div class="org-name">组织委员</div>
+            <div class="org-role">党建·组织</div>
+          </div>
+          <div class="org-node org-node-leaf">
+            <div class="org-name">宣传委员</div>
+            <div class="org-role">宣传·文化</div>
+          </div>
+          <div class="org-node org-node-leaf">
+            <div class="org-name">纪检委员</div>
+            <div class="org-role">纪律·监督</div>
+          </div>
+          <div class="org-node org-node-leaf">
+            <div class="org-name">治保主任</div>
+            <div class="org-role">治安·调解</div>
+          </div>
+          <div class="org-node org-node-leaf">
+            <div class="org-name">妇女主任</div>
+            <div class="org-role">妇女·计生</div>
+          </div>
+          <div class="org-node org-node-leaf">
+            <div class="org-name">民兵连长</div>
+            <div class="org-role">民兵·应急</div>
+          </div>
+          <div class="org-node org-node-leaf">
+            <div class="org-name">村会计</div>
+            <div class="org-role">财务·统计</div>
+          </div>
+          <div class="org-node org-node-leaf">
+            <div class="org-name">村民代表</div>
+            <div class="org-role">民意·议事</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 村委会成员介绍 -->
+    <section id="members" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>村委会成员</h2>
+        <div class="divider"></div>
+        <p>下枫槎村第十一届村委会成员</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
+        <!-- 书记 -->
+        <div class="glass-card committee-card fade-in">
+          <div class="committee-avatar" style="background:var(--accent-red-dim, rgba(201,74,74,0.12));color:var(--accent-red);">🚩</div>
+          <div class="committee-info">
+            <h3>党支部书记 <span style="font-weight:400;font-size:13px;color:var(--text-tertiary);">（信息更新中）</span></h3>
+            <div class="committee-badge party-badge">中共党员</div>
+            <p class="committee-desc">主持村党支部全面工作，负责党的建设、乡村振兴、重大决策等工作。</p>
+            <div class="committee-meta">
+              <span>📋 任期：2024-2027</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 村长 -->
+        <div class="glass-card committee-card fade-in">
+          <div class="committee-avatar" style="background:var(--accent-orange-dim);color:var(--accent-orange);">🏛️</div>
+          <div class="committee-info">
+            <h3>村委会主任（村长） <span style="font-weight:400;font-size:13px;color:var(--text-tertiary);">（信息更新中）</span></h3>
+            <div class="committee-badge party-badge">中共党员</div>
+            <p class="committee-desc">主持村委会全面工作，负责村务行政、经济发展、基础设施建设等。</p>
+            <div class="committee-meta">
+              <span>📋 任期：2024-2027</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 副村长 -->
+        <div class="glass-card committee-card fade-in">
+          <div class="committee-avatar" style="background:var(--accent-cyan-dim, rgba(58,157,171,0.12));color:var(--accent-cyan);">👥</div>
+          <div class="committee-info">
+            <h3>村委会副主任（副村长） <span style="font-weight:400;font-size:13px;color:var(--text-tertiary);">（信息更新中）</span></h3>
+            <div class="committee-badge">村委委员</div>
+            <p class="committee-desc">协助村长工作，分管农业、林业、水利、环境卫生等专项工作。</p>
+            <div class="committee-meta">
+              <span>📋 任期：2024-2027</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 村会计 -->
+        <div class="glass-card committee-card fade-in">
+          <div class="committee-avatar" style="background:var(--accent-green-dim, rgba(90,158,111,0.12));color:var(--accent-green);">📊</div>
+          <div class="committee-info">
+            <h3>村会计 <span style="font-weight:400;font-size:13px;color:var(--text-tertiary);">（信息更新中）</span></h3>
+            <div class="committee-badge">村委委员</div>
+            <p class="committee-desc">负责村集体财务管理、村务公开、统计报表、集体经济核算等工作。</p>
+            <div class="committee-meta">
+              <span>📋 任期：2024-2027</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 治保主任 -->
+        <div class="glass-card committee-card fade-in">
+          <div class="committee-avatar" style="background:var(--accent-orange-dim);color:var(--accent-orange);">🛡️</div>
+          <div class="committee-info">
+            <h3>治保主任 <span style="font-weight:400;font-size:13px;color:var(--text-tertiary);">（信息更新中）</span></h3>
+            <div class="committee-badge">村委委员</div>
+            <p class="committee-desc">负责村社会治安综合治理、民事调解、消防安全、信访稳定等工作。</p>
+            <div class="committee-meta">
+              <span>📋 任期：2024-2027</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 妇女主任 -->
+        <div class="glass-card committee-card fade-in">
+          <div class="committee-avatar" style="background:var(--accent-pink-dim, rgba(232,121,249,0.12));color:var(--accent-pink, #e879f9);">🌸</div>
+          <div class="committee-info">
+            <h3>妇女主任 <span style="font-weight:400;font-size:13px;color:var(--text-tertiary);">（信息更新中）</span></h3>
+            <div class="committee-badge">村委委员</div>
+            <p class="committee-desc">负责妇女权益保障、计划生育、儿童工作、精神文明建设等。</p>
+            <div class="committee-meta">
+              <span>📋 任期：2024-2027</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 党员风采 -->
+    <section id="party-members" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>党员风采</h2>
+        <div class="divider"></div>
+        <p>中共下枫槎村支部 · 先锋力量</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;">
+        <div class="glass-card party-card fade-in">
+          <div class="party-icon">🚩</div>
+          <div class="party-name">（信息征集中）</div>
+          <div class="party-title">中共党员</div>
+          <div class="party-slogan">不忘初心 牢记使命</div>
+        </div>
+        <div class="glass-card party-card fade-in">
+          <div class="party-icon">🚩</div>
+          <div class="party-name">（信息征集中）</div>
+          <div class="party-title">中共党员</div>
+          <div class="party-slogan">全心全意为人民服务</div>
+        </div>
+        <div class="glass-card party-card fade-in">
+          <div class="party-icon">🚩</div>
+          <div class="party-name">（信息征集中）</div>
+          <div class="party-title">中共党员</div>
+          <div class="party-slogan">发挥先锋作用 永葆先进本色</div>
+        </div>
+        <div class="glass-card party-card fade-in">
+          <div class="party-icon">🚩</div>
+          <div class="party-name">（信息征集中）</div>
+          <div class="party-title">中共党员</div>
+          <div class="party-slogan">扎根基层 服务群众</div>
+        </div>
+        <div class="glass-card party-card fade-in">
+          <div class="party-icon">🚩</div>
+          <div class="party-name">（信息征集中）</div>
+          <div class="party-title">中共党员</div>
+          <div class="party-slogan">带头致富 振兴乡村</div>
+        </div>
+        <div class="glass-card party-card fade-in">
+          <div class="party-icon">🚩</div>
+          <div class="party-name">（信息征集中）</div>
+          <div class="party-title">中共党员</div>
+          <div class="party-slogan">恪尽职守 勤勉工作</div>
+        </div>
+      </div>
+
+      <div class="glass-card" style="padding:24px;text-align:center;margin-top:20px;">
+        <p style="font-size:13px;color:var(--text-tertiary);">下枫槎村党支部现有党员信息正在整理中，后续将逐一展示党员风采。</p>
+      </div>
+    </section>
+
+    <!-- 村务监督 -->
+    <section id="supervision" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>村务监督委员会</h2>
+        <div class="divider"></div>
+        <p>民主监督 · 阳光村务</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div class="glass-card" style="padding:24px;">
+          <h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:16px;font-weight:500;margin-bottom:10px;">📋 监督职责</h3>
+          <ul style="font-size:13px;color:var(--text-secondary);line-height:2;padding-left:18px;">
+            <li>监督村务决策和执行情况</li>
+            <li>监督村集体财务管理</li>
+            <li>监督村务公开制度落实</li>
+            <li>监督村干部廉洁自律情况</li>
+            <li>收集和反映村民意见建议</li>
+          </ul>
+        </div>
+        <div class="glass-card" style="padding:24px;">
+          <h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:16px;font-weight:500;margin-bottom:10px;">📅 村务公开</h3>
+          <ul style="font-size:13px;color:var(--text-secondary);line-height:2;padding-left:18px;">
+            <li>财务收支情况（每季度公开）</li>
+            <li>惠民政策落实情况（即时公开）</li>
+            <li>村集体资产处置（专题公开）</li>
+            <li>工程项目招投标（全过程公开）</li>
+            <li>低保五保评定（年度公开）</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+</div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-section"><h4>下枫槎谢氏</h4><p>宁海下枫槎村谢氏家族数字宗祠</p></div>
+      <div class="footer-section"><h4>快捷链接</h4><a href="../index.html">首页</a><a href="history.html">家族历史</a><a href="genealogy.html">族谱查询</a></div>
+      <div class="footer-section"><h4>内容</h4><a href="celebrities.html">名人事迹</a><a href="news.html">消息发布</a><a href="activities.html">家族活动</a><a href="today.html" data-i18n="nav.today">今日下枫槎</a><a href="reports.html">新闻报道</a></div>
+      <div class="footer-section"><h4>联系</h4><a href="contact.html">联系我们</a></div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p>
+    </div>
+  </footer>
+
+  <button class="back-top">↑</button>
+  <script src="../js/main.js?v=3"></script>
+  <style>
+    .org-chart { display:flex;flex-direction:column;align-items:center;gap:8px;padding:30px 0; }
+    .org-level { display:flex;gap:20px;justify-content:center;flex-wrap:wrap; }
+    .org-level-two { gap:40px; }
+    .org-level-three { gap:20px; }
+    .org-level-four { gap:12px; }
+    .org-arrow { font-size:24px;color:var(--text-tertiary);text-align:center;line-height:1; }
+    .org-node {
+      padding:16px 24px;border-radius:12px;text-align:center;min-width:160px;
+      font-family:var(--font-title);
+    }
+    .org-node-primary {
+      background:var(--accent-orange);color:#000;font-size:17px;font-weight:600;
+      padding:18px 36px;border-radius:16px;
+    }
+    .org-node-primary .org-icon { font-size:28px;margin-bottom:4px; }
+    .org-node-secondary {
+      background:var(--accent-orange-dim);border:1px solid var(--accent-orange);min-width:200px;
+    }
+    .org-node-secondary .org-icon { font-size:24px;margin-bottom:4px; }
+    .org-node-secondary .org-name { font-size:15px;font-weight:600;color:var(--text-primary); }
+    .org-node-tertiary {
+      background:var(--glass-bg);border:1px solid var(--glass-border);min-width:170px;
+    }
+    .org-node-tertiary .org-name { font-size:14px;font-weight:500;color:var(--text-primary); }
+    .org-node-leaf {
+      background:var(--glass-bg);border:1px solid var(--glass-border);min-width:120px;
+      padding:12px 16px;
+    }
+    .org-node-leaf .org-name { font-size:13px;font-weight:400;color:var(--text-primary); }
+    .org-role { font-size:11px;color:var(--text-tertiary);margin-top:2px;font-family:var(--font-body); }
+    .committee-card { padding:20px;display:flex;gap:16px;align-items:flex-start; }
+    .committee-avatar {
+      width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+      font-size:24px;flex-shrink:0;
+    }
+    .committee-info { flex:1;min-width:0; }
+    .committee-info h3 { font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:6px;font-family:var(--font-title); }
+    .committee-badge {
+      display:inline-block;font-size:11px;padding:2px 10px;border-radius:4px;
+      background:var(--glass-bg);color:var(--text-secondary);margin-bottom:8px;
+    }
+    .party-badge { background:var(--accent-red-dim, rgba(201,74,74,0.12));color:var(--accent-red);font-weight:500; }
+    .committee-desc { font-size:13px;color:var(--text-secondary);line-height:1.7;margin-bottom:6px; }
+    .committee-meta { font-size:12px;color:var(--text-tertiary); }
+    .party-card {
+      padding:20px;text-align:center;border-top:3px solid var(--accent-red);
+      display:flex;flex-direction:column;align-items:center;gap:6px;
+    }
+    .party-icon { font-size:32px; }
+    .party-name { font-size:15px;font-weight:600;color:var(--text-primary);margin-top:4px; }
+    .party-title { font-size:12px;color:var(--accent-red);background:var(--accent-red-dim, rgba(201,74,74,0.08));padding:2px 12px;border-radius:4px; }
+    .party-slogan { font-size:12px;color:var(--text-tertiary);font-style:italic; }
+  </style>
+  <script>
+    const canvas = document.getElementById('bg-canvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let w, h;
+      function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+      resize(); window.addEventListener('resize', resize);
+      const dots = [];
+      for (let i = 0; i < 80; i++) dots.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, r: Math.random() * 2 + 1, a: Math.random() * 0.3 + 0.1 });
+      const orbs = [
+        { x: 0.2, y: 0.3, r: 0.35, color: 'rgba(251,146,60,0.06)' },
+        { x: 0.8, y: 0.7, r: 0.3, color: 'rgba(34,211,238,0.05)' },
+        { x: 0.5, y: 0.1, r: 0.25, color: 'rgba(251,146,60,0.04)' }
+      ];
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const dotRgb = isDark ? '255,255,255' : '100,100,100';
+        orbs.forEach(o => {
+          const grad = ctx.createRadialGradient(o.x * w, o.y * h, 0, o.x * w, o.y * h, o.r * w);
+          grad.addColorStop(0, o.color); grad.addColorStop(1, 'transparent');
+          ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+        });
+        dots.forEach(d => {
+          d.x += d.vx; d.y += d.vy;
+          if (d.x < 0) d.x = w; if (d.x > w) d.x = 0;
+          if (d.y < 0) d.y = h; if (d.y > h) d.y = 0;
+          ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${dotRgb},${d.a})`; ctx.fill();
+        });
+        for (let i = 0; i < dots.length; i++) {
+          for (let j = i + 1; j < dots.length; j++) {
+            const dx = dots[i].x - dots[j].x, dy = dots[i].y - dots[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 150) {
+              ctx.beginPath(); ctx.moveTo(dots[i].x, dots[i].y); ctx.lineTo(dots[j].x, dots[j].y);
+              ctx.strokeStyle = `rgba(${dotRgb},${(1 - dist / 150) * 0.08})`;
+              ctx.lineWidth = 0.5; ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+  </script>
+  <audio id="bg-music" loop src="../music/background.mp3"></audio>
+  <div class="music-player"><button class="music-btn" id="music-toggle">🔈</button><span class="music-label">背景音乐</span></div>
+</body>
+</html>

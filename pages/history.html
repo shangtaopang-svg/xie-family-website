@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="page.history.title">家族历史 · 下枫槎谢氏</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+
+  
+  <link rel="stylesheet" href="../css/style.css?v=2">
+  <script src="../js/i18n.js"></script>
+  <script src="../js/supabase.js?v=3"></script>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="content">
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        <div class="logo-icon">谢</div>
+        <div class="logo-text"><h1 data-i18n="logo.title">下枫槎谢氏</h1><small data-i18n="logo.subtitle">宁海 · 下枫槎村</small></div>
+      </a>
+      <button class="nav-toggle" data-i18n-aria="nav.toggle" aria-label="菜单">☰</button>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="../index.html" data-i18n="nav.home">首页</a></li>
+          <li><a href="history.html" class="active" data-i18n="nav.history">家族历史</a></li>
+          <li><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a></li>
+          <li><a href="news.html" data-i18n="nav.news">消息发布</a></li>
+          <li><a href="members.html" data-i18n="nav.members">家族成员</a></li>
+          <li><a href="activities.html" data-i18n="nav.activities">家族活动</a></li>
+          <li><a href="today.html" data-i18n="nav.today">今日下枫槎</a></li>
+          <li><a href="reports.html" data-i18n="nav.reports">新闻报道</a></li>
+          <li><a href="contact.html" data-i18n="nav.contact">联系我们</a></li>
+        </ul>
+        <div class="nav-actions">
+          <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
+          <button class="nav-action-btn lang-btn" id="lang-toggle" data-i18n-title="nav.lang" title="中英文切换">EN</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- weather moved to hero on index -->
+
+  <div class="page-wrap">
+    <div class="page-title">
+      <h2 data-i18n="nav.history">家族历史</h2>
+      <p data-i18n="page.history">探本溯源 · 继往开来</p>
+    </div>
+
+
+    <!-- 下枫槎谢氏宗源记 -->
+    <section id="zongyuan" class="fade-in" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>下枫槎谢氏宗源记</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="glass-card" style="padding:36px;border-left:3px solid var(--accent-orange);background:var(--glass-bg);">
+        <div style="max-width:720px;margin:0 auto;font-family:'Noto Serif SC',serif;font-size:15px;line-height:2.2;color:var(--text-secondary);text-align:justify;">
+
+          <p style="margin-bottom:1.6em;">盖闻木有本而枝叶茂，水有源而流派长。吾谢氏之先，出自姬姓。周宣王封元舅申伯于谢邑，因以国为氏，至今两千八百余载矣。自申伯受封，历代相承，或显于周秦，或盛于汉魏。至东晋时，文靖公谢安、康乐公谢玄叔侄，以八万北府之师破苻坚百万之众于淝水，拯社稷于将倾。一门数公，位极人臣，与琅琊王氏并称"王谢"，为天下望族之冠。此吾族千载之荣光也。</p>
+
+          <p style="margin-bottom:1.6em;">溯吾枫槎一脉，世系源远流长。自申伯传三十六世至东山会稽，又二十四世至临海下渡，再九世至石马。石马小四公，乃入浙东之近祖也。由石马传十二世，至文杲公，字克源，北宋宣和年间（约公元一一二五年）任越溪司巡检，始居岩下。公为枫槎谢氏之始迁祖，至今近九百载，传三十六世，瓜瓞绵绵。二世祖攒公、撰公，析居后枫槎与前枫槎，两支并茂，各立门户。</p>
+
+          <p style="margin-bottom:1.6em;">初，吾族世居岩下。迨明隆庆壬申（公元一五七二年），山洪暴发，庐舍为墟。十六世祖乾公、彬公昆仲，相度地势，遂迁于双枫古槎之下，因名其地曰"下枫槎"。斩荆棘，辟草莱，筑室于兹，开基立业。自此一脉繁衍，枝分派衍，或习儒术而登科第，或事商贾而通有无，或精农桑而富仓廪。清乾隆间，合族建宗祠于村北，三进两厢，门楣高悬"谢氏宗祠"匾额，堂号"敦睦堂"，寓敦宗睦族之意。春秋二祭，少长咸集，尊祖敬宗，礼行肃穆。</p>
+
+          <p style="margin-bottom:1.6em;">吾族行第字辈，自十九世起，依次为：一、懋、之、嘉、永、孝、思、台、邦、令、序、善、道、开、时、天，凡十六字，周而复始。今已传至"天"字辈，族众蕃衍，蔚为大观。散居四方者，或负笈远游而求学于外，或投身实业而建功于业，或捐资修路以利乡邻，或助学奖教以育英才。然心系故土，情牵宗亲，每逢清明冬至，千里归来，聚首祖祠，其乐融融。</p>
+
+          <p style="margin-bottom:0;">今值盛世，国运昌隆，族谱重修于丙午之春（公元二〇二六年），敦睦堂珍藏。建数字宗祠于云端，录世系于网络，使四海宗亲皆可随时查阅，虽隔山海，犹在目前。乌衣世泽，源远流长；宝树家声，继往开来。凡我族人，当念创业之艰难、守成之不易，同心同德，以光大门楣、垂裕后昆。则吾谢氏之兴，岂有艾乎？</p>
+
+          <div style="margin-top:24px;text-align:right;font-size:13px;color:var(--text-muted);font-style:italic;border-top:1px solid var(--divider);padding-top:16px;">
+            下枫槎谢氏阖族敬撰<br>
+            公元二〇二六年岁次丙午仲夏
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 家训家规 -->
+    <section id="family-rules" class="fade-in" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>家训家规</h2>
+        <div class="divider"></div>
+        <p>乌衣世泽 · 宝树家声 —— 谢氏家训代代传</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+        <div class="glass-card" style="padding:28px;border-left:3px solid var(--accent-orange);">
+          <h3 style="font-family:var(--font-title);color:var(--accent-orange);font-size:18px;font-weight:600;margin-bottom:16px;text-align:center;">📜 谢氏家训</h3>
+          <div style="font-family:'Noto Serif SC',serif;font-size:13px;line-height:2.2;color:var(--text-secondary);">
+            <p style="margin-bottom:10px;"><strong style="color:var(--text-primary);">一曰孝悌</strong> —— 百善孝为先，兄弟和睦，尊长爱幼，此为人伦之本。</p>
+            <p style="margin-bottom:10px;"><strong style="color:var(--text-primary);">二曰忠信</strong> —— 事君以忠，待人以信，言必行，行必果，此为立身之基。</p>
+            <p style="margin-bottom:10px;"><strong style="color:var(--text-primary);">三曰礼义</strong> —— 知书达礼，明辨是非，循规蹈矩，此为处世之道。</p>
+            <p style="margin-bottom:10px;"><strong style="color:var(--text-primary);">四曰廉耻</strong> —— 清正廉洁，知耻后勇，不取不义之财，此为操守之节。</p>
+            <p style="margin-bottom:10px;"><strong style="color:var(--text-primary);">五曰勤俭</strong> —— 勤以修身，俭以养德，一粥一饭当思来处不易，此为持家之法。</p>
+            <p style="margin-bottom:0;"><strong style="color:var(--text-primary);">六曰读书</strong> —— 耕读传家，诗书继世，读书明理，此为兴族之要。</p>
+          </div>
+        </div>
+        <div class="glass-card" style="padding:28px;border-left:3px solid var(--accent-cyan);">
+          <h3 style="font-family:var(--font-title);color:var(--accent-cyan);font-size:18px;font-weight:600;margin-bottom:16px;text-align:center;">🏮 族规十条</h3>
+          <ol style="font-size:13px;line-height:2.2;color:var(--text-secondary);padding-left:18px;">
+            <li>尊祖敬宗，春秋祭祀不可缺废</li>
+            <li>孝顺父母，生养死葬尽其心力</li>
+            <li>友爱兄弟，手足之情不可相残</li>
+            <li>和睦乡邻，出入相友守望相助</li>
+            <li>教训子孙，务令读书明理向善</li>
+            <li>谨慎婚配，择良家子门户相当</li>
+            <li>廉洁奉公，非义之财一介不取</li>
+            <li>勤业守分，各安其业毋事游惰</li>
+            <li>保护祖产，祠宇坟茔严禁毁坏</li>
+            <li>崇俭戒奢，婚丧喜庆勿竞奢华</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="glass-card" style="padding:24px;text-align:center;background:var(--accent-orange-dim);border:1px solid var(--accent-orange);">
+        <p style="font-size:14px;line-height:2;color:var(--text-secondary);font-style:italic;">
+          "乌衣世泽，宝树家声。凡我谢氏子孙，当以家训为镜、族规为准，<br>
+          修身齐家，敦亲睦族，光大门楣，垂裕后昆。"
+        </p>
+        <div style="margin-top:10px;font-size:12px;color:var(--text-tertiary);">—— 下枫槎谢氏阖族共立</div>
+      </div>
+    </section>
+
+    <!-- 姓氏起源 -->
+    <section id="origin" class="fade-in" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>谢氏起源</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="glass-card" style="padding:30px;border-left:3px solid var(--accent-orange);">
+        <p style="font-size:14px;line-height:2;margin-bottom:16px;color:var(--text-secondary);">
+          <strong style="color:var(--text-primary);">谢氏</strong>出自姬姓，以邑为氏。据《元和姓纂》及《通志·氏族略》记载，周宣王（公元前827-前781年在位）封其母舅申伯于谢邑（今河南南阳市一带），建立谢国。其后人以国为氏，称谢氏。
+        </p>
+        <p style="font-size:14px;line-height:2;margin-bottom:16px;color:var(--text-secondary);">
+          谢氏得姓至今已有两千八百余年历史。在漫长的发展过程中，谢氏逐渐由河南向全国迁徙繁衍，形成了"陈留谢氏"、"会稽谢氏"等著名郡望。东晋时期，以谢安、谢玄为代表的谢氏家族达到鼎盛，与王氏并称"王谢"，为天下望族。
+        </p>
+        <p style="font-size:14px;line-height:2;color:var(--text-secondary);">
+          谢氏堂号众多，最有名者当属<strong style="color:var(--accent-orange);">"宝树堂"</strong>和<strong style="color:var(--accent-orange);">"乌衣堂"</strong>。"宝树"出自唐太宗李世民对谢氏家族的赞誉——"宝树映庭"；"乌衣"则源自东晋建康（今南京）的乌衣巷，为谢氏聚居之地。唐代刘禹锡有诗云："旧时王谢堂前燕，飞入寻常百姓家。"下枫槎谢氏亦以"乌衣世泽、宝树家声"为家族楹联，传承千年家风。
+        </p>
+      </div>
+    </section>
+
+    <!-- 迁徙历程 -->
+    <section id="migration" class="fade-in" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>迁徙历程</h2>
+        <div class="divider"></div>
+        <p>从河南到江南，千年迁徙路</p>
+      </div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-year">西周 · 前827年</div>
+          <h3>得姓始祖 · 申伯受封</h3>
+          <p>周宣王封母舅申伯于谢邑（今河南南阳），建立谢国，谢氏自此得姓。申伯被尊为谢氏得姓始祖。</p>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year">西晋 · 永嘉之乱（307-313）</div>
+          <h3>衣冠南渡 · 入迁江南</h3>
+          <p>西晋末年，五胡乱华，中原士族大举南迁。谢氏家族随晋室渡江，定居会稽（今浙江绍兴）一带，史称"会稽谢氏"，开始了谢氏在江南的繁衍生息。</p>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year">东晋 · 383年</div>
+          <h3>淝水之战 · 家族鼎盛</h3>
+          <p>谢安、谢玄叔侄指挥淝水之战，以八万北府兵大破前秦苻坚百万大军。谢氏一门数公，位极人臣，与琅琊王氏并称"王谢"，为天下望族之冠。</p>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year">唐末 · 五代（907-960）</div>
+          <h3>临海下渡 · 石马分支</h3>
+          <p>唐末五代，会稽谢氏一支向东南迁徙，先居临海下渡，再传至石马。石马小四公为入浙东之近祖，下枫槎谢氏之直系渊源也。</p>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year">北宋 · 宣和（约1125）</div>
+          <h3>文杲公始居岩下</h3>
+          <p>北宋宣和年间，文杲公（字克源）任越溪司巡检，始居宁海岩下。公为枫槎谢氏之始迁祖，至今近九百载，传三十六世。二世祖攒公、撰公分居后枫槎与前枫槎，开两派之先河。</p>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year">明 · 隆庆壬申（1572）</div>
+          <h3>洪水迁居 · 开基下枫槎</h3>
+          <p>明隆庆壬申年，山洪暴发，岩下庐舍为墟。十六世祖乾公、彬公昆仲相度地势，遂迁于双枫古槎之下，因名其地曰"下枫槎"。自此斩荆棘、辟草莱，筑室开基，世代繁衍。</p>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year">明清时期（1368-1911）</div>
+          <h3>耕读传家 · 枝繁叶茂</h3>
+          <p>明清两代，下枫槎谢氏以农耕为本，兼重诗书。家族逐步壮大，分支出多个房派，宗祠亦在清乾隆年间建成。族人中不乏读书入仕者，亦有经商致富者。</p>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year">近现代（1912至今）</div>
+          <h3>与时俱进 · 遍布四海</h3>
+          <p>近现代以来，下枫槎谢氏族人足迹遍布海内外。有的走出山村求学创业，成为各行各业的精英；有的扎根故土，守护家园。无论身在何方，下枫槎始终是谢氏子孙共同的精神家园。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 宗祠文化 -->
+    <section id="temple" class="fade-in" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>宗祠文化</h2>
+        <div class="divider"></div>
+        <p>下枫槎谢氏宗祠 · 精神的殿堂</p>
+      </div>
+
+      <!-- 图片轮播 -->
+      <style>
+        .carousel-wrap { position:relative; width:100%; max-width:820px; margin:0 auto 28px; border-radius:var(--radius); overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.15); cursor:pointer; }
+        .carousel-track { display:flex; transition:transform 0.5s ease; }
+        .carousel-slide { min-width:100%; position:relative; }
+        .carousel-slide img { width:100%; aspect-ratio:16/10; object-fit:cover; display:block; background:var(--bg-secondary); }
+        .carousel-caption { position:absolute; bottom:0; left:0; right:0; padding:10px 16px; background:linear-gradient(transparent,rgba(0,0,0,0.7)); color:#fff; font-size:14px; text-align:center; pointer-events:none; }
+        .carousel-btn { position:absolute; top:50%; transform:translateY(-50%); z-index:2; background:rgba(0,0,0,0.4); color:#fff; border:none; width:40px; height:40px; border-radius:50%; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s; }
+        .carousel-btn:hover { background:rgba(0,0,0,0.7); }
+        .carousel-prev { left:12px; }
+        .carousel-next { right:12px; }
+        .carousel-dots { display:flex; justify-content:center; gap:8px; padding:10px 0 4px; }
+        .carousel-dots button { width:10px; height:10px; border-radius:50%; border:2px solid var(--text-muted); background:transparent; cursor:pointer; padding:0; transition:all 0.3s; }
+        .carousel-dots button.active { background:var(--accent); border-color:var(--accent); }
+        /* Lightbox */
+        .lightbox-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); z-index:99999; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.3s; cursor:pointer; }
+        .lightbox-overlay.show { opacity:1; }
+        .lightbox-overlay img { max-width:90vw; max-height:90vh; object-fit:contain; border-radius:4px; cursor:default; }
+        .lightbox-close { position:absolute; top:20px; right:28px; color:#fff; font-size:32px; cursor:pointer; background:none; border:none; line-height:1; }
+        .lightbox-btn { position:absolute; top:50%; transform:translateY(-50%); color:#fff; font-size:40px; cursor:pointer; background:rgba(255,255,255,0.1); border:none; width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:background 0.2s; z-index:2; }
+        .lightbox-btn:hover { background:rgba(255,255,255,0.25); }
+        .lightbox-prev { left:20px; }
+        .lightbox-next { right:20px; }
+        .lightbox-counter { position:absolute; bottom:24px; left:50%; transform:translateX(-50%); color:rgba(255,255,255,0.6); font-size:14px; }
+      </style>
+
+      <div class="carousel-wrap glass-card" style="padding:0;" id="carouselContainer">
+        <div class="carousel-track" id="carouselTrack"></div>
+        <button class="carousel-btn carousel-prev" id="carouselPrev" aria-label="上一张">&#10094;</button>
+        <button class="carousel-btn carousel-next" id="carouselNext" aria-label="下一张">&#10095;</button>
+        <div class="carousel-dots" id="carouselDots"></div>
+      </div>
+
+      <script>
+        (function(){
+          var DEFAULT_IMAGES = [
+            { src:'../images/ancestors/ancestral_hall1.jpg', title:'宗祠外景' },
+            { src:'../images/ancestors/ancestral_hall2.jpg', title:'宗祠戏台' },
+            { src:'../images/ancestors/ancestral_hall3.jpg', title:'祖堂' },
+            { src:'../images/ancestors/ancestral_hall4.jpg', title:'横厢' },
+            { src:'../images/ancestors/culture_hall2.jpg', title:'谢氏牌匾' },
+            { src:'../images/ancestors/culture_hall5.jpg', title:'为国立功' }
+          ];
+          var track = document.getElementById('carouselTrack');
+          var dotsContainer = document.getElementById('carouselDots');
+          var current = 0;
+          var interval;
+          var slidesData = [];
+
+          function buildCarousel(images) {
+            slidesData = images;
+            track.innerHTML = '';
+            dotsContainer.innerHTML = '';
+            images.forEach(function(img, i) {
+              var slide = document.createElement('div');
+              slide.className = 'carousel-slide';
+              slide.innerHTML = '<img src="'+img.src+'" alt="'+img.title+'" loading="lazy"><div class="carousel-caption">'+img.title+'</div>';
+              slide.onclick = function(){ openLightbox(i); };
+              track.appendChild(slide);
+
+              var dot = document.createElement('button');
+              dot.setAttribute('aria-label','切换到第'+(i+1)+'张');
+              if(i===0) dot.className='active';
+              dot.onclick = (function(idx){ return function(){ goTo(idx); }; })(i);
+              dotsContainer.appendChild(dot);
+            });
+            goTo(0);
+          }
+
+          function goTo(idx){
+            if(!slidesData.length) return;
+            current = (idx + slidesData.length) % slidesData.length;
+            track.style.transform = 'translateX(-'+(current*100)+'%)';
+            var dots = dotsContainer.children;
+            for(var j=0;j<dots.length;j++) dots[j].className='';
+            if(dots[current]) dots[current].className='active';
+          }
+
+          function nextSlide(){ goTo(current+1); }
+          function prevSlide(){ goTo(current-1); }
+
+          window.nextSlide = nextSlide;
+          window.prevSlide = prevSlide;
+
+          // Attach button click handlers
+          document.getElementById('carouselPrev').onclick = function(e){ e.stopPropagation(); prevSlide(); };
+          document.getElementById('carouselNext').onclick = function(e){ e.stopPropagation(); nextSlide(); };
+
+          function startAuto(){ interval=setInterval(nextSlide,2500); }
+          function stopAuto(){ clearInterval(interval); }
+
+          // Try loading from admin data
+          function loadAdminImages() {
+            try {
+              var meta = JSON.parse(localStorage.getItem('xie_admin_templeCarousel') || '[]');
+              if(!meta.length) { buildCarousel(DEFAULT_IMAGES); return; }
+
+              // Check for server file_url first
+              var hasServerUrls = meta.some(function(m){ return m.file_url; });
+              if (hasServerUrls) {
+                var loaded = [];
+                meta.forEach(function(m){
+                  if(m.file_url) {
+                    loaded.push({ src: m.file_url, title: m.title || '' });
+                  }
+                });
+                if(loaded.length) {
+                  buildCarousel(loaded);
+                } else {
+                  buildCarousel(DEFAULT_IMAGES);
+                }
+                return;
+              }
+
+              var hasAnyFile = meta.some(function(m){ return m.hasFile; });
+              if(!hasAnyFile) { buildCarousel(DEFAULT_IMAGES); return; }
+
+              // Load images from IndexedDB
+              if(typeof getAllFiles !== 'function') { buildCarousel(DEFAULT_IMAGES); return; }
+
+              getAllFiles('carousel_').then(function(files) {
+                var fileMap = {};
+                files.forEach(function(f){
+                  var parts = f.name.split('_');
+                  var id = parseInt(parts[parts.length-1]);
+                  if(!isNaN(id)) fileMap[id] = f.dataUrl;
+                });
+
+                var loaded = [];
+                meta.forEach(function(m){
+                  if(fileMap[m.id]) {
+                    loaded.push({ src: fileMap[m.id], title: m.title || '' });
+                  }
+                });
+
+                if(loaded.length) {
+                  buildCarousel(loaded);
+                } else {
+                  buildCarousel(DEFAULT_IMAGES);
+                }
+              }).catch(function(){ buildCarousel(DEFAULT_IMAGES); });
+            } catch(e) {
+              buildCarousel(DEFAULT_IMAGES);
+            }
+          }
+
+          loadAdminImages();
+
+          // Lightbox
+          window.openLightbox = function(idx) {
+            if(!slidesData.length) return;
+            var overlay = document.createElement('div');
+            overlay.className = 'lightbox-overlay';
+            overlay.innerHTML = '<button class="lightbox-close" onclick="closeLightbox()">&#10005;</button>' +
+              '<button class="lightbox-btn lightbox-prev" onclick="lbPrev(event)">&#10094;</button>' +
+              '<button class="lightbox-btn lightbox-next" onclick="lbNext(event)">&#10095;</button>' +
+              '<img src="" alt="" id="lightboxImg">' +
+              '<div class="lightbox-counter" id="lightboxCounter"></div>';
+            document.body.appendChild(overlay);
+            window._lbIdx = idx;
+            window._lbData = slidesData;
+            updateLightbox();
+            requestAnimationFrame(function(){ overlay.classList.add('show'); });
+            overlay.addEventListener('click', function(e) {
+              if(e.target === overlay) closeLightbox();
+            });
+            document.addEventListener('keydown', lbKeydown);
+          };
+
+          window.closeLightbox = function() {
+            var ov = document.querySelector('.lightbox-overlay');
+            if(ov) { ov.classList.remove('show'); setTimeout(function(){ ov.remove(); }, 300); }
+            document.removeEventListener('keydown', lbKeydown);
+          };
+
+          window.lbNext = function(e) {
+            if(e) e.stopPropagation();
+            window._lbIdx = (window._lbIdx + 1) % window._lbData.length;
+            updateLightbox();
+          };
+
+          window.lbPrev = function(e) {
+            if(e) e.stopPropagation();
+            window._lbIdx = (window._lbIdx - 1 + window._lbData.length) % window._lbData.length;
+            updateLightbox();
+          };
+
+          function updateLightbox() {
+            var img = document.getElementById('lightboxImg');
+            var counter = document.getElementById('lightboxCounter');
+            if(img && window._lbData[window._lbIdx]) {
+              img.src = window._lbData[window._lbIdx].src;
+              img.alt = window._lbData[window._lbIdx].title;
+            }
+            if(counter) {
+              counter.textContent = (window._lbIdx+1) + ' / ' + window._lbData.length;
+            }
+          }
+
+          function lbKeydown(e) {
+            if(e.key === 'Escape') closeLightbox();
+            if(e.key === 'ArrowRight') { e.preventDefault(); window.lbNext(); }
+            if(e.key === 'ArrowLeft') { e.preventDefault(); window.lbPrev(); }
+          }
+
+          var wrap = document.getElementById('carouselContainer');
+          wrap.addEventListener('mouseenter', stopAuto);
+          wrap.addEventListener('mouseleave', startAuto);
+          startAuto();
+        })();
+        // Try loading from Supabase for up-to-date temple carousel data
+        if (window.dbGetAll) {
+          dbGetAll('temple_carousel', { order: 'id.asc' }).then(function(supabaseData) {
+            if (supabaseData && supabaseData.length > 0) {
+              var existing = localStorage.getItem('xie_admin_templeCarousel');
+              var changed = !existing || existing !== JSON.stringify(supabaseData);
+              localStorage.setItem('xie_admin_templeCarousel', JSON.stringify(supabaseData));
+              if (changed) { window.location.reload(); }
+            }
+          }).catch(function() {});
+        }
+      </script>
+
+      <!-- 合并后文字 -->
+      <div class="glass-card" style="padding:28px 32px;text-align:center;max-width:820px;margin:0 auto;">
+        <p style="font-size:13px;line-height:2;color:var(--text-tertiary);">
+          下枫槎谢氏宗祠始建于清乾隆年间（约1740年），坐北朝南，三进两厢格局。前为门厅，中为议事厅，后为供奉厅。祠堂雕梁画栋，木雕、石雕精湛，具有典型的浙东清代建筑风格。门楣上有"谢氏宗祠"匾额，笔力遒劲。堂内悬挂"敦睦堂"匾额，寓敦宗睦族之意。每年举行春秋两祭——春祭在清明前后，为扫墓祭祖；秋祭在冬至前后，为宗祠合祭。祭祀仪式遵循古礼，三牲祭品，焚香燃烛，族人按辈分列队行礼。祭后设宴，合族共叙亲情。每逢重大节庆或家族大事，亦在宗祠举行仪式。宗祠不仅是祭祖的场所，更是族人议事、教化、凝聚人心的重要空间。
+        </p>
+      </div>
+    </section>
+
+    <!-- 祖像 -->
+    <section id="ancestor-portraits" class="fade-in" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>祖像</h2>
+        <div class="divider"></div>
+        <p>祖宗遗像 · 万世瞻仰</p>
+      </div>
+      <div class="portrait-gallery" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;">
+        <div class="glass-card" style="padding:12px;text-align:center;">
+          <img src="../images/ancestors/shenbo.jpg" alt="申伯" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">申伯</p>
+          <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">谢姓鼻祖，扶周中兴，周宣王赐封于谢邑，子孙以谢为姓（摘自三门下谢谱）</p>
+        </div>
+        <div class="glass-card" style="padding:12px;text-align:center;">
+          <img src="../images/ancestors/xieshang.jpg" alt="谢尚（308-357）" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">谢尚（308-357）</p>
+          <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">东晋名将，豫州刺史，领镇西将军（摘自下谢谱）</p>
+        </div>
+        <div class="glass-card" style="padding:12px;text-align:center;">
+          <img src="../images/ancestors/xiexuan.jpg" alt="谢玄（343-388）" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">谢玄（343-388）</p>
+          <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">东晋名将，历官冠军将军、前都督，以军功诏加七州大都督（摘自三门下谢宗谱）</p>
+        </div>
+        <div class="glass-card" style="padding:12px;text-align:center;">
+          <img src="../images/ancestors/xiean.jpg" alt="谢安（320-385）" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">谢安（320-385）</p>
+          <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">东晋名相，赠太傅，谥文靖。淝水之战以八万兵战符坚八十万大军之胜，创中国历史上以少胜多战例史篇（摘自三门下谢宗谱）</p>
+        </div>
+        <div class="glass-card" style="padding:12px;text-align:center;">
+          <img src="../images/ancestors/xiehongdao.jpg" alt="谢宏道" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">谢宏道</p>
+          <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">字宏道，宋中叶张镇孙榜进士，历官国子监司（摘自三门下谢宗谱）</p>
+        </div>
+        <div class="glass-card" style="padding:12px;text-align:center;">
+          <img src="../images/ancestors/xielingyun.jpg" alt="谢灵运（385-433）" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">谢灵运（385-433）</p>
+          <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">南朝宋著名诗人，玄公之孙。十八岁封康乐公，世称谢康乐。入宋降公爵为侯爵。温州太守、秘书监、内史（摘自中国通史·榧树宗谱）</p>
+        </div>
+        <div class="glass-card" style="padding:12px;text-align:center;">
+          <img src="../images/ancestors/wengaogong.jpg" alt="文杲公" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">文杲公</p>
+          <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">三世祖杲公，字克，枫槎始迁祖。宋登仕郎，英敏卓荦，文武兼备，任司巡检。岩下开基置产居卜</p>
+        </div>
+        <div class="glass-card" style="padding:12px;text-align:center;">
+          <img src="../images/ancestors/xiaosigong.jpg" alt="小四公" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">小四公</p>
+          <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">三门石马下谢始祖小四公（谢聪孙），朝奉郎谢奕信之孙、将仕郎兼文学家谢在纲之子</p>
+        </div>
+        <div class="glass-card" style="padding:12px;text-align:center;">
+          <img src="../images/ancestors/si4zhangong.jpg" alt="四世（杲公长子）" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">四世（杲公长子）</p>
+          <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">四世杲公长子，宋仕工部侍中，性和厚，在位小心醇谨，葬石马龙头山之原</p>
+        </div>
+        <div class="glass-card" style="padding:12px;text-align:center;">
+          <img src="../images/ancestors/san3jugong.jpg" alt="三世榘公" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">三世榘公</p>
+          <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">三世榘公，宋居士，下延邑城桃源祖，杲公胞弟。派下子孙邑城内东乡南乡西乡北乡各地。七世敬乙为复兴祖</p>
+        </div>
+        <div class="glass-card" style="padding:12px;text-align:center;">
+          <img src="../images/ancestors/bingong.jpg" alt="彬公" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">彬公</p>
+          <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">十八世叔仅公长子，出仕明祭酒，冠带荣身，素有孝行（岁隆庆始迁今枫槎，居为东房祖）</p>
+        </div>
+        <div class="glass-card" style="padding:12px;text-align:center;">
+          <img src="../images/ancestors/zangong.jpg" alt="攒公" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">攒公</p>
+          <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">五世攒公子，宋乡榜举人，好古力学，博通经史</p>
+        </div>
+        <div class="glass-card" style="padding:12px;text-align:center;">
+          <img src="../images/ancestors/qiangong.jpg" alt="乾公" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">乾公</p>
+          <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">十八世叔仅公次子，与兄同为省祭酒，冠带荣身，素有孝行（与兄同迁枫槎，派在西房之祖）</p>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:16px;">
+        <p style="font-size:12px;color:var(--text-muted);">以上祖像均按页码顺序载于《枫槎谢氏宗谱》祖像篇（敦睦堂珍藏·公元二〇二六年丙午春重修）</p>
+      </div>
+    </section>
+
+    <!-- 族谱 -->
+    <section id="genealogy" class="fade-in">
+      <div class="section-title">
+        <h2>族谱</h2>
+        <div class="divider"></div>
+        <p>查阅电子族谱 · 了解家族世系</p>
+      </div>
+      <div class="glass-card" style="padding:40px;text-align:center;">
+        <div style="font-size:64px;margin-bottom:16px;">📖</div>
+        <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:10px;font-size:20px;font-weight:400;">《下枫槎谢氏宗谱》</h3>
+        <p style="font-size:13px;color:var(--text-tertiary);max-width:500px;margin:0 auto 24px;">
+          族谱是家族的历史典籍。下枫槎谢氏族谱历经续修，自宋绍兴间已有序文，清嘉庆、道光年间递有增补。公元二〇二六年（岁次丙午春）重修，敦睦堂珍藏，分上下两册，详录自炎帝以来世系传承与人物事迹。
+        </p>
+        <a href="genealogy.html" class="btn btn-accent">进入族谱查询 →</a>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:12px;">* 族谱查询需密码验证，请联系管理员获取权限</p>
+      </div>
+    </section>
+
+  </div>
+
+</div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-section">
+        <h4 data-i18n="footer.section1.title">下枫槎谢氏</h4>
+        <p data-i18n="footer.desc">宁海下枫槎村谢氏家族数字宗祠，致力于家族文化传承与宗亲联络。</p>
+      </div>
+      <div class="footer-section">
+        <h4 data-i18n="footer.section2.title">快捷链接</h4>
+        <a href="../index.html" data-i18n="nav.home">首页</a>
+        <a href="history.html" data-i18n="nav.history">家族历史</a>
+        <a href="genealogy.html" data-i18n="footer.link.genealogy">族谱查询</a>
+      </div>
+      <div class="footer-section">
+        <h4 data-i18n="footer.section.content">内容</h4>
+        <a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a>
+        <a href="news.html" data-i18n="nav.news">消息发布</a>
+        <a href="activities.html" data-i18n="nav.activities">家族活动</a>
+        <a href="today.html" data-i18n="nav.today">今日下枫槎</a>
+        <a href="reports.html" data-i18n="nav.reports">新闻报道</a>
+      </div>
+      <div class="footer-section">
+        <h4 data-i18n="footer.section.contact">联系</h4>
+        <a href="contact.html" data-i18n="nav.contact">联系我们</a>
+        <a href="contact.html#feedback" data-i18n="footer.link.feedback">意见反馈</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p data-i18n="footer.copyright">© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p>
+    </div>
+  </footer>
+
+  <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
+  <script src="../js/main.js?v=3"></script>
+  <script>
+    const canvas = document.getElementById('bg-canvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let w, h;
+      function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+      resize(); window.addEventListener('resize', resize);
+      const dots = [];
+      for (let i = 0; i < 80; i++) dots.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, r: Math.random() * 2 + 1, a: Math.random() * 0.3 + 0.1 });
+      const orbs = [
+        { x: 0.2, y: 0.3, r: 0.35, color: 'rgba(251,146,60,0.06)' },
+        { x: 0.8, y: 0.7, r: 0.3, color: 'rgba(34,211,238,0.05)' },
+        { x: 0.5, y: 0.1, r: 0.25, color: 'rgba(251,146,60,0.04)' }
+      ];
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const dotRgb = isDark ? '255,255,255' : '100,100,100';
+        orbs.forEach(o => {
+          const grad = ctx.createRadialGradient(o.x * w, o.y * h, 0, o.x * w, o.y * h, o.r * w);
+          grad.addColorStop(0, o.color); grad.addColorStop(1, 'transparent');
+          ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+        });
+        dots.forEach(d => {
+          d.x += d.vx; d.y += d.vy;
+          if (d.x < 0) d.x = w; if (d.x > w) d.x = 0;
+          if (d.y < 0) d.y = h; if (d.y > h) d.y = 0;
+          ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${dotRgb},${d.a})`; ctx.fill();
+        });
+        for (let i = 0; i < dots.length; i++) {
+          for (let j = i + 1; j < dots.length; j++) {
+            const dx = dots[i].x - dots[j].x, dy = dots[i].y - dots[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 150) {
+              ctx.beginPath(); ctx.moveTo(dots[i].x, dots[i].y); ctx.lineTo(dots[j].x, dots[j].y);
+              ctx.strokeStyle = `rgba(${dotRgb},${(1 - dist / 150) * 0.08})`;
+              ctx.lineWidth = 0.5; ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+  </script>
+  <audio id="bg-music" loop src="../music/background.mp3"></audio>
+  <div class="music-player"><button class="music-btn" id="music-toggle">🔈</button><span class="music-label" data-i18n="music.label">背景音乐</span></div>
+</body>
+</html>

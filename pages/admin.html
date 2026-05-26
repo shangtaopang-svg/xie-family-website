@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="page.admin.title">管理后台 · 下枫槎谢氏</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+
+  
+  <link rel="stylesheet" href="../css/style.css?v=6">
+  <script src="../js/i18n.js?v=2"></script>
+  <script src="../js/file-store.js?v=3"></script>
+  <script src="../js/supabase.js?v=4"></script>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="content">
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        <div class="logo-icon">谢</div>
+        <div class="logo-text"><h1 data-i18n="logo.title">下枫槎谢氏</h1><small data-i18n="logo.subtitle">宁海 · 下枫槎村</small></div>
+      </a>
+      <button class="nav-toggle" data-i18n-aria="nav.toggle" aria-label="菜单">☰</button>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="../index.html" data-i18n="nav.home">首页</a></li>
+          <li><a href="history.html" data-i18n="nav.history">家族历史</a></li>
+          <li><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a></li>
+          <li><a href="news.html" data-i18n="nav.news">消息发布</a></li>
+          <li><a href="members.html" data-i18n="nav.members">家族成员</a></li>
+          <li><a href="activities.html" data-i18n="nav.activities">家族活动</a></li>
+          <li><a href="today.html" data-i18n="nav.today">今日下枫槎</a></li>
+          <li><a href="reports.html" data-i18n="nav.reports">新闻报道</a></li>
+          <li><a href="contact.html" data-i18n="nav.contact">联系我们</a></li>
+          <li><a href="admin.html" class="active" data-i18n="nav.admin" style="color:var(--accent-orange);">🔐 管理后台</a></li>
+        </ul>
+        <div class="nav-actions">
+          <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
+          <button class="nav-action-btn lang-btn" id="lang-toggle" data-i18n-title="nav.lang" title="中英文切换">EN</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- weather moved to hero on index -->
+
+  <div class="page-wrap" style="padding-top:100px;max-width:1200px;">
+    <div class="page-title">
+      <h2 data-i18n="admin.panel.title">管理后台</h2>
+      <p data-i18n="page.admin">网站内容管理 · 权限验证</p>
+    </div>
+
+    <!-- ===== 登录框 ===== -->
+    <div id="admin-login-box" class="genealogy-lock">
+      <div class="lock-icon">🔐</div>
+      <h3 data-i18n="admin.login.title">管理员身份验证</h3>
+      <p data-i18n="admin.login.desc">请输入管理员密码以进入后台管理</p>
+      <form id="admin-login-form" action="javascript:void(0)">
+        <input type="password" id="admin-password" data-i18n="admin.password.placeholder" placeholder="请输入管理密码" autocomplete="off" onkeydown="if(event.key==='Enter')adminLogin()">
+        <p id="admin-error" class="error-msg" style="color:var(--accent-red);font-size:12px;display:none;margin-bottom:8px;"></p>
+        <button type="button" class="btn btn-accent" style="width:100%;" onclick="adminLogin()" data-i18n="btn.verify">验证身份</button>
+      </form>
+      <p style="margin-top:16px;font-size:12px;color:var(--text-tertiary);" data-i18n="admin.footnote">* 仅限家族管理员登录 · 未经授权禁止进入</p>
+    </div>
+
+    <!-- ===== 管理面板 ===== -->
+    <div id="admin-panel" class="admin-panel">
+      <div class="admin-header" style="margin-top:30px;">
+        <h3 style="font-size:16px;font-weight:500;letter-spacing:1px;" data-i18n="admin.panel.title">📊 网站内容管理</h3>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <span id="admin-login-name" data-i18n="admin.login.name" style="font-size:12px;color:var(--text-tertiary);">管理员</span>
+          <button id="admin-logout" class="logout-btn" data-i18n="admin.logout">退出登录</button>
+        </div>
+      </div>
+      <div class="admin-body" style="display:flex;gap:24px;">
+        <!-- Sidebar -->
+        <div class="admin-sidebar">
+          <div class="admin-sidebar-item active" data-module="news" onclick="switchModule('news')"><span class="icon">📰</span><span class="label" data-i18n="admin.news">新闻管理</span></div>
+          <div class="admin-sidebar-item" data-module="genealogy" onclick="switchModule('genealogy')"><span class="icon">📖</span><span class="label" data-i18n="admin.genealogy">族谱管理</span></div>
+          <div class="admin-sidebar-item" data-module="members" onclick="switchModule('members')"><span class="icon">👥</span><span class="label" data-i18n="admin.members">成员管理</span></div>
+          <div class="admin-sidebar-item" data-module="activities" onclick="switchModule('activities')"><span class="icon">🎉</span><span class="label" data-i18n="admin.activities">活动管理</span></div>
+          <div class="admin-sidebar-item" data-module="honors" onclick="switchModule('honors')"><span class="icon">🏆</span><span class="label" data-i18n="admin.honors">村荣誉管理</span></div>
+          <div class="admin-sidebar-item" data-module="reports" onclick="switchModule('reports')"><span class="icon">📰</span><span class="label" data-i18n="admin.reports">新闻报道管理</span></div>
+          <div class="admin-sidebar-item" data-module="templeCarousel" onclick="switchModule('templeCarousel')"><span class="icon">🏛️</span><span class="label">宗祠轮播管理</span></div>
+          <div class="admin-sidebar-item" data-module="photos" onclick="switchModule('photos')"><span class="icon">🖼️</span><span class="label" data-i18n="admin.photos">照片管理</span></div>
+          <div class="admin-sidebar-item" data-module="videos" onclick="switchModule('videos')"><span class="icon">🎬</span><span class="label" data-i18n="admin.videos">视频管理</span></div>
+          <div class="admin-sidebar-item" data-module="messages" onclick="switchModule('messages')"><span class="icon">💬</span><span class="label" data-i18n="admin.messages">留言管理</span></div>
+          <div class="admin-sidebar-item" data-module="settings" onclick="switchModule('settings')"><span class="icon">⚙️</span><span class="label" data-i18n="admin.settings">系统设置</span></div>
+        </div>
+        <!-- Content area -->
+        <div id="admin-content-area" class="admin-content-area" style="flex:1;min-width:0;"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-section"><h4 data-i18n="footer.section1.title">下枫槎谢氏</h4><p data-i18n="footer.desc">宁海下枫槎村谢氏家族数字宗祠</p></div>
+      <div class="footer-section"><h4 data-i18n="footer.section2.title">快捷链接</h4><a href="../index.html" data-i18n="nav.home">首页</a><a href="history.html" data-i18n="nav.history">家族历史</a><a href="genealogy.html" data-i18n="footer.link.genealogy">族谱查询</a></div>
+      <div class="footer-section"><h4 data-i18n="footer.section.content">内容</h4><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a><a href="news.html" data-i18n="nav.news">消息发布</a><a href="today.html" data-i18n="nav.today">今日下枫槎</a><a href="reports.html" data-i18n="nav.reports">新闻报道</a></div>
+      <div class="footer-section"><h4 data-i18n="footer.section.contact">联系</h4><a href="contact.html" data-i18n="nav.contact">联系我们</a></div>
+    </div>
+    <div class="footer-bottom">
+      <p data-i18n="footer.copyright">© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p>
+    </div>
+  </footer>
+  <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
+  <!-- Inline critical admin function — works even if external JS fails to load -->
+  <script>
+  window.adminLogin = function adminLogin() {
+    var pwd = document.getElementById('admin-password');
+    var error = document.getElementById('admin-error');
+    if (!pwd) return;
+    if (pwd.value === 'admin2025') {
+      document.getElementById('admin-login-box').style.display = 'none';
+      document.getElementById('admin-panel').classList.add('active');
+      if (typeof renderModule === 'function') {
+        renderModule(currentModule || 'news');
+        if (typeof updateStats === 'function') updateStats();
+      }
+      if (typeof loadFromSupabase === 'function') {
+        loadFromSupabase();
+      }
+    } else {
+      if (error) {
+        error.textContent = '密码错误，请重试';
+        error.style.display = 'block';
+      }
+    }
+  };
+  </script>
+  <script src="../js/main.js?v=4"></script>
+  <script src="../js/admin.js?v=4"></script>
+  <script>
+    // Canvas animated background
+    const canvas = document.getElementById('bg-canvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let w, h;
+      function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+      resize(); window.addEventListener('resize', resize);
+      const dots = [];
+      for (let i = 0; i < 80; i++) dots.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, r: Math.random() * 2 + 1, a: Math.random() * 0.3 + 0.1 });
+      const orbs = [
+        { x: 0.2, y: 0.3, r: 0.35, color: 'rgba(251,146,60,0.06)' },
+        { x: 0.8, y: 0.7, r: 0.3, color: 'rgba(34,211,238,0.05)' },
+        { x: 0.5, y: 0.1, r: 0.25, color: 'rgba(251,146,60,0.04)' }
+      ];
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const dotRgb = isDark ? '255,255,255' : '100,100,100';
+        orbs.forEach(o => {
+          const grad = ctx.createRadialGradient(o.x * w, o.y * h, 0, o.x * w, o.y * h, o.r * w);
+          grad.addColorStop(0, o.color); grad.addColorStop(1, 'transparent');
+          ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+        });
+        dots.forEach(d => {
+          d.x += d.vx; d.y += d.vy;
+          if (d.x < 0) d.x = w; if (d.x > w) d.x = 0;
+          if (d.y < 0) d.y = h; if (d.y > h) d.y = 0;
+          ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${dotRgb},${d.a})`; ctx.fill();
+        });
+        for (let i = 0; i < dots.length; i++) {
+          for (let j = i + 1; j < dots.length; j++) {
+            const dx = dots[i].x - dots[j].x, dy = dots[i].y - dots[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 150) {
+              ctx.beginPath(); ctx.moveTo(dots[i].x, dots[i].y); ctx.lineTo(dots[j].x, dots[j].y);
+              ctx.strokeStyle = `rgba(${dotRgb},${(1 - dist / 150) * 0.08})`;
+              ctx.lineWidth = 0.5; ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+  </script>
+  <audio id="bg-music" loop src="../music/background.mp3"></audio>
+  <div class="music-player"><button class="music-btn" id="music-toggle">🔈</button><span class="music-label" data-i18n="music.label">背景音乐</span></div>
+</body>
+</html>
