@@ -265,7 +265,7 @@
         var act = pastActivities[ci];
         var ph = [];
         if (act.photos) { try { ph = typeof act.photos === 'string' ? JSON.parse(act.photos) : act.photos; } catch(e) {} }
-        if (ph.length > 1) {
+        if (ph.length > 0) {
           startCarousel(ci);
         }
       }
@@ -342,38 +342,41 @@
     }
 
     function loadActivities() {
+      // Show localStorage immediately (instant)
+      var local = localStorage.getItem('xie_admin_activities');
+      if (local) {
+        try {
+          var d = JSON.parse(local);
+          if (d && d.length) {
+            window._allActivities = d;
+            renderActivities(d);
+          }
+        } catch(e) {}
+      } else {
+        renderActivities(null);
+      }
+
+      // Then fetch server data (will replace local data when it arrives)
       var xhr = new XMLHttpRequest();
       xhr.open('GET', '/api/data/activities', true);
-      xhr.timeout = 5000;
+      xhr.timeout = 20000;
       xhr.onload = function() {
         if (xhr.status === 200) {
           try {
             var parsed = JSON.parse(xhr.responseText);
             if (parsed && Array.isArray(parsed)) {
+              // Sync server data back to localStorage for next load
+              localStorage.setItem('xie_admin_activities', JSON.stringify(parsed));
               window._allActivities = parsed;
               renderActivities(parsed);
               return;
             }
-          } catch(e) {}
+          } catch(e) { console.warn('Activities parse error:', e); }
         }
-        fallbackLoad();
       };
-      xhr.onerror = fallbackLoad;
-      xhr.ontimeout = fallbackLoad;
+      xhr.onerror = function() {};
+      xhr.ontimeout = function() {};
       xhr.send();
-    }
-
-    function fallbackLoad() {
-      var local = localStorage.getItem('xie_admin_activities');
-      if (local) {
-        try {
-          var d = JSON.parse(local);
-          window._allActivities = d;
-          renderActivities(d);
-        } catch(e) { renderActivities(null); }
-      } else {
-        renderActivities(null);
-      }
     }
 
     loadActivities();
