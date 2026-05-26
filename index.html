@@ -91,6 +91,7 @@
       var bg = localStorage.getItem('xie_hero_bg');
       var style = localStorage.getItem('xie_hero_style') || 'clean';
       if (bg && style === 'photo') {
+        hero.classList.add('hero-photo-bg');
         hero.style.backgroundImage = 'url(' + bg + ')';
         hero.style.backgroundSize = 'cover';
         hero.style.backgroundPosition = 'center';

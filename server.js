@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const zlib = require('zlib');
 
 const PORT = 80;
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
@@ -37,14 +38,33 @@ function collectBody(req) {
   });
 }
 
-function sendJson(res, status, data) {
+function sendJson(req, res, status, data) {
   const body = JSON.stringify(data);
-  const len = Buffer.byteLength(body);
-  res.writeHead(status, {
-    'Content-Type': 'application/json',
-    'Content-Length': String(len)
-  });
-  res.end(body);
+  gzipSend(req, res, status, { 'Content-Type': 'application/json' }, body);
+}
+
+const GZIP_MIN = 1024; // only gzip responses larger than 1KB
+
+function gzipSend(req, res, status, headers, data) {
+  const accept = req.headers['accept-encoding'] || '';
+  if (accept.includes('gzip') && Buffer.byteLength(data) > GZIP_MIN) {
+    zlib.gzip(data, (err, compressed) => {
+      if (err) {
+        // fallback to uncompressed
+        headers['Content-Length'] = Buffer.byteLength(data);
+        res.writeHead(status, headers);
+        return res.end(data);
+      }
+      headers['Content-Encoding'] = 'gzip';
+      headers['Content-Length'] = compressed.length;
+      res.writeHead(status, headers);
+      res.end(compressed);
+    });
+  } else {
+    headers['Content-Length'] = Buffer.byteLength(data);
+    res.writeHead(status, headers);
+    res.end(data);
+  }
 }
 
 const server = http.createServer(async (req, res) => {
@@ -66,7 +86,7 @@ const server = http.createServer(async (req, res) => {
       const { name, data } = JSON.parse(body);
       const matches = data.match(/^data:([^;]+);base64,(.+)$/);
       if (!matches) {
-        return sendJson(res, 400, { error: 'Invalid data URL' });
+        return sendJson(req, res, 400, { error: 'Invalid data URL' });
       }
       const mimeType = matches[1];
       const raw = matches[2];
@@ -85,13 +105,13 @@ const server = http.createServer(async (req, res) => {
 
       fs.writeFile(filePath, buffer, err => {
         if (err) {
-          return sendJson(res, 500, { error: 'Write failed' });
+          return sendJson(req, res, 500, { error: 'Write failed' });
         }
-        sendJson(res, 200, { url: '/uploads/' + filename });
+        sendJson(req, res, 200, { url: '/uploads/' + filename });
       });
       return;
     } catch (e) {
-      return sendJson(res, 400, { error: e.message });
+      return sendJson(req, res, 400, { error: e.message });
     }
   }
 
@@ -119,14 +139,14 @@ const server = http.createServer(async (req, res) => {
         const finalPath = filePath + ext;
         fs.writeFile(finalPath, buffer, err => {
           if (err) {
-            return sendJson(res, 500, { error: 'Write failed' });
+            return sendJson(req, res, 500, { error: 'Write failed' });
           }
-          sendJson(res, 200, { url: '/uploads/' + path.basename(finalPath) });
+          sendJson(req, res, 200, { url: '/uploads/' + path.basename(finalPath) });
         });
       });
       return;
     } catch (e) {
-      return sendJson(res, 400, { error: e.message });
+      return sendJson(req, res, 400, { error: e.message });
     }
   }
 
@@ -136,7 +156,7 @@ const server = http.createServer(async (req, res) => {
     const filename = decodeURIComponent(deleteMatch[1]);
     const filePath = path.join(UPLOADS_DIR, path.basename(filename));
     fs.unlink(filePath, () => {
-      sendJson(res, 200, { ok: true });
+      sendJson(req, res, 200, { ok: true });
     });
     return;
   }
@@ -150,12 +170,12 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET') {
       fs.readFile(filePath, 'utf-8', (err, content) => {
         if (err) {
-          return sendJson(res, 200, []);
+          return sendJson(req, res, 200, []);
         }
         try {
-          sendJson(res, 200, JSON.parse(content));
+          sendJson(req, res, 200, JSON.parse(content));
         } catch (e) {
-          sendJson(res, 200, []);
+          sendJson(req, res, 200, []);
         }
       });
       return;
@@ -168,17 +188,17 @@ const server = http.createServer(async (req, res) => {
         const data = JSON.parse(body);
         fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8', err => {
           if (err) {
-            return sendJson(res, 500, { error: 'Write failed' });
+            return sendJson(req, res, 500, { error: 'Write failed' });
           }
-          sendJson(res, 200, { ok: true, count: Array.isArray(data) ? data.length : 1 });
+          sendJson(req, res, 200, { ok: true, count: Array.isArray(data) ? data.length : 1 });
         });
       } catch (e) {
-        return sendJson(res, 400, { error: e.message });
+        return sendJson(req, res, 400, { error: e.message });
       }
       return;
     }
 
-    return sendJson(res, 405, { error: 'Method not allowed' });
+    return sendJson(req, res, 405, { error: 'Method not allowed' });
   }
 
   // === Static file serving ===
@@ -200,29 +220,30 @@ const server = http.createServer(async (req, res) => {
             res.writeHead(404, { 'Content-Length': '9' });
             return res.end('404 Not Found');
           }
-          res.writeHead(200, {
-            'Content-Type': 'text/html;charset=utf-8',
-            'Content-Length': Buffer.byteLength(data2)
-          });
-          res.end(data2);
+          return gzipSend(req, res, 200, { 'Content-Type': 'text/html;charset=utf-8' }, data2);
         });
       }
       const msg = '404 Not Found';
       res.writeHead(404, { 'Content-Length': Buffer.byteLength(msg) });
       return res.end(msg);
     }
+    const textExts = ['.html', '.css', '.js', '.json', '.svg'];
     const cacheExts = ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.ico', '.svg', '.webp', '.woff', '.woff2', '.mp3', '.mp4', '.pdf'];
     const headers = {
       'Content-Type': MIME[ext] || 'application/octet-stream',
-      'Content-Length': data.length
     };
     if (ext === '.html') {
       headers['Cache-Control'] = 'no-cache';
     } else if (cacheExts.includes(ext)) {
       headers['Cache-Control'] = 'public, max-age=604800, immutable';
     }
-    res.writeHead(200, headers);
-    res.end(data);
+    if (textExts.includes(ext)) {
+      gzipSend(req, res, 200, headers, data);
+    } else {
+      headers['Content-Length'] = data.length;
+      res.writeHead(200, headers);
+      res.end(data);
+    }
   });
 });
 
