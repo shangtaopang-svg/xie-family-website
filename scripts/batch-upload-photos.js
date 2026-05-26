@@ -68,7 +68,7 @@ function uploadFile(filePath) {
 
     const opts = {
       hostname: SERVER, port: PORT,
-      path: '/api/upload/bin',
+      path: '/api/upload',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     };

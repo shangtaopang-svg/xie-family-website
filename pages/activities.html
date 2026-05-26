@@ -205,7 +205,7 @@
             html += '<div class="ac-photo-count">' + photos.length + '张</div>';
             for (var pi = 0; pi < photos.length; pi++) {
               html += '<div class="ac-photo-slide' + (pi === 0 ? ' active' : '') + '" data-pidx="' + pi + '">';
-              html += '<img src="' + photos[pi] + '" alt="" onclick="handleActivityPhotoClick(' + i + ',' + pi + ')" onerror="this.parentElement.innerHTML=\'' + escapeHtml(a.icon || '🎉') + '\'">';
+              html += '<img src="' + photos[pi] + '" alt="" onclick="handleActivityPhotoClick(' + i + ',' + pi + ')" onerror="this.parentElement.innerHTML=\'' + esc(a.icon || '🎉') + '\'">';
               html += '</div>';
             }
             html += '<button class="ac-photo-nav ac-photo-prev" onclick="event.stopPropagation();navActivityCarousel(' + i + ',-1)">‹</button>';
@@ -362,16 +362,17 @@
       xhr.timeout = 20000;
       xhr.onload = function() {
         if (xhr.status === 200) {
+          var parsed;
           try {
-            var parsed = JSON.parse(xhr.responseText);
-            if (parsed && Array.isArray(parsed)) {
-              // Sync server data back to localStorage for next load
-              localStorage.setItem('xie_admin_activities', JSON.stringify(parsed));
-              window._allActivities = parsed;
+            parsed = JSON.parse(xhr.responseText);
+          } catch(e) { console.warn('Activities JSON parse error:', e); return; }
+          if (parsed && Array.isArray(parsed)) {
+            localStorage.setItem('xie_admin_activities', JSON.stringify(parsed));
+            window._allActivities = parsed;
+            try {
               renderActivities(parsed);
-              return;
-            }
-          } catch(e) { console.warn('Activities parse error:', e); }
+            } catch(e) { console.error('Activities render error:', e); }
+          }
         }
       };
       xhr.onerror = function() {};
