@@ -45,18 +45,22 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // === 滚动淡入 ===
-  var fadeElements = document.querySelectorAll('.fade-in');
-  if (fadeElements.length > 0) {
-    var observer = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.1 });
-    fadeElements.forEach(function(el) { observer.observe(el); });
-  }
+  window.initFadeIn = function initFadeIn(container) {
+    var root = container || document;
+    var fadeElements = root.querySelectorAll ? root.querySelectorAll('.fade-in') : [];
+    if (fadeElements.length > 0) {
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      fadeElements.forEach(function(el) { observer.observe(el); });
+    }
+  };
+  window.initFadeIn();
 
   // === 联系表单 ===
   var contactForm = document.getElementById('contact-form');
@@ -304,3 +308,132 @@ function stopAutoPlay() { if (carouselAutoTimer) { clearInterval(carouselAutoTim
 function resetAutoPlay() { stopAutoPlay(); startAutoPlay(); }
 
 document.addEventListener('DOMContentLoaded', initCarousel);
+
+// ===== 灯箱 Lightbox =====
+(function() {
+  var overlay, imgWrap, img, counter, thumbsWrap, autoTimer;
+  var photos = [];
+  var currentIdx = 0;
+
+  function createOverlay() {
+    if (document.querySelector('.lightbox-overlay')) return;
+    overlay = document.createElement('div');
+    overlay.className = 'lightbox-overlay';
+    overlay.id = 'lightbox-overlay';
+    overlay.innerHTML =
+      '<button class="lightbox-close" id="lb-close">✕</button>' +
+      '<div class="lightbox-img-wrap" id="lb-img-wrap">' +
+        '<button class="lightbox-nav lightbox-nav-prev" id="lb-prev">‹</button>' +
+        '<img id="lb-img" src="" alt="">' +
+        '<button class="lightbox-nav lightbox-nav-next" id="lb-next">›</button>' +
+        '<div class="lightbox-counter" id="lb-counter"></div>' +
+      '</div>' +
+      '<div class="lightbox-thumbs" id="lb-thumbs"></div>';
+    document.body.appendChild(overlay);
+    imgWrap = document.getElementById('lb-img-wrap');
+    img = document.getElementById('lb-img');
+    counter = document.getElementById('lb-counter');
+    thumbsWrap = document.getElementById('lb-thumbs');
+
+    document.getElementById('lb-close').addEventListener('click', closeLightbox);
+    document.getElementById('lb-prev').addEventListener('click', function() { navLightbox(-1); });
+    document.getElementById('lb-next').addEventListener('click', function() { navLightbox(1); });
+
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) closeLightbox();
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (!overlay.classList.contains('open')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') navLightbox(-1);
+      if (e.key === 'ArrowRight') navLightbox(1);
+    });
+  }
+
+  window.openLightbox = function(photoArray, index) {
+    createOverlay();
+    if (!photoArray || photoArray.length === 0) return;
+    photos = photoArray;
+    currentIdx = index || 0;
+    if (currentIdx < 0) currentIdx = 0;
+    if (currentIdx >= photos.length) currentIdx = photos.length - 1;
+    overlay = document.getElementById('lightbox-overlay');
+    if (!overlay) return;
+    overlay.classList.add('open');
+    updateLightbox();
+    startAutoPlay();
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closeLightbox = function() {
+    overlay = document.getElementById('lightbox-overlay');
+    if (overlay) overlay.classList.remove('open');
+    stopAutoPlay();
+    document.body.style.overflow = '';
+  };
+
+  function navLightbox(dir) {
+    stopAutoPlay();
+    currentIdx += dir;
+    if (currentIdx < 0) currentIdx = photos.length - 1;
+    if (currentIdx >= photos.length) currentIdx = 0;
+    updateLightbox();
+    startAutoPlay();
+  }
+
+  window.lightboxPrev = function() { navLightbox(-1); };
+  window.lightboxNext = function() { navLightbox(1); };
+
+  function updateLightbox() {
+    if (!photos.length) return;
+    img = document.getElementById('lb-img');
+    counter = document.getElementById('lb-counter');
+    thumbsWrap = document.getElementById('lb-thumbs');
+    if (img) img.src = photos[currentIdx];
+    if (counter) counter.textContent = (currentIdx + 1) + ' / ' + photos.length;
+
+    if (thumbsWrap) {
+      thumbsWrap.innerHTML = '';
+      for (var i = 0; i < photos.length; i++) {
+        var thumb = document.createElement('img');
+        thumb.src = photos[i];
+        thumb.className = i === currentIdx ? 'active' : '';
+        thumb.onerror = function() { this.style.display = 'none'; };
+        thumb.onclick = (function(idx) { return function() {
+          stopAutoPlay();
+          currentIdx = idx;
+          updateLightbox();
+          startAutoPlay();
+        }; })(i);
+        thumbsWrap.appendChild(thumb);
+      }
+    }
+  }
+
+  function startAutoPlay() {
+    stopAutoPlay();
+    autoTimer = setInterval(function() { navLightbox(1); }, 3000);
+  }
+  function stopAutoPlay() {
+    if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+  }
+
+  // Touch/swipe support
+  document.addEventListener('DOMContentLoaded', function() {
+    createOverlay();
+    overlay = document.getElementById('lightbox-overlay');
+    if (!overlay) return;
+    var startX = 0;
+    overlay.addEventListener('touchstart', function(e) {
+      startX = e.touches[0].clientX;
+    }, { passive: true });
+    overlay.addEventListener('touchend', function(e) {
+      var diff = e.changedTouches[0].clientX - startX;
+      if (Math.abs(diff) > 50) {
+        if (diff < 0) navLightbox(1);
+        else navLightbox(-1);
+      }
+    }, { passive: true });
+  });
+})();

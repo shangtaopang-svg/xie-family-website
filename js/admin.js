@@ -85,12 +85,13 @@ const MODULES = {
       { key: 'status', label: '状态', type: 'select', options: ['已举办', '即将举行', '筹备中'], required: true },
       { key: 'icon', label: '图标', type: 'select', options: ['🌿', '🎊', '📚', '🏆', '🏛️', '📸'] },
       { key: 'content', label: '描述', type: 'textarea', required: true },
-      { key: 'location', label: '地点', type: 'text' }
+      { key: 'location', label: '地点', type: 'text' },
+      { key: 'photos', label: '活动照片', type: 'photos' }
     ],
     defaultData: [
-      { id: 1, title: '丙午年清明祭祖大典', date: '2026-04-04', status: '已举办', icon: '🌿', content: '百余位宗亲齐聚下枫槎谢氏宗祠，依古礼举行清明祭祖仪式。', location: '下枫槎谢氏宗祠' },
-      { id: 2, title: '丙午年新春团拜会', date: '2026-02-12', status: '已举办', icon: '🎊', content: '农历正月初一，下枫槎谢氏在宗祠举行新春团拜活动。', location: '下枫槎谢氏宗祠' },
-      { id: 3, title: '丙午年冬至祭祖', date: '2026-12-21', status: '即将举行', icon: '🏛️', content: '每年冬至为下枫槎谢氏秋祭之日。', location: '下枫槎谢氏宗祠' }
+      { id: 1, title: '丙午年清明祭祖大典', date: '2026-04-04', status: '已举办', icon: '🌿', content: '百余位宗亲齐聚下枫槎谢氏宗祠，依古礼举行清明祭祖仪式。', location: '下枫槎谢氏宗祠', photos: [] },
+      { id: 2, title: '丙午年新春团拜会', date: '2026-02-12', status: '已举办', icon: '🎊', content: '农历正月初一，下枫槎谢氏在宗祠举行新春团拜活动。', location: '下枫槎谢氏宗祠', photos: [] },
+      { id: 3, title: '丙午年冬至祭祖', date: '2026-12-21', status: '即将举行', icon: '🏛️', content: '每年冬至为下枫槎谢氏秋祭之日。', location: '下枫槎谢氏宗祠', photos: [] }
     ]
   },
   templeCarousel: {
@@ -797,6 +798,27 @@ function showForm(mod, m, item) {
       if (isEdit && item.hasFile) {
         html += '<p style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">✅ 已上传文件，重新选择可替换</p>';
       }
+    } else if (f.type === 'photos') {
+      // Multi-photo upload zone for activities
+      var photos = [];
+      if (isEdit && item.photos) {
+        try { photos = typeof item.photos === 'string' ? JSON.parse(item.photos) : item.photos; } catch(e) {}
+      }
+      html += '<div class="photos-upload-zone" style="border:2px dashed var(--glass-border);border-radius:8px;padding:16px;text-align:center;">';
+      html += '<label style="display:block;font-size:13px;color:var(--text-secondary);margin-bottom:8px;">📷 活动照片（可上传多张）</label>';
+      html += '<div id="photos-preview" class="photos-preview" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;justify-content:center;">';
+      for (var pi = 0; pi < photos.length; pi++) {
+        html += '<div class="photo-thumb" style="position:relative;width:90px;height:90px;border-radius:6px;overflow:hidden;border:1px solid var(--glass-border);flex-shrink:0;">';
+        html += '<img src="' + photos[pi] + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.style.display=\'none\'">';
+        html += '<button type="button" onclick="removeActivityPhoto(this,\'' + photos[pi] + '\')" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:12px;line-height:20px;text-align:center;z-index:2;">✕</button>';
+        html += '</div>';
+      }
+      html += '</div>';
+      html += '<input type="file" id="field-photos-upload" accept="image/*" multiple style="display:none;" onchange="uploadActivityPhotos(this)">';
+      html += '<button type="button" class="btn btn-sm" onclick="document.getElementById(\'field-photos-upload\').click()" style="padding:6px 20px;">📷 选择照片</button>';
+      html += '<p style="font-size:11px;color:var(--text-tertiary);margin-top:6px;">支持多选，建议 1920×1080 以上</p>';
+      html += '<input type="hidden" id="field-photos" value="' + escapeHtml(JSON.stringify(photos)) + '">';
+      html += '</div>';
     } else if (f.type === 'select') {
       html += '<select id="field-' + f.key + '"' + (f.required ? ' required' : '') + '>';
       for (var j = 0; j < f.options.length; j++) {
@@ -907,6 +929,8 @@ function saveForm(mod, editId) {
       if (f.type === 'file') {
         fileInput = el;
         // Don't set value from file input here
+      } else if (f.type === 'photos') {
+        try { item[f.key] = JSON.parse(el.value); } catch(e) { item[f.key] = []; }
       } else {
         item[f.key] = el.value;
       }
@@ -1199,6 +1223,69 @@ function resetAllData() {
   }
   renderModule(currentModule);
   updateStats();
+}
+
+// ===== Activity photo upload helpers =====
+function uploadActivityPhotos(input) {
+  if (!input.files || !input.files.length) return;
+  var files = Array.prototype.slice.call(input.files);
+  var total = files.length;
+  var done = 0;
+  var photos = [];
+  try { photos = JSON.parse(document.getElementById('field-photos').value || '[]'); } catch(e) {}
+  function uploadNext(i) {
+    if (i >= files.length) {
+      document.getElementById('field-photos').value = JSON.stringify(photos);
+      showToast('已上传 ' + photos.length + ' 张照片');
+      // Re-render the photo preview
+      var preview = document.getElementById('photos-preview');
+      if (preview) renderPhotoPreviews(preview, photos);
+      input.value = '';
+      return;
+    }
+    uploadToServer('activity_' + Date.now() + '_' + i, files[i]).then(function(result) {
+      if (result && result.url) photos.push(result.url);
+      uploadNext(i + 1);
+    }).catch(function() {
+      uploadNext(i + 1);
+    });
+  }
+  uploadNext(0);
+}
+
+function removeActivityPhoto(btn, url) {
+  var thumb = btn.parentElement;
+  thumb.style.display = 'none';
+  var hidden = document.getElementById('field-photos');
+  if (!hidden) return;
+  var photos = [];
+  try { photos = JSON.parse(hidden.value || '[]'); } catch(e) {}
+  var idx = photos.indexOf(url);
+  if (idx > -1) photos.splice(idx, 1);
+  hidden.value = JSON.stringify(photos);
+  // Also delete from server
+  var filename = url.replace('/uploads/', '');
+  if (filename) deleteFromServer(filename);
+}
+
+function renderPhotoPreviews(container, urls) {
+  container.innerHTML = '';
+  for (var pi = 0; pi < urls.length; pi++) {
+    var div = document.createElement('div');
+    div.style.cssText = 'position:relative;width:90px;height:90px;border-radius:6px;overflow:hidden;border:1px solid var(--glass-border);flex-shrink:0;';
+    var img = document.createElement('img');
+    img.src = urls[pi];
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+    img.onerror = function() { this.parentElement.style.display = 'none'; };
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.innerHTML = '✕';
+    btn.style.cssText = 'position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:12px;line-height:20px;text-align:center;z-index:2;';
+    btn.onclick = function() { removeActivityPhoto(this, urls[pi]); };
+    div.appendChild(img);
+    div.appendChild(btn);
+    container.appendChild(div);
+  }
 }
 
 // ===== File check & repair =====
