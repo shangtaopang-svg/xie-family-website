@@ -5,10 +5,103 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title data-i18n="page.activities.title">家族活动 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-
-
-  <link rel="stylesheet" href="../css/style.css?v=15">
+  <link rel="stylesheet" href="../css/style.css?v=16">
   <script src="../js/i18n.js"></script>
+  <style>
+    /* Activity card photo carousel */
+    .ac-photo-wrap {
+      position: relative;
+      min-height: 200px;
+      overflow: hidden;
+    }
+    .ac-photo-wrap .ac-photo-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
+      background: linear-gradient(135deg, #e8e2da, #ddd8d0);
+    }
+    [data-theme="dark"] .ac-photo-wrap .ac-photo-slide {
+      background: linear-gradient(135deg, #0f0f1a, #1a1a2e);
+    }
+    .ac-photo-wrap .ac-photo-slide.active {
+      opacity: 1;
+    }
+    .ac-photo-wrap .ac-photo-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      cursor: pointer;
+    }
+    .ac-photo-wrap .ac-photo-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.35);
+      color: rgba(255,255,255,0.85);
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      transition: background 0.2s;
+      line-height: 1;
+    }
+    .ac-photo-wrap .ac-photo-nav:hover {
+      background: rgba(0,0,0,0.6);
+    }
+    .ac-photo-wrap:hover .ac-photo-nav {
+      display: flex;
+    }
+    .ac-photo-prev { left: 8px; }
+    .ac-photo-next { right: 8px; }
+    .ac-photo-dots {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 4px;
+      z-index: 5;
+    }
+    .ac-photo-dots span {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      transition: all 0.3s;
+    }
+    .ac-photo-dots span.active {
+      background: #fff;
+      width: 14px;
+      border-radius: 3px;
+    }
+    .ac-photo-count {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      z-index: 5;
+    }
+
+    @media (max-width: 800px) {
+      .ac-photo-wrap { min-height: 180px; }
+      .ac-photo-wrap .ac-photo-nav { display: flex; width: 28px; height: 28px; font-size: 14px; }
+    }
+  </style>
 </head>
 <body>
 
@@ -74,13 +167,15 @@
     var container = document.getElementById('activities-container');
     if (!container) return;
 
+    // Store carousel timers for cleanup
+    var carouselTimers = {};
+
     function renderActivities(data) {
       if (!data || data.length === 0) {
         container.innerHTML = '<section style="margin-bottom:50px;"><div class="section-title"><h2>活动回顾</h2><div class="divider"></div></div><p style="text-align:center;color:var(--text-tertiary);padding:40px 0;">暂无活动数据</p></section>';
         return;
       }
 
-      // Sort by date descending
       data.sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
 
       var pastActivities = data.filter(function(a) { return a.status === '已举办'; });
@@ -102,29 +197,37 @@
             try { photos = typeof a.photos === 'string' ? JSON.parse(a.photos) : a.photos; } catch(e) {}
           }
 
-          html += '<div class="activity-card fade-in">';
-          html += '<div class="activity-img" style="font-size:60px;">' + (a.icon || '🎉') + '</div>';
-          html += '<div class="activity-details">';
-          html += '<span class="date-tag">' + formatActDate(a.date) + '</span>';
-          html += '<h3>' + escapeActHtml(a.title) + '</h3>';
-          html += '<p>' + escapeActHtml(a.content) + '</p>';
-          if (a.location) {
-            html += '<p style="font-size:12px;color:var(--text-tertiary);margin-top:6px;">📍 ' + escapeActHtml(a.location) + '</p>';
-          }
+          html += '<div class="activity-card fade-in" data-activity-id="' + (a.id || i) + '">';
 
-          // Photo strip
+          // Left: photo carousel or icon fallback
           if (photos.length > 0) {
-            html += '<div class="activity-photos-strip">';
-            var showCount = Math.min(photos.length, 5);
-            for (var pi = 0; pi < showCount; pi++) {
-              html += '<img src="' + photos[pi] + '" alt="" loading="lazy" onclick="openLightbox(' + "'" + escapeActHtml(JSON.stringify(photos)) + "'" + ',' + pi + ')" onerror="this.style.display=\'none\'">';
+            html += '<div class="ac-photo-wrap" data-activity-idx="' + i + '">';
+            html += '<div class="ac-photo-count">' + photos.length + '张</div>';
+            for (var pi = 0; pi < photos.length; pi++) {
+              html += '<div class="ac-photo-slide' + (pi === 0 ? ' active' : '') + '" data-pidx="' + pi + '">';
+              html += '<img src="' + photos[pi] + '" alt="" onclick="handleActivityPhotoClick(' + i + ',' + pi + ')" onerror="this.parentElement.innerHTML=\'' + escapeHtml(a.icon || '🎉') + '\'">';
+              html += '</div>';
             }
-            if (photos.length > 5) {
-              html += '<div class="more-overlay" onclick="openLightbox(' + "'" + escapeActHtml(JSON.stringify(photos)) + "'" + ',5)">+' + (photos.length - 5) + '</div>';
+            html += '<button class="ac-photo-nav ac-photo-prev" onclick="event.stopPropagation();navActivityCarousel(' + i + ',-1)">‹</button>';
+            html += '<button class="ac-photo-nav ac-photo-next" onclick="event.stopPropagation();navActivityCarousel(' + i + ',1)">›</button>';
+            html += '<div class="ac-photo-dots">';
+            for (var di = 0; di < photos.length; di++) {
+              html += '<span' + (di === 0 ? ' class="active"' : '') + '></span>';
             }
             html += '</div>';
+            html += '</div>';
+          } else {
+            html += '<div class="activity-img" style="font-size:60px;">' + (a.icon || '🎉') + '</div>';
           }
 
+          // Right: details
+          html += '<div class="activity-details">';
+          html += '<span class="date-tag">' + formatDate(a.date) + '</span>';
+          html += '<h3>' + esc(a.title) + '</h3>';
+          html += '<p>' + esc(a.content) + '</p>';
+          if (a.location) {
+            html += '<p style="font-size:12px;color:var(--text-tertiary);margin-top:6px;">📍 ' + esc(a.location) + '</p>';
+          }
           html += '</div></div>';
         }
       }
@@ -137,17 +240,17 @@
         html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">';
         for (var ui = 0; ui < upcomingActivities.length; ui++) {
           var ua = upcomingActivities[ui];
-          var statusColor = ua.status === '即将举行' ? 'var(--accent-orange)' : 'var(--accent-orange-dim)';
-          var statusTextColor = ua.status === '即将举行' ? '#000' : 'var(--accent-orange)';
+          var sc = ua.status === '即将举行' ? 'var(--accent-orange)' : 'var(--accent-orange-dim)';
+          var stc = ua.status === '即将举行' ? '#000' : 'var(--accent-orange)';
           html += '<div class="glass-card" style="padding:24px;border-top:3px solid var(--accent-orange);">';
           html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
-          html += '<span style="background:' + statusColor + ';color:' + statusTextColor + ';padding:2px 10px;border-radius:3px;font-size:12px;font-weight:' + (ua.status !== '即将举行' ? '500' : '') + ';">' + escapeActHtml(ua.status) + '</span>';
-          html += '<span style="font-size:12px;color:var(--text-tertiary);">' + formatActDate(ua.date) + '</span>';
+          html += '<span style="background:' + sc + ';color:' + stc + ';padding:2px 10px;border-radius:3px;font-size:12px;font-weight:' + (ua.status !== '即将举行' ? '500' : '') + ';">' + esc(ua.status) + '</span>';
+          html += '<span style="font-size:12px;color:var(--text-tertiary);">' + formatDate(ua.date) + '</span>';
           html += '</div>';
-          html += '<h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:17px;font-weight:500;">' + escapeActHtml(ua.title) + '</h3>';
-          html += '<p style="font-size:13px;color:var(--text-tertiary);margin:8px 0;">' + escapeActHtml(ua.content) + '</p>';
+          html += '<h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:17px;font-weight:500;">' + esc(ua.title) + '</h3>';
+          html += '<p style="font-size:13px;color:var(--text-tertiary);margin:8px 0;">' + esc(ua.content) + '</p>';
           if (ua.location) {
-            html += '<p style="font-size:12px;color:var(--text-tertiary);">地点：' + escapeActHtml(ua.location) + '</p>';
+            html += '<p style="font-size:12px;color:var(--text-tertiary);">地点：' + esc(ua.location) + '</p>';
           }
           html += '</div>';
         }
@@ -155,26 +258,89 @@
       }
 
       container.innerHTML = html;
-
-      // Kick off fade-in observer for new elements
       if (typeof initFadeIn === 'function') initFadeIn();
+
+      // Start carousels
+      for (var ci = 0; ci < pastActivities.length; ci++) {
+        var act = pastActivities[ci];
+        var ph = [];
+        if (act.photos) { try { ph = typeof act.photos === 'string' ? JSON.parse(act.photos) : act.photos; } catch(e) {} }
+        if (ph.length > 1) {
+          startCarousel(ci);
+        }
+      }
     }
 
-    function formatActDate(d) {
+    // ===== Carousel per activity =====
+    function startCarousel(idx) {
+      stopCarousel(idx);
+      carouselTimers['c' + idx] = setInterval(function() {
+        var wrap = document.querySelector('.ac-photo-wrap[data-activity-idx="' + idx + '"]');
+        if (!wrap) { stopCarousel(idx); return; }
+        advanceCarousel(wrap, 1);
+      }, 3000);
+    }
+
+    function stopCarousel(idx) {
+      if (carouselTimers['c' + idx]) {
+        clearInterval(carouselTimers['c' + idx]);
+        delete carouselTimers['c' + idx];
+      }
+    }
+
+    function advanceCarousel(wrap, dir) {
+      var slides = wrap.querySelectorAll('.ac-photo-slide');
+      var dots = wrap.querySelectorAll('.ac-photo-dots span');
+      if (slides.length < 2) return;
+      var current = 0;
+      for (var si = 0; si < slides.length; si++) {
+        if (slides[si].classList.contains('active')) { current = si; break; }
+      }
+      var next = current + dir;
+      if (next < 0) next = slides.length - 1;
+      if (next >= slides.length) next = 0;
+      slides[current].classList.remove('active');
+      slides[next].classList.add('active');
+      if (dots.length) { dots[current].classList.remove('active'); dots[next].classList.add('active'); }
+    }
+
+    window.navActivityCarousel = function(idx, dir) {
+      stopCarousel(idx);
+      var wrap = document.querySelector('.ac-photo-wrap[data-activity-idx="' + idx + '"]');
+      if (wrap) advanceCarousel(wrap, dir);
+      startCarousel(idx);
+    };
+
+    // Store all activity photos for lightbox
+    window._activityPhotos = [];
+
+    window.handleActivityPhotoClick = function(actIdx, photoIdx) {
+      var data = window._allActivities || [];
+      var act = data.filter(function(a) { return a.status === '已举办'; })[actIdx];
+      if (!act) return;
+      var photos = [];
+      if (act.photos) { try { photos = typeof act.photos === 'string' ? JSON.parse(act.photos) : act.photos; } catch(e) {} }
+      if (photos.length === 0) return;
+      window._currentActivityPhotos = photos;
+      if (typeof window.openLightbox === 'function') {
+        window.openLightbox(photos, photoIdx);
+      }
+    };
+
+    function formatDate(d) {
       if (!d) return '';
       var parts = d.split('-');
       if (parts.length === 3) return parts[0] + '年' + parseInt(parts[1]) + '月' + parseInt(parts[2]) + '日';
       return d;
     }
 
-    function escapeActHtml(t) {
+    function esc(t) {
       if (!t) return '';
       var d = document.createElement('div');
       d.textContent = t;
       return d.innerHTML;
     }
 
-    // Load data: try server first, fallback to localStorage
     function loadActivities() {
       var xhr = new XMLHttpRequest();
       xhr.open('GET', '/api/data/activities', true);
@@ -183,60 +349,38 @@
         if (xhr.status === 200) {
           try {
             var parsed = JSON.parse(xhr.responseText);
-            if (parsed && parsed.data && Array.isArray(parsed.data)) {
-              renderActivities(parsed.data);
+            if (parsed && Array.isArray(parsed)) {
+              window._allActivities = parsed;
+              renderActivities(parsed);
               return;
             }
           } catch(e) {}
         }
-        // Fallback to localStorage
-        var local = localStorage.getItem('xie_admin_activities');
-        if (local) {
-          try { renderActivities(JSON.parse(local)); } catch(e) { renderActivities(null); }
-        } else {
-          renderActivities(null);
-        }
+        fallbackLoad();
       };
-      xhr.onerror = function() {
-        var local = localStorage.getItem('xie_admin_activities');
-        if (local) {
-          try { renderActivities(JSON.parse(local)); } catch(e) { renderActivities(null); }
-        } else {
-          renderActivities(null);
-        }
-      };
-      xhr.ontimeout = function() {
-        var local = localStorage.getItem('xie_admin_activities');
-        if (local) {
-          try { renderActivities(JSON.parse(local)); } catch(e) { renderActivities(null); }
-        } else {
-          renderActivities(null);
-        }
-      };
+      xhr.onerror = fallbackLoad;
+      xhr.ontimeout = fallbackLoad;
       xhr.send();
     }
 
-    // Patch openLightbox to accept JSON string from onclick
-    var origOpen = window.openLightbox;
-    window.openLightbox = function(photosData, index) {
-      var photos = [];
-      if (typeof photosData === 'string') {
-        try { photos = JSON.parse(photosData); } catch(e) { return; }
-      } else if (Array.isArray(photosData)) {
-        photos = photosData;
+    function fallbackLoad() {
+      var local = localStorage.getItem('xie_admin_activities');
+      if (local) {
+        try {
+          var d = JSON.parse(local);
+          window._allActivities = d;
+          renderActivities(d);
+        } catch(e) { renderActivities(null); }
       } else {
-        return;
+        renderActivities(null);
       }
-      if (typeof origOpen === 'function') {
-        origOpen(photos, index || 0);
-      }
-    };
+    }
 
     loadActivities();
   })();
   </script>
 
-  <script src="../js/main.js?v=5"></script>
+  <script src="../js/main.js?v=6"></script>
   <script>
     const canvas = document.getElementById('bg-canvas');
     if (canvas) {
