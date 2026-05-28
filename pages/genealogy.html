@@ -7,7 +7,7 @@
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 
   
-  <link rel="stylesheet" href="../css/style.css?v=13">
+  <link rel="stylesheet" href="../css/style.css?v=24">
   <script src="../js/i18n.js"></script>
   <script src="../js/file-store.js?v=3"></script>
   <script src="../js/supabase.js?v=3"></script>
@@ -37,9 +37,30 @@
           <li><a href="reports.html" data-i18n="nav.reports">新闻报道</a></li>
           <li><a href="contact.html" data-i18n="nav.contact">联系我们</a></li>
         </ul>
-        <div class="nav-actions">
-          <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
-          <button class="nav-action-btn lang-btn" id="lang-toggle" data-i18n-title="nav.lang" title="中英文切换">EN</button>
+                <!-- ===== 底部控制面板 ===== -->
+        <div class="sidebar-controls">
+          <div class="sc-row">
+            <button class="weather-btn" data-weather="off" title="关闭特效">✕</button>
+            <button class="weather-btn" data-weather="sunny" title="晴天">☀</button>
+            <button class="weather-btn" data-weather="rain" title="下雨">🌧</button>
+            <button class="weather-btn" data-weather="snow" title="下雪">❄</button>
+            <button class="weather-btn" data-weather="meteor" title="流星">☄</button>
+          </div>
+          <div class="sc-row">
+            <div class="map-zoom-btns">
+              <button class="map-z-in" title="放大">+</button>
+              <button class="map-z-out" title="缩小">−</button>
+            </div>
+            <span class="sc-divider"></span>
+            <button class="music-btn" id="music-prev" title="上一首" style="font-size:14px;">⏮</button>
+            <button class="music-btn" id="music-toggle">🔈</button>
+            <button class="music-btn" id="music-next" title="下一首" style="font-size:14px;">⏭</button>
+            <span class="music-label" id="music-track-name">背景音乐</span>
+          </div>
+          <div class="sc-row">
+            <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
+            <button class="nav-action-btn lang-btn" id="lang-toggle" data-i18n-title="nav.lang" title="中英文切换">EN</button>
+          </div>
         </div>
       </nav>
     </div>
@@ -54,7 +75,7 @@
     <!-- ===== 族谱内容 ===== -->
     <div id="genealogy-content" class="genealogy-content" style="display:block;">
 
-      <div class="section-title" style="margin-top:40px;">
+      <div class="section-title">
         <h2>《下枫槎谢氏宗谱》</h2>
         <div class="divider"></div>
         <p>乌衣世泽 · 宝树家声</p>
@@ -269,7 +290,28 @@
   }
   .pcard.highlight {
     border-color: var(--accent-orange);
-    box-shadow: 0 0 0 2px rgba(251,146,60,0.3);
+    box-shadow: 0 0 0 3px rgba(251,146,60,0.4);
+    animation: pulse-highlight 1s ease-in-out 3;
+  }
+  @keyframes pulse-highlight {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(251,146,60,0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(251,146,60,0.15); }
+  }
+  .locate-btn {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(251,146,60,0.3);
+    background: rgba(251,146,60,0.1);
+    color: var(--accent-orange);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .locate-btn:hover {
+    background: rgba(251,146,60,0.2);
+    border-color: var(--accent-orange);
   }
   .connector-down {
     width: 2px;
@@ -674,15 +716,18 @@
     var html = '<div style="padding:12px;background:var(--glass-bg);border-radius:8px;">';
     html += '<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px;">找到 ' + results.length + ' 条结果：</div>';
     results.forEach(function(p) {
-      html += '<div style="display:flex;align-items:center;gap:12px;padding:8px 12px;cursor:pointer;border-radius:6px;transition:background 0.2s;" onmouseover="this.style.background=\'var(--accent-orange-dim)\'" onmouseout="this.style.background=\'transparent\'" onclick="showPersonDetail(' + p.id + ', getGenealogyData());">';
-      html += '<span style="font-size:24px;">' + (p.gender === '男' ? '👤' : '👩') + '</span>';
-      html += '<div><div style="font-weight:500;color:var(--text-primary);font-size:14px;">' + escapeHtml(p.name) + '</div>';
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:6px;transition:background 0.2s;" onmouseover="this.style.background=\'var(--accent-orange-dim)\'" onmouseout="this.style.background=\'transparent\'">';
+      html += '<span style="font-size:22px;flex-shrink:0;">' + (p.gender === '男' ? '👤' : '👩') + '</span>';
+      html += '<div style="flex:1;min-width:0;cursor:pointer;" onclick="showPersonDetail(' + p.id + ', getGenealogyData());">';
+      html += '<div style="font-weight:500;color:var(--text-primary);font-size:14px;">' + escapeHtml(p.name) + '</div>';
       html += '<div style="font-size:11px;color:var(--text-tertiary);">';
       var parts = [];
       if (p.generation_num) parts.push('第' + p.generation_num + '世');
       if (p.generation && p.generation !== '—') parts.push(p.generation + '字辈');
       if (p.branch && p.branch !== '—') parts.push(p.branch);
-      html += parts.join(' · ') + '</div></div></div>';
+      html += parts.join(' · ') + '</div></div>';
+      html += '<button class="locate-btn" onclick="event.stopPropagation();locateInTree(' + p.id + ');">🌳 定位</button>';
+      html += '</div>';
     });
     html += '</div>';
     container.innerHTML = html;
@@ -694,6 +739,56 @@
   function clearSearch() {
     document.getElementById('genealogy-search').value = '';
     document.getElementById('search-results').innerHTML = '';
+  }
+
+  // ===== Locate person in tree =====
+  function locateInTree(personId) {
+    // Close any open detail popup
+    var existingOverlay = document.querySelector('.person-overlay');
+    if (existingOverlay) existingOverlay.remove();
+
+    // Find the tree node card
+    var card = document.querySelector('.pcard[data-id="' + personId + '"]');
+    if (!card) {
+      // Maybe tree isn't expanded enough — expand all first
+      expandAllTree();
+      // Try again after a brief delay
+      setTimeout(function() {
+        var card2 = document.querySelector('.pcard[data-id="' + personId + '"]');
+        if (!card2) return;
+        scrollToCard(card2);
+      }, 100);
+      return;
+    }
+    scrollToCard(card);
+  }
+
+  function scrollToCard(card) {
+    // Remove previous highlight
+    document.querySelectorAll('.pcard.highlight').forEach(function(c) { c.classList.remove('highlight'); });
+
+    // Scroll the tree container to show this card
+    var treeScroll = document.querySelector('.genealogy-tree-scroll');
+    if (treeScroll) {
+      var cardRect = card.getBoundingClientRect();
+      var scrollRect = treeScroll.getBoundingClientRect();
+      var offsetTop = card.offsetTop - treeScroll.offsetTop - scrollRect.height / 2 + card.offsetHeight / 2;
+      treeScroll.scrollTo({ top: offsetTop, left: 0, behavior: 'smooth' });
+    }
+
+    // Highlight the card
+    card.classList.add('highlight');
+
+    // Scroll search results out of the way
+    var resultsSection = document.getElementById('genealogy-search-section');
+    if (resultsSection) {
+      resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Remove highlight after 3.5s
+    setTimeout(function() {
+      card.classList.remove('highlight');
+    }, 3500);
   }
 
   // Allow Enter key to search
@@ -847,12 +942,6 @@
       draw();
     }
   </script>
-    <audio id="bg-music" loop src="../music/background.mp3"></audio>
-  <div class="music-player" id="music-player">
-    <button class="music-btn" id="music-prev" title="上一首" style="font-size:14px;">⏮</button>
-    <button class="music-btn" id="music-toggle">🔈</button>
-    <button class="music-btn" id="music-next" title="下一首" style="font-size:14px;">⏭</button>
-    <span class="music-label" id="music-track-name">背景音乐</span>
-  </div>
+  <audio id="bg-music" loop src="../music/background.mp3"></audio>
 </body>
 </html>

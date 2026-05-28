@@ -8,7 +8,7 @@
 
   <meta name="description" content="下枫槎村今日风貌：村组织架构、特色物产、村荣誉展示">
   
-  <link rel="stylesheet" href="../css/style.css?v=13">
+  <link rel="stylesheet" href="../css/style.css?v=14">
   <script src="../js/i18n.js"></script>
   <script src="../js/file-store.js?v=3"></script>
   <script src="../js/supabase.js?v=3"></script>
@@ -38,9 +38,30 @@
           <li><a href="reports.html" data-i18n="nav.reports">新闻报道</a></li>
           <li><a href="contact.html" data-i18n="nav.contact">联系我们</a></li>
         </ul>
-        <div class="nav-actions">
-          <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
-          <button class="nav-action-btn lang-btn" id="lang-toggle" data-i18n-title="nav.lang" title="中英文切换">EN</button>
+                <!-- ===== 底部控制面板 ===== -->
+        <div class="sidebar-controls">
+          <div class="sc-row">
+            <button class="weather-btn" data-weather="off" title="关闭特效">✕</button>
+            <button class="weather-btn" data-weather="sunny" title="晴天">☀</button>
+            <button class="weather-btn" data-weather="rain" title="下雨">🌧</button>
+            <button class="weather-btn" data-weather="snow" title="下雪">❄</button>
+            <button class="weather-btn" data-weather="meteor" title="流星">☄</button>
+          </div>
+          <div class="sc-row">
+            <div class="map-zoom-btns">
+              <button class="map-z-in" title="放大">+</button>
+              <button class="map-z-out" title="缩小">−</button>
+            </div>
+            <span class="sc-divider"></span>
+            <button class="music-btn" id="music-prev" title="上一首" style="font-size:14px;">⏮</button>
+            <button class="music-btn" id="music-toggle">🔈</button>
+            <button class="music-btn" id="music-next" title="下一首" style="font-size:14px;">⏭</button>
+            <span class="music-label" id="music-track-name">背景音乐</span>
+          </div>
+          <div class="sc-row">
+            <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
+            <button class="nav-action-btn lang-btn" id="lang-toggle" data-i18n-title="nav.lang" title="中英文切换">EN</button>
+          </div>
         </div>
       </nav>
     </div>
@@ -638,11 +659,6 @@
     }
   </script>
     <audio id="bg-music" loop src="../music/background.mp3"></audio>
-  <div class="music-player" id="music-player">
-    <button class="music-btn" id="music-prev" title="上一首" style="font-size:14px;">⏮</button>
-    <button class="music-btn" id="music-toggle">🔈</button>
-    <button class="music-btn" id="music-next" title="下一首" style="font-size:14px;">⏭</button>
-    <span class="music-label" id="music-track-name">背景音乐</span>
-  </div>
+  
 </body>
 </html>

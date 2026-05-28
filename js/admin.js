@@ -252,6 +252,60 @@ function formatDate(d) {
   return d;
 }
 
+// ===== Version History =====
+function getVersionHistory() {
+  var settings = getData('settings');
+  for (var i = 0; i < settings.length; i++) {
+    if (settings[i].key === 'versions') return settings[i].value || [];
+  }
+  return [];
+}
+
+function saveVersionHistory(versions) {
+  var settings = getData('settings');
+  for (var i = 0; i < settings.length; i++) {
+    if (settings[i].key === 'versions') {
+      settings[i].value = versions;
+      saveData('settings', settings);
+      return;
+    }
+  }
+  settings.push({ key: 'versions', value: versions });
+  saveData('settings', settings);
+}
+
+function recordVersion() {
+  var input = document.getElementById('version-desc-input');
+  if (!input || !input.value.trim()) { showToast('请填写更新说明'); return; }
+  var versions = getVersionHistory();
+  var now = new Date();
+  var dateStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  var verNum = 'v' + (versions.length + 1);
+  versions.unshift({ v: verNum, date: dateStr, desc: input.value.trim() });
+  saveVersionHistory(versions);
+  input.value = '';
+  showToast('版本 ' + verNum + ' 已记录');
+  renderSettings();
+}
+
+function deleteVersion(index) {
+  var versions = getVersionHistory();
+  if (index < 0 || index >= versions.length) return;
+  if (!confirm('确定删除此版本记录？')) return;
+  versions.splice(index, 1);
+  saveVersionHistory(versions);
+  renderSettings();
+}
+
+function autoRecordVersion(desc) {
+  var versions = getVersionHistory();
+  var now = new Date();
+  var dateStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  var verNum = 'v' + (versions.length + 1);
+  versions.unshift({ v: verNum, date: dateStr, desc: desc });
+  saveVersionHistory(versions);
+}
+
 // ===== Render =====
 function renderModule(mod) {
   var m = MODULES[mod];
@@ -1002,6 +1056,12 @@ function saveForm(mod, editId) {
 
   saveData(mod, data);
 
+  // Auto-record version for content updates
+  var moduleLabels = { genealogy:'族谱', members:'成员', activities:'活动', news:'消息', honors:'村荣誉', reports:'报道', photos:'照片', videos:'视频', music:'背景音乐', messages:'留言', templeCarousel:'宗祠轮播' };
+  var label = moduleLabels[mod] || mod;
+  var action = editId ? '更新' : '新增';
+  autoRecordVersion(action + label + '内容');
+
   // Handle file uploads — upload each file independently to server
   var uploadPromises = [];
   for (var ui = 0; ui < fileUploads.length; ui++) {
@@ -1056,6 +1116,9 @@ function deleteItem(mod, id) {
     else deletedItem = data[i];
   }
   saveData(mod, filtered);
+  // Auto-record delete version
+  var moduleLabels = { genealogy:'族谱', members:'成员', activities:'活动', news:'消息', honors:'村荣誉', reports:'报道', photos:'照片', videos:'视频', music:'背景音乐', messages:'留言', templeCarousel:'宗祠轮播' };
+  autoRecordVersion('删除' + (moduleLabels[mod] || mod) + '内容');
   // Delete file from server if has file_url
   if (deletedItem && deletedItem.file_url) {
     var filename = deletedItem.file_url.replace('/uploads/', '');
@@ -1092,7 +1155,6 @@ function renderSettings(area) {
   html += '<h4 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:12px;font-weight:500;">首页首屏风格</h4>';
   html += '<div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">';
   html += '<button class="btn ' + (heroStyle === 'clean' ? 'btn-accent' : 'btn') + '" id="hero-style-clean" onclick="setHeroStyle(\'clean\')" style="flex:1;min-width:100px;padding:10px;">🎨 纯色</button>';
-  html += '<button class="btn ' + (heroStyle === 'particle' ? 'btn-accent' : 'btn') + '" id="hero-style-particle" onclick="setHeroStyle(\'particle\')" style="flex:1;min-width:100px;padding:10px;">✨ 粒子</button>';
   html += '<button class="btn ' + (heroStyle === 'photo' ? 'btn-accent' : 'btn') + '" id="hero-style-photo" onclick="setHeroStyle(\'photo\')" style="flex:1;min-width:100px;padding:10px;">🖼️ 照片</button>';
   html += '<button class="btn ' + (heroStyle === 'map' ? 'btn-accent' : 'btn') + '" id="hero-style-map" onclick="setHeroStyle(\'map\')" style="flex:1;min-width:100px;padding:10px;">🗺️ 地图</button>';
   html += '</div>';
@@ -1135,6 +1197,31 @@ function renderSettings(area) {
   html += '<div style="background:var(--glass-bg);padding:16px;border-radius:8px;text-align:center;"><strong style="color:var(--text-primary);display:block;font-size:24px;" id="settings-reports-count">0</strong><span style="color:var(--text-tertiary);">报道</span></div>';
   html += '</div></div>';
 
+  // ===== 版本记录 =====
+  var versions = getVersionHistory();
+  html += '<div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--divider);">';
+  html += '<h4 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:12px;font-weight:500;">📋 版本记录</h4>';
+  html += '<div style="display:flex;gap:8px;margin-bottom:12px;">';
+  html += '<input type="text" id="version-desc-input" placeholder="本次更新内容说明，如：优化移动端布局、修复XXX" style="flex:1;padding:8px 12px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:13px;" onkeydown="if(event.key===\'Enter\')recordVersion()">';
+  html += '<button class="btn btn-accent btn-sm" onclick="recordVersion()">📝 记录</button>';
+  html += '</div>';
+  if (versions.length === 0) {
+    html += '<p style="font-size:13px;color:var(--text-tertiary);padding:12px;text-align:center;">暂无版本记录</p>';
+  } else {
+    html += '<div style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">';
+    for (var vi = 0; vi < versions.length; vi++) {
+      var v = versions[vi];
+      html += '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--glass-bg);border-radius:6px;font-size:13px;">';
+      html += '<span style="background:var(--accent-orange-dim);color:var(--accent-orange);padding:2px 8px;border-radius:4px;font-weight:600;font-size:11px;white-space:nowrap;">' + (v.v || '') + '</span>';
+      html += '<span style="color:var(--text-tertiary);font-size:11px;white-space:nowrap;">' + (v.date || '') + '</span>';
+      html += '<span style="color:var(--text-secondary);flex:1;">' + (v.desc || '') + '</span>';
+      html += '<button onclick="deleteVersion(' + vi + ')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:2px;" title="删除">✕</button>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+
   // Reset data
   html += '<div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--divider);">';
   html += '<h4 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:12px;font-weight:500;">数据管理</h4>';
@@ -1174,13 +1261,13 @@ function saveSettings() {
 function setHeroStyle(style) {
   localStorage.setItem('xie_hero_style', style);
   saveHeroSetting('hero_style', style);
-  var ids = ['hero-style-clean', 'hero-style-particle', 'hero-style-photo', 'hero-style-map'];
-  var vals = ['clean', 'particle', 'photo', 'map'];
+  var ids = ['hero-style-clean', 'hero-style-photo', 'hero-style-map'];
+  var vals = ['clean', 'photo', 'map'];
   for (var i = 0; i < ids.length; i++) {
     var btn = document.getElementById(ids[i]);
     if (btn) btn.className = 'btn' + (style === vals[i] ? ' btn-accent' : '');
   }
-  var label = { clean: '纯色', particle: '粒子背景', photo: '照片背景', map: '迁徙地图' }[style] || style;
+  var label = { clean: '纯色', photo: '照片背景', map: '迁徙地图' }[style] || style;
   showToast('首页风格已切换为' + label + '，刷新首页查看');
 }
 

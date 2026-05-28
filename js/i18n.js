@@ -44,6 +44,10 @@ const TRANSLATIONS = {
     zh: '家族历史',
     en: 'History'
   },
+  'nav.genealogy': {
+    zh: '族谱查询',
+    en: 'Genealogy'
+  },
   'nav.celebrities': {
     zh: '名人事迹',
     en: 'Celebrities'

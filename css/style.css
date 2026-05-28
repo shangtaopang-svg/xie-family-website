@@ -91,6 +91,16 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
+
+/* ===== Background Canvas (fixed behind everything, no flow space) ===== */
+#bg-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+}
 body {
   font-family: var(--font-body);
   color: var(--text-primary);
@@ -118,40 +128,29 @@ body {
 /* ===== Weather Controls ===== */
 .weather-controls {
   position: fixed;
-  right: 20px;
-  bottom: 80px;
-  z-index: 10;
+  left: 240px;
+  bottom: 106px;
+  z-index: 9999;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 6px;
-  opacity: 0.4;
+  opacity: 0.5;
   transition: opacity 0.3s;
 }
 .weather-controls:hover { opacity: 1; }
 .weather-btn {
   width: 34px; height: 34px;
   border-radius: 50%;
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg);
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(0,0,0,0.35);
   backdrop-filter: blur(8px);
-  color: var(--text-secondary);
+  color: #fff;
   font-size: 14px;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.25s;
   line-height: 1;
-}
-.weather-btn:hover {
-  background: var(--accent-orange-dim);
-  color: var(--accent-orange);
-  border-color: var(--accent-orange);
-  transform: scale(1.1);
-}
-.weather-btn.active {
-  background: var(--accent-orange);
-  color: #fff;
-  border-color: var(--accent-orange);
-  box-shadow: 0 0 12px rgba(212,119,58,0.3);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
 /* ===== Scrollbar ===== */
@@ -324,6 +323,147 @@ body {
   border-color: rgba(251,146,60,0.3);
 }
 
+/* ===== Sidebar 底部控制面板 ===== */
+.sidebar-controls {
+  margin-top: auto;
+  padding: 12px 8px 8px;
+  border-top: 1px solid var(--divider);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+.sc-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+}
+.sc-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--divider);
+  margin: 0 2px;
+}
+.sidebar-controls .weather-btn {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.25s;
+  line-height: 1;
+  padding: 0;
+}
+.sidebar-controls .weather-btn:hover {
+  background: var(--accent-orange-dim);
+  color: var(--accent-orange);
+  border-color: var(--accent-orange);
+  transform: scale(1.1);
+}
+.sidebar-controls .weather-btn.active {
+  background: var(--accent-orange);
+  color: #fff;
+  border-color: var(--accent-orange);
+}
+.sidebar-controls .music-btn {
+  width: 28px; height: 28px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  border-radius: 50%;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s;
+  line-height: 1;
+  padding: 0;
+}
+.sidebar-controls .music-btn:hover {
+  background: var(--glass-hover);
+  color: var(--text-primary);
+  transform: scale(1.1);
+}
+.sidebar-controls .music-btn.playing {
+  color: var(--accent-orange);
+  border-color: rgba(212,119,58,0.3);
+}
+.sidebar-controls .music-label {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60px;
+}
+.sidebar-controls .map-zoom-btns {
+  position: static;
+  opacity: 1;
+  pointer-events: auto;
+  flex-direction: row;
+  display: flex;
+  gap: 2px;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.sidebar-controls .map-zoom-btns button {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s;
+  line-height: 1;
+  padding: 0;
+  box-shadow: none;
+}
+.sidebar-controls .map-zoom-btns button:hover {
+  background: var(--accent-orange-dim);
+  color: var(--accent-orange);
+  border-color: var(--accent-orange);
+  transform: scale(1.1);
+}
+.sidebar-controls .nav-action-btn {
+  width: 28px;
+  height: 28px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s;
+  line-height: 1;
+  padding: 0;
+}
+.sidebar-controls .nav-action-btn.lang-btn {
+  width: auto;
+  padding: 0 6px;
+  font-size: 10px;
+}
+.sidebar-controls .nav-action-btn:hover {
+  background: var(--glass-hover);
+  color: var(--text-primary);
+  transform: scale(1.1);
+}
+
 /* ===== Main content offset for sidebar ===== */
 .content {
   margin-left: 220px;
@@ -454,12 +594,12 @@ body {
 /* ===== Music Player ===== */
 .music-player {
   position: fixed;
-  bottom: 70px;
-  left: 24px;
+  bottom: 24px;
+  left: 240px;
   z-index: 999;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 .music-btn {
   width: 38px; height: 38px;
@@ -619,8 +759,7 @@ body {
 .hero-bg-toggle {
   position: absolute;
   bottom: 130px;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 24px;
   display: flex;
   gap: 6px;
   z-index: 20;
@@ -806,7 +945,7 @@ body {
 
 .section-title {
   text-align: center;
-  margin-bottom: 36px;
+  margin-bottom: 24px;
 }
 
 .section-title h2 {
@@ -2279,7 +2418,7 @@ body {
 .page-wrap {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 60px 20px 60px;
+  padding: 25px 20px 60px;
   position: relative;
   z-index: 1;
 }
@@ -2290,21 +2429,21 @@ body {
 
 .page-title {
   text-align: center;
-  margin-bottom: 50px;
+  margin-bottom: 12px;
 }
 
 .page-title h2 {
   font-family: var(--font-title);
-  font-size: clamp(24px, 3.5vw, 36px);
+  font-size: clamp(20px, 2.8vw, 28px);
   font-weight: 400;
-  letter-spacing: 4px;
+  letter-spacing: 3px;
   color: var(--text-primary);
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .page-title p {
   color: var(--text-tertiary);
-  font-size: 13px;
+  font-size: 12px;
   letter-spacing: 2px;
 }
 
@@ -3111,7 +3250,7 @@ body {
   .main-nav.open { display: block; }
   .main-nav ul { flex-direction: column; }
   .main-nav a { padding: 10px 14px; }
-  .nav-actions { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--divider); justify-content: flex-start; }
+  .sidebar-controls { margin-top: 8px; padding: 8px; border-top: 1px solid var(--divider); }
 
   .hero-info { flex-direction: column; gap: 12px; }
   .hero-divider { width: 40px; height: 1px; }
@@ -3131,8 +3270,7 @@ body {
 @media (max-width: 480px) {
   .photo-grid-page { grid-template-columns: 1fr; }
   .admin-body .grid-4 { grid-template-columns: 1fr; }
-  .weather-controls { right: 10px; bottom: 70px; gap: 4px; }
-  .weather-btn { width: 28px; height: 28px; font-size: 11px; }
+  .sidebar-controls .weather-btn { width: 24px; height: 24px; font-size: 10px; }
 }
 
 /* ===== 始祖诞辰倒计时 ===== */
@@ -3358,11 +3496,11 @@ body {
 /* 缩放按钮 - 页面左下角（与音乐播放器同区域） */
 .map-zoom-btns {
   position: fixed;
-  bottom: 115px;
-  left: 20px;
+  bottom: 64px;
+  left: 240px;
   z-index: 99999;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 4px;
   opacity: 0;
   pointer-events: none;
@@ -3373,15 +3511,15 @@ body {
   pointer-events: auto;
 }
 .map-zoom-btns button {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg);
+  border: 1px solid rgba(0,0,0,0.1);
+  background: rgba(0,0,0,0.08);
   backdrop-filter: blur(8px);
-  color: var(--text-secondary);
-  font-size: 20px;
-  font-weight: 300;
+  color: #000;
+  font-size: 18px;
+  font-weight: 400;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -3389,6 +3527,7 @@ body {
   transition: all 0.25s ease;
   line-height: 1;
   user-select: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 .map-zoom-btns button:hover {
   background: var(--accent-orange-dim);
@@ -3906,4 +4045,257 @@ body {
   .lineage-branch-wrap::before { left: -16px; width: 16px; }
   .lineage-branches { grid-template-columns: 1fr; gap: 6px; }
   .lineage-continue { margin-left: 32px; }
+}
+
+/* ============================================
+   枫槎谢氏迁徙源流图
+   ============================================ */
+.migration-tree {
+  position: relative;
+  max-width: 720px;
+  margin: 30px auto 0;
+  padding: 10px 0 20px;
+}
+.migration-tree::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 36px;
+  width: 2px;
+  background: linear-gradient(to bottom,
+    #d4a037 0%, #22d3ee 20%, #4ade80 40%,
+    #fb923c 55%, #fb923c 60%, #ef4444 75%, #a78bfa 88%, #fbbf24 100%);
+  opacity: 0.25;
+}
+/* Each node */
+.m-node {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 0;
+  position: relative;
+  min-height: 80px;
+}
+/* Connector dot */
+.m-node::before {
+  content: '';
+  position: absolute;
+  left: 30px;
+  top: 28px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  z-index: 2;
+  border: 3px solid;
+  box-shadow: 0 0 0 4px var(--bg-primary);
+}
+.m-node[data-era="zhou"]::before { border-color: #d4a037; background: #d4a037; }
+.m-node[data-era="liuchao"]::before { border-color: #22d3ee; background: #22d3ee; }
+.m-node[data-era="tang"]::before { border-color: #4ade80; background: #4ade80; }
+.m-node[data-era="bei"]::before { border-color: #fb923c; background: #fb923c; }
+.m-node[data-era="ming"]::before { border-color: #ef4444; background: #ef4444; }
+.m-node[data-era="qing"]::before { border-color: #a78bfa; background: #a78bfa; }
+.m-node[data-era="now"]::before { border-color: #fbbf24; background: #fbbf24; }
+
+/* Start marker — 始 */
+.m-node-start::after {
+  content: '始';
+  position: absolute;
+  left: 22px;
+  top: 22px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #d4a037;
+  color: #000;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  letter-spacing: 1px;
+}
+
+/* Migration card */
+.m-card {
+  flex: 1;
+  margin-left: 52px;
+  padding: 16px 20px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+.m-card:hover {
+  background: var(--glass-hover);
+  transform: translateX(3px);
+  box-shadow: 0 4px 20px var(--shadow);
+}
+.m-era {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #000;
+  padding: 1px 10px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+  margin-right: 8px;
+}
+.m-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 4px 0 3px;
+  letter-spacing: 0.5px;
+}
+.m-loc {
+  font-size: 12px;
+  color: var(--accent-orange);
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+.m-desc {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  line-height: 1.8;
+  margin-bottom: 4px;
+}
+.m-year {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
+}
+
+/* Gap between nodes */
+.m-gap {
+  position: relative;
+  padding-left: 52px;
+  margin: -4px 0 0;
+  z-index: 1;
+}
+.m-gap::before {
+  content: '';
+  position: absolute;
+  left: 36px;
+  width: 2px;
+  background: var(--divider);
+  opacity: 0.3;
+}
+.m-gap span {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg-primary);
+  padding: 2px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--divider);
+  letter-spacing: 1px;
+}
+
+/* Branch (攒公/撰公/留居岩下) */
+.m-branch-wrap {
+  position: relative;
+  margin: 0 0 0 52px;
+  padding: 8px 0 4px;
+  z-index: 1;
+}
+.m-branch-wrap::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: -16px;
+  width: 16px;
+  border-left: 2px solid var(--divider);
+  border-bottom: 2px solid var(--divider);
+  border-radius: 0 0 0 12px;
+  opacity: 0.3;
+}
+.m-branches {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+.m-branch-item {
+  padding: 12px 14px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+.m-branch-item:hover {
+  background: var(--glass-hover);
+  transform: translateY(-2px);
+}
+.m-branch-item .b-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  letter-spacing: 1px;
+}
+.m-branch-item .b-desc {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1.6;
+}
+.m-branch-item.b-main {
+  border-color: var(--accent-orange);
+  background: rgba(251,146,60,0.06);
+}
+.m-branch-item.b-main .b-name {
+  color: var(--accent-orange);
+}
+
+/* Flood event highlight */
+.m-flood {
+  margin: 0 0 0 52px;
+  padding: 12px 18px;
+  background: rgba(239,68,68,0.06);
+  border: 1px solid rgba(239,68,68,0.15);
+  border-left: 3px solid #ef4444;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.m-flood-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+.m-flood-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.m-flood-text strong {
+  color: var(--accent-red);
+}
+
+/* Arrow connector */
+.m-arrow {
+  text-align: center;
+  padding: 2px 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .migration-tree::before { left: 24px; }
+  .m-node::before { left: 18px; top: 24px; width: 12px; height: 12px; }
+  .m-node-start::after { left: 10px; top: 18px; width: 28px; height: 28px; font-size: 11px; }
+  .m-card { margin-left: 36px; padding: 12px 14px; }
+  .m-gap { padding-left: 36px; }
+  .m-gap::before { left: 24px; }
+  .m-branch-wrap { margin-left: 36px; }
+  .m-branch-wrap::before { left: -12px; width: 12px; }
+  .m-branches { grid-template-columns: 1fr; gap: 6px; }
+  .m-flood { margin-left: 36px; flex-direction: column; text-align: center; }
+  .m-title { font-size: 14px; }
 }
