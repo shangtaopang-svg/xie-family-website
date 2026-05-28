@@ -7,7 +7,7 @@
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 
   
-  <link rel="stylesheet" href="../css/style.css?v=80">
+  <link rel="stylesheet" href="../css/style.css?v=80"> (fix: unify admin.html 12-button layout and add 管理后台 nav link to all pages)
   <script src="../js/i18n.js?v=9"></script>
   <script src="../js/file-store.js?v=6"></script>
   <script src="../js/supabase.js?v=6"></script>
@@ -49,11 +49,15 @@
             <button class="weather-btn" data-weather="meteor" title="流星">☄</button>
           </div>
           <div class="sc-row">
-            <button class="map-z-in sc-btn" title="放大">+</button>
-            <button class="map-z-out sc-btn" title="缩小">−</button>
-            <button class="music-btn" id="music-prev" title="上一首">⏮</button>
-            <button class="music-btn" id="music-toggle" title="播放/暂停">🔈</button>
-            <button class="music-btn" id="music-next" title="下一首">⏭</button>
+            <div class="map-zoom-btns">
+              <button class="map-z-in" title="放大">+</button>
+              <button class="map-z-out" title="缩小">−</button>
+            </div>
+            <span class="sc-divider"></span>
+            <button class="music-btn" id="music-prev" title="上一首" style="font-size:14px;">⏮</button>
+            <button class="music-btn" id="music-toggle">🔈</button>
+            <button class="music-btn" id="music-next" title="下一首" style="font-size:14px;">⏭</button>
+            <span class="music-label" id="music-track-name">背景音乐</span> (fix: unify admin.html 12-button layout and add 管理后台 nav link to all pages)
           </div>
           <div class="sc-row">
             <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
@@ -156,7 +160,7 @@
   };
   </script>
   <script src="../js/main.js?v=8"></script>
-  <script src="../js/admin.js?v=14"></script>
+  <script src="../js/admin.js?v=14"></script> (fix: unify admin.html 12-button layout and add 管理后台 nav link to all pages)
   <script>
     // Canvas animated background
     const canvas = document.getElementById('bg-canvas');
@@ -205,6 +209,6 @@
     }
   </script>
     <audio id="bg-music" loop src="../music/background.mp3"></audio>
-
+ (fix: unify admin.html 12-button layout and add 管理后台 nav link to all pages)
 </body>
 </html>
