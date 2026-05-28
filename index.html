@@ -11,13 +11,17 @@
 
   
   
-  <link rel="stylesheet" href="css/style.css?v=48">
+  <link rel="stylesheet" href="css/style.css?v=49">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="js/i18n.js?v=9"></script>
   <script src="js/file-store.js?v=6"></script>
 </head>
 <body>
 
 <canvas id="weather-canvas"></canvas>
+
+<!-- 迁徙地图背景 -->
+<div id="map-bg"></div>
 
 <div class="content">
 
@@ -161,16 +165,22 @@
       var hero = document.querySelector('.hero-section');
       if (!hero) return;
       function applyHero(bg, style) {
-        // Clear previous styles
         hero.classList.remove('hero-photo-bg', 'hero-particle-bg');
         hero.style.backgroundImage = '';
         if (style === 'particle') {
           hero.classList.add('hero-particle-bg');
+          document.dispatchEvent(new CustomEvent('xie-bg-mode', { detail: 'particle' }));
+        } else if (style === 'map') {
+          hero.classList.add('hero-particle-bg');
+          document.dispatchEvent(new CustomEvent('xie-bg-mode', { detail: 'map' }));
         } else if (bg && style === 'photo') {
           hero.classList.add('hero-photo-bg');
           hero.style.backgroundImage = 'url(' + bg + ')';
           hero.style.backgroundSize = 'cover';
           hero.style.backgroundPosition = 'center';
+          document.dispatchEvent(new CustomEvent('xie-bg-mode', { detail: 'particle' }));
+        } else {
+          document.dispatchEvent(new CustomEvent('xie-bg-mode', { detail: 'particle' }));
         }
       }
       var bg = localStorage.getItem('xie_hero_bg');
@@ -339,6 +349,8 @@
   </div>
 
   <script src="js/main.js?v=8"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/map-migration.js?v=1"></script>
   <script>
     // Hero-only particle background (canvas inside .hero-section)
     const canvas = document.getElementById('bg-canvas');
@@ -356,22 +368,22 @@
       const dots = [];
       const DOT_COUNT = 80;
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      const dotColor = isDark ? '255,255,255' : '100,100,100';
+      const dotColor = isDark ? '200,200,200' : '212,119,58';
 
       for (let i = 0; i < DOT_COUNT; i++) {
         dots.push({
           x: Math.random() * w, y: Math.random() * h,
           vx: (Math.random() - 0.5) * 0.3,
           vy: (Math.random() - 0.5) * 0.3,
-          r: Math.random() * 2 + 1,
-          a: Math.random() * 0.3 + 0.1
+          r: Math.random() * 2.5 + 1,
+          a: Math.random() * 0.4 + 0.15
         });
       }
 
       const orbs = [
-        { x: 0.2, y: 0.3, r: 0.35, color: 'rgba(212,119,58,0.04)' },
-        { x: 0.8, y: 0.7, r: 0.3, color: 'rgba(58,157,171,0.03)' },
-        { x: 0.5, y: 0.1, r: 0.25, color: 'rgba(212,119,58,0.03)' }
+        { x: 0.2, y: 0.3, r: 0.35, color: 'rgba(212,119,58,0.06)' },
+        { x: 0.8, y: 0.7, r: 0.3, color: 'rgba(58,157,171,0.05)' },
+        { x: 0.5, y: 0.1, r: 0.25, color: 'rgba(212,119,58,0.04)' }
       ];
 
       function draw() {
