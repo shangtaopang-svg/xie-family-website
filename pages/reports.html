@@ -11,6 +11,69 @@
   <script src="../js/i18n.js?v=6"></script>
   <script src="../js/file-store.js?v=3"></script>
   <script src="../js/supabase.js?v=3"></script>
+
+  <style>
+    /* ===== 新闻报道 ===== */
+    .reports-list-wrap {
+      min-height:200px;
+    }
+
+    .report-item {
+      display:flex; align-items:baseline; gap:24px;
+      padding:18px 0 16px;
+      cursor:pointer;
+      border-bottom:1px solid var(--divider);
+      transition:opacity 0.2s;
+    }
+    .report-item:last-child { border-bottom:none; }
+    .report-item:hover { opacity:0.7; }
+
+    .report-date {
+      flex-shrink:0; width:86px;
+      font-size:13px; color:var(--text-tertiary);
+      font-weight:400; letter-spacing:0.3px;
+      line-height:1.5;
+    }
+    .report-title {
+      flex:1; font-size:16px; color:var(--text-primary);
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      font-weight:500; line-height:1.5;
+      transition:color 0.2s;
+    }
+    .report-item:hover .report-title { color:var(--accent-orange); }
+    .report-source {
+      flex-shrink:0; font-size:12px; color:var(--text-tertiary);
+      font-weight:400; white-space:nowrap; line-height:1.5;
+    }
+    .report-external-link {
+      flex-shrink:0; font-size:12px; color:var(--text-tertiary);
+      text-decoration:none; margin-left:4px; line-height:1.5;
+      transition:color 0.2s;
+    }
+    .report-external-link:hover { color:var(--accent-orange); }
+
+    .reports-pagination {
+      display:flex; align-items:center; justify-content:center; gap:20px;
+      padding:28px 0 12px;
+    }
+    .page-btn {
+      padding:6px 22px; font-size:13px; cursor:pointer;
+      background:transparent; border:1px solid var(--glass-border);
+      border-radius:4px; color:var(--text-secondary); transition:all 0.2s; font-family:inherit;
+      letter-spacing:0.5px;
+    }
+    .page-btn:hover:not(:disabled) { border-color:var(--accent-orange); color:var(--accent-orange); }
+    .page-btn:disabled { opacity:0.25; cursor:default; }
+    .page-info { font-size:13px; color:var(--text-tertiary); letter-spacing:0.5px; }
+
+    @media (max-width:768px) {
+      .report-item { padding:14px 0; gap:12px; flex-wrap:wrap; }
+      .report-date { width:auto; font-size:12px; }
+      .report-title { font-size:15px; width:100%; order:-1; }
+      .report-source { font-size:11px; }
+    }
+  </style>  </style>
+
 </head>
 <body>
 
@@ -53,30 +116,8 @@
       <p data-i18n="page.reports">媒体报道 · 新闻聚焦</p>
     </div>
 
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:36px;">
-      <div>
-        <div class="section-title" style="text-align:left;"><h2 style="font-size:22px;">媒体报道</h2><div class="divider" style="margin:8px 0;"></div></div>
-        <div id="reports-list">
-          <!-- 由 JS 动态渲染 -->
-        </div>
-      </div>
-
-      <!-- 侧边栏 -->
-      <div>
-        <div class="glass-card" style="padding:20px;margin-bottom:20px;">
-          <h4 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:12px;font-size:15px;font-weight:500;">📰 关于报道</h4>
-          <p style="font-size:13px;color:var(--text-tertiary);line-height:1.8;">本栏目汇集各类媒体关于下枫槎村及谢氏家族的新闻报道，包括报刊、电视、网络等渠道的公开报道。欢迎族人提供相关报道线索。</p>
-        </div>
-
-        <div class="glass-card" style="padding:20px;">
-          <h4 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:12px;font-size:15px;font-weight:500;">🔗 媒体链接</h4>
-          <div style="font-size:13px;">
-            <p style="padding:6px 0;color:var(--text-tertiary);"><a href="#" style="color:var(--accent-orange);" onclick="alert('外部链接，将跳转到宁海新闻网');">宁海新闻网</a></p>
-            <p style="padding:6px 0;color:var(--text-tertiary);"><a href="#" style="color:var(--accent-orange);" onclick="alert('外部链接，将跳转到宁波日报');">宁波日报</a></p>
-            <p style="padding:6px 0;color:var(--text-tertiary);"><a href="#" style="color:var(--accent-orange);" onclick="alert('外部链接，将跳转到浙江新闻');">浙江新闻</a></p>
-          </div>
-        </div>
-      </div>
+    <div class="reports-list-wrap" id="reports-list-wrap">
+      <div id="reports-list"></div>
     </div>
   </div>
 
@@ -95,7 +136,7 @@
   </footer>
 
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
-  <script src="../js/main.js?v=3"></script>
+  <script src="../js/main.js?v=8"></script>
   <script>
     // Canvas animated background
     const canvas = document.getElementById('bg-canvas');
@@ -156,19 +197,21 @@
       return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
     }
 
-    // ===== 阅读全文弹窗 =====
-    function showFullArticle(link, title, source, date, content) {
+    function showReportModal(item) {
       var overlay = document.createElement('div');
       overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
       var box = document.createElement('div');
       box.style.cssText = 'background:var(--bg-primary);border:1px solid var(--glass-border);border-radius:12px;max-width:720px;width:100%;max-height:80vh;overflow-y:auto;padding:36px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
-      box.innerHTML = '<button onclick="this.parentElement.parentElement.remove()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-tertiary);">✕</button>'
-        + '<h2 style="font-family:var(--font-title);color:var(--text-primary);font-size:20px;font-weight:600;margin-bottom:12px;padding-right:30px;">' + escapeHtml(title) + '</h2>'
+      var fullContent = item.content || '';
+      var hasUrl = item.url && item.url.trim() !== '';
+      box.innerHTML = '<button onclick="this.parentElement.parentElement.remove()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-tertiary);">\u2715</button>'
+        + '<h2 style="font-family:var(--font-title);color:var(--text-primary);font-size:20px;font-weight:600;margin-bottom:12px;padding-right:30px;">' + escapeHtml(item.title) + '</h2>'
         + '<div style="font-size:13px;color:var(--text-tertiary);margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--divider);">'
-        + (date ? '<span>' + date + '</span>' : '')
-        + (source ? ' 来源：' + escapeHtml(source) : '')
+        + (item.date ? '<span>' + item.date + '</span>' : '')
+        + (item.source ? ' 来源：' + escapeHtml(item.source) : '')
         + '</div>'
-        + '<div style="font-size:14px;color:var(--text-secondary);line-height:2;">' + escapeHtml(content).replace(/\n/g, '<br>') + '</div>';
+        + '<div style="font-size:14px;color:var(--text-secondary);line-height:2;">' + escapeHtml(fullContent).replace(/\n/g, '<br>') + '</div>'
+        + (hasUrl ? '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--divider);"><a href="' + escapeAttr(item.url) + '" target="_blank" style="color:var(--accent-orange);font-size:13px;text-decoration:none;">\u67e5\u770b\u539f\u6587\u94fe\u63a5 \u2192</a></div>' : '');
       overlay.appendChild(box);
       overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
       document.body.appendChild(overlay);
@@ -176,45 +219,63 @@
 
     function renderReports() {
       var defaults = [
-        { id: 5, title: '望府山下清"枫"徐来', date: '2023-03-20', source: '浙江省纪委省监委网站', url: 'http://www.zjsjw.gov.cn/zhuantizhuanlan/qinglianwenhua/qingfengzhilv/202303/t20230307_8816170.shtml', content: '浙江省纪委监委"清风之旅"专栏报道下枫槎村。文章描绘了下枫槎村依托望府楼山风景和望府茶产区优势，打造"望府茶飨 自在曲水"IP，深挖"茶廉"文化。村内兴枫亭、茶廉枫香长廊、"廉在一起"会客厅、清枫舍等场所，将茶文化与廉洁教育有机结合。从村规民约"三字经"到"监督一点通"二维码，下枫槎以清廉村居建设赋能乡村振兴，实现了从城郊乡村到城市后花园的"美丽蝶变"。' },
-        { id: 4, title: '艺探新乡村 | 最是茶香抚人心——宁海县跃龙街道下枫槎村', date: '2026-05-25', source: '宁波文艺', url: 'https://mp.weixin.qq.com/s?__biz=MzI1NTY0MDQ0Ng==&mid=2247592668&idx=2&sn=f746455c81ccf6518134817815fa5cca', content: '宁波市文联"艺探新乡村"专栏报道下枫槎村。文章以茶文化为线索，从望府银毫、望府楼山到村庄蝶变，描绘了下枫槎村以茶为媒、艺术赋能乡村振兴的生动故事。村内仿古凉亭、小桥流水、音乐喷泉与茶廊、茶宿交相辉映，废弃房屋改造成的"蜂巢乐园"、电线杆艺术品等展现了化腐朽为神奇的乡村艺术。"四知堂""墨香斋""明德堂""清枫舍"等文化空间，让这个曾经"藏在深闺"的村子蝶变为远近闻名的后花园。' },
-        { id: 1, title: '宁海下枫槎村：古村焕新颜 数字宗祠传家风', date: '2026-04-20', source: '宁海新闻网', url: '', content: '宁海县下枫槎村依托数字宗祠平台，将传统家族文化融入现代数字技术，让在外游子能够随时了解家乡动态、参与家族事务，探索出一条传统文化传承的新路径。' },
-        { id: 2, title: '下枫槎村乡村振兴纪实：古村落的美丽蝶变', date: '2026-03-15', source: '宁波日报', url: '', content: '近年来，下枫槎村在保持古村落风貌的同时，大力发展乡村旅游和特色农业，实现了从偏远山村到美丽乡村的华丽转身。' },
-        { id: 3, title: '谢氏后人的文化坚守：老祠堂变身新课堂', date: '2026-02-08', source: '浙江新闻', url: '', content: '在宁海下枫槎村，谢氏族人将百年宗祠改造成传统文化课堂，定期组织青少年学习国学经典、书法礼仪，让老祠堂焕发新活力。' },
-        { id: 6, title: '宁波宁海：农家爱艺术 废物尽"奇"用', date: '2022-12-08', source: '央广网', url: 'https://www.163.com/dy/article/HO3MLPH00514R9NP.html', content: '央广网宁波12月8日报道，"尽奇用——废物不废"行动在宁海跃龙街道下枫槎村持续开展。村民沈玉燕利用老家具、旧衣服、树桩竹梢等将自家小院改造成公共文化空间，计划带领妇女刺绣团队打响"燕姐绣坊"品牌。村民陈掌娟的"一面结缘"面馆也成了邻里共创空间，大家用废布料勾画江南水乡图。中国人民大学"小裤脚教授"丛志强团队驻村指导，将家庭私人空间转化为公共文化服务空间，探索乡村公共文化服务助力共同富裕的有效路径。' },
-        { id: 7, title: '宁海下枫槎村｜"茶文化"艺术村展露风姿', date: '2022-06-16', source: '宁海新闻网', url: 'https://www.x163.com.cn/article-2129-1.html', content: '宁海跃龙街道下枫槎村依托望府楼山优美风景和望府茶主产区优势，打造"望府茶飨、自在曲水"IP，以茶廊、茶学、茶史、茶艺、茶宿、茶美"六茶"为内容，建设仿古凉亭、音乐喷泉、小桥流水等景观。村内建成"阿拉崖谷奶茶杯""巾帼茶席"等艺术节点17个，培育青枫蜜茶、"老十堂"养生姜膏等产业项目5个，总投资超千万元。前不久举办的"望府茶飨"文化节吸引大量游客，田也甜品店开张首日卖出奶茶300多杯。' },
-        { id: 8, title: '宁海跃龙：以艺术激活乡村振兴的"一池春水"', date: '2022-06-27', source: '浙江日报', url: 'http://zjrb.zjol.com.cn/html/2022-06/27/content_3566527.htm', content: '浙江日报报道宁海跃龙街道以艺术激活乡村振兴。下枫槎村引入中国人民大学丛志强团队和乡建艺术家驻村，依托望府楼山千亩茶园优势打造"望府茶飨、自在曲水"IP，建成艺术节点17个、培育产业项目5个，总投资超千万元。跃龙街道出台1号文件扶持艺术振兴乡村，规划打造休闲娱乐、绿色生态、产业活力三条精品线，推动乡村振兴从"美丽颜值"向"发展产值"转变。' },
+        { id: 5, title: '\u671b\u5e9c\u5c71\u4e0b\u6e05\u201c\u67ab\u201d\u6765', date: '2023-03-20', source: '\u6d59\u6c5f\u7701\u7eaa\u59d4\u7701\u7eaa\u76d1\u59d4\u7f51\u7ad9', url: 'http://www.zjsjw.gov.cn/zhuantizhuanlan/qinglianwenhua/qingfengzhilv/202303/t20230307_8816170.shtml', content: '\u6d59\u6c5f\u7701\u7eaa\u59d4\u76d1\u59d4\u201c\u6e05\u98ce\u4e4b\u65c5\u201d\u4e13\u680f\u62a5\u9053\u4e0b\u67ab\u693f\u6751\u3002\u6587\u7ae0\u63cf\u7ed8\u4e86\u4e0b\u67ab\u693f\u6751\u4f9d\u6258\u671b\u5e9c\u697c\u5c71\u98ce\u666f\u548c\u671b\u5e9c\u8336\u4ea7\u533a\u4f18\u52bf\uff0c\u6253\u9020\u201c\u673b\u5e9c\u8336\u98e8 \u81ea\u5728\u66f2\u6c34\u201dIP\uff0c\u6df1\u6316\u201c\u8336\u5ec9\u201d\u6587\u5316\u3002\u6751\u5185\u5174\u67ab\u4ead\u3001\u8336\u5ec9\u67ab\u9999\u957f\u5eca\u3001\u201c\u5ec9\u201d\u5728\u4e00\u8d77\u4f1a\u5ba2\u5385\u3001\u6e05\u67ab\u820d\u7b49\u573a\u6240\uff0c\u5c06\u8336\u6587\u5316\u4e0e\u5ec9\u6d01\u6559\u80b2\u6709\u673a\u7ed3\u5408\u3002\u4ece\u6751\u89c4\u6c11\u7ea6\u201c\u4e09\u5b57\u7ecf\u201d\u5230\u201c\u76d1\u7763\u4e00\u70b9\u901a\u201d\u4e8c\u7ef4\u7801\uff0c\u4e0b\u67ab\u693f\u4ee5\u6e05\u5ec9\u6751\u5c45\u5efa\u8bbe\u8d4b\u80fd\u4e61\u6751\u632f\u5174\uff0c\u5b9e\u73b0\u4e86\u4ece\u57ce\u90ca\u4e61\u6751\u5230\u57ce\u5e02\u540e\u82b1\u56ed\u7684\u201c\u7f8e\u4e3d\u8776\u53d8\u201d\u3002' },
+        { id: 4, title: '\u827a\u63a2\u65b0\u4e61\u6751 | \u6700\u662f\u8336\u9999\u6276\u4eba\u5fc3\u2014\u2014\u5b81\u6d77\u53bf\u8dc3\u9f99\u8857\u9053\u4e0b\u67ab\u693f\u6751', date: '2026-05-25', source: '\u5b81\u6ce2\u6587\u827a', url: 'https://mp.weixin.qq.com/s?__biz=MzI1NTY0MDQ0Ng==&mid=2247592668&idx=2&sn=f746455c81ccf6518134817815fa5cca', content: '\u5b81\u6ce2\u5e02\u6587\u8054\u201c\u827a\u63a2\u65b0\u4e61\u6751\u201d\u4e13\u680f\u62a5\u9053\u4e0b\u67ab\u693f\u6751\u3002\u6587\u7ae0\u4ee5\u8336\u6587\u5316\u4e3a\u7ebf\u7d22\uff0c\u4ece\u671b\u5e9c\u94f6\u6beb\u3001\u671b\u5e9c\u697c\u5c71\u5230\u6751\u5e84\u8776\u53d8\uff0c\u63cf\u7ed8\u4e86\u4e0b\u67ab\u693f\u6751\u4ee5\u8336\u4e3a\u5a92\u3001\u827a\u672f\u8d4b\u80fd\u4e61\u6751\u632f\u5174\u7684\u751f\u52a8\u6545\u4e8b\u3002\u6751\u5185\u4eff\u53e4\u51c9\u4ead\u3001\u5c0f\u6865\u6d41\u6c34\u3001\u97f3\u4e50\u55b7\u6cc9\u4e0e\u8336\u5eca\u3001\u8336\u5bbf\u4ea4\u76f8\u8f89\u6620\uff0c\u5e9f\u5f03\u623f\u5c4b\u6539\u9020\u6210\u7684\u201c\u8702\u5de2\u4e50\u56ed\u201d\u3001\u7535\u7ebf\u6746\u827a\u672f\u54c1\u7b49\u5c55\u73b0\u4e86\u5316\u8150\u79c0\u4e3a\u795e\u5947\u7684\u4e61\u6751\u827a\u672f\u3002\u201c\u56db\u77e5\u5802\u201d\u201c\u58a8\u9999\u658b\u201d\u201c\u660e\u5fb7\u5802\u201d\u201c\u6e05\u67ab\u820d\u201d\u7b49\u6587\u5316\u7a7a\u95f4\uff0c\u8ba9\u8fd9\u4e2a\u66fe\u7ecf\u201c\u85cf\u5728\u6df1\u9608\u201d\u7684\u6751\u5b50\u8776\u53d8\u4e3a\u8fdc\u8fd1\u95fb\u540d\u7684\u540e\u82b1\u56ed\u3002' },
+        { id: 6, title: '\u5b81\u6ce2\u5b81\u6d77\uff1a\u519c\u5bb6\u7231\u827a\u672f \u5e9f\u7269\u5c3d\u201c\u5947\u201d\u7528', date: '2022-12-08', source: '\u592e\u5e7f\u7f51', url: 'https://www.163.com/dy/article/HO3MLPH00514R9NP.html', content: '\u592e\u5e7f\u7f51\u5b81\u6ce212\u67088\u65e5\u62a5\u9053\uff0c\u201c\u5c3d\u5947\u7528\u2014\u2014\u5e9f\u7269\u4e0d\u5e9f\u201d\u884c\u52a8\u5728\u5b81\u6d77\u8dc3\u9f99\u8857\u9053\u4e0b\u67ab\u693f\u6751\u6301\u7eed\u5f00\u5c55\u3002\u6751\u6c11\u6c88\u7389\u71d5\u5229\u7528\u8001\u5bb6\u5177\u3001\u65e7\u8863\u670d\u3001\u6811\u6869\u7af9\u68a2\u7b49\u5c06\u81ea\u5bb6\u5c0f\u9662\u6539\u9020\u6210\u516c\u5171\u6587\u5316\u7a7a\u95f4\uff0c\u8ba1\u5212\u5e26\u9886\u5987\u5973\u523a\u7ee3\u56e2\u961f\u6253\u54cd\u201c\u71d5\u59d0\u7ee3\u574a\u201d\u54c1\u724c\u3002\u6751\u6c11\u9648\u638c\u5a1f\u7684\u201c\u4e00\u9762\u7f18\u7ed3\u201d\u9762\u9986\u4e5f\u6210\u4e86\u90bb\u91cc\u5171\u521b\u7a7a\u95f4\uff0c\u5927\u5bb6\u7528\u5e9f\u5e03\u6599\u52fe\u753b\u6c5f\u5357\u6c34\u4e61\u56fe\u3002\u4e2d\u56fd\u4eba\u6c11\u5927\u5b66\u201c\u5c0f\u88e4\u811a\u6559\u6388\u201d\u4e1b\u5fd7\u5f3a\u56e2\u961f\u9a7b\u6751\u6307\u5bfc\uff0c\u5c06\u5bb6\u5ead\u79c1\u4eba\u7a7a\u95f4\u8f6c\u5316\u4e3a\u516c\u5171\u6587\u5316\u670d\u52a1\u7a7a\u95f4\uff0c\u63a2\u7d22\u4e61\u6751\u516c\u5171\u6587\u5316\u670d\u52a1\u52a9\u529b\u5171\u540c\u5bcc\u88d5\u7684\u6709\u6548\u8def\u5f84\u3002' },
+        { id: 7, title: '\u5b81\u6d77\u4e0b\u67ab\u693f\u6751\uff5c\u201c\u8336\u6587\u5316\u201d\u827a\u672f\u6751\u5c55\u9732\u98ce\u59ff', date: '2022-06-16', source: '\u5b81\u6d77\u65b0\u95fb\u7f51', url: 'https://www.x163.com.cn/article-2129-1.html', content: '\u5b81\u6d77\u8dc3\u9f99\u8857\u9053\u4e0b\u67ab\u693f\u6751\u4f9d\u6258\u671b\u5e9c\u697c\u5c71\u4f18\u7f8e\u98ce\u666f\u548c\u671b\u5e9c\u8336\u4e3b\u4ea7\u533a\u4f18\u52bf\uff0c\u6253\u9020\u201c\u671b\u5e9c\u8336\u98e8\u3001\u81ea\u5728\u66f2\u6c34\u201dIP\uff0c\u4ee5\u8336\u5eca\u3001\u8336\u5b66\u3001\u8336\u53f2\u3001\u8336\u827a\u3001\u8336\u5bbf\u3001\u8336\u7f8e\u201c\u516d\u8336\u201d\u4e3a\u5185\u5bb9\uff0c\u5efa\u8bbe\u4eff\u53e4\u51c9\u4ead\u3001\u97f3\u4e50\u55b7\u6cc9\u3001\u5c0f\u6865\u6d41\u6c34\u7b49\u666f\u89c2\u3002\u6751\u5185\u5efa\u6210\u201c\u963f\u62c9\u5d16\u8c37\u5976\u8336\u676f\u201d\u201c\u5e45\u5e26\u8336\u5e2d\u201d\u7b49\u827a\u672f\u8282\u70b917\u4e2a\uff0c\u57f9\u80b2\u9752\u67ab\u871c\u8336\u3001\u201c\u8001\u5341\u5802\u201d\u517b\u751f\u59dc\u818f\u7b49\u4ea7\u4e1a\u9879\u76ee5\u4e2a\uff0c\u603b\u6295\u8d44\u8d85\u5343\u4e07\u5143\u3002\u524d\u4e0d\u4e45\u4e3e\u529e\u7684\u201c\u671b\u5e9c\u8336\u98e8\u201d\u6587\u5316\u8282\u5438\u5f15\u5927\u91cf\u6e38\u5ba2\uff0c\u7530\u4e5f\u751c\u54c1\u5e97\u5f00\u5f20\u9996\u65e5\u5356\u51fa\u5976\u8336300\u591a\u676f\u3002' },
+        { id: 8, title: '\u5b81\u6d77\u8dc3\u9f99\uff1a\u4ee5\u827a\u672f\u6fc0\u6d3b\u4e61\u6751\u632f\u5174\u7684\u201c\u4e00\u6c60\u6625\u6c34\u201d', date: '2022-06-27', source: '\u6d59\u6c5f\u65e5\u62a5', url: 'http://zjrb.zjol.com.cn/html/2022-06/27/content_3566527.htm', content: '\u6d59\u6c5f\u65e5\u62a5\u62a5\u9053\u5b81\u6d77\u8dc3\u9f99\u8857\u9053\u4ee5\u827a\u672f\u6fc0\u6d3b\u4e61\u6751\u632f\u5174\u3002\u4e0b\u67ab\u693f\u6751\u5f15\u5165\u4e2d\u56fd\u4eba\u6c11\u5927\u5b66\u4e1b\u5fd7\u5f3a\u56e2\u961f\u548c\u4e61\u5efa\u827a\u672f\u5bb6\u9a7b\u6751\uff0c\u4f9d\u6258\u671b\u5e9c\u697c\u5c71\u5343\u4ea9\u8336\u56ed\u4f18\u52bf\u6253\u9020\u201c\u671b\u5e9c\u8336\u98e8\u3001\u81ea\u5728\u66f2\u6c34\u201dIP\uff0c\u5efa\u6210\u827a\u672f\u8282\u70b917\u4e2a\u3001\u57f9\u80b2\u4ea7\u4e1a\u9879\u76ee5\u4e2a\uff0c\u603b\u6295\u8d44\u8d85\u5343\u4e07\u5143\u3002\u8dc3\u9f99\u8857\u9053\u51fa\u53f01\u53f7\u6587\u4ef6\u6276\u6301\u827a\u672f\u632f\u5174\u4e61\u6751\uff0c\u89c4\u5212\u6253\u9020\u4f11\u95f2\u5a31\u4e50\u3001\u7eff\u8272\u751f\u6001\u3001\u4ea7\u4e1a\u6d3b\u529b\u4e09\u6761\u7cbe\u54c1\u7ebf\uff0c\u63a8\u52a8\u4e61\u6751\u632f\u5174\u4ece\u201c\u7f8e\u4e3d\u989c\u503c\u201d\u5411\u201c\u53d1\u5c55\u4ea7\u503c\u201d\u8f6c\u53d8\u3002' },
       ];
       var data = JSON.parse(localStorage.getItem('xie_admin_reports'));
       if (!data || !data.length) {
         data = defaults;
       } else {
-        // Merge missing defaults so newly added items always appear
         var existingIds = {};
         data.forEach(function(item) { existingIds[item.id] = true; });
         defaults.forEach(function(item) {
           if (!existingIds[item.id]) data.push(item);
         });
       }
-      // Sort newest first
+      allReports = data;
+      currentPage = 1;
+      renderList();
+    }
+
+    function renderList() {
+      var data = allReports.slice();
       data.sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
+      var pageSize = 10;
+      var totalPages = Math.max(1, Math.ceil(data.length / pageSize));
+      if (currentPage > totalPages) currentPage = totalPages;
+      var start = (currentPage - 1) * pageSize;
+      var pageData = data.slice(start, start + pageSize);
       var html = '';
-      data.forEach(function(item) {
+      pageData.forEach(function(item) {
         var hasUrl = item.url && item.url.trim() !== '';
-        var fullContent = item.content || '';
-        html += '<div class="article-card fade-in">'
-          + '<h3>' + escapeHtml(item.title) + '</h3>'
-          + '<div class="meta">' + item.date + ' 来源：' + escapeHtml(item.source) + '</div>'
-          + '<p>' + escapeHtml(fullContent.length > 120 ? fullContent.substring(0, 120) + '...' : fullContent) + '</p>'
-          + (hasUrl
-              ? '<a href="' + escapeAttr(item.url) + '" target="_blank" class="read-more-link">查看全文 →</a>'
-              : '<a href="javascript:void(0)" class="read-more-link" onclick="showFullArticle(this, \'' + escapeAttr(item.title) + '\', \'' + escapeAttr(item.source || '') + '\', \'' + escapeAttr(item.date || '') + '\', \'' + escapeAttr(fullContent.replace(/'/g, "\\'").replace(/"/g, '&quot;')) + '\')">阅读全文 →</a>')
+        html += '<div class="report-item" onclick="showReportModal(' + JSON.stringify(item).replace(/"/g, '&quot;') + ')">'
+          + '<span class="report-date">' + (item.date || '') + '</span>'
+          + '<span class="report-title">' + escapeHtml(item.title) + '</span>'
+          + '<span class="report-source">' + escapeHtml(item.source || '') + '</span>'
+          + (hasUrl ? '<a href="' + escapeAttr(item.url) + '" target="_blank" class="report-external-link" onclick="event.stopPropagation()">原文 →</a>' : '')
           + '</div>';
       });
+      if (!html) {
+        html = '<div style="text-align:center;padding:40px 20px;color:var(--text-tertiary);font-size:13px;">暂无报道</div>';
+      }
+      html += '<div class="reports-pagination">'
+        + '<button class="page-btn" onclick="goToPage(-1)"' + (currentPage <= 1 ? ' disabled' : '') + '>上一页</button>'
+        + '<span class="page-info">' + currentPage + ' / ' + totalPages + '</span>'
+        + '<button class="page-btn" onclick="goToPage(1)"' + (currentPage >= totalPages ? ' disabled' : '') + '>下一页</button>'
+        + '</div>';
       document.getElementById('reports-list').innerHTML = html;
+
     }
-    renderReports(); // Initial render from localStorage or defaults
-    // Try loading from Supabase for up-to-date data across devices
+
+    function goToPage(dir) {
+      currentPage += dir;
+      renderList();
+      document.getElementById('reports-list-wrap').scrollTop = 0;
+    }
+    renderReports();
     if (window.dbGetAll) {
       dbGetAll('reports', { order: 'date.desc' }).then(function(supabaseData) {
         if (supabaseData && supabaseData.length > 0) {
@@ -224,7 +285,12 @@
       }).catch(function() {});
     }
   </script>
-  <audio id="bg-music" loop src="../music/background.mp3"></audio>
-  <div class="music-player"><button class="music-btn" id="music-toggle">🔈</button><span class="music-label" data-i18n="music.label">背景音乐</span></div>
+    <audio id="bg-music" loop src="../music/background.mp3"></audio>
+  <div class="music-player" id="music-player">
+    <button class="music-btn" id="music-prev" title="上一首" style="font-size:14px;">⏮</button>
+    <button class="music-btn" id="music-toggle">🔈</button>
+    <button class="music-btn" id="music-next" title="下一首" style="font-size:14px;">⏭</button>
+    <span class="music-label" id="music-track-name">背景音乐</span>
+  </div>
 </body>
 </html>

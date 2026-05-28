@@ -5,7 +5,7 @@ const zlib = require('zlib');
 const crypto = require('crypto');
 const { exec } = require('child_process');
 
-const PORT = 80;
+const PORT = parseInt(process.env.PORT, 10) || 3001;
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 const DATA_DIR = path.join(__dirname, 'data');
 
@@ -135,8 +135,10 @@ const server = http.createServer(async (req, res) => {
         else if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) ext = '.png';
         else if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46) ext = '.gif';
         else if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46) ext = '.webp';
-        else if (buffer[0] === 0x66 && buffer[1] === 0x74 && buffer[2] === 0x79 && buffer[3] === 0x70) ext = '.mp4'; // ftyp box (may need heuristic for mp4/webm)
+        else if (buffer.length >= 8 && buffer[4] === 0x66 && buffer[5] === 0x74 && buffer[6] === 0x79 && buffer[7] === 0x70) ext = '.mp4'; // ftyp box at byte 4 (bytes 0-3 are box size)
         else if (buffer[0] === 0x1A && buffer[1] === 0x45 && buffer[2] === 0xDF && buffer[3] === 0xA3) ext = '.webm'; // EBML header
+        else if (buffer[0] === 0x49 && buffer[1] === 0x44 && buffer[2] === 0x33) ext = '.mp3'; // ID3v2 tag
+        else if (buffer[0] === 0xFF && (buffer[1] === 0xFB || buffer[1] === 0xF3 || buffer[1] === 0xF2)) ext = '.mp3'; // MPEG sync
 
         const finalPath = filePath + ext;
         fs.writeFile(finalPath, buffer, err => {
@@ -236,6 +238,52 @@ const server = http.createServer(async (req, res) => {
     return res.end('Forbidden');
   }
 
+  const videoExts = ['.mp4', '.webm', '.mp3'];
+  const textExts = ['.html', '.css', '.js', '.json', '.svg'];
+  const cacheExts = ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.ico', '.svg', '.webp', '.woff', '.woff2', '.mp3', '.mp4', '.pdf'];
+
+  // Support Range headers for video/audio streaming
+  if (videoExts.includes(ext)) {
+    fs.stat(filePath, (err, stat) => {
+      if (err) {
+        const msg = '404 Not Found';
+        res.writeHead(404, { 'Content-Length': Buffer.byteLength(msg) });
+        return res.end(msg);
+      }
+      const fileSize = stat.size;
+      const range = req.headers.range;
+      const mimeType = MIME[ext] || 'application/octet-stream';
+
+      if (range) {
+        const parts = range.replace(/bytes=/, '').split('-');
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+        const chunkSize = end - start + 1;
+
+        res.writeHead(206, {
+          'Content-Range': 'bytes ' + start + '-' + end + '/' + fileSize,
+          'Accept-Ranges': 'bytes',
+          'Content-Length': chunkSize,
+          'Content-Type': mimeType,
+          'Cache-Control': 'public, max-age=604800, immutable',
+        });
+
+        const stream = fs.createReadStream(filePath, { start, end });
+        stream.pipe(res);
+        stream.on('error', () => { res.end(); });
+      } else {
+        res.writeHead(200, {
+          'Content-Type': mimeType,
+          'Accept-Ranges': 'bytes',
+          'Content-Length': fileSize,
+          'Cache-Control': 'public, max-age=604800, immutable',
+        });
+        fs.createReadStream(filePath).pipe(res);
+      }
+    });
+    return;
+  }
+
   fs.readFile(filePath, (err, data) => {
     if (err) {
       if (ext === '.html') {
@@ -251,8 +299,6 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(404, { 'Content-Length': Buffer.byteLength(msg) });
       return res.end(msg);
     }
-    const textExts = ['.html', '.css', '.js', '.json', '.svg'];
-    const cacheExts = ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.ico', '.svg', '.webp', '.woff', '.woff2', '.mp3', '.mp4', '.pdf'];
     const headers = {
       'Content-Type': MIME[ext] || 'application/octet-stream',
     };

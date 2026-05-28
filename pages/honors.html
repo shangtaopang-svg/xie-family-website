@@ -11,6 +11,29 @@
   <script src="../js/i18n.js"></script>
   <script src="../js/file-store.js?v=3"></script>
   <script src="../js/supabase.js?v=3"></script>
+  <style>
+    #honors-list { min-height:200px; }
+    .honor-item {
+      display:flex; align-items:center; gap:20px;
+      padding:18px 0 16px; cursor:pointer;
+      border-bottom:1px solid var(--divider);
+      transition:opacity 0.2s;
+    }
+    .honor-item:last-child { border-bottom:none; }
+    .honor-item:hover { opacity:0.7; }
+    .honor-icon { flex-shrink:0; font-size:28px; line-height:1; }
+    .honor-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; }
+    .honor-title { font-size:16px; color:var(--text-primary); font-weight:500; line-height:1.5; transition:color 0.2s; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .honor-item:hover .honor-title { color:var(--accent-orange); }
+    .honor-meta { font-size:13px; color:var(--text-tertiary); line-height:1.4; }
+    .honor-link { flex-shrink:0; font-size:12px; color:var(--text-tertiary); text-decoration:none; transition:color 0.2s; white-space:nowrap; cursor:pointer; }
+    .honor-link:hover { color:var(--accent-orange); }
+    @media (max-width:768px) {
+      .honor-item { padding:14px 0; gap:14px; }
+      .honor-icon { font-size:24px; }
+      .honor-title { font-size:15px; }
+    }
+  </style>
 </head>
 <body>
 
@@ -54,11 +77,9 @@
     </div>
 
     <!-- 荣誉列表 -->
-    <section style="margin-bottom:50px;">
-      <div id="honors-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px;">
-        <!-- 由 JS 动态渲染 -->
-      </div>
-    </section>
+    <div id="honors-wrap">
+      <div id="honors-list"></div>
+    </div>
   </div>
 
 </div>
@@ -76,7 +97,7 @@
   </footer>
 
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
-  <script src="../js/main.js?v=3"></script>
+  <script src="../js/main.js?v=8"></script>
   <script>
     // Canvas animated background
     const canvas = document.getElementById('bg-canvas');
@@ -132,62 +153,59 @@
     }
     function escapeAttr(text) {
       if (!text) return '';
-      return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      return text.replace(/'/g, "\'").replace(/"/g, '&quot;');
     }
 
-    function showFullArticle(link, title, awarder, date, content) {
+    function showHonorModal(item) {
       var overlay = document.createElement('div');
       overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
       var box = document.createElement('div');
       box.style.cssText = 'background:var(--bg-primary);border:1px solid var(--glass-border);border-radius:12px;max-width:720px;width:100%;max-height:80vh;overflow-y:auto;padding:36px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
+      var fullContent = item.content || '';
+      var hasUrl = item.url && item.url.trim() !== '';
       box.innerHTML = '<button onclick="this.parentElement.parentElement.remove()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-tertiary);">✕</button>'
-        + '<h2 style="font-family:var(--font-title);color:var(--text-primary);font-size:20px;font-weight:600;margin-bottom:12px;padding-right:30px;">' + escapeHtml(title) + '</h2>'
+        + '<div style="font-size:36px;margin-bottom:8px;">' + (item.icon || '🏆') + '</div>'
+        + '<h2 style="font-family:var(--font-title);color:var(--text-primary);font-size:20px;font-weight:600;margin-bottom:12px;padding-right:30px;">' + escapeHtml(item.title) + '</h2>'
         + '<div style="font-size:13px;color:var(--text-tertiary);margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--divider);">'
-        + (date ? '<span>' + date + '</span>' : '')
-        + (awarder ? ' · 颁发：' + escapeHtml(awarder) : '')
+        + (item.date ? '<span>' + item.date + '</span>' : '')
+        + (item.awarder ? ' · ' + escapeHtml(item.awarder) : '')
         + '</div>'
-        + '<div style="font-size:14px;color:var(--text-secondary);line-height:2;">' + escapeHtml(content).replace(/\n/g, '<br>') + '</div>';
+        + '<div style="font-size:14px;color:var(--text-secondary);line-height:2;">' + escapeHtml(fullContent).replace(/\n/g, '<br>') + '</div>'
+        + (hasUrl ? '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--divider);"><a href="' + escapeAttr(item.url) + '" target="_blank" style="color:var(--accent-orange);font-size:13px;text-decoration:none;">查看详情 →</a></div>' : '');
       overlay.appendChild(box);
       overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
       document.body.appendChild(overlay);
     }
 
-    // Render honors from admin data
     function renderHonors() {
       var data = JSON.parse(localStorage.getItem('xie_admin_honors'));
       if (!data || !data.length) {
         data = [
-          { id: 1, title: '浙江省美丽乡村示范村', date: '2025-12-01', awarder: '浙江省农业农村厅', icon: '🏆', url: '', content: '下枫槎村凭借优美的自然风光、整洁的村容村貌和深厚的文化底蕴，被评为浙江省美丽乡村示范村。这一荣誉是对全村人民共同努力的肯定。' },
-          { id: 2, title: '宁海县文明村', date: '2025-06-15', awarder: '宁海县人民政府', icon: '🥇', url: '', content: '下枫槎村在精神文明建设方面成效显著，村民自治有序、邻里和睦、文化活跃，获评宁海县文明村称号。' },
-          { id: 3, title: '谢氏宗祠文物保护单位', date: '2024-03-20', awarder: '宁海县文化和广电旅游体育局', icon: '📜', url: '', content: '下枫槎谢氏宗祠始建于清乾隆年间，三进两厢格局，雕梁画栋，具有较高的历史、艺术和科学价值，被列为县级文物保护单位。' }
+          { id: 1, title: '浙江省美丽乡村示范村', date: '2025-12-01', awarder: '浙江省农业农村厅', icon: '🏆', url: '', content: '下枫椿村凭借优美的自然风光、整洁的村容村貌和深厚的文化底蕴，被评为浙江省美丽乡村示范村。这一荣誉是对全村人民共同努力的肯定。' },
+          { id: 2, title: '宁海县文明村', date: '2025-06-15', awarder: '宁海县人民政府', icon: '🥇', url: '', content: '下枫椿村在精神文明建设方面成效显著，村民自治有序、邻里和睦、文化活跃，获评宁海县文明村称号。' },
+          { id: 3, title: '谢氏宗祠文物保护单位', date: '2024-03-20', awarder: '宁海县文化和广电电视旅游体育局', icon: '📜', url: '', content: '下枫椿谢氏宗祠始建于清乾隆年间，三进两厠格局，雕梁画栋，具有较高的历史、艺术和科学价值，被列为县级文物保护单位。' }
         ];
       }
-      // Sort by date ascending
-      data.sort(function(a, b) { return (a.date || '').localeCompare(b.date || ''); });
+      data.sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
       var html = '';
       data.forEach(function(item) {
-        var hasUrl = item.url && item.url.trim() !== '';
-        var fullContent = item.content || '';
-        html += '<div class="glass-card fade-in" style="padding:28px;border-top:3px solid var(--accent-orange);">'
-          + '<div style="font-size:36px;margin-bottom:12px;">' + (item.icon || '🏆') + '</div>'
-          + '<h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:17px;font-weight:500;margin-bottom:8px;">' + escapeHtml(item.title) + '</h3>'
-          + '<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">'
-          + '<span>📅 ' + item.date + '</span>'
-          + '&nbsp;&nbsp;—&nbsp;&nbsp;'
-          + '<span>🏛️ ' + escapeHtml(item.awarder) + '</span>'
-          + '</div>'
-          + '<p style="font-size:13px;color:var(--text-secondary);line-height:1.8;">' + escapeHtml(fullContent.length > 100 ? fullContent.substring(0, 100) + '…' : fullContent) + '</p>'
-          + (hasUrl
-              ? '<a href="' + escapeAttr(item.url) + '" target="_blank" class="read-more-link">查看详情 →</a>'
-              : '<a href="javascript:void(0)" class="read-more-link" onclick="showFullArticle(this, \'' + escapeAttr(item.title) + '\', \'' + escapeAttr(item.awarder || '') + '\', \'' + escapeAttr(item.date || '') + '\', \'' + escapeAttr(fullContent.replace(/'/g, "\\'").replace(/"/g, '&quot;')) + '\')">阅读全文 →</a>')
+        html += '<div class="honor-item" onclick="showHonorModal(' + JSON.stringify(item).replace(/"/g, '&quot;') + ')">'
+          + '<span class="honor-icon">' + (item.icon || '🏆') + '</span>'
+          + '<span class="honor-info">'
+          + '<span class="honor-title">' + escapeHtml(item.title) + '</span>'
+          + '<span class="honor-meta">' + (item.date || '') + ' · ' + escapeHtml(item.awarder || '') + '</span>'
+          + '</span>'
+          + (item.url ? '<a href="' + escapeAttr(item.url) + '" target="_blank" class="honor-link" onclick="event.stopPropagation()">详情 →</a>' : '<span class="honor-link" onclick="event.stopPropagation()">阅读 →</span>')
           + '</div>';
       });
-      document.getElementById('honors-grid').innerHTML = html;
+      if (!html) {
+        html = '<div style="text-align:center;padding:40px 20px;color:var(--text-tertiary);font-size:13px;">暂无荣誉</div>';
+      }
+      document.getElementById('honors-list').innerHTML = html;
     }
     renderHonors();
-    // Try loading from Supabase for up-to-date data across devices
     if (window.dbGetAll) {
-      dbGetAll('honors', { order: 'date.asc' }).then(function(supabaseData) {
+      dbGetAll('honors', { order: 'date.desc' }).then(function(supabaseData) {
         if (supabaseData && supabaseData.length > 0) {
           localStorage.setItem('xie_admin_honors', JSON.stringify(supabaseData));
           renderHonors();
@@ -195,7 +213,12 @@
       }).catch(function() {});
     }
   </script>
-  <audio id="bg-music" loop src="../music/background.mp3"></audio>
-  <div class="music-player"><button class="music-btn" id="music-toggle">🔈</button><span class="music-label" data-i18n="music.label">背景音乐</span></div>
+    <audio id="bg-music" loop src="../music/background.mp3"></audio>
+  <div class="music-player" id="music-player">
+    <button class="music-btn" id="music-prev" title="上一首" style="font-size:14px;">⏮</button>
+    <button class="music-btn" id="music-toggle">🔈</button>
+    <button class="music-btn" id="music-next" title="下一首" style="font-size:14px;">⏭</button>
+    <span class="music-label" id="music-track-name">背景音乐</span>
+  </div>
 </body>
 </html>

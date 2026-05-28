@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="../css/style.css?v=13">
   <script src="../js/i18n.js"></script>
   <script src="../js/supabase.js?v=3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -50,13 +51,28 @@
       <p data-i18n="page.members">枝繁叶茂 · 奕世其昌</p>
     </div>
 
-    <!-- 统计概览 -->
-    <section style="margin-bottom:30px;">
-      <div id="members-stats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;"></div>
+    <!-- 控制栏：在世/全部切换 + 导入导出 -->
+    <section style="margin-bottom:24px;">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <button id="alive-toggle" class="btn btn-sm active-tab" onclick="toggleAlive()" style="font-size:13px;padding:6px 18px;">在世成员</button>
+          <span style="font-size:12px;color:var(--text-tertiary);" id="alive-count-hint"></span>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-sm" onclick="document.getElementById('excel-upload').click()" style="font-size:12px;">📥 导入 Excel</button>
+          <button class="btn btn-sm" onclick="exportExcel()" style="font-size:12px;">📤 导出 Excel</button>
+          <input type="file" id="excel-upload" accept=".xlsx,.xls,.csv" style="display:none;" onchange="importExcel(this)">
+        </div>
+      </div>
     </section>
 
-    <!-- 支系筛选 -->
-    <section style="margin-bottom:30px;">
+    <!-- 统计概览 -->
+    <section style="margin-bottom:24px;">
+      <div id="members-stats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;"></div>
+    </section>
+
+    <!-- 支系 + 世代筛选 -->
+    <section style="margin-bottom:24px;">
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
         <span style="font-size:13px;color:var(--text-tertiary);">支系：</span>
         <div id="branch-tabs" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
@@ -73,7 +89,7 @@
       <div id="members-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;"></div>
       <div id="members-empty" style="display:none;text-align:center;padding:60px 20px;">
         <div style="font-size:48px;margin-bottom:12px;">📭</div>
-        <p style="color:var(--text-tertiary);font-size:14px;">暂无成员数据，请先通过管理后台录入族谱信息</p>
+        <p style="color:var(--text-tertiary);font-size:14px;">暂无在世成员数据。可通过上方"导入 Excel"批量录入族谱信息。</p>
         <a href="admin.html" class="btn btn-accent" style="margin-top:16px;display:inline-block;">前往管理后台 →</a>
       </div>
     </section>
@@ -105,10 +121,14 @@
   </footer>
 
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
-  <script src="../js/main.js?v=3"></script>
+  <script src="../js/main.js?v=8"></script>
   <script>
     function getGenealogyData() {
       try { return JSON.parse(localStorage.getItem('xie_admin_genealogy') || '[]'); } catch(e) { return []; }
+    }
+
+    function saveGenealogyData(data) {
+      localStorage.setItem('xie_admin_genealogy', JSON.stringify(data));
     }
 
     function escapeHtml(text) {
@@ -141,6 +161,166 @@
         result.push({ name: name, id: null });
       });
       return result;
+    }
+
+    // ===== State =====
+    var _showAliveOnly = true;
+    var _branchFilter = '';
+    var _genFilter = '';
+    var _searchFilter = '';
+
+    // ===== Toggle alive filter =====
+    function toggleAlive() {
+      _showAliveOnly = !_showAliveOnly;
+      var btn = document.getElementById('alive-toggle');
+      if (btn) {
+        btn.textContent = _showAliveOnly ? '在世成员' : '全部成员';
+        btn.classList.toggle('active-tab', _showAliveOnly);
+      }
+      applyFilters(window._membersData);
+    }
+
+    // ===== Excel Import =====
+    function importExcel(input) {
+      var file = input.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          var data = new Uint8Array(e.target.result);
+          var workbook = XLSX.read(data, { type: 'array' });
+          var sheet = workbook.Sheets[workbook.SheetNames[0]];
+          var rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+          if (!rows || rows.length === 0) {
+            alert('Excel 文件为空，请检查数据。');
+            return;
+          }
+
+          // Map Chinese column headers to field keys
+          var fieldMap = {
+            '姓名': 'name', '名字': 'name', '名称': 'name',
+            '世代': 'generation_num', '第几世': 'generation_num', '世数': 'generation_num',
+            '字辈': 'generation', '辈分': 'generation',
+            '性别': 'gender',
+            '父亲': 'father_id', '父亲ID': 'father_id', '父ID': 'father_id',
+            '母亲': 'mother_id', '母亲ID': 'mother_id', '母ID': 'mother_id',
+            '配偶': 'spouse_ids',
+            '支系': 'branch', '房': 'branch',
+            '出生': 'birth_date', '出生日期': 'birth_date', '出生年月': 'birth_date',
+            '逝世': 'death_date', '去世': 'death_date', '卒年': 'death_date',
+            '在世': 'is_alive', '健在': 'is_alive', '是否在世': 'is_alive', '状态': 'is_alive',
+            '过继': 'adopted', '嗣': 'adopted',
+            '地址': 'address', '居住地': 'address', '住址': 'address',
+            '简介': 'biography', '生平': 'biography', '备注': 'biography',
+            '照片': 'photo'
+          };
+
+          var existing = getGenealogyData();
+          var maxId = existing.reduce(function(m, p) { return Math.max(m, p.id || 0); }, 0);
+
+          var imported = 0;
+          rows.forEach(function(row) {
+            var person = {};
+            for (var cn in row) {
+              var key = fieldMap[cn.trim()] || null;
+              if (key) person[key] = String(row[cn]).trim();
+            }
+            if (!person.name) return; // Skip rows without name
+
+            // Auto-detect gender if not explicitly set
+            if (!person.gender) {
+              person.gender = (person.name.indexOf('夫人') >= 0 || person.name.indexOf('氏') >= 0) ? '女' : '男';
+            }
+
+            // Normalize is_alive
+            if (person.is_alive) {
+              var v = person.is_alive;
+              person.is_alive = (v === '是' || v === '在世' || v === '健在' || v === 'true' || v === '1') ? '是' : '否';
+            } else {
+              person.is_alive = '是'; // Default to alive
+            }
+
+            // Convert generation_num to number
+            if (person.generation_num) {
+              var g = parseInt(person.generation_num);
+              person.generation_num = isNaN(g) ? 0 : g;
+            }
+
+            // Convert father_id/mother_id to number if possible
+            ['father_id', 'mother_id'].forEach(function(k) {
+              if (person[k]) {
+                var n = parseInt(person[k]);
+                person[k] = isNaN(n) ? person[k] : n;
+              }
+            });
+
+            // Check for duplicate by name
+            var dup = false;
+            for (var di = 0; di < existing.length; di++) {
+              if (existing[di].name === person.name && existing[di].generation_num === person.generation_num) {
+                dup = true;
+                break;
+              }
+            }
+            if (dup) return; // Skip duplicates
+
+            maxId++;
+            person.id = maxId;
+            existing.push(person);
+            imported++;
+          });
+
+          if (imported > 0) {
+            saveGenealogyData(existing);
+            renderMembers();
+            alert('成功导入 ' + imported + ' 位成员！');
+          } else {
+            alert('未导入新成员（可能已存在重复数据或文件格式不正确）。');
+          }
+        } catch(err) {
+          alert('导入失败：' + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+      input.value = '';
+    }
+
+    // ===== Excel Export =====
+    function exportExcel() {
+      if (!window.XLSX) {
+        alert('正在加载导出库，请稍后重试…');
+        return;
+      }
+      var data = getGenealogyData();
+      if (!data || !data.length) {
+        alert('暂无可导出的数据。');
+        return;
+      }
+
+      var rows = data.map(function(p) {
+        return {
+          '姓名': p.name || '',
+          '第几世': p.generation_num || '',
+          '字辈': p.generation || '',
+          '性别': p.gender || '',
+          '支系': p.branch || '',
+          '出生年月': p.birth_date || '',
+          '逝世': p.death_date || '',
+          '是否在世': p.is_alive || '',
+          '配偶': p.spouse_ids || '',
+          '父亲ID': p.father_id || '',
+          '母亲ID': p.mother_id || '',
+          '过继': p.adopted || '',
+          '居住地': p.address || '',
+          '生平简介': p.biography || ''
+        };
+      });
+
+      var ws = XLSX.utils.json_to_sheet(rows);
+      var wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '家族成员');
+      XLSX.writeFile(wb, '下枫槎谢氏_家族成员.xlsx');
     }
 
     function showMemberDetail(id) {
@@ -215,6 +395,7 @@
 
       // Stats
       var total = data.length;
+      var alive = data.filter(function(p) { return p.is_alive === '是'; }).length;
       var males = 0, females = 0;
       var genSet = {}, branchSet = {};
       data.forEach(function(p) {
@@ -223,8 +404,13 @@
         if (p.generation_num) genSet[p.generation_num] = true;
         if (p.branch && p.branch !== '—') branchSet[p.branch] = true;
       });
+
+      var hint = document.getElementById('alive-count-hint');
+      if (hint) hint.textContent = '在世 ' + alive + ' 人 / 共计 ' + total + ' 人';
+
       statsEl.innerHTML = ''
-        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);">' + total + '</div><div style="font-size:11px;color:var(--text-tertiary);">成员总数</div></div>'
+        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);">' + alive + '</div><div style="font-size:11px;color:var(--text-tertiary);">在世成员</div></div>'
+        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--text-primary);">' + total + '</div><div style="font-size:11px;color:var(--text-tertiary);">总人数</div></div>'
         + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--text-primary);">' + males + '</div><div style="font-size:11px;color:var(--text-tertiary);">男</div></div>'
         + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--text-primary);">' + females + '</div><div style="font-size:11px;color:var(--text-tertiary);">女</div></div>'
         + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--text-primary);">' + Object.keys(genSet).length + '</div><div style="font-size:11px;color:var(--text-tertiary);">世代</div></div>'
@@ -253,10 +439,6 @@
       applyFilters(data);
     }
 
-    var _branchFilter = '';
-    var _genFilter = '';
-    var _searchFilter = '';
-
     function setBranchFilter(btn, branch) {
       document.querySelectorAll('.branch-tab').forEach(function(b) { b.classList.remove('active-tab'); });
       btn.classList.add('active-tab');
@@ -274,6 +456,8 @@
     function applyFilters(data) {
       if (!data) return;
       var filtered = data.filter(function(p) {
+        // Living-only filter
+        if (_showAliveOnly && p.is_alive !== '是') return false;
         if (_branchFilter && (p.branch !== _branchFilter)) return false;
         if (_genFilter !== '' && _genFilter !== null && _genFilter !== undefined) {
           if ((p.generation_num || 0) !== _genFilter) return false;
@@ -282,7 +466,8 @@
           var q = _searchFilter.toLowerCase();
           var match = (p.name && p.name.toLowerCase().indexOf(q) !== -1)
             || (p.generation && p.generation.toLowerCase().indexOf(q) !== -1)
-            || (p.branch && p.branch.toLowerCase().indexOf(q) !== -1);
+            || (p.branch && p.branch.toLowerCase().indexOf(q) !== -1)
+            || (p.address && p.address.toLowerCase().indexOf(q) !== -1);
           if (!match) return false;
         }
         return true;
@@ -290,7 +475,7 @@
 
       var container = document.getElementById('members-grid');
       if (filtered.length === 0) {
-        container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-tertiary);font-size:14px;">未找到匹配的成员</div>';
+        container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-tertiary);font-size:14px;">' + (_showAliveOnly ? '暂无在世成员数据' : '未找到匹配的成员') + '</div>';
         return;
       }
 
@@ -303,19 +488,22 @@
         var spouseStr = getSpouseNames(p.id, data).map(function(s) { return s.name; }).join('、');
         var hasBiography = p.biography && p.biography.trim() !== '';
 
-        html += '<div class="glass-card member-card" onclick="showMemberDetail(' + p.id + ')" style="padding:18px;cursor:pointer;border-left:3px solid ' + (p.gender === '男' ? 'var(--accent-orange)' : 'var(--accent-pink, #e879f9)') + ';transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 8px 24px rgba(0,0,0,0.15)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\'">';
+        var isDeceased = p.is_alive !== '是';
+        html += '<div class="glass-card member-card" onclick="showMemberDetail(' + p.id + ')" style="padding:18px;cursor:pointer;border-left:3px solid ' + (isDeceased ? 'var(--text-muted)' : (p.gender === '男' ? 'var(--accent-orange)' : 'var(--accent-pink, #e879f9)')) + ';' + (isDeceased ? 'opacity:0.55;' : '') + '" onmouseenter="this.classList.add(\'hover\')" onmouseleave="this.classList.remove(\'hover\')">';
         html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">';
-        html += '<div style="font-size:30px;">' + (p.gender === '男' ? '👤' : '👩') + '</div>';
+        html += '<div style="font-size:30px;">' + (isDeceased ? '🕊' : (p.gender === '男' ? '👤' : '👩')) + '</div>';
         html += '<div style="flex:1;min-width:0;">';
         html += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">';
         html += '<span style="font-size:16px;font-weight:600;color:var(--text-primary);">' + escapeHtml(p.name) + '</span>';
-        if (p.adopted && p.adopted !== '否') html += '<span style="font-size:10px;background:var(--accent-orange-dim);color:var(--accent-orange);padding:1px 6px;border-radius:3px;font-weight:500;">嗣</span>';
+        if (isDeceased) html += '<span style="font-size:10px;color:var(--text-muted);padding:1px 6px;border-radius:3px;border:1px solid var(--divider);font-weight:400;">已故</span>';
+        if (p.adopted && p.adopted !== '否') html += '<span style="font-size:10px;background:var(--accent-orange-dim);color:var(--accent-orange);padding:1px 6px;border-radius:3px;font-weight:500;">団</span>';
         if (hasBiography) html += '<span style="font-size:10px;color:var(--text-muted);">📄</span>';
         html += '</div>';
         html += '<div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">';
         var meta = [];
         if (genStr) meta.push(genStr);
         if (branchStr) meta.push(branchStr);
+        if (p.birth_date) meta.push('生于' + p.birth_date);
         html += meta.join(' · ') + '</div></div></div>';
         if (spouseStr) {
           html += '<div style="font-size:12px;color:var(--text-secondary);padding-top:8px;border-top:1px solid var(--divider);">配：' + escapeHtml(spouseStr) + '</div>';
@@ -360,6 +548,7 @@
     .btn-sm:hover { border-color:var(--accent-orange);color:var(--accent-orange); }
     .btn-sm.active-tab { background:var(--accent-orange);color:#000;border-color:var(--accent-orange);font-weight:500; }
     .member-card { transition:transform 0.2s,box-shadow 0.2s; }
+    .member-card.hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
     #members-grid { min-height:200px; }
     .branch-tab, .gen-tab { font-family:var(--font-body); }
   </style>
@@ -409,7 +598,12 @@
       draw();
     }
   </script>
-  <audio id="bg-music" loop src="../music/background.mp3"></audio>
-  <div class="music-player"><button class="music-btn" id="music-toggle">🔈</button><span class="music-label" data-i18n="music.label">背景音乐</span></div>
+    <audio id="bg-music" loop src="../music/background.mp3"></audio>
+  <div class="music-player" id="music-player">
+    <button class="music-btn" id="music-prev" title="上一首" style="font-size:14px;">⏮</button>
+    <button class="music-btn" id="music-toggle">🔈</button>
+    <button class="music-btn" id="music-next" title="下一首" style="font-size:14px;">⏭</button>
+    <span class="music-label" id="music-track-name">背景音乐</span>
+  </div>
 </body>
 </html>
