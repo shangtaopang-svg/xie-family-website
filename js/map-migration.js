@@ -46,22 +46,41 @@
     container = document.getElementById('map-bg');
     if (!container) return;
 
-    // Leaflet 不可用（CDN 被墙等情况）
-    if (typeof L === 'undefined') {
-      console.warn('[MapMigration] Leaflet 未加载，迁徙地图不可用');
-      return;
-    }
-
     bgCanvas = document.getElementById('bg-canvas');
 
     // 监听全局背景模式切换
     document.addEventListener('xie-bg-mode', function (e) {
       if (e.detail === 'map') {
-        activate();
+        ensureLeaflet(activate);
       } else {
         deactivate();
       }
     });
+
+    // 初始化时检查 hero_style，如果是地图模式则激活
+    var hs = localStorage.getItem('xie_hero_style') || 'clean';
+    if (hs === 'map') {
+      setTimeout(function() { ensureLeaflet(activate); }, 200);
+    }
+  }
+
+  /** 确保 Leaflet 已加载，未加载则动态拉取 */
+  function ensureLeaflet(callback) {
+    if (typeof L !== 'undefined') { callback(); return; }
+    // 动态加载 Leaflet CSS
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(link);
+    // 动态加载 Leaflet JS
+    var script = document.createElement('script');
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    script.onload = function () { setTimeout(callback, 150); };
+    script.onerror = function () {
+      console.warn('[MapMigration] Leaflet CDN 加载失败');
+      isActive = false;
+    };
+    document.body.appendChild(script);
   }
 
   /** 激活地图背景 */
