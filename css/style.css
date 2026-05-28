@@ -236,6 +236,9 @@ body {
 .nav-toggle {
   display: none;
 }
+.mobile-home-btn {
+  display: none;
+}
 
 .main-nav {
   display: flex;
@@ -3250,6 +3253,17 @@ body {
     line-height: 1;
     margin-left: auto;
   }
+  .mobile-home-btn {
+    display: block;
+    font-size: 20px;
+    text-decoration: none;
+    padding: 4px 8px;
+    margin-right: 4px;
+    border-radius: 8px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    line-height: 1;
+  }
   .main-nav {
     display: none;
     position: absolute;
@@ -3283,10 +3297,10 @@ body {
   .admin-body .grid-4 { grid-template-columns: repeat(2, 1fr); }
   .photo-grid-page { grid-template-columns: repeat(2, 1fr); }
   .hero-section { min-height: 50vh; padding-top: 20px; }
-  .hero-stats { gap: 14px; bottom: 70px; }
-  .hero-stat-num { font-size: 18px; }
-  .hero-stat-label { font-size: 10px; }
-  .hero-stat-dot { width: 2px; height: 2px; }
+  .hero-stats { gap: 10px; bottom: 68px; flex-wrap: wrap; max-width: 90%; }
+  .hero-stat-num { font-size: 16px; }
+  .hero-stat-label { font-size: 9px; letter-spacing: 1px; }
+  .hero-stat-dot { width: 2px; height: 2px; margin: 0 2px; }
   .hero-bg-toggle { bottom: 115px; right: 10px; }
   .hero-bg-toggle .hbg-btn { width: 30px; height: 30px; font-size: 13px; }
   .hero-motto { font-size: 24px; letter-spacing: 4px; margin-bottom: 8px; }
@@ -3297,48 +3311,6 @@ body {
   .hero-date-month { font-size: 16px; }
   .hero-marquee { height: 32px; }
   .hm-text { font-size: 11px; }
-
-  /* 手机端底部导航 */
-  .mobile-bottom-nav {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 9999;
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-top: 1px solid var(--glass-border);
-    padding: 4px 0;
-    justify-content: space-around;
-    align-items: center;
-    box-shadow: 0 -2px 20px rgba(0,0,0,0.08);
-  }
-  .mobile-bottom-nav a {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1px;
-    padding: 4px 6px;
-    font-size: 10px;
-    color: var(--text-tertiary);
-    text-decoration: none;
-    transition: color 0.2s;
-    min-width: 0;
-    flex: 1;
-    text-align: center;
-  }
-  .mobile-bottom-nav a .mnav-icon {
-    font-size: 18px;
-    line-height: 1;
-  }
-  .mobile-bottom-nav a.active {
-    color: var(--accent-orange);
-  }
-  body {
-    padding-bottom: 56px;
-  }
 }
 
 @media (max-width: 480px) {
