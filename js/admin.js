@@ -1092,6 +1092,7 @@ function renderSettings(area) {
   html += '<h4 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:12px;font-weight:500;">首页首屏风格</h4>';
   html += '<div style="display:flex;gap:12px;margin-bottom:12px;">';
   html += '<button class="btn ' + (heroStyle === 'clean' ? 'btn-accent' : 'btn') + '" id="hero-style-clean" onclick="setHeroStyle(\'clean\')" style="flex:1;padding:12px;">🎨 纯色风格</button>';
+  html += '<button class="btn ' + (heroStyle === 'particle' ? 'btn-accent' : 'btn') + '" id="hero-style-particle" onclick="setHeroStyle(\'particle\')" style="flex:1;padding:12px;">✨ 粒子背景</button>';
   html += '<button class="btn ' + (heroStyle === 'photo' ? 'btn-accent' : 'btn') + '" id="hero-style-photo" onclick="setHeroStyle(\'photo\')" style="flex:1;padding:12px;">🖼️ 照片背景</button>';
   html += '</div>';
 
@@ -1173,10 +1174,13 @@ function setHeroStyle(style) {
   localStorage.setItem('xie_hero_style', style);
   saveHeroSetting('hero_style', style);
   var cleanBtn = document.getElementById('hero-style-clean');
+  var particleBtn = document.getElementById('hero-style-particle');
   var photoBtn = document.getElementById('hero-style-photo');
   if (cleanBtn) { cleanBtn.className = 'btn' + (style === 'clean' ? ' btn-accent' : ''); }
+  if (particleBtn) { particleBtn.className = 'btn' + (style === 'particle' ? ' btn-accent' : ''); }
   if (photoBtn) { photoBtn.className = 'btn' + (style === 'photo' ? ' btn-accent' : ''); }
-  showToast('首页风格已切换为' + (style === 'photo' ? '照片背景' : '纯色') + '，刷新首页查看');
+  var label = { clean: '纯色风格', particle: '粒子背景', photo: '照片背景' }[style] || style;
+  showToast('首页风格已切换为' + label + '，刷新首页查看');
 }
 
 // ===== Hero background image upload =====
