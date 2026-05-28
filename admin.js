@@ -76,20 +76,19 @@ const MODULES = {
     ]
   },
   templeCarousel: {
-    label: '首页轮播管理',
+    label: '宗祠轮播管理',
     icon: '🖼️',
     fields: [
-      { key: 'title', label: '标题', type: 'text', required: true, placeholder: '如：谢氏宗祠 · 始建于清乾隆年间' },
-      { key: 'desc', label: '描述', type: 'text', placeholder: '一行简短描述，显示在标题下方' },
+      { key: 'title', label: '标题', type: 'text', required: true },
       { key: 'file', label: '上传图片', type: 'file', accept: 'image/*' }
     ],
     defaultData: [
-      { id: 1, title: '谢氏宗祠 · 始建于清乾隆年间', desc: '下枫槎谢氏宗祠，古朴庄严', hasFile: false },
-      { id: 2, title: '古树参天 · 村口古枫树', desc: '百年古枫，见证岁月更迭', hasFile: false },
-      { id: 3, title: '青山环绕 · 下枫槎村全景', desc: '望府山下，茶园环绕', hasFile: false },
-      { id: 4, title: '明清古民居 · 石板路蜿蜒', desc: '古村风貌，留住乡愁记忆', hasFile: false },
-      { id: 5, title: '清明祭祖 · 合族共祭', desc: '慎终追远，民德归厚', hasFile: false },
-      { id: 6, title: '新春团拜 · 宗亲欢聚', desc: '一年一度，阖族团圆', hasFile: false }
+      { id: 1, title: '宗祠外景', hasFile: false },
+      { id: 2, title: '宗祠戏台', hasFile: false },
+      { id: 3, title: '祖堂', hasFile: false },
+      { id: 4, title: '横厢', hasFile: false },
+      { id: 5, title: '谢氏牌匾', hasFile: false },
+      { id: 6, title: '为国立功', hasFile: false }
     ]
   },
   news: {
@@ -1027,10 +1026,6 @@ function saveForm(mod, editId) {
               }
             }
             saveData(mod, data);
-            // After music upload completes, reload the frontend player
-            if (mod === 'music' && window.reloadMusicPlaylist) {
-              window.reloadMusicPlaylist();
-            }
           } else {
             console.error('Upload failed for ' + fieldKey + ' — server returned:', JSON.stringify(result));
           }
@@ -1048,10 +1043,6 @@ function saveForm(mod, editId) {
     renderModule(mod);
     updateStats();
     showToast('已保存');
-    // If music module was updated, reload the player
-    if (mod === 'music' && window.reloadMusicPlaylist) {
-      window.reloadMusicPlaylist();
-    }
   }, 100);
 }
 
@@ -1073,9 +1064,6 @@ function deleteItem(mod, id) {
   renderModule(mod);
   updateStats();
   showToast('已删除');
-  if (mod === 'music' && window.reloadMusicPlaylist) {
-    window.reloadMusicPlaylist();
-  }
 }
 
 // ===== Settings =====
@@ -1103,7 +1091,8 @@ function renderSettings(area) {
   html += '<div style="margin-top:24px;">';
   html += '<h4 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:12px;font-weight:500;">首页首屏风格</h4>';
   html += '<div style="display:flex;gap:12px;margin-bottom:12px;">';
-  html += '<button class="btn ' + (heroStyle === 'clean' ? 'btn-accent' : 'btn') + '" id="hero-style-clean" onclick="setHeroStyle(\'clean\')" style="flex:1;padding:12px;">✨ 粒子背景</button>';
+  html += '<button class="btn ' + (heroStyle === 'clean' ? 'btn-accent' : 'btn') + '" id="hero-style-clean" onclick="setHeroStyle(\'clean\')" style="flex:1;padding:12px;">🎨 纯色风格</button>';
+  html += '<button class="btn ' + (heroStyle === 'particle' ? 'btn-accent' : 'btn') + '" id="hero-style-particle" onclick="setHeroStyle(\'particle\')" style="flex:1;padding:12px;">✨ 粒子背景</button>';
   html += '<button class="btn ' + (heroStyle === 'photo' ? 'btn-accent' : 'btn') + '" id="hero-style-photo" onclick="setHeroStyle(\'photo\')" style="flex:1;padding:12px;">🖼️ 照片背景</button>';
   html += '</div>';
 
@@ -1185,10 +1174,13 @@ function setHeroStyle(style) {
   localStorage.setItem('xie_hero_style', style);
   saveHeroSetting('hero_style', style);
   var cleanBtn = document.getElementById('hero-style-clean');
+  var particleBtn = document.getElementById('hero-style-particle');
   var photoBtn = document.getElementById('hero-style-photo');
   if (cleanBtn) { cleanBtn.className = 'btn' + (style === 'clean' ? ' btn-accent' : ''); }
+  if (particleBtn) { particleBtn.className = 'btn' + (style === 'particle' ? ' btn-accent' : ''); }
   if (photoBtn) { photoBtn.className = 'btn' + (style === 'photo' ? ' btn-accent' : ''); }
-  showToast('首页风格已切换为' + (style === 'photo' ? '照片背景' : '粒子背景') + '，刷新首页查看');
+  var label = { clean: '纯色风格', particle: '粒子背景', photo: '照片背景' }[style] || style;
+  showToast('首页风格已切换为' + label + '，刷新首页查看');
 }
 
 // ===== Hero background image upload =====
@@ -1532,10 +1524,6 @@ function loadFromSupabase() {
       if (document.getElementById('admin-content-area') && document.getElementById('admin-content-area').innerHTML) {
         renderModule(currentModule);
         updateStats();
-      }
-      // Reload music player if we have music data
-      if (window.reloadMusicPlaylist) {
-        window.reloadMusicPlaylist();
       }
     } else {
       console.log('服务器暂无数据，使用本地数据');
