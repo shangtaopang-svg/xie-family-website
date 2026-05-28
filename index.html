@@ -11,14 +11,13 @@
 
   
   
-  <link rel="stylesheet" href="css/style.css?v=44">
+  <link rel="stylesheet" href="css/style.css?v=45">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="js/i18n.js?v=9"></script>
   <script src="js/file-store.js?v=6"></script>
 </head>
 <body>
 
-<canvas id="bg-canvas"></canvas>
 <canvas id="weather-canvas"></canvas>
 
 <!-- 迁徙地图背景 -->
@@ -60,6 +59,7 @@
 
   <!-- ===== Hero ===== -->
   <section class="hero-section">
+    <canvas id="bg-canvas"></canvas>
     <div class="hero-info">
       <div class="hero-date-box">
       <div class="hero-date">
@@ -381,16 +381,22 @@
   })();
   </script>
   <script>
-    // Canvas animated background
+    // Canvas animated background (scoped to hero section)
     const canvas = document.getElementById('bg-canvas');
-    if (canvas) {
+    const heroSection = document.querySelector('.hero-section');
+    if (canvas && heroSection) {
       const ctx = canvas.getContext('2d');
       let w, h;
-      function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
-      resize(); window.addEventListener('resize', resize);
+      function resize() {
+        const rect = heroSection.getBoundingClientRect();
+        w = canvas.width = rect.width;
+        h = canvas.height = rect.height;
+      }
+      resize();
+      window.addEventListener('resize', resize);
 
       const dots = [];
-      const DOT_COUNT = 80;
+      const DOT_COUNT = 60;
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       const dotColor = isDark ? '255,255,255' : '100,100,100';
 
