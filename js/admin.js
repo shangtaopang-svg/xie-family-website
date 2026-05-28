@@ -1090,10 +1090,11 @@ function renderSettings(area) {
   html += '<div class="glass-card" style="padding:24px;max-width:600px;margin:0 auto;">';
   html += '<div style="margin-top:24px;">';
   html += '<h4 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:12px;font-weight:500;">首页首屏风格</h4>';
-  html += '<div style="display:flex;gap:12px;margin-bottom:12px;">';
-  html += '<button class="btn ' + (heroStyle === 'clean' ? 'btn-accent' : 'btn') + '" id="hero-style-clean" onclick="setHeroStyle(\'clean\')" style="flex:1;padding:12px;">🎨 纯色风格</button>';
-  html += '<button class="btn ' + (heroStyle === 'particle' ? 'btn-accent' : 'btn') + '" id="hero-style-particle" onclick="setHeroStyle(\'particle\')" style="flex:1;padding:12px;">✨ 粒子背景</button>';
-  html += '<button class="btn ' + (heroStyle === 'photo' ? 'btn-accent' : 'btn') + '" id="hero-style-photo" onclick="setHeroStyle(\'photo\')" style="flex:1;padding:12px;">🖼️ 照片背景</button>';
+  html += '<div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">';
+  html += '<button class="btn ' + (heroStyle === 'clean' ? 'btn-accent' : 'btn') + '" id="hero-style-clean" onclick="setHeroStyle(\'clean\')" style="flex:1;min-width:100px;padding:10px;">🎨 纯色</button>';
+  html += '<button class="btn ' + (heroStyle === 'particle' ? 'btn-accent' : 'btn') + '" id="hero-style-particle" onclick="setHeroStyle(\'particle\')" style="flex:1;min-width:100px;padding:10px;">✨ 粒子</button>';
+  html += '<button class="btn ' + (heroStyle === 'photo' ? 'btn-accent' : 'btn') + '" id="hero-style-photo" onclick="setHeroStyle(\'photo\')" style="flex:1;min-width:100px;padding:10px;">🖼️ 照片</button>';
+  html += '<button class="btn ' + (heroStyle === 'map' ? 'btn-accent' : 'btn') + '" id="hero-style-map" onclick="setHeroStyle(\'map\')" style="flex:1;min-width:100px;padding:10px;">🗺️ 地图</button>';
   html += '</div>';
 
   // Hero background image upload
@@ -1173,13 +1174,13 @@ function saveSettings() {
 function setHeroStyle(style) {
   localStorage.setItem('xie_hero_style', style);
   saveHeroSetting('hero_style', style);
-  var cleanBtn = document.getElementById('hero-style-clean');
-  var particleBtn = document.getElementById('hero-style-particle');
-  var photoBtn = document.getElementById('hero-style-photo');
-  if (cleanBtn) { cleanBtn.className = 'btn' + (style === 'clean' ? ' btn-accent' : ''); }
-  if (particleBtn) { particleBtn.className = 'btn' + (style === 'particle' ? ' btn-accent' : ''); }
-  if (photoBtn) { photoBtn.className = 'btn' + (style === 'photo' ? ' btn-accent' : ''); }
-  var label = { clean: '纯色风格', particle: '粒子背景', photo: '照片背景' }[style] || style;
+  var ids = ['hero-style-clean', 'hero-style-particle', 'hero-style-photo', 'hero-style-map'];
+  var vals = ['clean', 'particle', 'photo', 'map'];
+  for (var i = 0; i < ids.length; i++) {
+    var btn = document.getElementById(ids[i]);
+    if (btn) btn.className = 'btn' + (style === vals[i] ? ' btn-accent' : '');
+  }
+  var label = { clean: '纯色', particle: '粒子背景', photo: '照片背景', map: '迁徙地图' }[style] || style;
   showToast('首页风格已切换为' + label + '，刷新首页查看');
 }
 
