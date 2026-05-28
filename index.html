@@ -9,8 +9,9 @@
   <title data-i18n="site.title">宁海下枫槎村 · 谢氏家族</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="css/style.css?v=79">
-  <style>.logo-text small { display: none; }</style>
+  
+  
+  <link rel="stylesheet" href="css/style.css?v=75">
   <script src="js/i18n.js?v=9"></script>
   <script src="js/file-store.js?v=6"></script>
 </head>
@@ -30,7 +31,6 @@
           <small data-i18n="logo.subtitle">宁海 · 下枫槎村</small>
         </div>
       </a>
-      <a href="index.html" class="mobile-home-btn" title="返回首页">🏠</a>
       <button class="nav-toggle" data-i18n-aria="nav.toggle" aria-label="菜单">☰</button>
       <nav class="main-nav">
         <ul>
@@ -55,11 +55,15 @@
             <button class="weather-btn" data-weather="meteor" title="流星">☄</button>
           </div>
           <div class="sc-row">
-            <button class="map-z-in sc-btn" title="放大">+</button>
-            <button class="map-z-out sc-btn" title="缩小">−</button>
-            <button class="music-btn" id="music-prev" title="上一首">⏮</button>
-            <button class="music-btn" id="music-toggle" title="播放/暂停">🔈</button>
-            <button class="music-btn" id="music-next" title="下一首">⏭</button>
+            <div class="map-zoom-btns">
+              <button class="map-z-in" title="放大">+</button>
+              <button class="map-z-out" title="缩小">−</button>
+            </div>
+            <span class="sc-divider"></span>
+            <button class="music-btn" id="music-prev" title="上一首" style="font-size:14px;">⏮</button>
+            <button class="music-btn" id="music-toggle">🔈</button>
+            <button class="music-btn" id="music-next" title="下一首" style="font-size:14px;">⏭</button>
+            <span class="music-label" id="music-track-name">背景音乐</span>
           </div>
           <div class="sc-row">
             <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
@@ -386,6 +390,17 @@
   </footer>
 
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
+
+  <!-- ===== 手机端底部导航栏 ===== -->
+  <div class="mobile-bottom-nav">
+    <a href="index.html" class="active"><span class="mnav-icon">🏠</span>首页</a>
+    <a href="pages/history.html"><span class="mnav-icon">📜</span>历史</a>
+    <a href="pages/celebrities.html"><span class="mnav-icon">🏆</span>名人</a>
+    <a href="pages/news.html"><span class="mnav-icon">📢</span>消息</a>
+    <a href="pages/members.html"><span class="mnav-icon">👥</span>成员</a>
+    <a href="pages/activities.html"><span class="mnav-icon">🎉</span>活动</a>
+    <a href="pages/today.html"><span class="mnav-icon">📸</span>今日</a>
+  </div>
 
   <audio id="bg-music" loop src="music/background.mp3"></audio>
 

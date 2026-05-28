@@ -7,11 +7,10 @@
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 
   
-  <link rel="stylesheet" href="../css/style.css?v=80"> (fix: unify admin.html 12-button layout and add 管理后台 nav link to all pages)
+  <link rel="stylesheet" href="../css/style.css?v=18">
   <script src="../js/i18n.js?v=9"></script>
   <script src="../js/file-store.js?v=6"></script>
   <script src="../js/supabase.js?v=6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/animejs@4/dist/anime.min.js"></script>
 </head>
 <body>
 
@@ -57,7 +56,7 @@
             <button class="music-btn" id="music-prev" title="上一首" style="font-size:14px;">⏮</button>
             <button class="music-btn" id="music-toggle">🔈</button>
             <button class="music-btn" id="music-next" title="下一首" style="font-size:14px;">⏭</button>
-            <span class="music-label" id="music-track-name">背景音乐</span> (fix: unify admin.html 12-button layout and add 管理后台 nav link to all pages)
+            <span class="music-label" id="music-track-name">背景音乐</span>
           </div>
           <div class="sc-row">
             <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
@@ -160,7 +159,7 @@
   };
   </script>
   <script src="../js/main.js?v=8"></script>
-  <script src="../js/admin.js?v=14"></script> (fix: unify admin.html 12-button layout and add 管理后台 nav link to all pages)
+  <script src="../js/admin.js?v=12"></script>
   <script>
     // Canvas animated background
     const canvas = document.getElementById('bg-canvas');
@@ -209,6 +208,17 @@
     }
   </script>
     <audio id="bg-music" loop src="../music/background.mp3"></audio>
- (fix: unify admin.html 12-button layout and add 管理后台 nav link to all pages)
+
+  <!-- ===== 手机端底部导航栏 ===== -->
+  <div class="mobile-bottom-nav">
+    <a href="index.html"><span class="mnav-icon">🏠</span>首页</a>
+    <a href="pages/history.html"><span class="mnav-icon">📜</span>历史</a>
+    <a href="pages/celebrities.html"><span class="mnav-icon">🏆</span>名人</a>
+    <a href="pages/news.html"><span class="mnav-icon">📢</span>消息</a>
+    <a href="pages/members.html"><span class="mnav-icon">👥</span>成员</a>
+    <a href="pages/activities.html"><span class="mnav-icon">🎉</span>活动</a>
+    <a href="pages/today.html"><span class="mnav-icon">📸</span>今日</a>
+  </div>
+
 </body>
 </html>

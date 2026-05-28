@@ -7,25 +7,9 @@
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 
   
-  <link rel="stylesheet" href="../css/style.css?v=81">
+  <link rel="stylesheet" href="../css/style.css?v=23">
   <script src="../js/i18n.js"></script>
   <script src="../js/supabase.js?v=3"></script>
-  <style>
-    .zoom-in-title {
-      animation: zoomIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-    @keyframes zoomIn {
-      0%   { opacity: 0; transform: scale(0.3); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-    .float-in {
-      animation: floatIn 1s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-    @keyframes floatIn {
-      0%   { opacity: 0; transform: translateY(40px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-  </style>
 </head>
 <body>
 
@@ -64,11 +48,15 @@
             <button class="weather-btn" data-weather="meteor" title="流星">☄</button>
           </div>
           <div class="sc-row">
-            <button class="map-z-in sc-btn" title="放大">+</button>
-            <button class="map-z-out sc-btn" title="缩小">−</button>
-            <button class="music-btn" id="music-prev" title="上一首">⏮</button>
-            <button class="music-btn" id="music-toggle" title="播放/暂停">🔈</button>
-            <button class="music-btn" id="music-next" title="下一首">⏭</button>
+            <div class="map-zoom-btns">
+              <button class="map-z-in" title="放大">+</button>
+              <button class="map-z-out" title="缩小">−</button>
+            </div>
+            <span class="sc-divider"></span>
+            <button class="music-btn" id="music-prev" title="上一首" style="font-size:14px;">⏮</button>
+            <button class="music-btn" id="music-toggle">🔈</button>
+            <button class="music-btn" id="music-next" title="下一首" style="font-size:14px;">⏭</button>
+            <span class="music-label" id="music-track-name">背景音乐</span>
           </div>
           <div class="sc-row">
             <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
@@ -83,13 +71,13 @@
 
   <div class="page-wrap">
     <div class="page-title">
-      <h2 class="zoom-in-title" data-i18n="nav.history">家族历史</h2>
+      <h2 data-i18n="nav.history">家族历史</h2>
       <p data-i18n="page.history">探本溯源 · 继往开来</p>
     </div>
 
 
     <!-- 下枫槎谢氏宗源记 -->
-    <section id="zongyuan" class="float-in" style="margin-bottom:50px;">
+    <section id="zongyuan" class="fade-in" style="margin-bottom:50px;">
       <div class="section-title">
         <h2>下枫槎谢氏宗源记</h2>
         <div class="divider"></div>
@@ -99,7 +87,7 @@
 
           <p style="margin-bottom:1.6em;">盖闻木有本而枝叶茂，水有源而流派长。吾谢氏之先，出自姬姓。周宣王封元舅申伯于谢邑，因以国为氏，至今两千八百余载矣。自申伯受封，历代相承，或显于周秦，或盛于汉魏。至东晋时，文靖公谢安、康乐公谢玄叔侄，以八万北府之师破苻坚百万之众于淝水，拯社稷于将倾。一门数公，位极人臣，与琅琊王氏并称"王谢"，为天下望族之冠。此吾族千载之荣光也。</p>
 
-          <p style="margin-bottom:1.6em;">溯吾枫槎一脉，世系源远流长。自申伯传三十六世至东山会稽，再传至石马小四公，乃入浙东之近祖也。临海下渡一支，与石马同出东山会稽，乃平行之别派。由石马传十二世，至文杲公，字克源，北宋宣和年间（约公元一一二五年）任越溪司巡检，始居岩下。公为枫槎谢氏之始迁祖，至今近九百载，传三十六世，瓜瓞绵绵。二世祖攒公、撰公，析居后枫槎与前枫槎，两支并茂，各立门户。</p>
+          <p style="margin-bottom:1.6em;">溯吾枫槎一脉，世系源远流长。自申伯传三十六世至东山会稽，又二十四世至临海下渡，再九世至石马。石马小四公，乃入浙东之近祖也。由石马传十二世，至文杲公，字克源，北宋宣和年间（约公元一一二五年）任越溪司巡检，始居岩下。公为枫槎谢氏之始迁祖，至今近九百载，传三十六世，瓜瓞绵绵。二世祖攒公、撰公，析居后枫槎与前枫槎，两支并茂，各立门户。</p>
 
           <p style="margin-bottom:1.6em;">初，吾族世居岩下。迨明隆庆壬申（公元一五七二年），山洪暴发，庐舍为墟。十六世祖乾公、彬公昆仲，相度地势，遂迁于双枫古槎之下，因名其地曰"下枫槎"。斩荆棘，辟草莱，筑室于兹，开基立业。自此一脉繁衍，枝分派衍，或习儒术而登科第，或事商贾而通有无，或精农桑而富仓廪。清乾隆间，合族建宗祠于村北，三进两厢，门楣高悬"谢氏宗祠"匾额，堂号"敦睦堂"，寓敦宗睦族之意。春秋二祭，少长咸集，尊祖敬宗，礼行肃穆。</p>
 
@@ -211,7 +199,7 @@
             <div style="font-size:24px;margin-bottom:6px;">🍃</div>
             <h3 style="font-size:14px;color:var(--accent-orange);margin-bottom:4px;">下枫槎谢氏</h3>
             <p style="font-size:12px;color:var(--text-secondary);line-height:1.6;">
-              北宋宣和 · 文杲公自石马迁岩下<br>隆庆六年（1572）迁今址<br>以望府茶为业
+              明初洪武年间自临海迁入<br>隆庆六年（1572）迁今址<br>以望府茶为业
             </p>
           </div>
         </div>
@@ -225,7 +213,7 @@
         </p>
 
         <p style="font-size:14px;line-height:2;margin-bottom:16px;color:var(--text-secondary);">
-          <strong style="color:var(--text-primary);">下枫槎谢氏</strong>即吾族所在。北宋宣和年间（约1125年），文杲公自石马迁居宁海岩下（岩头下），任越溪司巡检，为枫槎谢氏始迁祖，至今近九百载，传三十六世。与长街谢氏同出石马，均为浙东谢氏一脉。明隆庆六年（1572），岩下遭特大洪水，村舍损毁，族人举族迁至枫槎岭下首，因地势低于上枫槎，故名"下枫槎"，永久定居。堂号"东山堂"，承东晋谢安"东山再起"之典。族人世代以种茶为业，望府楼山乌砂壤土、云雾缭绕，所产望府茶为宁海名茶，村域茶园连片，至今为支柱产业。
+          <strong style="color:var(--text-primary);">下枫槎谢氏</strong>即吾族所在。明初洪武年间自临海迁入宁海岩下（岩头下），与长街谢氏同宗，同为谢寿甫后裔分支。明隆庆六年（1572），岩下遭特大洪水，村舍损毁，族人举族迁至枫槎岭下首，因地势低于上枫槎，故名"下枫槎"，永久定居。堂号亦为"东山堂"，字辈沿用临海支系。族人世代以种茶为业，望府楼山乌砂壤土、云雾缭绕，所产望府茶为宁海名茶，村域茶园连片，至今为支柱产业。
         </p>
 
         <p style="font-size:14px;line-height:2;margin-bottom:16px;color:var(--text-secondary);">
@@ -241,7 +229,7 @@
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:8px;">
             <div><strong style="color:var(--accent-orange);">① 梅林杏树谢氏</strong><br>北宋崇宁 · 天台迁入</div>
             <div><strong style="color:var(--accent-orange);">② 长街谢氏</strong><br>南宋末 · 石马迁入<br>力洋谢氏为其分支</div>
-            <div><strong style="color:var(--accent-orange);">③ 下枫槎谢氏</strong><br>北宋 · 石马迁入<br>1572年洪水迁今址</div>
+            <div><strong style="color:var(--accent-orange);">③ 下枫槎谢氏</strong><br>明初 · 临海迁入<br>1572年洪水迁今址</div>
           </div>
         </div>
 
@@ -280,22 +268,18 @@
             <div class="m-desc">传三十六世至会稽。东晋谢安、谢玄叔侄淝水之战救社稷，一门数公位极人臣，与琅琊王氏并称"王谢"，为天下望族之冠。</div>
           </div>
         </div>
+        <div class="m-arrow">⬇ 东南迁 ↓</div>
 
-        <!-- 分支：一路至石马（主脉），一路至临海下渡（平行分支） -->
-        <div class="m-branch-wrap" style="margin-top:-16px;margin-bottom:-8px;">
-          <div class="m-branches" style="grid-template-columns:1fr 1fr;">
-            <div class="m-branch-item" style="border-color:#16a34a;border-width:2px;background:rgba(22,163,74,0.12);">
-              <div class="b-name" style="color:#16a34a;font-size:14px;font-weight:800;">└── 临海下渡</div>
-              <div class="b-desc" style="font-style:italic;font-weight:500;color:#16a34a;">另一支自东山会稽直接迁入<br>唐末五代 · 平行别派<br>此支止于此</div>
-            </div>
-            <div class="m-branch-item" style="border-color:#ef4444;background:rgba(239,68,68,0.06);">
-              <div class="b-name" style="color:#ef4444;font-size:14px;">├── 石马（主脉）</div>
-              <div class="b-desc" style="font-weight:500;">小四公自东山会稽直接迁入<br>北宋初 · 入浙东近祖<br>⬇ 一路至岩下 → 下枫槎</div>
-            </div>
+        <!-- 3. 临海下渡 -->
+        <div class="m-node" data-era="tang">
+          <div class="m-card">
+            <div><span class="m-era" style="background:#4ade80;">唐宋</span><span class="m-year">唐末五代</span></div>
+            <div class="m-title">临海下渡 · 迁居台州</div>
+            <div class="m-loc">浙江台州 · 临海市古渡口</div>
+            <div class="m-desc">传二十四世。唐末五代，中原战乱，会稽谢氏一支向东南迁徙，先居临海下渡，再传至石马。</div>
           </div>
         </div>
-
-        <!-- 4. 石马 -->
+        <div class="m-gap"><span>传九世</span></div>
 
         <!-- 4. 石马 -->
         <div class="m-node" data-era="bei">
@@ -303,7 +287,7 @@
             <div><span class="m-era" style="background:#fb923c;">北宋</span><span class="m-year">北宋初</span></div>
             <div class="m-title">小四公 · 入浙东近祖</div>
             <div class="m-loc">浙江台州 · 三门县珠岙镇石马村</div>
-            <div class="m-desc">小四公，字聪孙。自东山会稽迁居石马，为入浙东之近祖，下枫槎谢氏之直系渊源也。</div>
+            <div class="m-desc">小四公，字聪孙。自临海迁居石马，为入浙东之近祖，下枫槎谢氏之直系渊源也。</div>
           </div>
         </div>
         <div class="m-gap"><span>传十二世</span></div>
@@ -805,6 +789,17 @@
     }
   </script>
   <audio id="bg-music" loop src="../music/background.mp3"></audio>
+
+  <!-- ===== 手机端底部导航栏 ===== -->
+  <div class="mobile-bottom-nav">
+    <a href="../index.html"><span class="mnav-icon">🏠</span>首页</a>
+    <a href="history.html"><span class="mnav-icon">📜</span>历史</a>
+    <a href="celebrities.html"><span class="mnav-icon">🏆</span>名人</a>
+    <a href="news.html"><span class="mnav-icon">📢</span>消息</a>
+    <a href="members.html"><span class="mnav-icon">👥</span>成员</a>
+    <a href="activities.html"><span class="mnav-icon">🎉</span>活动</a>
+    <a href="today.html"><span class="mnav-icon">📸</span>今日</a>
+  </div>
 
 </body>
 </html>

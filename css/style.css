@@ -236,9 +236,6 @@ body {
 .nav-toggle {
   display: none;
 }
-.mobile-home-btn {
-  display: none;
-}
 
 .main-nav {
   display: flex;
@@ -340,8 +337,8 @@ body {
 .sc-row {
   display: flex;
   align-items: center;
-  justify-content: space-evenly;
-  gap: 2px;
+  justify-content: center;
+  gap: 4px;
   width: 100%;
 }
 .sc-divider {
@@ -398,14 +395,33 @@ body {
   color: var(--accent-orange);
   border-color: rgba(212,119,58,0.3);
 }
-/* sc-btn: map zoom buttons (now direct children of .sc-row) */
-.sidebar-controls .sc-btn {
-  width: 28px; height: 28px;
+.sidebar-controls .music-label {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60px;
+}
+.sidebar-controls .map-zoom-btns {
+  position: static;
+  opacity: 1;
+  pointer-events: auto;
+  flex-direction: row;
+  display: flex;
+  gap: 2px;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.sidebar-controls .map-zoom-btns button {
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   border: 1px solid var(--glass-border);
   background: var(--glass-bg);
   color: var(--text-secondary);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 400;
   cursor: pointer;
   display: flex;
@@ -414,8 +430,9 @@ body {
   transition: all 0.25s;
   line-height: 1;
   padding: 0;
+  box-shadow: none;
 }
-.sidebar-controls .sc-btn:hover {
+.sidebar-controls .map-zoom-btns button:hover {
   background: var(--accent-orange-dim);
   color: var(--accent-orange);
   border-color: var(--accent-orange);
@@ -446,33 +463,6 @@ body {
   background: var(--glass-hover);
   color: var(--text-primary);
   transform: scale(1.1);
-}
-
-/* ===== Map floating zoom controls ===== */
-.map-float-zoom button {
-  width: 44px; height: 44px;
-  border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(0,0,0,0.6);
-  color: #fff;
-  font-size: 22px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
-  line-height: 1;
-  padding: 0;
-}
-.map-float-zoom button:hover {
-  background: var(--accent-orange);
-  color: #000;
-  transform: scale(1.1);
-}
-.map-float-zoom button:active {
-  transform: scale(0.95);
 }
 
 /* ===== Main content offset for sidebar ===== */
@@ -3260,17 +3250,6 @@ body {
     line-height: 1;
     margin-left: auto;
   }
-  .mobile-home-btn {
-    display: block;
-    font-size: 20px;
-    text-decoration: none;
-    padding: 4px 8px;
-    margin-right: 4px;
-    border-radius: 8px;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    line-height: 1;
-  }
   .main-nav {
     display: none;
     position: absolute;
@@ -3304,10 +3283,10 @@ body {
   .admin-body .grid-4 { grid-template-columns: repeat(2, 1fr); }
   .photo-grid-page { grid-template-columns: repeat(2, 1fr); }
   .hero-section { min-height: 50vh; padding-top: 20px; }
-  .hero-stats { gap: 10px; bottom: 68px; flex-wrap: wrap; max-width: 90%; }
-  .hero-stat-num { font-size: 16px; }
-  .hero-stat-label { font-size: 9px; letter-spacing: 1px; }
-  .hero-stat-dot { width: 2px; height: 2px; margin: 0 2px; }
+  .hero-stats { gap: 14px; bottom: 70px; }
+  .hero-stat-num { font-size: 18px; }
+  .hero-stat-label { font-size: 10px; }
+  .hero-stat-dot { width: 2px; height: 2px; }
   .hero-bg-toggle { bottom: 115px; right: 10px; }
   .hero-bg-toggle .hbg-btn { width: 30px; height: 30px; font-size: 13px; }
   .hero-motto { font-size: 24px; letter-spacing: 4px; margin-bottom: 8px; }
@@ -3318,14 +3297,54 @@ body {
   .hero-date-month { font-size: 16px; }
   .hero-marquee { height: 32px; }
   .hm-text { font-size: 11px; }
+
+  /* 手机端底部导航 */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--glass-border);
+    padding: 4px 0;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -2px 20px rgba(0,0,0,0.08);
+  }
+  .mobile-bottom-nav a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: 4px 6px;
+    font-size: 10px;
+    color: var(--text-tertiary);
+    text-decoration: none;
+    transition: color 0.2s;
+    min-width: 0;
+    flex: 1;
+    text-align: center;
+  }
+  .mobile-bottom-nav a .mnav-icon {
+    font-size: 18px;
+    line-height: 1;
+  }
+  .mobile-bottom-nav a.active {
+    color: var(--accent-orange);
+  }
+  body {
+    padding-bottom: 56px;
+  }
 }
 
 @media (max-width: 480px) {
   .photo-grid-page { grid-template-columns: 1fr; }
   .admin-body .grid-4 { grid-template-columns: 1fr; }
   .sidebar-controls .weather-btn { width: 24px; height: 24px; font-size: 10px; }
-  .sidebar-controls .sc-btn { width: 24px; height: 24px; font-size: 14px; }
-  .sidebar-controls .music-btn { width: 24px; height: 24px; font-size: 10px; }
 }
 
 /* ===== 始祖诞辰倒计时 ===== */
