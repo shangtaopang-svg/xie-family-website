@@ -388,8 +388,8 @@
       const ctx = canvas.getContext('2d');
       let w, h;
       function resize() {
-        w = canvas.width = heroSection.clientWidth;
-        h = canvas.height = heroSection.clientHeight;
+        w = canvas.width = heroSection.offsetWidth;
+        h = canvas.height = heroSection.offsetHeight;
       }
       resize();
       window.addEventListener('resize', resize);
