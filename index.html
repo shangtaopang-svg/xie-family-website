@@ -18,6 +18,7 @@
 </head>
 <body>
 
+<canvas id="bg-canvas"></canvas>
 <canvas id="weather-canvas"></canvas>
 
 <!-- 迁徙地图背景 -->
@@ -59,7 +60,6 @@
 
   <!-- ===== Hero ===== -->
   <section class="hero-section">
-    <canvas id="bg-canvas"></canvas>
     <div class="hero-info">
       <div class="hero-date-box">
       <div class="hero-date">
@@ -381,22 +381,27 @@
   })();
   </script>
   <script>
-    // Canvas animated background (scoped to hero section)
+    // Canvas animated background (clipped to hero section area)
     const canvas = document.getElementById('bg-canvas');
-    const heroSection = document.querySelector('.hero-section');
-    if (canvas && heroSection) {
+    if (canvas) {
       const ctx = canvas.getContext('2d');
       let w, h;
-      function resize() {
-        const rect = heroSection.getBoundingClientRect();
-        w = canvas.width = rect.width;
-        h = canvas.height = rect.height;
+      function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+      resize(); window.addEventListener('resize', resize);
+
+      // Clip canvas to hero section using clip-path
+      const heroSection = document.querySelector('.hero-section');
+      function clipToHero() {
+        if (!heroSection) return;
+        var r = heroSection.getBoundingClientRect();
+        canvas.style.clipPath = 'inset(' + r.top + 'px ' + (window.innerWidth - r.right) + 'px ' + (window.innerHeight - r.bottom) + 'px ' + r.left + 'px)';
       }
-      resize();
-      window.addEventListener('resize', resize);
+      clipToHero();
+      window.addEventListener('resize', clipToHero);
+      window.addEventListener('scroll', clipToHero);
 
       const dots = [];
-      const DOT_COUNT = 60;
+      const DOT_COUNT = 80;
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       const dotColor = isDark ? '255,255,255' : '100,100,100';
 
