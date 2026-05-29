@@ -197,14 +197,38 @@
     var latlngs = ROUTE.map(function (p) { return [p.lat, p.lng]; });
     map.fitBounds(latlngs, { padding: [60, 60], maxZoom: 7.5 });
 
-    // 1) 完整路线（弯曲路径）
+    // 1) 完整路线（白色描边 + 红色主线，确保在任何背景上都清晰可见）
+    var MAIN_COLOR = '#ef4444';
+    var OUTLINE_COLOR = 'rgba(255,255,255,0.5)';
     for (var i = 0; i < CURVED_SEGMENTS.length; i++) {
-      var style = SEGMENT_STYLES[i] || { color: '#888', weight: 2 };
-      allSegments.push(L.polyline(CURVED_SEGMENTS[i], {
-        color: style.color,
-        weight: style.weight,
-        opacity: 0.6
+      var pts = CURVED_SEGMENTS[i];
+      // 白色外发光轮廓（模拟描边效果）
+      L.polyline(pts, {
+        color: '#ffffff', weight: 8, opacity: 0.15, interactive: false
+      }).addTo(map);
+      L.polyline(pts, {
+        color: '#ffffff', weight: 4, opacity: 0.4, interactive: false
+      }).addTo(map);
+      // 红色主线
+      allSegments.push(L.polyline(pts, {
+        color: MAIN_COLOR,
+        weight: 3.5,
+        opacity: 0.85
       }).addTo(map));
+    }
+    // 路线方向箭头标记（间隔位置放置）
+    for (var i = 0; i < CURVED_SEGMENTS.length; i++) {
+      var pts = CURVED_SEGMENTS[i];
+      var count = Math.min(3, Math.floor(pts.length / 20));
+      for (var a = 1; a <= count; a++) {
+        var idx = Math.floor(pts.length * a / (count + 1));
+        var pt = pts[idx];
+        // 带白色外圈的小红点
+        L.circleMarker(pt, {
+          radius: 4, color: '#ffffff', fillColor: MAIN_COLOR,
+          fillOpacity: 1, weight: 2, opacity: 0.9, interactive: false
+        }).addTo(map);
+      }
     }
 
     // 2) 高亮进度线
@@ -322,34 +346,37 @@
       });
       L.marker([wp.lat, wp.lng], { icon: icon, opacity: 0.85, interactive: false }).addTo(map);
 
-      // 亮绿色实线连接至东山会稽（发光效果）
+      // 亮绿色实线连接至东山会稽（白色描边确保可见）
       var sidePt1 = [ROUTE[1].lat, ROUTE[1].lng];
       var sidePt2 = [wp.lat, wp.lng];
-      // 发光底层
+      // 白色外发光轮廓
       L.polyline([sidePt1, sidePt2], {
-        color: '#4ade80', weight: 10, opacity: 0.2, interactive: false
+        color: '#ffffff', weight: 8, opacity: 0.15, interactive: false
       }).addTo(map);
-      // 主线
       L.polyline([sidePt1, sidePt2], {
-        color: '#4ade80', weight: 4, opacity: 0.95, interactive: false
+        color: '#ffffff', weight: 4, opacity: 0.35, interactive: false
       }).addTo(map);
-      // 路径标记点（中间三个）
+      // 绿色主线
+      L.polyline([sidePt1, sidePt2], {
+        color: '#4ade80', weight: 3.5, opacity: 0.9, interactive: false
+      }).addTo(map);
+      // 路径标记点（白色外圈 + 绿心）
       for (var a = 1; a <= 3; a++) {
         var t = a / 4;
         var apt = [sidePt1[0] + (sidePt2[0] - sidePt1[0]) * t, sidePt1[1] + (sidePt2[1] - sidePt1[1]) * t];
         L.circleMarker(apt, {
-          radius: 3.5, color: '#4ade80', fillColor: '#4ade80',
-          fillOpacity: 1, weight: 0, interactive: false
+          radius: 4, color: '#ffffff', fillColor: '#4ade80',
+          fillOpacity: 1, weight: 2, opacity: 0.9, interactive: false
         }).addTo(map);
       }
-      // 两端强调点
+      // 两端强调点（白色外圈 + 绿心）
       L.circleMarker(sidePt1, {
-        radius: 7, color: '#4ade80', fillColor: '#4ade80',
-        fillOpacity: 0.6, weight: 2, interactive: false
+        radius: 7, color: '#ffffff', fillColor: '#4ade80',
+        fillOpacity: 0.7, weight: 2, opacity: 0.9, interactive: false
       }).addTo(map);
       L.circleMarker(sidePt2, {
-        radius: 8, color: '#4ade80', fillColor: '#4ade80',
-        fillOpacity: 0.6, weight: 2, interactive: false
+        radius: 8, color: '#ffffff', fillColor: '#4ade80',
+        fillOpacity: 0.7, weight: 2, opacity: 0.9, interactive: false
       }).addTo(map);
 
       // 路线标注
@@ -363,6 +390,18 @@
         icon: sideLabel, interactive: false, zIndexOffset: 2000
       }).addTo(map);
     });
+
+    // 地图图例
+    var legend = L.control({ position: 'bottomleft' });
+    legend.onAdd = function () {
+      var div = L.DomUtil.create('div', 'map-legend');
+      div.style.cssText = 'background:rgba(0,0,0,0.75);color:#fff;padding:10px 14px;border-radius:8px;font-size:12px;line-height:1.8;border:1px solid rgba(255,255,255,0.15);backdrop-filter:blur(4px);';
+      div.innerHTML =
+        '<div><span style="display:inline-block;width:24px;height:4px;background:#ef4444;vertical-align:middle;margin-right:8px;border-radius:2px;box-shadow:0 0 4px rgba(239,68,68,0.5);"></span>主脉 · 石马 → 下枫槎</div>' +
+        '<div><span style="display:inline-block;width:24px;height:4px;background:#4ade80;vertical-align:middle;margin-right:8px;border-radius:2px;box-shadow:0 0 4px rgba(74,222,128,0.5);"></span>平行分支 · 临海下渡</div>';
+      return div;
+    };
+    legend.addTo(map);
 
     // 7) 可点击节点
     ROUTE.forEach(function (wp, i) {
