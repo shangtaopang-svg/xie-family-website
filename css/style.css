@@ -340,8 +340,8 @@ body {
 .sc-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
+  justify-content: space-evenly;
+  gap: 2px;
   width: 100%;
 }
 .sc-divider {
@@ -398,33 +398,14 @@ body {
   color: var(--accent-orange);
   border-color: rgba(212,119,58,0.3);
 }
-.sidebar-controls .music-label {
-  font-size: 10px;
-  color: var(--text-tertiary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 60px;
-}
-.sidebar-controls .map-zoom-btns {
-  position: static;
-  opacity: 1;
-  pointer-events: auto;
-  flex-direction: row;
-  display: flex;
-  gap: 2px;
-  background: none;
-  border: none;
-  padding: 0;
-}
-.sidebar-controls .map-zoom-btns button {
-  width: 26px;
-  height: 26px;
+/* sc-btn: map zoom buttons (now direct children of .sc-row) */
+.sidebar-controls .sc-btn {
+  width: 28px; height: 28px;
   border-radius: 50%;
   border: 1px solid var(--glass-border);
   background: var(--glass-bg);
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 400;
   cursor: pointer;
   display: flex;
@@ -433,9 +414,8 @@ body {
   transition: all 0.25s;
   line-height: 1;
   padding: 0;
-  box-shadow: none;
 }
-.sidebar-controls .map-zoom-btns button:hover {
+.sidebar-controls .sc-btn:hover {
   background: var(--accent-orange-dim);
   color: var(--accent-orange);
   border-color: var(--accent-orange);
@@ -466,6 +446,33 @@ body {
   background: var(--glass-hover);
   color: var(--text-primary);
   transform: scale(1.1);
+}
+
+/* ===== Map floating zoom controls ===== */
+.map-float-zoom button {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  line-height: 1;
+  padding: 0;
+}
+.map-float-zoom button:hover {
+  background: var(--accent-orange);
+  color: #000;
+  transform: scale(1.1);
+}
+.map-float-zoom button:active {
+  transform: scale(0.95);
 }
 
 /* ===== Main content offset for sidebar ===== */
@@ -3317,6 +3324,8 @@ body {
   .photo-grid-page { grid-template-columns: 1fr; }
   .admin-body .grid-4 { grid-template-columns: 1fr; }
   .sidebar-controls .weather-btn { width: 24px; height: 24px; font-size: 10px; }
+  .sidebar-controls .sc-btn { width: 24px; height: 24px; font-size: 14px; }
+  .sidebar-controls .music-btn { width: 24px; height: 24px; font-size: 10px; }
 }
 
 /* ===== 始祖诞辰倒计时 ===== */
@@ -4293,6 +4302,57 @@ body {
 }
 .m-branch-item.b-main .b-name {
   color: var(--accent-orange);
+}
+
+/* Tree fork: 东山会稽分支展示 */
+.m-fork {
+  position: relative;
+  margin: 8px 0 8px 52px;
+  padding: 12px 20px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+}
+.m-fork-branches {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.m-fork-main,
+.m-fork-side {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+.m-fork-main {
+  background: rgba(239,68,68,0.06);
+  border: 1px solid rgba(239,68,68,0.15);
+}
+.m-fork-side {
+  background: rgba(139,92,246,0.06);
+  border: 1px solid rgba(139,92,246,0.15);
+}
+.m-fork-char {
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.m-fork-label {
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+.m-fork-sub {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+.m-fork-arrow {
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 4px;
 }
 
 /* Flood event highlight */

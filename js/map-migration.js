@@ -20,10 +20,10 @@
   ];
 
   var SEGMENT_STYLES = [
-    { color: '#d4a037', weight: 2.5 },
-    { color: '#22d3ee', weight: 2.5 },
-    { color: '#fb923c', weight: 3 },
-    { color: '#ef4444', weight: 3.5 }
+    { color: '#ef4444', weight: 3.5 },
+    { color: '#ef4444', weight: 3.5 },
+    { color: '#ef4444', weight: 4 },
+    { color: '#ef4444', weight: 4.5 }
   ];
 
   var SEG_TRAVEL = [10000, 4000, 3500, 3000];
