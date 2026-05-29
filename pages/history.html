@@ -18,6 +18,13 @@
       0%   { opacity: 0; transform: scale(0.3); }
       100% { opacity: 1; transform: scale(1); }
     }
+    .float-in {
+      animation: floatIn 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes floatIn {
+      0%   { opacity: 0; transform: translateY(40px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
@@ -82,7 +89,7 @@
 
 
     <!-- 下枫槎谢氏宗源记 -->
-    <section id="zongyuan" class="fade-in" style="margin-bottom:50px;">
+    <section id="zongyuan" class="float-in" style="margin-bottom:50px;">
       <div class="section-title">
         <h2>下枫槎谢氏宗源记</h2>
         <div class="divider"></div>
