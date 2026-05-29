@@ -90,6 +90,7 @@
   var map = null;
   var container = null;
   var isActive = false;
+  var zoomCtrl = null;
 
   var allSegments = [];
   var progressLine = null;
@@ -143,6 +144,7 @@
     isActive = true;
     if (!map) createMap();
     container.classList.add('active');
+    if (zoomCtrl) zoomCtrl.style.display = 'flex';
     if (map) setTimeout(function () { map.invalidateSize(); }, 50);
     setTimeout(startAnim, 600);
   }
@@ -153,6 +155,7 @@
     stopAnim();
     hideNodeInfo();
     container.classList.remove('active');
+    if (zoomCtrl) zoomCtrl.style.display = 'none';
   }
 
   function createMap() {
@@ -163,23 +166,18 @@
       scrollWheelZoom: true,
       doubleClickZoom: false,
       touchZoom: true,
-      keyboard: false,
+      keyboard: true,
       zoomSnap: 0.5
     });
 
-    // 缩放按钮（绑定侧边栏中已有的 + / − 按钮）
-    var zi = document.querySelector('.map-z-in');
-    var zo = document.querySelector('.map-z-out');
-    if (!zi || !zo) {
-      var zoomDiv = document.createElement('div');
-      zoomDiv.className = 'map-zoom-btns';
-      zoomDiv.innerHTML = '<button class="map-z-in" title="放大">+</button><button class="map-z-out" title="缩小">−</button>';
-      document.body.appendChild(zoomDiv);
-      zi = zoomDiv.querySelector('.map-z-in');
-      zo = zoomDiv.querySelector('.map-z-out');
-    }
-    if (zi) zi.onclick = function () { if (map) map.zoomIn(); };
-    if (zo) zo.onclick = function () { if (map) map.zoomOut(); };
+    // 浮动缩放按钮（覆盖在地图上方，不受侧边栏影响）
+    zoomCtrl = document.createElement('div');
+    zoomCtrl.className = 'map-float-zoom';
+    zoomCtrl.innerHTML = '<button class="mfz-in" title="放大">+</button><button class="mfz-out" title="缩小">−</button>';
+    zoomCtrl.style.cssText = 'position:fixed;bottom:30px;right:30px;display:flex;flex-direction:column;gap:4px;z-index:9999;display:none;';
+    document.body.appendChild(zoomCtrl);
+    zoomCtrl.querySelector('.mfz-in').onclick = function () { if (map) map.zoomIn(); };
+    zoomCtrl.querySelector('.mfz-out').onclick = function () { if (map) map.zoomOut(); };
 
     // 高德地图瓦片（国内可访问，通过 CSS 暗化处理达到暗色调效果）
     L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
