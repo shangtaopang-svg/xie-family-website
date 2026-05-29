@@ -7,7 +7,7 @@
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 
   
-  <link rel="stylesheet" href="../css/style.css?v=80">
+  <link rel="stylesheet" href="../css/style.css?v=81">
   <script src="../js/i18n.js"></script>
   <script src="../js/supabase.js?v=3"></script>
 </head>
@@ -266,22 +266,20 @@
         </div>
 
         <!-- 分支：一路至石马（主脉），一路至临海下渡（平行分支） -->
-        <div class="m-fork">
-          <div class="m-fork-line"></div>
-          <div class="m-fork-branches">
-            <div class="m-fork-main">
-              <span class="m-fork-char">├──→</span>
-              <span class="m-fork-label" style="color:#ef4444;font-weight:700;">石马（主脉）</span>
-              <span class="m-fork-sub">小四公自东山会稽直接迁入</span>
-              <span class="m-fork-arrow" style="color:#ef4444;">→ 岩下 → 下枫槎</span>
+        <div class="m-branch-wrap" style="margin-top:-16px;margin-bottom:-8px;">
+          <div class="m-branches" style="grid-template-columns:1fr 1fr;">
+            <div class="m-branch-item" style="border-color:#8b5cf6;background:rgba(139,92,246,0.06);">
+              <div class="b-name" style="color:#8b5cf6;font-size:14px;">└── 临海下渡</div>
+              <div class="b-desc" style="font-style:italic;color:var(--text-tertiary);">另一支自东山会稽直接迁入<br>唐末五代 · 平行别派<br>此支止于此</div>
             </div>
-            <div class="m-fork-side">
-              <span class="m-fork-char">└──→</span>
-              <span class="m-fork-label" style="color:#8b5cf6;">临海下渡</span>
-              <span class="m-fork-sub">唐末五代 · 另一支自东山会稽迁入，平行别派</span>
+            <div class="m-branch-item" style="border-color:#ef4444;background:rgba(239,68,68,0.06);">
+              <div class="b-name" style="color:#ef4444;font-size:14px;">├── 石马（主脉）</div>
+              <div class="b-desc" style="font-weight:500;">小四公自东山会稽直接迁入<br>北宋初 · 入浙东近祖<br>⬇ 一路至岩下 → 下枫槎</div>
             </div>
           </div>
         </div>
+
+        <!-- 4. 石马 -->
 
         <!-- 4. 石马 -->
         <div class="m-node" data-era="bei">

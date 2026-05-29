@@ -4304,57 +4304,6 @@ body {
   color: var(--accent-orange);
 }
 
-/* Tree fork: 东山会稽分支展示 */
-.m-fork {
-  position: relative;
-  margin: 8px 0 8px 52px;
-  padding: 12px 20px;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: 10px;
-}
-.m-fork-branches {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.m-fork-main,
-.m-fork-side {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 6px;
-}
-.m-fork-main {
-  background: rgba(239,68,68,0.06);
-  border: 1px solid rgba(239,68,68,0.15);
-}
-.m-fork-side {
-  background: rgba(139,92,246,0.06);
-  border: 1px solid rgba(139,92,246,0.15);
-}
-.m-fork-char {
-  font-family: 'Courier New', monospace;
-  font-size: 16px;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-.m-fork-label {
-  font-size: 14px;
-  letter-spacing: 0.5px;
-}
-.m-fork-sub {
-  font-size: 11px;
-  color: var(--text-tertiary);
-}
-.m-fork-arrow {
-  font-size: 12px;
-  font-weight: 600;
-  margin-left: 4px;
-}
-
 /* Flood event highlight */
 .m-flood {
   margin: 0 0 0 52px;
