@@ -311,39 +311,53 @@
     SIDE_POINTS.forEach(function (wp) {
       var icon = L.divIcon({
         className: 'map-wp-label map-wp-side',
-        html: '<div class="map-wp-inner map-wp-side-inner" style="border:2px solid #7c3aed;background:rgba(30,30,50,0.95);">' +
+        html: '<div class="map-wp-inner map-wp-side-inner" style="border:2px solid #c084fc;background:rgba(40,20,60,0.95);box-shadow:0 0 24px rgba(192,132,252,0.3);">' +
           '<span class="map-wp-era" style="background:#7c3aed;font-weight:700;padding:3px 10px;">' + wp.era + '</span>' +
           '<span class="map-wp-year">' + wp.year + '</span>' +
-          '<span class="map-wp-name" style="color:#a78bfa;font-weight:700;">' + wp.name + '</span>' +
+          '<span class="map-wp-name" style="color:#c084fc;font-weight:700;font-size:15px;">' + wp.name + '</span>' +
           '<span class="map-wp-addr">' + wp.fullName + '</span>' +
-          '<span class="map-wp-desc" style="font-style:italic;color:#a78bfa;">↕ 自东山会稽分支</span></div>',
+          '<span class="map-wp-desc" style="font-style:italic;color:#c084fc;font-weight:500;">↕ 自东山会稽分支 · 平行别派</span></div>',
         iconSize: [180, 100],
         iconAnchor: [90, 0]
       });
       L.marker([wp.lat, wp.lng], { icon: icon, opacity: 0.85, interactive: false }).addTo(map);
 
-      // 灰线连接至东山会稽（表明同源关系）
-      L.polyline([
-        [wp.lat, wp.lng],
-        [ROUTE[1].lat, ROUTE[1].lng]
-      ], { color: '#7c3aed', weight: 3, opacity: 0.7, dashArray: '8,6', interactive: false }).addTo(map);
-
-      // 加粗起点终点 marker 增强可视性
-      L.circleMarker([ROUTE[1].lat, ROUTE[1].lng], {
-        radius: 6, color: '#7c3aed', fillColor: '#7c3aed',
-        fillOpacity: 0.8, weight: 2, interactive: false
+      // 亮紫色实线连接至东山会稽（加发光效果，确保可见）
+      var sidePt1 = [ROUTE[1].lat, ROUTE[1].lng];
+      var sidePt2 = [wp.lat, wp.lng];
+      // 发光底层
+      L.polyline([sidePt1, sidePt2], {
+        color: '#c084fc', weight: 10, opacity: 0.2, interactive: false
       }).addTo(map);
-      L.circleMarker([wp.lat, wp.lng], {
-        radius: 6, color: '#7c3aed', fillColor: '#7c3aed',
-        fillOpacity: 0.8, weight: 2, interactive: false
+      // 主线
+      L.polyline([sidePt1, sidePt2], {
+        color: '#c084fc', weight: 4, opacity: 0.95, interactive: false
+      }).addTo(map);
+      // 路径箭头标记（中间三个点）
+      for (var a = 1; a <= 3; a++) {
+        var t = a / 4;
+        var apt = [sidePt1[0] + (sidePt2[0] - sidePt1[0]) * t, sidePt1[1] + (sidePt2[1] - sidePt1[1]) * t];
+        L.circleMarker(apt, {
+          radius: 3.5, color: '#c084fc', fillColor: '#c084fc',
+          fillOpacity: 1, weight: 0, interactive: false
+        }).addTo(map);
+      }
+      // 两端强调点
+      L.circleMarker(sidePt1, {
+        radius: 7, color: '#c084fc', fillColor: '#c084fc',
+        fillOpacity: 0.6, weight: 2, interactive: false
+      }).addTo(map);
+      L.circleMarker(sidePt2, {
+        radius: 8, color: '#c084fc', fillColor: '#c084fc',
+        fillOpacity: 0.6, weight: 2, interactive: false
       }).addTo(map);
 
       // 路线标注
       var sideLabel = L.divIcon({
         className: '',
-        html: '<span style="background:#7c3aed;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;white-space:nowrap;opacity:0.85;">⬆ 平行分支 · 临海下渡</span>',
+        html: '<span style="background:#7c3aed;color:#fff;padding:3px 12px;border-radius:4px;font-size:12px;font-weight:700;white-space:nowrap;border:2px solid #c084fc;box-shadow:0 0 20px rgba(192,132,252,0.6);">⬆ 平行分支 · 临海下渡</span>',
         iconSize: [0, 0],
-        iconAnchor: [0, 0]
+        iconAnchor: [65, 0]
       });
       L.marker([(ROUTE[1].lat + wp.lat) / 2, (ROUTE[1].lng + wp.lng) / 2], {
         icon: sideLabel, interactive: false, zIndexOffset: 2000
