@@ -537,8 +537,12 @@ function renderGenealogy(area) {
   var html = '<div class="admin-module">';
   html += '<div class="admin-module-header">';
   html += '<h3>📖 族谱管理</h3>';
-  html += '<div style="display:flex;gap:8px;">';
+  html += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
   html += '<button class="btn btn-accent btn-sm" onclick="showAddForm(\'genealogy\')">+ 新增人员</button>';
+  html += '<button class="btn btn-sm" onclick="exportGenealogyCSV()">📥 导出CSV</button>';
+  html += '<button class="btn btn-sm" onclick="document.getElementById(\'csv-import-input\').click()">📤 导入CSV</button>';
+  html += '<input type="file" id="csv-import-input" accept=".csv" style="display:none" onchange="importGenealogyCSV(this)">';
+  html += '<button class="btn btn-sm" onclick="generateGenealogyBook()">📖 生成谱书</button>';
   html += '<button class="btn btn-sm" onclick="window.open(\'../pages/genealogy.html\', \'_blank\')" style="padding:8px 16px;">🔗 预览世系图</button>';
   html += '</div></div>';
 
@@ -656,6 +660,147 @@ function filterGenealogyTable() {
     if (!q) { r.style.display = ''; return; }
     r.style.display = r.getAttribute('data-search').toLowerCase().indexOf(q) !== -1 ? '' : 'none';
   });
+}
+
+// ===== CSV Export/Import =====
+function exportGenealogyCSV() {
+  var data = getData('genealogy');
+  if (!data || data.length === 0) {
+    showToast('没有数据可导出');
+    return;
+  }
+  // Fields to export (skip id, keep the rest)
+  var fields = ['name','gender','generation_num','generation','father_id','mother_id','spouse_ids','branch','birth_date','death_date','is_alive','adopted','address','biography'];
+  var headers = ['姓名','性别','世代数','字辈','父亲ID','母亲ID','配偶','支系','出生','逝世','是否在世','过继','居住地','生平简介'];
+
+  var csv = '﻿'; // BOM for Excel UTF-8
+  csv += headers.join(',') + '\n';
+  data.forEach(function(p) {
+    var row = fields.map(function(key) {
+      var val = (p[key] !== undefined && p[key] !== null) ? String(p[key]) : '';
+      // Escape quotes and wrap in quotes if contains comma or quote
+      if (val.indexOf(',') !== -1 || val.indexOf('"') !== -1 || val.indexOf('\n') !== -1) {
+        val = '"' + val.replace(/"/g, '""') + '"';
+      }
+      return val;
+    });
+    csv += row.join(',') + '\n';
+  });
+
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = '下枫槎谢氏族谱_' + new Date().toISOString().slice(0,10) + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('导出成功');
+}
+
+function importGenealogyCSV(input) {
+  var file = input.files[0];
+  if (!file) { showToast('请选择文件'); return; }
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var text = e.target.result;
+      // Remove BOM if present
+      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+
+      var lines = text.split(/\r?\n/).filter(function(l) { return l.trim(); });
+      if (lines.length < 2) { showToast('CSV文件格式错误：至少需要标题行+1行数据'); return; }
+
+      // Parse header
+      var headerLine = lines[0];
+      var headers = parseCSVLine(headerLine);
+      var fieldMap = {
+        '姓名':'name','性别':'gender','世代数':'generation_num','字辈':'generation',
+        '父亲ID':'father_id','母亲ID':'mother_id','配偶':'spouse_ids','支系':'branch',
+        '出生':'birth_date','逝世':'death_date','是否在世':'is_alive','过继':'adopted',
+        '居住地':'address','生平简介':'biography',
+        'name':'name','gender':'gender','generation_num':'generation_num','generation':'generation',
+        'father_id':'father_id','mother_id':'mother_id','spouse_ids':'spouse_ids','branch':'branch',
+        'birth_date':'birth_date','death_date':'death_date','is_alive':'is_alive','adopted':'adopted',
+        'address':'address','biography':'biography'
+      };
+
+      // Map headers to fields
+      var fieldIdx = headers.map(function(h) { return fieldMap[h.trim()] || null; });
+
+      var existingData = getData('genealogy');
+      var maxId = existingData.reduce(function(m, p) { return Math.max(m, p.id || 0); }, 0);
+      var imported = 0;
+
+      for (var i = 1; i < lines.length; i++) {
+        var vals = parseCSVLine(lines[i]);
+        var person = {};
+        var hasData = false;
+        fieldIdx.forEach(function(field, idx) {
+          if (field && idx < vals.length) {
+            var v = vals[idx].trim();
+            if (v) {
+              if (field === 'generation_num' || field === 'father_id' || field === 'mother_id') {
+                person[field] = v === '' ? null : parseInt(v);
+              } else {
+                person[field] = v;
+              }
+              hasData = true;
+            }
+          }
+        });
+        if (!hasData || !person.name) continue;
+        maxId++;
+        person.id = maxId;
+        existingData.push(person);
+        imported++;
+      }
+
+      if (imported > 0) {
+        saveData('genealogy', existingData);
+        renderModule('genealogy');
+        showToast('成功导入 ' + imported + ' 条记录');
+      } else {
+        showToast('没有找到可导入的数据（请确保有"姓名"列）');
+      }
+    } catch(err) {
+      showToast('导入失败: ' + err.message);
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function parseCSVLine(line) {
+  var result = [];
+  var current = '';
+  var inQuotes = false;
+  for (var i = 0; i < line.length; i++) {
+    var c = line[i];
+    if (inQuotes) {
+      if (c === '"' && line[i+1] === '"') {
+        current += '"';
+        i++;
+      } else if (c === '"') {
+        inQuotes = false;
+      } else {
+        current += c;
+      }
+    } else {
+      if (c === '"') {
+        inQuotes = true;
+      } else if (c === ',') {
+        result.push(current);
+        current = '';
+      } else {
+        current += c;
+      }
+    }
+  }
+  result.push(current);
+  return result;
 }
 
 // ===== Toast notification =====
@@ -1827,3 +1972,176 @@ window.repairMissingVideoFiles = repairMissingVideoFiles;
 window.filterGenealogyTable = filterGenealogyTable;
 window.uploadHeroBg = uploadHeroBg;
 window.removeHeroBg = removeHeroBg;
+window.exportGenealogyCSV = exportGenealogyCSV;
+window.importGenealogyCSV = importGenealogyCSV;
+window.generateGenealogyBook = generateGenealogyBook;
+
+// ===== 一键生成谱书 =====
+function generateGenealogyBook() {
+  var data = getData('genealogy');
+  if (!data || data.length === 0) {
+    showToast('没有族谱数据，请先添加人员');
+    return;
+  }
+  // Open book view in new window
+  var w = window.open('', '_blank');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>下枫槎谢氏宗谱</title>');
+  w.document.write('<style>' +
+    'body{margin:0;padding:0;font-family:"Noto Serif SC","STSong","SimSun","Songti SC",serif;background:#f5f0eb;color:#2d2a24;}' +
+    '.book-wrap{max-width:800px;margin:0 auto;padding:40px 60px 80px;}' +
+    '.cover{text-align:center;padding:120px 40px 80px;margin-bottom:40px;}' +
+    '.cover h1{font-size:36px;letter-spacing:8px;margin-bottom:16px;color:#8b1a1a;}' +
+    '.cover .sub{font-size:16px;color:#8b7355;letter-spacing:4px;margin-bottom:40px;}' +
+    '.cover .year{font-size:14px;color:#666;margin-top:60px;}' +
+    '.section-title{font-size:20px;font-weight:600;color:#8b1a1a;border-bottom:2px solid #c4a882;padding-bottom:8px;margin:40px 0 24px;letter-spacing:2px;}' +
+    '.preface{font-size:14px;line-height:2.2;text-indent:2em;color:#444;margin-bottom:30px;}' +
+    '.gen-table{width:100%;border-collapse:collapse;margin-bottom:30px;font-size:13px;}' +
+    '.gen-table th{background:#c4a882;color:#fff;padding:8px 12px;text-align:left;font-weight:500;}' +
+    '.gen-table td{padding:6px 12px;border-bottom:1px solid #ddd;}' +
+    '.gen-table tr:hover td{background:#f5ede0;}' +
+    '.biography{margin-bottom:20px;padding:16px 20px;background:#fff;border-left:3px solid #c4a882;border-radius:4px;}' +
+    '.bio-name{font-size:16px;font-weight:600;color:#333;margin-bottom:4px;}' +
+    '.bio-meta{font-size:12px;color:#999;margin-bottom:8px;}' +
+    '.bio-text{font-size:13px;line-height:1.8;color:#555;}' +
+    '.page-break{page-break-before:always;}' +
+    '.gen-group{margin-bottom:30px;}' +
+    '.gen-heading{font-size:18px;font-weight:600;color:#8b1a1a;padding:8px 16px;background:#f5ede0;border-radius:4px;margin-bottom:16px;}' +
+    '.print-btn{position:fixed;bottom:30px;right:30px;padding:10px 24px;background:#8b1a1a;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.2);z-index:999;}' +
+    '.print-btn:hover{background:#a52a2a;}' +
+    '@media print{body{background:#fff;}.print-btn{display:none;}.book-wrap{padding:0;}}' +
+    '</style></head><body>');
+  w.document.write('<button class="print-btn" onclick="window.print()">🖨️ 打印谱书</button>');
+  w.document.write('<div class="book-wrap">');
+
+  // Cover page
+  w.document.write('<div class="cover">');
+  w.document.write('<h1>下枫槎谢氏宗谱</h1>');
+  w.document.write('<div class="sub">敦睦堂珍藏</div>');
+  w.document.write('<div style="margin:30px 0;font-size:15px;color:#8b7355;line-height:2;">乌衣世泽 · 宝树家声</div>');
+  w.document.write('<div class="year">公元二〇二六年 丙午年春 续修</div>');
+  w.document.write('</div>');
+
+  // Preface
+  w.document.write('<div class="section-title">谱序</div>');
+  w.document.write('<div class="preface">盖闻木有本而枝叶茂，水有源而流派长。下枫槎谢氏，自北宋宣和年间文杲公居岩下以来，历九百载，传三十六世。明隆庆壬申（一五七二年）迁居枫槎，至今四百五十余年。今续修宗谱于丙午之春（公元二〇二六年），敦睦堂珍藏，分上下两册。凡我族人，当览斯谱而明世系、序昭穆、敦亲睦、传家风，继往开来，光大门楣。</div>');
+
+  // Stats
+  var total = data.length;
+  var gens = {}, branchSet = {}, males = 0, females = 0;
+  data.forEach(function(p) {
+    gens[p.generation_num || 0] = (gens[p.generation_num || 0] || 0) + 1;
+    if (p.branch && p.branch !== '—') branchSet[p.branch] = true;
+    if (p.gender === '男') males++;
+    if (p.gender === '女') females++;
+  });
+  var genKeys = Object.keys(gens).filter(Number).sort(function(a,b){return a-b;});
+  w.document.write('<div style="text-align:center;font-size:13px;color:#666;margin-bottom:30px;padding:16px;background:#f5ede0;border-radius:8px;">');
+  w.document.write('总人口 ' + total + ' 人 · ' + genKeys.length + ' 世 · ' + Object.keys(branchSet).length + ' 支系 · 男 ' + males + ' 人 · 女 ' + females + ' 人');
+  w.document.write('</div>');
+
+  // Lineage table by generation (世系表)
+  w.document.write('<div class="section-title page-break">世系表</div>');
+  genKeys.forEach(function(g) {
+    var members = data.filter(function(p) { return p.generation_num === parseInt(g); });
+    if (members.length === 0) return;
+    members.sort(function(a, b) { return (a.name || '').localeCompare(b.name || ''); });
+    w.document.write('<div class="gen-group">');
+    w.document.write('<div class="gen-heading">第' + g + '世（共' + members.length + '人）</div>');
+    w.document.write('<table class="gen-table"><thead><tr><th>姓名</th><th>性别</th><th>字辈</th><th>支系</th><th>父亲</th><th>配偶</th><th>生卒</th><th>居住地</th></tr></thead><tbody>');
+    members.forEach(function(p) {
+      var fatherName = '—';
+      if (p.father_id) {
+        for (var fi = 0; fi < data.length; fi++) {
+          if (data[fi].id === parseInt(p.father_id)) { fatherName = data[fi].name; break; }
+        }
+      }
+      var spouseNames = p.spouse_ids ? p.spouse_ids.toString().split(',').map(function(n){return n.trim();}).filter(function(n){return n;}).join('、') : '—';
+      w.document.write('<tr><td>' + escapeHtml(p.name) + '</td><td>' + (p.gender || '—') + '</td><td>' + (p.generation || '—') + '</td><td>' + (p.branch || '—') + '</td><td>' + fatherName + '</td><td>' + spouseNames + '</td><td>' + (p.birth_date||'') + (p.death_date ? '~' + p.death_date : '') + '</td><td>' + escapeHtml(p.address||'') + '</td></tr>');
+    });
+    w.document.write('</tbody></table></div>');
+  });
+
+  // Biographies (行传)
+  w.document.write('<div class="section-title page-break">行传</div>');
+  data.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0) || (a.name || '').localeCompare(b.name || ''); });
+  data.forEach(function(p) {
+    if (!p.biography && !p.birth_date && !p.death_date) return; // Skip entries with no info
+    w.document.write('<div class="biography">');
+    w.document.write('<div class="bio-name">' + escapeHtml(p.name) + (p.generation_num ? '（第' + p.generation_num + '世）' : '') + '</div>');
+    w.document.write('<div class="bio-meta">');
+    var parts = [];
+    if (p.gender) parts.push(p.gender);
+    if (p.generation && p.generation !== '—') parts.push(p.generation + '字辈');
+    if (p.branch && p.branch !== '—') parts.push(p.branch);
+    if (p.birth_date || p.death_date) parts.push((p.birth_date||'') + (p.death_date ? ' ~ ' + p.death_date : ''));
+    if (p.is_alive === '是') parts.push('在世');
+    if (p.address) parts.push('居' + p.address);
+    w.document.write(parts.join(' · '));
+    w.document.write('</div>');
+    if (p.spouse_ids) {
+      var sp = p.spouse_ids.toString().split(',').map(function(n){return n.trim();}).filter(function(n){return n;});
+      if (sp.length > 0) w.document.write('<div style="font-size:12px;color:#888;margin-bottom:6px;">配: ' + escapeHtml(sp.join('、')) + '</div>');
+    }
+    if (p.biography) {
+      w.document.write('<div class="bio-text">' + escapeHtml(p.biography).replace(/\n/g, '<br>') + '</div>');
+    }
+    w.document.write('</div>');
+  });
+
+  // Family tree diagram (世系图) - simplified vertical text diagram
+  w.document.write('<div class="section-title page-break">世系图</div>');
+  w.document.write('<div style="font-size:12px;color:#666;margin-bottom:16px;">以下为各世系传承关系：</div>');
+
+  // Build tree structure from data
+  var existingIds = {};
+  data.forEach(function(p) { existingIds[p.id] = true; });
+  var roots = data.filter(function(p) {
+    return !p.father_id || !existingIds[parseInt(p.father_id)];
+  });
+  // Filter out spouses from roots
+  var spouseIds = {};
+  data.forEach(function(p) {
+    if (p.spouse_ids) {
+      var names = p.spouse_ids.toString().split(',').map(function(n){return n.trim();}).filter(function(n){return n;});
+      data.forEach(function(other){
+        if (other.id !== p.id && names.indexOf(other.name) !== -1) spouseIds[other.id] = p.id;
+      });
+    }
+  });
+  roots = roots.filter(function(p){ return !spouseIds[p.id] || spouseIds[p.id] > p.id; });
+  if (roots.length === 0 && data.length > 0) roots = [data[0]];
+
+  function renderLineage(person, depth) {
+    var children = data.filter(function(p) { return parseInt(p.father_id) === person.id || parseInt(p.mother_id) === person.id; });
+    var indent = depth * 20;
+    var marker = depth === 0 ? '●' : '○';
+    var spouseTxt = '';
+    if (person.spouse_ids) {
+      var sp = person.spouse_ids.toString().split(',').map(function(n){return n.trim();}).filter(function(n){return n;});
+      if (sp.length > 0) spouseTxt = ' 配 ' + sp.join('、');
+    }
+    var genTxt = person.generation_num ? '第' + person.generation_num + '世' : '';
+    var html = '<div style="padding-left:' + indent + 'px;padding-top:4px;font-size:13px;line-height:1.8;">';
+    html += '<span style="color:#8b1a1a;margin-right:6px;">' + marker + '</span>';
+    html += '<strong>' + escapeHtml(person.name) + '</strong>';
+    if (genTxt) html += ' <span style="color:#999;font-size:12px;">' + genTxt + '</span>';
+    if (spouseTxt) html += ' <span style="color:#888;font-size:12px;">' + spouseTxt + '</span>';
+    if (person.biography && person.biography.length > 60) html += ' <span style="color:#aaa;font-size:11px;">——' + escapeHtml(person.biography.slice(0,60)) + '…</span>';
+    html += '</div>';
+    children.forEach(function(child) {
+      html += renderLineage(child, depth + 1);
+    });
+    return html;
+  }
+  roots.forEach(function(root) {
+    w.document.write('<div style="margin-bottom:20px;padding:12px 16px;background:#fff;border-radius:6px;border:1px solid #e8ddd0;">');
+    w.document.write(renderLineage(root, 0));
+    w.document.write('</div>');
+  });
+
+  // End
+  w.document.write('<div style="text-align:center;padding:60px 0 40px;color:#999;font-size:13px;">— 谱书完 —</div>');
+  w.document.write('<div style="text-align:center;color:#999;font-size:12px;padding-bottom:40px;">下枫槎谢氏数字宗祠 · 公元二〇二六年</div>');
+  w.document.write('</div></body></html>');
+  w.document.close();
+}
