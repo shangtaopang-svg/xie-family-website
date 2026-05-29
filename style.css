@@ -340,8 +340,8 @@ body {
 .sc-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
+  justify-content: space-evenly;
+  gap: 2px;
   width: 100%;
 }
 .sc-divider {
@@ -404,7 +404,9 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 60px;
+  max-width: 50px;
+  min-width: 24px;
+  text-align: center;
 }
 .sidebar-controls .map-zoom-btns {
   position: static;
