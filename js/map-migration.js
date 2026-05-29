@@ -9,22 +9,25 @@
   var ROUTE = [
     { lng: 112.454, lat: 34.620, name: '谢邑',     fullName: '河南洛阳',                  year: '前806年', era: '周代', desc: '周宣王封申伯于谢邑，谢氏得姓' },
     { lng: 120.883, lat: 29.775, name: '东山会稽', fullName: '浙江绍兴·上虞区上浦镇东山村', year: '东汉-东晋', era: '六朝', desc: '传36世，乌衣巷王谢世家' },
-    { lng: 121.140, lat: 28.850, name: '临海下渡', fullName: '浙江台州·临海市古渡口',       year: '唐末五代', era: '唐宋', desc: '传24世，迁居台州临海' },
-    { lng: 121.380, lat: 29.120, name: '石马',     fullName: '浙江台州·三门县珠岙镇石马村',  year: '北宋初',  era: '北宋', desc: '小四公为入浙东近祖，传9世' },
+    { lng: 121.380, lat: 29.120, name: '石马',     fullName: '浙江台州·三门县珠岙镇石马村',  year: '北宋初',  era: '北宋', desc: '小四公（谢聪孙）从会稽避乱迁入石马，为入浙东近祖' },
     { lng: 121.430, lat: 29.280, name: '岩下',     fullName: '浙江宁波·宁海县跃龙街道岩头下村', year: '约1125年', era: '北宋', desc: '文杲公始迁岩下，枫槎谢氏始迁祖' },
     { lng: 121.445, lat: 29.278, name: '下枫槎村', fullName: '浙江宁波·宁海县跃龙街道望府村',  year: '1572年',  era: '明代', desc: '乾公彬公因水患迁居，开基立业' }
+  ];
+
+  // 平行分支：不参与主路线动画，但在地图上显示
+  var SIDE_POINTS = [
+    { lng: 121.140, lat: 28.850, name: '临海下渡', fullName: '浙江台州·临海市古渡口', year: '唐末五代', era: '唐宋', desc: '与石马平行分支——同出东山会稽，各自直接迁入台州不同地点' }
   ];
 
   var SEGMENT_STYLES = [
     { color: '#d4a037', weight: 2.5 },
     { color: '#22d3ee', weight: 2.5 },
-    { color: '#4ade80', weight: 2.5 },
     { color: '#fb923c', weight: 3 },
     { color: '#ef4444', weight: 3.5 }
   ];
 
-  var SEG_TRAVEL = [10000, 4000, 3500, 3500, 3000];
-  var SEG_PAUSE  = [3500, 3500, 3500, 3500, 5000];
+  var SEG_TRAVEL = [10000, 4000, 3500, 3000];
+  var SEG_PAUSE  = [3500, 3500, 3500, 5000];
   var SEG_COUNT = SEG_TRAVEL.length;
 
   // ---- Segment distances (haversine) ----
@@ -250,10 +253,10 @@
       var segStyle = SEGMENT_STYLES[Math.min(i, SEGMENT_STYLES.length - 1)] || { color: '#888' };
       var extraClass = '';
       var anchorY = 0;
-      if (i === 4) {        // 岩下：标签向上，距离收近
+      if (i === 3) {        // 岩下：标签向上
         extraClass = ' map-wp-inner-up';
         anchorY = 55;
-      } else if (i === 5) { // 下枫槎：标签向下
+      } else if (i === 4) { // 下枫槎：标签向下
         extraClass = ' map-wp-inner-down';
         anchorY = 0;
       }
@@ -287,6 +290,28 @@
         iconAnchor: [28, 9]
       });
       L.marker(mid, { icon: icon, interactive: false, opacity: 0.8 }).addTo(map);
+    });
+
+    // 平行分支途经点（临海下渡等）
+    SIDE_POINTS.forEach(function (wp) {
+      var icon = L.divIcon({
+        className: 'map-wp-label map-wp-side',
+        html: '<div class="map-wp-inner map-wp-side-inner">' +
+          '<span class="map-wp-era" style="background:#8b5cf6">' + wp.era + '</span>' +
+          '<span class="map-wp-year">' + wp.year + '</span>' +
+          '<span class="map-wp-name">' + wp.name + '</span>' +
+          '<span class="map-wp-addr">' + wp.fullName + '</span>' +
+          '<span class="map-wp-desc" style="font-style:italic;">↕ 平行分支</span></div>',
+        iconSize: [180, 100],
+        iconAnchor: [90, 0]
+      });
+      L.marker([wp.lat, wp.lng], { icon: icon, opacity: 0.85, interactive: false }).addTo(map);
+
+      // 灰线连接至东山会稽（表明同源关系）
+      L.polyline([
+        [wp.lat, wp.lng],
+        [ROUTE[1].lat, ROUTE[1].lng]
+      ], { color: '#8b5cf6', weight: 1.5, opacity: 0.35, dashArray: '6,8', interactive: false }).addTo(map);
     });
 
     // 7) 可点击节点
