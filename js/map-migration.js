@@ -292,16 +292,31 @@
       L.marker(mid, { icon: icon, interactive: false, opacity: 0.8 }).addTo(map);
     });
 
+    // 主脉标注（在石马段路线旁）
+    (function () {
+      var midIdx = Math.floor(CURVED_SEGMENTS[2].length / 2);
+      var midPt = CURVED_SEGMENTS[2][midIdx];
+      var mainLabel = L.divIcon({
+        className: '',
+        html: '<span style="background:#ef4444;color:#fff;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 0 12px rgba(239,68,68,0.5);">▶ 主脉 · 石马 → 下枫槎</span>',
+        iconSize: [0, 0],
+        iconAnchor: [0, 0]
+      });
+      L.marker([midPt[0] + 0.06, midPt[1] + 0.03], {
+        icon: mainLabel, interactive: false, zIndexOffset: 2000
+      }).addTo(map);
+    })();
+
     // 平行分支途经点（临海下渡等）
     SIDE_POINTS.forEach(function (wp) {
       var icon = L.divIcon({
         className: 'map-wp-label map-wp-side',
-        html: '<div class="map-wp-inner map-wp-side-inner">' +
-          '<span class="map-wp-era" style="background:#8b5cf6">' + wp.era + '</span>' +
+        html: '<div class="map-wp-inner map-wp-side-inner" style="border:2px solid #7c3aed;background:rgba(30,30,50,0.95);">' +
+          '<span class="map-wp-era" style="background:#7c3aed;font-weight:700;padding:3px 10px;">' + wp.era + '</span>' +
           '<span class="map-wp-year">' + wp.year + '</span>' +
-          '<span class="map-wp-name">' + wp.name + '</span>' +
+          '<span class="map-wp-name" style="color:#a78bfa;font-weight:700;">' + wp.name + '</span>' +
           '<span class="map-wp-addr">' + wp.fullName + '</span>' +
-          '<span class="map-wp-desc" style="font-style:italic;">↕ 平行分支</span></div>',
+          '<span class="map-wp-desc" style="font-style:italic;color:#a78bfa;">↕ 自东山会稽分支</span></div>',
         iconSize: [180, 100],
         iconAnchor: [90, 0]
       });
@@ -311,7 +326,28 @@
       L.polyline([
         [wp.lat, wp.lng],
         [ROUTE[1].lat, ROUTE[1].lng]
-      ], { color: '#8b5cf6', weight: 1.5, opacity: 0.35, dashArray: '6,8', interactive: false }).addTo(map);
+      ], { color: '#7c3aed', weight: 3, opacity: 0.7, dashArray: '8,6', interactive: false }).addTo(map);
+
+      // 加粗起点终点 marker 增强可视性
+      L.circleMarker([ROUTE[1].lat, ROUTE[1].lng], {
+        radius: 6, color: '#7c3aed', fillColor: '#7c3aed',
+        fillOpacity: 0.8, weight: 2, interactive: false
+      }).addTo(map);
+      L.circleMarker([wp.lat, wp.lng], {
+        radius: 6, color: '#7c3aed', fillColor: '#7c3aed',
+        fillOpacity: 0.8, weight: 2, interactive: false
+      }).addTo(map);
+
+      // 路线标注
+      var sideLabel = L.divIcon({
+        className: '',
+        html: '<span style="background:#7c3aed;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;white-space:nowrap;opacity:0.85;">⬆ 平行分支 · 临海下渡</span>',
+        iconSize: [0, 0],
+        iconAnchor: [0, 0]
+      });
+      L.marker([(ROUTE[1].lat + wp.lat) / 2, (ROUTE[1].lng + wp.lng) / 2], {
+        icon: sideLabel, interactive: false, zIndexOffset: 2000
+      }).addTo(map);
     });
 
     // 7) 可点击节点
