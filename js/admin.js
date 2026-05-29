@@ -656,10 +656,44 @@ function renderGenealogy(area) {
 function filterGenealogyTable() {
   var q = document.getElementById('genealogy-admin-search').value.trim().toLowerCase();
   var rows = document.querySelectorAll('.admin-table tbody tr');
+  var match = [], hide = [];
   rows.forEach(function(r) {
-    if (!q) { r.style.display = ''; return; }
-    r.style.display = r.getAttribute('data-search').toLowerCase().indexOf(q) !== -1 ? '' : 'none';
+    if (!q || r.getAttribute('data-search').toLowerCase().indexOf(q) !== -1) {
+      match.push(r);
+    } else {
+      hide.push(r);
+    }
   });
+  if (!window.anime) {
+    rows.forEach(function(r) { r.style.display = match.indexOf(r) !== -1 ? '' : 'none'; });
+    return;
+  }
+  // Hide non-matching: slide out + fade
+  if (hide.length) {
+    anime({
+      targets: hide,
+      opacity: [1, 0],
+      translateX: [0, 20],
+      duration: 150,
+      easing: 'easeIn',
+      complete: function () {
+        hide.forEach(function(r) { r.style.display = 'none'; anime.set(r, { opacity: 1, translateX: 0 }); });
+      }
+    });
+  }
+  // Show matching: slide in + fade (staggered)
+  if (match.length) {
+    match.forEach(function(r) { r.style.display = ''; });
+    anime.set(match, { opacity: 0, translateX: -16 });
+    anime({
+      targets: match,
+      opacity: [0, 1],
+      translateX: [-16, 0],
+      duration: 250,
+      delay: anime.stagger(30),
+      easing: 'easeOut'
+    });
+  }
 }
 
 // ===== CSV Export/Import =====
@@ -863,6 +897,146 @@ function showEditForm(mod, id) {
   showForm(mod, m, item);
 }
 
+// ===== Genealogy form helpers (分组表单) =====
+function getFieldDef(moduleDef, key) {
+  for (var i = 0; i < moduleDef.fields.length; i++) {
+    if (moduleDef.fields[i].key === key) return moduleDef.fields[i];
+  }
+  return null;
+}
+
+function renderGenealogyFieldHtml(mod, m, key, item) {
+  var f = getFieldDef(m, key);
+  if (!f) return '';
+  var isEdit = item !== null;
+  var val = isEdit ? (item[f.key] || '') : '';
+  var html = '<div class="form-group">';
+  html += '<label>' + f.label + (f.required ? ' *' : '') + '</label>';
+
+  if (mod === 'genealogy' && f.key === 'father_id') {
+    var allPeople = getData('genealogy');
+    var currentId = parseInt(val);
+    html += '<select id="field-father_id" onchange="genealogyUpdateMother()" style="width:100%;padding:8px 10px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:13px;">';
+    html += '<option value="">— 请选择 —</option>';
+    var males = [];
+    for (var gi = 0; gi < allPeople.length; gi++) {
+      if (isEdit && allPeople[gi].id === item.id) continue;
+      if (allPeople[gi].gender === '男') males.push(allPeople[gi]);
+    }
+    males.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0) || (a.name || '').localeCompare(b.name || ''); });
+    for (var gi2 = 0; gi2 < males.length; gi2++) {
+      var sel = currentId === males[gi2].id;
+      html += '<option value="' + males[gi2].id + '"' + (sel ? ' selected' : '') + '>[' + (males[gi2].generation_num || '?') + '世] ' + escapeHtml(males[gi2].name) + (males[gi2].spouse_ids ? ' 配:' + escapeHtml(males[gi2].spouse_ids.toString().split(',').map(function(n){return n.trim();}).filter(function(n){return n;}).join('/')) : '') + '</option>';
+    }
+    if (currentId) {
+      var inList = males.some(function(m) { return m.id === currentId; });
+      if (!inList) {
+        for (var ci2 = 0; ci2 < allPeople.length; ci2++) {
+          if (allPeople[ci2].id === currentId) {
+            html += '<option disabled style="font-size:11px;color:var(--text-tertiary);border-top:1px solid var(--divider);">─ 其他（过继/特殊） ─</option>';
+            html += '<option value="' + currentId + '" selected>[' + (allPeople[ci2].generation_num || '?') + '世] ' + escapeHtml(allPeople[ci2].name) + ' ⚠️</option>';
+            break;
+          }
+        }
+      }
+    }
+    html += '</select>';
+  } else if (mod === 'genealogy' && f.key === 'mother_id') {
+    var allPeople = getData('genealogy');
+    var currentMotherVal = val;
+    var currentMotherId = parseInt(val);
+    var fatherId = isEdit ? parseInt(item.father_id) : 0;
+    var fatherPerson = null;
+    var recommendedMothers = [];
+    if (fatherId) {
+      for (var fi = 0; fi < allPeople.length; fi++) {
+        if (allPeople[fi].id === fatherId) { fatherPerson = allPeople[fi]; break; }
+      }
+      if (fatherPerson && fatherPerson.spouse_ids) {
+        var spouseNames = fatherPerson.spouse_ids.toString().split(',').map(function(n) { return n.trim(); }).filter(function(n) { return n; });
+        spouseNames.forEach(function(nm) {
+          for (var fi2 = 0; fi2 < allPeople.length; fi2++) {
+            if (allPeople[fi2].name === nm && allPeople[fi2].gender === '女') {
+              recommendedMothers.push(allPeople[fi2]);
+            }
+          }
+        });
+      }
+    }
+    var unmatchedSpouseNames = [];
+    if (fatherPerson && fatherPerson.spouse_ids) {
+      var allSpos = fatherPerson.spouse_ids.toString().split(',').map(function(n) { return n.trim(); }).filter(function(n) { return n; });
+      allSpos.forEach(function(nm) {
+        var found = false;
+        for (var ri = 0; ri < recommendedMothers.length; ri++) {
+          if (recommendedMothers[ri].name === nm) { found = true; break; }
+        }
+        if (!found) unmatchedSpouseNames.push(nm);
+      });
+    }
+
+    html += '<select id="field-mother_id" style="width:100%;padding:8px 10px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:13px;">';
+    html += '<option value="">— 请选择 —</option>';
+    if (recommendedMothers.length > 0 || unmatchedSpouseNames.length > 0) {
+      html += '<optgroup label="▼ 父亲配偶">';
+      recommendedMothers.forEach(function(m) {
+        html += '<option value="' + m.id + '"' + (currentMotherId === m.id ? ' selected' : '') + '>[' + (m.generation_num || '?') + '世] ' + escapeHtml(m.name) + '</option>';
+      });
+      unmatchedSpouseNames.forEach(function(nm) {
+        html += '<option value="" disabled style="color:var(--text-tertiary);font-style:italic;">⚠️ ' + escapeHtml(nm) + '（尚未建档，请先添加此人）</option>';
+      });
+      html += '</optgroup>';
+    }
+    html += '<optgroup label="▼ 所有女性">';
+    var females = [];
+    for (var fi3 = 0; fi3 < allPeople.length; fi3++) {
+      if (allPeople[fi3].gender === '女') females.push(allPeople[fi3]);
+    }
+    females.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0) || (a.name || '').localeCompare(b.name || ''); });
+    females.forEach(function(m) {
+      html += '<option value="' + m.id + '"' + (currentMotherId === m.id ? ' selected' : '') + '>[' + (m.generation_num || '?') + '世] ' + escapeHtml(m.name) + (m.spouse_ids ? ' 配:' + escapeHtml(m.spouse_ids.toString().split(',').map(function(n){return n.trim();}).filter(function(n){return n;}).join('/')) : '') + '</option>';
+    });
+    html += '</optgroup></select>';
+  } else if (mod === 'genealogy' && f.key === 'spouse_ids') {
+    var spVal = val;
+    var spParts = spVal ? spVal.split(',').map(function(s) { return s.trim(); }).filter(function(s) { return s; }) : [];
+    var spPrimary = spParts[0] || '';
+    var spSecondary = spParts.slice(1).join('、') || '';
+    html += '<div style="display:flex;flex-direction:column;gap:8px;">';
+    html += '<input type="text" id="sp-field-primary" value="' + escapeHtml(spPrimary) + '" placeholder="原配（第一配偶）姓名" style="width:100%;padding:8px 10px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:13px;box-sizing:border-box;">';
+    html += '<input type="text" id="sp-field-secondary" value="' + escapeHtml(spSecondary) + '" placeholder="非原配姓名（多位用顿号分隔）" style="width:100%;padding:8px 10px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:13px;box-sizing:border-box;">';
+    html += '<p style="font-size:11px;color:var(--text-tertiary);margin:0;">原配为第一配偶，非原配可填多位用顿号分隔</p>';
+    html += '</div>';
+  } else if (f.type === 'select') {
+    html += '<select id="field-' + f.key + '"' + (f.required ? ' required' : '') + '>';
+    for (var j = 0; j < f.options.length; j++) {
+      var selected = val === f.options[j] ? ' selected' : '';
+      html += '<option' + selected + '>' + f.options[j] + '</option>';
+    }
+    html += '</select>';
+  } else if (f.type === 'textarea') {
+    html += '<textarea id="field-' + f.key + '"' + (f.required ? ' required' : '') + ' placeholder="请输入' + f.label + '" style="width:100%;padding:8px 10px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:13px;box-sizing:border-box;min-height:80px;">' + escapeHtml(val) + '</textarea>';
+  } else if (f.type === 'number') {
+    html += '<input type="number" id="field-' + f.key + '" value="' + escapeHtml(val) + '" placeholder="' + (f.placeholder || '请输入' + f.label) + '"' + (f.required ? ' required' : '') + ' style="width:100%;padding:8px 10px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:13px;box-sizing:border-box;">';
+  } else if (f.type === 'file') {
+    html += '<input type="file" id="field-' + f.key + '" accept="' + (f.accept || '*') + '" style="padding:8px;background:var(--bg-card);border:1px solid var(--glass-border);border-radius:8px;width:100%;font-size:13px;">';
+  } else {
+    html += '<input type="text" id="field-' + f.key + '" value="' + escapeHtml(val) + '" placeholder="' + (f.placeholder || '请输入' + f.label) + '"' + (f.required ? ' required' : '') + ' style="width:100%;padding:8px 10px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:13px;box-sizing:border-box;">';
+  }
+
+  if (f.help) html += '<p style="font-size:11px;color:var(--text-tertiary);margin:4px 0 0;">' + f.help + '</p>';
+  html += '</div>';
+  return html;
+}
+
+function toggleAdvancedFields(btn) {
+  var div = document.getElementById('genealogy-advanced-fields');
+  if (!div) return;
+  var isHidden = div.style.display === 'none';
+  div.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '📂 收起高级信息' : '📂 高级信息（生卒、支系、简介等）';
+}
+
 function showForm(mod, m, item) {
   var isEdit = item !== null;
   var overlay = document.createElement('div');
@@ -879,6 +1053,44 @@ function showForm(mod, m, item) {
   html += '</div>';
 
   html += '<form id="admin-form" onsubmit="return false;">';
+
+  // 族谱表单：分组显示，基本资料 + 高级信息
+  if (mod === 'genealogy') {
+    var basicKeys = ['generation_num', 'name', 'gender', 'generation', 'father_id', 'mother_id', 'spouse_ids'];
+    var advancedKeys = ['branch', 'birth_date', 'death_date', 'is_alive', 'adopted', 'address', 'biography', 'photo'];
+
+    html += '<div style="background:var(--accent-orange-dim);border-radius:8px;padding:10px 14px;margin-bottom:16px;">';
+    html += '<div style="font-size:12px;font-weight:500;color:var(--accent-orange);margin-bottom:4px;">📋 基本资料</div>';
+    html += '<div style="font-size:11px;color:var(--text-tertiary);">填写姓名、世代、父母配偶等核心信息</div>';
+    html += '</div>';
+
+    for (var bi = 0; bi < basicKeys.length; bi++) {
+      html += renderGenealogyFieldHtml(mod, m, basicKeys[bi], isEdit ? item : null);
+    }
+
+    html += '<div style="margin:12px 0;">';
+    html += '<button type="button" class="btn btn-sm" onclick="toggleAdvancedFields(this)" style="width:100%;padding:8px;font-size:12px;color:var(--text-tertiary);background:var(--glass-bg);border:1px dashed var(--glass-border);border-radius:8px;cursor:pointer;">📂 高级信息（生卒、支系、简介等）</button>';
+    html += '</div>';
+
+    html += '<div id="genealogy-advanced-fields" style="display:none;">';
+    for (var ai = 0; ai < advancedKeys.length; ai++) {
+      html += renderGenealogyFieldHtml(mod, m, advancedKeys[ai], isEdit ? item : null);
+    }
+    html += '</div>';
+
+    html += '</form>';
+    html += '<div style="display:flex;gap:12px;justify-content:flex-end;margin-top:24px;">';
+    html += '<button type="button" class="btn btn-secondary" onclick="this.closest(\'.admin-modal-overlay\').remove()">取消</button>';
+    html += '<button type="submit" class="btn btn-accent" onclick="saveForm(\'' + mod + '\',' + (isEdit ? item.id : 'null') + ')">' + (isEdit ? '保存修改' : '添加') + '</button>';
+    html += '</div>';
+
+    box.innerHTML = html;
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    // Trigger mother field update on next tick
+    setTimeout(function() { if (typeof genealogyUpdateMother === 'function') genealogyUpdateMother(); }, 50);
+    return;
+  }
 
   for (var i = 0; i < m.fields.length; i++) {
     var f = m.fields[i];
@@ -1734,11 +1946,37 @@ var currentModule = 'genealogy';
 
 function switchModule(mod) {
   currentModule = mod;
-  renderModule(mod);
+  var area = document.getElementById('admin-content-area');
   // Update active state in sidebar
   var items = document.querySelectorAll('.admin-sidebar-item');
   for (var i = 0; i < items.length; i++) {
     items[i].classList.toggle('active', items[i].getAttribute('data-module') === mod);
+  }
+  // 使用 anime.js 过渡动画
+  if (window.anime && area && area.children.length > 0) {
+    anime({
+      targets: Array.from(area.children),
+      opacity: [1, 0],
+      translateY: [0, -10],
+      duration: 100,
+      easing: 'easeIn',
+      complete: function () {
+        renderModule(mod);
+        var newChildren = Array.from(area.children);
+        if (newChildren.length) {
+          anime.set(newChildren, { opacity: 0, translateY: 12 });
+          anime({
+            targets: newChildren,
+            opacity: [0, 1],
+            translateY: [12, 0],
+            duration: 250,
+            easing: 'easeOut'
+          });
+        }
+      }
+    });
+  } else {
+    renderModule(mod);
   }
 }
 
