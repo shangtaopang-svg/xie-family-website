@@ -10,6 +10,15 @@
   <link rel="stylesheet" href="../css/style.css?v=81">
   <script src="../js/i18n.js"></script>
   <script src="../js/supabase.js?v=3"></script>
+  <style>
+    .zoom-in-title {
+      animation: zoomIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes zoomIn {
+      0%   { opacity: 0; transform: scale(0.3); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+  </style>
 </head>
 <body>
 
@@ -67,7 +76,7 @@
 
   <div class="page-wrap">
     <div class="page-title">
-      <h2 data-i18n="nav.history">家族历史</h2>
+      <h2 class="zoom-in-title" data-i18n="nav.history">家族历史</h2>
       <p data-i18n="page.history">探本溯源 · 继往开来</p>
     </div>
 
