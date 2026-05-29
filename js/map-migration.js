@@ -143,8 +143,6 @@
     isActive = true;
     if (!map) createMap();
     container.classList.add('active');
-    var zb = document.querySelector('.map-zoom-btns');
-    if (zb) zb.classList.add('active');
     if (map) setTimeout(function () { map.invalidateSize(); }, 50);
     setTimeout(startAnim, 600);
   }
@@ -155,8 +153,6 @@
     stopAnim();
     hideNodeInfo();
     container.classList.remove('active');
-    var zb = document.querySelector('.map-zoom-btns');
-    if (zb) zb.classList.remove('active');
   }
 
   function createMap() {
@@ -167,20 +163,23 @@
       scrollWheelZoom: true,
       doubleClickZoom: false,
       touchZoom: true,
-      keyboard: false,
+      keyboard: true,
       zoomSnap: 0.5
     });
 
-    // 缩放按钮（优先使用侧边栏中已有的）
-    var zoomDiv = document.querySelector('.map-zoom-btns');
-    if (!zoomDiv) {
-      zoomDiv = document.createElement('div');
+    // 缩放按钮（绑定侧边栏中已有的 + / − 按钮）
+    var zi = document.querySelector('.map-z-in');
+    var zo = document.querySelector('.map-z-out');
+    if (!zi || !zo) {
+      var zoomDiv = document.createElement('div');
       zoomDiv.className = 'map-zoom-btns';
       zoomDiv.innerHTML = '<button class="map-z-in" title="放大">+</button><button class="map-z-out" title="缩小">−</button>';
       document.body.appendChild(zoomDiv);
+      zi = zoomDiv.querySelector('.map-z-in');
+      zo = zoomDiv.querySelector('.map-z-out');
     }
-    zoomDiv.querySelector('.map-z-in').onclick = function () { if (map) map.zoomIn(); };
-    zoomDiv.querySelector('.map-z-out').onclick = function () { if (map) map.zoomOut(); };
+    if (zi) zi.onclick = function () { if (map) map.zoomIn(); };
+    if (zo) zo.onclick = function () { if (map) map.zoomOut(); };
 
     // 高德地图瓦片（国内可访问，通过 CSS 暗化处理达到暗色调效果）
     L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
