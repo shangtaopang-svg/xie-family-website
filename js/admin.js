@@ -562,7 +562,7 @@ function renderGenealogy(area) {
   html += '<div class="apt-left">';
   html += '<div class="apt-tree-filters">';
   html += '<select id="tree-filter-gen" onchange="renderGenealogyTree()"><option value="">全部世代</option>';
-  for (var g = 1; g <= 20; g++) {
+  for (var g = 1; g <= 150; g++) {
     if (gens[g]) html += '<option value="' + g + '">' + g + '世 (' + gens[g] + '人)</option>';
   }
   html += '</select>';
