@@ -2240,8 +2240,20 @@ function toggleTreeFullscreen() {
 // Re-initialize after tree re-render
 var origRenderGenealogyTree = renderGenealogyTree;
 renderGenealogyTree = function() {
+  // Save zoom/pan state before re-render
+  var savedZoom = treeZoom, savedX = treePanX, savedY = treePanY;
+  // Only reset to default if user hasn't manually zoomed (zoom=1 means default)
+  // Actually, preserve zoom/pan always so the view doesn't jump
   if (origRenderGenealogyTree) origRenderGenealogyTree();
-  setTimeout(initTreePanZoom, 50);
+  setTimeout(function() {
+    initTreePanZoom();
+    // Restore zoom/pan state
+    treeZoom = savedZoom;
+    treePanX = savedX;
+    treePanY = savedY;
+    applyTreeTransform();
+    updateZoomLevel();
+  }, 50);
 };
 
 // ===== 族谱树：展开/折叠节点 =====

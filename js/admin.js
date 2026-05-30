@@ -2296,8 +2296,16 @@ function toggleTreeFullscreen() {
 
 var origRenderGenealogyTree = renderGenealogyTree;
 renderGenealogyTree = function() {
+  var savedZoom = treeZoom, savedX = treePanX, savedY = treePanY;
   if (origRenderGenealogyTree) origRenderGenealogyTree();
-  setTimeout(initTreePanZoom, 50);
+  setTimeout(function() {
+    initTreePanZoom();
+    treeZoom = savedZoom;
+    treePanX = savedX;
+    treePanY = savedY;
+    applyTreeTransform();
+    updateZoomLevel();
+  }, 50);
 };
 
 // ===== 族谱树：展开/折叠节点 =====
