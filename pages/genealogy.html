@@ -159,6 +159,28 @@
         </div>
       </div>
 
+      <!-- ===== 统计分析 ===== -->
+      <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-stats-section">
+        <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:16px;font-size:17px;font-weight:500;">📊 统计分析</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+          <div style="background:var(--accent-orange-dim);border-radius:10px;padding:16px;text-align:center;"><div style="font-size:28px;font-weight:700;color:var(--accent-orange);" id="stat-total-people">0</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">总人数</div></div>
+          <div style="background:var(--glass-bg);border-radius:10px;padding:16px;text-align:center;"><div style="font-size:28px;font-weight:700;color:var(--accent-orange);" id="stat-total-gens">0</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">世代数</div></div>
+          <div style="background:var(--glass-bg);border-radius:10px;padding:16px;text-align:center;"><div style="font-size:28px;font-weight:700;color:var(--accent-cyan);" id="stat-male-count">0</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">男性</div></div>
+          <div style="background:var(--glass-bg);border-radius:10px;padding:16px;text-align:center;"><div style="font-size:28px;font-weight:700;color:#ff6b9d;" id="stat-female-count">0</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">女性</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:10px;padding:16px;">
+            <h4 style="font-size:13px;color:var(--text-primary);margin:0 0 8px;font-weight:500;">📈 各世代人口分布</h4>
+            <canvas id="chart-gens" height="220" style="width:100%;"></canvas>
+          </div>
+          <div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:10px;padding:16px;">
+            <h4 style="font-size:13px;color:var(--text-primary);margin:0 0 8px;font-weight:500;">🧩 支系比例</h4>
+            <canvas id="chart-branch" height="220" style="width:100%;"></canvas>
+          </div>
+        </div>
+        <div style="margin-top:12px;text-align:center;font-size:11px;color:var(--text-tertiary);">数据更新于页面加载时</div>
+      </div>
+
       <!-- 管理提示 -->
       <div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:20px;text-align:center;" class="fade-in">
         <h4 style="font-family:var(--font-title);color:var(--accent-orange);margin-bottom:8px;font-weight:500;">🔧 管理员操作</h4>
@@ -919,6 +941,135 @@
     return d.innerHTML;
   }
 
+  // ===== 统计图表 =====
+  function renderGenealogyCharts() {
+    var data = getGenealogyData();
+    if (!data || data.length === 0) return;
+
+    // Stats summary
+    var total = data.length;
+    var gens = {}, branches = {}, males = 0, females = 0;
+    var maxGen = 0, minGen = 999;
+    data.forEach(function(p) {
+      var gn = parseInt(p.generation_num) || 0;
+      gens[gn] = (gens[gn] || 0) + 1;
+      if (gn > maxGen) maxGen = gn;
+      if (gn < minGen && gn > 0) minGen = gn;
+      if (p.gender === '男') males++;
+      else if (p.gender === '女') females++;
+      var br = p.branch && p.branch !== '—' ? p.branch : '未指定';
+      branches[br] = (branches[br] || 0) + 1;
+    });
+
+    document.getElementById('stat-total-people').textContent = total;
+    document.getElementById('stat-total-gens').textContent = Object.keys(gens).length;
+    document.getElementById('stat-male-count').textContent = males;
+    document.getElementById('stat-female-count').textContent = females;
+
+    // ---- Bar chart: Population by generation ----
+    var barCanvas = document.getElementById('chart-gens');
+    if (barCanvas) {
+      var ctx = barCanvas.getContext('2d');
+      var rect = barCanvas.parentElement.getBoundingClientRect();
+      var W = rect.width - 32 || 500;
+      var R = window.devicePixelRatio || 1;
+      barCanvas.width = W * R;
+      barCanvas.height = 240 * R;
+      barCanvas.style.width = W + 'px';
+      barCanvas.style.height = '240px';
+      ctx.scale(R, R);
+      var H = 240, pad = { top: 20, bottom: 30, left: 40, right: 16 };
+      var chartW = W - pad.left - pad.right;
+      var chartH = H - pad.top - pad.bottom;
+
+      // Get generation keys sorted
+      var genKeys = Object.keys(gens).filter(function(k) { return parseInt(k) > 0; }).sort(function(a,b) { return parseInt(a)-parseInt(b); });
+      var values = genKeys.map(function(k) { return gens[k]; });
+      var maxVal = Math.max.apply(null, values);
+      var barW = Math.max(3, Math.min(20, chartW / genKeys.length - 2));
+
+      ctx.clearRect(0, 0, W, H);
+
+      // Grid lines
+      ctx.strokeStyle = 'rgba(200,200,200,0.15)';
+      ctx.lineWidth = 1;
+      for (var g = 0; g <= 4; g++) {
+        var y = pad.top + chartH * (1 - g / 4);
+        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+        ctx.fillStyle = 'rgba(200,200,200,0.4)';
+        ctx.font = '9px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(Math.round(maxVal * g / 4), pad.left - 4, y + 3);
+      }
+
+      // Bars
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      var barColor = isDark ? 'rgba(251,146,60,0.7)' : 'rgba(251,146,60,0.6)';
+      var barHover = 'rgba(251,146,60,0.9)';
+      genKeys.forEach(function(k, i) {
+        var x = pad.left + i * (chartW / genKeys.length);
+        var barH = (values[i] / maxVal) * chartH;
+        ctx.fillStyle = barColor;
+        ctx.fillRect(x, pad.top + chartH - barH, barW, barH);
+        // Generation label
+        if (i % Math.max(1, Math.floor(genKeys.length / 15)) === 0) {
+          ctx.fillStyle = 'rgba(200,200,200,0.5)';
+          ctx.font = '8px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(k + '世', x + barW / 2, H - pad.bottom + 14);
+        }
+      });
+    }
+
+    // ---- Pie chart: Branch distribution ----
+    var pieCanvas = document.getElementById('chart-branch');
+    if (pieCanvas) {
+      var ctx2 = pieCanvas.getContext('2d');
+      var rect2 = pieCanvas.parentElement.getBoundingClientRect();
+      var W2 = rect2.width - 32 || 500;
+      var R2 = window.devicePixelRatio || 1;
+      pieCanvas.width = W2 * R2;
+      pieCanvas.height = 240 * R2;
+      pieCanvas.style.width = W2 + 'px';
+      pieCanvas.style.height = '240px';
+      ctx2.scale(R2, R2);
+
+      var colors = ['#ef4444','#22d3ee','#fb923c','#4ade80','#a78bfa','#f472b6','#94a3b8'];
+      var branchNames = Object.keys(branches);
+      var totalBranches = 0;
+      branchNames.forEach(function(b) { totalBranches += branches[b]; });
+
+      var cx = W2 * 0.35, cy = 120, radius = 80;
+      var startAngle = -Math.PI / 2;
+
+      branchNames.forEach(function(b, i) {
+        var slice = (branches[b] / totalBranches) * Math.PI * 2;
+        ctx2.beginPath();
+        ctx2.moveTo(cx, cy);
+        ctx2.arc(cx, cy, radius, startAngle, startAngle + slice);
+        ctx2.closePath();
+        ctx2.fillStyle = colors[i % colors.length];
+        ctx2.fill();
+        ctx2.strokeStyle = isDark ? '#1a1a2e' : '#fff';
+        ctx2.lineWidth = 2;
+        ctx2.stroke();
+        startAngle += slice;
+      });
+
+      // Legend
+      var legendX = W2 * 0.65, legendY = 60;
+      ctx2.font = '11px sans-serif';
+      branchNames.forEach(function(b, i) {
+        var ly = legendY + i * 22;
+        ctx2.fillStyle = colors[i % colors.length];
+        ctx2.fillRect(legendX, ly, 12, 12);
+        ctx2.fillStyle = 'rgba(200,200,200,0.7)';
+        ctx2.textAlign = 'left';
+        ctx2.fillText(b + ' (' + branches[b] + '人)', legendX + 18, ly + 11);
+      });
+    }
+  }
+
   // ===== Zoom & Pan =====
   var treeScale = 1;
   var treePanX = 0;
@@ -1037,6 +1188,7 @@
       document.getElementById('genealogy-search-section').style.opacity = '1';
       document.getElementById('genealogy-tree-section').style.opacity = '1';
       document.getElementById('genealogy-table-section').style.opacity = '1';
+      document.getElementById('genealogy-stats-section').style.opacity = '1';
       return;
     }
 
@@ -1095,6 +1247,9 @@
     document.getElementById('genealogy-search-section').style.opacity = '1';
     document.getElementById('genealogy-tree-section').style.opacity = '1';
     document.getElementById('genealogy-table-section').style.opacity = '1';
+    document.getElementById('genealogy-stats-section').style.opacity = '1';
+    renderGenealogyCharts();
+      window.addEventListener("resize", renderGenealogyCharts);
   }
 
   // Wait for page ready
