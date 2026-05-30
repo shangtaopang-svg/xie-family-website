@@ -363,6 +363,17 @@
   .pcard .meta { font-size:11px !important; }
   .pcard .branch-tag { font-size:10px !important; padding:2px 8px !important; }
   .connector-down { height:20px !important; }
+  /* Ancestor tree */
+  .ancestor-tree-wrap { background:var(--glass-bg); border:1px solid var(--accent-orange); border-radius:12px; padding:20px; margin-top:16px; }
+  .ancestor-node { display:flex; flex-direction:column; align-items:center; position:relative; }
+  .ancestor-self .ancestor-card { border:2px solid var(--accent-orange); background:var(--accent-orange-dim); }
+  .ancestor-card { background:var(--bg-card); border:1px solid var(--glass-border); border-radius:10px; padding:10px 16px; text-align:center; min-width:120px; transition:all 0.2s; }
+  .ancestor-card:hover { border-color:var(--accent-orange); box-shadow:0 2px 8px rgba(251,146,60,0.12); }
+  .ancestor-gen { font-size:11px; color:var(--accent-orange); font-weight:600; margin-bottom:2px; }
+  .ancestor-name { font-size:15px; font-weight:600; color:var(--text-primary); }
+  .ancestor-meta { font-size:11px; color:var(--text-tertiary); margin-top:2px; }
+  .ancestor-connector { width:2px; height:14px; background:var(--accent-orange); opacity:0.2; }
+  .ancestor-down-arrow { font-size:12px; color:var(--accent-orange); opacity:0.4; padding:2px 0; line-height:1; }
   </style>
 
   <script>
@@ -727,6 +738,7 @@
       if (p.branch && p.branch !== '—') parts.push(p.branch);
       html += parts.join(' · ') + '</div></div>';
       html += '<button class="locate-btn" onclick="event.stopPropagation();locateInTree(' + p.id + ');">🌳 定位</button>';
+      html += '<button class="locate-btn" onclick="event.stopPropagation();showAncestors(' + p.id + ');" title="查看上代直系" style="background:var(--accent-orange-dim);color:var(--accent-orange);">⬆ 上代</button>';
       html += '</div>';
     });
     html += '</div>';
@@ -789,6 +801,88 @@
     setTimeout(function() {
       card.classList.remove('highlight');
     }, 3500);
+  }
+
+  // ===== 查上代直系祖先 =====
+  function showAncestors(personId) {
+    var data = getGenealogyData();
+    var person = null;
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].id === personId) { person = data[i]; break; }
+    }
+    if (!person) return;
+
+    // Collect all direct ancestors going up
+    var ancestors = [];
+    function findAncestors(p, depth) {
+      if (depth > 50) return; // safety limit
+      ancestors.push(p);
+      if (p.father_id) {
+        for (var j = 0; j < data.length; j++) {
+          if (data[j].id === parseInt(p.father_id)) {
+            findAncestors(data[j], depth + 1);
+            break;
+          }
+        }
+      }
+      if (p.mother_id && !p.father_id) { // only show mother if no father
+        for (var j = 0; j < data.length; j++) {
+          if (data[j].id === parseInt(p.mother_id)) {
+            findAncestors(data[j], depth + 1);
+            break;
+          }
+        }
+      }
+    }
+    findAncestors(person, 0);
+
+    // Build ancestor tree HTML (root = oldest ancestor at top, person at bottom)
+    var html = '<div class="ancestor-tree-wrap">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
+    html += '<h4 style="margin:0;font-size:15px;font-weight:500;color:var(--text-primary);">⬆ ' + escapeHtml(person.name) + ' 的上代直系</h4>';
+    html += '<button class="btn btn-sm" onclick="this.closest(\'.ancestor-tree-wrap\').remove()">✕ 关闭</button>';
+    html += '</div>';
+
+    // Render from oldest to youngest (top to bottom)
+    for (var k = ancestors.length - 1; k >= 0; k--) {
+      var a = ancestors[k];
+      var isSelf = (k === 0);
+      var isLast = (k === ancestors.length - 1);
+      html += '<div class="ancestor-node' + (isSelf ? ' ancestor-self' : '') + '">';
+      if (!isLast && k > 0) {
+        html += '<div class="ancestor-connector"></div>';
+      }
+      html += '<div class="ancestor-card">';
+      html += '<div class="ancestor-gen">第' + a.generation_num + '世</div>';
+      html += '<div class="ancestor-name">' + (isSelf ? '👉 ' : '') + escapeHtml(a.name) + '</div>';
+      if (a.gender) html += '<div class="ancestor-meta">' + (a.gender === '男' ? '👤' : '👩') + ' ' + (a.generation && a.generation !== '—' ? a.generation + '字辈' : '') + '</div>';
+      if (a.branch && a.branch !== '—') html += '<div class="ancestor-meta">🏷️ ' + a.branch + '</div>';
+      if (a.spouse_ids) {
+        var spouses = a.spouse_ids.split(',').map(function(n){return n.trim();}).filter(function(n){return n;}).join('、');
+        if (spouses) html += '<div class="ancestor-meta">💑 ' + escapeHtml(spouses) + '</div>';
+      }
+      html += '</div>';
+      if (!isSelf) {
+        html += '<div class="ancestor-down-arrow">⬇</div>';
+      }
+      html += '</div>';
+    }
+
+    html += '</div>';
+
+    // Remove any existing ancestor tree display
+    var existing = document.querySelector('.ancestor-tree-wrap');
+    if (existing) existing.remove();
+
+    // Insert after search results
+    var container = document.getElementById('search-results');
+    if (container) {
+      container.insertAdjacentHTML('afterend', html);
+      html.scrollIntoView ? html.scrollIntoView({ behavior: 'smooth', block: 'center' }) : null;
+      // Scroll to the ancestor tree
+      var el = document.querySelector('.ancestor-tree-wrap');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   }
 
   // Allow Enter key to search
