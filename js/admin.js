@@ -319,8 +319,16 @@ function renderModule(mod) {
   }
 
   if (m.isGenealogy) {
+    var savedZoom = treeZoom, savedX = treePanX, savedY = treePanY;
     renderGenealogy(area);
-    setTimeout(initTreePanZoom, 100);
+    setTimeout(function() {
+      initTreePanZoom();
+      treeZoom = savedZoom;
+      treePanX = savedX;
+      treePanY = savedY;
+      applyTreeTransform();
+      updateZoomLevel();
+    }, 100);
     return;
   }
 
