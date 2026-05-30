@@ -570,6 +570,8 @@ function renderGenealogy(area) {
   html += '<button class="apt-zoom-btn" onclick="zoomTree(1)" title="重置">⟲</button>';
   html += '<button class="apt-zoom-btn" onclick="fitTree()" title="适应屏幕">⊞</button>';
   html += '<span style="font-size:11px;color:var(--text-tertiary);margin-left:4px;" id="apt-zoom-level">100%</span>';
+  html += '<span style="flex:1;"></span>';
+  html += '<button class="apt-zoom-btn" onclick="toggleTreeFullscreen()" title="全屏编辑" id="apt-fullscreen-btn" style="font-size:13px;">⛶</button>';
   html += '</div>';
   html += '<div class="apt-tree-viewport" id="apt-tree-viewport">';
   html += '<div class="apt-tree" id="admin-genealogy-tree">';
@@ -664,6 +666,10 @@ function renderGenealogy(area) {
     '.apt-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-secondary);min-height:400px;}' +
     '.apt-tree-viewport:active{cursor:grabbing;}' +
     '.apt-tree-viewport .apt-tree{transform-origin:0 0;transition:transform 0.05s;}' +
+    '.apt-tree-fullscreen .apt-right{display:none;}' +
+    '.apt-tree-fullscreen .apt-left{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;padding:56px 12px 12px 12px;border-radius:0;overflow:hidden;}' +
+    '.apt-tree-fullscreen .apt-tree-viewport{height:calc(100vh - 100px);min-height:0;}' +
+    '.apt-tree-fullscreen #apt-fullscreen-btn{background:var(--accent-orange);color:#fff;}' +
   '</style>';
 
   area.innerHTML = html;
@@ -1072,8 +1078,8 @@ function showForm(mod, m, item) {
 
   // 族谱表单：分组显示，基本资料 + 高级信息
   if (mod === 'genealogy') {
-    var basicKeys = ['generation_num', 'name', 'gender', 'generation', 'father_id', 'mother_id', 'spouse_ids'];
-    var advancedKeys = ['branch', 'birth_date', 'death_date', 'is_alive', 'adopted', 'address', 'biography', 'photo'];
+    var basicKeys = ['generation_num', 'name', 'gender', 'generation', 'branch', 'father_id', 'mother_id', 'spouse_ids'];
+    var advancedKeys = ['birth_date', 'death_date', 'is_alive', 'adopted', 'address', 'biography', 'photo'];
 
     html += '<div style="background:var(--accent-orange-dim);border-radius:8px;padding:10px 14px;margin-bottom:16px;">';
     html += '<div style="font-size:12px;font-weight:500;color:var(--accent-orange);margin-bottom:4px;">📋 基本资料</div>';
@@ -2272,6 +2278,20 @@ function fitTree() {
 function updateZoomLevel() {
   var el = document.getElementById('apt-zoom-level');
   if (el) el.textContent = Math.round(treeZoom * 100) + '%';
+}
+
+function toggleTreeFullscreen() {
+  var split = document.querySelector('.apt-split');
+  if (!split) return;
+  split.classList.toggle('apt-tree-fullscreen');
+  var btn = document.getElementById('apt-fullscreen-btn');
+  if (btn) btn.textContent = split.classList.contains('apt-tree-fullscreen') ? '✕' : '⛶';
+  setTimeout(function() { fitTree(); }, 100);
+  if (split.classList.contains('apt-tree-fullscreen')) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+  }
 }
 
 var origRenderGenealogyTree = renderGenealogyTree;
