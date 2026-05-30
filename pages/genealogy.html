@@ -997,162 +997,175 @@
   function renderGenealogyCharts() {
     var data = getGenealogyData();
     if (!data || data.length === 0) return;
-
-    // Stats summary
-    var total = data.length;
-    var gens = {}, branches = {}, males = 0, females = 0;
-    var maxGen = 0, minGen = 999;
+    data.sort(function(a,b){return(parseInt(a.generation_num)||0)-(parseInt(b.generation_num)||0);});
+    var total = data.length, gens = {}, males = 0, females = 0;
     data.forEach(function(p) {
       var gn = parseInt(p.generation_num) || 0;
       gens[gn] = (gens[gn] || 0) + 1;
-      if (gn > maxGen) maxGen = gn;
-      if (gn < minGen && gn > 0) minGen = gn;
-      if (p.gender === '男') males++;
-      else if (p.gender === '女') females++;
-      var br = p.branch && p.branch !== '—' ? p.branch : '未指定';
-      branches[br] = (branches[br] || 0) + 1;
+      if (p.gender === '男') males++; else if (p.gender === '女') females++;
     });
-
     document.getElementById('stat-total-people').textContent = total;
     document.getElementById('stat-total-gens').textContent = Object.keys(gens).length;
     document.getElementById('stat-male-count').textContent = males;
     document.getElementById('stat-female-count').textContent = females;
 
-    // ---- Bar chart: Population by generation ----
     var barCanvas = document.getElementById('chart-gens');
     if (barCanvas) {
-      var ctx = barCanvas.getContext('2d');
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       var rect = barCanvas.parentElement.getBoundingClientRect();
       var W = rect.width - 32 || 500;
       var R = window.devicePixelRatio || 1;
-      barCanvas.width = W * R;
-      barCanvas.height = 240 * R;
-      barCanvas.style.width = W + 'px';
-      barCanvas.style.height = '240px';
-      ctx.scale(R, R);
-      var H = 240, pad = { top: 20, bottom: 30, left: 40, right: 16 };
-      var chartW = W - pad.left - pad.right;
-      var chartH = H - pad.top - pad.bottom;
-
-      // Get generation keys sorted
-      var genKeys = Object.keys(gens).filter(function(k) { return parseInt(k) > 0; }).sort(function(a,b) { return parseInt(a)-parseInt(b); });
-      var values = genKeys.map(function(k) { return gens[k]; });
+      barCanvas.width = W * R; barCanvas.height = 280 * R;
+      barCanvas.style.width = W + 'px'; barCanvas.style.height = '280px';
+      var ctx = barCanvas.getContext('2d'); ctx.scale(R, R);
+      var H = 280, pad = {top:24,bottom:40,left:44,right:16};
+      var cw = W - pad.left - pad.right, ch = H - pad.top - pad.bottom;
+      var genKeys = Object.keys(gens).filter(function(k){return parseInt(k)>0;}).sort(function(a,b){return parseInt(a)-parseInt(b);});
+      var values = genKeys.map(function(k){return gens[k];});
       var maxVal = Math.max.apply(null, values);
-      var barW = Math.max(3, Math.min(20, chartW / genKeys.length - 2));
-
       ctx.clearRect(0, 0, W, H);
-
-      // Grid lines
-      ctx.strokeStyle = 'rgba(200,200,200,0.15)';
-      ctx.lineWidth = 1;
-      for (var g = 0; g <= 4; g++) {
-        var y = pad.top + chartH * (1 - g / 4);
-        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
-        ctx.fillStyle = 'rgba(200,200,200,0.4)';
-        ctx.font = '9px sans-serif';
-        ctx.textAlign = 'right';
-        ctx.fillText(Math.round(maxVal * g / 4), pad.left - 4, y + 3);
+      ctx.strokeStyle = 'rgba(200,200,200,0.12)'; ctx.lineWidth = 1;
+      for (var gi = 0; gi <= 4; gi++) {
+        var yy = pad.top + ch * (1 - gi/4);
+        ctx.beginPath(); ctx.moveTo(pad.left, yy); ctx.lineTo(W-pad.right, yy); ctx.stroke();
+        ctx.fillStyle = 'rgba(200,200,200,0.35)'; ctx.font = '9px sans-serif'; ctx.textAlign = 'right';
+        ctx.fillText(Math.round(maxVal * gi/4), pad.left-4, yy+3);
       }
-
-      // Bars
-      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      var barColor = isDark ? 'rgba(251,146,60,0.7)' : 'rgba(251,146,60,0.6)';
-      var barHover = 'rgba(251,146,60,0.9)';
+      var barColor = isDark ? 'rgba(251,146,60,0.65)' : 'rgba(251,146,60,0.55)';
+      var barHC = 'rgba(251,146,60,0.9)';
+      var barW = Math.max(2, Math.min(18, cw / genKeys.length - 1));
+      var barData = [];
       genKeys.forEach(function(k, i) {
-        var x = pad.left + i * (chartW / genKeys.length);
-        var barH = (values[i] / maxVal) * chartH;
+        var x = pad.left + i * (cw / genKeys.length);
+        var bh = (values[i] / maxVal) * ch;
         ctx.fillStyle = barColor;
-        ctx.fillRect(x, pad.top + chartH - barH, barW, barH);
-        // Generation label
-        if (i % Math.max(1, Math.floor(genKeys.length / 15)) === 0) {
-          ctx.fillStyle = 'rgba(200,200,200,0.5)';
-          ctx.font = '8px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(k + '世', x + barW / 2, H - pad.bottom + 14);
+        ctx.fillRect(x, pad.top + ch - bh, barW, bh);
+        barData.push({x:x, y:pad.top + ch - bh, w:barW, h:bh, gen:k, count:values[i]});
+        if (i % Math.max(1, Math.floor(genKeys.length/12)) === 0) {
+          ctx.fillStyle = 'rgba(200,200,200,0.4)'; ctx.font = '8px sans-serif'; ctx.textAlign = 'center';
+          ctx.fillText(k, x + barW/2, H - pad.bottom + 14);
         }
       });
+      barCanvas.onclick = function(e) {
+        var mr = barCanvas.getBoundingClientRect();
+        var mx = (e.clientX - mr.left) * R;
+        for (var bi = 0; bi < barData.length; bi++) {
+          var b = barData[bi];
+          if (mx >= b.x*R && mx <= (b.x+b.w)*R) {
+            showGenDetail(b.gen, b.count, data); break;
+          }
+        }
+      };
+      barCanvas.onmousemove = function(e) {
+        var mr = barCanvas.getBoundingClientRect();
+        var mx = (e.clientX - mr.left) * R;
+        var found = -1;
+        for (var bi = 0; bi < barData.length; bi++) {
+          var b = barData[bi];
+          if (mx >= b.x*R && mx <= (b.x+b.w)*R) { found = bi; break; }
+        }
+        barCanvas.style.cursor = found >= 0 ? 'pointer' : 'default';
+        ctx.clearRect(0, 0, W, H);
+        ctx.strokeStyle = 'rgba(200,200,200,0.12)'; ctx.lineWidth = 1;
+        for (var gi = 0; gi <= 4; gi++) {
+          var yy = pad.top + ch * (1 - gi/4);
+          ctx.beginPath(); ctx.moveTo(pad.left, yy); ctx.lineTo(W-pad.right, yy); ctx.stroke();
+          ctx.fillStyle = 'rgba(200,200,200,0.35)'; ctx.font = '9px sans-serif'; ctx.textAlign = 'right';
+          ctx.fillText(Math.round(maxVal * gi/4), pad.left-4, yy+3);
+        }
+        genKeys.forEach(function(k, i) {
+          var x = pad.left + i * (cw / genKeys.length);
+          var bh = (values[i] / maxVal) * ch;
+          ctx.fillStyle = (i === found) ? barHC : barColor;
+          ctx.fillRect(x, pad.top + ch - bh, barW, bh);
+          if (i === found) {
+            ctx.fillStyle = 'rgba(251,146,60,0.9)'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText(values[i] + '人', x + barW/2, pad.top + ch - bh - 6);
+          }
+          if (i % Math.max(1, Math.floor(genKeys.length/12)) === 0 || i === found) {
+            ctx.fillStyle = (i === found) ? 'rgba(251,146,60,0.9)' : 'rgba(200,200,200,0.4)';
+            ctx.font = '8px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText(k + '世', x + barW/2, H - pad.bottom + 14);
+          }
+        });
+      };
     }
 
-    // ---- Pie chart: 前枫槎 vs 后枫槎比例 ----
     var pieCanvas = document.getElementById('chart-branch');
     if (pieCanvas) {
-      // Build ancestor lookup
-      var findById = {};
-      data.forEach(function(p) { findById[p.id] = p; });
-
-      // Find 攒公 and 撰公 by name or get children of 文杲公 / generation 4-5
       var zanGong = null, zhuanGong = null;
       for (var zi = 0; zi < data.length; zi++) {
-        var nm = data[zi].name || '';
-        if (nm.indexOf('攒') !== -1) zanGong = data[zi];
-        if (nm.indexOf('撰') !== -1) zhuanGong = data[zi];
+        if ((data[zi].name || '').indexOf('攒') !== -1) zanGong = data[zi];
+        if ((data[zi].name || '').indexOf('撰') !== -1) zhuanGong = data[zi];
       }
-      // Fallback: if not found, use generation-based split
-      // 攒=后枫槎, 撰=前枫槎
-      var qianCount = 0, houCount = 0, otherCount = 0;
-      var qianPeople = [], houPeople = [];
-
-      function countDescendants(rootId, list) {
+      var qianList = [], houList = [];
+      function collectD(rootId, list) {
         for (var ci = 0; ci < data.length; ci++) {
           if (parseInt(data[ci].father_id) === rootId || parseInt(data[ci].mother_id) === rootId) {
-            list.push(data[ci]);
-            countDescendants(data[ci].id, list);
+            list.push(data[ci]); collectD(data[ci].id, list);
           }
         }
       }
+      if (zhuanGong) collectD(zhuanGong.id, qianList);
+      if (zanGong) collectD(zanGong.id, houList);
 
-      if (zanGong) countDescendants(zanGong.id, houPeople);
-      if (zhuanGong) countDescendants(zhuanGong.id, qianPeople);
-
-      // If no 攒/撰 found, split by branch or everything as 其他
-      if (!zanGong && !zhuanGong) {
-        // Try to find groups: people whose father has a 'branch' in ['后枫槎','前枫槎'] etc
-        data.forEach(function(p) {
-          var br = p.branch || '';
-          if (br.indexOf('后') !== -1 || br.indexOf('攒') !== -1) houPeople.push(p);
-          else if (br.indexOf('前') !== -1 || br.indexOf('撰') !== -1) qianPeople.push(p);
-          else otherCount++;
-        });
-      }
-
-      qianCount = qianPeople.length;
-      houCount = houPeople.length;
-      // remaining = total - qian - hou that are already counted
-      var countedIds = {};
-      qianPeople.concat(houPeople).forEach(function(pp) { countedIds[pp.id] = true; });
-      data.forEach(function(p) {
-        if (!countedIds[p.id]) otherCount++;
-      });
-
-      // Render interactive HTML chart
-      var total3 = qianCount + houCount + otherCount;
-      var pctQ = total3 ? Math.round(qianCount / total3 * 100) : 0;
-      var pctH = total3 ? Math.round(houCount / total3 * 100) : 0;
-      var pctO = 100 - pctQ - pctH;
-
-      // Hide canvas, show HTML version instead
       pieCanvas.style.display = 'none';
-      var pieParent = pieCanvas.parentElement;
-      var chartHtml = '<div class="fc-pie-wrap">';
-      chartHtml += '<div class="fc-pie" style="--q:' + pctQ + ';--h:' + pctH + ';--o:' + pctO + '">';
-      chartHtml += '<div class="fc-pie-slice fc-pie-qian" style="--p:' + pctQ + ';--color:#fb923c;" onclick="showBranchList(\'前枫槎\',\'撰公支系\',' + qianCount + ',\'' + escapeHtml(JSON.stringify(qianPeople.map(function(pp){return {id:pp.id,name:pp.name,gen:pp.generation_num};}))) + '\')" title="点击查看详情">前枫槎</div>';
-      chartHtml += '<div class="fc-pie-slice fc-pie-hou" style="--p:' + pctH + ';--color:#4ade80;" onclick="showBranchList(\'后枫槎\',\'攒公支系\',' + houCount + ',\'' + escapeHtml(JSON.stringify(houPeople.map(function(pp){return {id:pp.id,name:pp.name,gen:pp.generation_num};}))) + '\')" title="点击查看详情">后枫槎</div>';
-      chartHtml += '<div class="fc-pie-slice fc-pie-other" style="--p:' + pctO + ';--color:#94a3b8;" onclick="showBranchList(\'其他/岩下\',\'未归入前/后枫槎\',' + otherCount + ',\'' + escapeHtml(JSON.stringify(data.filter(function(pp){return !countedIds[pp.id];}).map(function(pp){return {id:pp.id,name:pp.name,gen:pp.generation_num};}))) + '\')" title="点击查看详情">其他</div>';
-      chartHtml += '<div class="fc-pie-center" >';
-      chartHtml += '<span class="fc-pie-total">' + total3 + '人</span>';
-      chartHtml += '<span class="fc-pie-label">点击查看</span>';
-      chartHtml += '</div></div>';
-      chartHtml += '<div class="fc-legend">';
-      chartHtml += '<div class="fc-legend-item" onclick="showBranchList(\'前枫槎\',\'撰公支系\',' + qianCount + ',\'' + escapeHtml(JSON.stringify(qianPeople.map(function(pp){return {id:pp.id,name:pp.name,gen:pp.generation_num};}))) + '\')"><span style="background:#fb923c;"></span><strong>前枫槎</strong> (撰公) <span class="fc-count">' + qianCount + '人 ' + pctQ + '%</span></div>';
-      chartHtml += '<div class="fc-legend-item" onclick="showBranchList(\'后枫槎\',\'攒公支系\',' + houCount + ',\'' + escapeHtml(JSON.stringify(houPeople.map(function(pp){return {id:pp.id,name:pp.name,gen:pp.generation_num};}))) + '\')"><span style="background:#4ade80;"></span><strong>后枫槎</strong> (攒公) <span class="fc-count">' + houCount + '人 ' + pctH + '%</span></div>';
-      chartHtml += '<div class="fc-legend-item" onclick="showBranchList(\'其他/岩下\',\'未归入\',' + otherCount + ',\'' + escapeHtml(JSON.stringify(data.filter(function(pp){return !countedIds[pp.id];}).map(function(pp){return {id:pp.id,name:pp.name,gen:pp.generation_num};}))) + '\')"><span style="background:#94a3b8;"></span><strong>其他/岩下</strong> <span class="fc-count">' + otherCount + '人 ' + pctO + '%</span></div>';
-      chartHtml += '</div></div>';
+      var pParent = pieCanvas.parentElement;
+      var oldEl = pParent.querySelector('.fc-pie-wrap, .fc-note');
+      if (oldEl) oldEl.remove();
 
-      // Insert before existing content or replace
-      var oldChart = pieParent.querySelector('.fc-pie-wrap');
-      if (oldChart) oldChart.remove();
-      pieParent.insertAdjacentHTML('beforeend', chartHtml);
+      if (!zanGong && !zhuanGong) {
+        var note = document.createElement('div');
+        note.className = 'fc-note';
+        note.style.cssText = 'padding:40px;text-align:center;color:var(--text-tertiary);font-size:13px;';
+        note.textContent = '请先在族谱中录入攒公（后枫槎）和撰公（前枫槎），系统将自动统计两派人口比例';
+        pParent.appendChild(note);
+      } else {
+        var qc = qianList.length + (zhuanGong ? 1 : 0);
+        var hc = houList.length + (zanGong ? 1 : 0);
+        var totalP = qc + hc;
+        var pctQ = totalP ? Math.round(qc / totalP * 100) : 50;
+        var pctH = 100 - pctQ;
+        function arrToJson(arr) { return JSON.stringify(arr).replace(/'/g,"&#39;"); }
+        var qArr = (zhuanGong ? [zhuanGong].concat(qianList) : qianList).map(function(pp){return {id:pp.id,name:pp.name,gen:pp.generation_num};});
+        var hArr = (zanGong ? [zanGong].concat(houList) : houList).map(function(pp){return {id:pp.id,name:pp.name,gen:pp.generation_num};});
+        var chHtml = '<div class="fc-pie-wrap">';
+        chHtml += '<div class="fc-pie" style="--q:' + pctQ + ';--h:' + pctH + '"><div class="fc-pie-center"><span class="fc-pie-total">' + totalP + '人</span><span class="fc-pie-label">点击图例查看详情</span></div></div>';
+        chHtml += '<div class="fc-legend">';
+        chHtml += '<div class="fc-legend-item" onclick=' + "'showBranchList("前枫槎","撰公支系"," + qc + ","" + arrToJson(qArr) + "")'><span style='background:#fb923c;'></span><strong>前枫槎</strong> (撰公支系) <span class='fc-count'>" + qc + "人 (" + pctQ + "%)</span></div>";
+        chHtml += '<div class="fc-legend-item" onclick=' + "'showBranchList("后枫槎","攒公支系"," + hc + ","" + arrToJson(hArr) + "")'><span style='background:#4ade80;'></span><strong>后枫槎</strong> (攒公支系) <span class='fc-count'>" + hc + "人 (" + pctH + "%)</span></div>";
+        chHtml += '</div></div>';
+        pParent.insertAdjacentHTML('beforeend', chHtml);
+      }
     }
+  }
+
+  function showGenDetail(gen, count, data) {
+    var people = data.filter(function(p){return parseInt(p.generation_num) === gen;});
+    var a = people.filter(function(p){return p.is_alive === '是';}).length;
+    var d = people.filter(function(p){return p.is_alive === '否';}).length;
+    var u = people.length - a - d;
+    var overlay = document.createElement('div');
+    overlay.className = 'branch-modal-overlay';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+    var html = '<div class="branch-modal"><div style="display:flex;justify-content:space-between;align-items:flex-start;">';
+    html += '<div><h3>第' + gen + '世</h3><div class="bm-sub">共' + people.length + '人 · 在世' + a + '人 · 已故' + d + '人' + (u ? ' · 未知' + u + '人' : '') + '</div></div>';
+    html += '<button onclick="this.closest(\'.branch-modal-overlay\').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-tertiary);">X</button></div>';
+    if (people.length === 0) {
+      html += '<div style="padding:20px;text-align:center;color:var(--text-tertiary);font-size:13px;">暂无数据</div>';
+    } else {
+      people.sort(function(a,b){return(a.name||'').localeCompare(b.name||'');});
+      people.forEach(function(pp) {
+        var st = pp.is_alive === '是' ? '🟢' : (pp.is_alive === '否' ? '⚰️' : '⚪');
+        html += '<div class="bm-person" onclick="showPersonDetail(' + pp.id + ', getGenealogyData());">';
+        html += '<div style="font-size:16px;flex-shrink:0;">' + st + '</div>';
+        html += '<div><div class="bm-name">' + escapeHtml(pp.name) + '</div><div class="bm-gen">' + (pp.gender === '男' ? '👤' : '👩') + ' ' + (pp.branch && pp.branch !== '—' ? pp.branch : '') + '</div></div>';
+        html += '</div>';
+      });
+    }
+    html += '</div>';
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
   }
 
   // ===== Zoom & Pan =====
