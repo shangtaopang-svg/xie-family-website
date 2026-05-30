@@ -424,13 +424,6 @@
   <script>
   // ===== Load data =====
   function getGenealogyData() {
-    // Try server API first (always gets latest data)
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', '/api/data/genealogy', false);
-    try { xhr.send(); } catch(e) {}
-    if (xhr.status === 200) {
-      try { return JSON.parse(xhr.responseText); } catch(e) {}
-    }
     try {
       var stored = localStorage.getItem('xie_admin_genealogy');
       if (stored) return JSON.parse(stored);
@@ -1375,12 +1368,18 @@
   } else {
     document.addEventListener('DOMContentLoaded', renderGenealogyPage);
   }
-  // Try loading from Supabase for up-to-date genealogy data across devices
+  // Load from server API for latest data
+  fetch('/api/data/genealogy').then(function(r) { return r.json(); }).then(function(apiData) {
+    if (apiData && apiData.length > 0) {
+      localStorage.setItem('xie_admin_genealogy', JSON.stringify(apiData));
+      renderGenealogyPage();
+    }
+  }).catch(function() {});
+  // Supabase fallback
   if (window.dbGetAll) {
     dbGetAll('genealogy', { order: 'id.asc' }).then(function(supabaseData) {
       if (supabaseData && supabaseData.length > 0) {
         localStorage.setItem('xie_admin_genealogy', JSON.stringify(supabaseData));
-        // Re-render with Supabase data
         renderGenealogyPage();
       }
     }).catch(function() {});
