@@ -320,6 +320,7 @@ function renderModule(mod) {
 
   if (m.isGenealogy) {
     renderGenealogy(area);
+    setTimeout(initTreePanZoom, 100);
     return;
   }
 
@@ -563,8 +564,17 @@ function renderGenealogy(area) {
   }
   html += '</select>';
   html += '</div>';
+  html += '<div class="apt-tree-toolbar">';
+  html += '<button class="apt-zoom-btn" onclick="zoomTree(1.2)" title="放大">🔍+</button>';
+  html += '<button class="apt-zoom-btn" onclick="zoomTree(0.8)" title="缩小">🔍−</button>';
+  html += '<button class="apt-zoom-btn" onclick="zoomTree(1)" title="重置">⟲</button>';
+  html += '<button class="apt-zoom-btn" onclick="fitTree()" title="适应屏幕">⊞</button>';
+  html += '<span style="font-size:11px;color:var(--text-tertiary);margin-left:4px;" id="apt-zoom-level">100%</span>';
+  html += '</div>';
+  html += '<div class="apt-tree-viewport" id="apt-tree-viewport">';
   html += '<div class="apt-tree" id="admin-genealogy-tree">';
   html += buildAdminTreeHtml(data);
+  html += '</div>';
   html += '</div>';
   html += '</div>';
 
@@ -610,7 +620,7 @@ function renderGenealogy(area) {
   // CSS for admin tree
   html += '<style>' +
     '.apt-split{display:flex;gap:16px;min-height:600px;}' +
-    '.apt-left{flex:2;min-width:0;border:1px solid var(--glass-border);border-radius:12px;background:var(--bg-card);overflow:auto;padding:24px 20px;}' +
+    '.apt-left{flex:2;min-width:0;border:1px solid var(--glass-border);border-radius:12px;background:var(--bg-card);overflow:hidden;padding:24px 20px;}' +
     '.apt-right{width:320px;min-width:280px;display:flex;flex-direction:column;gap:12px;}' +
     '.apt-tree{display:flex;flex-direction:column;align-items:center;gap:0;}' +
     '.apt-person{display:flex;flex-direction:column;align-items:center;}' +
@@ -648,6 +658,12 @@ function renderGenealogy(area) {
     '.apt-stat-lbl{font-size:10px;color:var(--text-tertiary);margin-top:2px;}' +
     '.apt-search{width:100%;padding:8px 14px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:13px;box-sizing:border-box;}' +
     '.apt-table-wrap{flex:1;overflow-y:auto;max-height:450px;}' +
+    '.apt-tree-toolbar{display:flex;gap:4px;align-items:center;margin-bottom:6px;flex-wrap:wrap;}' +
+    '.apt-zoom-btn{width:28px;height:24px;border:1px solid var(--glass-border);border-radius:4px;background:var(--bg-card);color:var(--text-primary);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;}' +
+    '.apt-zoom-btn:hover{background:var(--accent-orange-dim);border-color:var(--accent-orange);}' +
+    '.apt-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-secondary);min-height:400px;}' +
+    '.apt-tree-viewport:active{cursor:grabbing;}' +
+    '.apt-tree-viewport .apt-tree{transform-origin:0 0;transition:transform 0.05s;}' +
   '</style>';
 
   area.innerHTML = html;
@@ -2104,6 +2120,109 @@ function genealogyUpdateMother() {
 
   motherSelect.innerHTML = html;
 }
+
+// ===== 族谱树：缩放和平移 =====
+var treeZoom = 1;
+var treePanX = 0, treePanY = 0;
+var treeDragging = false, treeDragStartX, treeDragStartY, treePanStartX, treePanStartY;
+
+function initTreePanZoom() {
+  var vp = document.getElementById('apt-tree-viewport');
+  if (!vp) return;
+  var tree = vp.querySelector('.apt-tree');
+  if (!tree) return;
+
+  // Mouse wheel zoom
+  vp.onwheel = function(e) {
+    e.preventDefault();
+    var rect = vp.getBoundingClientRect();
+    var mx = e.clientX - rect.left;
+    var my = e.clientY - rect.top;
+    var factor = e.deltaY < 0 ? 1.1 : 0.9;
+    var newZoom = Math.max(0.1, Math.min(5, treeZoom * factor));
+    // Zoom towards mouse position
+    treePanX = mx - (mx - treePanX) * (newZoom / treeZoom);
+    treePanY = my - (my - treePanY) * (newZoom / treeZoom);
+    treeZoom = newZoom;
+    applyTreeTransform(tree);
+    updateZoomLevel();
+  };
+
+  // Drag to pan
+  vp.onmousedown = function(e) {
+    if (e.target.closest('.apt-zoom-btn, .apt-btn-expand, .apt-card, .apt-btn-add, .apt-btn-del, select, input, button')) return;
+    treeDragging = true;
+    treeDragStartX = e.clientX;
+    treeDragStartY = e.clientY;
+    treePanStartX = treePanX;
+    treePanStartY = treePanY;
+    vp.style.cursor = 'grabbing';
+    e.preventDefault();
+  };
+
+  window.onmousemove = function(e) {
+    if (!treeDragging) return;
+    var dx = e.clientX - treeDragStartX;
+    var dy = e.clientY - treeDragStartY;
+    treePanX = treePanStartX + dx;
+    treePanY = treePanStartY + dy;
+    applyTreeTransform(tree);
+  };
+
+  window.onmouseup = function() {
+    if (treeDragging) {
+      treeDragging = false;
+      var vp2 = document.getElementById('apt-tree-viewport');
+      if (vp2) vp2.style.cursor = 'grab';
+    }
+  };
+}
+
+function applyTreeTransform(tree) {
+  if (!tree) tree = document.querySelector('#apt-tree-viewport .apt-tree');
+  if (!tree) return;
+  tree.style.transform = 'translate(' + treePanX + 'px, ' + treePanY + 'px) scale(' + treeZoom + ')';
+}
+
+function zoomTree(factor) {
+  var vp = document.getElementById('apt-tree-viewport');
+  var tree = vp ? vp.querySelector('.apt-tree') : null;
+  if (!tree) return;
+  if (factor === 1) {
+    treeZoom = 1; treePanX = 0; treePanY = 0;
+  } else {
+    treeZoom = Math.max(0.1, Math.min(5, treeZoom * factor));
+  }
+  applyTreeTransform(tree);
+  updateZoomLevel();
+}
+
+function fitTree() {
+  var vp = document.getElementById('apt-tree-viewport');
+  var tree = vp ? vp.querySelector('.apt-tree') : null;
+  if (!tree || !vp) return;
+  var vpw = vp.clientWidth - 40, vph = vp.clientHeight - 40;
+  var tw = tree.scrollWidth || 800, th = tree.scrollHeight || 600;
+  var sx = vpw / tw, sy = vph / th;
+  treeZoom = Math.min(sx, sy, 1.5);
+  treeZoom = Math.max(0.1, treeZoom);
+  treePanX = 20;
+  treePanY = 20;
+  applyTreeTransform(tree);
+  updateZoomLevel();
+}
+
+function updateZoomLevel() {
+  var el = document.getElementById('apt-zoom-level');
+  if (el) el.textContent = Math.round(treeZoom * 100) + '%';
+}
+
+// Re-initialize after tree re-render
+var origRenderGenealogyTree = renderGenealogyTree;
+renderGenealogyTree = function() {
+  if (origRenderGenealogyTree) origRenderGenealogyTree();
+  setTimeout(initTreePanZoom, 50);
+};
 
 // ===== 族谱树：展开/折叠节点 =====
 function toggleTreeNode(btn) {
