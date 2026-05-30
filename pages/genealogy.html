@@ -928,7 +928,7 @@
   function applyTreeTransform() {
     var el = document.getElementById('tree-container');
     if (!el) return;
-    el.style.transform = 'scale(' + treeScale + ') translate(' + treePanX + 'px,' + treePanY + 'px)';
+    el.style.transform = 'translate(' + treePanX + 'px, ' + treePanY + 'px) scale(' + treeScale + ')';
     var levelEl = document.getElementById('tree-zoom-level');
     if (levelEl) levelEl.textContent = Math.round(treeScale * 100) + '%';
   }
@@ -939,8 +939,16 @@
     if (scrollContainer) {
       scrollContainer.addEventListener('wheel', function(e) {
         e.preventDefault();
-        if (e.deltaY < 0) treeZoomIn();
-        else treeZoomOut();
+        var rect = scrollContainer.getBoundingClientRect();
+        var mx = e.clientX - rect.left;
+        var my = e.clientY - rect.top;
+        var factor = e.deltaY < 0 ? 1.1 : 0.9;
+        var newScale = Math.max(0.3, Math.min(3, treeScale * factor));
+        // Zoom towards mouse position
+        treePanX = mx - (mx - treePanX) * (newScale / treeScale);
+        treePanY = my - (my - treePanY) * (newScale / treeScale);
+        treeScale = newScale;
+        applyTreeTransform();
       }, { passive: false });
 
       // Drag-to-pan
