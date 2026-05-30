@@ -815,28 +815,35 @@
     // Collect all direct ancestors going up
     var ancestors = [];
     var brokenChain = false;
+    function findAncestorById(id) {
+      for (var j = 0; j < data.length; j++) {
+        if (data[j].id === id) return data[j];
+      }
+      return null;
+    }
     function findAncestors(p, depth) {
-      if (depth > 300) { brokenChain = true; return; } // safety limit
+      if (depth > 300) { brokenChain = true; return; }
       ancestors.push(p);
       var found = false;
+      // 1) Try father_id first
       if (p.father_id) {
-        var fid = parseInt(p.father_id);
-        for (var j = 0; j < data.length; j++) {
-          if (data[j].id === fid) {
-            findAncestors(data[j], depth + 1);
-            found = true;
-            break;
-          }
-        }
+        var father = findAncestorById(parseInt(p.father_id));
+        if (father) { findAncestors(father, depth + 1); found = true; }
       }
+      // 2) Try mother_id if father not found
       if (!found && p.mother_id) {
-        var mid = parseInt(p.mother_id);
-        for (var j = 0; j < data.length; j++) {
-          if (data[j].id === mid) {
-            findAncestors(data[j], depth + 1);
-            found = true;
-            break;
-          }
+        var mother = findAncestorById(parseInt(p.mother_id));
+        if (mother) { findAncestors(mother, depth + 1); found = true; }
+      }
+      // 3) Fallback: find by generation number (上一世)
+      if (!found && p.generation_num && parseInt(p.generation_num) > 1) {
+        var prevGen = parseInt(p.generation_num) - 1;
+        var candidates = data.filter(function(x) {
+          return parseInt(x.generation_num) === prevGen && x.gender === '男';
+        });
+        if (candidates.length === 1) {
+          findAncestors(candidates[0], depth + 1);
+          found = true;
         }
       }
     }
