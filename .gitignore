@@ -1,9 +1,10 @@
-node_modules/
-uploads/*
-!uploads/.gitkeep
-data/*
 !data/.gitkeep
+!uploads/.gitkeep
 *.log
 .DS_Store
+data/*
 dd/
+node_modules/
+uploads/*
 谢总提供照片/
+族谱
