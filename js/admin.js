@@ -461,7 +461,7 @@ function buildAdminTreeHtml(data) {
   if (roots.length === 0 && data.length > 0) roots = [data[0]];
 
   function renderPerson(person) {
-    var html = '<div class="apt-person' + (childrenOf(person).length > 0 ? ' apt-collapsed' : '') + '">';
+    var html = '<div class="apt-person">';
     html += '<div class="apt-card ' + (person.gender === '男' ? 'apt-male' : 'apt-female') + '" onclick="showEditForm(\'genealogy\',' + person.id + ')" title="点击编辑">';
     html += '<div class="apt-card-inner">';
     html += '<div class="apt-card-actions" onclick="event.stopPropagation();">';
