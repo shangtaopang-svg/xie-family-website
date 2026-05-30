@@ -814,21 +814,27 @@
 
     // Collect all direct ancestors going up
     var ancestors = [];
+    var brokenChain = false;
     function findAncestors(p, depth) {
-      if (depth > 50) return; // safety limit
+      if (depth > 300) { brokenChain = true; return; } // safety limit
       ancestors.push(p);
+      var found = false;
       if (p.father_id) {
+        var fid = parseInt(p.father_id);
         for (var j = 0; j < data.length; j++) {
-          if (data[j].id === parseInt(p.father_id)) {
+          if (data[j].id === fid) {
             findAncestors(data[j], depth + 1);
+            found = true;
             break;
           }
         }
       }
-      if (p.mother_id && !p.father_id) { // only show mother if no father
+      if (!found && p.mother_id) {
+        var mid = parseInt(p.mother_id);
         for (var j = 0; j < data.length; j++) {
-          if (data[j].id === parseInt(p.mother_id)) {
+          if (data[j].id === mid) {
             findAncestors(data[j], depth + 1);
+            found = true;
             break;
           }
         }
@@ -869,6 +875,10 @@
     }
 
     html += '</div>';
+
+    if (brokenChain) {
+      html += '<div style="text-align:center;padding:8px;font-size:12px;color:var(--text-tertiary);margin-top:8px;border-top:1px dashed var(--glass-border);">⚠️ 上代数据不完整，仍有祖先未录入系统或未关联父亲ID</div>';
+    }
 
     // Remove any existing ancestor tree display
     var existing = document.querySelector('.ancestor-tree-wrap');
