@@ -164,7 +164,7 @@
         <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:16px;font-size:17px;font-weight:500;">📊 统计分析</h3>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
           <div style="background:var(--accent-orange-dim);border-radius:10px;padding:16px;text-align:center;"><div style="font-size:28px;font-weight:700;color:var(--accent-orange);" id="stat-total-people">0</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">总人数</div></div>
-          <div style="background:var(--glass-bg);border-radius:10px;padding:16px;text-align:center;"><div style="font-size:28px;font-weight:700;color:var(--accent-orange);" id="stat-total-gens">0</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">世代数</div></div>
+          <div style="background:var(--glass-bg);border-radius:10px;padding:16px;text-align:center;"><div style="font-size:28px;font-weight:700;color:var(--accent-orange);" id="stat-total-gens">0</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">世代范围</div></div>
           <div style="background:var(--glass-bg);border-radius:10px;padding:16px;text-align:center;"><div style="font-size:28px;font-weight:700;color:var(--accent-cyan);" id="stat-male-count">0</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">男性</div></div>
           <div style="background:var(--glass-bg);border-radius:10px;padding:16px;text-align:center;"><div style="font-size:28px;font-weight:700;color:#ff6b9d;" id="stat-female-count">0</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">女性</div></div>
         </div>
@@ -1005,7 +1005,8 @@
       if (p.gender === '男') males++; else if (p.gender === '女') females++;
     });
     document.getElementById('stat-total-people').textContent = total;
-    document.getElementById('stat-total-gens').textContent = Object.keys(gens).length;
+    var genKeys = Object.keys(gens).filter(function(k){return parseInt(k)>0;}).sort(function(a,b){return parseInt(a)-parseInt(b);});
+    document.getElementById('stat-total-gens').textContent = genKeys.length > 0 ? genKeys[0] + '世~' + genKeys[genKeys.length-1] + '世' : '0';
     document.getElementById('stat-male-count').textContent = males;
     document.getElementById('stat-female-count').textContent = females;
 
