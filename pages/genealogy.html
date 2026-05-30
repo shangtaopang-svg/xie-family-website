@@ -1138,7 +1138,7 @@
       chartHtml += '<div class="fc-pie-slice fc-pie-qian" style="--p:' + pctQ + ';--color:#fb923c;" onclick="showBranchList(\'前枫槎\',\'撰公支系\',' + qianCount + ',\'' + escapeHtml(JSON.stringify(qianPeople.map(function(pp){return {id:pp.id,name:pp.name,gen:pp.generation_num};}))) + '\')" title="点击查看详情">前枫槎</div>';
       chartHtml += '<div class="fc-pie-slice fc-pie-hou" style="--p:' + pctH + ';--color:#4ade80;" onclick="showBranchList(\'后枫槎\',\'攒公支系\',' + houCount + ',\'' + escapeHtml(JSON.stringify(houPeople.map(function(pp){return {id:pp.id,name:pp.name,gen:pp.generation_num};}))) + '\')" title="点击查看详情">后枫槎</div>';
       chartHtml += '<div class="fc-pie-slice fc-pie-other" style="--p:' + pctO + ';--color:#94a3b8;" onclick="showBranchList(\'其他/岩下\',\'未归入前/后枫槎\',' + otherCount + ',\'' + escapeHtml(JSON.stringify(data.filter(function(pp){return !countedIds[pp.id];}).map(function(pp){return {id:pp.id,name:pp.name,gen:pp.generation_num};}))) + '\')" title="点击查看详情">其他</div>';
-      chartHtml += '<div class="fc-pie-center" onclick="zoomTreeView()">';
+      chartHtml += '<div class="fc-pie-center" >';
       chartHtml += '<span class="fc-pie-total">' + total3 + '人</span>';
       chartHtml += '<span class="fc-pie-label">点击查看</span>';
       chartHtml += '</div></div>';
