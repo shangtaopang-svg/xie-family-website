@@ -1363,26 +1363,34 @@
   }
 
   // Wait for page ready
-  if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    renderGenealogyPage();
-  } else {
-    document.addEventListener('DOMContentLoaded', renderGenealogyPage);
-  }
-  // Load from server API for latest data
-  fetch('/api/data/genealogy').then(function(r) { return r.json(); }).then(function(apiData) {
-    if (apiData && apiData.length > 0) {
-      localStorage.setItem('xie_admin_genealogy', JSON.stringify(apiData));
+  function initPage() {
+    try {
       renderGenealogyPage();
-    }
-  }).catch(function() {});
-  // Supabase fallback
-  if (window.dbGetAll) {
-    dbGetAll('genealogy', { order: 'id.asc' }).then(function(supabaseData) {
-      if (supabaseData && supabaseData.length > 0) {
-        localStorage.setItem('xie_admin_genealogy', JSON.stringify(supabaseData));
-        renderGenealogyPage();
+      // Load from server API for latest data
+      fetch('/api/data/genealogy').then(function(r) { return r.json(); }).then(function(apiData) {
+        if (apiData && apiData.length > 0) {
+          localStorage.setItem('xie_admin_genealogy', JSON.stringify(apiData));
+          renderGenealogyPage();
+        }
+      }).catch(function(err) { console.warn('API fetch failed:', err); });
+      // Supabase fallback
+      if (window.dbGetAll) {
+        dbGetAll('genealogy', { order: 'id.asc' }).then(function(supabaseData) {
+          if (supabaseData && supabaseData.length > 0) {
+            localStorage.setItem('xie_admin_genealogy', JSON.stringify(supabaseData));
+            renderGenealogyPage();
+          }
+        }).catch(function(err) { console.warn('Supabase fetch failed:', err); });
       }
-    }).catch(function() {});
+    } catch(e) {
+      console.error('Init error:', e);
+      document.body.innerHTML += '<div style="position:fixed;bottom:0;left:0;right:0;background:#e74c3c;color:#fff;padding:16px;font-size:13px;z-index:99999;">加载出错: ' + e.message + '</div>';
+    }
+  }
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    initPage();
+  } else {
+    document.addEventListener('DOMContentLoaded', initPage);
   }
   </script>
 
