@@ -995,6 +995,7 @@
 
   // ===== 统计图表 =====
   function renderGenealogyCharts() {
+    try {
     var data = getGenealogyData();
     if (!data || data.length === 0) return;
     data.sort(function(a,b){return(parseInt(a.generation_num)||0)-(parseInt(b.generation_num)||0);});
@@ -1139,6 +1140,7 @@
         pParent.insertAdjacentHTML('beforeend', chHtml);
       }
     }
+  } catch(e) { console.error('Chart error:', e); }
   }
 
   function showGenDetail(gen, count, data) {
