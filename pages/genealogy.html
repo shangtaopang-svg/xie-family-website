@@ -424,6 +424,13 @@
   <script>
   // ===== Load data =====
   function getGenealogyData() {
+    // Try server API first (always gets latest data)
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/api/data/genealogy', false);
+    try { xhr.send(); } catch(e) {}
+    if (xhr.status === 200) {
+      try { return JSON.parse(xhr.responseText); } catch(e) {}
+    }
     try {
       var stored = localStorage.getItem('xie_admin_genealogy');
       if (stored) return JSON.parse(stored);
@@ -1287,6 +1294,8 @@
 
   // ===== Render everything =====
   function renderGenealogyPage() {
+  try {
+    console.log("renderGenealogyPage start");
     var data = getGenealogyData();
     if (!data || data.length === 0) {
       document.getElementById('genealogy-preface').style.opacity = '1';
@@ -1357,6 +1366,7 @@
     document.getElementById('genealogy-stats-section').style.opacity = '1';
     renderGenealogyCharts();
       window.addEventListener("resize", renderGenealogyCharts);
+  } catch(e) { console.error('Page render error:', e); }
   }
 
   // Wait for page ready
