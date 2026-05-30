@@ -1058,7 +1058,10 @@
           }
         }
       };
+      var chartHoverTimeout = null;
       barCanvas.onmousemove = function(e) {
+        if (chartHoverTimeout) cancelAnimationFrame(chartHoverTimeout);
+        chartHoverTimeout = requestAnimationFrame(function() {
         var mr = barCanvas.getBoundingClientRect();
         var mx = (e.clientX - mr.left) * R;
         var found = -1;
@@ -1067,6 +1070,8 @@
           if (mx >= b.x*R && mx <= (b.x+b.w)*R) { found = bi; break; }
         }
         barCanvas.style.cursor = found >= 0 ? 'pointer' : 'default';
+        if (found === barCanvas._lastHover) return;
+        barCanvas._lastHover = found;
         ctx.clearRect(0, 0, W, H);
         ctx.strokeStyle = 'rgba(200,200,200,0.12)'; ctx.lineWidth = 1;
         for (var gi = 0; gi <= 4; gi++) {
@@ -1089,6 +1094,7 @@
             ctx.font = '8px sans-serif'; ctx.textAlign = 'center';
             ctx.fillText(k + '世', x + barW/2, H - pad.bottom + 14);
           }
+        });
         });
       };
     }
