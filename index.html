@@ -107,7 +107,9 @@
       <button class="hbg-btn" data-style="clean" title="纯色背景">🎨</button>
       <button class="hbg-btn" data-style="photo" title="照片背景">🖼️</button>
       <button class="hbg-btn" data-style="map" title="迁徙地图">🗺️</button>
+      <button class="hbg-btn" data-style="globe" title="地球俯瞰">🌍</button>
     </div>
+    <div id="globe-container" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;display:none;"></div>
     <script>
     (function() {
       var btns = document.querySelectorAll('.hbg-btn');
@@ -119,17 +121,24 @@
         btns.forEach(function(b) { b.classList.remove('active'); });
         var match = document.querySelector('.hbg-btn[data-style="' + style + '"]');
         if (match) match.classList.add('active');
-        if (style === 'map') {
-          hero.classList.add('hero-map-bg');
-          document.dispatchEvent(new CustomEvent('xie-bg-mode', { detail: 'map' }));
-        } else if (bg && style === 'photo') {
-          hero.classList.add('hero-photo-bg');
-          hero.style.backgroundImage = 'url(' + bg + ')';
-          hero.style.backgroundSize = 'cover';
-          hero.style.backgroundPosition = 'center';
-          document.dispatchEvent(new CustomEvent('xie-bg-mode', { detail: 'particle' }));
+        var gc = document.getElementById('globe-container');
+        if (style === 'globe') {
+          if (gc) gc.style.display = 'block';
+          document.dispatchEvent(new CustomEvent('xie-bg-mode', { detail: 'globe' }));
         } else {
-          document.dispatchEvent(new CustomEvent('xie-bg-mode', { detail: 'particle' }));
+          if (gc) gc.style.display = 'none';
+          if (style === 'map') {
+            hero.classList.add('hero-map-bg');
+            document.dispatchEvent(new CustomEvent('xie-bg-mode', { detail: 'map' }));
+          } else if (bg && style === 'photo') {
+            hero.classList.add('hero-photo-bg');
+            hero.style.backgroundImage = 'url(' + bg + ')';
+            hero.style.backgroundSize = 'cover';
+            hero.style.backgroundPosition = 'center';
+            document.dispatchEvent(new CustomEvent('xie-bg-mode', { detail: 'particle' }));
+          } else {
+            document.dispatchEvent(new CustomEvent('xie-bg-mode', { detail: 'particle' }));
+          }
         }
       }
       for (var i = 0; i < btns.length; i++) {
@@ -499,6 +508,7 @@
   <audio id="bg-music" loop src="music/background.mp3"></audio>
 
   <script src="js/main.js?v=8"></script>
+  <script src="js/earth-globe.js?v=1"></script>
   <script src="js/map-migration.js?v=19"></script>
 
   <!-- ===== 天气特效粒子引擎 ===== -->
