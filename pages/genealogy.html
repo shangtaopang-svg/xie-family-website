@@ -350,7 +350,7 @@
     overflow-y: auto;
   }
   .genealogy-page { max-width: 1200px !important; }
-  .genealogy-tree-scroll { overflow:auto; border:1px solid var(--glass-border); border-radius:12px; background:var(--bg-card); padding:40px 30px; }
+  .genealogy-tree-scroll { overflow:hidden; border:1px solid var(--glass-border); border-radius:12px; background:var(--bg-card); padding:40px 30px; cursor:grab; min-height:400px; }
   /* Collapsible tree */
   .tree-node-wrap { display:flex; flex-direction:column; align-items:center; }
   .tree-node-collapsed > .tree-children-wrap { display:none; }
@@ -844,11 +844,9 @@
     var scrollContainer = document.getElementById('tree-scroll-container');
     if (scrollContainer) {
       scrollContainer.addEventListener('wheel', function(e) {
-        if (e.ctrlKey || e.metaKey) {
-          e.preventDefault();
-          if (e.deltaY < 0) treeZoomIn();
-          else treeZoomOut();
-        }
+        e.preventDefault();
+        if (e.deltaY < 0) treeZoomIn();
+        else treeZoomOut();
       }, { passive: false });
 
       // Drag-to-pan
