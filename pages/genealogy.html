@@ -17,6 +17,8 @@
 <canvas id="bg-canvas"></canvas>
 
 <div class="content">
+<div id="diag-bar" style="background:#1a1a2e;color:#0f0;padding:8px 16px;font-size:12px;font-family:monospace;white-space:pre-wrap;display:none;">诊断信息</div>
+
 
   <header class="site-header">
     <div class="header-inner">
@@ -1363,7 +1365,22 @@
   }
 
   // Wait for page ready
-  function initPage() {
+  
+  function showDiag(msg) {
+    var el = document.getElementById('diag-bar');
+    if (el) { el.style.display = 'block'; el.textContent += '
+' + msg; }
+  }
+  showDiag('Page loaded, checking data...');
+  
+  // Quick check
+  try {
+    var testData = getGenealogyData();
+    showDiag('Data count: ' + (testData ? testData.length : 0));
+  } catch(e) {
+    showDiag('ERROR: ' + e.message);
+  }
+function initPage() {
     try {
       renderGenealogyPage();
       // Load from server API for latest data
