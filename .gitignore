@@ -5,3 +5,5 @@ data/*
 !data/.gitkeep
 *.log
 .DS_Store
+dd/
+谢总提供照片/
