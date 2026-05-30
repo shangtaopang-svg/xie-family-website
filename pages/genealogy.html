@@ -7,7 +7,7 @@
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 
   
-  <link rel="stylesheet" href="../css/style.css?v=24">
+  <link rel="stylesheet" href="../css/style.css?v=80">
   <script src="../js/i18n.js"></script>
   <script src="../js/file-store.js?v=3"></script>
   <script src="../js/supabase.js?v=3"></script>
@@ -47,15 +47,11 @@
             <button class="weather-btn" data-weather="meteor" title="流星">☄</button>
           </div>
           <div class="sc-row">
-            <div class="map-zoom-btns">
-              <button class="map-z-in" title="放大">+</button>
-              <button class="map-z-out" title="缩小">−</button>
-            </div>
-            <span class="sc-divider"></span>
-            <button class="music-btn" id="music-prev" title="上一首" style="font-size:14px;">⏮</button>
-            <button class="music-btn" id="music-toggle">🔈</button>
-            <button class="music-btn" id="music-next" title="下一首" style="font-size:14px;">⏭</button>
-            <span class="music-label" id="music-track-name">背景音乐</span>
+            <button class="map-z-in sc-btn" title="放大">+</button>
+            <button class="map-z-out sc-btn" title="缩小">−</button>
+            <button class="music-btn" id="music-prev" title="上一首">⏮</button>
+            <button class="music-btn" id="music-toggle" title="播放/暂停">🔈</button>
+            <button class="music-btn" id="music-next" title="下一首">⏭</button>
           </div>
           <div class="sc-row">
             <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
@@ -135,14 +131,18 @@
       <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-tree-section">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
           <h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:17px;font-weight:500;margin:0;">🌳 世系图谱</h3>
-          <div style="display:flex;gap:8px;align-items:center;">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
             <span style="font-size:12px;color:var(--text-tertiary);">点击姓名查看详情</span>
+            <button class="btn btn-sm" onclick="treeZoomIn()" title="放大">🔍+</button>
+            <button class="btn btn-sm" onclick="treeZoomOut()" title="缩小">🔍−</button>
+            <button class="btn btn-sm" onclick="treeZoomReset()" title="重置缩放">1:1</button>
+            <span id="tree-zoom-level" style="font-size:11px;color:var(--text-tertiary);min-width:32px;text-align:center;">100%</span>
             <button class="btn btn-sm" onclick="expandAllTree()" title="展开全部">全部展开</button>
             <button class="btn btn-sm" onclick="collapseAllTree()" title="收起全部">全部收起</button>
           </div>
         </div>
-        <div class="genealogy-tree-scroll">
-          <div id="tree-container" style="min-width:100%;transition:transform 0.2s;"></div>
+        <div class="genealogy-tree-scroll" id="tree-scroll-container">
+          <div id="tree-container" style="min-width:100%;transition:transform 0.15s;transform-origin:top center;"></div>
         </div>
       </div>
 
@@ -808,6 +808,108 @@
     return d.innerHTML;
   }
 
+  // ===== Zoom & Pan =====
+  var treeScale = 1;
+  var treePanX = 0;
+  var treePanY = 0;
+
+  function treeZoomIn() {
+    if (treeScale < 3) {
+      treeScale = Math.min(3, treeScale + 0.15);
+      applyTreeTransform();
+    }
+  }
+  function treeZoomOut() {
+    if (treeScale > 0.3) {
+      treeScale = Math.max(0.3, treeScale - 0.15);
+      applyTreeTransform();
+    }
+  }
+  function treeZoomReset() {
+    treeScale = 1;
+    treePanX = 0;
+    treePanY = 0;
+    applyTreeTransform();
+  }
+  function applyTreeTransform() {
+    var el = document.getElementById('tree-container');
+    if (!el) return;
+    el.style.transform = 'scale(' + treeScale + ') translate(' + treePanX + 'px,' + treePanY + 'px)';
+    var levelEl = document.getElementById('tree-zoom-level');
+    if (levelEl) levelEl.textContent = Math.round(treeScale * 100) + '%';
+  }
+
+  // Wheel zoom on tree container
+  document.addEventListener('DOMContentLoaded', function() {
+    var scrollContainer = document.getElementById('tree-scroll-container');
+    if (scrollContainer) {
+      scrollContainer.addEventListener('wheel', function(e) {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          if (e.deltaY < 0) treeZoomIn();
+          else treeZoomOut();
+        }
+      }, { passive: false });
+
+      // Drag-to-pan
+      var isDragging = false;
+      var startX, startY;
+      scrollContainer.addEventListener('mousedown', function(e) {
+        // Only pan if not clicking a button or card
+        if (e.target.closest('.pcard') || e.target.closest('button')) return;
+        isDragging = true;
+        startX = e.clientX - treePanX;
+        startY = e.clientY - treePanY;
+        scrollContainer.style.cursor = 'grabbing';
+      });
+      document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        treePanX = e.clientX - startX;
+        treePanY = e.clientY - startY;
+        applyTreeTransform();
+      });
+      document.addEventListener('mouseup', function() {
+        if (!isDragging) return;
+        isDragging = false;
+        if (scrollContainer) scrollContainer.style.cursor = 'grab';
+      });
+      scrollContainer.style.cursor = 'grab';
+
+      // Touch pan (two-finger) and pinch-zoom
+      var lastTouchDist = 0;
+      var lastTouchX = 0, lastTouchY = 0;
+      scrollContainer.addEventListener('touchstart', function(e) {
+        if (e.touches.length === 2) {
+          e.preventDefault();
+          var dx = e.touches[0].clientX - e.touches[1].clientX;
+          var dy = e.touches[0].clientY - e.touches[1].clientY;
+          lastTouchDist = Math.sqrt(dx * dx + dy * dy);
+        } else if (e.touches.length === 1) {
+          lastTouchX = e.touches[0].clientX - treePanX;
+          lastTouchY = e.touches[0].clientY - treePanY;
+        }
+      }, { passive: true });
+      scrollContainer.addEventListener('touchmove', function(e) {
+        if (e.touches.length === 2) {
+          e.preventDefault();
+          var dx = e.touches[0].clientX - e.touches[1].clientX;
+          var dy = e.touches[0].clientY - e.touches[1].clientY;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          if (lastTouchDist > 0) {
+            var delta = dist / lastTouchDist;
+            if (delta > 1.02) treeZoomIn();
+            else if (delta < 0.98) treeZoomOut();
+          }
+          lastTouchDist = dist;
+        } else if (e.touches.length === 1) {
+          treePanX = e.touches[0].clientX - lastTouchX;
+          treePanY = e.touches[0].clientY - lastTouchY;
+          applyTreeTransform();
+        }
+      }, { passive: false });
+    }
+  });
+
   // ===== Render everything =====
   function renderGenealogyPage() {
     var data = getGenealogyData();
@@ -943,17 +1045,6 @@
     }
   </script>
   <audio id="bg-music" loop src="../music/background.mp3"></audio>
-
-  <!-- ===== 手机端底部导航栏 ===== -->
-  <div class="mobile-bottom-nav">
-    <a href="../index.html"><span class="mnav-icon">🏠</span>首页</a>
-    <a href="history.html"><span class="mnav-icon">📜</span>历史</a>
-    <a href="celebrities.html"><span class="mnav-icon">🏆</span>名人</a>
-    <a href="news.html"><span class="mnav-icon">📢</span>消息</a>
-    <a href="members.html"><span class="mnav-icon">👥</span>成员</a>
-    <a href="activities.html"><span class="mnav-icon">🎉</span>活动</a>
-    <a href="today.html"><span class="mnav-icon">📸</span>今日</a>
-  </div>
 
 </body>
 </html>

@@ -7,27 +7,24 @@
   'use strict';
 
   var ROUTE = [
-    { lng: 112.454, lat: 34.620, name: '谢邑',     fullName: '河南洛阳',                  year: '前806年', era: '周代', desc: '周宣王封申伯于谢邑，谢氏得姓' },
-    { lng: 120.883, lat: 29.775, name: '东山会稽', fullName: '浙江绍兴·上虞区上浦镇东山村', year: '东汉-东晋', era: '六朝', desc: '传36世，乌衣巷王谢世家' },
-    { lng: 121.380, lat: 29.120, name: '石马',     fullName: '浙江台州·三门县珠岙镇石马村',  year: '北宋初',  era: '北宋', desc: '小四公（谢聪孙）从会稽避乱迁入石马，为入浙东近祖' },
-    { lng: 121.430, lat: 29.280, name: '岩下',     fullName: '浙江宁波·宁海县跃龙街道岩头下村', year: '约1125年', era: '北宋', desc: '文杲公始迁岩下，枫槎谢氏始迁祖' },
-    { lng: 121.445, lat: 29.278, name: '下枫槎村', fullName: '浙江宁波·宁海县跃龙街道望府村',  year: '1572年',  era: '明代', desc: '乾公彬公因水患迁居，开基立业' }
-  ];
-
-  // 平行分支：不参与主路线动画，但在地图上显示
-  var SIDE_POINTS = [
-    { lng: 121.140, lat: 28.850, name: '临海下渡', fullName: '浙江台州·临海市古渡口', year: '唐末五代', era: '唐宋', desc: '与石马平行分支——同出东山会稽，各自直接迁入台州不同地点' }
+    { lng: 112.454, lat: 34.620, name: '谢邑',       fullName: '河南洛阳',                  year: '前806年', era: '周代', desc: '周宣王封申伯于谢邑，谢氏得姓' },
+    { lng: 120.883, lat: 29.775, name: '东山会稽',   fullName: '浙江绍兴·上虞区上浦镇东山村', year: '东汉-东晋', era: '六朝', desc: '传36世，乌衣巷王谢世家' },
+    { lng: 121.140, lat: 28.850, name: '临海下渡',   fullName: '浙江台州·临海市古渡口',      year: '唐末',    era: '唐末', desc: '谢氏一支从会稽南下经临海古渡口入台州' },
+    { lng: 121.380, lat: 29.120, name: '石马（下谢）', fullName: '浙江台州·三门县珠岙镇石马村', year: '北宋初',  era: '北宋', desc: '小四公（谢聪孙）从临海迁入石马，为入浙东近祖' },
+    { lng: 121.430, lat: 29.280, name: '岩下',       fullName: '浙江宁波·宁海县跃龙街道岩头下村', year: '约1125年', era: '北宋', desc: '文杲公始迁岩下，枫槎谢氏始迁祖' },
+    { lng: 121.445, lat: 29.278, name: '下枫槎村',   fullName: '浙江宁波·宁海县跃龙街道望府村',  year: '1572年',  era: '明代', desc: '乾公彬公因水患迁居，开基立业' }
   ];
 
   var SEGMENT_STYLES = [
+    { color: '#ef4444', weight: 3.5 },
     { color: '#ef4444', weight: 3.5 },
     { color: '#ef4444', weight: 3.5 },
     { color: '#ef4444', weight: 4 },
     { color: '#ef4444', weight: 4.5 }
   ];
 
-  var SEG_TRAVEL = [10000, 4000, 3500, 3000];
-  var SEG_PAUSE  = [3500, 3500, 3500, 5000];
+  var SEG_TRAVEL = [10000, 4000, 3500, 3500, 3000];
+  var SEG_PAUSE  = [3500, 3500, 3500, 3500, 5000];
   var SEG_COUNT = SEG_TRAVEL.length;
 
   // ---- Segment distances (haversine) ----
@@ -277,10 +274,10 @@
       var segStyle = SEGMENT_STYLES[Math.min(i, SEGMENT_STYLES.length - 1)] || { color: '#888' };
       var extraClass = '';
       var anchorY = 0;
-      if (i === 3) {        // 岩下：标签向上
+      if (i === 4) {        // 岩下：标签向上
         extraClass = ' map-wp-inner-up';
         anchorY = 55;
-      } else if (i === 4) { // 下枫槎：标签向下
+      } else if (i === 5) { // 下枫槎：标签向下
         extraClass = ' map-wp-inner-down';
         anchorY = 0;
       }
@@ -316,89 +313,13 @@
       L.marker(mid, { icon: icon, interactive: false, opacity: 0.8 }).addTo(map);
     });
 
-    // 主脉标注（在石马段路线旁）
-    (function () {
-      var midIdx = Math.floor(CURVED_SEGMENTS[2].length / 2);
-      var midPt = CURVED_SEGMENTS[2][midIdx];
-      var mainLabel = L.divIcon({
-        className: '',
-        html: '<span style="background:#ef4444;color:#fff;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 0 12px rgba(239,68,68,0.5);">▶ 主脉 · 石马 → 下枫槎</span>',
-        iconSize: [0, 0],
-        iconAnchor: [0, 0]
-      });
-      L.marker([midPt[0] + 0.06, midPt[1] + 0.03], {
-        icon: mainLabel, interactive: false, zIndexOffset: 2000
-      }).addTo(map);
-    })();
-
-    // 平行分支途经点（临海下渡等）
-    SIDE_POINTS.forEach(function (wp) {
-      var icon = L.divIcon({
-        className: 'map-wp-label map-wp-side',
-        html: '<div class="map-wp-inner map-wp-side-inner" style="border:2px solid #4ade80;background:rgba(20,60,30,0.95);box-shadow:0 0 24px rgba(74,222,128,0.35);">' +
-          '<span class="map-wp-era" style="background:#16a34a;font-weight:700;padding:3px 10px;">' + wp.era + '</span>' +
-          '<span class="map-wp-year">' + wp.year + '</span>' +
-          '<span class="map-wp-name" style="color:#4ade80;font-weight:700;font-size:15px;">' + wp.name + '</span>' +
-          '<span class="map-wp-addr">' + wp.fullName + '</span>' +
-          '<span class="map-wp-desc" style="font-style:italic;color:#86efac;font-weight:500;">↕ 自东山会稽分支 · 平行别派</span></div>',
-        iconSize: [180, 100],
-        iconAnchor: [90, 0]
-      });
-      L.marker([wp.lat, wp.lng], { icon: icon, opacity: 0.85, interactive: false }).addTo(map);
-
-      // 亮绿色实线连接至东山会稽（白色描边确保可见）
-      var sidePt1 = [ROUTE[1].lat, ROUTE[1].lng];
-      var sidePt2 = [wp.lat, wp.lng];
-      // 白色外发光轮廓
-      L.polyline([sidePt1, sidePt2], {
-        color: '#ffffff', weight: 8, opacity: 0.15, interactive: false
-      }).addTo(map);
-      L.polyline([sidePt1, sidePt2], {
-        color: '#ffffff', weight: 4, opacity: 0.35, interactive: false
-      }).addTo(map);
-      // 绿色主线
-      L.polyline([sidePt1, sidePt2], {
-        color: '#4ade80', weight: 3.5, opacity: 0.9, interactive: false
-      }).addTo(map);
-      // 路径标记点（白色外圈 + 绿心）
-      for (var a = 1; a <= 3; a++) {
-        var t = a / 4;
-        var apt = [sidePt1[0] + (sidePt2[0] - sidePt1[0]) * t, sidePt1[1] + (sidePt2[1] - sidePt1[1]) * t];
-        L.circleMarker(apt, {
-          radius: 4, color: '#ffffff', fillColor: '#4ade80',
-          fillOpacity: 1, weight: 2, opacity: 0.9, interactive: false
-        }).addTo(map);
-      }
-      // 两端强调点（白色外圈 + 绿心）
-      L.circleMarker(sidePt1, {
-        radius: 7, color: '#ffffff', fillColor: '#4ade80',
-        fillOpacity: 0.7, weight: 2, opacity: 0.9, interactive: false
-      }).addTo(map);
-      L.circleMarker(sidePt2, {
-        radius: 8, color: '#ffffff', fillColor: '#4ade80',
-        fillOpacity: 0.7, weight: 2, opacity: 0.9, interactive: false
-      }).addTo(map);
-
-      // 路线标注
-      var sideLabel = L.divIcon({
-        className: '',
-        html: '<span style="background:#16a34a;color:#fff;padding:3px 12px;border-radius:4px;font-size:12px;font-weight:700;white-space:nowrap;border:2px solid #4ade80;box-shadow:0 0 20px rgba(74,222,128,0.6);">⬆ 平行分支 · 临海下渡</span>',
-        iconSize: [0, 0],
-        iconAnchor: [65, 0]
-      });
-      L.marker([(ROUTE[1].lat + wp.lat) / 2, (ROUTE[1].lng + wp.lng) / 2], {
-        icon: sideLabel, interactive: false, zIndexOffset: 2000
-      }).addTo(map);
-    });
-
     // 地图图例
     var legend = L.control({ position: 'bottomleft' });
     legend.onAdd = function () {
       var div = L.DomUtil.create('div', 'map-legend');
       div.style.cssText = 'background:rgba(0,0,0,0.75);color:#fff;padding:10px 14px;border-radius:8px;font-size:12px;line-height:1.8;border:1px solid rgba(255,255,255,0.15);backdrop-filter:blur(4px);';
       div.innerHTML =
-        '<div><span style="display:inline-block;width:24px;height:4px;background:#ef4444;vertical-align:middle;margin-right:8px;border-radius:2px;box-shadow:0 0 4px rgba(239,68,68,0.5);"></span>主脉 · 石马 → 下枫槎</div>' +
-        '<div><span style="display:inline-block;width:24px;height:4px;background:#4ade80;vertical-align:middle;margin-right:8px;border-radius:2px;box-shadow:0 0 4px rgba(74,222,128,0.5);"></span>平行分支 · 临海下渡</div>';
+        '<div><span style="display:inline-block;width:24px;height:4px;background:#ef4444;vertical-align:middle;margin-right:8px;border-radius:2px;box-shadow:0 0 4px rgba(239,68,68,0.5);"></span>谢氏迁徙主脉 · 洛阳 → 下枫槎</div>';
       return div;
     };
     legend.addTo(map);
@@ -478,7 +399,7 @@
     var segStyle = SEGMENT_STYLES[Math.min(idx, SEGMENT_STYLES.length - 1)] || { color: '#888' };
 
     var zoom = map.getZoom();
-    if (idx >= 4 && zoom < 13) zoom = 13;
+    if (idx >= 5 && zoom < 13) zoom = 13;
     map.setView([wp.lat, wp.lng], zoom, { animate: true });
 
     labelMarkers.forEach(function (m, i) {
