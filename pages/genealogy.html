@@ -396,6 +396,29 @@
   .ancestor-meta { font-size:11px; color:var(--text-tertiary); margin-top:2px; }
   .ancestor-connector { width:2px; height:14px; background:var(--accent-orange); opacity:0.2; }
   .ancestor-down-arrow { font-size:12px; color:var(--accent-orange); opacity:0.4; padding:2px 0; line-height:1; }
+  /* Interactive pie chart */
+  .fc-pie-wrap { display:flex; gap:20px; align-items:center; flex-wrap:wrap; justify-content:center; }
+  .fc-pie { position:relative; width:200px; height:200px; border-radius:50%; background:conic-gradient(#fb923c 0deg calc(var(--q)*3.6deg), #4ade80 calc(var(--q)*3.6deg) calc((var(--q)+var(--h))*3.6deg), #94a3b8 calc((var(--q)+var(--h))*3.6deg) 360deg); cursor:pointer; flex-shrink:0; transition:transform 0.3s; }
+  .fc-pie:hover { transform:scale(1.05); }
+  .fc-pie-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:100px; height:100px; border-radius:50%; background:var(--bg-card); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s; }
+  .fc-pie-center:hover { background:var(--accent-orange-dim); }
+  .fc-pie-total { font-size:22px; font-weight:700; color:var(--accent-orange); line-height:1; }
+  .fc-pie-label { font-size:10px; color:var(--text-tertiary); margin-top:2px; }
+  .fc-legend { display:flex; flex-direction:column; gap:8px; }
+  .fc-legend-item { display:flex; align-items:center; gap:8px; padding:6px 12px; border-radius:6px; cursor:pointer; transition:background 0.15s; font-size:13px; }
+  .fc-legend-item:hover { background:var(--accent-orange-dim); }
+  .fc-legend-item span:first-child { display:inline-block; width:14px; height:14px; border-radius:3px; flex-shrink:0; }
+  .fc-legend-item strong { color:var(--text-primary); }
+  .fc-count { font-size:11px; color:var(--text-tertiary); margin-left:4px; }
+  /* Branch detail modal */
+  .branch-modal-overlay { position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center; }
+  .branch-modal { background:var(--bg-card);border-radius:16px;padding:24px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+  .branch-modal h3 { font-size:16px;font-weight:600;color:var(--text-primary);margin:0 0 4px; }
+  .branch-modal .bm-sub { font-size:12px;color:var(--text-tertiary);margin-bottom:14px; }
+  .branch-modal .bm-person { display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer; }
+  .branch-modal .bm-person:hover { background:var(--accent-orange-dim); }
+  .branch-modal .bm-person .bm-name { font-size:14px;font-weight:500;color:var(--text-primary); }
+  .branch-modal .bm-person .bm-gen { font-size:11px;color:var(--text-tertiary); }
   </style>
 
   <script>
@@ -924,6 +947,35 @@
     }
   }
 
+  // ===== 支系详情弹窗 =====
+  function showBranchList(name, desc, count, peopleJson) {
+    try {
+      var people = JSON.parse(peopleJson);
+    } catch(e) { people = []; }
+
+    var overlay = document.createElement('div');
+    overlay.className = 'branch-modal-overlay';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+
+    var html = '<div class="branch-modal">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;">';
+    html += '<div><h3>' + name + '</h3><div class="bm-sub">' + desc + ' · 共' + count + '人</div></div>';
+    html += '<button onclick="this.closest(\'.branch-modal-overlay\').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-tertiary);">✕</button>';
+    html += '</div>';
+    if (people.length === 0) {
+      html += '<div style="padding:20px;text-align:center;color:var(--text-tertiary);font-size:13px;">暂无数据</div>';
+    } else {
+      people.forEach(function(pp) {
+        html += '<div class="bm-person" onclick="showPersonDetail(' + pp.id + ', getGenealogyData());">';
+        html += '<div><div class="bm-name">' + escapeHtml(pp.name) + '</div><div class="bm-gen">第' + (pp.gen || '?') + '世</div></div>';
+        html += '</div>';
+      });
+    }
+    html += '</div>';
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+  }
+
   // Allow Enter key to search
   document.addEventListener('DOMContentLoaded', function() {
     var searchInput = document.getElementById('genealogy-search');
@@ -1021,52 +1073,85 @@
       });
     }
 
-    // ---- Pie chart: Branch distribution ----
+    // ---- Pie chart: 前枫槎 vs 后枫槎比例 ----
     var pieCanvas = document.getElementById('chart-branch');
     if (pieCanvas) {
-      var ctx2 = pieCanvas.getContext('2d');
-      var rect2 = pieCanvas.parentElement.getBoundingClientRect();
-      var W2 = rect2.width - 32 || 500;
-      var R2 = window.devicePixelRatio || 1;
-      pieCanvas.width = W2 * R2;
-      pieCanvas.height = 240 * R2;
-      pieCanvas.style.width = W2 + 'px';
-      pieCanvas.style.height = '240px';
-      ctx2.scale(R2, R2);
+      // Build ancestor lookup
+      var findById = {};
+      data.forEach(function(p) { findById[p.id] = p; });
 
-      var colors = ['#ef4444','#22d3ee','#fb923c','#4ade80','#a78bfa','#f472b6','#94a3b8'];
-      var branchNames = Object.keys(branches);
-      var totalBranches = 0;
-      branchNames.forEach(function(b) { totalBranches += branches[b]; });
+      // Find 攒公 and 撰公 by name or get children of 文杲公 / generation 4-5
+      var zanGong = null, zhuanGong = null;
+      for (var zi = 0; zi < data.length; zi++) {
+        var nm = data[zi].name || '';
+        if (nm.indexOf('攒') !== -1) zanGong = data[zi];
+        if (nm.indexOf('撰') !== -1) zhuanGong = data[zi];
+      }
+      // Fallback: if not found, use generation-based split
+      // 攒=后枫槎, 撰=前枫槎
+      var qianCount = 0, houCount = 0, otherCount = 0;
+      var qianPeople = [], houPeople = [];
 
-      var cx = W2 * 0.35, cy = 120, radius = 80;
-      var startAngle = -Math.PI / 2;
+      function countDescendants(rootId, list) {
+        for (var ci = 0; ci < data.length; ci++) {
+          if (parseInt(data[ci].father_id) === rootId || parseInt(data[ci].mother_id) === rootId) {
+            list.push(data[ci]);
+            countDescendants(data[ci].id, list);
+          }
+        }
+      }
 
-      branchNames.forEach(function(b, i) {
-        var slice = (branches[b] / totalBranches) * Math.PI * 2;
-        ctx2.beginPath();
-        ctx2.moveTo(cx, cy);
-        ctx2.arc(cx, cy, radius, startAngle, startAngle + slice);
-        ctx2.closePath();
-        ctx2.fillStyle = colors[i % colors.length];
-        ctx2.fill();
-        ctx2.strokeStyle = isDark ? '#1a1a2e' : '#fff';
-        ctx2.lineWidth = 2;
-        ctx2.stroke();
-        startAngle += slice;
+      if (zanGong) countDescendants(zanGong.id, houPeople);
+      if (zhuanGong) countDescendants(zhuanGong.id, qianPeople);
+
+      // If no 攒/撰 found, split by branch or everything as 其他
+      if (!zanGong && !zhuanGong) {
+        // Try to find groups: people whose father has a 'branch' in ['后枫槎','前枫槎'] etc
+        data.forEach(function(p) {
+          var br = p.branch || '';
+          if (br.indexOf('后') !== -1 || br.indexOf('攒') !== -1) houPeople.push(p);
+          else if (br.indexOf('前') !== -1 || br.indexOf('撰') !== -1) qianPeople.push(p);
+          else otherCount++;
+        });
+      }
+
+      qianCount = qianPeople.length;
+      houCount = houPeople.length;
+      // remaining = total - qian - hou that are already counted
+      var countedIds = {};
+      qianPeople.concat(houPeople).forEach(function(pp) { countedIds[pp.id] = true; });
+      data.forEach(function(p) {
+        if (!countedIds[p.id]) otherCount++;
       });
 
-      // Legend
-      var legendX = W2 * 0.65, legendY = 60;
-      ctx2.font = '11px sans-serif';
-      branchNames.forEach(function(b, i) {
-        var ly = legendY + i * 22;
-        ctx2.fillStyle = colors[i % colors.length];
-        ctx2.fillRect(legendX, ly, 12, 12);
-        ctx2.fillStyle = 'rgba(200,200,200,0.7)';
-        ctx2.textAlign = 'left';
-        ctx2.fillText(b + ' (' + branches[b] + '人)', legendX + 18, ly + 11);
-      });
+      // Render interactive HTML chart
+      var total3 = qianCount + houCount + otherCount;
+      var pctQ = total3 ? Math.round(qianCount / total3 * 100) : 0;
+      var pctH = total3 ? Math.round(houCount / total3 * 100) : 0;
+      var pctO = 100 - pctQ - pctH;
+
+      // Hide canvas, show HTML version instead
+      pieCanvas.style.display = 'none';
+      var pieParent = pieCanvas.parentElement;
+      var chartHtml = '<div class="fc-pie-wrap">';
+      chartHtml += '<div class="fc-pie" style="--q:' + pctQ + ';--h:' + pctH + ';--o:' + pctO + '">';
+      chartHtml += '<div class="fc-pie-slice fc-pie-qian" style="--p:' + pctQ + ';--color:#fb923c;" onclick="showBranchList(\'前枫槎\',\'撰公支系\',' + qianCount + ',\'' + escapeHtml(JSON.stringify(qianPeople.map(function(pp){return {id:pp.id,name:pp.name,gen:pp.generation_num};}))) + '\')" title="点击查看详情">前枫槎</div>';
+      chartHtml += '<div class="fc-pie-slice fc-pie-hou" style="--p:' + pctH + ';--color:#4ade80;" onclick="showBranchList(\'后枫槎\',\'攒公支系\',' + houCount + ',\'' + escapeHtml(JSON.stringify(houPeople.map(function(pp){return {id:pp.id,name:pp.name,gen:pp.generation_num};}))) + '\')" title="点击查看详情">后枫槎</div>';
+      chartHtml += '<div class="fc-pie-slice fc-pie-other" style="--p:' + pctO + ';--color:#94a3b8;" onclick="showBranchList(\'其他/岩下\',\'未归入前/后枫槎\',' + otherCount + ',\'' + escapeHtml(JSON.stringify(data.filter(function(pp){return !countedIds[pp.id];}).map(function(pp){return {id:pp.id,name:pp.name,gen:pp.generation_num};}))) + '\')" title="点击查看详情">其他</div>';
+      chartHtml += '<div class="fc-pie-center" onclick="zoomTreeView()">';
+      chartHtml += '<span class="fc-pie-total">' + total3 + '人</span>';
+      chartHtml += '<span class="fc-pie-label">点击查看</span>';
+      chartHtml += '</div></div>';
+      chartHtml += '<div class="fc-legend">';
+      chartHtml += '<div class="fc-legend-item" onclick="showBranchList(\'前枫槎\',\'撰公支系\',' + qianCount + ',\'' + escapeHtml(JSON.stringify(qianPeople.map(function(pp){return {id:pp.id,name:pp.name,gen:pp.generation_num};}))) + '\')"><span style="background:#fb923c;"></span><strong>前枫槎</strong> (撰公) <span class="fc-count">' + qianCount + '人 ' + pctQ + '%</span></div>';
+      chartHtml += '<div class="fc-legend-item" onclick="showBranchList(\'后枫槎\',\'攒公支系\',' + houCount + ',\'' + escapeHtml(JSON.stringify(houPeople.map(function(pp){return {id:pp.id,name:pp.name,gen:pp.generation_num};}))) + '\')"><span style="background:#4ade80;"></span><strong>后枫槎</strong> (攒公) <span class="fc-count">' + houCount + '人 ' + pctH + '%</span></div>';
+      chartHtml += '<div class="fc-legend-item" onclick="showBranchList(\'其他/岩下\',\'未归入\',' + otherCount + ',\'' + escapeHtml(JSON.stringify(data.filter(function(pp){return !countedIds[pp.id];}).map(function(pp){return {id:pp.id,name:pp.name,gen:pp.generation_num};}))) + '\')"><span style="background:#94a3b8;"></span><strong>其他/岩下</strong> <span class="fc-count">' + otherCount + '人 ' + pctO + '%</span></div>';
+      chartHtml += '</div></div>';
+
+      // Insert before existing content or replace
+      var oldChart = pieParent.querySelector('.fc-pie-wrap');
+      if (oldChart) oldChart.remove();
+      pieParent.insertAdjacentHTML('beforeend', chartHtml);
     }
   }
 
