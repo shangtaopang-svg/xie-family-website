@@ -852,7 +852,7 @@
       if (!isLast && k > 0) {
         html += '<div class="ancestor-connector"></div>';
       }
-      html += '<div class="ancestor-card">';
+      html += '<div class="ancestor-card" onclick="showPersonDetail(' + a.id + ', getGenealogyData());" style="cursor:pointer;" title="点击查看详情">';
       html += '<div class="ancestor-gen">第' + a.generation_num + '世</div>';
       html += '<div class="ancestor-name">' + (isSelf ? '👉 ' : '') + escapeHtml(a.name) + '</div>';
       if (a.gender) html += '<div class="ancestor-meta">' + (a.gender === '男' ? '👤' : '👩') + ' ' + (a.generation && a.generation !== '—' ? a.generation + '字辈' : '') + '</div>';
