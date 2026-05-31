@@ -152,7 +152,7 @@
   function loadThreeJs(callback) {
     if (typeof THREE !== 'undefined') { callback(); return; }
     var script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+    script.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
     script.onload = callback;
     script.onerror = function() {
       console.warn('[EarthGlobe] Three.js CDN 失败');
