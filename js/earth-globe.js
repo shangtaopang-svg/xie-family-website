@@ -71,6 +71,11 @@
     cameraTargetY = 0;
     phase = 'orbiting';
     container.style.display = 'block';
+    // 重新计算尺寸（容器从display:none变为block后尺寸会变）
+    if (canvas) {
+      W = canvas.width = container.clientWidth || window.innerWidth;
+      H = canvas.height = container.clientHeight || window.innerHeight;
+    }
     animate();
   }
 
