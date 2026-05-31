@@ -1135,13 +1135,54 @@
     var data = getGenealogyData();
     if (!data || data.length === 0) return;
 
-    // 统计各世代人数
+    // 找文杲公（下枫槎始祖），确定起始世代
+    var wenGaoGen = null;
+    var wenGao = null;
+    for (var wi = 0; wi < data.length; wi++) {
+      if (data[wi].name === '文杲公' || data[wi].id === 2) {
+        wenGao = data[wi];
+        wenGaoGen = parseInt(data[wi].generation_num) || 0;
+        break;
+      }
+    }
+    // 如果文杲公不在数据中，尝试找攒公/撰公（文杲的儿子，第二代）
+    if (!wenGao) {
+      for (var wi = 0; wi < data.length; wi++) {
+        var nm = data[wi].name || '';
+        if (nm.indexOf('攒') >= 0 || nm.indexOf('撰') >= 0) {
+          wenGaoGen = (parseInt(data[wi].generation_num) || 0) - 1;
+          break;
+        }
+      }
+    }
+    // 如果还没找到，默认文杲公在种子数据中的位置（id=2, gen=1的情况下找不到就用id=2）
+    if (wenGaoGen === null) {
+      // 检查是否有id=2的记录
+      for (var wi = 0; wi < data.length; wi++) {
+        if (data[wi].id === 2) {
+          wenGaoGen = parseInt(data[wi].generation_num) || 0;
+          break;
+        }
+      }
+    }
+    // 最终兜底：从最小世代开始
+    if (wenGaoGen === null) {
+      var minGen = 999;
+      data.forEach(function(p) {
+        var g = parseInt(p.generation_num) || 0;
+        if (g > 0 && g < minGen) minGen = g;
+      });
+      wenGaoGen = minGen;
+    }
+
+    // 统计各世代人数（仅文杲及其后代）
     var genCounts = {};
     var maxGen = 0;
     data.forEach(function(p) {
       var g = parseInt(p.generation_num) || 0;
-      if (g > 0) {
-        genCounts[g] = (genCounts[g] || 0) + 1;
+      if (g >= wenGaoGen && g > 0) {
+        var relGen = g - wenGaoGen + 1; // 文杲=1世
+        genCounts[relGen] = (genCounts[relGen] || 0) + 1;
         if (g > maxGen) maxGen = g;
       }
     });
@@ -1159,22 +1200,24 @@
         ctx.scale(R, R);
         var H = 260;
 
+        // 过滤：只统计文杲公及其后代
+        var filteredData = data.filter(function(p){return parseInt(p.generation_num||0) >= wenGaoGen;});
         // 找攒公(后枫槎)和撰公(前枫槎)
         var zanGong = null, zhuanGong = null;
-        for (var i = 0; i < data.length; i++) {
-          var nm = data[i].name || '';
-          if (nm.indexOf('攒') >= 0) zanGong = data[i];
-          if (nm.indexOf('撰') >= 0) zhuanGong = data[i];
+        for (var i = 0; i < filteredData.length; i++) {
+          var nm = filteredData[i].name || '';
+          if (nm.indexOf('攒') >= 0) zanGong = filteredData[i];
+          if (nm.indexOf('撰') >= 0) zhuanGong = filteredData[i];
         }
 
         var qianIds = {}, houIds = {};
         function collectIds(rootId, result) {
           result[rootId] = true;
-          for (var j = 0; j < data.length; j++) {
-            var pid = parseInt(data[j].father_id);
-            if (pid === rootId || parseInt(data[j].mother_id) === rootId) {
-              result[data[j].id] = true;
-              collectIds(data[j].id, result);
+          for (var j = 0; j < filteredData.length; j++) {
+            var pid = parseInt(filteredData[j].father_id);
+            if (pid === rootId || parseInt(filteredData[j].mother_id) === rootId) {
+              result[filteredData[j].id] = true;
+              collectIds(filteredData[j].id, result);
             }
           }
         }
@@ -1183,14 +1226,14 @@
 
         // 如果都没有，用文杲公（id=2）的子女分组
         if (!zanGong && !zhuanGong) {
-          for (var i = 0; i < data.length; i++) {
-            if (data[i].id === 2) {
+          for (var i = 0; i < filteredData.length; i++) {
+            if (filteredData[i].id === 2) {
               // 文杲公的后代按偶数/奇数ID分组模拟前/后枫槎
-              for (var j = 0; j < data.length; j++) {
-                if (parseInt(data[j].father_id) === 2) {
-                  if (data[j].id % 2 === 0) houIds[data[j].id] = true;
-                  else qianIds[data[j].id] = true;
-                  collectIds(data[j].id, data[j].id % 2 === 0 ? houIds : qianIds);
+              for (var j = 0; j < filteredData.length; j++) {
+                if (parseInt(filteredData[j].father_id) === 2) {
+                  if (filteredData[j].id % 2 === 0) houIds[filteredData[j].id] = true;
+                  else qianIds[filteredData[j].id] = true;
+                  collectIds(filteredData[j].id, filteredData[j].id % 2 === 0 ? houIds : qianIds);
                 }
               }
               break;
@@ -1199,7 +1242,7 @@
         }
 
         var qCount = 0, hCount = 0;
-        data.forEach(function(p) {
+        filteredData.forEach(function(p) {
           if (qianIds[p.id]) qCount++;
           else if (houIds[p.id]) hCount++;
         });
@@ -1333,10 +1376,11 @@
           for (var bi = 0; bi < barData.length; bi++) {
             var b = barData[bi];
             if (mx >= b.x * R && mx <= (b.x + b.w) * R) {
-              var gen = b.gen;
-              var people = data.filter(function(p){return parseInt(p.generation_num) === gen;});
+              var relGen = b.gen;
+              var absGen = relGen + wenGaoGen - 1;
+              var people = data.filter(function(p){return parseInt(p.generation_num) === absGen;});
               var names = people.map(function(p){return p.name;}).join('、');
-              showPopup('第' + gen + '世', b.count + '人', names);
+              showPopup('第' + relGen + '世（文杲公' + relGen + '世）', b.count + '人', names);
               break;
             }
           }
