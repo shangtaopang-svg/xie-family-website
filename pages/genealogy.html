@@ -119,12 +119,6 @@
       <!-- 可视化图表 -->
       <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-chart-section">
         <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:16px;font-size:17px;font-weight:500;">📊 数据分析</h3>
-        <div style="margin-bottom:12px;padding:8px 12px;background:var(--accent-orange-dim);border-radius:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span style="font-size:12px;color:var(--text-primary);">文杲公所在世代：</span>
-          <input type="number" id="wengao-gen-input" value="" placeholder="自动" style="width:70px;padding:4px 8px;border:1px solid var(--glass-border);border-radius:4px;background:var(--bg-card);color:var(--text-primary);font-size:13px;">
-          <button onclick="var v=parseInt(document.getElementById('wengao-gen-input').value);if(v>0){localStorage.setItem('xie_wengao_gen',v);renderCharts();}else{localStorage.removeItem('xie_wengao_gen');renderCharts();}" style="padding:4px 10px;border:1px solid var(--accent-orange);border-radius:4px;background:var(--accent-orange);color:#fff;font-size:12px;cursor:pointer;">应用</button>
-          <span style="font-size:11px;color:var(--text-tertiary);">填文杲在族谱中的世代数，仅统计其后代</span>
-        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:10px;padding:14px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
@@ -1147,24 +1141,37 @@
     var data = getGenealogyData();
     if (!data || data.length === 0) return;
 
-    // 文杲公起始世代（用户可调）
-    // 预填输入框
-    var wgInput = document.getElementById('wengao-gen-input');
-    if(wgInput && localStorage.getItem('xie_wengao_gen')) wgInput.value = localStorage.getItem('xie_wengao_gen');
-    var savedWenGaoGen = parseInt(localStorage.getItem('xie_wengao_gen') || '');
-    var wenGaoGen = savedWenGaoGen > 0 ? savedWenGaoGen : null;
-    // 如果没有设置，从数据中自动尝试查找
-    if (wenGaoGen === null) {
+    // 找文杲公（下枫槎始祖），确定起始世代
+    var wenGaoGen = null;
+    var wenGao = null;
+    for (var wi = 0; wi < data.length; wi++) {
+      if (data[wi].name === '文杲公' || data[wi].id === 2) {
+        wenGao = data[wi];
+        wenGaoGen = parseInt(data[wi].generation_num) || 0;
+        break;
+      }
+    }
+    // 如果文杲公不在数据中，尝试找攒公/撰公（文杲的儿子，第二代）
+    if (!wenGao) {
       for (var wi = 0; wi < data.length; wi++) {
         var nm = data[wi].name || '';
-        if (nm.indexOf('文杲') >= 0 || nm.indexOf('攒') >= 0 || nm.indexOf('撰') >= 0) {
-          wenGaoGen = parseInt(data[wi].generation_num) || 0;
-          if (nm.indexOf('攒') >= 0 || nm.indexOf('撰') >= 0) wenGaoGen--;
+        if (nm.indexOf('攒') >= 0 || nm.indexOf('撰') >= 0) {
+          wenGaoGen = (parseInt(data[wi].generation_num) || 0) - 1;
           break;
         }
       }
     }
-    // 如果还是找不到，用所有数据
+    // 如果还没找到，默认文杲公在种子数据中的位置（id=2, gen=1的情况下找不到就用id=2）
+    if (wenGaoGen === null) {
+      // 检查是否有id=2的记录
+      for (var wi = 0; wi < data.length; wi++) {
+        if (data[wi].id === 2) {
+          wenGaoGen = parseInt(data[wi].generation_num) || 0;
+          break;
+        }
+      }
+    }
+    // 最终兜底：从最小世代开始
     if (wenGaoGen === null) {
       var minGen = 999;
       data.forEach(function(p) {
@@ -1316,90 +1323,90 @@
       })();
     }
 
-    // ---- 柱状图：各世代人口分布 ----
+    // ---- 柱状图：各世代人口分布（从文杲公开始） ----
     var genCanvas = document.getElementById('chart-gens');
     if (genCanvas && typeof genCanvas.getContext === 'function') {
       (function() {
-        var c = genCanvas, ctx = c.getContext('2d');
-        var rect = c.parentElement.getBoundingClientRect();
-        var W = Math.max(rect.width - 32, 200);
-        var R = window.devicePixelRatio || 1;
-        c.width = W * R; c.height = 260 * R;
-        c.style.width = W + 'px'; c.style.height = '260px';
-        ctx.scale(R, R);
-        var H = 260;
-
-        var genKeys = Object.keys(genCounts).sort(function(a,b){return parseInt(a)-parseInt(b);});
-        var values = genKeys.map(function(k){return genCounts[k];});
-        var maxVal = Math.max.apply(null, values);
-        var pad = {top:20, bottom:36, left:40, right:12};
-        var cw = W - pad.left - pad.right, ch = H - pad.top - pad.bottom;
-
-        ctx.clearRect(0, 0, W, H);
-
-        // 网格线
-        ctx.strokeStyle = 'rgba(200,200,200,0.12)';
-        ctx.lineWidth = 1;
-        for (var gi = 0; gi <= 4; gi++) {
-          var yy = pad.top + ch * (1 - gi/4);
-          ctx.beginPath(); ctx.moveTo(pad.left, yy); ctx.lineTo(W - pad.right, yy); ctx.stroke();
-          ctx.fillStyle = 'rgba(200,200,200,0.35)';
-          ctx.font = '9px sans-serif';
-          ctx.textAlign = 'right';
-          ctx.fillText(Math.round(maxVal * gi / 4), pad.left - 4, yy + 3);
-        }
-
-        var barW = Math.max(2, Math.min(16, cw / genKeys.length - 1));
-        var barData = [];
-        var barColor = 'rgba(251,146,60,0.6)';
-
-        genKeys.forEach(function(k, i) {
-          var x = pad.left + i * (cw / genKeys.length);
-          var bh = (values[i] / maxVal) * ch;
-          ctx.fillStyle = barColor;
-          ctx.fillRect(x, pad.top + ch - bh, barW, bh);
-          barData.push({ x: x, w: barW, gen: parseInt(k), count: values[i] });
-          // 标签（每10个显示一个）
-          if (i % 10 === 0 || i === genKeys.length - 1) {
-            ctx.fillStyle = 'rgba(200,200,200,0.4)';
-            ctx.font = '8px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(k + '世', x + barW/2, H - pad.bottom + 14);
+        var gC = genCanvas, gCtx = gC.getContext('2d');
+        var gRect = gC.parentElement.getBoundingClientRect();
+        var gW = Math.max(gRect.width - 32, 200);
+        var gR = window.devicePixelRatio || 1;
+        gC.width = gW * gR; gC.height = 280 * gR;
+        gC.style.width = gW + 'px'; gC.style.height = '280px';
+        gCtx.scale(gR, gR);
+        var gH = 280;
+        var genData = {};
+        data.forEach(function(p) {
+          var absG = parseInt(p.generation_num) || 0;
+          if (absG >= wenGaoGen) {
+            var relG = absG - wenGaoGen + 1;
+            if (!genData[relG]) genData[relG] = { total: 0, alive: 0, dead: 0 };
+            genData[relG].total++;
+            if (p.is_alive === '是') genData[relG].alive++;
+            else if (p.is_alive === '否') genData[relG].dead++;
           }
         });
-
-        // 点击查看详情
-        c.onclick = function(e) {
-          var mr = c.getBoundingClientRect();
-          var mx = (e.clientX - mr.left) * R;
-          for (var bi = 0; bi < barData.length; bi++) {
-            var b = barData[bi];
-            if (mx >= b.x * R && mx <= (b.x + b.w) * R) {
-              var relGen = b.gen;
-              var absGen = relGen + wenGaoGen - 1;
+        var gKeys = Object.keys(genData).sort(function(a,b){return parseInt(a)-parseInt(b);});
+        if (gKeys.length === 0) {
+          gCtx.fillStyle = 'rgba(200,200,200,0.3)'; gCtx.font = '13px sans-serif'; gCtx.textAlign = 'center'; gCtx.fillText('暂无数据', gW/2, gH/2);
+          return;
+        }
+        var gVals = gKeys.map(function(k){return genData[k].total;});
+        var gMax = Math.max.apply(null, gVals);
+        var gPad = {t:24, b:40, l:46, r:12};
+        var gCw = gW - gPad.l - gPad.r, gCh = gH - gPad.t - gPad.b;
+        gCtx.clearRect(0, 0, gW, gH);
+        gCtx.strokeStyle = 'rgba(200,200,200,0.1)'; gCtx.lineWidth = 1;
+        for (var gi = 0; gi <= 4; gi++) {
+          var yy = gPad.t + gCh * (1 - gi/4);
+          gCtx.beginPath(); gCtx.moveTo(gPad.l, yy); gCtx.lineTo(gW - gPad.r, yy); gCtx.stroke();
+          gCtx.fillStyle = 'rgba(200,200,200,0.3)'; gCtx.font = '9px sans-serif'; gCtx.textAlign = 'right';
+          gCtx.fillText(Math.round(gMax * gi/4), gPad.l - 6, yy + 3);
+        }
+        var gBarW = Math.max(3, Math.min(28, gCw / gKeys.length - 2));
+        var gBarData = [];
+        var gStep = Math.max(1, Math.floor(gKeys.length / 12));
+        gKeys.forEach(function(k, i) {
+          var x = gPad.l + i * (gCw / gKeys.length);
+          var bh = (gVals[i] / gMax) * gCh;
+          gCtx.fillStyle = 'rgba(251,146,60,0.65)';
+          gCtx.fillRect(x, gPad.t + gCh - bh, gBarW, bh);
+          gBarData.push({ x: x, w: gBarW, gen: parseInt(k), count: gVals[i], absGen: parseInt(k) + wenGaoGen - 1 });
+          if (i % gStep === 0 || i === gKeys.length - 1) {
+            gCtx.fillStyle = 'rgba(200,200,200,0.4)'; gCtx.font = '8px sans-serif'; gCtx.textAlign = 'center';
+            gCtx.fillText(k + '世', x + gBarW/2, gH - gPad.b + 14);
+          }
+        });
+        gC.onclick = function(e) {
+          var mr = gC.getBoundingClientRect();
+          var mx = (e.clientX - mr.left) * gR;
+          for (var bi = 0; bi < gBarData.length; bi++) {
+            var b = gBarData[bi];
+            if (mx >= b.x * gR && mx <= (b.x + b.w) * gR) {
+              var absGen = b.absGen;
               var people = data.filter(function(p){return parseInt(p.generation_num) === absGen;});
+              var alive = people.filter(function(p){return p.is_alive === '是';}).length;
+              var dead = people.filter(function(p){return p.is_alive === '否';}).length;
+              var unknown = people.length - alive - dead;
               var names = people.map(function(p){return p.name;}).join('、');
-              showPopup('第' + relGen + '世（文杲公' + relGen + '世）', b.count + '人', names);
+              var detail = '在世: ' + alive + '人 | 已故: ' + dead + '人' + (unknown ? ' | 未知: ' + unknown + '人' : '');
+              showPopup('第' + b.gen + '世 共' + b.count + '人', detail, names);
               break;
             }
           }
         };
-
-        // 鼠标悬停高亮
-        c.onmousemove = function(e) {
-          var mr = c.getBoundingClientRect();
-          var mx = (e.clientX - mr.left) * R;
+        gC.onmousemove = function(e) {
+          var mr = gC.getBoundingClientRect();
+          var mx = (e.clientX - mr.left) * gR;
           var found = -1;
-          for (var bi = 0; bi < barData.length; bi++) {
-            if (mx >= barData[bi].x * R && mx <= (barData[bi].x + barData[bi].w) * R) {
-              found = bi; break;
-            }
+          for (var bi = 0; bi < gBarData.length; bi++) {
+            if (mx >= gBarData[bi].x * gR && mx <= (gBarData[bi].x + gBarData[bi].w) * gR) { found = bi; break; }
           }
-          c.style.cursor = found >= 0 ? 'pointer' : 'default';
+          gC.style.cursor = found >= 0 ? 'pointer' : 'default';
         };
       })();
     }
-  }
+}
 
   // ===== 图表全屏查看 =====
   function openChartFullscreen(type) {
