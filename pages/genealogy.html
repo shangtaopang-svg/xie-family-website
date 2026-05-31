@@ -12,7 +12,7 @@
   <script src="../js/file-store.js?v=3"></script>
   <script src="../js/supabase.js?v=3"></script>
 </head>
-<body>
+<body><div id="js-diag" style="position:fixed;top:0;left:0;right:0;background:#222;color:#0f0;padding:4px;font-size:11px;z-index:99999;text-align:center;">Loading...</div>
 
 <canvas id="bg-canvas"></canvas>
 
@@ -423,7 +423,12 @@
   </style>
 
   <script>
+  document.write('<div style="position:fixed;top:0;left:0;right:0;background:#333;color:#0f0;padding:4px 8px;font-size:11px;z-index:99999;text-align:center;">JS running...</div>');
+  console.log('Genealogy page JS started');
+</script>
+<script>
   // ===== Load data =====
+document.getElementById("js-diag").textContent = "JS loaded, initializing...";
   function getGenealogyData() {
     try {
       var stored = localStorage.getItem('xie_admin_genealogy');
@@ -1359,6 +1364,8 @@
     document.getElementById('genealogy-table-section').style.opacity = '1';
     document.getElementById('genealogy-stats-section').style.opacity = '1';
     renderGenealogyCharts();
+  document.getElementById("js-diag").textContent = "Render complete!";
+  setTimeout(function(){var d=document.getElementById("js-diag");if(d)d.style.display="none";},2000);
       window.addEventListener("resize", renderGenealogyCharts);
   } catch(e) { console.error('Page render error:', e); }
   }
