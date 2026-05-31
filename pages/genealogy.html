@@ -119,22 +119,28 @@
       <!-- 可视化图表 -->
       <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-chart-section">
         <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:16px;font-size:17px;font-weight:500;">📊 数据分析</h3>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-          <div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:10px;padding:14px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-              <h4 style="font-size:13px;color:var(--text-primary);margin:0;font-weight:500;">前枫槎 vs 后枫槎（文杲公后裔）</h4>
-              <button onclick="openChartFullscreen('branch')" style="background:none;border:1px solid var(--glass-border);border-radius:4px;color:var(--text-tertiary);font-size:11px;padding:2px 8px;cursor:pointer;">⛶ 全屏</button>
-            </div>
-            <canvas id="chart-branch" height="240" style="width:100%;cursor:pointer;"></canvas>
+        <div id="gen-table-container" style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:10px;padding:14px;overflow-x:auto;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <h4 style="font-size:13px;color:var(--text-primary);margin:0;font-weight:500;">文杲公后裔各世代人口</h4>
           </div>
-          <div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:10px;padding:14px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-              <h4 style="font-size:13px;color:var(--text-primary);margin:0;font-weight:500;">各世代人口分布</h4>
-              <button onclick="openChartFullscreen('gens')" style="background:none;border:1px solid var(--glass-border);border-radius:4px;color:var(--text-tertiary);font-size:11px;padding:2px 8px;cursor:pointer;">⛶ 全屏</button>
-            </div>
-            <canvas id="chart-gens" height="240" style="width:100%;cursor:pointer;"></canvas>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:8px;">
+            <span style="display:inline-block;width:10px;height:10px;background:#fb923c;border-radius:2px;margin-right:3px;"></span> 前枫槎（撰公）
+            <span style="display:inline-block;width:10px;height:10px;background:#4ade80;border-radius:2px;margin-right:3px;margin-left:12px;"></span> 后枫槎（攒公）
           </div>
+          <table id="gen-stats-table" style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--glass-border);">
+                <th style="text-align:left;padding:6px 8px;color:var(--text-primary);font-weight:500;">世代</th>
+                <th style="text-align:center;padding:6px 8px;color:var(--text-primary);font-weight:500;">前枫槎</th>
+                <th style="text-align:center;padding:6px 8px;color:var(--text-primary);font-weight:500;">后枫槎</th>
+                <th style="text-align:center;padding:6px 8px;color:var(--text-primary);font-weight:500;">合计</th>
+              </tr>
+            </thead>
+            <tbody id="gen-stats-body"></tbody>
+          </table>
+          <div id="gen-stats-empty" style="padding:30px;text-align:center;color:var(--text-tertiary);font-size:13px;">加载中...</div>
         </div>
+        <div style="margin-top:12px;text-align:center;font-size:11px;color:var(--text-tertiary);">点击行查看各世代详情</div>
       </div>
 
       <!-- 搜索 -->
@@ -1142,517 +1148,102 @@
       }
     }).catch(function() {});
   }
-  // ===== 统计图表（纯 Canvas 2D，无外部依赖） =====
-  function renderCharts() {
-    var data = getGenealogyData();
-    if (!data || data.length === 0) return;
+  // ===== 各世代人口统计表 =====
+function renderCharts() {
+  var data = getGenealogyData();
+  if (!data || data.length === 0) return;
 
-    // 找文杲公（下枫槎始祖），确定起始世代
-    var wenGaoGen = null;
-    var wenGao = null;
+  // 获取文杲公的世代
+  var wenGaoGen = parseInt(localStorage.getItem('xie_wengao_gen') || '');
+  if (!wenGaoGen) {
     for (var wi = 0; wi < data.length; wi++) {
       if (data[wi].name === '文杲公' || data[wi].id === 2) {
-        wenGao = data[wi];
         wenGaoGen = parseInt(data[wi].generation_num) || 0;
         break;
       }
     }
-    // 如果文杲公不在数据中，尝试找攒公/撰公（文杲的儿子，第二代）
-    if (!wenGao) {
-      for (var wi = 0; wi < data.length; wi++) {
-        var nm = data[wi].name || '';
-        if (nm.indexOf('攒') >= 0 || nm.indexOf('撰') >= 0) {
-          wenGaoGen = (parseInt(data[wi].generation_num) || 0) - 1;
-          break;
-        }
-      }
-    }
-    // 如果还没找到，默认文杲公在种子数据中的位置（id=2, gen=1的情况下找不到就用id=2）
-    if (wenGaoGen === null) {
-      // 检查是否有id=2的记录
-      for (var wi = 0; wi < data.length; wi++) {
-        if (data[wi].id === 2) {
-          wenGaoGen = parseInt(data[wi].generation_num) || 0;
-          break;
-        }
-      }
-    }
-    // 最终兜底：从最小世代开始
-    if (wenGaoGen === null) {
-      var minGen = 999;
-      data.forEach(function(p) {
-        var g = parseInt(p.generation_num) || 0;
-        if (g > 0 && g < minGen) minGen = g;
-      });
-      wenGaoGen = minGen;
-    }
-
-    // 统计各世代人数（仅文杲及其后代）
-    var genCounts = {};
-    var maxGen = 0;
-    data.forEach(function(p) {
-      var g = parseInt(p.generation_num) || 0;
-      if (g >= wenGaoGen && g > 0) {
-        var relGen = g - wenGaoGen + 1; // 文杲=1世
-        genCounts[relGen] = (genCounts[relGen] || 0) + 1;
-        if (g > maxGen) maxGen = g;
-      }
-    });
-
-    // ---- 饼图：前枫槎 vs 后枫槎 ----
-    var branchCanvas = document.getElementById('chart-branch');
-    if (branchCanvas && typeof branchCanvas.getContext === 'function') {
-      (function() {
-        var c = branchCanvas, ctx = c.getContext('2d');
-        var rect = c.parentElement.getBoundingClientRect();
-        var W = Math.max(rect.width - 32, 200);
-        var R = window.devicePixelRatio || 1;
-        c.width = W * R; c.height = 260 * R;
-        c.style.width = W + 'px'; c.style.height = '260px';
-        ctx.scale(R, R);
-        var H = 260;
-
-        // 过滤：只统计文杲公及其后代
-        var filteredData = data.filter(function(p){return parseInt(p.generation_num||0) >= wenGaoGen;});
-        // 找攒公(后枫槎)和撰公(前枫槎)
-        var zanGong = null, zhuanGong = null;
-        for (var i = 0; i < filteredData.length; i++) {
-          var nm = filteredData[i].name || '';
-          if (nm.indexOf('攒') >= 0) zanGong = filteredData[i];
-          if (nm.indexOf('撰') >= 0) zhuanGong = filteredData[i];
-        }
-
-        var qianIds = {}, houIds = {};
-        function collectIds(rootId, result) {
-          result[rootId] = true;
-          for (var j = 0; j < filteredData.length; j++) {
-            var pid = parseInt(filteredData[j].father_id);
-            if (pid === rootId || parseInt(filteredData[j].mother_id) === rootId) {
-              result[filteredData[j].id] = true;
-              collectIds(filteredData[j].id, result);
-            }
-          }
-        }
-        if (zhuanGong) collectIds(zhuanGong.id, qianIds);
-        if (zanGong) collectIds(zanGong.id, houIds);
-
-        // 如果都没有，用文杲公（id=2）的子女分组
-        if (!zanGong && !zhuanGong) {
-          for (var i = 0; i < filteredData.length; i++) {
-            if (filteredData[i].id === 2) {
-              // 文杲公的后代按偶数/奇数ID分组模拟前/后枫槎
-              for (var j = 0; j < filteredData.length; j++) {
-                if (parseInt(filteredData[j].father_id) === 2) {
-                  if (filteredData[j].id % 2 === 0) houIds[filteredData[j].id] = true;
-                  else qianIds[filteredData[j].id] = true;
-                  collectIds(filteredData[j].id, filteredData[j].id % 2 === 0 ? houIds : qianIds);
-                }
-              }
-              break;
-            }
-          }
-        }
-
-        var qCount = 0, hCount = 0;
-        filteredData.forEach(function(p) {
-          if (qianIds[p.id]) qCount++;
-          else if (houIds[p.id]) hCount++;
-        });
-        // 如果没有找到分组，就平分
-        if (qCount === 0 && hCount === 0) {
-          qCount = 1; hCount = 1;
-        }
-        var total = qCount + hCount;
-        var qPct = Math.round(qCount / total * 100);
-        var hPct = 100 - qPct;
-
-        var cx = W * 0.35, cy = 130, radius = Math.min(W * 0.22, 90);
-        ctx.clearRect(0, 0, W, H);
-
-        // 饼图
-        var qAngle = (qPct / 100) * Math.PI * 2;
-        var colors = ['#fb923c', '#4ade80'];
-        var slices = [
-          { label: '前枫槎', count: qCount, pct: qPct, angle: qAngle, color: colors[0] },
-          { label: '后枫槎', count: hCount, pct: hPct, angle: Math.PI * 2 - qAngle, color: colors[1] }
-        ];
-
-        // 存储扇形数据用于点击检测
-        var sliceData = [];
-        var startA = -Math.PI / 2;
-        slices.forEach(function(s, si) {
-          ctx.beginPath();
-          ctx.moveTo(cx, cy);
-          ctx.arc(cx, cy, radius, startA, startA + s.angle);
-          ctx.closePath();
-          ctx.fillStyle = s.color;
-          ctx.fill();
-          ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-          ctx.lineWidth = 1;
-          ctx.stroke();
-          sliceData.push({ start: startA, end: startA + s.angle, label: s.label, count: s.count, pct: s.pct });
-          startA += s.angle;
-        });
-
-        // 图例
-        var lx = W * 0.6, ly = 70;
-        slices.forEach(function(s, i) {
-          var y = ly + i * 28;
-          ctx.fillStyle = s.color;
-          ctx.fillRect(lx, y, 14, 14);
-          ctx.fillStyle = 'rgba(255,255,255,0.8)';
-          ctx.font = '12px sans-serif';
-          ctx.textAlign = 'left';
-          ctx.fillText(s.label + ': ' + s.count + '人 (' + s.pct + '%)', lx + 20, y + 12);
-        });
-
-        // 点击检测
-        c.onclick = function(e) {
-          var mr = c.getBoundingClientRect();
-          var mx = (e.clientX - mr.left) * R;
-          var my = (e.clientY - mr.top) * R;
-          var dx = mx / R - cx, dy = my / R - cy;
-          var dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist > radius) return;
-          var angle = Math.atan2(dy, dx);
-          if (angle < -Math.PI / 2) angle += Math.PI * 2;
-          for (var si = 0; si < sliceData.length; si++) {
-            var s = sliceData[si];
-            var sA = s.start, eA = s.end;
-            if (eA > Math.PI * 2) { sA -= Math.PI * 2; eA -= Math.PI * 2; }
-            if (angle >= sA && angle < eA) {
-              showPopup(s.label, s.count + '人 (' + s.pct + '%)', s.label + ' 文杲公后裔');
-              break;
-            }
-          }
-        };
-      })();
-    }
-
-        // ---- 各世代人口分布（横向条形图，从文杲公开始） ----
-    var genCanvas = document.getElementById('chart-gens');
-    if (genCanvas && typeof genCanvas.getContext === 'function') {
-      (function() {
-        var gC = genCanvas, gCtx = gC.getContext('2d');
-        var gRect = gC.parentElement.getBoundingClientRect();
-        var gW = Math.max(gRect.width - 32, 200);
-        var gR = window.devicePixelRatio || 1;
-        gC.width = gW * gR; gC.height = 300 * gR;
-        gC.style.width = gW + 'px'; gC.style.height = '300px';
-        gCtx.scale(gR, gR);
-        var gH = 300;
-        var genRows = [];
-        data.forEach(function(p) {
-          var absG = parseInt(p.generation_num) || 0;
-          if (absG >= wenGaoGen) {
-            var relG = absG - wenGaoGen + 1;
-            var row = null;
-            for (var ri = 0; ri < genRows.length; ri++) {
-              if (genRows[ri].gen === relG) { row = genRows[ri]; break; }
-            }
-            if (!row) { row = { gen: relG, total: 0, alive: 0, dead: 0 }; genRows.push(row); }
-            row.total++;
-            if (p.is_alive === '是') row.alive++;
-            else if (p.is_alive === '否') row.dead++;
-          }
-        });
-        genRows.sort(function(a,b){return a.gen - b.gen;});
-        if (genRows.length === 0) {
-          gCtx.fillStyle = 'rgba(200,200,200,0.3)'; gCtx.font = '13px sans-serif'; gCtx.textAlign = 'center';
-          gCtx.fillText('暂无数据', gW/2, gH/2); return;
-        }
-        var maxTotal = 1;
-        genRows.forEach(function(r){if(r.total > maxTotal) maxTotal = r.total;});
-        var pad = {t:16, b:16, l:60, r:120};
-        var barH = 24, gap = 6, startY = pad.t;
-        var maxBars = Math.floor((gH - pad.t - pad.b) / (barH + gap));
-        var visibleRows = genRows.slice(0, maxBars);
-        gCtx.clearRect(0, 0, gW, gH);
-        var barMaxW = gW - pad.l - pad.r - 12;
-        visibleRows.forEach(function(row, i) {
-          var y = startY + i * (barH + gap);
-          gCtx.fillStyle = 'rgba(200,200,200,0.6)';
-          gCtx.font = 'bold 11px sans-serif';
-          gCtx.textAlign = 'right';
-          gCtx.fillText(row.gen + '世', pad.l - 8, y + barH - 5);
-          var totalStr = row.total + '人';
-          if (row.alive > 0 || row.dead > 0) {
-            totalStr += ' (在世' + row.alive + ' · 已故' + row.dead + ')';
-          }
-          gCtx.fillStyle = 'rgba(200,200,200,0.5)';
-          gCtx.font = '10px sans-serif';
-          gCtx.textAlign = 'left';
-          gCtx.fillText(totalStr, gW - pad.r + 6, y + barH - 5);
-          var aliveW = (row.alive / maxTotal) * barMaxW;
-          var deadW = (row.dead / maxTotal) * barMaxW;
-          var bx = pad.l, by = y;
-          gCtx.fillStyle = 'rgba(200,200,200,0.08)';
-          gCtx.fillRect(bx, by, barMaxW, barH);
-          if (aliveW > 0) { gCtx.fillStyle = 'rgba(74,222,128,0.6)'; gCtx.fillRect(bx, by, aliveW, barH); bx += aliveW; }
-          if (deadW > 0) { gCtx.fillStyle = 'rgba(239,68,68,0.5)'; gCtx.fillRect(bx, by, deadW, barH); bx += deadW; }
-          var ukW = barMaxW - aliveW - deadW;
-          if (ukW > 0) { gCtx.fillStyle = 'rgba(200,200,200,0.2)'; gCtx.fillRect(bx, by, ukW, barH); }
-        });
-        var legY = gH - 10;
-        var legX = pad.l;
-        var legs = [
-          {l:'在世',c:'rgba(74,222,128,0.6)'},
-          {l:'已故',c:'rgba(239,68,68,0.5)'},
-          {l:'未知',c:'rgba(200,200,200,0.2)'}
-        ];
-        legs.forEach(function(lp) {
-          gCtx.fillStyle = lp.c;
-          gCtx.fillRect(legX, legY - 8, 12, 12);
-          gCtx.fillStyle = 'rgba(200,200,200,0.4)';
-          gCtx.font = '10px sans-serif';
-          gCtx.textAlign = 'left';
-          gCtx.fillText(lp.l, legX + 16, legY + 2);
-          legX += 50 + lp.l.length * 6;
-        });
-        gC.onclick = function(e) {
-          var mr = gC.getBoundingClientRect();
-          var my = (e.clientY - mr.top) * gR;
-          for (var ri = 0; ri < visibleRows.length; ri++) {
-            var row = visibleRows[ri];
-            var ry = startY + ri * (barH + gap);
-            if (my >= ry * gR && my <= (ry + barH) * gR) {
-              var absGen = row.gen + wenGaoGen - 1;
-              var people = data.filter(function(pj){return parseInt(pj.generation_num) === absGen;});
-              var al = people.filter(function(pj){return pj.is_alive === '是';}).length;
-              var de = people.filter(function(pj){return pj.is_alive === '否';}).length;
-              var names = people.map(function(pj){return pj.name;}).join('、');
-              var ov = document.createElement('div');
-              ov.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
-              ov.onclick = function(ev) { if (ev.target === ov) ov.remove(); };
-              var bx2 = document.createElement('div');
-              bx2.style.cssText = 'background:var(--bg-card);border-radius:16px;padding:24px;max-width:400px;width:90%;';
-              bx2.innerHTML = '<div style="text-align:center;"><div style="font-size:14px;color:var(--text-tertiary);margin-bottom:4px;">在世: ' + al + '人 | 已故: ' + de + '人</div><div style="font-size:20px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">第' + row.gen + '世 共' + row.total + '人</div><div style="font-size:13px;color:var(--text-secondary);line-height:1.6;word-break:break-all;">' + names + '</div><button onclick="this.parentElement.parentElement.parentElement.remove()" style="margin-top:16px;padding:8px 24px;border:1px solid var(--glass-border);border-radius:8px;background:var(--glass-bg);color:var(--text-primary);font-size:13px;cursor:pointer;">关闭</button></div>';
-              ov.appendChild(bx2);
-              document.body.appendChild(ov);
-              break;
-            }
-          }
-        };
-        gC.onmousemove = function(e) {
-          var mr = gC.getBoundingClientRect();
-          var my = (e.clientY - mr.top) * gR;
-          var found = -1;
-          for (var ri = 0; ri < visibleRows.length; ri++) {
-            var ry = startY + ri * (barH + gap);
-            if (my >= ry * gR && my <= (ry + barH) * gR) { found = ri; break; }
-          }
-          gC.style.cursor = found >= 0 ? 'pointer' : 'default';
-        };
-      })();
-    }
-}
-
-  // ===== 图表全屏查看 =====
-  function openChartFullscreen(type) {
-    var data = getGenealogyData();
-    if (!data || data.length === 0) return;
-
-    var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;';
-
-    var header = document.createElement('div');
-    header.style.cssText = 'position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:12px 20px;z-index:2;';
-    header.innerHTML = '<span style="color:#fff;font-size:14px;">' + (type === 'branch' ? '前枫槎 vs 后枫槎' : '各世代人口分布') + '</span><button onclick="this.parentElement.parentElement.remove()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:20px;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>';
-    overlay.appendChild(header);
-
-    var canvas = document.createElement('canvas');
-    canvas.style.cssText = 'max-width:95vw;max-height:85vh;cursor:grab;';
-    overlay.appendChild(canvas);
-    document.body.appendChild(overlay);
-
-    var W = window.innerWidth * 0.85, H = window.innerHeight * 0.8;
-    var R = window.devicePixelRatio || 1;
-    canvas.width = W * R;
-    canvas.height = H * R;
-    canvas.style.width = W + 'px';
-    canvas.style.height = H + 'px';
-    var ctx = canvas.getContext('2d');
-    ctx.scale(R, R);
-
-    var zoom = 1, panX = 0, panY = 0, dragging = false, dragSX, dragSY, panSX, panSY;
-
-    function renderChart() {
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.clearRect(0, 0, W, H);
-      ctx.translate(panX, panY);
-      ctx.scale(zoom, zoom);
-
-      if (type === 'branch') {
-        // 饼图
-        var cx = W * 0.38, cy = H * 0.45, radius = Math.min(W, H) * 0.18;
-        // 找攒/撰
-        var zan = null, zhuan = null;
-        for (var i = 0; i < data.length; i++) {
-          var nm = data[i].name || '';
-          if (nm.indexOf('攒') >= 0) zan = data[i];
-          if (nm.indexOf('撰') >= 0) zhuan = data[i];
-        }
-        var qIds = {}, hIds = {};
-        function collect(root, res) {
-          res[root] = true;
-          for (var j = 0; j < data.length; j++) {
-            var pid = parseInt(data[j].father_id);
-            if (pid === root || parseInt(data[j].mother_id) === root) {
-              res[data[j].id] = true;
-              collect(data[j].id, res);
-            }
-          }
-        }
-        if (zhuan) collect(zhuan.id, qIds);
-        if (zan) collect(zan.id, hIds);
-        if (!zan && !zhuan) {
-          for (var i = 0; i < data.length; i++) {
-            if (data[i].id === 2) {
-              for (var j = 0; j < data.length; j++) {
-                if (parseInt(data[j].father_id) === 2) {
-                  if (data[j].id % 2 === 0) hIds[data[j].id] = true;
-                  else qIds[data[j].id] = true;
-                  collect(data[j].id, data[j].id % 2 === 0 ? hIds : qIds);
-                }
-              }
-              break;
-            }
-          }
-        }
-        var qc = 0, hc = 0;
-        data.forEach(function(p) { if (qIds[p.id]) qc++; else if (hIds[p.id]) hc++; });
-        if (qc === 0 && hc === 0) { qc = 1; hc = 1; }
-        var total = qc + hc;
-        var slices2 = [{l:'前枫槎',c:qc,color:'#fb923c'},{l:'后枫槎',c:hc,color:'#4ade80'}];
-        var sa = -Math.PI / 2;
-        slices2.forEach(function(s) {
-          var angle = (s.c / total) * Math.PI * 2;
-          ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, radius, sa, sa + angle); ctx.closePath();
-          ctx.fillStyle = s.color; ctx.fill();
-          ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1.5; ctx.stroke();
-          // 标签
-          var ma = sa + angle / 2;
-          var lx = cx + Math.cos(ma) * radius * 0.65;
-          var ly = cy + Math.sin(ma) * radius * 0.65;
-          ctx.fillStyle = 'rgba(255,255,255,0.9)';
-          ctx.font = 'bold 16px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(s.l + ' ' + s.c + '人 (' + Math.round(s.c/total*100) + '%)', lx, ly);
-          sa += angle;
-        });
-      } else {
-        // 柱状图（全屏）
-        var wenGaoGen2 = parseInt(localStorage.getItem('xie_wengao_gen') || '');
-        if (!wenGaoGen2) {
-          for (var i = 0; i < data.length; i++) {
-            if (data[i].name === '文杲公' || data[i].id === 2) {
-              wenGaoGen2 = parseInt(data[i].generation_num) || 0; break;
-            }
-          }
-        }
-        if (!wenGaoGen2) {
-          var minG = 999;
-          data.forEach(function(p){var g=parseInt(p.generation_num)||0;if(g>0&&g<minG)minG=g;});
-          wenGaoGen2 = minG;
-        }
-        var gCounts = {};
-        data.forEach(function(p) {
-          var g = parseInt(p.generation_num) || 0;
-          if (g >= wenGaoGen2) {
-            var r = g - wenGaoGen2 + 1;
-            if (!gCounts[r]) gCounts[r] = { t: 0, a: 0, d: 0 };
-            gCounts[r].t++;
-            if (p.is_alive === '是') gCounts[r].a++;
-            else if (p.is_alive === '否') gCounts[r].d++;
-          }
-        });
-        var gKeys = Object.keys(gCounts).sort(function(a,b){return parseInt(a)-parseInt(b);});
-        var gVals = gKeys.map(function(k){return gCounts[k].t;});
-        var maxV = Math.max.apply(null, gVals);
-        var pad = {t:40,b:50,l:60,r:20};
-        var cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
-        ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1;
-        for (var gi = 0; gi <= 4; gi++) {
-          var yy = pad.t + ch * (1 - gi/4);
-          ctx.beginPath(); ctx.moveTo(pad.l, yy); ctx.lineTo(W - pad.r, yy); ctx.stroke();
-          ctx.fillStyle = 'rgba(255,255,255,0.4)';
-          ctx.font = '12px sans-serif'; ctx.textAlign = 'right';
-          ctx.fillText(Math.round(maxV * gi / 4), pad.l - 8, yy + 4);
-        }
-        var bw = Math.max(4, Math.min(24, cw / gKeys.length - 2));
-        var barData2 = [];
-        gKeys.forEach(function(k, i) {
-          var x = pad.l + i * (cw / gKeys.length);
-          var bh = (gVals[i] / maxV) * ch;
-          ctx.fillStyle = 'rgba(251,146,60,0.7)';
-          ctx.fillRect(x, pad.t + ch - bh, bw, bh);
-          barData2.push({ x: x, w: bw, gen: parseInt(k), count: gVals[i], absGen: parseInt(k) + wenGaoGen2 - 1 });
-          ctx.fillStyle = 'rgba(255,255,255,0.5)';
-          ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
-          ctx.fillText(k + '世', x + bw/2, H - pad.b + 16);
-        });
-        // 点击详情
-        canvas.onclick = function(e) {
-          var mr = canvas.getBoundingClientRect();
-          var mx = (e.clientX - mr.left) / mr.width * W;
-          for (var bi = 0; bi < barData2.length; bi++) {
-            var b = barData2[bi];
-            var bx = (b.x - panX) / zoom;
-            var bw2 = b.w / zoom;
-            if (mx >= bx && mx <= bx + bw2) {
-              var absGen = b.absGen;
-              var people = data.filter(function(p){return parseInt(p.generation_num) === absGen;});
-              var alive = people.filter(function(p){return p.is_alive === '是';}).length;
-              var dead = people.filter(function(p){return p.is_alive === '否';}).length;
-              var names = people.map(function(p){return p.name;}).join('、');
-              var detail = '在世: ' + alive + '人 | 已故: ' + dead + '人';
-              var overlay2 = document.createElement('div');
-              overlay2.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:100000;display:flex;align-items:center;justify-content:center;';
-              overlay2.onclick = function(ev) { if (ev.target === overlay2) overlay2.remove(); };
-              var box = document.createElement('div');
-              box.style.cssText = 'background:var(--bg-card);border-radius:16px;padding:24px;max-width:400px;width:90%;';
-              box.innerHTML = '<div style="text-align:center;"><div style="font-size:14px;color:var(--text-tertiary);margin-bottom:4px;">' + detail + '</div><div style="font-size:20px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">第' + b.gen + '世 共' + b.count + '人</div><div style="font-size:13px;color:var(--text-secondary);line-height:1.6;word-break:break-all;">' + names + '</div><button onclick="this.parentElement.parentElement.parentElement.remove()" style="margin-top:16px;padding:8px 24px;border:1px solid var(--glass-border);border-radius:8px;background:var(--glass-bg);color:var(--text-primary);font-size:13px;cursor:pointer;">关闭</button></div>';
-              overlay2.appendChild(box);
-              document.body.appendChild(overlay2);
-              break;
-            }
-          }
-        };      }
-    }
-
-    renderChart();
-
-    // Zoom & Pan
-    canvas.onwheel = function(e) {
-      e.preventDefault();
-      var rect = canvas.getBoundingClientRect();
-      var mx = (e.clientX - rect.left) / rect.width * W;
-      var my = (e.clientY - rect.top) / rect.height * H;
-      var f = e.deltaY < 0 ? 1.15 : 0.87;
-      var nz = Math.max(0.2, Math.min(10, zoom * f));
-      panX = mx - (mx - panX) * (nz / zoom);
-      panY = my - (my - panY) * (nz / zoom);
-      zoom = nz;
-      renderChart();
-    };
-    canvas.onmousedown = function(e) { dragging = true; dragSX = e.clientX; dragSY = e.clientY; panSX = panX; panSY = panY; canvas.style.cursor = 'grabbing'; };
-    window.onmousemove = function(e) { if (!dragging) return; panX = panSX + (e.clientX - dragSX); panY = panSY + (e.clientY - dragSY); renderChart(); };
-    window.onmouseup = function() { dragging = false; canvas.style.cursor = 'grab'; };
-    canvas.style.cursor = 'grab';
-
-    // Resize handler
-    window.addEventListener('resize', function() {
-      W = window.innerWidth * 0.85; H = window.innerHeight * 0.8;
-      canvas.width = W * R; canvas.height = H * R; canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
-      ctx.scale(R, R);
-      renderChart();
-    });
-
-    // Initial render
-    renderChart();
+    var minG = 999;
+    data.forEach(function(p){var g=parseInt(p.generation_num)||0;if(g>0&&g<minG)minG=g;});
+    wenGaoGen = wenGaoGen || minG;
   }
 
-  // ===== 图表弹出框 =====
+  // 找攒公（后枫槎）和撰公（前枫槎）
+  var zanGong = null, zhuanGong = null;
+  for (var wi = 0; wi < data.length; wi++) {
+    var nm = data[wi].name || '';
+    if (nm.indexOf('攒') >= 0) zanGong = data[wi];
+    if (nm.indexOf('撰') >= 0) zhuanGong = data[wi];
+  }
+
+  // 统计：每代人中属于前枫槎/后枫槎的人数
+  var genMap = {};
+  data.forEach(function(p) {
+    var absG = parseInt(p.generation_num) || 0;
+    if (absG >= wenGaoGen) {
+      var relG = absG - wenGaoGen + 1;
+      if (!genMap[relG]) genMap[relG] = { qian: 0, hou: 0, total: 0 };
+      genMap[relG].total++;
+
+      // 判断属于前枫槎还是后枫槎（通过祖先链）
+      var isQian = false, isHou = false;
+      if (zhuanGong || zanGong) {
+        var pid = parseInt(p.father_id) || parseInt(p.mother_id) || 0;
+        while (pid) {
+          if (pid === (zhuanGong ? zhuanGong.id : -1)) { isQian = true; break; }
+          if (pid === (zanGong ? zanGong.id : -1)) { isHou = true; break; }
+          var parent = null;
+          for (var pi = 0; pi < data.length; pi++) {
+            if (data[pi].id === pid) { parent = data[pi]; break; }
+          }
+          pid = parent ? (parseInt(parent.father_id) || parseInt(parent.mother_id) || 0) : 0;
+        }
+      }
+      if (isQian) genMap[relG].qian++;
+      else if (isHou) genMap[relG].hou++;
+    }
+  });
+
+  var keys = Object.keys(genMap).sort(function(a,b){return parseInt(a)-parseInt(b);});
+  var tbody = document.getElementById('gen-stats-body');
+  var empty = document.getElementById('gen-stats-empty');
+  if (!tbody) return;
+
+  if (keys.length === 0) {
+    if (empty) empty.textContent = '暂无数据';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  var html = '';
+  keys.forEach(function(k) {
+    var g = genMap[k];
+    html += '<tr onclick="showGenPopup(' + (parseInt(k) + wenGaoGen - 1) + ',' + parseInt(k) + ')" style="cursor:pointer;border-bottom:1px solid var(--glass-border);transition:background 0.15s;" onmouseover="this.style.background='var(--accent-orange-dim)';" onmouseout="this.style.background='transparent';">';
+    html += '<td style="padding:6px 8px;color:var(--text-primary);font-weight:500;">' + k + '世</td>';
+    html += '<td style="text-align:center;padding:6px 8px;color:#fb923c;">' + g.qian + '</td>';
+    html += '<td style="text-align:center;padding:6px 8px;color:#4ade80;">' + g.hou + '</td>';
+    html += '<td style="text-align:center;padding:6px 8px;color:var(--text-primary);font-weight:500;">' + g.total + '</td>';
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+function showGenPopup(absGen, relGen) {
+  var data = getGenealogyData();
+  var people = data.filter(function(p){return parseInt(p.generation_num) === absGen;});
+  var names = people.map(function(p){return p.name;}).join('、');
+  var alive = people.filter(function(p){return p.is_alive === '是';}).length;
+  var dead = people.filter(function(p){return p.is_alive === '否';}).length;
+
+  var ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
+  ov.onclick = function(ev) { if (ev.target === ov) ov.remove(); };
+  var bx = document.createElement('div');
+  bx.style.cssText = 'background:var(--bg-card);border-radius:16px;padding:24px;max-width:400px;width:90%;';
+  bx.innerHTML = '<div style="text-align:center;"><div style="font-size:14px;color:var(--text-tertiary);margin-bottom:4px;">在世: ' + alive + '人 | 已故: ' + dead + '人</div><div style="font-size:20px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">第' + relGen + '世 共' + people.length + '人</div><div style="font-size:13px;color:var(--text-secondary);line-height:1.6;word-break:break-all;">' + names + '</div><button onclick="this.parentElement.parentElement.parentElement.remove()" style="margin-top:16px;padding:8px 24px;border:1px solid var(--glass-border);border-radius:8px;background:var(--glass-bg);color:var(--text-primary);font-size:13px;cursor:pointer;">关闭</button></div>';
+  ov.appendChild(bx);
+  document.body.appendChild(ov);
+}
+// ===== 图表弹出框 =====
   function showPopup(title, subtitle, detail) {
     var overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
