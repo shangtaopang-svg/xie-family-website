@@ -121,11 +121,17 @@
         <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:16px;font-size:17px;font-weight:500;">📊 数据分析</h3>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:10px;padding:14px;">
-            <h4 style="font-size:13px;color:var(--text-primary);margin:0 0 8px;font-weight:500;">前枫槎 vs 后枫槎（文杲公后裔）</h4>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <h4 style="font-size:13px;color:var(--text-primary);margin:0;font-weight:500;">前枫槎 vs 后枫槎（文杲公后裔）</h4>
+              <button onclick="openChartFullscreen('branch')" style="background:none;border:1px solid var(--glass-border);border-radius:4px;color:var(--text-tertiary);font-size:11px;padding:2px 8px;cursor:pointer;">⛶ 全屏</button>
+            </div>
             <canvas id="chart-branch" height="240" style="width:100%;cursor:pointer;"></canvas>
           </div>
           <div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:10px;padding:14px;">
-            <h4 style="font-size:13px;color:var(--text-primary);margin:0 0 8px;font-weight:500;">各世代人口分布</h4>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <h4 style="font-size:13px;color:var(--text-primary);margin:0;font-weight:500;">各世代人口分布</h4>
+              <button onclick="openChartFullscreen('gens')" style="background:none;border:1px solid var(--glass-border);border-radius:4px;color:var(--text-tertiary);font-size:11px;padding:2px 8px;cursor:pointer;">⛶ 全屏</button>
+            </div>
             <canvas id="chart-gens" height="240" style="width:100%;cursor:pointer;"></canvas>
           </div>
         </div>
@@ -1400,6 +1406,176 @@
         };
       })();
     }
+  }
+
+  // ===== 图表全屏查看 =====
+  function openChartFullscreen(type) {
+    var data = getGenealogyData();
+    if (!data || data.length === 0) return;
+
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;';
+
+    var header = document.createElement('div');
+    header.style.cssText = 'position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:12px 20px;z-index:2;';
+    header.innerHTML = '<span style="color:#fff;font-size:14px;">' + (type === 'branch' ? '前枫槎 vs 后枫槎' : '各世代人口分布') + '</span><button onclick="this.parentElement.parentElement.remove()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:20px;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>';
+    overlay.appendChild(header);
+
+    var canvas = document.createElement('canvas');
+    canvas.style.cssText = 'max-width:95vw;max-height:85vh;cursor:grab;';
+    overlay.appendChild(canvas);
+    document.body.appendChild(overlay);
+
+    var W = window.innerWidth * 0.85, H = window.innerHeight * 0.8;
+    var R = window.devicePixelRatio || 1;
+    canvas.width = W * R;
+    canvas.height = H * R;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    var ctx = canvas.getContext('2d');
+    ctx.scale(R, R);
+
+    var zoom = 1, panX = 0, panY = 0, dragging = false, dragSX, dragSY, panSX, panSY;
+
+    function renderChart() {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+      ctx.translate(panX, panY);
+      ctx.scale(zoom, zoom);
+
+      if (type === 'branch') {
+        // 饼图
+        var cx = W * 0.38, cy = H * 0.45, radius = Math.min(W, H) * 0.18;
+        // 找攒/撰
+        var zan = null, zhuan = null;
+        for (var i = 0; i < data.length; i++) {
+          var nm = data[i].name || '';
+          if (nm.indexOf('攒') >= 0) zan = data[i];
+          if (nm.indexOf('撰') >= 0) zhuan = data[i];
+        }
+        var qIds = {}, hIds = {};
+        function collect(root, res) {
+          res[root] = true;
+          for (var j = 0; j < data.length; j++) {
+            var pid = parseInt(data[j].father_id);
+            if (pid === root || parseInt(data[j].mother_id) === root) {
+              res[data[j].id] = true;
+              collect(data[j].id, res);
+            }
+          }
+        }
+        if (zhuan) collect(zhuan.id, qIds);
+        if (zan) collect(zan.id, hIds);
+        if (!zan && !zhuan) {
+          for (var i = 0; i < data.length; i++) {
+            if (data[i].id === 2) {
+              for (var j = 0; j < data.length; j++) {
+                if (parseInt(data[j].father_id) === 2) {
+                  if (data[j].id % 2 === 0) hIds[data[j].id] = true;
+                  else qIds[data[j].id] = true;
+                  collect(data[j].id, data[j].id % 2 === 0 ? hIds : qIds);
+                }
+              }
+              break;
+            }
+          }
+        }
+        var qc = 0, hc = 0;
+        data.forEach(function(p) { if (qIds[p.id]) qc++; else if (hIds[p.id]) hc++; });
+        if (qc === 0 && hc === 0) { qc = 1; hc = 1; }
+        var total = qc + hc;
+        var slices2 = [{l:'前枫槎',c:qc,color:'#fb923c'},{l:'后枫槎',c:hc,color:'#4ade80'}];
+        var sa = -Math.PI / 2;
+        slices2.forEach(function(s) {
+          var angle = (s.c / total) * Math.PI * 2;
+          ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, radius, sa, sa + angle); ctx.closePath();
+          ctx.fillStyle = s.color; ctx.fill();
+          ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1.5; ctx.stroke();
+          // 标签
+          var ma = sa + angle / 2;
+          var lx = cx + Math.cos(ma) * radius * 0.65;
+          var ly = cy + Math.sin(ma) * radius * 0.65;
+          ctx.fillStyle = 'rgba(255,255,255,0.9)';
+          ctx.font = 'bold 16px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(s.l + ' ' + s.c + '人 (' + Math.round(s.c/total*100) + '%)', lx, ly);
+          sa += angle;
+        });
+      } else {
+        // 柱状图
+        var wenGaoGen2 = null;
+        for (var i = 0; i < data.length; i++) {
+          if (data[i].name === '文杲公' || data[i].id === 2) {
+            wenGaoGen2 = parseInt(data[i].generation_num) || 0; break;
+          }
+        }
+        if (!wenGaoGen2) {
+          var minG = 999;
+          data.forEach(function(p){var g=parseInt(p.generation_num)||0;if(g>0&&g<minG)minG=g;});
+          wenGaoGen2 = minG;
+        }
+        var gCounts = {};
+        data.forEach(function(p) {
+          var g = parseInt(p.generation_num) || 0;
+          if (g >= wenGaoGen2) { var r = g - wenGaoGen2 + 1; gCounts[r] = (gCounts[r] || 0) + 1; }
+        });
+        var gKeys = Object.keys(gCounts).sort(function(a,b){return parseInt(a)-parseInt(b);});
+        var gVals = gKeys.map(function(k){return gCounts[k];});
+        var maxV = Math.max.apply(null, gVals);
+        var pad = {t:40,b:50,l:60,r:20};
+        var cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
+        // 网格
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1;
+        for (var gi = 0; gi <= 4; gi++) {
+          var yy = pad.t + ch * (1 - gi/4);
+          ctx.beginPath(); ctx.moveTo(pad.l, yy); ctx.lineTo(W - pad.r, yy); ctx.stroke();
+          ctx.fillStyle = 'rgba(255,255,255,0.4)';
+          ctx.font = '12px sans-serif'; ctx.textAlign = 'right';
+          ctx.fillText(Math.round(maxV * gi / 4), pad.l - 8, yy + 4);
+        }
+        var bw = Math.max(4, Math.min(24, cw / gKeys.length - 2));
+        gKeys.forEach(function(k, i) {
+          var x = pad.l + i * (cw / gKeys.length);
+          var bh = (gVals[i] / maxV) * ch;
+          ctx.fillStyle = 'rgba(251,146,60,0.7)';
+          ctx.fillRect(x, pad.t + ch - bh, bw, bh);
+          ctx.fillStyle = 'rgba(255,255,255,0.5)';
+          ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+          ctx.fillText(k + '世', x + bw/2, H - pad.b + 16);
+        });
+      }
+    }
+
+    renderChart();
+
+    // Zoom & Pan
+    canvas.onwheel = function(e) {
+      e.preventDefault();
+      var rect = canvas.getBoundingClientRect();
+      var mx = (e.clientX - rect.left) / rect.width * W;
+      var my = (e.clientY - rect.top) / rect.height * H;
+      var f = e.deltaY < 0 ? 1.15 : 0.87;
+      var nz = Math.max(0.2, Math.min(10, zoom * f));
+      panX = mx - (mx - panX) * (nz / zoom);
+      panY = my - (my - panY) * (nz / zoom);
+      zoom = nz;
+      renderChart();
+    };
+    canvas.onmousedown = function(e) { dragging = true; dragSX = e.clientX; dragSY = e.clientY; panSX = panX; panSY = panY; canvas.style.cursor = 'grabbing'; };
+    window.onmousemove = function(e) { if (!dragging) return; panX = panSX + (e.clientX - dragSX); panY = panSY + (e.clientY - dragSY); renderChart(); };
+    window.onmouseup = function() { dragging = false; canvas.style.cursor = 'grab'; };
+    canvas.style.cursor = 'grab';
+
+    // Resize handler
+    window.addEventListener('resize', function() {
+      W = window.innerWidth * 0.85; H = window.innerHeight * 0.8;
+      canvas.width = W * R; canvas.height = H * R; canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+      ctx.scale(R, R);
+      renderChart();
+    });
+
+    // Initial render
+    renderChart();
   }
 
   // ===== 图表弹出框 =====
