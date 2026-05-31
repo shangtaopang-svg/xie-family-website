@@ -13,6 +13,7 @@
   <script src="../js/supabase.js?v=3"></script>
 </head>
 <body>
+<div id="test-msg" style="position:fixed;top:0;left:0;right:0;background:#333;color:#0f0;padding:4px;font-size:12px;z-index:99999;text-align:center;">Page loading...</div>
 
 <canvas id="bg-canvas"></canvas>
 
@@ -404,7 +405,8 @@
   </style>
 
   <script>
-  // ===== Load data =====
+  document.getElementById('test-msg').textContent += ' → JS running';
+// ===== Load data =====
   function getGenealogyData() {
     try {
       var stored = localStorage.getItem('xie_admin_genealogy');
@@ -1135,6 +1137,7 @@
   // Wait for page ready
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
     renderGenealogyPage();
+  document.getElementById("test-msg").textContent += " → Page rendered";
   } else {
     document.addEventListener('DOMContentLoaded', renderGenealogyPage);
   }
@@ -1145,6 +1148,7 @@
         localStorage.setItem('xie_admin_genealogy', JSON.stringify(supabaseData));
         // Re-render with Supabase data
         renderGenealogyPage();
+  document.getElementById("test-msg").textContent += " → Page rendered";
       }
     }).catch(function() {});
   }
