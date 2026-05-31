@@ -154,6 +154,9 @@
       if (cur === 'particle') cur = 'clean';
       var activeBtn = document.querySelector('.hbg-btn[data-style="' + cur + '"]');
       if (activeBtn) activeBtn.classList.add('active');
+      if (cur === 'globe') {
+        apply(localStorage.getItem('xie_hero_bg'), 'globe');
+      }
     })();
     </script>
 
