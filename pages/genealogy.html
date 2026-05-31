@@ -1502,11 +1502,13 @@
           sa += angle;
         });
       } else {
-        // 柱状图
-        var wenGaoGen2 = null;
-        for (var i = 0; i < data.length; i++) {
-          if (data[i].name === '文杲公' || data[i].id === 2) {
-            wenGaoGen2 = parseInt(data[i].generation_num) || 0; break;
+        // 柱状图（全屏）
+        var wenGaoGen2 = parseInt(localStorage.getItem('xie_wengao_gen') || '');
+        if (!wenGaoGen2) {
+          for (var i = 0; i < data.length; i++) {
+            if (data[i].name === '文杲公' || data[i].id === 2) {
+              wenGaoGen2 = parseInt(data[i].generation_num) || 0; break;
+            }
           }
         }
         if (!wenGaoGen2) {
@@ -1517,14 +1519,19 @@
         var gCounts = {};
         data.forEach(function(p) {
           var g = parseInt(p.generation_num) || 0;
-          if (g >= wenGaoGen2) { var r = g - wenGaoGen2 + 1; gCounts[r] = (gCounts[r] || 0) + 1; }
+          if (g >= wenGaoGen2) {
+            var r = g - wenGaoGen2 + 1;
+            if (!gCounts[r]) gCounts[r] = { t: 0, a: 0, d: 0 };
+            gCounts[r].t++;
+            if (p.is_alive === '是') gCounts[r].a++;
+            else if (p.is_alive === '否') gCounts[r].d++;
+          }
         });
         var gKeys = Object.keys(gCounts).sort(function(a,b){return parseInt(a)-parseInt(b);});
-        var gVals = gKeys.map(function(k){return gCounts[k];});
+        var gVals = gKeys.map(function(k){return gCounts[k].t;});
         var maxV = Math.max.apply(null, gVals);
         var pad = {t:40,b:50,l:60,r:20};
         var cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
-        // 网格
         ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1;
         for (var gi = 0; gi <= 4; gi++) {
           var yy = pad.t + ch * (1 - gi/4);
@@ -1534,16 +1541,44 @@
           ctx.fillText(Math.round(maxV * gi / 4), pad.l - 8, yy + 4);
         }
         var bw = Math.max(4, Math.min(24, cw / gKeys.length - 2));
+        var barData2 = [];
         gKeys.forEach(function(k, i) {
           var x = pad.l + i * (cw / gKeys.length);
           var bh = (gVals[i] / maxV) * ch;
           ctx.fillStyle = 'rgba(251,146,60,0.7)';
           ctx.fillRect(x, pad.t + ch - bh, bw, bh);
+          barData2.push({ x: x, w: bw, gen: parseInt(k), count: gVals[i], absGen: parseInt(k) + wenGaoGen2 - 1 });
           ctx.fillStyle = 'rgba(255,255,255,0.5)';
           ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
           ctx.fillText(k + '世', x + bw/2, H - pad.b + 16);
         });
-      }
+        // 点击详情
+        canvas.onclick = function(e) {
+          var mr = canvas.getBoundingClientRect();
+          var mx = (e.clientX - mr.left) / mr.width * W;
+          for (var bi = 0; bi < barData2.length; bi++) {
+            var b = barData2[bi];
+            var bx = (b.x - panX) / zoom;
+            var bw2 = b.w / zoom;
+            if (mx >= bx && mx <= bx + bw2) {
+              var absGen = b.absGen;
+              var people = data.filter(function(p){return parseInt(p.generation_num) === absGen;});
+              var alive = people.filter(function(p){return p.is_alive === '是';}).length;
+              var dead = people.filter(function(p){return p.is_alive === '否';}).length;
+              var names = people.map(function(p){return p.name;}).join('、');
+              var detail = '在世: ' + alive + '人 | 已故: ' + dead + '人';
+              var overlay2 = document.createElement('div');
+              overlay2.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:100000;display:flex;align-items:center;justify-content:center;';
+              overlay2.onclick = function(ev) { if (ev.target === overlay2) overlay2.remove(); };
+              var box = document.createElement('div');
+              box.style.cssText = 'background:var(--bg-card);border-radius:16px;padding:24px;max-width:400px;width:90%;';
+              box.innerHTML = '<div style="text-align:center;"><div style="font-size:14px;color:var(--text-tertiary);margin-bottom:4px;">' + detail + '</div><div style="font-size:20px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">第' + b.gen + '世 共' + b.count + '人</div><div style="font-size:13px;color:var(--text-secondary);line-height:1.6;word-break:break-all;">' + names + '</div><button onclick="this.parentElement.parentElement.parentElement.remove()" style="margin-top:16px;padding:8px 24px;border:1px solid var(--glass-border);border-radius:8px;background:var(--glass-bg);color:var(--text-primary);font-size:13px;cursor:pointer;">关闭</button></div>';
+              overlay2.appendChild(box);
+              document.body.appendChild(overlay2);
+              break;
+            }
+          }
+        };      }
     }
 
     renderChart();
