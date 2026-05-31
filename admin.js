@@ -19,7 +19,7 @@ const MODULES = {
       { key: 'father_id', label: '父亲ID', type: 'number', placeholder: '填写父亲的编号，始祖留空' },
       { key: 'mother_id', label: '母亲ID', type: 'number', placeholder: '填写母亲的编号' },
       { key: 'spouse_ids', label: '配偶', type: 'text', placeholder: '直接输入姓名，多个用逗号分隔' },
-      { key: 'adopted', label: '是否过继', type: 'select', options: ['否', '是(嗣子)', '是(继子)', '是(养子)'] },
+      { key: 'adopted', label: '是否过继', type: 'select', options: ['否', '是(嗣子)', '是(继子)', '是(养子)', '出继'] },
       { key: 'branch', label: '支系', type: 'select', options: ['长房', '二房', '三房', '四房', '—'] },
       { key: 'birth_date', label: '出生', type: 'text', placeholder: '如: 1950 或 1950-03-15' },
       { key: 'death_date', label: '逝世', type: 'text', placeholder: '在世则留空' },
@@ -481,7 +481,10 @@ function buildAdminTreeHtml(data) {
     html += '<button class="apt-btn-del" onclick="if(confirm(\'确定删除 ' + escapeHtml(person.name) + ' 吗？\'))deleteItem(\'genealogy\',' + person.id + ')" title="删除此人">−</button>';
     html += '</div>';
     html += '<div class="apt-name">';
-    if (person.adopted && person.adopted !== '否') html += '<span class="apt-adopted-badge" title="' + escapeHtml(person.adopted) + '">嗣</span>';
+    if (person.adopted && person.adopted !== '否') {
+      if (person.adopted === '出继') html += '<span class="apt-adopted-badge" style="background:#22c55e;" title="出继">出</span>';
+      else html += '<span class="apt-adopted-badge" title="' + escapeHtml(person.adopted) + '">嗣</span>';
+    }
     html += escapeHtml(person.name) + '</div>';
     html += '<div class="apt-meta">' + (person.generation_num || '?') + '世' + (person.generation && person.generation !== '—' ? ' · ' + escapeHtml(person.generation) : '') + '</div>';
     if (person.branch && person.branch !== '—') {

@@ -544,9 +544,15 @@
     nameEl.className = 'name';
     if (person.adopted && person.adopted !== '否') {
       var badge = document.createElement('span');
-      badge.textContent = '嗣';
-      badge.style.cssText = 'display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#e74c3c;border-radius:3px;padding:0 5px;margin-right:4px;line-height:16px;vertical-align:middle;';
-      badge.title = person.adopted;
+      if (person.adopted === '出继') {
+        badge.textContent = '出';
+        badge.style.cssText = 'display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#22c55e;border-radius:3px;padding:0 5px;margin-right:4px;line-height:16px;vertical-align:middle;';
+        badge.title = '出继';
+      } else {
+        badge.textContent = '嗣';
+        badge.style.cssText = 'display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#e74c3c;border-radius:3px;padding:0 5px;margin-right:4px;line-height:16px;vertical-align:middle;';
+        badge.title = person.adopted;
+      }
       nameEl.appendChild(badge);
     }
     nameEl.appendChild(document.createTextNode(person.name || '未知'));
