@@ -13,7 +13,6 @@
   <script src="../js/supabase.js?v=3"></script>
 </head>
 <body>
-<div id="test-msg" style="position:fixed;top:0;left:0;right:0;background:#333;color:#0f0;padding:4px;font-size:12px;z-index:99999;text-align:center;">Page loading...</div>
 
 <canvas id="bg-canvas"></canvas>
 
@@ -115,33 +114,6 @@
       <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-stats">
         <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:16px;font-size:17px;font-weight:500;">📊 族谱统计</h3>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px;" id="stats-container"></div>
-      </div>
-
-      <!-- 可视化图表 -->
-      <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-chart-section">
-        <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:16px;font-size:17px;font-weight:500;">📊 数据分析</h3>
-        <div id="gen-table-container" style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:10px;padding:14px;overflow-x:auto;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <h4 style="font-size:13px;color:var(--text-primary);margin:0;font-weight:500;">文杲公后裔各世代人口</h4>
-          </div>
-          <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:8px;">
-            <span style="display:inline-block;width:10px;height:10px;background:#fb923c;border-radius:2px;margin-right:3px;"></span> 前枫槎（撰公）
-            <span style="display:inline-block;width:10px;height:10px;background:#4ade80;border-radius:2px;margin-right:3px;margin-left:12px;"></span> 后枫槎（攒公）
-          </div>
-          <table id="gen-stats-table" style="width:100%;border-collapse:collapse;font-size:13px;">
-            <thead>
-              <tr style="border-bottom:1px solid var(--glass-border);">
-                <th style="text-align:left;padding:6px 8px;color:var(--text-primary);font-weight:500;">世代</th>
-                <th style="text-align:center;padding:6px 8px;color:var(--text-primary);font-weight:500;">前枫槎</th>
-                <th style="text-align:center;padding:6px 8px;color:var(--text-primary);font-weight:500;">后枫槎</th>
-                <th style="text-align:center;padding:6px 8px;color:var(--text-primary);font-weight:500;">合计</th>
-              </tr>
-            </thead>
-            <tbody id="gen-stats-body"></tbody>
-          </table>
-          <div id="gen-stats-empty" style="padding:30px;text-align:center;color:var(--text-tertiary);font-size:13px;">加载中...</div>
-        </div>
-        <div style="margin-top:12px;text-align:center;font-size:11px;color:var(--text-tertiary);">点击行查看各世代详情</div>
       </div>
 
       <!-- 搜索 -->
@@ -405,8 +377,7 @@
   </style>
 
   <script>
-  document.getElementById('test-msg').textContent += ' → JS running';
-// ===== Load data =====
+  // ===== Load data =====
   function getGenealogyData() {
     try {
       var stored = localStorage.getItem('xie_admin_genealogy');
@@ -552,15 +523,9 @@
     nameEl.className = 'name';
     if (person.adopted && person.adopted !== '否') {
       var badge = document.createElement('span');
-      if (person.adopted === '出继') {
-        badge.textContent = '出';
-        badge.style.cssText = 'display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#22c55e;border-radius:3px;padding:0 5px;margin-right:4px;line-height:16px;vertical-align:middle;';
-        badge.title = '出继';
-      } else {
-        badge.textContent = '嗣';
-        badge.style.cssText = 'display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#e74c3c;border-radius:3px;padding:0 5px;margin-right:4px;line-height:16px;vertical-align:middle;';
-        badge.title = person.adopted;
-      }
+      badge.textContent = '嗣';
+      badge.style.cssText = 'display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#e74c3c;border-radius:3px;padding:0 5px;margin-right:4px;line-height:16px;vertical-align:middle;';
+      badge.title = person.adopted;
       nameEl.appendChild(badge);
     }
     nameEl.appendChild(document.createTextNode(person.name || '未知'));
@@ -1130,14 +1095,11 @@
     document.getElementById('genealogy-search-section').style.opacity = '1';
     document.getElementById('genealogy-tree-section').style.opacity = '1';
     document.getElementById('genealogy-table-section').style.opacity = '1';
-    document.getElementById('genealogy-chart-section').style.opacity = '1';
-    renderCharts();
   }
 
   // Wait for page ready
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
     renderGenealogyPage();
-  document.getElementById("test-msg").textContent += " → Page rendered";
   } else {
     document.addEventListener('DOMContentLoaded', renderGenealogyPage);
   }
@@ -1148,121 +1110,12 @@
         localStorage.setItem('xie_admin_genealogy', JSON.stringify(supabaseData));
         // Re-render with Supabase data
         renderGenealogyPage();
-  document.getElementById("test-msg").textContent += " → Page rendered";
       }
     }).catch(function() {});
   }
-  // ===== 各世代人口统计表 =====
-function renderCharts() {
-  var data = getGenealogyData();
-  if (!data || data.length === 0) return;
-
-  // 获取文杲公的世代
-  var wenGaoGen = parseInt(localStorage.getItem('xie_wengao_gen') || '');
-  if (!wenGaoGen) {
-    for (var wi = 0; wi < data.length; wi++) {
-      if (data[wi].name === '文杲公' || data[wi].id === 2) {
-        wenGaoGen = parseInt(data[wi].generation_num) || 0;
-        break;
-      }
-    }
-    var minG = 999;
-    data.forEach(function(p){var g=parseInt(p.generation_num)||0;if(g>0&&g<minG)minG=g;});
-    wenGaoGen = wenGaoGen || minG;
-  }
-
-  // 找攒公（后枫槎）和撰公（前枫槎）
-  var zanGong = null, zhuanGong = null;
-  for (var wi = 0; wi < data.length; wi++) {
-    var nm = data[wi].name || '';
-    if (nm.indexOf('攒') >= 0) zanGong = data[wi];
-    if (nm.indexOf('撰') >= 0) zhuanGong = data[wi];
-  }
-
-  // 统计：每代人中属于前枫槎/后枫槎的人数
-  var genMap = {};
-  data.forEach(function(p) {
-    var absG = parseInt(p.generation_num) || 0;
-    if (absG >= wenGaoGen) {
-      var relG = absG - wenGaoGen + 1;
-      if (!genMap[relG]) genMap[relG] = { qian: 0, hou: 0, total: 0 };
-      genMap[relG].total++;
-
-      // 判断属于前枫槎还是后枫槎（通过祖先链）
-      var isQian = false, isHou = false;
-      if (zhuanGong || zanGong) {
-        var pid = parseInt(p.father_id) || parseInt(p.mother_id) || 0;
-        while (pid) {
-          if (pid === (zhuanGong ? zhuanGong.id : -1)) { isQian = true; break; }
-          if (pid === (zanGong ? zanGong.id : -1)) { isHou = true; break; }
-          var parent = null;
-          for (var pi = 0; pi < data.length; pi++) {
-            if (data[pi].id === pid) { parent = data[pi]; break; }
-          }
-          pid = parent ? (parseInt(parent.father_id) || parseInt(parent.mother_id) || 0) : 0;
-        }
-      }
-      if (isQian) genMap[relG].qian++;
-      else if (isHou) genMap[relG].hou++;
-    }
-  });
-
-  var keys = Object.keys(genMap).sort(function(a,b){return parseInt(a)-parseInt(b);});
-  var tbody = document.getElementById('gen-stats-body');
-  var empty = document.getElementById('gen-stats-empty');
-  if (!tbody) return;
-
-  if (keys.length === 0) {
-    if (empty) empty.textContent = '暂无数据';
-    return;
-  }
-  if (empty) empty.style.display = 'none';
-
-  var html = '';
-  keys.forEach(function(k) {
-    var g = genMap[k];
-    html += '<tr onclick="showGenPopup(' + (parseInt(k) + wenGaoGen - 1) + ',' + parseInt(k) + ')" style="cursor:pointer;border-bottom:1px solid var(--glass-border);transition:background 0.15s;" onmouseover="this.style.background=\'var(--accent-orange-dim)';" onmouseout="this.style.background=\'transparent';">';
-    html += '<td style="padding:6px 8px;color:var(--text-primary);font-weight:500;">' + k + '世</td>';
-    html += '<td style="text-align:center;padding:6px 8px;color:#fb923c;">' + g.qian + '</td>';
-    html += '<td style="text-align:center;padding:6px 8px;color:#4ade80;">' + g.hou + '</td>';
-    html += '<td style="text-align:center;padding:6px 8px;color:var(--text-primary);font-weight:500;">' + g.total + '</td>';
-    html += '</tr>';
-  });
-  tbody.innerHTML = html;
-}
-
-function showGenPopup(absGen, relGen) {
-  var data = getGenealogyData();
-  var people = data.filter(function(p){return parseInt(p.generation_num) === absGen;});
-  var names = people.map(function(p){return p.name;}).join('、');
-  var alive = people.filter(function(p){return p.is_alive === '是';}).length;
-  var dead = people.filter(function(p){return p.is_alive === '否';}).length;
-
-  var ov = document.createElement('div');
-  ov.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
-  ov.onclick = function(ev) { if (ev.target === ov) ov.remove(); };
-  var bx = document.createElement('div');
-  bx.style.cssText = 'background:var(--bg-card);border-radius:16px;padding:24px;max-width:400px;width:90%;';
-  bx.innerHTML = '<div style="text-align:center;"><div style="font-size:14px;color:var(--text-tertiary);margin-bottom:4px;">在世: ' + alive + '人 | 已故: ' + dead + '人</div><div style="font-size:20px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">第' + relGen + '世 共' + people.length + '人</div><div style="font-size:13px;color:var(--text-secondary);line-height:1.6;word-break:break-all;">' + names + '</div><button onclick="this.parentElement.parentElement.parentElement.remove()" style="margin-top:16px;padding:8px 24px;border:1px solid var(--glass-border);border-radius:8px;background:var(--glass-bg);color:var(--text-primary);font-size:13px;cursor:pointer;">关闭</button></div>';
-  ov.appendChild(bx);
-  document.body.appendChild(ov);
-}
-// ===== 图表弹出框 =====
-  function showPopup(title, subtitle, detail) {
-    var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
-    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
-    var box = document.createElement('div');
-    box.style.cssText = 'background:var(--bg-card);border-radius:16px;padding:24px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
-    box.innerHTML = '<div style="text-align:center;"><div style="font-size:14px;color:var(--text-tertiary);margin-bottom:4px;">' + subtitle + '</div><div style="font-size:20px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">' + title + '</div><div style="font-size:13px;color:var(--text-secondary);line-height:1.6;word-break:break-all;">' + detail + '</div><button onclick="this.parentElement.parentElement.remove()" style="margin-top:16px;padding:8px 24px;border:1px solid var(--glass-border);border-radius:8px;background:var(--glass-bg);color:var(--text-primary);font-size:13px;cursor:pointer;">关闭</button></div>';
-    // Fix: use the overlay click to close
-    overlay.innerHTML = '';
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
-  }
   </script>
 
-  <script>console.log("SCRIPT STARTED");
+  <script>
     const canvas = document.getElementById('bg-canvas');
     if (canvas) {
       const ctx = canvas.getContext('2d');
