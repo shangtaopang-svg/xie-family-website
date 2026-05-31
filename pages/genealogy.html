@@ -12,12 +12,11 @@
   <script src="../js/file-store.js?v=3"></script>
   <script src="../js/supabase.js?v=3"></script>
 </head>
-<body><div id="js-diag" style="position:fixed;top:0;left:0;right:0;background:#222;color:#0f0;padding:4px;font-size:11px;z-index:99999;text-align:center;">Loading...</div>
+<body>
 
 <canvas id="bg-canvas"></canvas>
 
 <div class="content">
-
 
   <header class="site-header">
     <div class="header-inner">
@@ -158,28 +157,6 @@
             <tbody id="gen-table-body"></tbody>
           </table>
         </div>
-      </div>
-
-      <!-- ===== 统计分析 ===== -->
-      <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-stats-section">
-        <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:16px;font-size:17px;font-weight:500;">📊 统计分析</h3>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
-          <div style="background:var(--accent-orange-dim);border-radius:10px;padding:16px;text-align:center;"><div style="font-size:28px;font-weight:700;color:var(--accent-orange);" id="stat-total-people">0</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">总人数</div></div>
-          <div style="background:var(--glass-bg);border-radius:10px;padding:16px;text-align:center;"><div style="font-size:28px;font-weight:700;color:var(--accent-orange);" id="stat-total-gens">0</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">世代范围</div></div>
-          <div style="background:var(--glass-bg);border-radius:10px;padding:16px;text-align:center;"><div style="font-size:28px;font-weight:700;color:var(--accent-cyan);" id="stat-male-count">0</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">男性</div></div>
-          <div style="background:var(--glass-bg);border-radius:10px;padding:16px;text-align:center;"><div style="font-size:28px;font-weight:700;color:#ff6b9d;" id="stat-female-count">0</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">女性</div></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-          <div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:10px;padding:16px;">
-            <h4 style="font-size:13px;color:var(--text-primary);margin:0 0 8px;font-weight:500;">📈 各世代人口分布</h4>
-            <canvas id="chart-gens" height="220" style="width:100%;"></canvas>
-          </div>
-          <div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:10px;padding:16px;">
-            <h4 style="font-size:13px;color:var(--text-primary);margin:0 0 8px;font-weight:500;">🧩 支系比例</h4>
-            <canvas id="chart-branch" height="220" style="width:100%;"></canvas>
-          </div>
-        </div>
-        <div style="margin-top:12px;text-align:center;font-size:11px;color:var(--text-tertiary);">数据更新于页面加载时</div>
       </div>
 
       <!-- 管理提示 -->
@@ -397,38 +374,10 @@
   .ancestor-meta { font-size:11px; color:var(--text-tertiary); margin-top:2px; }
   .ancestor-connector { width:2px; height:14px; background:var(--accent-orange); opacity:0.2; }
   .ancestor-down-arrow { font-size:12px; color:var(--accent-orange); opacity:0.4; padding:2px 0; line-height:1; }
-  /* Interactive pie chart */
-  .fc-pie-wrap { display:flex; gap:20px; align-items:center; flex-wrap:wrap; justify-content:center; }
-  .fc-pie { position:relative; width:200px; height:200px; border-radius:50%; background:conic-gradient(#fb923c 0deg calc(var(--q)*3.6deg), #4ade80 calc(var(--q)*3.6deg) calc((var(--q)+var(--h))*3.6deg), #94a3b8 calc((var(--q)+var(--h))*3.6deg) 360deg); cursor:pointer; flex-shrink:0; transition:transform 0.3s; }
-  .fc-pie:hover { transform:scale(1.05); }
-  .fc-pie-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:100px; height:100px; border-radius:50%; background:var(--bg-card); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s; }
-  .fc-pie-center:hover { background:var(--accent-orange-dim); }
-  .fc-pie-total { font-size:22px; font-weight:700; color:var(--accent-orange); line-height:1; }
-  .fc-pie-label { font-size:10px; color:var(--text-tertiary); margin-top:2px; }
-  .fc-legend { display:flex; flex-direction:column; gap:8px; }
-  .fc-legend-item { display:flex; align-items:center; gap:8px; padding:6px 12px; border-radius:6px; cursor:pointer; transition:background 0.15s; font-size:13px; }
-  .fc-legend-item:hover { background:var(--accent-orange-dim); }
-  .fc-legend-item span:first-child { display:inline-block; width:14px; height:14px; border-radius:3px; flex-shrink:0; }
-  .fc-legend-item strong { color:var(--text-primary); }
-  .fc-count { font-size:11px; color:var(--text-tertiary); margin-left:4px; }
-  /* Branch detail modal */
-  .branch-modal-overlay { position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center; }
-  .branch-modal { background:var(--bg-card);border-radius:16px;padding:24px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3); }
-  .branch-modal h3 { font-size:16px;font-weight:600;color:var(--text-primary);margin:0 0 4px; }
-  .branch-modal .bm-sub { font-size:12px;color:var(--text-tertiary);margin-bottom:14px; }
-  .branch-modal .bm-person { display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer; }
-  .branch-modal .bm-person:hover { background:var(--accent-orange-dim); }
-  .branch-modal .bm-person .bm-name { font-size:14px;font-weight:500;color:var(--text-primary); }
-  .branch-modal .bm-person .bm-gen { font-size:11px;color:var(--text-tertiary); }
   </style>
 
   <script>
-  document.write('<div style="position:fixed;top:0;left:0;right:0;background:#333;color:#0f0;padding:4px 8px;font-size:11px;z-index:99999;text-align:center;">JS running...</div>');
-  console.log('Genealogy page JS started');
-</script>
-<script>
   // ===== Load data =====
-document.getElementById("js-diag").textContent = "JS loaded, initializing...";
   function getGenealogyData() {
     try {
       var stored = localStorage.getItem('xie_admin_genealogy');
@@ -953,35 +902,6 @@ document.getElementById("js-diag").textContent = "JS loaded, initializing...";
     }
   }
 
-  // ===== 支系详情弹窗 =====
-  function showBranchList(name, desc, count, peopleJson) {
-    try {
-      var people = JSON.parse(peopleJson);
-    } catch(e) { people = []; }
-
-    var overlay = document.createElement('div');
-    overlay.className = 'branch-modal-overlay';
-    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
-
-    var html = '<div class="branch-modal">';
-    html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;">';
-    html += '<div><h3>' + name + '</h3><div class="bm-sub">' + desc + ' · 共' + count + '人</div></div>';
-    html += '<button onclick="this.closest(\'.branch-modal-overlay\').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-tertiary);">✕</button>';
-    html += '</div>';
-    if (people.length === 0) {
-      html += '<div style="padding:20px;text-align:center;color:var(--text-tertiary);font-size:13px;">暂无数据</div>';
-    } else {
-      people.forEach(function(pp) {
-        html += '<div class="bm-person" onclick="showPersonDetail(' + pp.id + ', getGenealogyData());">';
-        html += '<div><div class="bm-name">' + escapeHtml(pp.name) + '</div><div class="bm-gen">第' + (pp.gen || '?') + '世</div></div>';
-        html += '</div>';
-      });
-    }
-    html += '</div>';
-    overlay.innerHTML = html;
-    document.body.appendChild(overlay);
-  }
-
   // Allow Enter key to search
   document.addEventListener('DOMContentLoaded', function() {
     var searchInput = document.getElementById('genealogy-search');
@@ -997,190 +917,6 @@ document.getElementById("js-diag").textContent = "JS loaded, initializing...";
     var d = document.createElement('div');
     d.textContent = text;
     return d.innerHTML;
-  }
-
-  // ===== 统计图表 =====
-  function renderGenealogyCharts() {
-    try {
-    var data = getGenealogyData();
-    if (!data || data.length === 0) return;
-    data.sort(function(a,b){return(parseInt(a.generation_num)||0)-(parseInt(b.generation_num)||0);});
-    var total = data.length, gens = {}, males = 0, females = 0;
-    data.forEach(function(p) {
-      var gn = parseInt(p.generation_num) || 0;
-      gens[gn] = (gens[gn] || 0) + 1;
-      if (p.gender === '男') males++; else if (p.gender === '女') females++;
-    });
-    document.getElementById('stat-total-people').textContent = total;
-    var genKeys = Object.keys(gens).filter(function(k){return parseInt(k)>0;}).sort(function(a,b){return parseInt(a)-parseInt(b);});
-    document.getElementById('stat-total-gens').textContent = genKeys.length > 0 ? genKeys[0] + '世~' + genKeys[genKeys.length-1] + '世' : '0';
-    document.getElementById('stat-male-count').textContent = males;
-    document.getElementById('stat-female-count').textContent = females;
-
-    var barCanvas = document.getElementById('chart-gens');
-    if (barCanvas) {
-      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      var rect = barCanvas.parentElement.getBoundingClientRect();
-      var W = rect.width - 32 || 500;
-      var R = window.devicePixelRatio || 1;
-      barCanvas.width = W * R; barCanvas.height = 280 * R;
-      barCanvas.style.width = W + 'px'; barCanvas.style.height = '280px';
-      var ctx = barCanvas.getContext('2d'); ctx.scale(R, R);
-      var H = 280, pad = {top:24,bottom:40,left:44,right:16};
-      var cw = W - pad.left - pad.right, ch = H - pad.top - pad.bottom;
-      var genKeys = Object.keys(gens).filter(function(k){return parseInt(k)>0;}).sort(function(a,b){return parseInt(a)-parseInt(b);});
-      var values = genKeys.map(function(k){return gens[k];});
-      var maxVal = Math.max.apply(null, values);
-      ctx.clearRect(0, 0, W, H);
-      ctx.strokeStyle = 'rgba(200,200,200,0.12)'; ctx.lineWidth = 1;
-      for (var gi = 0; gi <= 4; gi++) {
-        var yy = pad.top + ch * (1 - gi/4);
-        ctx.beginPath(); ctx.moveTo(pad.left, yy); ctx.lineTo(W-pad.right, yy); ctx.stroke();
-        ctx.fillStyle = 'rgba(200,200,200,0.35)'; ctx.font = '9px sans-serif'; ctx.textAlign = 'right';
-        ctx.fillText(Math.round(maxVal * gi/4), pad.left-4, yy+3);
-      }
-      var barColor = isDark ? 'rgba(251,146,60,0.65)' : 'rgba(251,146,60,0.55)';
-      var barHC = 'rgba(251,146,60,0.9)';
-      var barW = Math.max(2, Math.min(18, cw / genKeys.length - 1));
-      var barData = [];
-      genKeys.forEach(function(k, i) {
-        var x = pad.left + i * (cw / genKeys.length);
-        var bh = (values[i] / maxVal) * ch;
-        ctx.fillStyle = barColor;
-        ctx.fillRect(x, pad.top + ch - bh, barW, bh);
-        barData.push({x:x, y:pad.top + ch - bh, w:barW, h:bh, gen:k, count:values[i]});
-        if (i % Math.max(1, Math.floor(genKeys.length/12)) === 0) {
-          ctx.fillStyle = 'rgba(200,200,200,0.4)'; ctx.font = '8px sans-serif'; ctx.textAlign = 'center';
-          ctx.fillText(k, x + barW/2, H - pad.bottom + 14);
-        }
-      });
-      barCanvas.onclick = function(e) {
-        var mr = barCanvas.getBoundingClientRect();
-        var mx = (e.clientX - mr.left) * R;
-        for (var bi = 0; bi < barData.length; bi++) {
-          var b = barData[bi];
-          if (mx >= b.x*R && mx <= (b.x+b.w)*R) {
-            showGenDetail(b.gen, b.count, data); break;
-          }
-        }
-      };
-      var chartHoverTimeout = null;
-      barCanvas.onmousemove = function(e) {
-        if (chartHoverTimeout) cancelAnimationFrame(chartHoverTimeout);
-        chartHoverTimeout = requestAnimationFrame(function() {
-        var mr = barCanvas.getBoundingClientRect();
-        var mx = (e.clientX - mr.left) * R;
-        var found = -1;
-        for (var bi = 0; bi < barData.length; bi++) {
-          var b = barData[bi];
-          if (mx >= b.x*R && mx <= (b.x+b.w)*R) { found = bi; break; }
-        }
-        barCanvas.style.cursor = found >= 0 ? 'pointer' : 'default';
-        if (found === barCanvas._lastHover) return;
-        barCanvas._lastHover = found;
-        ctx.clearRect(0, 0, W, H);
-        ctx.strokeStyle = 'rgba(200,200,200,0.12)'; ctx.lineWidth = 1;
-        for (var gi = 0; gi <= 4; gi++) {
-          var yy = pad.top + ch * (1 - gi/4);
-          ctx.beginPath(); ctx.moveTo(pad.left, yy); ctx.lineTo(W-pad.right, yy); ctx.stroke();
-          ctx.fillStyle = 'rgba(200,200,200,0.35)'; ctx.font = '9px sans-serif'; ctx.textAlign = 'right';
-          ctx.fillText(Math.round(maxVal * gi/4), pad.left-4, yy+3);
-        }
-        genKeys.forEach(function(k, i) {
-          var x = pad.left + i * (cw / genKeys.length);
-          var bh = (values[i] / maxVal) * ch;
-          ctx.fillStyle = (i === found) ? barHC : barColor;
-          ctx.fillRect(x, pad.top + ch - bh, barW, bh);
-          if (i === found) {
-            ctx.fillStyle = 'rgba(251,146,60,0.9)'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
-            ctx.fillText(values[i] + '人', x + barW/2, pad.top + ch - bh - 6);
-          }
-          if (i % Math.max(1, Math.floor(genKeys.length/12)) === 0 || i === found) {
-            ctx.fillStyle = (i === found) ? 'rgba(251,146,60,0.9)' : 'rgba(200,200,200,0.4)';
-            ctx.font = '8px sans-serif'; ctx.textAlign = 'center';
-            ctx.fillText(k + '世', x + barW/2, H - pad.bottom + 14);
-          }
-        });
-        });
-      };
-    }
-
-    var pieCanvas = document.getElementById('chart-branch');
-    if (pieCanvas) {
-      var zanGong = null, zhuanGong = null;
-      for (var zi = 0; zi < data.length; zi++) {
-        if ((data[zi].name || '').indexOf('攒') !== -1) zanGong = data[zi];
-        if ((data[zi].name || '').indexOf('撰') !== -1) zhuanGong = data[zi];
-      }
-      var qianList = [], houList = [];
-      function collectD(rootId, list) {
-        for (var ci = 0; ci < data.length; ci++) {
-          if (parseInt(data[ci].father_id) === rootId || parseInt(data[ci].mother_id) === rootId) {
-            list.push(data[ci]); collectD(data[ci].id, list);
-          }
-        }
-      }
-      if (zhuanGong) collectD(zhuanGong.id, qianList);
-      if (zanGong) collectD(zanGong.id, houList);
-
-      pieCanvas.style.display = 'none';
-      var pParent = pieCanvas.parentElement;
-      var oldEl = pParent.querySelector('.fc-pie-wrap, .fc-note');
-      if (oldEl) oldEl.remove();
-
-      if (!zanGong && !zhuanGong) {
-        var note = document.createElement('div');
-        note.className = 'fc-note';
-        note.style.cssText = 'padding:40px;text-align:center;color:var(--text-tertiary);font-size:13px;';
-        note.textContent = '请先在族谱中录入攒公（后枫槎）和撰公（前枫槎），系统将自动统计两派人口比例';
-        pParent.appendChild(note);
-      } else {
-        var qc = qianList.length + (zhuanGong ? 1 : 0);
-        var hc = houList.length + (zanGong ? 1 : 0);
-        var totalP = qc + hc;
-        var pctQ = totalP ? Math.round(qc / totalP * 100) : 50;
-        var pctH = 100 - pctQ;
-        function arrToJson(arr) { return JSON.stringify(arr).replace(/'/g,"&#39;"); }
-        var qArr = (zhuanGong ? [zhuanGong].concat(qianList) : qianList).map(function(pp){return {id:pp.id,name:pp.name,gen:pp.generation_num};});
-        var hArr = (zanGong ? [zanGong].concat(houList) : houList).map(function(pp){return {id:pp.id,name:pp.name,gen:pp.generation_num};});
-        var chHtml = '<div class="fc-pie-wrap">';
-        chHtml += '<div class="fc-pie" style="--q:' + pctQ + ';--h:' + pctH + '"><div class="fc-pie-center"><span class="fc-pie-total">' + totalP + '人</span><span class="fc-pie-label">点击图例查看详情</span></div></div>';
-        chHtml += '<div class="fc-legend">';
-        chHtml += '<div class="fc-legend-item" onclick=' + "'showBranchList("前枫槎","撰公支系"," + qc + ","" + arrToJson(qArr) + "")'><span style='background:#fb923c;'></span><strong>前枫槎</strong> (撰公支系) <span class='fc-count'>" + qc + "人 (" + pctQ + "%)</span></div>";
-        chHtml += '<div class="fc-legend-item" onclick=' + "'showBranchList("后枫槎","攒公支系"," + hc + ","" + arrToJson(hArr) + "")'><span style='background:#4ade80;'></span><strong>后枫槎</strong> (攒公支系) <span class='fc-count'>" + hc + "人 (" + pctH + "%)</span></div>";
-        chHtml += '</div></div>';
-        pParent.insertAdjacentHTML('beforeend', chHtml);
-      }
-    }
-  } catch(e) { console.error('Chart error:', e); }
-  }
-
-  function showGenDetail(gen, count, data) {
-    var people = data.filter(function(p){return parseInt(p.generation_num) === gen;});
-    var a = people.filter(function(p){return p.is_alive === '是';}).length;
-    var d = people.filter(function(p){return p.is_alive === '否';}).length;
-    var u = people.length - a - d;
-    var overlay = document.createElement('div');
-    overlay.className = 'branch-modal-overlay';
-    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
-    var html = '<div class="branch-modal"><div style="display:flex;justify-content:space-between;align-items:flex-start;">';
-    html += '<div><h3>第' + gen + '世</h3><div class="bm-sub">共' + people.length + '人 · 在世' + a + '人 · 已故' + d + '人' + (u ? ' · 未知' + u + '人' : '') + '</div></div>';
-    html += '<button onclick="this.closest(\'.branch-modal-overlay\').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-tertiary);">X</button></div>';
-    if (people.length === 0) {
-      html += '<div style="padding:20px;text-align:center;color:var(--text-tertiary);font-size:13px;">暂无数据</div>';
-    } else {
-      people.sort(function(a,b){return(a.name||'').localeCompare(b.name||'');});
-      people.forEach(function(pp) {
-        var st = pp.is_alive === '是' ? '🟢' : (pp.is_alive === '否' ? '⚰️' : '⚪');
-        html += '<div class="bm-person" onclick="showPersonDetail(' + pp.id + ', getGenealogyData());">';
-        html += '<div style="font-size:16px;flex-shrink:0;">' + st + '</div>';
-        html += '<div><div class="bm-name">' + escapeHtml(pp.name) + '</div><div class="bm-gen">' + (pp.gender === '男' ? '👤' : '👩') + ' ' + (pp.branch && pp.branch !== '—' ? pp.branch : '') + '</div></div>';
-        html += '</div>';
-      });
-    }
-    html += '</div>';
-    overlay.innerHTML = html;
-    document.body.appendChild(overlay);
   }
 
   // ===== Zoom & Pan =====
@@ -1293,8 +1029,6 @@ document.getElementById("js-diag").textContent = "JS loaded, initializing...";
 
   // ===== Render everything =====
   function renderGenealogyPage() {
-  try {
-    console.log("renderGenealogyPage start");
     var data = getGenealogyData();
     if (!data || data.length === 0) {
       document.getElementById('genealogy-preface').style.opacity = '1';
@@ -1303,7 +1037,6 @@ document.getElementById("js-diag").textContent = "JS loaded, initializing...";
       document.getElementById('genealogy-search-section').style.opacity = '1';
       document.getElementById('genealogy-tree-section').style.opacity = '1';
       document.getElementById('genealogy-table-section').style.opacity = '1';
-      document.getElementById('genealogy-stats-section').style.opacity = '1';
       return;
     }
 
@@ -1362,44 +1095,23 @@ document.getElementById("js-diag").textContent = "JS loaded, initializing...";
     document.getElementById('genealogy-search-section').style.opacity = '1';
     document.getElementById('genealogy-tree-section').style.opacity = '1';
     document.getElementById('genealogy-table-section').style.opacity = '1';
-    document.getElementById('genealogy-stats-section').style.opacity = '1';
-    renderGenealogyCharts();
-  document.getElementById("js-diag").textContent = "Render complete!";
-  setTimeout(function(){var d=document.getElementById("js-diag");if(d)d.style.display="none";},2000);
-      window.addEventListener("resize", renderGenealogyCharts);
-  } catch(e) { console.error('Page render error:', e); }
   }
 
   // Wait for page ready
-  
-function initPage() {
-    try {
-      renderGenealogyPage();
-      // Load from server API for latest data
-      fetch('/api/data/genealogy').then(function(r) { return r.json(); }).then(function(apiData) {
-        if (apiData && apiData.length > 0) {
-          localStorage.setItem('xie_admin_genealogy', JSON.stringify(apiData));
-          renderGenealogyPage();
-        }
-      }).catch(function(err) { console.warn('API fetch failed:', err); });
-      // Supabase fallback
-      if (window.dbGetAll) {
-        dbGetAll('genealogy', { order: 'id.asc' }).then(function(supabaseData) {
-          if (supabaseData && supabaseData.length > 0) {
-            localStorage.setItem('xie_admin_genealogy', JSON.stringify(supabaseData));
-            renderGenealogyPage();
-          }
-        }).catch(function(err) { console.warn('Supabase fetch failed:', err); });
-      }
-    } catch(e) {
-      console.error('Init error:', e);
-      document.body.innerHTML += '<div style="position:fixed;bottom:0;left:0;right:0;background:#e74c3c;color:#fff;padding:16px;font-size:13px;z-index:99999;">加载出错: ' + e.message + '</div>';
-    }
-  }
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    initPage();
+    renderGenealogyPage();
   } else {
-    document.addEventListener('DOMContentLoaded', initPage);
+    document.addEventListener('DOMContentLoaded', renderGenealogyPage);
+  }
+  // Try loading from Supabase for up-to-date genealogy data across devices
+  if (window.dbGetAll) {
+    dbGetAll('genealogy', { order: 'id.asc' }).then(function(supabaseData) {
+      if (supabaseData && supabaseData.length > 0) {
+        localStorage.setItem('xie_admin_genealogy', JSON.stringify(supabaseData));
+        // Re-render with Supabase data
+        renderGenealogyPage();
+      }
+    }).catch(function() {});
   }
   </script>
 
