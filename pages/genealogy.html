@@ -119,6 +119,12 @@
       <!-- 可视化图表 -->
       <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-chart-section">
         <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:16px;font-size:17px;font-weight:500;">📊 数据分析</h3>
+        <div style="margin-bottom:12px;padding:8px 12px;background:var(--accent-orange-dim);border-radius:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:12px;color:var(--text-primary);">文杲公所在世代：</span>
+          <input type="number" id="wengao-gen-input" value="" placeholder="自动" style="width:70px;padding:4px 8px;border:1px solid var(--glass-border);border-radius:4px;background:var(--bg-card);color:var(--text-primary);font-size:13px;">
+          <button onclick="var v=parseInt(document.getElementById('wengao-gen-input').value);if(v>0){localStorage.setItem('xie_wengao_gen',v);renderCharts();}else{localStorage.removeItem('xie_wengao_gen');renderCharts();}" style="padding:4px 10px;border:1px solid var(--accent-orange);border-radius:4px;background:var(--accent-orange);color:#fff;font-size:12px;cursor:pointer;">应用</button>
+          <span style="font-size:11px;color:var(--text-tertiary);">填文杲在族谱中的世代数，仅统计其后代</span>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:10px;padding:14px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
@@ -1141,37 +1147,24 @@
     var data = getGenealogyData();
     if (!data || data.length === 0) return;
 
-    // 找文杲公（下枫槎始祖），确定起始世代
-    var wenGaoGen = null;
-    var wenGao = null;
-    for (var wi = 0; wi < data.length; wi++) {
-      if (data[wi].name === '文杲公' || data[wi].id === 2) {
-        wenGao = data[wi];
-        wenGaoGen = parseInt(data[wi].generation_num) || 0;
-        break;
-      }
-    }
-    // 如果文杲公不在数据中，尝试找攒公/撰公（文杲的儿子，第二代）
-    if (!wenGao) {
+    // 文杲公起始世代（用户可调）
+    // 预填输入框
+    var wgInput = document.getElementById('wengao-gen-input');
+    if(wgInput && localStorage.getItem('xie_wengao_gen')) wgInput.value = localStorage.getItem('xie_wengao_gen');
+    var savedWenGaoGen = parseInt(localStorage.getItem('xie_wengao_gen') || '');
+    var wenGaoGen = savedWenGaoGen > 0 ? savedWenGaoGen : null;
+    // 如果没有设置，从数据中自动尝试查找
+    if (wenGaoGen === null) {
       for (var wi = 0; wi < data.length; wi++) {
         var nm = data[wi].name || '';
-        if (nm.indexOf('攒') >= 0 || nm.indexOf('撰') >= 0) {
-          wenGaoGen = (parseInt(data[wi].generation_num) || 0) - 1;
-          break;
-        }
-      }
-    }
-    // 如果还没找到，默认文杲公在种子数据中的位置（id=2, gen=1的情况下找不到就用id=2）
-    if (wenGaoGen === null) {
-      // 检查是否有id=2的记录
-      for (var wi = 0; wi < data.length; wi++) {
-        if (data[wi].id === 2) {
+        if (nm.indexOf('文杲') >= 0 || nm.indexOf('攒') >= 0 || nm.indexOf('撰') >= 0) {
           wenGaoGen = parseInt(data[wi].generation_num) || 0;
+          if (nm.indexOf('攒') >= 0 || nm.indexOf('撰') >= 0) wenGaoGen--;
           break;
         }
       }
     }
-    // 最终兜底：从最小世代开始
+    // 如果还是找不到，用所有数据
     if (wenGaoGen === null) {
       var minGen = 999;
       data.forEach(function(p) {
