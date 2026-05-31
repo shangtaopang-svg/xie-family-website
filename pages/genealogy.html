@@ -1323,7 +1323,7 @@
       })();
     }
 
-    // ---- 柱状图：各世代人口分布（从文杲公开始） ----
+        // ---- 各世代人口分布（横向条形图，从文杲公开始） ----
     var genCanvas = document.getElementById('chart-gens');
     if (genCanvas && typeof genCanvas.getContext === 'function') {
       (function() {
@@ -1331,76 +1331,109 @@
         var gRect = gC.parentElement.getBoundingClientRect();
         var gW = Math.max(gRect.width - 32, 200);
         var gR = window.devicePixelRatio || 1;
-        gC.width = gW * gR; gC.height = 280 * gR;
-        gC.style.width = gW + 'px'; gC.style.height = '280px';
+        gC.width = gW * gR; gC.height = 300 * gR;
+        gC.style.width = gW + 'px'; gC.style.height = '300px';
         gCtx.scale(gR, gR);
-        var gH = 280;
-        var genData = {};
+        var gH = 300;
+        var genRows = [];
         data.forEach(function(p) {
           var absG = parseInt(p.generation_num) || 0;
           if (absG >= wenGaoGen) {
             var relG = absG - wenGaoGen + 1;
-            if (!genData[relG]) genData[relG] = { total: 0, alive: 0, dead: 0 };
-            genData[relG].total++;
-            if (p.is_alive === '是') genData[relG].alive++;
-            else if (p.is_alive === '否') genData[relG].dead++;
+            var row = null;
+            for (var ri = 0; ri < genRows.length; ri++) {
+              if (genRows[ri].gen === relG) { row = genRows[ri]; break; }
+            }
+            if (!row) { row = { gen: relG, total: 0, alive: 0, dead: 0 }; genRows.push(row); }
+            row.total++;
+            if (p.is_alive === '是') row.alive++;
+            else if (p.is_alive === '否') row.dead++;
           }
         });
-        var gKeys = Object.keys(genData).sort(function(a,b){return parseInt(a)-parseInt(b);});
-        if (gKeys.length === 0) {
-          gCtx.fillStyle = 'rgba(200,200,200,0.3)'; gCtx.font = '13px sans-serif'; gCtx.textAlign = 'center'; gCtx.fillText('暂无数据', gW/2, gH/2);
-          return;
+        genRows.sort(function(a,b){return a.gen - b.gen;});
+        if (genRows.length === 0) {
+          gCtx.fillStyle = 'rgba(200,200,200,0.3)'; gCtx.font = '13px sans-serif'; gCtx.textAlign = 'center';
+          gCtx.fillText('暂无数据', gW/2, gH/2); return;
         }
-        var gVals = gKeys.map(function(k){return genData[k].total;});
-        var gMax = Math.max.apply(null, gVals);
-        var gPad = {t:24, b:40, l:46, r:12};
-        var gCw = gW - gPad.l - gPad.r, gCh = gH - gPad.t - gPad.b;
+        var maxTotal = 1;
+        genRows.forEach(function(r){if(r.total > maxTotal) maxTotal = r.total;});
+        var pad = {t:16, b:16, l:60, r:120};
+        var barH = 24, gap = 6, startY = pad.t;
+        var maxBars = Math.floor((gH - pad.t - pad.b) / (barH + gap));
+        var visibleRows = genRows.slice(0, maxBars);
         gCtx.clearRect(0, 0, gW, gH);
-        gCtx.strokeStyle = 'rgba(200,200,200,0.1)'; gCtx.lineWidth = 1;
-        for (var gi = 0; gi <= 4; gi++) {
-          var yy = gPad.t + gCh * (1 - gi/4);
-          gCtx.beginPath(); gCtx.moveTo(gPad.l, yy); gCtx.lineTo(gW - gPad.r, yy); gCtx.stroke();
-          gCtx.fillStyle = 'rgba(200,200,200,0.3)'; gCtx.font = '9px sans-serif'; gCtx.textAlign = 'right';
-          gCtx.fillText(Math.round(gMax * gi/4), gPad.l - 6, yy + 3);
-        }
-        var gBarW = Math.max(3, Math.min(28, gCw / gKeys.length - 2));
-        var gBarData = [];
-        var gStep = Math.max(1, Math.floor(gKeys.length / 12));
-        gKeys.forEach(function(k, i) {
-          var x = gPad.l + i * (gCw / gKeys.length);
-          var bh = (gVals[i] / gMax) * gCh;
-          gCtx.fillStyle = 'rgba(251,146,60,0.65)';
-          gCtx.fillRect(x, gPad.t + gCh - bh, gBarW, bh);
-          gBarData.push({ x: x, w: gBarW, gen: parseInt(k), count: gVals[i], absGen: parseInt(k) + wenGaoGen - 1 });
-          if (i % gStep === 0 || i === gKeys.length - 1) {
-            gCtx.fillStyle = 'rgba(200,200,200,0.4)'; gCtx.font = '8px sans-serif'; gCtx.textAlign = 'center';
-            gCtx.fillText(k + '世', x + gBarW/2, gH - gPad.b + 14);
+        var barMaxW = gW - pad.l - pad.r - 12;
+        visibleRows.forEach(function(row, i) {
+          var y = startY + i * (barH + gap);
+          gCtx.fillStyle = 'rgba(200,200,200,0.6)';
+          gCtx.font = 'bold 11px sans-serif';
+          gCtx.textAlign = 'right';
+          gCtx.fillText(row.gen + '世', pad.l - 8, y + barH - 5);
+          var totalStr = row.total + '人';
+          if (row.alive > 0 || row.dead > 0) {
+            totalStr += ' (在世' + row.alive + ' · 已故' + row.dead + ')';
           }
+          gCtx.fillStyle = 'rgba(200,200,200,0.5)';
+          gCtx.font = '10px sans-serif';
+          gCtx.textAlign = 'left';
+          gCtx.fillText(totalStr, gW - pad.r + 6, y + barH - 5);
+          var aliveW = (row.alive / maxTotal) * barMaxW;
+          var deadW = (row.dead / maxTotal) * barMaxW;
+          var bx = pad.l, by = y;
+          gCtx.fillStyle = 'rgba(200,200,200,0.08)';
+          gCtx.fillRect(bx, by, barMaxW, barH);
+          if (aliveW > 0) { gCtx.fillStyle = 'rgba(74,222,128,0.6)'; gCtx.fillRect(bx, by, aliveW, barH); bx += aliveW; }
+          if (deadW > 0) { gCtx.fillStyle = 'rgba(239,68,68,0.5)'; gCtx.fillRect(bx, by, deadW, barH); bx += deadW; }
+          var ukW = barMaxW - aliveW - deadW;
+          if (ukW > 0) { gCtx.fillStyle = 'rgba(200,200,200,0.2)'; gCtx.fillRect(bx, by, ukW, barH); }
+        });
+        var legY = gH - 10;
+        var legX = pad.l;
+        var legs = [
+          {l:'在世',c:'rgba(74,222,128,0.6)'},
+          {l:'已故',c:'rgba(239,68,68,0.5)'},
+          {l:'未知',c:'rgba(200,200,200,0.2)'}
+        ];
+        legs.forEach(function(lp) {
+          gCtx.fillStyle = lp.c;
+          gCtx.fillRect(legX, legY - 8, 12, 12);
+          gCtx.fillStyle = 'rgba(200,200,200,0.4)';
+          gCtx.font = '10px sans-serif';
+          gCtx.textAlign = 'left';
+          gCtx.fillText(lp.l, legX + 16, legY + 2);
+          legX += 50 + lp.l.length * 6;
         });
         gC.onclick = function(e) {
           var mr = gC.getBoundingClientRect();
-          var mx = (e.clientX - mr.left) * gR;
-          for (var bi = 0; bi < gBarData.length; bi++) {
-            var b = gBarData[bi];
-            if (mx >= b.x * gR && mx <= (b.x + b.w) * gR) {
-              var absGen = b.absGen;
-              var people = data.filter(function(p){return parseInt(p.generation_num) === absGen;});
-              var alive = people.filter(function(p){return p.is_alive === '是';}).length;
-              var dead = people.filter(function(p){return p.is_alive === '否';}).length;
-              var unknown = people.length - alive - dead;
-              var names = people.map(function(p){return p.name;}).join('、');
-              var detail = '在世: ' + alive + '人 | 已故: ' + dead + '人' + (unknown ? ' | 未知: ' + unknown + '人' : '');
-              showPopup('第' + b.gen + '世 共' + b.count + '人', detail, names);
+          var my = (e.clientY - mr.top) * gR;
+          for (var ri = 0; ri < visibleRows.length; ri++) {
+            var row = visibleRows[ri];
+            var ry = startY + ri * (barH + gap);
+            if (my >= ry * gR && my <= (ry + barH) * gR) {
+              var absGen = row.gen + wenGaoGen - 1;
+              var people = data.filter(function(pj){return parseInt(pj.generation_num) === absGen;});
+              var al = people.filter(function(pj){return pj.is_alive === '是';}).length;
+              var de = people.filter(function(pj){return pj.is_alive === '否';}).length;
+              var names = people.map(function(pj){return pj.name;}).join('、');
+              var ov = document.createElement('div');
+              ov.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
+              ov.onclick = function(ev) { if (ev.target === ov) ov.remove(); };
+              var bx2 = document.createElement('div');
+              bx2.style.cssText = 'background:var(--bg-card);border-radius:16px;padding:24px;max-width:400px;width:90%;';
+              bx2.innerHTML = '<div style="text-align:center;"><div style="font-size:14px;color:var(--text-tertiary);margin-bottom:4px;">在世: ' + al + '人 | 已故: ' + de + '人</div><div style="font-size:20px;font-weight:600;color:var(--text-primary);margin-bottom:12px;">第' + row.gen + '世 共' + row.total + '人</div><div style="font-size:13px;color:var(--text-secondary);line-height:1.6;word-break:break-all;">' + names + '</div><button onclick="this.parentElement.parentElement.parentElement.remove()" style="margin-top:16px;padding:8px 24px;border:1px solid var(--glass-border);border-radius:8px;background:var(--glass-bg);color:var(--text-primary);font-size:13px;cursor:pointer;">关闭</button></div>';
+              ov.appendChild(bx2);
+              document.body.appendChild(ov);
               break;
             }
           }
         };
         gC.onmousemove = function(e) {
           var mr = gC.getBoundingClientRect();
-          var mx = (e.clientX - mr.left) * gR;
+          var my = (e.clientY - mr.top) * gR;
           var found = -1;
-          for (var bi = 0; bi < gBarData.length; bi++) {
-            if (mx >= gBarData[bi].x * gR && mx <= (gBarData[bi].x + gBarData[bi].w) * gR) { found = bi; break; }
+          for (var ri = 0; ri < visibleRows.length; ri++) {
+            var ry = startY + ri * (barH + gap);
+            if (my >= ry * gR && my <= (ry + barH) * gR) { found = ri; break; }
           }
           gC.style.cursor = found >= 0 ? 'pointer' : 'default';
         };
