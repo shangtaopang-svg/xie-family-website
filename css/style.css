@@ -4268,11 +4268,13 @@ body {
   opacity: 0.3;
 }
 .m-branches {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  display: flex;
   gap: 10px;
+  justify-content: center;
 }
 .m-branch-item {
+  flex: 1;
+  max-width: 260px;
   padding: 12px 14px;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
@@ -4350,7 +4352,8 @@ body {
   .m-gap::before { left: 24px; }
   .m-branch-wrap { margin-left: 36px; }
   .m-branch-wrap::before { left: -12px; width: 12px; }
-  .m-branches { grid-template-columns: 1fr; gap: 6px; }
+  .m-branches { flex-direction: column; gap: 6px; }
+  .m-branch-item { max-width: none; }
   .m-flood { margin-left: 36px; flex-direction: column; text-align: center; }
   .m-title { font-size: 14px; }
 }
