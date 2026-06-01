@@ -195,6 +195,9 @@
 .genealogy-tree-scroll svg { display:block; width:100%; height:100%; min-height:450px; }
 .tree-svg-card { cursor:pointer; transition:opacity 0.15s; }
 .tree-svg-card:hover .card-bg { stroke:var(--accent-orange); stroke-width:2.5; }
+.tree-svg-highlight .card-bg { stroke:#e67e22; stroke-width:2.5; fill:rgba(251,146,60,0.12); }
+.tree-svg-highlight .card-name { fill:#e67e22; font-weight:700; }
+.tree-svg-highlight .card-bg:hover { stroke:#d35400; stroke-width:3; fill:rgba(251,146,60,0.2); }
 .tree-svg-card:hover { opacity:0.92; }
 .card-bg { fill:var(--glass-bg); stroke:var(--glass-border); stroke-width:1.5; rx:8; ry:8; transition:stroke 0.15s, stroke-width 0.15s; }
 .card-bg.male { }
@@ -252,20 +255,49 @@
 
 <script>
   // ===== Load data =====
+  function getFullSeedData() {
+    return [
+      {id:1,name:'谢小四',gender:'男',generation:'—',generation_num:0,branch:'石马(下谢)',birth_date:'宋靖康年间',is_alive:'否',biography:'会稽人，宋靖康年间迁居石马，入浙东之近祖。下枫槎谢氏之直系渊源。'},
+      {id:2,name:'文杲公',gender:'男',generation:'—',generation_num:1,branch:'枫槎始祖',father_id:1,birth_date:'北宋宣和(约1125)',is_alive:'否',biography:'字克源，宋登仕郎，越溪司巡检。英敏卓荦，文武兼备，始居岩下，为枫槎谢氏之始迁祖。至今近九百载，传三十六世。'},
+      {id:3,name:'攒公',gender:'男',generation:'—',generation_num:2,branch:'后枫槎派',father_id:2,is_alive:'否',biography:'文杲公长子，分居后枫槎，开一派之先河。'},
+      {id:4,name:'撰公',gender:'男',generation:'—',generation_num:2,branch:'前枫槎派',father_id:2,is_alive:'否',biography:'文杲公次子，分居前枫槎，与前枫槎派并立。'},
+      {id:5,name:'彬公',gender:'男',generation:'—',generation_num:16,branch:'后枫槎东房',birth_date:'明隆庆壬申(1572)',is_alive:'否',biography:'字叔仅，十六世祖。明隆庆六年壬申（1572年），时遭洪水之患，岁季始迁枫槎，为下枫槎开基之祖。'},
+      {id:6,name:'乾公',gender:'男',generation:'—',generation_num:16,branch:'后枫槎东房',birth_date:'明隆庆壬申(1572)',is_alive:'否',biography:'与彬公昆仲，明隆庆六年壬申（1572年），山洪暴发，庐舍为墟。与彬公相度地势，遂迁于双枫古槎之下，因名其地曰下枫槎。'},
+      {id:7,name:'云先公',gender:'男',generation:'之',generation_num:21,branch:'西大房二份',birth_date:'清乾隆间',is_alive:'否',biography:'名大性，西大房二份之祖。乾隆二十七年（1762年）首倡并主持修建下枫槎谢氏宗祠，敦睦堂由此而立。'},
+      {id:8,name:'文对',gender:'男',generation:'—',generation_num:1,branch:'枫槎分支',father_id:2,is_alive:'否',biography:'文杲公之子，枫槎谢氏分支祖。'}
+    ];
+  }
   function getGenealogyData() {
     try {
       var stored = localStorage.getItem('xie_admin_genealogy');
-      if (stored) return JSON.parse(stored);
+      if (stored) {
+        var parsed = JSON.parse(stored);
+        // Ensure new seed entries exist (upgrade localStorage data)
+        var seedNames = {'谢小四':1,'文杲公':2,'攒公':3,'撰公':4,'彬公':5,'乾公':6,'云先公':7,'文对':8};
+        var existingNames = {};
+        parsed.forEach(function(p) { existingNames[p.name] = true; });
+        var needSave = false;
+        for (var sn in seedNames) {
+          if (!existingNames[sn]) {
+            // Find the full entry from seedData below
+            needSave = true; break;
+          }
+        }
+        if (needSave) {
+          var fullSeed = getFullSeedData();
+          for (var i = 0; i < fullSeed.length; i++) {
+            if (!existingNames[fullSeed[i].name]) {
+              parsed.push(fullSeed[i]);
+              existingNames[fullSeed[i].name] = true;
+            }
+          }
+          localStorage.setItem('xie_admin_genealogy', JSON.stringify(parsed));
+          return parsed;
+        }
+        return parsed;
+      }
       // Seed default ancestor data from PDF族谱
-      var seedData = [
-        {id:1,name:'谢小四',gender:'男',generation:'—',generation_num:0,branch:'石马(下谢)',birth_date:'宋靖康年间',is_alive:'否',biography:'会稽人，宋靖康年间迁居石马，入浙东之近祖。下枫槎谢氏之直系渊源。'},
-        {id:2,name:'文杲公',gender:'男',generation:'—',generation_num:1,branch:'枫槎始祖',father_id:1,birth_date:'北宋宣和(约1125)',is_alive:'否',biography:'字克源，宋登仕郎，越溪司巡检。英敏卓荦，文武兼备，始居岩下，为枫槎谢氏之始迁祖。至今近九百载，传三十六世。'},
-        {id:3,name:'攒公',gender:'男',generation:'—',generation_num:2,branch:'后枫槎派',father_id:2,is_alive:'否',biography:'文杲公长子，分居后枫槎，开一派之先河。'},
-        {id:4,name:'撰公',gender:'男',generation:'—',generation_num:2,branch:'前枫槎派',father_id:2,is_alive:'否',biography:'文杲公次子，分居前枫槎，与前枫槎派并立。'},
-        {id:5,name:'彬公',gender:'男',generation:'—',generation_num:16,branch:'后枫槎东房',birth_date:'明隆庆壬申(1572)',is_alive:'否',biography:'字叔仅，十六世祖。明隆庆六年壬申（1572年），时遭洪水之患，岁季始迁枫槎，为下枫槎开基之祖。'},
-        {id:6,name:'乾公',gender:'男',generation:'—',generation_num:16,branch:'后枫槎东房',birth_date:'明隆庆壬申(1572)',is_alive:'否',biography:'与彬公昆仲，明隆庆六年壬申（1572年），山洪暴发，庐舍为墟。与彬公相度地势，遂迁于双枫古槎之下，因名其地曰下枫槎。'},
-        {id:7,name:'云先公',gender:'男',generation:'之',generation_num:21,branch:'西大房二份',birth_date:'清乾隆间',is_alive:'否',biography:'名大性，西大房二份之祖。乾隆二十七年（1762年）首倡并主持修建下枫槎谢氏宗祠，敦睦堂由此而立。'}
-      ];
+      var seedData = getFullSeedData();
       localStorage.setItem('xie_admin_genealogy', JSON.stringify(seedData));
       return seedData;
     } catch(e) { return []; }
@@ -370,7 +402,9 @@ function layoutTree(personId, x, y, data, collapsed, visited) {
 
 function buildCardSvg(person, data, hasChildren, descendantCount, childCount) {
   var id = person.id;
-  var card = '<g class="tree-svg-card" data-id="' + id + '" onclick="onCardClick(' + id + ', event)">';
+  var HIGHLIGHT_NAMES = ['谢小四','文杲公','攒公','撰公','彬公','乾公','文对'];
+  var isHighlight = HIGHLIGHT_NAMES.indexOf(person.name) >= 0;
+  var card = '<g class="tree-svg-card' + (isHighlight ? ' tree-svg-highlight' : '') + '" data-id="' + id + '" onclick="onCardClick(' + id + ', event)">';
   card += '<rect class="card-bg ' + (person.gender === '男' ? 'male' : 'female') + '" x="-' + (CARD_W/2) + '" y="-' + (CARD_H/2) + '" width="' + CARD_W + '" height="' + CARD_H + '"/>';
   var nameText = escapeHtml(person.name || '未知');
   if (person.adopted && person.adopted !== '否') {
