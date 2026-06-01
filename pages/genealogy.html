@@ -1167,37 +1167,41 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   
 
-// ===== Fullscreen toggle (native browser API) =====
+// ===== Fullscreen toggle =====
+function fitTreeToContainer(container) {
+  var svg = container.querySelector('svg');
+  if (!svg) return;
+  var vb = svg.getAttribute('viewBox').split(' ').map(Number);
+  var cw = container.clientWidth;
+  var ch = container.clientHeight;
+  if (cw <= 0 || ch <= 0) { cw = window.innerWidth; ch = window.innerHeight; }
+  var pad = 40;
+  var sx = (cw - pad) / vb[2];
+  var sy = (ch - pad) / vb[3];
+  treeScale = Math.min(sx, sy, 3);
+  if (treeScale < 0.3) treeScale = 0.3;
+  treePanX = (cw - vb[2] * treeScale) / 2;
+  treePanY = (ch - vb[3] * treeScale) / 2;
+  applyTreeTransformSVG();
+}
+
 function toggleTreeFullscreen() {
   var container = document.getElementById('tree-scroll-container');
   if (!container) return;
   if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-    // Enter fullscreen
     container.classList.add('tree-native-fullscreen');
+    var fsPromise;
     if (container.requestFullscreen) {
-      container.requestFullscreen().catch(function(){});
+      fsPromise = container.requestFullscreen();
     } else if (container.webkitRequestFullscreen) {
-      container.webkitRequestFullscreen();
+      fsPromise = container.webkitRequestFullscreen();
     }
-    // Auto-fit tree after entering fullscreen
-    setTimeout(function() {
-      var svg = container.querySelector('svg');
-      if (svg) {
-        var vb = svg.getAttribute('viewBox').split(' ').map(Number);
-        var cw = container.clientWidth;
-        var ch = container.clientHeight;
-        var pad = 40;
-        var sx = (cw - pad) / vb[2];
-        var sy = (ch - pad) / vb[3];
-        treeScale = Math.min(sx, sy, 3);
-        if (treeScale < 0.3) treeScale = 0.3;
-        treePanX = (cw - vb[2] * treeScale) / 2;
-        treePanY = (ch - vb[3] * treeScale) / 2;
-        applyTreeTransformSVG();
-      }
-    }, 300);
+    if (fsPromise && fsPromise.then) {
+      fsPromise.then(function() { fitTreeToContainer(container); }).catch(function(){});
+    } else {
+      setTimeout(function() { fitTreeToContainer(container); }, 500);
+    }
   } else {
-    // Exit fullscreen
     exitTreeFullscreen();
   }
 }
@@ -1208,19 +1212,16 @@ function exitTreeFullscreen() {
   else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
   treeZoomReset();
 }
-// Listen for fullscreen change events (Escape key exits fullscreen natively)
 document.addEventListener('fullscreenchange', function() {
   if (!document.fullscreenElement) {
-    var container = document.getElementById('tree-scroll-container');
-    if (container) container.classList.remove('tree-native-fullscreen');
-    treeZoomReset();
+    var c = document.getElementById('tree-scroll-container');
+    if (c) c.classList.remove('tree-native-fullscreen');
   }
 });
 document.addEventListener('webkitfullscreenchange', function() {
   if (!document.webkitFullscreenElement) {
-    var container = document.getElementById('tree-scroll-container');
-    if (container) container.classList.remove('tree-native-fullscreen');
-    treeZoomReset();
+    var c = document.getElementById('tree-scroll-container');
+    if (c) c.classList.remove('tree-native-fullscreen');
   }
 });
 </script>
