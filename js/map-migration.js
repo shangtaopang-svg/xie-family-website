@@ -192,8 +192,8 @@
     }).addTo(map);
 
     var latlngs = ROUTE.map(function (p) { return [p.lat, p.lng]; });
-    latlngs.push([34.2, 123.0], [28.4, 123.2]);
-    map.fitBounds(latlngs, { padding: [60, 60], maxZoom: 7 });
+    latlngs.push([34.5, 123.5], [28.0, 123.5]);
+    map.fitBounds(latlngs, { padding: [50, 50], maxZoom: 6.5 });
 
     // 1) 完整路线（白色描边 + 红色主线，确保在任何背景上都清晰可见）
     var MAIN_COLOR = '#ef4444';
@@ -284,7 +284,7 @@
         [wp.lat, oceanLng],
         [oceanLat, oceanLng]
       ], {
-        color: 'rgba(255,255,255,0.2)', weight: 1.5, dashArray: '4,6', interactive: false
+        color: 'rgba(251,146,60,0.35)', weight: 2, dashArray: '6,4', interactive: false
       }).addTo(map);
       // 弯折点小圆点
       L.circleMarker([wp.lat, oceanLng], {
