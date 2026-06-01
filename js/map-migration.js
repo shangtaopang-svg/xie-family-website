@@ -270,21 +270,30 @@
       fillOpacity: 0.08, weight: 0, opacity: 0
     }).addTo(map));
 
-    // 5) 节点编号标注（点击显示详情侧面板）
-    var nodeNumberMarkers = [];
+    // 5) 节点编号标注（点击弹窗显示详情）
+    var NODE_ERA_COLORS = ['#d4a037','#22d3ee','#a78bfa','#fb923c','#fb923c','#ef4444'];
     ROUTE.forEach(function (wp, i) {
+      var segStyle = SEGMENT_STYLES[Math.min(i, SEGMENT_STYLES.length - 1)] || { color: '#888' };
+      var eraColor = NODE_ERA_COLORS[i % NODE_ERA_COLORS.length];
+      var popupContent = '<div style="font-family:sans-serif;min-width:220px;">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,0.1);">' +
+        '<span style="background:' + segStyle.color + ';color:#fff;font-size:11px;font-weight:700;padding:2px 10px;border-radius:4px;letter-spacing:1px;">' + wp.era + '</span>' +
+        '<span style="font-size:12px;color:#666;">' + wp.year + '</span>' +
+        '</div>' +
+        '<div style="font-size:18px;font-weight:700;margin-bottom:4px;">节点' + (i+1) + ': ' + wp.name + '</div>' +
+        '<div style="font-size:12px;color:#888;margin-bottom:6px;">' + wp.fullName + '</div>' +
+        '<div style="font-size:13px;color:#555;line-height:1.6;">' + wp.desc + '</div>' +
+        '</div>';
+
       var numIcon = L.divIcon({
         className: 'map-node-num-label',
-        html: '<div onclick="onNodeClick(' + i + ')" style="cursor:pointer;background:rgba(251,146,60,0.9);color:#fff;font-size:14px;font-weight:800;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,0.5);">' + (i+1) + '</div>',
+        html: '<div style="cursor:pointer;background:rgba(251,146,60,0.9);color:#fff;font-size:14px;font-weight:800;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,0.5);">' + (i+1) + '</div>',
         iconSize: [30, 30],
         iconAnchor: [15, 15]
       });
-      (function(idx) {
-        var numM = L.marker([wp.lat, wp.lng], { icon: numIcon, opacity: 0.95, interactive: true, zIndexOffset: 1000 }).addTo(map);
-        numM.on('click', function() { onNodeClick(idx); });
-
-        nodeNumberMarkers.push(numM);
-      })(i);
+      var numM = L.marker([wp.lat, wp.lng], { icon: numIcon, opacity: 0.95, interactive: true, zIndexOffset: 1000 }).addTo(map);
+      numM.bindPopup(popupContent, { closeButton: true, maxWidth: 300, className: 'map-node-popup' });
+      nodeNumberMarkers.push(numM);
     });
 
         // 6) 分段距离标注（在路线中间）
