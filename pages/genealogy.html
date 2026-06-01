@@ -147,7 +147,6 @@
           <div id="tree-container"></div>
         </div>
       </div>
-      <div class="tree-fullscreen-close" id="tree-fullscreen-close" onclick="exitTreeFullscreen()">✕ 退出全屏</div>
 
       <!-- 世系表 -->
       <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-table-section">
@@ -251,10 +250,9 @@
 .locate-btn { font-size:11px; padding:3px 10px; border-radius:6px; border:1px solid rgba(251,146,60,0.3); background:rgba(251,146,60,0.1); color:var(--accent-orange); cursor:pointer; white-space:nowrap; transition:all 0.2s; flex-shrink:0; }
 .locate-btn:hover { background:rgba(251,146,60,0.2); border-color:var(--accent-orange); }
 
-/* Fullscreen tree */
-.tree-fullscreen-mode .genealogy-tree-scroll { position:fixed !important; top:0; left:0; right:0; bottom:0; z-index:99998; border-radius:0; border:none; min-height:100vh; width:100vw; background:var(--bg-primary); padding:20px; margin:0; display:flex; align-items:center; justify-content:center; }
-.tree-fullscreen-mode .genealogy-tree-scroll .tree-viewport { margin:auto; }
-.tree-fullscreen-mode .tree-fullscreen-close { display:flex !important; position:fixed; top:20px; right:24px; z-index:99999; background:rgba(0,0,0,0.7); color:#fff; border:none; border-radius:8px; padding:8px 18px; font-size:14px; cursor:pointer; align-items:center; justify-content:center; }
+/* Fullscreen tree - native browser fullscreen API */
+.tree-native-fullscreen { background:var(--bg-primary) !important; padding:30px !important; overflow:hidden !important; display:flex !important; align-items:center !important; justify-content:center !important; }
+.tree-native-fullscreen .tree-viewport { margin:auto; }
 </style>
 
 <script>
@@ -1170,40 +1168,62 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   
 
-// ===== Fullscreen toggle =====
+// ===== Fullscreen toggle (native browser API) =====
 function toggleTreeFullscreen() {
-  var section = document.getElementById('genealogy-tree-section');
-  if (!section) return;
-  section.classList.toggle('tree-fullscreen-mode');
-  document.body.style.overflow = section.classList.contains('tree-fullscreen-mode') ? 'hidden' : '';
-  if (section.classList.contains('tree-fullscreen-mode')) {
+  var container = document.getElementById('tree-scroll-container');
+  if (!container) return;
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    // Enter fullscreen
+    container.classList.add('tree-native-fullscreen');
+    if (container.requestFullscreen) {
+      container.requestFullscreen().catch(function(){});
+    } else if (container.webkitRequestFullscreen) {
+      container.webkitRequestFullscreen();
+    }
+    // Auto-fit tree after entering fullscreen
     setTimeout(function() {
-      var svg = document.querySelector('#tree-container svg');
-      var scrollContainer = document.getElementById('tree-scroll-container');
-      if (svg && scrollContainer) {
+      var svg = container.querySelector('svg');
+      if (svg) {
         var vb = svg.getAttribute('viewBox').split(' ').map(Number);
-        var cw = scrollContainer.clientWidth;
-        var ch = scrollContainer.clientHeight;
-        var padding = 60;
-        var scaleX = (cw - padding) / vb[2];
-        var scaleY = (ch - padding) / vb[3];
-        treeScale = Math.min(scaleX, scaleY, 2);
+        var cw = container.clientWidth;
+        var ch = container.clientHeight;
+        var pad = 40;
+        var sx = (cw - pad) / vb[2];
+        var sy = (ch - pad) / vb[3];
+        treeScale = Math.min(sx, sy, 3);
         if (treeScale < 0.3) treeScale = 0.3;
         treePanX = (cw - vb[2] * treeScale) / 2;
         treePanY = (ch - vb[3] * treeScale) / 2;
         applyTreeTransformSVG();
-      } else {
-        treeZoomReset();
       }
-    }, 100);
+    }, 300);
+  } else {
+    // Exit fullscreen
+    exitTreeFullscreen();
   }
 }
 function exitTreeFullscreen() {
-  var section = document.getElementById('genealogy-tree-section');
-  if (section) section.classList.remove('tree-fullscreen-mode');
-  document.body.style.overflow = '';
+  var container = document.getElementById('tree-scroll-container');
+  if (container) container.classList.remove('tree-native-fullscreen');
+  if (document.exitFullscreen) document.exitFullscreen().catch(function(){});
+  else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  treeZoomReset();
 }
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') exitTreeFullscreen(); });
+// Listen for fullscreen change events (Escape key exits fullscreen natively)
+document.addEventListener('fullscreenchange', function() {
+  if (!document.fullscreenElement) {
+    var container = document.getElementById('tree-scroll-container');
+    if (container) container.classList.remove('tree-native-fullscreen');
+    treeZoomReset();
+  }
+});
+document.addEventListener('webkitfullscreenchange', function() {
+  if (!document.webkitFullscreenElement) {
+    var container = document.getElementById('tree-scroll-container');
+    if (container) container.classList.remove('tree-native-fullscreen');
+    treeZoomReset();
+  }
+});
 </script>
   <audio id="bg-music" loop src="../music/background.mp3"></audio>
 
