@@ -1176,7 +1176,25 @@ function toggleTreeFullscreen() {
   section.classList.toggle('tree-fullscreen-mode');
   document.body.style.overflow = section.classList.contains('tree-fullscreen-mode') ? 'hidden' : '';
   if (section.classList.contains('tree-fullscreen-mode')) {
-    setTimeout(function() { treeZoomReset(); }, 50);
+    setTimeout(function() {
+      var svg = document.querySelector('#tree-container svg');
+      var scrollContainer = document.getElementById('tree-scroll-container');
+      if (svg && scrollContainer) {
+        var vb = svg.getAttribute('viewBox').split(' ').map(Number);
+        var cw = scrollContainer.clientWidth;
+        var ch = scrollContainer.clientHeight;
+        var padding = 60;
+        var scaleX = (cw - padding) / vb[2];
+        var scaleY = (ch - padding) / vb[3];
+        treeScale = Math.min(scaleX, scaleY, 2);
+        if (treeScale < 0.3) treeScale = 0.3;
+        treePanX = (cw - vb[2] * treeScale) / 2;
+        treePanY = (ch - vb[3] * treeScale) / 2;
+        applyTreeTransformSVG();
+      } else {
+        treeZoomReset();
+      }
+    }, 100);
   }
 }
 function exitTreeFullscreen() {
