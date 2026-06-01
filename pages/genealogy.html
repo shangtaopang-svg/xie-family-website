@@ -274,7 +274,7 @@
     try {
       var stored = localStorage.getItem('xie_admin_genealogy');
       var ver = localStorage.getItem('xie_admin_genealogy_ver');
-      if (stored && ver === '3') {
+      if (stored && ver === '4') {
         return JSON.parse(stored);
       }
       // Fresh seed data or upgrade old cache
@@ -299,13 +299,13 @@
           }
         }
         localStorage.setItem('xie_admin_genealogy', JSON.stringify(parsed));
-        localStorage.setItem('xie_admin_genealogy_ver', '3');
+        localStorage.setItem('xie_admin_genealogy_ver', '4');
         return parsed;
       }
       // Seed default ancestor data from PDF族谱
       var seedData = getFullSeedData();
       localStorage.setItem('xie_admin_genealogy', JSON.stringify(seedData));
-      localStorage.setItem('xie_admin_genealogy_ver', '3');
+      localStorage.setItem('xie_admin_genealogy_ver', '4');
       return seedData;
     } catch(e) { return []; }
   }
