@@ -4383,3 +4383,7 @@ body {
   .m-flood { margin-left: 36px; flex-direction: column; text-align: center; }
   .m-title { font-size: 14px; }
 }
+/* Node number markers */
+.map-node-num-label { background:none !important; border:none !important; }
+.map-node-num-label div { cursor:pointer; }
+

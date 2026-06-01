@@ -286,7 +286,7 @@
       nodeNumberMarkers.push(numM);
     });
 
-    // 6) 分段距离标注（在路线中间）    // 6) 分段距离标注（在路线中间）
+        // 6) 分段距离标注（在路线中间）
     CURVED_SEGMENTS.forEach(function (seg, i) {
       var mid = seg[Math.floor(seg.length / 2)];
       var distKm = SEG_DISTANCES[i];
