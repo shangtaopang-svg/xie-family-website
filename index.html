@@ -141,7 +141,7 @@
           apply(localStorage.getItem('xie_hero_bg'), style);
         });
       }
-      var cur = localStorage.getItem('xie_hero_style') || 'clean';
+      var cur = localStorage.getItem('xie_hero_style') || 'map';
       if (cur === 'particle') cur = 'clean';
       var activeBtn = document.querySelector('.hbg-btn[data-style="' + cur + '"]');
       if (activeBtn) activeBtn.classList.add('active');
