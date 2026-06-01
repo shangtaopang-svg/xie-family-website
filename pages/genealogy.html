@@ -147,9 +147,9 @@
         <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
           <span style="font-size:12px;color:var(--text-tertiary);margin-right:4px;">筛选：</span>
           <button class="btn btn-xs" onclick="filterBranch('all')" style="background:var(--accent-orange);color:#fff;border:none;" id="filter-all">全部世系</button>
-          <button class="btn btn-xs" onclick="filterBranch('bin')" id="filter-bin">🔴 彬公支系</button>
-          <button class="btn btn-xs" onclick="filterBranch('qian')" id="filter-qian">🟠 乾公支系</button>
-          <button class="btn btn-xs" onclick="filterBranch('wendui')" id="filter-wendui">🔵 文对支系</button>
+          <button class="btn btn-xs" onclick="filterBranch('彬（东房祖）')" id="filter-bin">🔴 彬公支系</button>
+          <button class="btn btn-xs" onclick="filterBranch('乾（西房祖）')" id="filter-qian">🟠 乾公支系</button>
+          <button class="btn btn-xs" onclick="filterBranch('文对')" id="filter-wendui">🔵 文对支系</button>
         </div>
         <div class="genealogy-tree-scroll" id="tree-scroll-container">
           <div id="tree-container"></div>
@@ -511,9 +511,13 @@ var _currentBranch = 'all';
 
 function filterBranch(branch) {
   _currentBranch = branch;
-  // Update button styles
+  // Update button styles - map branch name to button id
+  var btnId = 'filter-all';
+  if (branch.indexOf('彬') >= 0) btnId = 'filter-bin';
+  else if (branch.indexOf('乾') >= 0) btnId = 'filter-qian';
+  else if (branch.indexOf('文对') >= 0) btnId = 'filter-wendui';
   document.querySelectorAll('[id^="filter-"]').forEach(function(b) { b.style.background = ''; b.style.color = ''; b.style.border = '1px solid var(--glass-border)'; });
-  var btn = document.getElementById('filter-' + branch);
+  var btn = document.getElementById(btnId);
   if (btn) { btn.style.background = 'var(--accent-orange)'; btn.style.color = '#fff'; btn.style.border = 'none'; }
   renderTreeSVG(getGenealogyData());
 }
