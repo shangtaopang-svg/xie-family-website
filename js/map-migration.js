@@ -275,15 +275,16 @@
     ROUTE.forEach(function (wp, i) {
       var numIcon = L.divIcon({
         className: 'map-node-num-label',
-        html: '<div style="cursor:pointer;background:rgba(251,146,60,0.9);color:#fff;font-size:14px;font-weight:800;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,0.5);">' + (i+1) + '</div>',
+        html: '<div onclick="onNodeClick(' + i + ')" style="cursor:pointer;background:rgba(251,146,60,0.9);color:#fff;font-size:14px;font-weight:800;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,0.5);">' + (i+1) + '</div>',
         iconSize: [30, 30],
         iconAnchor: [15, 15]
       });
-      var numM = L.marker([wp.lat, wp.lng], { icon: numIcon, opacity: 0.95, interactive: true, zIndexOffset: 1000 }).addTo(map);
       (function(idx) {
+        var numM = L.marker([wp.lat, wp.lng], { icon: numIcon, opacity: 0.95, interactive: true, zIndexOffset: 1000 }).addTo(map);
         numM.on('click', function() { onNodeClick(idx); });
+
+        nodeNumberMarkers.push(numM);
       })(i);
-      nodeNumberMarkers.push(numM);
     });
 
         // 6) 分段距离标注（在路线中间）
