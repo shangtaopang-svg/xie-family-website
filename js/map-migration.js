@@ -270,7 +270,18 @@
       fillOpacity: 0.08, weight: 0, opacity: 0
     }).addTo(map));
 
-        // 5) 途经点标签（引线到大海区域呈现）
+    // 5a) 节点编号标注（在节点位置显示"节点1"~"节点6"）
+    ROUTE.forEach(function (wp, i) {
+      var numIcon = L.divIcon({
+        className: 'map-node-num-label',
+        html: '<div style="background:rgba(0,0,0,0.7);color:#fb923c;font-size:15px;font-weight:800;padding:4px 12px;border-radius:20px;border:2px solid #fb923c;backdrop-filter:blur(4px);text-shadow:0 1px 4px rgba(0,0,0,0.5);white-space:nowrap;">节点' + (i+1) + '</div>',
+        iconSize: [80, 32],
+        iconAnchor: [40, 16]
+      });
+      L.marker([wp.lat, wp.lng], { icon: numIcon, opacity: 0.95, interactive: false, zIndexOffset: 1000 }).addTo(map);
+    });
+
+    // 5b) 详细内容标注（引线到大海区域呈现）
     var oceanLabelLngs = [123.0, 122.7, 122.9, 122.8, 123.1, 122.6];
     var oceanLabelLats = [34.2, 30.2, 28.4, 28.7, 28.9, 29.7];
     ROUTE.forEach(function (wp, i) {
@@ -293,17 +304,18 @@
       }).addTo(map);
 
       var coordText = wp.lat.toFixed(3) + ', ' + wp.lng.toFixed(3);
+      var oceanLabelText = '<div class="map-wp-inner" style="min-width:200px;">' +
+        '<div style="font-size:13px;font-weight:700;color:#fb923c;margin-bottom:2px;">节点' + (i+1) + '</div>' +
+        '<span class="map-wp-era" style="background:' + segStyle.color + '">' + wp.era + '</span>' +
+        '<span class="map-wp-year">' + wp.year + '</span>' +
+        '<span class="map-wp-name">' + wp.name + '</span>' +
+        '<span class="map-wp-addr">' + wp.fullName + '</span>' +
+        '<span class="map-wp-desc">' + wp.desc + '</span></div>';
       var icon = L.divIcon({
         className: 'map-wp-label',
-        html: '<div class="map-wp-inner">' +
-          '<span class="map-wp-era" style="background:' + segStyle.color + '">' + wp.era + '</span>' +
-          '<span class="map-wp-year">' + wp.year + '</span>' +
-          '<span class="map-wp-name">' + wp.name + '</span>' +
-          '<span class="map-wp-addr">' + wp.fullName + '</span>' +
-          '<span class="map-wp-coord">' + coordText + '</span>' +
-          '<span class="map-wp-desc">' + wp.desc + '</span></div>',
-        iconSize: [180, 100],
-        iconAnchor: [90, 50]
+        html: oceanLabelText,
+        iconSize: [220, 130],
+        iconAnchor: [110, 65]
       });
       labelMarkers.push(L.marker([oceanLat, oceanLng], {
         icon: icon, opacity: 0, interactive: false
