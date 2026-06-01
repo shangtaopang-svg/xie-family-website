@@ -4387,3 +4387,4 @@ body {
 .map-node-num-label { background:none !important; border:none !important; }
 .map-node-num-label div { cursor:pointer; }
 
+.btn-xs { padding:3px 12px;font-size:12px;border-radius:6px;border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--text-secondary);cursor:pointer;transition:all 0.2s;white-space:nowrap; } .btn-xs:hover { border-color:var(--accent-orange);color:var(--accent-orange); }

@@ -143,6 +143,14 @@
             <button class="btn btn-sm" onclick="toggleTreeFullscreen()" title="全屏观看" style="background:var(--accent-orange-dim);border-color:var(--accent-orange);">⛶ 全屏</button>
           </div>
         </div>
+        <!-- Branch filter -->
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+          <span style="font-size:12px;color:var(--text-tertiary);margin-right:4px;">筛选：</span>
+          <button class="btn btn-xs" onclick="filterBranch('all')" style="background:var(--accent-orange);color:#fff;border:none;" id="filter-all">全部世系</button>
+          <button class="btn btn-xs" onclick="filterBranch('bin')" id="filter-bin">🔴 彬公支系</button>
+          <button class="btn btn-xs" onclick="filterBranch('qian')" id="filter-qian">🟠 乾公支系</button>
+          <button class="btn btn-xs" onclick="filterBranch('wendui')" id="filter-wendui">🔵 文对支系</button>
+        </div>
         <div class="genealogy-tree-scroll" id="tree-scroll-container">
           <div id="tree-container"></div>
         </div>
@@ -477,9 +485,47 @@ function buildConnectorPath(parentId, childIds, layout) {
   return paths;
 }
 
+// Branch filter: collect all descendants of a root person
+function getBranchData(data, rootNamePattern) {
+  // Find root person
+  var root = null;
+  for (var i = 0; i < data.length; i++) {
+    if (data[i].name.indexOf(rootNamePattern) >= 0) { root = data[i]; break; }
+  }
+  if (!root) return data;
+  // Collect all descendants
+  var ids = [root.id];
+  function collect(pid) {
+    for (var i = 0; i < data.length; i++) {
+      if ((parseInt(data[i].father_id) === pid || parseInt(data[i].mother_id) === pid) && ids.indexOf(data[i].id) === -1) {
+        ids.push(data[i].id);
+        collect(data[i].id);
+      }
+    }
+  }
+  collect(root.id);
+  return data.filter(function(p) { return ids.indexOf(p.id) >= 0; });
+}
+
+var _currentBranch = 'all';
+
+function filterBranch(branch) {
+  _currentBranch = branch;
+  // Update button styles
+  document.querySelectorAll('[id^="filter-"]').forEach(function(b) { b.style.background = ''; b.style.color = ''; b.style.border = '1px solid var(--glass-border)'; });
+  var btn = document.getElementById('filter-' + branch);
+  if (btn) { btn.style.background = 'var(--accent-orange)'; btn.style.color = '#fff'; btn.style.border = 'none'; }
+  renderTreeSVG(getGenealogyData());
+}
+
 function renderTreeSVG(data) {
   var container = document.getElementById('tree-container');
   if (!container) return;
+  // Apply branch filter
+  if (_currentBranch && _currentBranch !== 'all') {
+    var filteredData = getBranchData(data, _currentBranch);
+    if (filteredData && filteredData.length > 0) data = filteredData;
+  }
   if (!data || data.length === 0) {
     container.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-tertiary);font-size:14px;">暂无族谱数据，请在管理后台添加</div>';
     return;
