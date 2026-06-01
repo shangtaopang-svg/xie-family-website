@@ -270,60 +270,23 @@
       fillOpacity: 0.08, weight: 0, opacity: 0
     }).addTo(map));
 
-    // 5a) 节点编号标注（在节点位置显示"节点1"~"节点6"）
+    // 5) 节点编号标注（点击显示详情侧面板）
+    var nodeNumberMarkers = [];
     ROUTE.forEach(function (wp, i) {
       var numIcon = L.divIcon({
         className: 'map-node-num-label',
-        html: '<div style="cursor:pointer;background:rgba(0,0,0,0.7);color:#fb923c;font-size:15px;font-weight:800;padding:4px 12px;border-radius:20px;border:2px solid #fb923c;backdrop-filter:blur(4px);text-shadow:0 1px 4px rgba(0,0,0,0.5);white-space:nowrap;">节点' + (i+1) + '</div>',
-        iconSize: [80, 32],
-        iconAnchor: [40, 16]
+        html: '<div style="cursor:pointer;background:rgba(251,146,60,0.9);color:#fff;font-size:14px;font-weight:800;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,0.5);">' + (i+1) + '</div>',
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
       });
       var numM = L.marker([wp.lat, wp.lng], { icon: numIcon, opacity: 0.95, interactive: true, zIndexOffset: 1000 }).addTo(map);
-      (function(idx) { numM.on('click', function() { onNodeClick(idx); }); })(i);
+      (function(idx) {
+        numM.on('click', function() { onNodeClick(idx); });
+      })(i);
+      nodeNumberMarkers.push(numM);
     });
 
-    // 5b) 详细内容标注（引线到大海区域呈现）
-    var oceanLabelLngs = [122.8, 122.6, 122.9, 122.5, 123.0, 122.4];
-    var oceanLabelLats = [34.5, 32.0, 30.0, 29.5, 28.7, 27.5];
-    ROUTE.forEach(function (wp, i) {
-      var segStyle = SEGMENT_STYLES[Math.min(i, SEGMENT_STYLES.length - 1)] || { color: '#888' };
-      var oceanLat = oceanLabelLats[i] || wp.lat;
-      var oceanLng = oceanLabelLngs[i] || 122.8;
-
-      // 引线：从节点水平向右到东经，再垂直延伸到海上标签位
-      L.polyline([
-        [wp.lat, wp.lng],
-        [wp.lat, oceanLng],
-        [oceanLat, oceanLng]
-      ], {
-        color: 'rgba(251,146,60,0.35)', weight: 2, dashArray: '6,4', interactive: false
-      }).addTo(map);
-      // 弯折点小圆点
-      L.circleMarker([wp.lat, oceanLng], {
-        radius: 2, color: 'rgba(255,255,255,0.3)', fillColor: 'rgba(255,255,255,0.5)',
-        fillOpacity: 0.5, weight: 0, interactive: false
-      }).addTo(map);
-
-      var coordText = wp.lat.toFixed(3) + ', ' + wp.lng.toFixed(3);
-      var oceanLabelText = '<div class="map-wp-inner" style="min-width:200px;">' +
-        '<div style="font-size:13px;font-weight:700;color:#fb923c;margin-bottom:2px;">节点' + (i+1) + '</div>' +
-        '<span class="map-wp-era" style="background:' + segStyle.color + '">' + wp.era + '</span>' +
-        '<span class="map-wp-year">' + wp.year + '</span>' +
-        '<span class="map-wp-name">' + wp.name + '</span>' +
-        '<span class="map-wp-addr">' + wp.fullName + '</span>' +
-        '<span class="map-wp-desc">' + wp.desc + '</span></div>';
-      var icon = L.divIcon({
-        className: 'map-wp-label',
-        html: oceanLabelText,
-        iconSize: [220, 130],
-        iconAnchor: [110, 65]
-      });
-      labelMarkers.push(L.marker([oceanLat, oceanLng], {
-        icon: icon, opacity: 0, interactive: false
-      }).addTo(map));
-    });
-
-    // 6) 分段距离标注（在路线中间）
+    // 6) 分段距离标注（在路线中间）    // 6) 分段距离标注（在路线中间）
     CURVED_SEGMENTS.forEach(function (seg, i) {
       var mid = seg[Math.floor(seg.length / 2)];
       var distKm = SEG_DISTANCES[i];
@@ -367,13 +330,14 @@
     // 8) 节点信息面板
     infoPanel = document.createElement('div');
     infoPanel.className = 'map-node-info';
-    infoPanel.innerHTML = '<div class="n-era"></div>' +
+    infoPanel.innerHTML = '<div class="n-header"><span class="n-num"></span><span class="n-era"></span></div>' +
+      '<div class="n-body">' +
       '<div class="n-year"></div>' +
       '<div class="n-name"></div>' +
       '<div class="n-addr"></div>' +
-      '<div class="n-coord"></div>' +
       '<div class="n-desc"></div>' +
-      '<div class="n-close" onclick="MapMigration.resume()">— 继续 —</div>';
+      '</div>' +
+      '<div class="n-close" onclick="MapMigration.resume()">✕</div>';
     container.appendChild(infoPanel);
 
     movingDot.setLatLng(CURVED_SEGMENTS[0][0]);
@@ -425,18 +389,13 @@
     if (idx >= 5 && zoom < 13) zoom = 13;
     map.setView([wp.lat, wp.lng], zoom, { animate: true });
 
-    // Show clicked node's ocean label, hide others
-    labelMarkers.forEach(function (m, i) {
-      m.setOpacity(i === idx ? 1 : 0);
-    });
-
     if (infoPanel) {
+      infoPanel.querySelector('.n-num').textContent = '节点' + (idx + 1);
       infoPanel.querySelector('.n-era').textContent = wp.era;
       infoPanel.querySelector('.n-era').style.background = segStyle.color;
       infoPanel.querySelector('.n-year').textContent = wp.year;
       infoPanel.querySelector('.n-name').textContent = wp.name;
       infoPanel.querySelector('.n-addr').textContent = wp.fullName;
-      infoPanel.querySelector('.n-coord').textContent = wp.lat.toFixed(3) + ', ' + wp.lng.toFixed(3);
       infoPanel.querySelector('.n-desc').textContent = wp.desc;
       infoPanel.classList.add('show');
     }
@@ -448,7 +407,6 @@
 
   function resumeAnim() {
     hideNodeInfo();
-    labelMarkers.forEach(function (m) { m.setOpacity(0); });
     if (isPaused) {
       isPaused = false;
       startTime = performance.now();
