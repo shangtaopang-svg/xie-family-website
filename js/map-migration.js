@@ -192,7 +192,7 @@
     }).addTo(map);
 
     var latlngs = ROUTE.map(function (p) { return [p.lat, p.lng]; });
-    latlngs.push([34.5, 123.5], [28.0, 123.5]);
+    latlngs.push([35.0, 123.5], [27.0, 123.5]);
     map.fitBounds(latlngs, { padding: [50, 50], maxZoom: 6.5 });
 
     // 1) 完整路线（白色描边 + 红色主线，确保在任何背景上都清晰可见）
@@ -274,16 +274,17 @@
     ROUTE.forEach(function (wp, i) {
       var numIcon = L.divIcon({
         className: 'map-node-num-label',
-        html: '<div style="background:rgba(0,0,0,0.7);color:#fb923c;font-size:15px;font-weight:800;padding:4px 12px;border-radius:20px;border:2px solid #fb923c;backdrop-filter:blur(4px);text-shadow:0 1px 4px rgba(0,0,0,0.5);white-space:nowrap;">节点' + (i+1) + '</div>',
+        html: '<div style="cursor:pointer;background:rgba(0,0,0,0.7);color:#fb923c;font-size:15px;font-weight:800;padding:4px 12px;border-radius:20px;border:2px solid #fb923c;backdrop-filter:blur(4px);text-shadow:0 1px 4px rgba(0,0,0,0.5);white-space:nowrap;">节点' + (i+1) + '</div>',
         iconSize: [80, 32],
         iconAnchor: [40, 16]
       });
-      L.marker([wp.lat, wp.lng], { icon: numIcon, opacity: 0.95, interactive: false, zIndexOffset: 1000 }).addTo(map);
+      var numM = L.marker([wp.lat, wp.lng], { icon: numIcon, opacity: 0.95, interactive: true, zIndexOffset: 1000 }).addTo(map);
+      (function(idx) { numM.on('click', function() { onNodeClick(idx); }); })(i);
     });
 
     // 5b) 详细内容标注（引线到大海区域呈现）
-    var oceanLabelLngs = [123.0, 122.7, 122.9, 122.8, 123.1, 122.6];
-    var oceanLabelLats = [34.2, 30.2, 28.4, 28.7, 28.9, 29.7];
+    var oceanLabelLngs = [122.8, 122.6, 122.9, 122.5, 123.0, 122.4];
+    var oceanLabelLats = [34.5, 32.0, 30.0, 29.5, 28.7, 27.5];
     ROUTE.forEach(function (wp, i) {
       var segStyle = SEGMENT_STYLES[Math.min(i, SEGMENT_STYLES.length - 1)] || { color: '#888' };
       var oceanLat = oceanLabelLats[i] || wp.lat;
@@ -424,8 +425,9 @@
     if (idx >= 5 && zoom < 13) zoom = 13;
     map.setView([wp.lat, wp.lng], zoom, { animate: true });
 
+    // Show clicked node's ocean label, hide others
     labelMarkers.forEach(function (m, i) {
-      m.setOpacity(i === idx ? 1 : 0.15);
+      m.setOpacity(i === idx ? 1 : 0);
     });
 
     if (infoPanel) {
