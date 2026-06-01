@@ -409,7 +409,10 @@ function layoutTree(personId, x, y, data, collapsed, visited) {
 
 function buildCardSvg(person, data, hasChildren, descendantCount, childCount) {
   var id = person.id;
-  var isHighlight = person.highlight === true;
+  var isHighlight = person.highlight === true ||
+    /^(小四|文杲|攒|撰|彬|乾|文对)/.test(person.name) ||
+    /（(石马|司检|后枫槎|前枫槎|东房|西房)）/.test(person.name) ||
+    /【(后枫槎|前枫槎)】/.test(person.name);
   var card = '<g class="tree-svg-card' + (isHighlight ? ' tree-svg-highlight' : '') + '" data-id="' + id + '" onclick="onCardClick(' + id + ', event)">';
   card += '<rect class="card-bg ' + (person.gender === '男' ? 'male' : 'female') + '" x="-' + (CARD_W/2) + '" y="-' + (CARD_H/2) + '" width="' + CARD_W + '" height="' + CARD_H + '"/>';
   if (isHighlight) {
