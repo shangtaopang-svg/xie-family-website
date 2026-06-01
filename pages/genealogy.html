@@ -195,9 +195,11 @@
 .genealogy-tree-scroll svg { display:block; width:100%; height:100%; min-height:450px; }
 .tree-svg-card { cursor:pointer; transition:opacity 0.15s; }
 .tree-svg-card:hover .card-bg { stroke:var(--accent-orange); stroke-width:2.5; }
-.tree-svg-highlight .card-bg { stroke:#e67e22; stroke-width:2.5; fill:rgba(251,146,60,0.12); }
-.tree-svg-highlight .card-name { fill:#e67e22; font-weight:700; }
-.tree-svg-highlight .card-bg:hover { stroke:#d35400; stroke-width:3; fill:rgba(251,146,60,0.2); }
+.tree-svg-highlight .card-bg { stroke:#ff6b00; stroke-width:4; fill:rgba(255,107,0,0.2); }
+.tree-svg-highlight .card-name { fill:#ff6b00; font-weight:800; font-size:16px; }
+.tree-svg-highlight .card-meta { fill:#ff6b00; font-weight:600; }
+.tree-svg-highlight .card-branch { fill:#ff6b00; font-weight:700; font-size:10px; }
+.tree-svg-highlight .card-bg:hover { stroke:#e04400; stroke-width:5; fill:rgba(255,107,0,0.3); }
 .tree-svg-card:hover { opacity:0.92; }
 .card-bg { fill:var(--glass-bg); stroke:var(--glass-border); stroke-width:1.5; rx:8; ry:8; transition:stroke 0.15s, stroke-width 0.15s; }
 .card-bg.male { }
@@ -221,6 +223,7 @@
 .tree-svg-node-hidden .card-collapse-text { display:none; }
 /* Larger cards */
 .tree-svg-card .card-bg { width:140px; height:85px; }
+.tree-svg-highlight .card-bg { stroke-width:4; }
 .card-name { transform:translateY(-10px); }
 .card-meta { transform:translateY(10px); }
 .card-branch { transform:translateY(22px); }
@@ -328,7 +331,7 @@
   }
 
   // ===== SVG Tree rendering =====
-var CARD_W = 140, CARD_H = 85, H_GAP = 36, V_GAP = 110;
+var CARD_W = 150, CARD_H = 85, H_GAP = 50, V_GAP = 110;
 var treeScale = 1, treePanX = 0, treePanY = 0;
 var treeLayout = {}; // { personId: {x, y} }
 var allNodes = [];
@@ -400,6 +403,9 @@ function buildCardSvg(person, data, hasChildren, descendantCount, childCount) {
   var isHighlight = HIGHLIGHT_NAMES.indexOf(person.name) >= 0;
   var card = '<g class="tree-svg-card' + (isHighlight ? ' tree-svg-highlight' : '') + '" data-id="' + id + '" onclick="onCardClick(' + id + ', event)">';
   card += '<rect class="card-bg ' + (person.gender === '男' ? 'male' : 'female') + '" x="-' + (CARD_W/2) + '" y="-' + (CARD_H/2) + '" width="' + CARD_W + '" height="' + CARD_H + '"/>';
+  if (isHighlight) {
+    card += '<text x="' + (CARD_W/2 - 8) + '" y="-' + (CARD_H/2 + 6) + '" fill="#ff6b00" font-size="14">⭐</text>';
+  }
   var nameText = escapeHtml(person.name || '未知');
   if (person.adopted && person.adopted !== '否') {
     card += '<text class="card-adopted-badge" x="-' + (CARD_W/2-12) + '" y="-' + (CARD_H/2+4) + '" text-anchor="middle">嗣</text>';
