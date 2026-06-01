@@ -588,6 +588,51 @@ function renderTreeSVG(data) {
     svg += '</g>';
   }
 
+  // Draw group boxes for 彬 and 乾 and their descendants
+  var groups = ['彬（东房祖）', '乾（西房祖）'];
+  var groupColors = ['#ef4444', '#ef4444'];
+  for (var g = 0; g < groups.length; g++) {
+    var rootPerson = null;
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].name.indexOf(groups[g].substring(0, 1)) === 0 && data[i].name.indexOf(groups[g].substring(1)) > 0) {
+        rootPerson = data[i]; break;
+      }
+    }
+    if (!rootPerson) continue;
+    var descendantIds = [rootPerson.id];
+    function collectDescendants(pid) {
+      for (var i = 0; i < data.length; i++) {
+        if (parseInt(data[i].father_id) === pid || parseInt(data[i].mother_id) === pid) {
+          if (descendantIds.indexOf(data[i].id) === -1) {
+            descendantIds.push(data[i].id);
+            collectDescendants(data[i].id);
+          }
+        }
+      }
+    }
+    collectDescendants(rootPerson.id);
+    var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    var hasAny = false;
+    for (var i = 0; i < descendantIds.length; i++) {
+      var pos = treeLayout[descendantIds[i]];
+      if (pos) {
+        if (pos.x < minX) minX = pos.x;
+        if (pos.x > maxX) maxX = pos.x;
+        if (pos.y < minY) minY = pos.y;
+        if (pos.y > maxY) maxY = pos.y;
+        hasAny = true;
+      }
+    }
+    if (!hasAny) continue;
+    var pad = 25;
+    var bx = minX - CARD_W/2 - pad;
+    var by = minY - CARD_H/2 - pad;
+    var bw = (maxX - minX) + CARD_W + pad * 2;
+    var bh = (maxY - minY) + CARD_H + pad * 2;
+    svg += '<rect x="' + bx + '" y="' + by + '" width="' + bw + '" height="' + bh + '" fill="none" stroke="' + groupColors[g] + '" stroke-width="3" stroke-dasharray="8,4" rx="14" opacity="0.8"/>';
+    svg += '<text x="' + (bx + 14) + '" y="' + (by + 20) + '" fill="' + groupColors[g] + '" font-size="13" font-weight="700" opacity="0.85">' + groups[g] + '</text>';
+  }
+
   svg += '</svg></div>';
 
   // Place SVG in container
