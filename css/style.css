@@ -4388,3 +4388,29 @@ body {
 .map-node-num-label div { cursor:pointer; }
 
 .btn-xs { padding:3px 12px;font-size:12px;border-radius:6px;border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--text-secondary);cursor:pointer;transition:all 0.2s;white-space:nowrap; } .btn-xs:hover { border-color:var(--accent-orange);color:var(--accent-orange); }
+
+/* Mobile back button */
+.back-page-btn {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 999;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  text-decoration: none;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+}
+.back-page-btn:hover { background: var(--glass-hover); color: var(--text-primary); }
+@media (max-width: 900px) {
+  .back-page-btn { display: flex; }
+}
