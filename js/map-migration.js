@@ -192,7 +192,8 @@
     }).addTo(map);
 
     var latlngs = ROUTE.map(function (p) { return [p.lat, p.lng]; });
-    map.fitBounds(latlngs, { padding: [60, 60], maxZoom: 7.5 });
+    latlngs.push([34.2, 123.0], [28.4, 123.2]);
+    map.fitBounds(latlngs, { padding: [60, 60], maxZoom: 7 });
 
     // 1) 完整路线（白色描边 + 红色主线，确保在任何背景上都清晰可见）
     var MAIN_COLOR = '#ef4444';
@@ -269,23 +270,32 @@
       fillOpacity: 0.08, weight: 0, opacity: 0
     }).addTo(map));
 
-    // 5) 途经点标签
+        // 5) 途经点标签（引线到大海区域呈现）
+    var oceanLabelLngs = [123.0, 122.7, 122.9, 122.8, 123.1, 122.6];
+    var oceanLabelLats = [34.2, 30.2, 28.4, 28.7, 28.9, 29.7];
     ROUTE.forEach(function (wp, i) {
       var segStyle = SEGMENT_STYLES[Math.min(i, SEGMENT_STYLES.length - 1)] || { color: '#888' };
-      var extraClass = '';
-      var anchorY = 0;
-      if (i === 4) {        // 岩下：标签向上
-        extraClass = ' map-wp-inner-up';
-        anchorY = 55;
-      } else if (i === 5) { // 下枫槎：标签向下
-        extraClass = ' map-wp-inner-down';
-        anchorY = 0;
-      }
+      var oceanLat = oceanLabelLats[i] || wp.lat;
+      var oceanLng = oceanLabelLngs[i] || 122.8;
+
+      // 引线：从节点水平向右到东经，再垂直延伸到海上标签位
+      L.polyline([
+        [wp.lat, wp.lng],
+        [wp.lat, oceanLng],
+        [oceanLat, oceanLng]
+      ], {
+        color: 'rgba(255,255,255,0.2)', weight: 1.5, dashArray: '4,6', interactive: false
+      }).addTo(map);
+      // 弯折点小圆点
+      L.circleMarker([wp.lat, oceanLng], {
+        radius: 2, color: 'rgba(255,255,255,0.3)', fillColor: 'rgba(255,255,255,0.5)',
+        fillOpacity: 0.5, weight: 0, interactive: false
+      }).addTo(map);
 
       var coordText = wp.lat.toFixed(3) + ', ' + wp.lng.toFixed(3);
       var icon = L.divIcon({
         className: 'map-wp-label',
-        html: '<div class="map-wp-inner' + extraClass + '">' +
+        html: '<div class="map-wp-inner">' +
           '<span class="map-wp-era" style="background:' + segStyle.color + '">' + wp.era + '</span>' +
           '<span class="map-wp-year">' + wp.year + '</span>' +
           '<span class="map-wp-name">' + wp.name + '</span>' +
@@ -293,9 +303,9 @@
           '<span class="map-wp-coord">' + coordText + '</span>' +
           '<span class="map-wp-desc">' + wp.desc + '</span></div>',
         iconSize: [180, 100],
-        iconAnchor: [90, anchorY]
+        iconAnchor: [90, 50]
       });
-      labelMarkers.push(L.marker([wp.lat, wp.lng], {
+      labelMarkers.push(L.marker([oceanLat, oceanLng], {
         icon: icon, opacity: 0, interactive: false
       }).addTo(map));
     });
