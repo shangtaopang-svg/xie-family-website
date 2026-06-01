@@ -137,7 +137,7 @@
             <button class="btn btn-sm" onclick="treeZoomIn()" title="放大">🔍+</button>
             <button class="btn btn-sm" onclick="treeZoomOut()" title="缩小">🔍−</button>
             <button class="btn btn-sm" onclick="treeZoomReset()" title="重置缩放">1:1</button>
-            <span id="tree-zoom-level" style="font-size:11px;color:var(--text-tertiary);min-width:32px;text-align:center;">100%</span>
+            <span id="tree-zoom-level" style="font-size:11px;color:var(--text-tertiary;min-width:32px;text-align:center;">100%</span>
             <button class="btn btn-sm" onclick="expandAllTree()" title="展开全部">全部展开</button>
             <button class="btn btn-sm" onclick="collapseAllTree()" title="收起全部">全部收起</button>
           </div>
@@ -189,7 +189,7 @@
 
   <style>
 /* Tree visualization - SVG */
-.genealogy-tree-scroll { overflow:hidden; border:1px solid var(--glass-border); border-radius:12px; background:var(--bg-card); cursor:grab; min-height:450px; position:relative; }
+.genealogy-tree-scroll { overflow:hidden; border:1px solid var(--glass-border); border-radius:12px; background:var(--bg-card); cursor:grab; min-height:450px; position:relative; width:100%; }
 .genealogy-tree-scroll svg { display:block; width:100%; height:100%; min-height:450px; }
 .tree-svg-card { cursor:pointer; transition:opacity 0.15s; }
 .tree-svg-card:hover .card-bg { stroke:var(--accent-orange); stroke-width:2.5; }
@@ -480,10 +480,10 @@ function renderTreeSVG(data) {
   var svgW = Math.max(400, maxX - minX + CARD_W + 80);
   var svgH = Math.max(400, maxY - minY + CARD_H + 80);
 
-  // Build SVG
-  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + svgW + ' ' + svgH + '" width="100%" height="100%" style="min-height:450px;">';
+  // Build SVG - wrapped in CSS-transform div for correct mouse zoom
+  var svg = '<div class="tree-viewport" style="transform-origin:0 0;transform:translate(' + treePanX + 'px,' + treePanY + 'px) scale(' + treeScale + ');">';
+  svg += '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + svgW + ' ' + svgH + '" width="' + svgW + '" height="' + svgH + '" style="display:block;">';
   svg += '<defs><filter id="glow"><feGaussianBlur stdDeviation="2" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
-  svg += '<g class="tree-viewport" transform="translate(' + treePanX + ',' + treePanY + ') scale(' + treeScale + ')">';
 
   // Draw connectors (all cards visible)
   var cardIdsNum = cardIds.map(function(id) { return parseInt(id); });
@@ -529,7 +529,7 @@ function renderTreeSVG(data) {
     svg += '</g>';
   }
 
-  svg += '</g></svg>';
+  svg += '</svg></div>';
 
   // Place SVG in container
   container.innerHTML = svg;
@@ -588,7 +588,7 @@ function treeZoomReset() { treeScale = 1; treePanX = 0; treePanY = 0; applyTreeT
 function applyTreeTransformSVG() {
   var vp = document.querySelector('.tree-viewport');
   if (!vp) return;
-  vp.setAttribute('transform', 'translate(' + treePanX + ',' + treePanY + ') scale(' + treeScale + ')');
+  vp.style.transform = 'translate(' + treePanX + 'px,' + treePanY + 'px) scale(' + treeScale + ')';
   var el = document.getElementById('tree-zoom-level');
   if (el) el.textContent = Math.round(treeScale * 100) + '%';
 }
@@ -619,16 +619,15 @@ function scrollToCardSVG(card) {
   var scrollContainer = document.getElementById('tree-scroll-container');
   if (!scrollContainer) return;
 
-  // Get card center in viewport coordinates
-  var ctm = card.getScreenCTM ? card.getScreenCTM() : null;
-  if (!ctm) return;
+  // Find card position using getBoundingClientRect in CSS pixel space
+  var cardRect = card.getBoundingClientRect();
   var containerRect = scrollContainer.getBoundingClientRect();
-  var cx = ctm.e + CARD_W/2 * treeScale;
-  var cy = ctm.f + CARD_H/2 * treeScale;
-  var dx = cx - containerRect.left - containerRect.width / 2;
-  var dy = cy - containerRect.top - containerRect.height / 2;
-  treePanX -= dx / treeScale;
-  treePanY -= dy / treeScale;
+  var cx = cardRect.left + cardRect.width/2 - containerRect.left;
+  var cy = cardRect.top + cardRect.height/2 - containerRect.top;
+  var containerCX = containerRect.width / 2;
+  var containerCY = containerRect.height / 2;
+  treePanX += (containerCX - cx) / treeScale;
+  treePanY += (containerCY - cy) / treeScale;
   applyTreeTransformSVG();
 
   setTimeout(function() { if (bg) bg.classList.remove('highlight'); }, 3500);
@@ -647,6 +646,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var my = e.clientY - rect.top;
     var factor = e.deltaY < 0 ? 1.08 : 0.92;
     var newScale = Math.max(0.3, Math.min(3, treeScale * factor));
+    // Zoom towards mouse position using CSS pixel coordinates
     treePanX = mx - (mx - treePanX) * (newScale / treeScale);
     treePanY = my - (my - treePanY) * (newScale / treeScale);
     treeScale = newScale;
