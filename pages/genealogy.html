@@ -635,7 +635,7 @@ function scrollToCardSVG(card) {
 }
 
 // ===== Setup SVG tree interactions =====
-document.addEventListener('DOMContentLoaded-first', function() {
+document.addEventListener('DOMContentLoaded', function() {
   var scrollContainer = document.getElementById('tree-scroll-container');
   if (!scrollContainer) return;
 
@@ -961,7 +961,7 @@ document.addEventListener('DOMContentLoaded-first', function() {
   }
 
   // Allow Enter key to search
-  document.addEventListener('DOMContentLoaded-first', function() {
+  document.addEventListener('DOMContentLoaded', function() {
     var searchInput = document.getElementById('genealogy-search');
     if (searchInput) {
       searchInput.addEventListener('keyup', function(e) {
