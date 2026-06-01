@@ -588,9 +588,10 @@ function renderTreeSVG(data) {
     svg += '</g>';
   }
 
-  // Draw group boxes for 彬 and 乾 and their descendants
-  var groups = ['彬（东房祖）', '乾（西房祖）'];
-  var groupColors = ['#ef4444', '#ef4444'];
+  // Draw group boxes for each branch
+  var groups = ['彬（东房祖）', '乾（西房祖）', '攒【后枫槎】', '撰【前枫槎】'];
+  var groupColors = ['#ef4444', '#ef4444', '#22c55e', '#22c55e'];
+  var groupWidths = [3, 3, 5, 5];
   for (var g = 0; g < groups.length; g++) {
     var rootPerson = null;
     for (var i = 0; i < data.length; i++) {
@@ -629,7 +630,7 @@ function renderTreeSVG(data) {
     var by = minY - CARD_H/2 - pad;
     var bw = (maxX - minX) + CARD_W + pad * 2;
     var bh = (maxY - minY) + CARD_H + pad * 2;
-    svg += '<rect x="' + bx + '" y="' + by + '" width="' + bw + '" height="' + bh + '" fill="none" stroke="' + groupColors[g] + '" stroke-width="3" stroke-dasharray="8,4" rx="14" opacity="0.8"/>';
+    svg += '<rect x="' + bx + '" y="' + by + '" width="' + bw + '" height="' + bh + '" fill="none" stroke="' + groupColors[g] + '" stroke-width="' + groupWidths[g] + '" stroke-dasharray="8,4" rx="14" opacity="0.8"/>';
     svg += '<text x="' + (bx + 14) + '" y="' + (by + 20) + '" fill="' + groupColors[g] + '" font-size="13" font-weight="700" opacity="0.85">' + groups[g] + '</text>';
   }
 
