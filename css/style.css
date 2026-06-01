@@ -3787,92 +3787,118 @@ body {
 .map-node-clickable {
   cursor: pointer;
 }
+/* Node info side panel */
 .map-node-info {
   position: absolute;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 50%;
+  right: -380px;
+  transform: translateY(-50%);
   z-index: 20;
-  background: rgba(0,0,0,0.75);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 14px;
-  padding: 18px 28px;
-  max-width: 420px;
-  width: 90%;
-  text-align: center;
+  background: rgba(10,10,15,0.88);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(251,146,60,0.25);
+  border-radius: 16px;
+  padding: 24px 28px;
+  width: 320px;
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
   pointer-events: none;
+  box-shadow: -8px 0 30px rgba(0,0,0,0.4);
 }
 .map-node-info.show {
+  right: 20px;
   opacity: 1;
   pointer-events: auto;
 }
+.map-node-info .n-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.map-node-info .n-num {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fb923c;
+  letter-spacing: 1px;
+  background: rgba(251,146,60,0.15);
+  padding: 3px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(251,146,60,0.3);
+}
 .map-node-info .n-era {
-  display: inline-block;
-  font-size: 10px;
-  padding: 1px 10px;
+  font-size: 11px;
+  padding: 3px 12px;
   border-radius: 4px;
   color: #fff;
+  letter-spacing: 1.5px;
+  font-weight: 600;
+}
+.map-node-info .n-body {
+  margin-bottom: 14px;
+}
+.map-node-info .n-year {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
   letter-spacing: 1px;
   margin-bottom: 6px;
 }
-.map-node-info .n-year {
-  font-size: 12px;
-  color: rgba(255,255,255,0.6);
-  letter-spacing: 1px;
-  margin-bottom: 4px;
-}
 .map-node-info .n-name {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   color: #fff;
   letter-spacing: 2px;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 .map-node-info .n-addr {
   font-size: 12px;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255,255,255,0.55);
   letter-spacing: 1px;
-  margin-bottom: 2px;
-}
-.map-node-info .n-coord {
-  font-size: 10px;
-  color: rgba(255,255,255,0.35);
-  letter-spacing: 0.5px;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
 }
 .map-node-info .n-desc {
   font-size: 13px;
-  color: rgba(255,255,255,0.8);
+  color: rgba(255,255,255,0.75);
   letter-spacing: 1px;
-  line-height: 1.6;
-  margin-bottom: 10px;
+  line-height: 1.7;
 }
 .map-node-info .n-close {
-  display: inline-block;
-  padding: 5px 24px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.15);
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
   background: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.8);
-  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+  font-size: 14px;
   cursor: pointer;
-  letter-spacing: 2px;
-  transition: background 0.3s;
+  transition: background 0.2s;
 }
 .map-node-info .n-close:hover {
-  background: rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.2);
+  color: #fff;
 }
 @media (max-width: 768px) {
   .map-node-info {
-    bottom: 60px;
-    padding: 14px 18px;
-    max-width: 300px;
+    top: auto;
+    bottom: -300px;
+    right: 10px;
+    left: 10px;
+    width: auto;
+    transform: none;
+    transition: bottom 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
   }
-  .map-node-info .n-name { font-size: 15px; }
-  .map-node-info .n-desc { font-size: 12px; }
+  .map-node-info.show {
+    bottom: 10px;
+    right: 10px;
+  }
 }
 
 /* ============================================
