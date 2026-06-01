@@ -270,35 +270,29 @@
   function getGenealogyData() {
     try {
       var stored = localStorage.getItem('xie_admin_genealogy');
+      var ver = localStorage.getItem('xie_admin_genealogy_ver');
+      if (stored && ver === '2') {
+        return JSON.parse(stored);
+      }
+      // Fresh seed data or upgrade old cache
       if (stored) {
         var parsed = JSON.parse(stored);
-        // Ensure new seed entries exist (upgrade localStorage data)
-        var seedNames = {'谢小四':1,'文杲公':2,'攒公':3,'撰公':4,'彬公':5,'乾公':6,'云先公':7,'文对':8};
-        var existingNames = {};
-        parsed.forEach(function(p) { existingNames[p.name] = true; });
-        var needSave = false;
-        for (var sn in seedNames) {
-          if (!existingNames[sn]) {
-            // Find the full entry from seedData below
-            needSave = true; break;
+        var fullSeed = getFullSeedData();
+        var existingIds = {};
+        parsed.forEach(function(p) { existingIds[p.id] = true; });
+        for (var i = 0; i < fullSeed.length; i++) {
+          if (!existingIds[fullSeed[i].id]) {
+            parsed.push(fullSeed[i]);
           }
         }
-        if (needSave) {
-          var fullSeed = getFullSeedData();
-          for (var i = 0; i < fullSeed.length; i++) {
-            if (!existingNames[fullSeed[i].name]) {
-              parsed.push(fullSeed[i]);
-              existingNames[fullSeed[i].name] = true;
-            }
-          }
-          localStorage.setItem('xie_admin_genealogy', JSON.stringify(parsed));
-          return parsed;
-        }
+        localStorage.setItem('xie_admin_genealogy', JSON.stringify(parsed));
+        localStorage.setItem('xie_admin_genealogy_ver', '2');
         return parsed;
       }
       // Seed default ancestor data from PDF族谱
       var seedData = getFullSeedData();
       localStorage.setItem('xie_admin_genealogy', JSON.stringify(seedData));
+      localStorage.setItem('xie_admin_genealogy_ver', '2');
       return seedData;
     } catch(e) { return []; }
   }
