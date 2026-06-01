@@ -271,6 +271,7 @@
     }).addTo(map));
 
     // 5) 节点编号标注（视觉标记，点击在下方透明圆层处理）
+    var nodeNumberMarkers = [];
     ROUTE.forEach(function (wp, i) {
       var numIcon = L.divIcon({
         className: 'map-node-num-label',
