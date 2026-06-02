@@ -89,6 +89,21 @@
       <div id="members-stats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;"></div>
     </section>
 
+    <!-- 数据可视化 -->
+    <section style="margin-bottom:24px;opacity:0;transition:opacity 0.5s;" id="chart-section">
+      <div class="section-title"><h2>📈 数据可视化</h2><div class="divider"></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="glass-card" style="padding:16px;">
+          <h4 style="font-size:14px;color:var(--text-primary);margin-bottom:10px;text-align:center;">各世代人口分布</h4>
+          <div id="chart-gen" style="height:280px;"></div>
+        </div>
+        <div class="glass-card" style="padding:16px;">
+          <h4 style="font-size:14px;color:var(--text-primary);margin-bottom:10px;text-align:center;">彬/乾/文对分支人数对比</h4>
+          <div id="chart-branch" style="height:280px;"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- 支系 + 世代筛选 -->
     <section style="margin-bottom:24px;">
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -621,5 +636,99 @@
     <audio id="bg-music" loop src="../music/background.mp3"></audio>
   
 
+<script>
+function renderMemberCharts() {
+  var data = [];
+  try { data = JSON.parse(localStorage.getItem('xie_admin_genealogy') || '[]'); } catch(e) {}
+  if (!data || data.length === 0) { setTimeout(renderMemberCharts, 1000); return; }
+  
+  document.getElementById('chart-section').style.opacity = '1';
+
+  // 1. Generation distribution
+  var genData = {};
+  data.forEach(function(p) {
+    var g = parseInt(p.generation_num) || 0;
+    genData[g] = (genData[g] || 0) + 1;
+  });
+  var sorted = Object.keys(genData).map(Number).sort(function(a,b){return a-b});
+  var maxCount = 1;
+  sorted.forEach(function(g){if(genData[g]>maxCount)maxCount=genData[g];});
+  
+  var genHtml = '<div style="padding:4px;overflow-y:auto;height:100%;font-size:11px;">';
+  sorted.forEach(function(g) {
+    var pct = (genData[g] / maxCount * 100).toFixed(0);
+    genHtml += '<div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">';
+    genHtml += '<span style="width:45px;text-align:right;color:var(--text-tertiary);flex-shrink:0;">' + g + '世</span>';
+    genHtml += '<div style="flex:1;height:16px;background:var(--glass-bg);border-radius:3px;overflow:hidden;">';
+    genHtml += '<div style="height:100%;width:' + pct + '%;background:#fb923c;border-radius:3px;"></div></div>';
+    genHtml += '<span style="width:28px;color:var(--text-secondary);flex-shrink:0;text-align:right;">' + genData[g] + '</span>';
+    genHtml += '</div>';
+  });
+  genHtml += '</div>';
+  document.getElementById('chart-gen').innerHTML = genHtml;
+
+  // 2. Branch stats - 彬/乾/文对
+  var branchRoots = ['彬（东房祖）', '乾（西房祖）', '文对'];
+  var branchResult = [];
+  branchRoots.forEach(function(name) {
+    var ids = []; var root = null;
+    for (var i = 0; i < data.length; i++) {
+      var n = data[i].name || '';
+      if (n.indexOf(name.substring(0,1)) >= 0 && n.indexOf(name.substring(1,3)) >= 0) {
+        root = data[i]; break;
+      }
+    }
+    if (root) {
+      ids.push(root.id);
+      (function collect(pid) {
+        for (var i = 0; i < data.length; i++) {
+          var f = parseInt(data[i].father_id);
+          var m = parseInt(data[i].mother_id);
+          if ((f === pid || m === pid) && ids.indexOf(data[i].id) === -1) {
+            ids.push(data[i].id); collect(data[i].id);
+          }
+        }
+      })(root.id);
+    }
+    branchResult.push({ label: name.substring(0,1) + '公', count: ids.length || 1 });
+  });
+  
+  var maxBr = 1;
+  branchResult.forEach(function(b){if(b.count>maxBr)maxBr=b.count;});
+  var colors = ['#ef4444', '#fb923c', '#22c55e'];
+  var brHtml = '<div style="padding:10px;display:flex;flex-direction:column;gap:14px;justify-content:center;height:100%;">';
+  branchResult.forEach(function(b, i) {
+    var pct = (b.count / maxBr * 100).toFixed(0);
+    brHtml += '<div>';
+    brHtml += '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px;">';
+    brHtml += '<span style="color:var(--text-primary);font-weight:600;">' + b.label + '</span>';
+    brHtml += '<span style="color:var(--text-secondary);">' + b.count + '人</span>';
+    brHtml += '</div>';
+    brHtml += '<div style="height:28px;background:var(--glass-bg);border-radius:5px;overflow:hidden;">';
+    brHtml += '<div style="height:100%;width:' + pct + '%;background:' + colors[i] + ';border-radius:5px;"></div>';
+    brHtml += '</div></div>';
+  });
+  brHtml += '</div>';
+  document.getElementById('chart-branch').innerHTML = brHtml;
+
+  // 3. Additional stats: male/female ratio as colored bar
+  var males = 0, females = 0;
+  data.forEach(function(p) { if(p.gender === '男') males++; else if(p.gender === '女') females++; });
+  var total = males + females;
+  var mPct = total > 0 ? (males/total*100).toFixed(0) : 0;
+  var fPct = total > 0 ? (females/total*100).toFixed(0) : 0;
+  
+  // Add gender ratio after the charts
+  var extraHtml = '<div style="margin-top:12px;" class="glass-card" style="padding:16px;">';
+  extraHtml += '<h4 style="font-size:13px;color:var(--text-primary);margin-bottom:8px;">性别比例</h4>';
+  extraHtml += '<div style="height:24px;border-radius:4px;overflow:hidden;display:flex;">';
+  extraHtml += '<div style="flex:' + mPct + ';background:#4a9eff;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:600;">男 ' + mPct + '%</div>';
+  extraHtml += '<div style="flex:' + fPct + ';background:#ff6b9d;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:600;">女 ' + fPct + '%</div>';
+  extraHtml += '</div></div>';
+}
+
+// Wait for data and render
+setTimeout(renderMemberCharts, 500);
+</script>
 </body>
 </html>
