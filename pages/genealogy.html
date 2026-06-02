@@ -960,6 +960,7 @@ document.addEventListener('DOMContentLoaded', function() {
       html += '<p style="margin:0;">' + escapeHtml(person.biography).replace(/\n/g, '<br>') + '</p></div>';
     }
 
+    html += buildFamilyChart(person, data);
     html += '<div style="text-align:center;margin-top:16px;"><button class="btn btn-accent" onclick="this.closest(\'.person-detail-modal\').remove();showAncestors(' + person.id + ');" style="font-size:15px;padding:10px 28px;">\u2B06 \u67E5\u770B\u7956\u5148\u6811</button></div>';
     box.innerHTML = html;
     overlay.appendChild(box);
@@ -1316,6 +1317,49 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     pathHtml += '</div></div>';
     pathEl.innerHTML = pathHtml;
+  }
+
+  function buildFamilyChart(person, data) {
+    var h = '<div style="margin-top:16px;padding:16px;background:var(--glass-bg);border-radius:8px;">';
+    h += '<h4 style="font-family:var(--font-title);color:var(--text-primary);font-size:14px;font-weight:500;margin-bottom:12px;">\uD83D\uDC6A 亲系关系</h4>';
+
+    var father = null, mother = null;
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].id === parseInt(person.father_id)) father = data[i];
+      if (data[i].id === parseInt(person.mother_id)) mother = data[i];
+    }
+    if (father || mother) {
+      h += '<div style="margin-bottom:10px;"><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px;">\u2B06 父母</div><div style="display:flex;gap:8px;flex-wrap:wrap;">';
+      if (father) h += '<span class="locate-btn" onclick="showPersonDetail(' + father.id + ', getGenealogyData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC68 \u7236: ' + escapeHtml(father.name) + '</span>';
+      if (mother) h += '<span class="locate-btn" onclick="showPersonDetail(' + mother.id + ', getGenealogyData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC69 \u6BCD: ' + escapeHtml(mother.name) + '</span>';
+      h += '</div></div>';
+    }
+
+    var spouses = getSpouses(person.id, data);
+    if (spouses.length > 0) {
+      h += '<div style="margin-bottom:10px;"><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px;">\uD83D\uDC91 配偶</div><div style="display:flex;gap:8px;flex-wrap:wrap;">';
+      spouses.forEach(function(s) {
+        h += '<span class="locate-btn" onclick="showPersonDetail(' + s.id + ', getGenealogyData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC69 \u914D\u5076: ' + escapeHtml(s.name) + '</span>';
+      });
+      h += '</div></div>';
+    }
+
+    var children = [];
+    for (var i = 0; i < data.length; i++) {
+      if (parseInt(data[i].father_id) === person.id || parseInt(data[i].mother_id) === person.id) {
+        children.push(data[i]);
+      }
+    }
+    if (children.length > 0) {
+      h += '<div><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px;">\u2B07 子女（' + children.length + '\u4EBA\uFF09</div><div style="display:flex;gap:6px;flex-wrap:wrap;">';
+      children.forEach(function(c) {
+        h += '<span class="locate-btn" onclick="showPersonDetail(' + c.id + ', getGenealogyData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC66 ' + escapeHtml(c.name) + '</span>';
+      });
+      h += '</div></div>';
+    }
+
+    h += '</div>';
+    return h;
   }
 
   function escapeHtml(text) {
