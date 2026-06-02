@@ -960,6 +960,7 @@ document.addEventListener('DOMContentLoaded', function() {
       html += '<p style="margin:0;">' + escapeHtml(person.biography).replace(/\n/g, '<br>') + '</p></div>';
     }
 
+    html += '<div style="text-align:center;margin-top:16px;"><button class="btn btn-accent" onclick="this.closest(\'.person-detail-modal\').remove();showAncestors(' + person.id + ');" style="font-size:15px;padding:10px 28px;">\u2B06 \u67E5\u770B\u7956\u5148\u6811</button></div>';
     box.innerHTML = html;
     overlay.appendChild(box);
     document.body.appendChild(overlay);
