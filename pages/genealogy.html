@@ -1174,12 +1174,13 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
     // ===== Render everything =====
-  function renderGenealogyPageSVG() {
+  function renderGenealogyPageSVG() { try {
     var data = getGenealogyData();
     if (!data || data.length === 0) {
       document.getElementById('genealogy-preface').style.opacity = '1';
       document.getElementById('genealogy-generation-chart').style.opacity = '1';
       document.getElementById('genealogy-stats').style.opacity = '1';
+      document.getElementById('genealogy-charts').style.opacity = '1';
       document.getElementById('genealogy-search-section').style.opacity = '1';
       document.getElementById('genealogy-tree-section').style.opacity = '1';
       document.getElementById('genealogy-table-section').style.opacity = '1';
@@ -1242,11 +1243,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('genealogy-preface').style.opacity = '1';
     document.getElementById('genealogy-generation-chart').style.opacity = '1';
     document.getElementById('genealogy-stats').style.opacity = '1';
+    document.getElementById('genealogy-charts').style.opacity = '1';
     document.getElementById('genealogy-search-section').style.opacity = '1';
     document.getElementById('genealogy-tree-section').style.opacity = '1';
     document.getElementById('genealogy-table-section').style.opacity = '1';
   }
 
+  } catch(e) { console.error('Genealogy render error:', e); }
   // Wait for page ready
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
     renderGenealogyPageSVG();
