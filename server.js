@@ -177,7 +177,16 @@ const server = http.createServer(async (req, res) => {
           return sendJson(req, res, 200, []);
         }
         try {
-          sendJson(req, res, 200, JSON.parse(content));
+          var parsed = JSON.parse(content);
+          if (Array.isArray(parsed)) {
+            parsed.forEach(function(p) {
+              p.is_alive = '否';
+              if (!p.branch || p.branch === '—' || p.branch.trim() === '') {
+                p.branch = '—';
+              }
+            });
+          }
+          sendJson(req, res, 200, parsed);
         } catch (e) {
           sendJson(req, res, 200, []);
         }
