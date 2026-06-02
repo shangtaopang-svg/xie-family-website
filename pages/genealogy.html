@@ -287,7 +287,9 @@
       var stored = localStorage.getItem('xie_admin_genealogy');
       var ver = localStorage.getItem('xie_admin_genealogy_ver');
       if (stored && ver === '4') {
-        return JSON.parse(stored);
+        var d = JSON.parse(stored);
+        d.forEach(function(p) { p.is_alive = '否'; });
+        return d;
       }
       // Fresh seed data or upgrade old cache
       if (stored) {
@@ -310,6 +312,7 @@
             parsed.push(fullSeed[i]);
           }
         }
+        parsed.forEach(function(p) { p.is_alive = '否'; });
         localStorage.setItem('xie_admin_genealogy', JSON.stringify(parsed));
         localStorage.setItem('xie_admin_genealogy_ver', '4');
         return parsed;
