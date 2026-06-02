@@ -117,21 +117,6 @@
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px;" id="stats-container"></div>
       </div>
 
-      <!-- 可视化统计图表 -->
-      <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-charts">
-        <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:16px;font-size:17px;font-weight:500;">📈 数据可视化</h3>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" id="chart-grid">
-          <div class="glass-card" style="padding:16px;text-align:center;">
-            <h4 style="font-size:14px;color:var(--text-primary);margin-bottom:8px;">各世代人口分布</h4>
-            <div id="chart-gen" style="height:300px></div>
-          </div>
-          <div class="glass-card" style="padding:16px;text-align:center;">
-            <h4 style="font-size:14px;color:var(--text-primary);margin-bottom:8px;">彬/乾/文对支系统计</h4>
-            <div id="chart-branch" style="height:300px></div>
-          </div>
-        </div>
-      </div>
-
       <!-- 搜索 -->
       <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-search-section">
         <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:16px;font-size:17px;font-weight:500;">🔍 族谱查询</h3>
@@ -1180,7 +1165,6 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('genealogy-preface').style.opacity = '1';
       document.getElementById('genealogy-generation-chart').style.opacity = '1';
       document.getElementById('genealogy-stats').style.opacity = '1';
-      var gcEl = document.getElementById('genealogy-charts'); if(gcEl) gcEl.style.opacity = '1';
       document.getElementById('genealogy-search-section').style.opacity = '1';
       document.getElementById('genealogy-tree-section').style.opacity = '1';
       document.getElementById('genealogy-table-section').style.opacity = '1';
@@ -1243,7 +1227,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('genealogy-preface').style.opacity = '1';
     document.getElementById('genealogy-generation-chart').style.opacity = '1';
     document.getElementById('genealogy-stats').style.opacity = '1';
-    var gcEl = document.getElementById('genealogy-charts'); if(gcEl) gcEl.style.opacity = '1';
     document.getElementById('genealogy-search-section').style.opacity = '1';
     document.getElementById('genealogy-tree-section').style.opacity = '1';
     document.getElementById('genealogy-table-section').style.opacity = '1';
@@ -1371,90 +1354,5 @@ document.addEventListener('keydown', function(e) {
 </script>
   <audio id="bg-music" loop src="../music/background.mp3"></audio>
 
-<script>
-// Chart rendering (waits for ECharts to load)
-function renderCharts() {
-  var data = getGenealogyData();
-  if (!data || data.length === 0) return;
-
-  // 1. Generation distribution as SVG bars
-  var genData = {};
-  data.forEach(function(p) {
-    var g = parseInt(p.generation_num) || 0;
-    genData[g] = (genData[g] || 0) + 1;
-  });
-  var genKeys = Object.keys(genData).map(Number).sort(function(a,b){return a-b});
-  // Show most populous generations (top 30)
-  var sorted = genKeys.map(function(g){return {gen:g, count:genData[g]}}).sort(function(a,b){return b.count-a.count}).slice(0, 30);
-  sorted.sort(function(a,b){return a.gen-b.gen});
-  
-  var genContainer = document.getElementById('chart-gen');
-  if (genContainer) {
-    var maxCount = 1;
-    sorted.forEach(function(s){if(s.count>maxCount)maxCount=s.count;});
-    var html = '<div style="padding:4px;overflow-y:auto;height:100%;">';
-    sorted.forEach(function(s) {
-      var pct = (s.count / maxCount * 100).toFixed(0);
-      html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;font-size:11px;">';
-      html += '<span style="width:50px;text-align:right;color:var(--text-tertiary);flex-shrink:0;">' + s.gen + '世</span>';
-      html += '<div style="flex:1;height:18px;background:var(--glass-bg);border-radius:3px;overflow:hidden;">';
-      html += '<div style="height:100%;width:' + pct + '%;background:#fb923c;border-radius:3px;transition:width 0.3s;"></div></div>';
-      html += '<span style="width:30px;color:var(--text-secondary);flex-shrink:0;">' + s.count + '</span>';
-      html += '</div>';
-    });
-    html += '</div>';
-    genContainer.innerHTML = html;
-  }
-
-  // 2. Branch stats - SVG horizontal bars
-  var branchNames = ['彬（东房祖）', '乾（西房祖）', '文对'];
-  var branchData = [];
-  branchNames.forEach(function(name) {
-    var ids = []; var root = null;
-    for (var i = 0; i < data.length; i++) {
-      var n = data[i].name || '';
-      if (n.indexOf(name.substring(0,1)) >= 0 && (n.indexOf(name.substring(1,3)) >= 0)) {
-        root = data[i]; break;
-      }
-    }
-    if (root) {
-      ids.push(root.id);
-      (function collect(pid) {
-        for (var i = 0; i < data.length; i++) {
-          var f = parseInt(data[i].father_id);
-          var m = parseInt(data[i].mother_id);
-          if ((f === pid || m === pid) && ids.indexOf(data[i].id) === -1) {
-            ids.push(data[i].id); collect(data[i].id);
-          }
-        }
-      })(root.id);
-    }
-    branchData.push({ name: name.substring(0,1) + '公', count: ids.length || 1 });
-  });
-  
-  var brContainer = document.getElementById('chart-branch');
-  if (brContainer) {
-    var maxBr = 1;
-    branchData.forEach(function(b){if(b.count>maxBr)maxBr=b.count;});
-    var colors = ['#ef4444', '#fb923c', '#22c55e'];
-    var html2 = '<div style="padding:10px;display:flex;flex-direction:column;gap:10px;justify-content:center;height:100%;">';
-    branchData.forEach(function(b, i) {
-      var pct = (b.count / maxBr * 100).toFixed(0);
-      html2 += '<div>';
-      html2 += '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px;">';
-      html2 += '<span style="color:var(--text-primary);font-weight:600;">' + b.name + '</span>';
-      html2 += '<span style="color:var(--text-secondary);">' + b.count + '人</span>';
-      html2 += '</div>';
-      html2 += '<div style="height:24px;background:var(--glass-bg);border-radius:4px;overflow:hidden;">';
-      html2 += '<div style="height:100%;width:' + pct + '%;background:' + colors[i] + ';border-radius:4px;transition:width 0.5s;"></div>';
-      html2 += '</div></div>';
-    });
-    html2 += '</div>';
-    brContainer.innerHTML = html2;
-  }
-}
-
-// Render charts after data is ready
-setTimeout(renderCharts, 800);</script>
 </body>
 </html>
