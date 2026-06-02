@@ -639,7 +639,8 @@
 
     // --- 初始化 ---
     // 恢复上次效果
-    var saved = localStorage.getItem('xie_weather_effect') || 'off';
+    localStorage.removeItem('xie_weather_effect');
+    var saved = 'off';
     if (saved && saved !== 'off') startEffect(saved);
     else updateActiveBtn('off');
 
