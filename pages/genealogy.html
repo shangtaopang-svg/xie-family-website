@@ -705,10 +705,11 @@ function renderTreeSVG(data) {
     }
     var statsDiv = document.createElement('div');
     statsDiv.id = 'branch-stats-overlay';
-    statsDiv.style.cssText = 'position:absolute;top:16px;left:16px;z-index:100;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);border-radius:10px;padding:10px 16px;border:1px solid rgba(255,255,255,0.08);pointer-events:none;';
-    statsDiv.innerHTML = '<div style="color:#fb923c;font-size:14px;font-weight:700;margin-bottom:2px;">支系总人口: ' + totalPeople + '人</div>' +
+    statsDiv.style.cssText = 'position:absolute;top:16px;left:16px;z-index:100;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:10px;padding:8px 16px;border:1px solid rgba(255,255,255,0.08);';
+    statsDiv.innerHTML = '<div style="color:#fb923c;font-size:13px;font-weight:700;">支系总人口: ' + totalPeople + '人</div>' +
       '<div style="color:rgba(255,255,255,0.55);font-size:11px;">在世 ' + alive + ' · 已故 ' + deceased + '</div>';
-    container.appendChild(statsDiv);
+    var scrollContainer = document.getElementById('tree-scroll-container');
+    scrollContainer.appendChild(statsDiv);
   }
 
   // Store node refs
