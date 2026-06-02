@@ -641,6 +641,14 @@ function renderMemberCharts() {
   var data = [];
   try { data = JSON.parse(localStorage.getItem('xie_admin_genealogy') || '[]'); } catch(e) {}
   if (!data || data.length === 0) { setTimeout(renderMemberCharts, 1000); return; }
+
+  // Add animated bar glow styles
+  if (!document.getElementById('chart-anim-style')) {
+    var style = document.createElement('style');
+    style.id = 'chart-anim-style';
+    style.textContent = '@keyframes barGlow { 0%,100% { filter: brightness(1); box-shadow: 0 0 6px rgba(255,107,0,0.2); } 50% { filter: brightness(1.15); box-shadow: 0 0 16px rgba(255,107,0,0.4); } }';
+    document.head.appendChild(style);
+  }
   
   document.getElementById('chart-section').style.opacity = '1';
 
@@ -660,7 +668,7 @@ function renderMemberCharts() {
     genHtml += '<div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">';
     genHtml += '<span style="width:45px;text-align:right;color:var(--text-tertiary);flex-shrink:0;">' + g + '世</span>';
     genHtml += '<div style="flex:1;height:16px;background:var(--glass-bg);border-radius:3px;overflow:hidden;">';
-    genHtml += '<div style="height:100%;width:' + pct + '%;background:#fb923c;border-radius:3px;"></div></div>';
+    genHtml += '<div style="height:100%;width:' + pct + '%;background:#fb923c;border-radius:3px;animation:barGlow 2s ease-in-out infinite;"></div></div>';
     genHtml += '<span style="width:28px;color:var(--text-secondary);flex-shrink:0;text-align:right;">' + genData[g] + '</span>';
     genHtml += '</div>';
   });
@@ -710,7 +718,7 @@ function renderMemberCharts() {
     brHtml += '<div style="height:28px;background:var(--glass-bg);border-radius:5px;overflow:hidden;display:flex;">';
     if (b.alive > 0) {
       var aPct = (b.alive / b.total * 100).toFixed(0);
-      brHtml += '<div style="height:100%;width:' + aPct + '%;background:rgba(34,197,94,0.7);border-radius:5px 0 0 5px;" title="在世 ' + b.alive + '人"></div>';
+      brHtml += '<div style="height:100%;width:' + aPct + '%;background:rgba(34,197,94,0.7);border-radius:5px 0 0 5px;animation:barGlow 2.5s ease-in-out infinite;" title="在世 ' + b.alive + '人"></div>';
     }
     var dPct = b.total > 0 ? (b.deceased / b.total * 100).toFixed(0) : 100;
     brHtml += '<div style="height:100%;width:' + dPct + '%;background:rgba(100,100,120,0.4);border-radius:' + (b.alive > 0 ? '0 5px 5px 0' : '5px') + ';" title="已故 ' + b.deceased + '人"></div>';
