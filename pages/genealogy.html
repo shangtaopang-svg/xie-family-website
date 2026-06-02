@@ -562,7 +562,7 @@ function renderTreeSVG(data) {
   } catch(e) {}
 
   for (var i = 0; i < roots.length; i++) {
-    layoutTree(roots[i].id, 0, 50, data, collapsedNodes[roots[i].id], null);
+    layoutTree(roots[i].id, 0, 100, data, collapsedNodes[roots[i].id], null);
   }
   // Reposition roots side by side
   var rootOffsets = [];
@@ -575,7 +575,7 @@ function renderTreeSVG(data) {
   treeLayout = {};
   var offsetX = 100;
   for (var i = 0; i < roots.length; i++) {
-    layoutTree(rootOffsets[i].id, offsetX + rootOffsets[i].w/2, 50, data, collapsedNodes[rootOffsets[i].id], null);
+    layoutTree(rootOffsets[i].id, offsetX + rootOffsets[i].w/2, 100, data, collapsedNodes[rootOffsets[i].id], null);
     offsetX += rootOffsets[i].w + H_GAP * 2;
   }
 
