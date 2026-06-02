@@ -117,6 +117,21 @@
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px;" id="stats-container"></div>
       </div>
 
+      <!-- 可视化统计图表 -->
+      <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-charts">
+        <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:16px;font-size:17px;font-weight:500;">📈 数据可视化</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" id="chart-grid">
+          <div class="glass-card" style="padding:16px;text-align:center;">
+            <h4 style="font-size:14px;color:var(--text-primary);margin-bottom:8px;">各世代人口分布</h4>
+            <div id="chart-gen" style="height:300px;cursor:pointer;" onclick="enlargeChart('chart-gen')"></div>
+          </div>
+          <div class="glass-card" style="padding:16px;text-align:center;">
+            <h4 style="font-size:14px;color:var(--text-primary);margin-bottom:8px;">彬/乾/文对支系统计</h4>
+            <div id="chart-branch" style="height:300px;cursor:pointer;" onclick="enlargeChart('chart-branch')"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- 搜索 -->
       <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-search-section">
         <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:16px;font-size:17px;font-weight:500;">🔍 族谱查询</h3>
@@ -197,7 +212,8 @@
   
   <a href="javascript:history.back()" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
-  <script src="../js/main.js?v=8"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<script src="../js/main.js?v=8"></script>
 
   <style>
 /* Tree visualization - SVG */
@@ -1354,5 +1370,106 @@ document.addEventListener('keydown', function(e) {
 </script>
   <audio id="bg-music" loop src="../music/background.mp3"></audio>
 
+<script>
+// Chart rendering (waits for ECharts to load)
+function initCharts() {
+  var data = getGenealogyData();
+  if (!data || data.length === 0) return;
+  
+  // 1. Generation distribution chart
+  var genData = {};
+  data.forEach(function(p) {
+    var g = parseInt(p.generation_num) || 0;
+    genData[g] = (genData[g] || 0) + 1;
+  });
+  var genKeys = Object.keys(genData).map(Number).sort(function(a,b){return a-b});
+  var genChartDom = document.getElementById('chart-gen');
+  if (genChartDom && typeof echarts !== 'undefined') {
+    var chart = echarts.init(genChartDom);
+    chart.setOption({
+      tooltip: { trigger: 'axis' },
+      grid: { left: 50, right: 20, top: 20, bottom: 40 },
+      xAxis: { type: 'category', data: genKeys.map(function(g){return g+'世'}), axisLabel: { rotate: 45, fontSize: 10 } },
+      yAxis: { type: 'value' },
+      series: [{ type: 'bar', data: genKeys.map(function(g){return genData[g]}), itemStyle: { color: '#fb923c' } }],
+      dataZoom: [{ type: 'inside', start: 0, end: 100 }]
+    });
+    chart.on('click', function() { enlargeChart('chart-gen'); });
+  }
+
+  // 2. Branch stats - 彬/乾/文对
+  var branchNames = ['彬（东房祖）', '乾（西房祖）', '文对'];
+  var branchData = [];
+  branchNames.forEach(function(name) {
+    var ids = []; var root = null;
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].name.indexOf(name.substring(0,1)) >= 0 && data[i].name.indexOf(name.substring(1)) > 0) {
+        root = data[i]; break;
+      }
+    }
+    if (root) {
+      ids.push(root.id);
+      function collect(pid) {
+        for (var i = 0; i < data.length; i++) {
+          if ((parseInt(data[i].father_id) === pid || parseInt(data[i].mother_id) === pid) && ids.indexOf(data[i].id) === -1) {
+            ids.push(data[i].id); collect(data[i].id);
+          }
+        }
+      }
+      collect(root.id);
+    }
+    branchData.push({ name: name.substring(0,1)+'公', value: ids.length });
+  });
+  var branchChartDom = document.getElementById('chart-branch');
+  if (branchChartDom && typeof echarts !== 'undefined') {
+    var bChart = echarts.init(branchChartDom);
+    bChart.setOption({
+      tooltip: { trigger: 'item' },
+      series: [{
+        type: 'pie', radius: ['30%', '70%'],
+        data: branchData,
+        label: { formatter: '{b}: {c}人 ({d}%)', fontSize: 12 },
+        itemStyle: { borderRadius: 6 }
+      }]
+    });
+    bChart.on('click', function() { enlargeChart('chart-branch'); });
+  }
+}
+
+// Enlarge chart to fullscreen lightbox
+function enlargeChart(chartId) {
+  var chartDom = document.getElementById(chartId);
+  if (!chartDom) return;
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;';
+  overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+  var wrapper = document.createElement('div');
+  wrapper.style.cssText = 'width:90vw;height:80vh;background:var(--bg-primary);border-radius:12px;padding:20px;';
+  var closeBtn = document.createElement('button');
+  closeBtn.textContent = '✕';
+  closeBtn.style.cssText = 'position:fixed;top:20px;right:24px;background:none;border:none;color:#fff;font-size:28px;cursor:pointer;z-index:10;';
+  closeBtn.onclick = function() { overlay.remove(); };
+  overlay.appendChild(closeBtn);
+  overlay.appendChild(wrapper);
+  document.body.appendChild(overlay);
+  // Clone the chart into the enlarged view
+  setTimeout(function() {
+    var cloneChart = echarts.init(wrapper);
+    var opts = echarts.getInstanceByDom(chartDom).getOption();
+    cloneChart.setOption(opts);
+    cloneChart.on('click', function() { });
+    window.addEventListener('resize', function() { cloneChart.resize(); });
+  }, 100);
+  document.addEventListener('keydown', function escHandler(e) {
+    if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', escHandler); }
+  });
+}
+
+// Initialize charts after page renders
+setTimeout(function() {
+  if (typeof echarts !== 'undefined') { initCharts(); }
+  else { document.addEventListener('DOMContentLoaded', function() { setTimeout(initCharts, 1000); }); }
+}, 500);
+</script>
 </body>
 </html>
