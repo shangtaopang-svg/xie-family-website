@@ -4,18 +4,18 @@
    ============================================ */
 
 :root {
-  --bg-primary: #f5f0eb;
-  --bg-secondary: #ede8e2;
-  --bg-card: rgba(255,255,255,0.6);
-  --glass-bg: rgba(255,255,255,0.78);
+  --bg-primary: #f5f3f0;
+  --bg-secondary: #ece8e4;
+  --bg-card: rgba(255,255,255,0.72);
+  --glass-bg: rgba(255,255,255,0.82);
   --glass-border: rgba(0,0,0,0.06);
   --glass-hover: rgba(255,255,255,0.95);
-  --text-primary: #2d2a24;
-  --text-secondary: #6b6560;
+  --text-primary: #1c1a18;
+  --text-secondary: #5e5854;
   --text-tertiary: #9e9690;
   --text-muted: #c5bfb8;
-  --accent-orange: #d4773a;
-  --accent-orange-dim: rgba(212,119,58,0.12);
+  --accent-orange: #c96d30;
+  --accent-orange-dim: rgba(201,109,48,0.12);
   --accent-cyan: #3a9dab;
   --accent-green: #5a9e6f;
   --accent-red: #c94a4a;
