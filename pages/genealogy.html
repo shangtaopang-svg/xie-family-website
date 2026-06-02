@@ -705,7 +705,7 @@ function renderTreeSVG(data) {
     }
     var statsDiv = document.createElement('div');
     statsDiv.id = 'branch-stats-overlay';
-    statsDiv.style.cssText = 'position:absolute;top:16px;left:16px;z-index:100;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:10px;padding:8px 16px;border:1px solid rgba(255,255,255,0.08);';
+    statsDiv.style.cssText = 'position:absolute;top:16px;right:16px;z-index:100;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:10px;padding:6px 14px;border:1px solid rgba(255,255,255,0.08);font-size:12px;';
     statsDiv.innerHTML = '<div style="color:#fb923c;font-size:13px;font-weight:700;">支系总人口: ' + totalPeople + '人</div>' +
       '<div style="color:rgba(255,255,255,0.55);font-size:11px;">在世 ' + alive + ' · 已故 ' + deceased + '</div>';
     var scrollContainer = document.getElementById('tree-scroll-container');
