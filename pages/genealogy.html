@@ -1180,7 +1180,7 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('genealogy-preface').style.opacity = '1';
       document.getElementById('genealogy-generation-chart').style.opacity = '1';
       document.getElementById('genealogy-stats').style.opacity = '1';
-      document.getElementById('genealogy-charts').style.opacity = '1';
+      var gcEl = document.getElementById('genealogy-charts'); if(gcEl) gcEl.style.opacity = '1';
       document.getElementById('genealogy-search-section').style.opacity = '1';
       document.getElementById('genealogy-tree-section').style.opacity = '1';
       document.getElementById('genealogy-table-section').style.opacity = '1';
@@ -1243,7 +1243,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('genealogy-preface').style.opacity = '1';
     document.getElementById('genealogy-generation-chart').style.opacity = '1';
     document.getElementById('genealogy-stats').style.opacity = '1';
-    document.getElementById('genealogy-charts').style.opacity = '1';
+    var gcEl = document.getElementById('genealogy-charts'); if(gcEl) gcEl.style.opacity = '1';
     document.getElementById('genealogy-search-section').style.opacity = '1';
     document.getElementById('genealogy-tree-section').style.opacity = '1';
     document.getElementById('genealogy-table-section').style.opacity = '1';
