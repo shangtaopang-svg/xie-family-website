@@ -1174,7 +1174,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
     // ===== Render everything =====
-  function renderGenealogyPageSVG() { try {
+  function renderGenealogyPageSVG() {
     var data = getGenealogyData();
     if (!data || data.length === 0) {
       document.getElementById('genealogy-preface').style.opacity = '1';
@@ -1249,7 +1249,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('genealogy-table-section').style.opacity = '1';
   }
 
-  } catch(e) { console.error('Genealogy render error:', e); }
   // Wait for page ready
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
     renderGenealogyPageSVG();
