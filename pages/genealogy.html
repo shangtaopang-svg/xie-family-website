@@ -1183,11 +1183,15 @@ document.addEventListener('DOMContentLoaded', function() {
       if (p.gender === '男') males++;
       if (p.gender === '女') females++;
     });
-    var genCount = Object.keys(gens).length;
+    var genMax = 0;
+    data.forEach(function(p) {
+      var g = parseInt(p.generation_num, 10) || 0;
+      if (g > genMax) genMax = g;
+    });
 
     var statsHtml = '';
     statsHtml += '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--accent-orange);">' + total + '</div><div style="font-size:11px;color:var(--text-tertiary);">总人数</div></div>';
-    statsHtml += '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + genCount + '</div><div style="font-size:11px;color:var(--text-tertiary);">世代</div></div>';
+    statsHtml += '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + genMax + '</div><div style="font-size:11px;color:var(--text-tertiary);">世代</div></div>';
     statsHtml += '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + Object.keys(branches).length + '</div><div style="font-size:11px;color:var(--text-tertiary);">支系</div></div>';
     statsHtml += '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + males + '</div><div style="font-size:11px;color:var(--text-tertiary);">男</div></div>';
     statsHtml += '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + females + '</div><div style="font-size:11px;color:var(--text-tertiary);">女</div></div>';
