@@ -573,7 +573,7 @@ function renderTreeSVG(data) {
     totalRW += rw + (i < roots.length - 1 ? H_GAP * 2 : 0);
   }
   treeLayout = {};
-  var offsetX = 60;
+  var offsetX = 100;
   for (var i = 0; i < roots.length; i++) {
     layoutTree(rootOffsets[i].id, offsetX + rootOffsets[i].w/2, 50, data, collapsedNodes[rootOffsets[i].id], null);
     offsetX += rootOffsets[i].w + H_GAP * 2;
@@ -595,6 +595,18 @@ function renderTreeSVG(data) {
   var svg = '<div class="tree-viewport" style="transform-origin:0 0;transform:translate(' + treePanX + 'px,' + treePanY + 'px) scale(' + treeScale + ');">';
   svg += '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + svgW + ' ' + svgH + '" width="' + svgW + '" height="' + svgH + '" style="display:block;">';
   svg += '<defs><filter id="glow"><feGaussianBlur stdDeviation="2" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+  // Population stats for branch view
+  if (_currentBranch && _currentBranch !== 'all') {
+    var totalPeople = cardIds.length;
+    var alive = 0, deceased = 0;
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].is_alive === '是') alive++;
+      else if (data[i].is_alive === '否') deceased++;
+    }
+    svg += '<rect x="10" y="10" width="180" height="52" rx="8" fill="rgba(0,0,0,0.6)"/>';
+    svg += '<text x="20" y="34" fill="#fb923c" font-size="13" font-weight="700">支系总人口: ' + totalPeople + '人</text>';
+    svg += '<text x="20" y="52" fill="rgba(255,255,255,0.6)" font-size="11">在世 ' + alive + ' · 已故 ' + deceased + '</text>';
+  }
 
   // Draw connectors (all cards visible)
   var cardIdsNum = cardIds.map(function(id) { return parseInt(id); });
