@@ -705,6 +705,9 @@ function renderTreeSVG(data) {
   var existingStats = document.getElementById('branch-stats-overlay');
   if (existingStats) existingStats.remove();
   if (_currentBranch && _currentBranch !== 'all') {
+    if (_currentBranch.indexOf('枫槎') >= 0) {
+      // Skip stats for 前枫槎/后枫槎
+    } else {
     var totalPeople = cardIds.length;
     var alive = 0, deceased = 0;
     for (var i = 0; i < data.length; i++) {
@@ -718,6 +721,7 @@ function renderTreeSVG(data) {
       '<div style="color:rgba(255,255,255,0.55);font-size:11px;">在世 ' + alive + ' · 已故 ' + deceased + '</div>';
     var scrollContainer = document.getElementById('tree-scroll-container');
     scrollContainer.appendChild(statsDiv);
+    }
   }
 
   // Store node refs
