@@ -988,9 +988,15 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     var sel = document.getElementById('search-branch');
     if (!sel) return;
+    var fixedBranches = ['长房', '二房', '三房', '四房', '后枫椿', '前枫椿', '临海下渡', '石马下谢', '枫椿分支'];
     sel.innerHTML = '<option value="">全部支系</option>';
+    fixedBranches.forEach(function(b) {
+      sel.innerHTML += '<option value="' + b + '">' + b + '</option>';
+    });
     Object.keys(branches).sort().forEach(function(b) {
-      sel.innerHTML += '<option value="' + escapeHtml(b) + '">' + escapeHtml(b) + '</option>';
+      if (fixedBranches.indexOf(b) < 0) {
+        sel.innerHTML += '<option value="' + escapeHtml(b) + '">' + escapeHtml(b) + '</option>';
+      }
     });
   }
 
