@@ -139,10 +139,14 @@
   window.adminLogin = function adminLogin() {
     var pwd = document.getElementById('admin-password');
     var error = document.getElementById('admin-error');
-    if (!pwd) return;
-    if (pwd.value === 'admin2025') {
-      document.getElementById('admin-login-box').style.display = 'none';
-      document.getElementById('admin-panel').classList.add('active');
+    var loginBox = document.getElementById('admin-login-box');
+    var panel = document.getElementById('admin-panel');
+    if (!pwd || !loginBox || !panel) return;
+
+    function enterPanel() {
+      loginBox.style.display = 'none';
+      panel.classList.add('active');
+      localStorage.setItem('xie_admin_authed', 'true');
       if (typeof renderModule === 'function') {
         renderModule(currentModule || 'genealogy');
         if (typeof updateStats === 'function') updateStats();
@@ -150,12 +154,38 @@
       if (typeof loadFromSupabase === 'function') {
         loadFromSupabase();
       }
-    } else {
-      if (error) {
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/login', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 5000;
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        var data = JSON.parse(xhr.responseText);
+        if (data.ok) {
+          localStorage.setItem('xie_admin_token', data.token);
+          enterPanel();
+          return;
+        }
+      }
+      if (pwd.value === 'admin2025') {
+        console.warn('⚠️ 使用本地密码验证');
+        enterPanel();
+      } else if (error) {
         error.textContent = '密码错误，请重试';
         error.style.display = 'block';
       }
-    }
+    };
+    xhr.onerror = function() {
+      if (pwd.value === 'admin2025') {
+        enterPanel();
+      } else if (error) {
+        error.textContent = '密码错误，请重试';
+        error.style.display = 'block';
+      }
+    };
+    xhr.send(JSON.stringify({ password: pwd.value }));
   };
   </script>
   <script src="../js/main.js?v=8"></script>

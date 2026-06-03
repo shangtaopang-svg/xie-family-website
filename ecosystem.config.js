@@ -11,7 +11,8 @@ module.exports = {
     env: {
       NODE_ENV: 'production',
       PORT: 3001,
-      WEBHOOK_SECRET: 'xie-family-deploy-2026',
+      ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'admin2025',
+      WEBHOOK_SECRET: process.env.WEBHOOK_SECRET || 'xie-family-deploy-2026',
     }
   }]
 };

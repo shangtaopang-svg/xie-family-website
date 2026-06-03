@@ -6,8 +6,15 @@ const crypto = require('crypto');
 const { exec } = require('child_process');
 
 const PORT = parseInt(process.env.PORT, 10) || 3001;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin2025';
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 const DATA_DIR = path.join(__dirname, 'data');
+
+// In-memory admin tokens (expire on server restart — acceptable for this scale)
+const adminTokens = new Set();
+function generateToken() {
+  return crypto.randomBytes(32).toString('hex');
+}
 
 const MIME = {
   '.html': 'text/html;charset=utf-8',
@@ -163,6 +170,33 @@ const server = http.createServer(async (req, res) => {
       sendJson(req, res, 200, { ok: true });
     });
     return;
+  }
+
+  // === API: Admin login (server-side auth) ===
+  if (url === '/api/login' && req.method === 'POST') {
+    try {
+      const body = await collectBody(req);
+      const { password } = JSON.parse(body);
+      if (password === ADMIN_PASSWORD) {
+        const token = generateToken();
+        adminTokens.add(token);
+        return sendJson(req, res, 200, { ok: true, token });
+      } else {
+        return sendJson(req, res, 401, { ok: false, error: '密码错误' });
+      }
+    } catch (e) {
+      return sendJson(req, res, 400, { error: e.message });
+    }
+  }
+
+  // === API: Verify admin token ===
+  if (url === '/api/verify' && req.method === 'GET') {
+    const auth = req.headers['authorization'] || '';
+    const token = auth.replace('Bearer ', '');
+    if (adminTokens.has(token)) {
+      return sendJson(req, res, 200, { ok: true });
+    }
+    return sendJson(req, res, 401, { ok: false });
   }
 
   // === API: Data read/write (local JSON storage, replaces Supabase) ===

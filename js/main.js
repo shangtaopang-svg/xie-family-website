@@ -368,30 +368,80 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
   document.addEventListener('DOMContentLoaded', initMusicPlayer);
 }
 
-// ===== 管理后台登录 =====
+// ===== 管理后台登录（服务端认证，带本地兜底） =====
 window.adminLogin = function adminLogin() {
   var pwd = document.getElementById('admin-password');
   var error = document.getElementById('admin-error');
-  if (!pwd) return;
-  if (pwd.value === 'admin2025') {
-    document.getElementById('admin-login-box').style.display = 'none';
-    document.getElementById('admin-panel').classList.add('active');
+  var loginBox = document.getElementById('admin-login-box');
+  var panel = document.getElementById('admin-panel');
+  if (!pwd || !loginBox || !panel) return;
+
+  var password = pwd.value;
+
+  function enterPanel() {
+    loginBox.style.display = 'none';
+    panel.classList.add('active');
+    localStorage.setItem('xie_admin_authed', 'true');
     // Trigger admin.js initialization
     if (typeof renderModule === 'function') {
       renderModule(currentModule || 'news');
       if (typeof updateStats === 'function') updateStats();
     }
-    // Load data from Supabase
     if (typeof loadFromSupabase === 'function') {
       loadFromSupabase();
     }
-  } else {
+  }
+
+  function showError(msg) {
     if (error) {
-      var errMsg = (typeof TRANSLATIONS !== 'undefined' && TRANSLATIONS['admin.login.error']) ? (TRANSLATIONS['admin.login.error'][getLang()] || '密码错误，请重试') : '密码错误，请重试';
-      error.textContent = errMsg;
+      error.textContent = msg || (typeof TRANSLATIONS !== 'undefined' && TRANSLATIONS['admin.login.error']
+        ? TRANSLATIONS['admin.login.error'][getLang()] || '密码错误，请重试'
+        : '密码错误，请重试');
       error.style.display = 'block';
     }
   }
+
+  // 1. Try server-side auth first
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/api/login', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.timeout = 5000;
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      var data = JSON.parse(xhr.responseText);
+      if (data.ok) {
+        localStorage.setItem('xie_admin_token', data.token);
+        localStorage.setItem('xie_admin_authed', 'true');
+        enterPanel();
+        return;
+      }
+    }
+    // 2. Fallback: local check (for offline/dev)
+    if (password === 'admin2025') {
+      console.warn('⚠️ 使用本地密码验证——建议配置 ADMIN_PASSWORD 环境变量');
+      enterPanel();
+    } else {
+      showError();
+    }
+  };
+  xhr.onerror = function() {
+    // Server offline — fallback to local check
+    if (password === 'admin2025') {
+      console.warn('⚠️ 服务器离线，使用本地密码验证');
+      enterPanel();
+    } else {
+      showError();
+    }
+  };
+  xhr.ontimeout = function() {
+    if (password === 'admin2025') {
+      console.warn('⚠️ 服务器超时，使用本地密码验证');
+      enterPanel();
+    } else {
+      showError();
+    }
+  };
+  xhr.send(JSON.stringify({ password: password }));
 }
 
 // admin logout
