@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>统计 - 麻将朋友圈</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app-wrap">
+  <header class="app-header">
+    <div class="app-logo">🀄 <span>麻将朋友圈</span></div>
+    <nav class="app-nav">
+      <a href="../index.html">首页</a>
+      <a href="records.html">战绩</a>
+      <a href="stats.html" class="active">统计</a>
+      <a href="posts.html">心得</a>
+    </nav>
+  </header>
+
+  <div class="page-header"><h2>📈 统计看板</h2></div>
+
+  <!-- Player selector -->
+  <div class="card" style="padding:12px 16px;">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <label style="font-size:13px;color:var(--text-secondary);">选择玩家：</label>
+      <select class="form-input" id="player-select" style="width:auto;min-width:120px;" onchange="updatePlayerStats()">
+        <option value="">-- 全部排行 --</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Player detail -->
+  <div class="card" id="player-detail" style="display:none;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px;text-align:center;" id="player-stats-grid"></div>
+    <div style="margin-top:16px;">
+      <canvas id="trend-chart" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- Ranking chart -->
+  <div class="card">
+    <div class="card-title">🏆 胜率排行</div>
+    <div class="chart-wrap"><canvas id="rank-chart" height="250"></canvas></div>
+  </div>
+
+  <!-- All players comparison -->
+  <div class="card">
+    <div class="card-title">📊 净胜总额对比</div>
+    <div class="chart-wrap"><canvas id="net-chart" height="250"></canvas></div>
+  </div>
+</div>
+
+<script src="../../js/i18n.js"></script>
+<script src="../js/main.js"></script>
+<script>
+var allRecords = [];
+var charts = {};
+
+(async function init() {
+  allRecords = await api.get('mj_records') || [];
+  populatePlayerSelect();
+  renderRankingCharts();
+})();
+
+function populatePlayerSelect() {
+  var select = document.getElementById('player-select');
+  var names = {};
+  allRecords.forEach(function(r) {
+    (r.players || []).forEach(function(p) {
+      if (p.name) names[p.name] = true;
+    });
+  });
+  var sorted = Object.keys(names).sort();
+  sorted.forEach(function(name) {
+    var opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    select.appendChild(opt);
+  });
+}
+
+function getPlayerStats(name) {
+  var total = 0, wins = 0, losses = 0, maxWin = 0, maxLose = 0, streak = 0, bestStreak = 0, curStreak = 0;
+  var trend = [];
+
+  allRecords.forEach(function(r) {
+    var found = null;
+    (r.players || []).forEach(function(p) {
+      if (p.name === name) found = p;
+    });
+    if (!found) return;
+    total += found.score;
+    trend.push({ date: r.date, score: found.score });
+
+    if (found.score > 0) { wins++; curStreak = curStreak > 0 ? curStreak + 1 : 1; }
+    else if (found.score < 0) { losses++; curStreak = curStreak < 0 ? curStreak - 1 : -1; }
+    else { curStreak = 0; }
+    bestStreak = Math.max(bestStreak, Math.abs(curStreak));
+
+    if (found.score > maxWin) maxWin = found.score;
+    if (found.score < maxLose) maxLose = found.score;
+  });
+
+  return {
+    total: total,
+    wins: wins,
+    losses: losses,
+    games: wins + losses,
+    winRate: (wins + losses) ? (wins / (wins + losses) * 100) : 0,
+    maxWin: maxWin,
+    maxLose: maxLose,
+    bestStreak: bestStreak,
+    trend: trend
+  };
+}
+
+function updatePlayerStats() {
+  var name = document.getElementById('player-select').value;
+  var detail = document.getElementById('player-detail');
+  if (!name) { detail.style.display = 'none'; return; }
+
+  detail.style.display = 'block';
+  var s = getPlayerStats(name);
+
+  document.getElementById('player-stats-grid').innerHTML =
+    '<div><div class="stat-num ' + (s.total >= 0 ? 'positive' : 'negative') + '">' + (s.total >= 0 ? '+' : '') + s.total + '</div><div class="stat-label">净胜</div></div>' +
+    '<div><div class="stat-num">' + s.games + '</div><div class="stat-label">总场次</div></div>' +
+    '<div><div class="stat-num positive">' + s.wins + '</div><div class="stat-label">赢</div></div>' +
+    '<div><div class="stat-num negative">' + s.losses + '</div><div class="stat-label">输</div></div>' +
+    '<div><div class="stat-num">' + s.winRate.toFixed(1) + '%</div><div class="stat-label">胜率</div></div>' +
+    '<div><div class="stat-num positive">' + s.maxWin + '</div><div class="stat-label">单场最高赢</div></div>' +
+    '<div><div class="stat-num negative">' + s.maxLose + '</div><div class="stat-label">单场最高输</div></div>' +
+    '<div><div class="stat-num">' + s.bestStreak + '</div><div class="stat-label">最长连胜</div></div>';
+
+  // Trend chart
+  if (charts.trend) charts.trend.destroy();
+  if (s.trend.length) {
+    var ctx = document.getElementById('trend-chart').getContext('2d');
+    charts.trend = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: s.trend.map(function(t) { return t.date || ''; }),
+        datasets: [{
+          label: name + ' 每场输赢',
+          data: s.trend.map(function(t) { return t.score; }),
+          borderColor: '#c4493a',
+          backgroundColor: 'rgba(196,73,58,0.1)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { grid: { color: 'rgba(0,0,0,0.05)' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+}
+
+function renderRankingCharts() {
+  // Win rate chart
+  var names = {};
+  allRecords.forEach(function(r) {
+    (r.players || []).forEach(function(p) {
+      if (!names[p.name]) names[p.name] = { total: 0, wins: 0, games: 0, net: 0 };
+      names[p.name].total += p.score;
+      names[p.name].net += p.score;
+      names[p.name].games++;
+      if (p.score > 0) names[p.name].wins++;
+    });
+  });
+
+  var sorted = Object.keys(names).sort(function(a, b) {
+    return (names[b].wins / names[b].games) - (names[a].wins / names[a].games);
+  });
+
+  var ctx1 = document.getElementById('rank-chart').getContext('2d');
+  charts.rank = new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(function(n) { return n; }),
+      datasets: [{
+        label: '胜率 (%)',
+        data: sorted.map(function(n) { return (names[n].wins / names[n].games * 100).toFixed(1); }),
+        backgroundColor: sorted.map(function(_, i) {
+          var colors = ['#c4493a', '#d66a4a', '#e08b5a', '#e8a86a', '#d4a97a', '#b8895e'];
+          return colors[i % colors.length];
+        }),
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+      },
+      scales: {
+        y: { beginAtZero: true, max: 100, grid: { color: 'rgba(0,0,0,0.05)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Net score comparison
+  var netSorted = Object.keys(names).sort(function(a, b) { return names[b].net - names[a].net; });
+  var ctx2 = document.getElementById('net-chart').getContext('2d');
+  charts.net = new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: netSorted,
+      datasets: [{
+        label: '净胜总额',
+        data: netSorted.map(function(n) { return names[n].net; }),
+        backgroundColor: netSorted.map(function(n) { return names[n].net >= 0 ? 'rgba(46,125,50,0.7)' : 'rgba(198,40,40,0.7)'; }),
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { grid: { color: 'rgba(0,0,0,0.05)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>战绩 - 麻将朋友圈</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="app-wrap">
+  <header class="app-header">
+    <div class="app-logo">🀄 <span>麻将朋友圈</span></div>
+    <nav class="app-nav">
+      <a href="../index.html">首页</a>
+      <a href="records.html" class="active">战绩</a>
+      <a href="stats.html">统计</a>
+      <a href="posts.html">心得</a>
+    </nav>
+  </header>
+
+  <div class="page-header">
+    <h2>📊 牌局记录</h2>
+    <button class="btn btn-primary" onclick="showAddForm()">+ 记录新牌局</button>
+  </div>
+
+  <!-- Filter -->
+  <div class="card" style="padding:12px 16px;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <input class="form-input" id="filter-player" placeholder="搜索玩家..." style="width:160px;">
+      <input class="form-input" id="filter-date" type="date" style="width:160px;">
+      <button class="btn btn-outline btn-sm" onclick="applyFilter()">筛选</button>
+      <button class="btn btn-outline btn-sm" onclick="resetFilter()">重置</button>
+    </div>
+  </div>
+
+  <!-- Records list -->
+  <div class="card" id="records-container">
+    <div class="empty-state"><div class="icon">📊</div>加载中...</div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div class="modal-overlay" id="record-modal">
+    <div class="modal">
+      <h3 style="margin-bottom:16px;" id="modal-title">新增牌局</h3>
+      <form id="record-form" onsubmit="saveRecord(event)">
+        <input type="hidden" id="edit-id" value="">
+
+        <div class="form-group">
+          <label>日期</label>
+          <input class="form-input" type="date" id="record-date" required>
+        </div>
+
+        <div class="form-group">
+          <label>参与玩家（点击选择）</label>
+          <div id="player-selector" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+          <div style="margin-top:6px;display:flex;gap:6px;">
+            <input class="form-input" id="new-player-name" placeholder="新玩家名字" style="flex:1;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="addNewPlayer()">添加</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>输赢金额</label>
+          <div id="score-inputs">
+            <div class="empty-state" style="padding:10px;">请先选择玩家</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>备注</label>
+          <input class="form-input" id="record-notes" placeholder="比如谁胡了什么大牌...">
+        </div>
+
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <span id="balance-check" style="flex:1;font-size:13px;align-self:center;"></span>
+          <button type="button" class="btn btn-outline" onclick="closeModal()">取消</button>
+          <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="../../js/i18n.js"></script>
+<script src="../js/main.js"></script>
+<script>
+var allRecords = [];
+var selectedPlayers = [];
+
+// Load
+(async function init() {
+  try {
+    allRecords = await api.get('mj_records') || [];
+    renderRecords(allRecords);
+    updatePlayerSelector();
+  } catch(e) { console.error(e); }
+})();
+
+function renderRecords(records) {
+  var container = document.getElementById('records-container');
+  if (!records || !records.length) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">📊</div>还没有牌局记录<br><small>点击右上角「记录新牌局」开始</small></div>';
+    return;
+  }
+
+  // Sort by date descending
+  var sorted = records.slice().sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
+
+  container.innerHTML = sorted.map(function(r, idx) {
+    var date = fmtDate(r.date) || '未知日期';
+    var players = (r.players || []).map(function(p) {
+      var cls = p.score >= 0 ? 'positive' : 'negative';
+      var sign = p.score >= 0 ? '+' : '';
+      return '<span class="record-player">' + escapeHtml(p.name) + ': <span class="record-score ' + cls + '">' + sign + p.score + '</span></span>';
+    }).join('');
+    var notes = r.notes ? '<span class="record-notes">— ' + escapeHtml(r.notes) + '</span>' : '';
+    var realIdx = allRecords.indexOf(r);
+    return '<div class="record-item">' +
+      '<span class="record-date">' + date + '</span>' +
+      '<div class="record-players">' + players + '</div>' +
+      notes +
+      '<div style="display:flex;gap:4px;flex-shrink:0;">' +
+        '<button class="btn btn-outline btn-sm" onclick="editRecord(' + realIdx + ')">✎</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="deleteRecord(' + realIdx + ')">✕</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function applyFilter() {
+  var nameFilter = (document.getElementById('filter-player').value || '').trim().toLowerCase();
+  var dateFilter = document.getElementById('filter-date').value;
+
+  var filtered = allRecords.filter(function(r) {
+    if (nameFilter) {
+      var match = (r.players || []).some(function(p) {
+        return (p.name || '').toLowerCase().includes(nameFilter);
+      });
+      if (!match) return false;
+    }
+    if (dateFilter && r.date !== dateFilter) return false;
+    return true;
+  });
+  renderRecords(filtered);
+}
+
+function resetFilter() {
+  document.getElementById('filter-player').value = '';
+  document.getElementById('filter-date').value = '';
+  renderRecords(allRecords);
+}
+
+// ---- Player Selector ----
+async function updatePlayerSelector() {
+  var players = await getAllPlayers();
+  var container = document.getElementById('player-selector');
+  container.innerHTML = players.map(function(name) {
+    var selected = selectedPlayers.indexOf(name) >= 0;
+    return '<span class="player-tag ' + (selected ? 'selected' : '') + '" onclick="togglePlayer(\'' + escapeHtml(name) + '\')">' + escapeHtml(name) + '</span>';
+  }).join('');
+  updateScoreInputs();
+}
+
+function togglePlayer(name) {
+  var idx = selectedPlayers.indexOf(name);
+  if (idx >= 0) selectedPlayers.splice(idx, 1);
+  else selectedPlayers.push(name);
+  updatePlayerSelector();
+  updateScoreInputs();
+}
+
+function addNewPlayer() {
+  var input = document.getElementById('new-player-name');
+  var name = (input.value || '').trim();
+  if (!name) return;
+  if (selectedPlayers.indexOf(name) < 0) selectedPlayers.push(name);
+  input.value = '';
+  updatePlayerSelector();
+  updateScoreInputs();
+}
+
+// ---- Score Inputs ----
+function updateScoreInputs() {
+  var container = document.getElementById('score-inputs');
+  if (!selectedPlayers.length) {
+    container.innerHTML = '<div class="empty-state" style="padding:10px;">请先选择玩家</div>';
+    updateBalance();
+    return;
+  }
+  container.innerHTML = selectedPlayers.map(function(name) {
+    return '<div class="form-row" style="margin-bottom:6px;">' +
+      '<span style="min-width:60px;font-size:14px;">' + escapeHtml(name) + '</span>' +
+      '<input class="form-input score-input" data-player="' + escapeHtml(name) + '" type="number" placeholder="+/-金额" style="width:120px;" oninput="updateBalance()">' +
+    '</div>';
+  }).join('');
+  updateBalance();
+}
+
+function updateBalance() {
+  var inputs = document.querySelectorAll('.score-input');
+  var total = 0;
+  inputs.forEach(function(inp) {
+    total += parseInt(inp.value) || 0;
+  });
+  var el = document.getElementById('balance-check');
+  if (total === 0 && inputs.length > 0) {
+    el.innerHTML = '✅ 总和为 0';
+    el.style.color = 'var(--green)';
+  } else if (inputs.length > 0) {
+    el.innerHTML = '⚠️ 总和为 ' + total + '（应为 0）';
+    el.style.color = 'var(--red)';
+  } else {
+    el.innerHTML = '';
+  }
+}
+
+// ---- Modal ----
+function showAddForm() {
+  document.getElementById('modal-title').textContent = '📝 新增牌局';
+  document.getElementById('edit-id').value = '';
+  document.getElementById('record-date').value = fmtDate(new Date());
+  document.getElementById('record-notes').value = '';
+  selectedPlayers = [];
+  updatePlayerSelector();
+  document.getElementById('record-modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('record-modal').classList.remove('open');
+}
+
+function editRecord(idx) {
+  var r = allRecords[idx];
+  if (!r) return;
+  document.getElementById('modal-title').textContent = '✎ 编辑牌局';
+  document.getElementById('edit-id').value = idx;
+  document.getElementById('record-date').value = r.date || '';
+  document.getElementById('record-notes').value = r.notes || '';
+  selectedPlayers = (r.players || []).map(function(p) { return p.name; });
+  updatePlayerSelector();
+
+  // Set score values after inputs render
+  setTimeout(function() {
+    (r.players || []).forEach(function(p) {
+      var inp = document.querySelector('.score-input[data-player="' + CSS.escape(p.name) + '"]');
+      if (inp) inp.value = p.score;
+    });
+    updateBalance();
+  }, 50);
+
+  document.getElementById('record-modal').classList.add('open');
+}
+
+async function saveRecord(e) {
+  e.preventDefault();
+  var editId = document.getElementById('edit-id').value;
+  var date = document.getElementById('record-date').value;
+  var notes = document.getElementById('record-notes').value.trim();
+
+  var players = [];
+  var inputs = document.querySelectorAll('.score-input');
+  var hasError = false;
+  inputs.forEach(function(inp) {
+    var name = inp.getAttribute('data-player');
+    var score = parseInt(inp.value);
+    if (isNaN(score)) { hasError = true; return; }
+    players.push({ name: name, score: score });
+  });
+
+  if (hasError || players.length < 2) {
+    showToast('请正确填写所有金额', 'error');
+    return;
+  }
+
+  var total = players.reduce(function(s, p) { return s + p.score; }, 0);
+  if (total !== 0) {
+    showToast('输赢金额总和必须为 0（当前 ' + total + '）', 'error');
+    return;
+  }
+
+  var record = { date: date, players: players, notes: notes };
+
+  if (editId !== '') {
+    allRecords[parseInt(editId)] = record;
+  } else {
+    allRecords.push(record);
+  }
+
+  try {
+    await api.save('mj_records', allRecords);
+    showToast('保存成功 ✅');
+    closeModal();
+    renderRecords(allRecords);
+  } catch(e) {
+    showToast('保存失败', 'error');
+  }
+}
+
+async function deleteRecord(idx) {
+  if (!confirm('确定删除这条记录？')) return;
+  allRecords.splice(idx, 1);
+  try {
+    await api.save('mj_records', allRecords);
+    showToast('已删除');
+    renderRecords(allRecords);
+  } catch(e) {
+    showToast('删除失败', 'error');
+  }
+}
+
+// Close modal on overlay click
+document.getElementById('record-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>

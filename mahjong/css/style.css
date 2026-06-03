@@ -1,0 +1,232 @@
+/* ============================================
+   麻将朋友圈 — 战绩记录 + 心得分享
+   ============================================ */
+
+:root {
+  --bg: #f5f0eb;
+  --bg-card: #ffffff;
+  --text: #2d2d2d;
+  --text-secondary: #777;
+  --accent: #c4493a;
+  --accent-light: rgba(196,73,58,0.08);
+  --green: #2e7d32;
+  --red: #c62828;
+  --gold: #f9a825;
+  --border: rgba(0,0,0,0.08);
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --radius: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+/* ===== Layout ===== */
+.app-wrap { max-width: 960px; margin: 0 auto; padding: 16px; }
+
+/* ===== Header ===== */
+.app-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0; margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.app-logo {
+  font-size: 22px; font-weight: 700; letter-spacing: 1px;
+  display: flex; align-items: center; gap: 8px;
+}
+.app-logo span { color: var(--accent); }
+.app-nav { display: flex; gap: 4px; }
+.app-nav a {
+  padding: 8px 16px; border-radius: 8px;
+  text-decoration: none; color: var(--text-secondary);
+  font-size: 14px; transition: all 0.2s;
+}
+.app-nav a:hover, .app-nav a.active {
+  background: var(--accent-light); color: var(--accent);
+}
+
+/* ===== Cards ===== */
+.card {
+  background: var(--bg-card); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px;
+}
+.card-title {
+  font-size: 15px; font-weight: 600; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* ===== Stats Grid ===== */
+.stats-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px; margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--bg-card); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 16px; text-align: center;
+}
+.stat-num {
+  font-size: 28px; font-weight: 700; margin-bottom: 2px;
+}
+.stat-num.positive { color: var(--green); }
+.stat-num.negative { color: var(--red); }
+.stat-label { font-size: 12px; color: var(--text-secondary); }
+
+/* ===== Records List ===== */
+.record-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.record-item:last-child { border-bottom: none; }
+.record-date { font-size: 13px; color: var(--text-secondary); min-width: 80px; }
+.record-players { flex: 1; display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.record-player {
+  font-size: 13px; display: flex; align-items: center; gap: 4px;
+}
+.record-score {
+  font-weight: 600;
+}
+.record-score.positive { color: var(--green); }
+.record-score.negative { color: var(--red); }
+.record-notes { font-size: 12px; color: var(--text-secondary); font-style: italic; }
+
+/* ===== Form ===== */
+.form-group { margin-bottom: 14px; }
+.form-group label {
+  display: block; font-size: 13px; font-weight: 600;
+  margin-bottom: 4px; color: var(--text-secondary);
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%; padding: 8px 12px; border: 1px solid var(--border);
+  border-radius: 8px; font-size: 14px; background: var(--bg-card);
+  font-family: inherit;
+}
+.form-textarea { min-height: 80px; resize: vertical; }
+.form-row { display: flex; gap: 8px; align-items: center; }
+.form-row .form-input { flex: 1; }
+
+.btn {
+  padding: 8px 20px; border: none; border-radius: 8px;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s; font-family: inherit;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { opacity: 0.9; }
+.btn-outline {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+.btn-sm { padding: 4px 12px; font-size: 12px; }
+.btn-danger { background: var(--red); color: #fff; }
+
+/* ===== Player Tags ===== */
+.player-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 6px;
+  font-size: 13px; cursor: pointer; transition: all 0.2s;
+  border: 1px solid var(--border); user-select: none;
+}
+.player-tag.selected {
+  background: var(--accent-light); border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ===== Posts ===== */
+.post-card { margin-bottom: 16px; }
+.post-title {
+  font-size: 17px; font-weight: 600; margin-bottom: 6px;
+}
+.post-meta {
+  font-size: 12px; color: var(--text-secondary);
+  display: flex; gap: 12px; margin-bottom: 8px;
+}
+.post-content { font-size: 14px; line-height: 1.8; color: #444; }
+.post-tags { display: flex; gap: 6px; margin-top: 8px; }
+.post-tag {
+  font-size: 11px; padding: 2px 8px; border-radius: 4px;
+  background: var(--accent-light); color: var(--accent);
+}
+.post-actions { margin-top: 8px; display: flex; gap: 8px; }
+
+/* ===== Page Header ===== */
+.page-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.page-header h2 { font-size: 20px; }
+
+/* ===== Modal ===== */
+.modal-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4); z-index: 999;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg-card); border-radius: var(--radius);
+  padding: 24px; width: 90%; max-width: 500px;
+  max-height: 80vh; overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+
+/* ===== Chart containers ===== */
+.chart-wrap {
+  max-width: 100%; overflow: hidden;
+  margin: 10px 0;
+}
+
+/* ===== Empty state ===== */
+.empty-state {
+  text-align: center; padding: 40px 20px;
+  color: var(--text-secondary); font-size: 14px;
+}
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+/* ===== Toasts ===== */
+.toast {
+  position: fixed; top: 20px; right: 20px;
+  padding: 12px 20px; border-radius: 8px;
+  color: #fff; font-size: 14px; z-index: 9999;
+  animation: slideIn 0.3s ease;
+}
+.toast.success { background: var(--green); }
+.toast.error { background: var(--red); }
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ===== Ranking badges ===== */
+.rank-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  font-size: 14px; font-weight: 700; margin-right: 8px;
+}
+.rank-1 { background: #ffd700; color: #000; }
+.rank-2 { background: #c0c0c0; color: #000; }
+.rank-3 { background: #cd7f32; color: #fff; }
+
+/* ===== Rank list ===== */
+.rank-list { list-style: none; }
+.rank-item {
+  display: flex; align-items: center; padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.rank-item:last-child { border-bottom: none; }
+.rank-name { flex: 1; font-weight: 500; }
+.rank-score { font-weight: 700; color: var(--green); }
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+  .app-header { flex-direction: column; gap: 8px; }
+  .app-nav { width: 100%; overflow-x: auto; }
+  .app-nav a { flex: 1; text-align: center; font-size: 13px; padding: 6px 8px; }
+  .stats-row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .stat-num { font-size: 22px; }
+  .record-item { flex-wrap: wrap; gap: 4px; }
+  .record-date { min-width: auto; }
+}

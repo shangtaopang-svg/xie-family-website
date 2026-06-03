@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🀄 麻将朋友圈</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app-wrap">
+  <header class="app-header">
+    <div class="app-logo">🀄 <span>麻将朋友圈</span></div>
+    <nav class="app-nav">
+      <a href="index.html" class="active">首页</a>
+      <a href="pages/records.html">战绩</a>
+      <a href="pages/stats.html">统计</a>
+      <a href="pages/posts.html">心得</a>
+    </nav>
+  </header>
+
+  <!-- Stats Overview -->
+  <div class="stats-row" id="stats-overview">
+    <div class="stat-card"><div class="stat-num" id="total-games">0</div><div class="stat-label">总场次</div></div>
+    <div class="stat-card"><div class="stat-num positive" id="total-amount">¥0</div><div class="stat-label">总流水</div></div>
+    <div class="stat-card"><div class="stat-num" id="active-players">0</div><div class="stat-label">活跃玩家</div></div>
+    <div class="stat-card"><div class="stat-num" id="total-posts">0</div><div class="stat-label">心得</div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+    <!-- Recent Records -->
+    <div class="card">
+      <div class="card-title">📊 最近战绩</div>
+      <div id="recent-records"><div class="empty-state">暂无战绩</div></div>
+    </div>
+
+    <!-- Recent Posts -->
+    <div class="card">
+      <div class="card-title">📝 最新心得</div>
+      <div id="recent-posts"><div class="empty-state">暂无心得</div></div>
+    </div>
+  </div>
+
+  <!-- Weekly Ranking -->
+  <div class="card">
+    <div class="card-title">🏆 本周排行</div>
+    <div id="weekly-ranking"><div class="empty-state">暂无数据</div></div>
+  </div>
+</div>
+
+<script src="../js/i18n.js"></script>
+<script src="js/main.js"></script>
+<script>
+// Dashboard: load overview data
+(async function() {
+  try {
+    var records = await api.get('mj_records') || [];
+    var posts = await api.get('mj_posts') || [];
+
+    // Calculate stats
+    var totalGames = records.length;
+    var totalAmount = records.reduce(function(s, r) {
+      return s + r.players.reduce(function(ss, p) { return ss + Math.abs(p.score); }, 0);
+    }, 0) / 2; // flow = sum of abs / 2
+    var allPlayers = {};
+    records.forEach(function(r) {
+      r.players.forEach(function(p) { allPlayers[p.name] = true; });
+    });
+    var activePlayers = Object.keys(allPlayers).length;
+
+    document.getElementById('total-games').textContent = totalGames;
+    document.getElementById('total-amount').textContent = '¥' + totalAmount;
+    document.getElementById('active-players').textContent = activePlayers;
+    document.getElementById('total-posts').textContent = posts.length;
+
+    // Recent records (last 5)
+    var recentEl = document.getElementById('recent-records');
+    var recent = records.slice(-5).reverse();
+    if (recent.length) {
+      recentEl.innerHTML = recent.map(function(r) {
+        var date = r.date || '';
+        var players = r.players.map(function(p) {
+          var cls = p.score >= 0 ? 'positive' : 'negative';
+          var sign = p.score >= 0 ? '+' : '';
+          return '<span class="record-player">' + escapeHtml(p.name) + ' <span class="record-score ' + cls + '">' + sign + p.score + '</span></span>';
+        }).join('');
+        return '<div class="record-item"><span class="record-date">' + date + '</span><div class="record-players">' + players + '</div></div>';
+      }).join('');
+    }
+
+    // Recent posts (last 3)
+    var postsEl = document.getElementById('recent-posts');
+    var recentPosts = posts.slice(-3).reverse();
+    if (recentPosts.length) {
+      postsEl.innerHTML = recentPosts.map(function(p) {
+        return '<div class="record-item"><span class="record-date">' + (p.date || '') + '</span><span>' + escapeHtml(p.title || p.content.slice(0, 30)) + '</span></div>';
+      }).join('');
+    }
+
+    // Weekly ranking (net score per player)
+    var rankEl = document.getElementById('weekly-ranking');
+    var playerScores = {};
+    records.forEach(function(r) {
+      r.players.forEach(function(p) {
+        playerScores[p.name] = (playerScores[p.name] || 0) + p.score;
+      });
+    });
+    var sorted = Object.keys(playerScores).sort(function(a, b) {
+      return playerScores[b] - playerScores[a];
+    });
+    if (sorted.length) {
+      var medals = ['rank-1', 'rank-2', 'rank-3'];
+      rankEl.innerHTML = '<ol class="rank-list">' + sorted.map(function(name, i) {
+        var score = playerScores[name];
+        var medal = i < 3 ? medals[i] : '';
+        var cls = score >= 0 ? 'positive' : 'negative';
+        var sign = score >= 0 ? '+' : '';
+        return '<li class="rank-item"><span class="rank-badge ' + medal + '">' + (i + 1) + '</span><span class="rank-name">' + escapeHtml(name) + '</span><span class="rank-score ' + cls + '">' + sign + score + '</span></li>';
+      }).join('') + '</ol>';
+    }
+  } catch(e) {
+    console.warn('Dashboard load error:', e);
+  }
+})();
+</script>
+</body>
+</html>
