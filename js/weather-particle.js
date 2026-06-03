@@ -198,6 +198,7 @@
         case 'sunny': drawSunny(ctx, particles); break;
         case 'snow':  drawSnow(ctx, particles); break;
         case 'meteor': drawMeteors(ctx, particles); break;
+        default: return; // 'off' — stop the animation loop
       }
       animId = requestAnimationFrame(loop);
     }
@@ -217,11 +218,13 @@
     }
 
     // --- 初始化 ---
-    // 恢复上次效果
-    localStorage.removeItem('xie_weather_effect');
-    var saved = 'off';
-    if (saved && saved !== 'off') startEffect(saved);
-    else updateActiveBtn('off');
+    // 恢复上次效果（用户偏好持久化）
+    var saved = localStorage.getItem('xie_weather_effect') || 'off';
+    if (saved && saved !== 'off') {
+      startEffect(saved);
+    } else {
+      updateActiveBtn('off');
+    }
 
     // 绑定按钮
     document.addEventListener('click', function(e) {
