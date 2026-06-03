@@ -8,323 +8,292 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    /* ===== 麻将传播地图 ===== */
-    .mahjong-hero {
-      position: relative; width: 100%; border-radius: var(--radius);
-      overflow: hidden; margin-bottom: 24px;
-      border: 1px solid var(--glass-border);
-      background: #0a0a1a;
-    }
-    #mahjong-map-container {
-      width: 100%; height: 420px; z-index: 1;
-    }
-    .mahjong-hero-overlay {
-      position: absolute; top: 0; left: 0; right: 0;
-      padding: 20px 24px; z-index: 10;
-      background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
-      pointer-events: none;
-    }
-    .mahjong-hero-overlay h1 {
-      font-family: var(--font-title); font-size: 24px; color: #fff;
-      letter-spacing: 3px; text-shadow: 0 2px 12px rgba(0,0,0,0.5);
-    }
-    .mahjong-hero-overlay p {
-      font-size: 13px; color: rgba(255,255,255,0.6);
-      margin-top: 4px; letter-spacing: 1px;
-    }
-
-    /* Map markers */
-    .mj-map-marker {
-      background: none !important; border: none !important;
-    }
-    .mj-marker-inner {
-      width: 16px; height: 16px; display: flex;
-      align-items: center; justify-content: center;
-    }
-    .mj-marker-dot {
-      width: 12px; height: 12px; border-radius: 50%;
-      background: var(--accent-orange);
-      border: 2px solid rgba(255,107,0,0.4);
-      box-shadow: 0 0 12px rgba(255,107,0,0.3);
-      transition: all 0.3s;
-    }
-    .mj-marker-active .mj-marker-dot {
-      width: 16px; height: 16px;
-      box-shadow: 0 0 20px rgba(255,107,0,0.6);
-      background: #ffd700;
-    }
-    .mj-map-tooltip {
-      background: rgba(0,0,0,0.8) !important;
-      border: 1px solid rgba(255,107,0,0.3) !important;
-      color: #fff !important; font-size: 12px !important;
-      border-radius: 6px !important; padding: 4px 10px !important;
-      box-shadow: none !important;
-    }
-    .mj-map-tooltip::before { border-top-color: rgba(0,0,0,0.8) !important; }
-    .leaflet-popup-content-wrapper {
-      background: rgba(15,15,22,0.95) !important;
-      color: #e8e6e0 !important; border-radius: 10px !important;
-      border: 1px solid rgba(255,255,255,0.08) !important;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.4) !important;
-    }
-    .leaflet-popup-tip { background: rgba(15,15,22,0.95) !important; }
-    .leaflet-popup-close-button { color: #999 !important; }
-
-    /* Map legend */
-    .mj-legend {
-      position: absolute; bottom: 12px; right: 12px; z-index: 10;
-      background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
-      border-radius: 8px; padding: 8px 12px; pointer-events: none;
-    }
-    .mj-legend span {
-      font-size: 11px; color: rgba(255,255,255,0.5);
-    }
-    .mj-legend .route-dot {
-      display: inline-block; width: 20px; height: 2px;
-      background: linear-gradient(to right, #ff6b00, #ffd700);
-      margin-right: 4px; border-radius: 1px;
-    }
-
-    @media (max-width: 700px) {
-      #mahjong-map-container { height: 280px; }
-      .mahjong-hero-overlay h1 { font-size: 18px; }
-      .mahjong-hero-overlay { padding: 12px 16px; }
-    }
+    #mahjong-map-container { width:100%;height:420px; }
+    .hero-map-bg #mahjong-map-container { position:absolute;top:0;left:0;width:100%;height:100%; }
+    @media(max-width:900px){ #mahjong-map-container{height:260px;} }
   </style>
 </head>
 <body>
-  <!-- ===== 麻将传播地图 Hero ===== -->
-  <div class="app-wrap">
-    <div class="mahjong-hero">
-      <div class="mahjong-hero-overlay">
-        <h1>🀄 宁海三中98届麻将交流群</h1>
-        <p>从宁海出发 · 麻将传播世界各地路线图</p>
+<!-- ===== Sidebar ===== -->
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <div class="logo-icon">🀄</div>
+      <div class="logo-text">
+        <h1>宁海三中98届</h1>
+        <small>麻将交流群</small>
       </div>
-      <div id="mahjong-map-container"></div>
-      <div class="mj-legend">
-        <span><span class="route-dot"></span> 麻将传播路线 · 悬停暂停动画</span>
+    </a>
+    <button class="nav-toggle" aria-label="菜单">☰</button>
+    <nav class="main-nav">
+      <ul>
+        <li><a href="index.html" class="active">🏠 首页</a></li>
+        <li><a href="pages/records.html">📊 战绩</a></li>
+        <li><a href="pages/stats.html">📈 统计</a></li>
+        <li><a href="pages/friendship.html">🤝 友谊时刻</a></li>
+        <li><a href="pages/mahjong-culture.html">🀄 麻将文化</a></li>
+        <li><a href="pages/posts.html">📝 心得</a></li>
+      </ul>
+      <div class="sidebar-controls">
+        <div class="sc-row">
+          <button class="sidebar-btn" id="auth-btn" onclick="showLoginOverlay()" title="登录">👤</button>
+          <button class="sidebar-btn" id="theme-btn" onclick="toggleTheme()" title="切换主题">☀️</button>
+        </div>
+        <div class="sc-row" id="user-info" style="display:none;font-size:11px;color:var(--text-tertiary);padding-top:4px;"></div>
       </div>
-    </div>
-  </div>
-
-<div class="app-wrap">
-  <header class="app-header">
-    <div class="app-logo">🀄 <span>宁海三中98届麻将交流群</span></div>
-    <nav class="app-nav">
-      <a href="index.html" class="active">首页</a>
-      <a href="pages/records.html">战绩</a>
-      <a href="pages/stats.html">统计</a>
-      <a href="pages/friendship.html">友谊时刻</a>
-      <a href="pages/mahjong-culture.html">麻将文化</a>
-      <a href="pages/posts.html">心得</a>
     </nav>
-    <div style="display:flex;gap:4px;align-items:center;position:relative;">
-      <button class="btn btn-outline btn-sm" id="auth-btn" onclick="showLoginOverlay()" style="font-size:13px;padding:4px 12px;white-space:nowrap;">未登录</button>
-      <button class="btn btn-outline btn-sm" id="theme-btn" onclick="toggleTheme()" style="font-size:13px;padding:4px 10px;">☀️</button>
-    </div>
-  </header>
+  </div>
+</header>
 
-  <!-- Stats Overview -->
-  <div class="stats-row" id="stats-overview">
-    <div class="stat-card"><div class="stat-num" id="total-games">0</div><div class="stat-label">总场次</div></div>
-    <div class="stat-card"><div class="stat-num positive" id="total-amount">¥0</div><div class="stat-label">总流水</div></div>
-    <div class="stat-card"><div class="stat-num" id="active-players">0</div><div class="stat-label">活跃玩家</div></div>
-    <div class="stat-card"><div class="stat-num" id="total-posts">0</div><div class="stat-label">心得</div></div>
+<!-- ===== Content ===== -->
+<div class="content">
+
+  <!-- Hero / Map -->
+  <section class="hero-section hero-map-bg">
+    <div id="mahjong-map-container"></div>
+    <div class="hero-info">
+      <div class="hero-date-box">
+        <div class="hero-date">
+          <div class="hero-date-day" id="hero-day">18</div>
+          <div class="hero-date-detail">
+            <div class="hero-date-month" id="hero-month">6月</div>
+            <div class="hero-date-weekday" id="hero-weekday">星期三</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-motto">以牌会友 · 乐在其中</div>
+    <div class="hero-sub">—— 宁海三中98届 · 麻将交流群 ——</div>
+  </section>
+
+  <!-- Stats Bar -->
+  <div class="stats-bar">
+    <div class="stat-item"><div class="num" id="total-games">0</div><div class="label">总场次</div></div>
+    <div class="stat-item"><div class="num positive" id="total-amount">¥0</div><div class="label">总流水</div></div>
+    <div class="stat-item"><div class="num" id="active-players">0</div><div class="label">活跃玩家</div></div>
+    <div class="stat-item"><div class="num" id="total-posts">0</div><div class="label">心得</div></div>
+    <div class="stat-item"><div class="num positive" id="my-month">-</div><div class="label">我的本月</div></div>
   </div>
 
-  <!-- Personal Stats (logged in) -->
-  <div class="card" id="personal-card" style="display:none;">
-    <div class="card-title">👤 我的月度统计 <span id="personal-month-label" style="font-weight:400;font-size:13px;color:var(--text-tertiary);"></span></div>
-    <div class="stats-row" id="personal-stats-grid" style="margin-bottom:0;"></div>
-    <div style="margin-top:10px;">
-      <canvas id="personal-month-chart" height="120"></canvas>
+  <!-- Media Row: Video + Photo -->
+  <div class="media-row-section">
+    <div class="media-row">
+      <div class="media-col">
+        <div class="media-col-header">
+          <h3>🎬 友谊视频</h3>
+          <div class="divider"></div>
+          <p>影像记录 · 同窗情谊</p>
+        </div>
+        <div class="reels-container" id="video-container">
+          <div class="empty-state" style="padding:20px;">暂无视频</div>
+        </div>
+      </div>
+      <div class="media-col">
+        <div class="media-col-header">
+          <h3>📷 友谊照片</h3>
+          <div class="divider"></div>
+          <p>定格瞬间 · 永恒回忆</p>
+        </div>
+        <div class="photo-carousel-wrap">
+          <div class="friend-carousel" id="photo-carousel">
+            <div class="friend-carousel-track" id="photo-track"></div>
+            <button class="carousel-btn carousel-prev" onclick="movePhoto(-1)">‹</button>
+            <button class="carousel-btn carousel-next" onclick="movePhoto(1)">›</button>
+          </div>
+          <div class="carousel-dots" id="photo-dots"></div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-    <!-- Recent Records -->
-    <div class="card">
-      <div class="card-title">📊 最近战绩</div>
-      <div id="recent-records"><div class="empty-state">暂无战绩</div></div>
+  <!-- Dashboard Grid -->
+  <div class="section-wrap" style="padding-top:0;">
+    <div class="grid-2-1">
+      <!-- Recent Records -->
+      <div class="card">
+        <div class="card-title">📊 最近战绩</div>
+        <div id="recent-records"><div class="empty-state">暂无战绩，快去记录吧</div></div>
+        <div style="text-align:center;margin-top:12px;">
+          <a href="pages/records.html" class="btn btn-outline btn-sm">查看全部 →</a>
+        </div>
+      </div>
+
+      <!-- Ranking -->
+      <div class="card">
+        <div class="card-title">🏆 总排行</div>
+        <div id="weekly-ranking"><div class="empty-state">暂无数据</div></div>
+      </div>
     </div>
 
-    <!-- Recent Posts -->
-    <div class="card">
-      <div class="card-title">📝 最新心得</div>
-      <div id="recent-posts"><div class="empty-state">暂无心得</div></div>
-    </div>
-  </div>
+    <div class="grid-2">
+      <!-- Monthly Personal Chart -->
+      <div class="card" id="personal-card" style="display:none;">
+        <div class="card-title">👤 本月走势 <span id="personal-month-label" style="font-weight:400;font-size:12px;color:var(--text-tertiary);"></span></div>
+        <canvas id="personal-month-chart" height="120"></canvas>
+      </div>
 
-  <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;">
-    <!-- Ranking -->
-    <div class="card">
-      <div class="card-title">🏆 总排行</div>
-      <div id="weekly-ranking"><div class="empty-state">暂无数据</div></div>
-    </div>
-
-    <!-- Group Members -->
-    <div class="card">
-      <div class="card-title">👥 群成员</div>
-      <div id="member-list" style="font-size:13px;line-height:2;">
-        <div class="empty-state">加载中...</div>
+      <!-- Group Members -->
+      <div class="card">
+        <div class="card-title">👥 群成员</div>
+        <div id="member-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;">
+          <div class="empty-state" style="padding:10px;">加载中...</div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- Footer -->
+<footer class="site-footer">© 2026 宁海三中98届麻将交流群 · 以牌会友</footer>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="../js/i18n.js"></script>
 <script src="js/main.js"></script>
 <script src="js/mahjong-map.js"></script>
 <script>
-// Dashboard: load overview data
+// ---- Date ----
+(function() {
+  var d = new Date();
+  document.getElementById('hero-day').textContent = d.getDate();
+  document.getElementById('hero-month').textContent = (d.getMonth()+1)+'月';
+  var weekdays = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+  document.getElementById('hero-weekday').textContent = weekdays[d.getDay()];
+})();
+
+// ---- Nav toggle ----
+document.querySelector('.nav-toggle')?.addEventListener('click', function() {
+  document.querySelector('.main-nav').classList.toggle('open');
+});
+
+// ---- Dashboard ----
 (async function() {
   try {
     var records = await api.get('mj_records') || [];
     var posts = await api.get('mj_posts') || [];
+    var friendship = await api.get('mj_friendship') || {videos:[],photos:[]};
 
+    // Stats
     var totalGames = records.length;
     var totalAmount = records.reduce(function(s, r) {
       return s + r.players.reduce(function(ss, p) { return ss + Math.abs(p.score); }, 0);
     }, 0) / 2;
     var allPlayers = {};
-    records.forEach(function(r) {
-      r.players.forEach(function(p) { allPlayers[p.name] = true; });
-    });
-    var activePlayers = Object.keys(allPlayers).length;
-
+    records.forEach(function(r) { r.players.forEach(function(p) { allPlayers[p.name] = true; }); });
     document.getElementById('total-games').textContent = totalGames;
-    document.getElementById('total-amount').textContent = '¥' + totalAmount;
-    document.getElementById('active-players').textContent = activePlayers;
+    document.getElementById('total-amount').textContent = '¥' + Math.round(totalAmount);
+    document.getElementById('active-players').textContent = Object.keys(allPlayers).length;
     document.getElementById('total-posts').textContent = posts.length;
 
-    // Recent records (last 5)
+    // Recent records
     var recentEl = document.getElementById('recent-records');
     var recent = records.slice(-5).reverse();
     if (recent.length) {
       recentEl.innerHTML = recent.map(function(r) {
-        var date = r.date || '';
-        var players = r.players.map(function(p) {
-          var cls = p.score >= 0 ? 'positive' : 'negative';
-          var sign = p.score >= 0 ? '+' : '';
-          return '<span class="record-player">' + escapeHtml(p.name) + ' <span class="record-score ' + cls + '">' + sign + p.score + '</span></span>';
-        }).join('');
-        return '<div class="record-item"><span class="record-date">' + date + '</span><div class="record-players">' + players + '</div></div>';
-      }).join('');
-    }
-
-    // Recent posts (last 3)
-    var postsEl = document.getElementById('recent-posts');
-    var recentPosts = posts.slice(-3).reverse();
-    if (recentPosts.length) {
-      postsEl.innerHTML = recentPosts.map(function(p) {
-        return '<div class="record-item"><span class="record-date">' + (p.date || '') + '</span><span>' + escapeHtml(p.title || p.content.slice(0, 30)) + '</span></div>';
+        return '<div class="record-item"><span class="record-date">' + (r.date||'') + '</span><div class="record-players">' +
+          r.players.map(function(p) {
+            var cls = p.score >= 0 ? 'positive' : 'negative';
+            var sign = p.score >= 0 ? '+' : '';
+            return '<span class="record-player">' + playerWithAvatar(p.name, 18) + ' <span class="record-score ' + cls + '">' + sign + p.score + '</span></span>';
+          }).join('') + '</div></div>';
       }).join('');
     }
 
     // Ranking
-    var rankEl = document.getElementById('weekly-ranking');
     var playerScores = {};
-    records.forEach(function(r) {
-      r.players.forEach(function(p) {
-        playerScores[p.name] = (playerScores[p.name] || 0) + p.score;
-      });
-    });
-    var sorted = Object.keys(playerScores).sort(function(a, b) {
-      return playerScores[b] - playerScores[a];
-    });
+    records.forEach(function(r) { r.players.forEach(function(p) { playerScores[p.name] = (playerScores[p.name]||0) + p.score; }); });
+    var sorted = Object.keys(playerScores).sort(function(a,b){return playerScores[b]-playerScores[a];});
     if (sorted.length) {
-      var medals = ['rank-1', 'rank-2', 'rank-3'];
-      rankEl.innerHTML = '<ol class="rank-list">' + sorted.map(function(name, i) {
-        var score = playerScores[name];
-        var medal = i < 3 ? medals[i] : '';
-        var cls = score >= 0 ? 'positive' : 'negative';
-        var sign = score >= 0 ? '+' : '';
-        return '<li class="rank-item"><span class="rank-badge ' + medal + '">' + (i + 1) + '</span><span class="rank-name">' + escapeHtml(name) + '</span><span class="rank-score ' + cls + '">' + sign + score + '</span></li>';
-      }).join('') + '</ol>';
+      document.getElementById('weekly-ranking').innerHTML = '<ol class="rank-list">' +
+        sorted.map(function(name, i) {
+          var score = playerScores[name];
+          var medal = i < 3 ? ['rank-1','rank-2','rank-3'][i] : '';
+          var cls = score >= 0 ? 'positive' : 'negative';
+          var sign = score >= 0 ? '+' : '';
+          return '<li class="rank-item"><span class="rank-badge '+medal+'">'+(i+1)+'</span><span class="rank-name">'+playerWithAvatar(name,20)+'</span><span class="rank-score '+cls+'">'+sign+score+'</span></li>';
+        }).join('') + '</ol>';
     }
 
-    // Personal monthly stats (if logged in)
+    // Personal monthly
     var loggedIn = localStorage.getItem('mj_player');
     if (loggedIn) {
-      var personalCard = document.getElementById('personal-card');
-      personalCard.style.display = 'block';
+      document.getElementById('personal-card').style.display = 'block';
       var now = new Date();
-      var thisMonth = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2, '0');
-      document.getElementById('personal-month-label').textContent = '（' + thisMonth.replace('-', '年') + '月）';
-
-      var monthRecords = records.filter(function(r) {
-        return r.date && r.date.substring(0, 7) === thisMonth;
-      });
-      var myTotal = 0, myWins = 0, myLosses = 0, myGames = 0;
-      monthRecords.forEach(function(r) {
-        (r.players || []).forEach(function(p) {
-          if (p.name === loggedIn) {
-            myTotal += p.score; myGames++;
-            if (p.score > 0) myWins++;
-            else if (p.score < 0) myLosses++;
-          }
+      var thisMonth = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+      document.getElementById('personal-month-label').textContent = thisMonth;
+      var monthRecs = records.filter(function(r) { return r.date && r.date.substring(0,7) === thisMonth; });
+      var myTotal = 0, myScores = [];
+      monthRecs.forEach(function(r) {
+        r.players.forEach(function(p) {
+          if (p.name === loggedIn) { myTotal += p.score; myScores.push({date:r.date,score:p.score}); }
         });
       });
-      document.getElementById('personal-stats-grid').innerHTML =
-        '<div class="stat-card"><div class="stat-num">' + myGames + '</div><div class="stat-label">本月场次</div></div>' +
-        '<div class="stat-card"><div class="stat-num ' + (myTotal >= 0 ? 'positive' : 'negative') + '">' + (myTotal >= 0 ? '+' : '') + myTotal + '</div><div class="stat-label">本月净胜</div></div>' +
-        '<div class="stat-card"><div class="stat-num positive">' + myWins + '</div><div class="stat-label">赢</div></div>' +
-        '<div class="stat-card"><div class="stat-num negative">' + myLosses + '</div><div class="stat-label">输</div></div>';
-
-      var personalCtx = document.getElementById('personal-month-chart');
-      if (personalCtx) {
-        var myRecords = records.filter(function(r) {
-          return r.date && r.date.substring(0, 7) === thisMonth;
+      document.getElementById('my-month').textContent = (myTotal>=0?'+':'')+myTotal;
+      if (myScores.length > 0) {
+        new Chart(document.getElementById('personal-month-chart'), {
+          type: 'line',
+          data: {
+            labels: myScores.map(function(s) { return s.date ? s.date.slice(5) : ''; }),
+            datasets: [{
+              label: loggedIn, data: myScores.map(function(s) { return s.score; }),
+              borderColor: '#ff6b00', backgroundColor: 'rgba(255,107,0,0.1)',
+              fill: true, tension: 0.3, pointRadius: 4,
+            }]
+          },
+          options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{grid:{color:'rgba(0,0,0,0.05)'}},x:{grid:{display:false}}} }
         });
-        var myScores = [];
-        myRecords.forEach(function(r) {
-          (r.players || []).forEach(function(p) {
-            if (p.name === loggedIn) myScores.push({ date: r.date, score: p.score });
-          });
-        });
-        if (myScores.length) {
-          new Chart(personalCtx, {
-            type: 'line',
-            data: {
-              labels: myScores.map(function(s) { return s.date ? s.date.slice(5) : ''; }),
-              datasets: [{
-                label: loggedIn,
-                data: myScores.map(function(s) { return s.score; }),
-                borderColor: '#ff6b00',
-                backgroundColor: 'rgba(255,107,0,0.1)',
-                fill: true, tension: 0.3, pointRadius: 4,
-              }]
-            },
-            options: {
-              responsive: true,
-              plugins: { legend: { display: false } },
-              scales: {
-                y: { grid: { color: 'rgba(0,0,0,0.05)' } },
-                x: { grid: { display: false } }
-              }
-            }
-          });
-        }
       }
     }
 
-    // Member list
+    // Members
     var members = window.DEFAULT_PLAYERS || [];
-    var nicknames = {
-      '王建军': '卯兔', '邵伟军': '猩猩/屌', '冯善雷': '蛇',
-      '庞尚韬': '可与', '冯悦': '青蛙', '张和翔': '胖子', '张文杰': '德杰'
-    };
-    var memberEl = document.getElementById('member-list');
-    memberEl.innerHTML = members.map(function(name) {
-      var nick = nicknames[name] ? '（' + nicknames[name] + '）' : '';
-      return '<div>' + escapeHtml(name) + '<span style="color:var(--text-secondary);font-size:12px;margin-left:4px;">' + nick + '</span></div>';
+    var nicknames = {'王建军':'卯兔','邵伟军':'猩猩','冯善雷':'蛇','庞尚韬':'可与','冯悦':'青蛙','张展':'展昭','张和翔':'胖子','张文杰':'德杰'};
+    document.getElementById('member-list').innerHTML = members.map(function(name) {
+      var nick = nicknames[name] ? '<span style="font-size:10px;color:var(--text-tertiary);">'+nicknames[name]+'</span>' : '';
+      return '<div style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:8px;border:1px solid var(--glass-border);background:var(--glass-bg);">' +
+        avatarHtml(name,24) + '<div><div style="font-size:12px;">'+escapeHtml(name)+'</div>'+nick+'</div></div>';
     }).join('');
 
-  } catch(e) {
-    console.warn('Dashboard load error:', e);
-  }
+    // Friendship media
+    var videos = friendship.videos || [];
+    var vc = document.getElementById('video-container');
+    if (videos.length) {
+      vc.innerHTML = videos.slice().reverse().map(function(v) {
+        return '<div class="reel-item"><video class="reel-video" src="'+v.url+'" controls playsinline preload="metadata"></video>' +
+          '<div class="reel-info"><div class="title">'+escapeHtml(v.title||'')+'</div><div class="desc">'+(v.date||'')+'</div></div></div>';
+      }).join('');
+    }
+    var photos = friendship.photos || [];
+    renderPhotos(photos);
+  } catch(e) { console.warn(e); }
 })();
+
+// Photo carousel
+var photoIndex = 0;
+var photoData = [];
+function renderPhotos(photos) {
+  photoData = photos;
+  var track = document.getElementById('photo-track');
+  var dots = document.getElementById('photo-dots');
+  if (!photos.length) {
+    track.innerHTML = '<div class="friend-carousel-slide"><div class="empty-state" style="height:100%;display:flex;align-items:center;justify-content:center;">暂无照片</div></div>';
+    dots.innerHTML = ''; return;
+  }
+  track.innerHTML = photos.map(function(p) {
+    return '<div class="friend-carousel-slide"><img src="'+p.url+'" alt="'+escapeHtml(p.title||'')+'"><div class="slide-label">'+escapeHtml(p.title||'')+'</div></div>';
+  }).join('');
+  dots.innerHTML = photos.map(function(_,i) {
+    return '<div class="carousel-dot'+(i===0?' active':'')+'" onclick="goToPhoto('+i+')"></div>';
+  }).join('');
+  photoIndex = 0;
+}
+function movePhoto(dir) { goToPhoto(photoIndex+dir); }
+function goToPhoto(idx) {
+  if (!photoData.length) return;
+  if (idx<0) idx=photoData.length-1; if(idx>=photoData.length) idx=0;
+  photoIndex=idx;
+  document.getElementById('photo-track').style.transform='translateX(-'+(idx*100)+'%)';
+  document.querySelectorAll('#photo-dots .carousel-dot').forEach(function(d,i){d.classList.toggle('active',i===idx);});
+}
+setInterval(function() { if (photoData.length>1) movePhoto(1); }, 4000);
 </script>
 </body>
 </html>
