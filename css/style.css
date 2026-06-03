@@ -4437,25 +4437,42 @@ body {
   .back-page-btn { display: flex; }
 }
 
-/* Brick Wall — tile hover & particle effects */
+/* Brick Wall — photo masonry grid */
 .brick-tile {
-  transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.4s ease !important;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease !important;
+  border-radius: 10px;
+  background: var(--bg-secondary);
 }
 .brick-tile:hover {
-  box-shadow: 0 4px 20px rgba(255, 107, 0, 0.25),
-              0 0 0 2px rgba(255, 107, 0, 0.15) !important;
+  box-shadow: 0 6px 30px rgba(255, 107, 0, 0.25) !important;
+  transform: scale(1.03) !important;
   z-index: 10;
 }
-.brick-tile[data-flipped="true"]:hover {
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.15),
-              0 0 0 2px rgba(255, 255, 255, 0.1) !important;
-  transform: rotateX(0deg) rotateY(180deg) rotateZ(0deg) scale(1.08) !important;
-  z-index: 10;
+.brick-tile:focus-visible {
+  outline: 2px solid var(--accent-orange);
+  outline-offset: 2px;
 }
-.brick-particle {
-  will-change: transform, opacity;
+.brick-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+.brick-watermark {
   pointer-events: none;
+  user-select: none;
+}
+.brick-label {
+  pointer-events: none;
+  user-select: none;
 }
 
-/* Remove old brick-wall grid styles (replaced by JS absolute positioning) */
+/* Dark mode adjustments */
+[data-theme="dark"] .brick-tile {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+[data-theme="dark"] .brick-tile:hover {
+  box-shadow: 0 6px 30px rgba(212,121,58,0.3) !important;
+}
