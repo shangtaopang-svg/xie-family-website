@@ -82,10 +82,20 @@
     zoomAnimation: true,
   });
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  var tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 18,
     attribution: '&copy; <a href="https://carto.com">CARTO</a>',
   }).addTo(map);
+  // Fallback: if CartoDB tiles fail, try OSM
+  tileLayer.on('tileerror', function() {
+    if (!window._tileFallback) {
+      window._tileFallback = true;
+      map.removeLayer(tileLayer);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+      }).addTo(map);
+    }
+  });
 
   var allCoords = ROUTE.map(function (p) { return [p.lat, p.lng]; });
   map.fitBounds(allCoords, { padding: [60, 60], maxZoom: 5 });
