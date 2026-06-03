@@ -51,8 +51,8 @@
 <div class="content">
 
   <div class="page-header">
-    <h2>📊 牌局记录</h2>
-    <button class="btn btn-primary" onclick="showAddForm()">+ 记录新牌局</button>
+    <h2>📊 牌局管理</h2>
+    <button class="btn btn-primary" onclick="showAddForm()">+ 组建新牌局</button>
   </div>
 
   <!-- Filter -->
@@ -315,15 +315,19 @@ function editRecord(idx) {
   }
   selectedPlayers = (r.players || []).map(function(p) { return typeof p === "string" ? p : p.name; });
   updatePlayerSelector();
+}
 
-
-
-  if (hasError || players.length < 2) {
-    showToast('请正确填写所有金额', 'error');
+async function saveRecord(event) {
+  event.preventDefault();
+  var editId = document.getElementById('edit-id').value;
+  var date = document.getElementById('record-date').value;
+  var notes = document.getElementById('record-notes').value.trim();
+  var players = [];
+  selectedPlayers.forEach(function(name) { players.push(name); });
+  if (players.length < 2) {
+    showToast('请至少选择2位玩家', 'error');
     return;
   }
-
-
   var time = document.getElementById('record-time').value || '';
   var record = { date: date + ' ' + time, venue: getVenue(), players: players, notes: notes };
 
