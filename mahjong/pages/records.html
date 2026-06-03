@@ -16,7 +16,8 @@
       <a href="stats.html">统计</a>
       <a href="posts.html">心得</a>
     </nav>
-    <div style="display:flex;gap:4px;">
+    <div style="display:flex;gap:4px;align-items:center;position:relative;">
+      <button class="btn btn-outline btn-sm" id="auth-btn" onclick="showLoginOverlay()" style="font-size:13px;padding:4px 12px;white-space:nowrap;">未登录</button>
       <button class="btn btn-outline btn-sm" id="theme-btn" onclick="toggleTheme()" style="font-size:13px;padding:4px 10px;">☀️</button>
     </div>
   </header>
@@ -96,6 +97,10 @@ var selectedPlayers = [];
     allRecords = await api.get('mj_records') || [];
     renderRecords(allRecords);
     updatePlayerSelector();
+    // Show "my records" button if logged in
+    if (localStorage.getItem('mj_player')) {
+      document.getElementById('my-records-btn').style.display = '';
+    }
   } catch(e) { console.error(e); }
 })();
 
@@ -128,6 +133,14 @@ function renderRecords(records) {
       '</div>' +
     '</div>';
   }).join('');
+}
+
+function showMyRecords() {
+  var player = localStorage.getItem('mj_player');
+  if (player) {
+    document.getElementById('filter-player').value = player;
+    applyFilter();
+  }
 }
 
 function applyFilter() {
@@ -229,6 +242,9 @@ function showAddForm() {
   document.getElementById('record-date').value = fmtDate(new Date());
   document.getElementById('record-notes').value = '';
   selectedPlayers = [];
+  // Auto-fill logged-in player
+  var loggedIn = localStorage.getItem('mj_player');
+  if (loggedIn) selectedPlayers.push(loggedIn);
   updatePlayerSelector();
   document.getElementById('record-modal').classList.add('open');
 }

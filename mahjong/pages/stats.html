@@ -17,20 +17,34 @@
       <a href="stats.html" class="active">统计</a>
       <a href="posts.html">心得</a>
     </nav>
-    <div style="display:flex;gap:4px;">
+    <div style="display:flex;gap:4px;align-items:center;position:relative;">
+      <button class="btn btn-outline btn-sm" id="auth-btn" onclick="showLoginOverlay()" style="font-size:13px;padding:4px 12px;white-space:nowrap;">未登录</button>
       <button class="btn btn-outline btn-sm" id="theme-btn" onclick="toggleTheme()" style="font-size:13px;padding:4px 10px;">☀️</button>
     </div>
   </header>
 
   <div class="page-header"><h2>📈 统计看板</h2></div>
 
-  <!-- Player selector -->
+  <!-- Filters -->
   <div class="card" style="padding:12px 16px;">
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
       <label style="font-size:13px;color:var(--text-secondary);">选择玩家：</label>
       <select class="form-input" id="player-select" style="width:auto;min-width:120px;" onchange="updatePlayerStats()">
         <option value="">-- 全部排行 --</option>
       </select>
+      <label style="font-size:13px;color:var(--text-secondary);margin-left:8px;">月份：</label>
+      <select class="form-input" id="month-select" style="width:auto;min-width:120px;" onchange="updateMonthStats()">
+        <option value="">-- 全部 --</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Monthly summary -->
+  <div class="card" id="month-summary" style="display:none;">
+    <div class="card-title">📅 月度汇总 <span id="month-label" style="font-weight:400;font-size:13px;color:var(--text-tertiary);"></span></div>
+    <div class="stats-row" id="month-stats-grid" style="margin-bottom:0;"></div>
+    <div style="margin-top:12px;">
+      <canvas id="month-chart" height="180"></canvas>
     </div>
   </div>
 
@@ -64,7 +78,20 @@ var charts = {};
 (async function init() {
   allRecords = await api.get('mj_records') || [];
   populatePlayerSelect();
+  populateMonthSelect();
   renderRankingCharts();
+  // Auto-show logged-in player
+  var loggedIn = localStorage.getItem('mj_player');
+  if (loggedIn) {
+    var sel = document.getElementById('player-select');
+    for (var i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].value === loggedIn) {
+        sel.value = loggedIn;
+        updatePlayerStats();
+        break;
+      }
+    }
+  }
 })();
 
 function populatePlayerSelect() {
@@ -153,6 +180,89 @@ function updatePlayerStats() {
           fill: true,
           tension: 0.3,
           pointRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { grid: { color: 'rgba(0,0,0,0.05)' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+}
+
+function populateMonthSelect() {
+  var sel = document.getElementById('month-select');
+  var months = {};
+  allRecords.forEach(function(r) {
+    if (r.date) {
+      var m = r.date.substring(0, 7);
+      months[m] = true;
+    }
+  });
+  var sorted = Object.keys(months).sort().reverse();
+  sorted.forEach(function(m) {
+    var opt = document.createElement('option');
+    opt.value = m;
+    var parts = m.split('-');
+    opt.textContent = parts[0] + '年' + parts[1] + '月';
+    sel.appendChild(opt);
+  });
+}
+
+function updateMonthStats() {
+  var month = document.getElementById('month-select').value;
+  var summary = document.getElementById('month-summary');
+  if (!month) { summary.style.display = 'none'; return; }
+
+  summary.style.display = 'block';
+  document.getElementById('month-label').textContent = month.replace('-', '年') + '月';
+
+  var monthRecords = allRecords.filter(function(r) {
+    return r.date && r.date.substring(0, 7) === month;
+  });
+
+  var games = monthRecords.length;
+  var totalFlow = 0;
+  var playerTotals = {};
+  monthRecords.forEach(function(r) {
+    (r.players || []).forEach(function(p) {
+      totalFlow += Math.abs(p.score);
+      playerTotals[p.name] = (playerTotals[p.name] || 0) + p.score;
+    });
+  });
+  totalFlow = totalFlow / 2; // each game flow
+
+  var sorted = Object.keys(playerTotals).sort(function(a, b) {
+    return playerTotals[b] - playerTotals[a];
+  });
+  var topWinner = sorted.length ? sorted[0] + ' (' + playerTotals[sorted[0]] + ')' : '-';
+  var topLoser = sorted.length ? sorted[sorted.length - 1] + ' (' + playerTotals[sorted[sorted.length - 1]] + ')' : '-';
+
+  document.getElementById('month-stats-grid').innerHTML =
+    '<div class="stat-card"><div class="stat-num">' + games + '</div><div class="stat-label">场次</div></div>' +
+    '<div class="stat-card"><div class="stat-num positive">' + totalFlow.toFixed(0) + '</div><div class="stat-label">总流水</div></div>' +
+    '<div class="stat-card"><div class="stat-num positive">' + topWinner + '</div><div class="stat-label">本月赢家</div></div>' +
+    '<div class="stat-card"><div class="stat-num negative">' + topLoser + '</div><div class="stat-label">本月输家</div></div>';
+
+  // Month chart: bar chart of each player's net score this month
+  if (charts.month) charts.month.destroy();
+  if (sorted.length) {
+    var ctx = document.getElementById('month-chart').getContext('2d');
+    charts.month = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: sorted,
+        datasets: [{
+          label: '本月净胜',
+          data: sorted.map(function(n) { return playerTotals[n]; }),
+          backgroundColor: sorted.map(function(n) {
+            return playerTotals[n] >= 0 ? 'rgba(90,158,111,0.7)' : 'rgba(201,74,74,0.7)';
+          }),
+          borderRadius: 6,
         }]
       },
       options: {

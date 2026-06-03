@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🀄 宁海三中98届麻将交流群</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -16,7 +17,8 @@
       <a href="pages/stats.html">统计</a>
       <a href="pages/posts.html">心得</a>
     </nav>
-    <div style="display:flex;gap:4px;">
+    <div style="display:flex;gap:4px;align-items:center;position:relative;">
+      <button class="btn btn-outline btn-sm" id="auth-btn" onclick="showLoginOverlay()" style="font-size:13px;padding:4px 12px;white-space:nowrap;">未登录</button>
       <button class="btn btn-outline btn-sm" id="theme-btn" onclick="toggleTheme()" style="font-size:13px;padding:4px 10px;">☀️</button>
     </div>
   </header>
@@ -27,6 +29,15 @@
     <div class="stat-card"><div class="stat-num positive" id="total-amount">¥0</div><div class="stat-label">总流水</div></div>
     <div class="stat-card"><div class="stat-num" id="active-players">0</div><div class="stat-label">活跃玩家</div></div>
     <div class="stat-card"><div class="stat-num" id="total-posts">0</div><div class="stat-label">心得</div></div>
+  </div>
+
+  <!-- Personal Stats (logged in) -->
+  <div class="card" id="personal-card" style="display:none;">
+    <div class="card-title">👤 我的月度统计 <span id="personal-month-label" style="font-weight:400;font-size:13px;color:var(--text-tertiary);"></span></div>
+    <div class="stats-row" id="personal-stats-grid" style="margin-bottom:0;"></div>
+    <div style="margin-top:10px;">
+      <canvas id="personal-month-chart" height="120"></canvas>
+    </div>
   </div>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
@@ -130,6 +141,75 @@
         return '<li class="rank-item"><span class="rank-badge ' + medal + '">' + (i + 1) + '</span><span class="rank-name">' + escapeHtml(name) + '</span><span class="rank-score ' + cls + '">' + sign + score + '</span></li>';
       }).join('') + '</ol>';
     }
+    // Personal monthly stats (if logged in)
+    var loggedIn = localStorage.getItem('mj_player');
+    if (loggedIn) {
+      var personalCard = document.getElementById('personal-card');
+      personalCard.style.display = 'block';
+      var now = new Date();
+      var thisMonth = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2, '0');
+      document.getElementById('personal-month-label').textContent = '（' + thisMonth.replace('-', '年') + '月）';
+
+      var monthRecords = records.filter(function(r) {
+        return r.date && r.date.substring(0, 7) === thisMonth;
+      });
+      var myTotal = 0, myWins = 0, myLosses = 0, myGames = 0;
+      monthRecords.forEach(function(r) {
+        (r.players || []).forEach(function(p) {
+          if (p.name === loggedIn) {
+            myTotal += p.score;
+            myGames++;
+            if (p.score > 0) myWins++;
+            else if (p.score < 0) myLosses++;
+          }
+        });
+      });
+      document.getElementById('personal-stats-grid').innerHTML =
+        '<div class="stat-card"><div class="stat-num">' + myGames + '</div><div class="stat-label">本月场次</div></div>' +
+        '<div class="stat-card"><div class="stat-num ' + (myTotal >= 0 ? 'positive' : 'negative') + '">' + (myTotal >= 0 ? '+' : '') + myTotal + '</div><div class="stat-label">本月净胜</div></div>' +
+        '<div class="stat-card"><div class="stat-num positive">' + myWins + '</div><div class="stat-label">赢</div></div>' +
+        '<div class="stat-card"><div class="stat-num negative">' + myLosses + '</div><div class="stat-label">输</div></div>';
+
+      // Personal monthly chart
+      var personalCtx = document.getElementById('personal-month-chart');
+      if (personalCtx && typeof Chart !== 'undefined') {
+        var myRecords = records.filter(function(r) {
+          return r.date && r.date.substring(0, 7) === thisMonth;
+        });
+        var myScores = [];
+        myRecords.forEach(function(r) {
+          (r.players || []).forEach(function(p) {
+            if (p.name === loggedIn) myScores.push({ date: r.date, score: p.score });
+          });
+        });
+        if (myScores.length) {
+          new Chart(personalCtx, {
+            type: 'line',
+            data: {
+              labels: myScores.map(function(s) { return s.date ? s.date.slice(5) : ''; }),
+              datasets: [{
+                label: loggedIn,
+                data: myScores.map(function(s) { return s.score; }),
+                borderColor: '#ff6b00',
+                backgroundColor: 'rgba(255,107,0,0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 4,
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: { grid: { color: 'rgba(0,0,0,0.05)' } },
+                x: { grid: { display: false } }
+              }
+            }
+          });
+        }
+      }
+    }
+
     // Render member list
     var members = window.DEFAULT_PLAYERS || [
       '王建军', '邵伟军', '冯善雷', '庞尚韬',
