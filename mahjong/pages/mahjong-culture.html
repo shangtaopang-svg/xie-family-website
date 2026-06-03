@@ -82,34 +82,63 @@
   </style>
 </head>
 <body>
-<div class="app-wrap">
-  <header class="app-header">
-    <div class="app-logo">🀄 <span>宁海三中98届麻将交流群</span></div>
-    <nav class="app-nav">
-      <a href="../index.html">首页</a>
-      <a href="records.html">战绩</a>
-      <a href="stats.html">统计</a>
-      <a href="friendship.html">友谊时刻</a>
-      <a href="mahjong-culture.html" class="active">麻将文化</a>
-      <a href="posts.html">心得</a>
+<canvas id="weather-canvas" class="weather-canvas"></canvas>
+<!-- ===== Sidebar ===== -->
+<header class="site-header">
+  <div class="header-inner">
+    <a href="../index.html" class="logo">
+      <div class="logo-icon">🀄</div>
+      <div class="logo-text">
+        <h1>宁海三中98届</h1>
+        <small>麻将交流群</small>
+      </div>
+    </a>
+    <button class="nav-toggle" aria-label="菜单">☰</button>
+    <nav class="main-nav">
+      <ul>
+        <li><a href="../index.html" data-i18n="nav.home">🏠 首页</a></li>
+        <li><a href="records.html" class="active" data-i18n="nav.records">📊 战绩</a></li>
+        <li><a href="stats.html" data-i18n="nav.stats">📈 统计</a></li>
+        <li><a href="friendship.html" data-i18n="nav.friendship">🤝 友谊时刻</a></li>
+        <li><a href="mahjong-culture.html" data-i18n="nav.culture">🀄 麻将文化</a></li>
+        <li><a href="posts.html" data-i18n="nav.posts">📝 心得</a></li>
+      </ul>
+      <div class="sidebar-controls">
+        <div class="sc-row">
+          <button class="weather-btn sidebar-btn" data-weather="off" title="关闭特效">✕</button>
+          <button class="weather-btn sidebar-btn" data-weather="sunny" title="晴天">☀</button>
+          <button class="weather-btn sidebar-btn" data-weather="rain" title="下雨">🌧</button>
+          <button class="weather-btn sidebar-btn" data-weather="snow" title="下雪">❄</button>
+          <button class="weather-btn sidebar-btn" data-weather="meteor" title="流星">☄</button>
+        </div>
+        <div class="sc-row">
+          <button class="sidebar-btn" id="music-prev" title="上一首">⏮</button>
+          <button class="sidebar-btn" id="music-toggle" title="播放/暂停">🔈</button>
+          <button class="sidebar-btn" id="music-next" title="下一首">⏭</button>
+        </div>
+        <div class="sc-row">
+          <button class="sidebar-btn" id="theme-btn" onclick="toggleTheme()" data-i18n="nav.theme" title="切换主题">☀️</button>
+          <button class="sidebar-btn lang-btn" id="lang-btn" onclick="toggleMjLang()" title="中英文切换">EN</button>
+          <button class="sidebar-btn" id="auth-btn" onclick="showLoginOverlay()" title="登录">👤</button>
+        </div>
+      </div>
     </nav>
-    <div style="display:flex;gap:4px;align-items:center;position:relative;">
-      <button class="btn btn-outline btn-sm" id="auth-btn" onclick="showLoginOverlay()" style="font-size:13px;padding:4px 12px;white-space:nowrap;">未登录</button>
-      <button class="btn btn-outline btn-sm" id="theme-btn" onclick="toggleTheme()" style="font-size:13px;padding:4px 10px;">☀️</button>
-    </div>
-  </header>
+  </div>
+</header>
+
+<div class="content">
+
+  
 
   <div class="page-header">
     <h2>🀄 麻将文化</h2>
   </div>
-
   <!-- 封面 -->
   <div class="card" style="text-align:center;padding:40px 20px;background:linear-gradient(135deg,var(--accent-orange-dim),transparent);">
     <div style="font-size:72px;margin-bottom:12px;">🀄</div>
     <h2 style="font-family:var(--font-title);font-size:28px;letter-spacing:4px;">麻 将</h2>
     <p style="color:var(--text-tertiary);margin-top:8px;">中国国粹 · 智力运动 · 友谊桥梁</p>
   </div>
-
   <div class="article">
 
     <!-- 一、麻将起源 -->
@@ -135,7 +164,6 @@
         <div class="timeline-text">清末至民国时期，麻将最终定型并在全国广泛流行，成为"国牌"。1920 年代传入美国、日本等地，逐渐成为世界性的棋牌运动。</div>
       </div>
     </div>
-
     <blockquote>
       "麻将是中国智慧的结晶，它不仅是一种游戏，更是一种哲学——在混乱中寻找秩序，在随机中把握机会。"
     </blockquote>
@@ -220,8 +248,14 @@
 
   </div>
 </div>
-
 <script src="../../js/i18n.js"></script>
+<audio id="bg-music" loop src="../../music/background.mp3"></audio>
+<script src="../js/i18n-mj.js"></script>
 <script src="../js/main.js"></script>
+
+<script>document.querySelector('.nav-toggle')?.addEventListener('click',function(){document.querySelector('.main-nav').classList.toggle('open');});</script>
+
+</div>
+<footer class="site-footer">© 2026 宁海三中98届麻将交流群</footer>
 </body>
 </html>

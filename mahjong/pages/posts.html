@@ -7,31 +7,62 @@
   <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-<div class="app-wrap">
-  <header class="app-header">
-    <div class="app-logo">🀄 <span>宁海三中98届麻将交流群</span></div>
-    <nav class="app-nav">
-      <a href="../index.html">首页</a>
-      <a href="records.html">战绩</a>
-      <a href="stats.html">统计</a>
-      <a href="posts.html" class="active">心得</a>
+<canvas id="weather-canvas" class="weather-canvas"></canvas>
+<!-- ===== Sidebar ===== -->
+<header class="site-header">
+  <div class="header-inner">
+    <a href="../index.html" class="logo">
+      <div class="logo-icon">🀄</div>
+      <div class="logo-text">
+        <h1>宁海三中98届</h1>
+        <small>麻将交流群</small>
+      </div>
+    </a>
+    <button class="nav-toggle" aria-label="菜单">☰</button>
+    <nav class="main-nav">
+      <ul>
+        <li><a href="../index.html" data-i18n="nav.home">🏠 首页</a></li>
+        <li><a href="records.html" class="active" data-i18n="nav.records">📊 战绩</a></li>
+        <li><a href="stats.html" data-i18n="nav.stats">📈 统计</a></li>
+        <li><a href="friendship.html" data-i18n="nav.friendship">🤝 友谊时刻</a></li>
+        <li><a href="mahjong-culture.html" data-i18n="nav.culture">🀄 麻将文化</a></li>
+        <li><a href="posts.html" data-i18n="nav.posts">📝 心得</a></li>
+      </ul>
+      <div class="sidebar-controls">
+        <div class="sc-row">
+          <button class="weather-btn sidebar-btn" data-weather="off" title="关闭特效">✕</button>
+          <button class="weather-btn sidebar-btn" data-weather="sunny" title="晴天">☀</button>
+          <button class="weather-btn sidebar-btn" data-weather="rain" title="下雨">🌧</button>
+          <button class="weather-btn sidebar-btn" data-weather="snow" title="下雪">❄</button>
+          <button class="weather-btn sidebar-btn" data-weather="meteor" title="流星">☄</button>
+        </div>
+        <div class="sc-row">
+          <button class="sidebar-btn" id="music-prev" title="上一首">⏮</button>
+          <button class="sidebar-btn" id="music-toggle" title="播放/暂停">🔈</button>
+          <button class="sidebar-btn" id="music-next" title="下一首">⏭</button>
+        </div>
+        <div class="sc-row">
+          <button class="sidebar-btn" id="theme-btn" onclick="toggleTheme()" data-i18n="nav.theme" title="切换主题">☀️</button>
+          <button class="sidebar-btn lang-btn" id="lang-btn" onclick="toggleMjLang()" title="中英文切换">EN</button>
+          <button class="sidebar-btn" id="auth-btn" onclick="showLoginOverlay()" title="登录">👤</button>
+        </div>
+      </div>
     </nav>
-    <div style="display:flex;gap:4px;align-items:center;position:relative;">
-      <button class="btn btn-outline btn-sm" id="auth-btn" onclick="showLoginOverlay()" style="font-size:13px;padding:4px 12px;white-space:nowrap;">未登录</button>
-      <button class="btn btn-outline btn-sm" id="theme-btn" onclick="toggleTheme()" style="font-size:13px;padding:4px 10px;">☀️</button>
-    </div>
-  </header>
+  </div>
+</header>
+
+<div class="content">
+
+  
 
   <div class="page-header">
     <h2>📝 麻将心得</h2>
     <button class="btn btn-primary" onclick="showPostForm()">+ 写心得</button>
   </div>
-
   <!-- Posts list -->
   <div id="posts-container">
     <div class="empty-state"><div class="icon">📝</div>加载中...</div>
   </div>
-
   <!-- Post Modal -->
   <div class="modal-overlay" id="post-modal">
     <div class="modal">
@@ -43,22 +74,18 @@
           <label>标题</label>
           <input class="form-input" id="post-title" placeholder="给心得起个标题" required>
         </div>
-
         <div class="form-group">
           <label>作者</label>
           <input class="form-input" id="post-author" placeholder="你的名字" required>
         </div>
-
         <div class="form-group">
           <label>内容</label>
           <textarea class="form-textarea" id="post-content" placeholder="分享你的麻将心得、技巧、趣事..." rows="6" required></textarea>
         </div>
-
         <div class="form-group">
           <label>标签（用空格分隔，如 #技巧 #趣事）</label>
           <input class="form-input" id="post-tags" placeholder="#技巧 #宁海麻将">
         </div>
-
         <div style="display:flex;gap:8px;justify-content:flex-end;">
           <button type="button" class="btn btn-outline" onclick="closePostModal()">取消</button>
           <button type="submit" class="btn btn-primary">发布</button>
@@ -67,8 +94,9 @@
     </div>
   </div>
 </div>
-
 <script src="../../js/i18n.js"></script>
+<audio id="bg-music" loop src="../../music/background.mp3"></audio>
+<script src="../js/i18n-mj.js"></script>
 <script src="../js/main.js"></script>
 <script>
 var allPosts = [];
@@ -213,5 +241,10 @@ function toggleTheme() {
   }
 }
 </script>
+
+<script>document.querySelector('.nav-toggle')?.addEventListener('click',function(){document.querySelector('.main-nav').classList.toggle('open');});</script>
+
+</div>
+<footer class="site-footer">© 2026 宁海三中98届麻将交流群</footer>
 </body>
 </html>

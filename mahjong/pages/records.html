@@ -57,6 +57,21 @@
         </div>
 
         <div class="form-group">
+          <label>牌局地点</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <select class="form-input" id="record-venue" style="width:auto;flex:1;min-width:120px;" onchange="toggleCustomVenue()">
+              <option value="">-- 选择场地 --</option>
+              <option value="棋牌室">🀄 棋牌室</option>
+              <option value="茶楼">🍵 茶楼</option>
+              <option value="朋友家">🏠 朋友家</option>
+              <option value="线上">📱 线上</option>
+              <option value="其他">✏️ 其他</option>
+            </select>
+            <input class="form-input" id="custom-venue" placeholder="自定义场地" style="display:none;flex:1;">
+          </div>
+        </div>
+
+        <div class="form-group">
           <label>参与玩家（点击选择）</label>
           <div id="player-selector" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
           <div style="margin-top:6px;display:flex;gap:6px;">
@@ -118,6 +133,7 @@ function renderRecords(records) {
 
   container.innerHTML = sorted.map(function(r, idx) {
     var date = fmtDate(r.date) || '未知日期';
+    var venueHtml = r.venue ? ' <span style="font-size:11px;color:var(--text-tertiary);">📍 '+escapeHtml(r.venue)+'</span>' : '';
     var players = (r.players || []).map(function(p) {
       var cls = p.score >= 0 ? 'positive' : 'negative';
       var sign = p.score >= 0 ? '+' : '';
@@ -126,7 +142,7 @@ function renderRecords(records) {
     var notes = r.notes ? '<span class="record-notes">— ' + escapeHtml(r.notes) + '</span>' : '';
     var realIdx = allRecords.indexOf(r);
     return '<div class="record-item">' +
-      '<span class="record-date">' + date + '</span>' +
+      '<span class="record-date">' + date + venueHtml + '</span>' +
       '<div class="record-players">' + players + '</div>' +
       notes +
       '<div style="display:flex;gap:4px;flex-shrink:0;">' +
@@ -182,6 +198,24 @@ async function updatePlayerSelector() {
     return '<span class="player-tag ' + (selected ? 'selected' : '') + '" onclick="togglePlayer(\'' + escapeHtml(name) + '\')">' + escapeHtml(name) + '</span>';
   }).join('');
   updateScoreInputs();
+}
+
+function toggleCustomVenue() {
+  var sel = document.getElementById('record-venue');
+  var custom = document.getElementById('custom-venue');
+  if (sel.value === '其他') {
+    custom.style.display = 'block';
+    custom.value = '';
+  } else {
+    custom.style.display = 'none';
+  }
+}
+
+function getVenue() {
+  var sel = document.getElementById('record-venue');
+  var custom = document.getElementById('custom-venue');
+  if (sel.value === '其他') return custom.value.trim() || '其他';
+  return sel.value;
 }
 
 function togglePlayer(name) {
@@ -262,6 +296,21 @@ function editRecord(idx) {
   document.getElementById('edit-id').value = idx;
   document.getElementById('record-date').value = r.date || '';
   document.getElementById('record-notes').value = r.notes || '';
+  // Restore venue
+  var venueSel = document.getElementById('record-venue');
+  var venueCustom = document.getElementById('custom-venue');
+  var knownVenues = ['棋牌室','茶楼','朋友家','线上'];
+  if (r.venue && knownVenues.indexOf(r.venue) >= 0) {
+    venueSel.value = r.venue;
+    venueCustom.style.display = 'none';
+  } else if (r.venue) {
+    venueSel.value = '其他';
+    venueCustom.style.display = 'block';
+    venueCustom.value = r.venue;
+  } else {
+    venueSel.value = '';
+    venueCustom.style.display = 'none';
+  }
   selectedPlayers = (r.players || []).map(function(p) { return p.name; });
   updatePlayerSelector();
 
@@ -304,7 +353,7 @@ async function saveRecord(e) {
     return;
   }
 
-  var record = { date: date, players: players, notes: notes };
+  var record = { date: date, venue: getVenue(), players: players, notes: notes };
 
   if (editId !== '') {
     allRecords[parseInt(editId)] = record;
