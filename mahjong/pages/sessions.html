@@ -211,19 +211,17 @@
         // If 4 players, use all. If fewer, leave seats empty
         var seats = ['', '', '', ''];
         for (var i = 0; i < Math.min(players.length, 4); i++) {
-          seats[i] = players[i].name;
+          seats[i] = typeof players[i] === 'string' ? players[i] : (players[i] ? players[i].name : '');
         }
 
         var notes = r.notes ? '<div class="table-notes">📝 ' + escapeHtml(r.notes) + '</div>' : '';
 
         function seatHtml(pos, cls, label) {
-          var p = seats[pos];
-          if (!p.name) return '<div class="player-seat ' + cls + '"><div class="avatar-wrap" style="width:44px;height:44px;border-radius:50%;background:var(--glass-border);"></div><div class="pname" style="opacity:0.3;">空位</div></div>';
-          var scoreCls = p.score >= 0 ? 'positive' : 'negative';
-          var sign = p.score >= 0 ? '+' : '';
+          var pname = seats[pos];
+          if (!pname) return '<div class="player-seat ' + cls + '"><div class="avatar-wrap" style="width:44px;height:44px;border-radius:50%;background:var(--glass-border);"></div><div class="pname" style="opacity:0.3;">空位</div></div>';
           return '<div class="player-seat ' + cls + '">' +
-            avatarHtml(p.name, 44) +
-            '<div class="pname">' + escapeHtml(p.name) + '</div>' +
+            avatarHtml(pname, 44) +
+            '<div class="pname">' + escapeHtml(pname) + '</div>' +
             '<div class="seat-label">' + label + '</div>' +
           '</div>';
         }
