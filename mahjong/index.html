@@ -8,11 +8,11 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    #mahjong-map-container { width:100%;height:420px;z-index:0; }
+    #mahjong-map-container { width:100%;height:100%;z-index:0; }
     .hero-map-bg #mahjong-map-container { position:absolute;top:0;left:0;width:100%;height:100%; }
-    .hero-section { position:relative;z-index:1;min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden; }
+    .hero-section { position:relative;z-index:1;height:420px;min-height:50vh;overflow:hidden; }
     .weather-canvas { position:fixed;top:0;left:220px;right:0;bottom:0;z-index:0;pointer-events:none; }
-    @media(max-width:900px){ #mahjong-map-container{height:260px;} .weather-canvas{left:0;} }
+    @media(max-width:900px){ .hero-section{height:280px;min-height:280px;} #mahjong-map-container{height:100%;} .weather-canvas{left:0;} }
   </style>
 </head>
 <body>
@@ -36,9 +36,10 @@
         <li><a href="index.html" class="active" data-i18n="nav.home">🏠 首页</a></li>
         <li><a href="pages/records.html" data-i18n="nav.records">📊 战绩</a></li>
         <li><a href="pages/stats.html" data-i18n="nav.stats">📈 统计</a></li>
-        <li><a href="pages/friendship.html" data-i18n="nav.friendship">🤝 友谊时刻</a></li>
+        
         <li><a href="pages/mahjong-culture.html" data-i18n="nav.culture">🀄 麻将文化</a></li>
         <li><a href="pages/posts.html" data-i18n="nav.posts">📝 心得</a></li>
+        <li><a href="pages/admin.html" style="color:var(--accent-orange);">⚙️ 后台</a></li>
       </ul>
       <div class="sidebar-controls">
         <div class="sc-row">
