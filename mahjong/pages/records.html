@@ -106,12 +106,7 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label>输赢金额</label>
-          <div id="score-inputs">
-            <div class="empty-state" style="padding:10px;">请先选择玩家</div>
-          </div>
-        </div>
+
 
         <div class="form-group">
           <label>备注</label>
@@ -119,7 +114,7 @@
         </div>
 
         <div style="display:flex;gap:8px;justify-content:flex-end;">
-          <span id="balance-check" style="flex:1;font-size:13px;align-self:center;"></span>
+
           <button type="button" class="btn btn-outline" onclick="closeModal()">取消</button>
           <button type="submit" class="btn btn-primary">保存</button>
         </div>
@@ -225,7 +220,7 @@ async function updatePlayerSelector() {
     var selected = selectedPlayers.indexOf(name) >= 0;
     return '<span class="player-tag ' + (selected ? 'selected' : '') + '" onclick="togglePlayer(\'' + escapeHtml(name) + '\')">' + escapeHtml(name) + '</span>';
   }).join('');
-  updateScoreInputs();
+  // updateScoreInputs();
 }
 
 function toggleCustomVenue() {
@@ -251,7 +246,7 @@ function togglePlayer(name) {
   if (idx >= 0) selectedPlayers.splice(idx, 1);
   else selectedPlayers.push(name);
   updatePlayerSelector();
-  updateScoreInputs();
+  // updateScoreInputs();
 }
 
 function addNewPlayer() {
@@ -261,7 +256,7 @@ function addNewPlayer() {
   if (selectedPlayers.indexOf(name) < 0) selectedPlayers.push(name);
   input.value = '';
   updatePlayerSelector();
-  updateScoreInputs();
+  // updateScoreInputs();
 }
 
 // ---- Score Inputs ----
@@ -269,7 +264,7 @@ function updateScoreInputs() {
   var container = document.getElementById('score-inputs');
   if (!selectedPlayers.length) {
     container.innerHTML = '<div class="empty-state" style="padding:10px;">请先选择玩家</div>';
-    updateBalance();
+    // updateBalance();
     return;
   }
   container.innerHTML = selectedPlayers.map(function(name) {
@@ -278,7 +273,7 @@ function updateScoreInputs() {
       '<input class="form-input score-input" data-player="' + escapeHtml(name) + '" type="number" placeholder="+/-金额" style="width:120px;" oninput="updateBalance()">' +
     '</div>';
   }).join('');
-  updateBalance();
+  // updateBalance();
 }
 
 function updateBalance() {
@@ -339,7 +334,7 @@ function editRecord(idx) {
     venueSel.value = '';
     venueCustom.style.display = 'none';
   }
-  selectedPlayers = (r.players || []).map(function(p) { return p.name; });
+  selectedPlayers = (r.players || []).map(function(p) { return typeof p === 'string' ? p : p.name; });
   updatePlayerSelector();
 
   // Set score values after inputs render
@@ -348,7 +343,7 @@ function editRecord(idx) {
       var inp = document.querySelector('.score-input[data-player="' + CSS.escape(p.name) + '"]');
       if (inp) inp.value = p.score;
     });
-    updateBalance();
+    // updateBalance();
   }, 50);
 
   document.getElementById('record-modal').classList.add('open');
@@ -367,7 +362,7 @@ async function saveRecord(e) {
     var name = inp.getAttribute('data-player');
     var score = parseInt(inp.value);
     if (isNaN(score)) { hasError = true; return; }
-    players.push({ name: name, score: score });
+    players.push(name);
   });
 
   if (hasError || players.length < 2) {
@@ -375,11 +370,6 @@ async function saveRecord(e) {
     return;
   }
 
-  var total = players.reduce(function(s, p) { return s + p.score; }, 0);
-  if (total !== 0) {
-    showToast('输赢金额总和必须为 0（当前 ' + total + '）', 'error');
-    return;
-  }
 
   var record = { date: date, venue: getVenue(), players: players, notes: notes };
 

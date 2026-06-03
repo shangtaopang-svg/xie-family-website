@@ -105,6 +105,8 @@
 var allRecords = [];
 var charts = {};
 
+function playerName(p) { return typeof p === 'string' ? p : (p ? p.name : ''); }
+function playerScore(p) { return typeof p === 'object' && p && p.score !== undefined ? p.score : 0; }
 (async function init() {
   allRecords = await api.get('mj_records') || [];
   populatePlayerSelect();
@@ -148,7 +150,7 @@ function getPlayerStats(name) {
   allRecords.forEach(function(r) {
     var found = null;
     (r.players || []).forEach(function(p) {
-      if (p.name === name) found = p;
+      if (playerName(p) === name) found = p;
     });
     if (!found) return;
     total += found.score;
@@ -313,10 +315,7 @@ function renderRankingCharts() {
   allRecords.forEach(function(r) {
     (r.players || []).forEach(function(p) {
       if (!names[p.name]) names[p.name] = { total: 0, wins: 0, games: 0, net: 0 };
-      names[p.name].total += p.score;
-      names[p.name].net += p.score;
-      names[p.name].games++;
-      if (p.score > 0) names[p.name].wins++;
+      var pn = playerName(p); var ps = playerScore(p); names[pn].total += ps; names[pn].net += ps; names[pn].games++; if (ps > 0) names[pn].wins++;
     });
   });
 
