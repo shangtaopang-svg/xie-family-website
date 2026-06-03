@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人中心 - 宁海三中98届</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .profile-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .avatar-big { width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 8px; }
+    @media(max-width:700px){ .profile-grid{grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+<canvas id="weather-canvas" class="weather-canvas"></canvas>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="../index.html" class="logo"><div class="logo-icon">🀄</div><div class="logo-text"><h1>宁海三中98届</h1><small>麻将交流群</small></div></a>
+    <button class="nav-toggle">☰</button>
+    <nav class="main-nav">
+      <ul>
+        <li><a href="../index.html">🏠 首页</a></li>
+        <li><a href="sessions.html">🀄 组局</a></li>
+        <li><a href="records.html">📊 战绩</a></li>
+        <li><a href="stats.html">📈 统计</a></li>
+        <li><a href="mahjong-culture.html">🀄 麻将文化</a></li>
+        <li><a href="posts.html">📝 心得</a></li>
+        <li><a href="profile.html" class="active">👤 个人中心</a></li>
+        <li><a href="admin.html" style="color:var(--accent-orange);">⚙️ 管理后台</a></li>
+      </ul>
+      <div class="sidebar-controls">
+        <div class="sc-row">
+          <button class="weather-btn sidebar-btn" data-weather="off">✕</button>
+          <button class="weather-btn sidebar-btn" data-weather="sunny">☀</button>
+          <button class="weather-btn sidebar-btn" data-weather="rain">🌧</button>
+          <button class="weather-btn sidebar-btn" data-weather="snow">❄</button>
+          <button class="weather-btn sidebar-btn" data-weather="meteor">☄</button>
+        </div>
+        <div class="sc-row">
+          <button class="sidebar-btn" id="music-prev">⏮</button>
+          <button class="sidebar-btn" id="music-toggle">🔈</button>
+          <button class="sidebar-btn" id="music-next">⏭</button>
+        </div>
+        <div class="sc-row">
+          <button class="sidebar-btn" id="theme-btn" onclick="toggleTheme()">☀️</button>
+          <button class="sidebar-btn lang-btn" id="lang-btn" onclick="toggleMjLang()">EN</button>
+          <button class="sidebar-btn" id="auth-btn" onclick="showLoginOverlay()">👤</button>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+<div class="content">
+  <!-- Not logged in -->
+  <div class="card" id="profile-login-gate" style="text-align:center;padding:40px;">
+    <div style="font-size:56px;margin-bottom:12px;">👤</div>
+    <p style="color:var(--text-tertiary);margin-bottom:16px;">请先登录后查看个人中心</p>
+    <button class="btn btn-primary" onclick="showLoginOverlay()">去登录</button>
+  </div>
+
+  <!-- Profile Panel -->
+  <div id="profile-panel" style="display:none;">
+    <!-- Welcome -->
+    <div class="card" style="text-align:center;padding:24px;">
+      <div id="profile-avatar" class="avatar-big"></div>
+      <h2 id="profile-name" style="font-family:var(--font-title);font-size:22px;"></h2>
+      <p id="profile-nick" style="color:var(--text-tertiary);font-size:13px;"></p>
+      <button class="btn btn-outline btn-sm" onclick="logout()" style="margin-top:8px;">退出登录</button>
+    </div>
+
+    <div class="profile-grid">
+      <!-- Change Password -->
+      <div class="card">
+        <h3 style="font-family:var(--font-title);font-size:16px;margin-bottom:12px;">🔑 修改密码</h3>
+        <div class="form-group"><label>当前密码</label><input class="form-input" type="password" id="old-pwd" placeholder="输入当前密码"></div>
+        <div class="form-group"><label>新密码</label><input class="form-input" type="password" id="new-pwd" placeholder="至少4位"></div>
+        <div class="form-group"><label>确认新密码</label><input class="form-input" type="password" id="confirm-pwd" placeholder="再次输入"></div>
+        <div id="pwd-msg" style="font-size:13px;margin-bottom:8px;"></div>
+        <button class="btn btn-primary" onclick="changePassword()">修改密码</button>
+      </div>
+
+      <!-- My Stats Summary -->
+      <div class="card">
+        <h3 style="font-family:var(--font-title);font-size:16px;margin-bottom:12px;">📊 我的战绩</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:center;" id="my-stats">
+          <div><div style="font-size:24px;font-weight:700;" id="ms-games">-</div><div style="font-size:11px;color:var(--text-tertiary);">总场次</div></div>
+          <div><div style="font-size:24px;font-weight:700;color:var(--accent-green)" id="ms-wins">-</div><div style="font-size:11px;color:var(--text-tertiary);">赢</div></div>
+          <div><div style="font-size:24px;font-weight:700;color:var(--accent-red)" id="ms-losses">-</div><div style="font-size:11px;color:var(--text-tertiary);">输</div></div>
+          <div><div style="font-size:24px;font-weight:700;" id="ms-net">-</div><div style="font-size:11px;color:var(--text-tertiary);">净胜</div></div>
+        </div>
+      </div>
+
+      <!-- Upload Photo -->
+      <div class="card">
+        <h3 style="font-family:var(--font-title);font-size:16px;margin-bottom:12px;">📷 上传照片</h3>
+        <div class="form-group"><label>选择照片</label><input class="form-input" type="file" accept="image/*" onchange="uploadPhoto(this)"></div>
+        <div class="form-group"><label>描述</label><input class="form-input" id="photo-desc" placeholder="比如：棋牌室合影"></div>
+        <div id="photo-msg" style="font-size:13px;margin-bottom:8px;"></div>
+        <button class="btn btn-outline btn-sm" onclick="document.querySelector('input[type=file]').click()">📤 上传</button>
+      </div>
+
+      <!-- Upload Video -->
+      <div class="card">
+        <h3 style="font-family:var(--font-title);font-size:16px;margin-bottom:12px;">🎬 上传视频</h3>
+        <div class="form-group"><label>选择视频</label><input class="form-input" type="file" accept="video/*" onchange="uploadVideo(this)"></div>
+        <div class="form-group"><label>标题</label><input class="form-input" id="video-title" placeholder="比如：聚会精彩瞬间"></div>
+        <div id="video-msg" style="font-size:13px;margin-bottom:8px;"></div>
+        <button class="btn btn-outline btn-sm" onclick="document.querySelectorAll('input[type=file]')[1].click()">📤 上传</button>
+      </div>
+    </div>
+  </div>
+</div>
+<footer class="site-footer">© 2026 宁海三中98届麻将交流群</footer>
+
+<audio id="bg-music" loop src="../../music/background.mp3"></audio>
+<script src="../js/i18n-mj.js"></script>
+<script src="../js/main.js"></script>
+<script>
+// Load profile on page load
+(function() {
+  var player = localStorage.getItem('mj_player');
+  if (player) {
+    document.getElementById('profile-login-gate').style.display = 'none';
+    document.getElementById('profile-panel').style.display = 'block';
+    document.getElementById('profile-name').textContent = player;
+    // Avatar
+    var avatarEl = document.getElementById('profile-avatar');
+    avatarEl.innerHTML = getAvatar(player).emoji;
+    avatarEl.style.background = getAvatar(player).bg;
+    // Nickname
+    var nicks = {'王建军':'卯兔','邵伟军':'猩猩','冯善雷':'蛇','庞尚韬':'可与','冯悦':'青蛙','张展':'展昭','张和翔':'胖子','张文杰':'德杰'};
+    document.getElementById('profile-nick').textContent = nicks[player] ? '绰号：' + nicks[player] : '';
+    loadMyStats(player);
+  }
+})();
+
+async function loadMyStats(name) {
+  try {
+    var records = await api.get('mj_records') || [];
+    var wins = 0, losses = 0, net = 0;
+    records.forEach(function(r) {
+      r.players.forEach(function(p) {
+        if (p.name === name) {
+          net += p.score;
+          if (p.score > 0) wins++;
+          else if (p.score < 0) losses++;
+        }
+      });
+    });
+    document.getElementById('ms-games').textContent = wins + losses;
+    document.getElementById('ms-wins').textContent = wins;
+    document.getElementById('ms-losses').textContent = losses;
+    document.getElementById('ms-net').textContent = (net >= 0 ? '+' : '') + net;
+    document.getElementById('ms-net').style.color = net >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+  } catch(e) { console.warn(e); }
+}
+
+// Password change
+async function changePassword() {
+  var msg = document.getElementById('pwd-msg');
+  var oldPwd = document.getElementById('old-pwd').value;
+  var newPwd = document.getElementById('new-pwd').value;
+  var confirmPwd = document.getElementById('confirm-pwd').value;
+  var player = localStorage.getItem('mj_player');
+  if (!player) { msg.textContent='请先登录'; msg.style.color='var(--accent-red)'; return; }
+  if (!oldPwd||!newPwd||!confirmPwd) { msg.textContent='请填写所有字段'; msg.style.color='var(--accent-red)'; return; }
+  if (newPwd.length<4) { msg.textContent='新密码至少4位'; msg.style.color='var(--accent-red)'; return; }
+  if (newPwd!==confirmPwd) { msg.textContent='两次密码不一致'; msg.style.color='var(--accent-red)'; return; }
+  try {
+    var passwords = await api.get('passwords') || {};
+    if (passwords[player] !== sha256(oldPwd)) { msg.textContent='当前密码错误'; msg.style.color='var(--accent-red)'; return; }
+    passwords[player] = sha256(newPwd);
+    await api.save('passwords', passwords);
+    msg.textContent='✅ 密码修改成功！'; msg.style.color='var(--accent-green)';
+    document.getElementById('old-pwd').value=''; document.getElementById('new-pwd').value=''; document.getElementById('confirm-pwd').value='';
+  } catch(e) { msg.textContent='修改失败'; msg.style.color='var(--accent-red)'; }
+}
+
+// Upload photo
+async function uploadPhoto(input) {
+  var file = input.files[0]; if (!file) return;
+  var desc = document.getElementById('photo-desc').value.trim() || '聚会照片';
+  var msg = document.getElementById('photo-msg');
+  msg.textContent='上传中...'; msg.style.color='var(--text-tertiary)';
+  try {
+    var url = await uploadFile(file);
+    if (!url) { msg.textContent='上传失败'; msg.style.color='var(--accent-red)'; return; }
+    var friendship = await api.get('mj_friendship') || {videos:[],photos:[]};
+    friendship.photos.push({url:url, title:desc, date:fmtDate(new Date())});
+    await api.save('mj_friendship', friendship);
+    msg.textContent='✅ 照片已上传到友谊时刻'; msg.style.color='var(--accent-green)';
+    input.value='';
+  } catch(e) { msg.textContent='上传失败'; msg.style.color='var(--accent-red)'; }
+}
+
+// Upload video
+async function uploadVideo(input) {
+  var file = input.files[0]; if (!file) return;
+  var title = document.getElementById('video-title').value.trim() || '聚会视频';
+  var msg = document.getElementById('video-msg');
+  msg.textContent='上传中...'; msg.style.color='var(--text-tertiary)';
+  try {
+    var url = await uploadFile(file);
+    if (!url) { msg.textContent='上传失败'; msg.style.color='var(--accent-red)'; return; }
+    var friendship = await api.get('mj_friendship') || {videos:[],photos:[]};
+    friendship.videos.push({url:url, title:title, date:fmtDate(new Date())});
+    await api.save('mj_friendship', friendship);
+    msg.textContent='✅ 视频已上传到友谊时刻'; msg.style.color='var(--accent-green)';
+    input.value='';
+  } catch(e) { msg.textContent='上传失败'; msg.style.color='var(--accent-red)'; }
+}
+
+document.querySelector('.nav-toggle')?.addEventListener('click',function(){document.querySelector('.main-nav').classList.toggle('open');});
+</script>
+</body>
+</html>
