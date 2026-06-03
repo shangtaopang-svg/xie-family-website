@@ -82,9 +82,9 @@
     zoomAnimation: true,
   });
 
-  L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 18,
-    attribution: '&copy; <a href="http://openstreetmap.org">OSM</a>',
+    attribution: '&copy; <a href="https://carto.com">CARTO</a>',
   }).addTo(map);
 
   var allCoords = ROUTE.map(function (p) { return [p.lat, p.lng]; });
