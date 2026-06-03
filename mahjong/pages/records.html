@@ -3,26 +3,51 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>战绩 - 宁海三中98届麻将交流群</title>
+  <title>战绩 - 宁海三中98届</title>
   <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-<div class="app-wrap">
-  <header class="app-header">
-    <div class="app-logo">🀄 <span>宁海三中98届麻将交流群</span></div>
-    <nav class="app-nav">
-      <a href="../index.html">首页</a>
-      <a href="records.html" class="active">战绩</a>
-      <a href="stats.html">统计</a>
-      <a href="friendship.html">友谊时刻</a>
-      <a href="mahjong-culture.html">麻将文化</a>
-      <a href="posts.html">心得</a>
+<canvas id="weather-canvas" class="weather-canvas"></canvas>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="../index.html" class="logo">
+      <div class="logo-icon">🀄</div>
+      <div class="logo-text"><h1>宁海三中98届</h1><small>麻将交流群</small></div>
+    </a>
+    <button class="nav-toggle" aria-label="菜单">☰</button>
+    <nav class="main-nav">
+      <ul>
+        <li><a href="../index.html" data-i18n="nav.home">🏠 首页</a></li>
+        <li><a href="sessions.html">🀄 组局</a></li>
+        <li><a href="records.html" class="active" data-i18n="nav.records">📊 战绩</a></li>
+        <li><a href="stats.html" data-i18n="nav.stats">📈 统计</a></li>
+        <li><a href="mahjong-culture.html" data-i18n="nav.culture">🀄 麻将文化</a></li>
+        <li><a href="posts.html" data-i18n="nav.posts">📝 心得</a></li>
+        <li><a href="admin.html" style="color:var(--accent-orange);">⚙️ 后台</a></li>
+      </ul>
+      <div class="sidebar-controls">
+        <div class="sc-row">
+          <button class="weather-btn sidebar-btn" data-weather="off">✕</button>
+          <button class="weather-btn sidebar-btn" data-weather="sunny">☀</button>
+          <button class="weather-btn sidebar-btn" data-weather="rain">🌧</button>
+          <button class="weather-btn sidebar-btn" data-weather="snow">❄</button>
+          <button class="weather-btn sidebar-btn" data-weather="meteor">☄</button>
+        </div>
+        <div class="sc-row">
+          <button class="sidebar-btn" id="music-prev">⏮</button>
+          <button class="sidebar-btn" id="music-toggle">🔈</button>
+          <button class="sidebar-btn" id="music-next">⏭</button>
+        </div>
+        <div class="sc-row">
+          <button class="sidebar-btn" id="theme-btn" onclick="toggleTheme()">☀️</button>
+          <button class="sidebar-btn lang-btn" id="lang-btn" onclick="toggleMjLang()">EN</button>
+          <button class="sidebar-btn" id="auth-btn" onclick="showLoginOverlay()">👤</button>
+        </div>
+      </div>
     </nav>
-    <div style="display:flex;gap:4px;align-items:center;position:relative;">
-      <button class="btn btn-outline btn-sm" id="auth-btn" onclick="showLoginOverlay()" style="font-size:13px;padding:4px 12px;white-space:nowrap;">未登录</button>
-      <button class="btn btn-outline btn-sm" id="theme-btn" onclick="toggleTheme()" style="font-size:13px;padding:4px 10px;">☀️</button>
-    </div>
-  </header>
+  </div>
+</header>
+<div class="content">
 
   <div class="page-header">
     <h2>📊 牌局记录</h2>
@@ -101,8 +126,10 @@
     </div>
   </div>
 </div>
+<footer class="site-footer">© 2026 宁海三中98届麻将交流群</footer>
 
-<script src="../../js/i18n.js"></script>
+<audio id="bg-music" loop src="../../music/background.mp3"></audio>
+<script src="../js/i18n-mj.js"></script>
 <script src="../js/main.js"></script>
 <script>
 var allRecords = [];
@@ -415,5 +442,6 @@ function toggleTheme() {
   }
 }
 </script>
+<script>document.querySelector('.nav-toggle')?.addEventListener('click',function(){document.querySelector('.main-nav').classList.toggle('open');});</script>
 </body>
 </html>
