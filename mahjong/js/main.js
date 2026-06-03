@@ -231,3 +231,47 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 });
+
+
+// ===== AVATAR SYSTEM =====
+// Each player gets a unique avatar based on their nickname/personality
+window.PLAYER_AVATARS = {
+  "王建军": { emoji: "🐰", color: "#ffd700", bg: "linear-gradient(135deg,#ffd700,#f9a825)", nick: "卯兔" },
+  "邵伟军": { emoji: "🦍", color: "#8B4513", bg: "linear-gradient(135deg,#8B4513,#654321)", nick: "猩猩" },
+  "冯善雷": { emoji: "🐍", color: "#4ade80", bg: "linear-gradient(135deg,#2e7d32,#4ade80)", nick: "蛇" },
+  "庞尚韬": { emoji: "🤝", color: "#22d3ee", bg: "linear-gradient(135deg,#0891b2,#22d3ee)", nick: "可与" },
+  "冯悦":   { emoji: "🐸", color: "#4ade80", bg: "linear-gradient(135deg,#16a34a,#4ade80)", nick: "青蛙" },
+  "张展":   { emoji: "🐱", color: "#f97316", bg: "linear-gradient(135deg,#ea580c,#f97316)", nick: "展昭" },
+  "张林松": { emoji: "🌲", color: "#34d399", bg: "linear-gradient(135deg,#047857,#34d399)", nick: "" },
+  "张和翔": { emoji: "🐻", color: "#f97316", bg: "linear-gradient(135deg,#c2410c,#f97316)", nick: "胖子" },
+  "张文杰": { emoji: "⭐", color: "#a78bfa", bg: "linear-gradient(135deg,#7c3aed,#a78bfa)", nick: "德杰" },
+};
+
+// Get avatar data for a player
+function getAvatar(name) {
+  var data = window.PLAYER_AVATARS[name];
+  if (data) return data;
+  var colors = ["#ff6b00","#22d3ee","#4ade80","#fbbf24","#a78bfa","#f87171","#34d399","#f97316"];
+  var hash = 0;
+  for (var i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  var c = colors[Math.abs(hash) % colors.length];
+  return { emoji: "🎵", color: c, bg: "linear-gradient(135deg," + c + "," + c + "cc)", nick: "" };
+}
+
+// Render avatar HTML for a player
+function avatarHtml(name, size) {
+  size = size || 32;
+  var a = getAvatar(name);
+  var fontSize = Math.round(size * 0.45);
+  return '<div class="player-avatar" style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:' + a.bg + ';display:inline-flex;align-items:center;justify-content:center;font-size:' + fontSize + 'px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.1);" title="' + escapeHtml(name) + (a.nick ? ' (' + a.nick + ')' : '') + '">' + a.emoji + '</div>';
+}
+
+// Render player name with avatar
+function playerWithAvatar(name, size) {
+  size = size || 24;
+  var fontSize = Math.round(size * 0.4);
+  return '<span style="display:inline-flex;align-items:center;gap:6px;">' +
+    '<div class="player-avatar" style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:' + getAvatar(name).bg + ';display:inline-flex;align-items:center;justify-content:center;font-size:' + fontSize + 'px;flex-shrink:0;">' + getAvatar(name).emoji + '</div>' +
+    escapeHtml(name) +
+  '</span>';
+}

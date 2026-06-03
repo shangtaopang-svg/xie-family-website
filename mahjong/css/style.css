@@ -355,3 +355,12 @@ body {
   .record-date { min-width: auto; }
   .page-header { flex-wrap: wrap; gap: 8px; }
 }
+
+/* ===== Player Avatars ===== */
+.player-avatar {
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+.player-avatar:hover {
+  transform: scale(1.15);
+}

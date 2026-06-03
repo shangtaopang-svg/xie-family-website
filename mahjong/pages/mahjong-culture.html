@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>麻将文化 - 宁海三中98届</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* 文章样式 */
+    .article { line-height: 2; font-size: 15px; color: var(--text-secondary); }
+    .article h3 {
+      font-family: var(--font-title); font-size: 20px; margin: 28px 0 12px;
+      color: var(--text-primary); letter-spacing: 1px;
+    }
+    .article h4 {
+      font-family: var(--font-title); font-size: 16px; margin: 20px 0 8px;
+      color: var(--text-primary);
+    }
+    .article p { margin-bottom: 12px; text-indent: 2em; }
+    .article p.no-indent { text-indent: 0; }
+    .article blockquote {
+      border-left: 3px solid var(--accent-orange);
+      padding: 12px 20px; margin: 16px 0;
+      background: var(--accent-orange-dim);
+      border-radius: 0 8px 8px 0;
+      font-style: italic;
+    }
+    .article ul { margin: 8px 0 12px 2em; }
+    .article li { margin-bottom: 6px; }
+    .article .highlight {
+      display: inline-block; padding: 0 6px;
+      background: var(--accent-orange-dim); border-radius: 4px;
+      color: var(--accent-orange); font-weight: 600;
+    }
+
+    /* 规则表 */
+    .rules-table {
+      width: 100%; border-collapse: collapse; margin: 16px 0;
+      font-size: 14px;
+    }
+    .rules-table th {
+      background: var(--accent-orange-dim); color: var(--accent-orange);
+      padding: 10px 14px; text-align: left; font-weight: 600;
+      border-bottom: 2px solid var(--accent-orange);
+    }
+    .rules-table td {
+      padding: 8px 14px; border-bottom: 1px solid var(--glass-border);
+    }
+    .rules-table tr:hover td { background: var(--glass-bg); }
+
+    /* 时间线 */
+    .timeline { position: relative; padding-left: 28px; margin: 16px 0; }
+    .timeline::before {
+      content: ''; position: absolute; left: 8px; top: 0; bottom: 0;
+      width: 2px; background: linear-gradient(to bottom, var(--accent-orange), var(--accent-cyan));
+      opacity: 0.3;
+    }
+    .timeline-item { position: relative; margin-bottom: 20px; }
+    .timeline-item::before {
+      content: ''; position: absolute; left: -24px; top: 6px;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--accent-orange); border: 2px solid var(--bg-primary);
+    }
+    .timeline-year { font-size: 14px; font-weight: 700; color: var(--accent-orange); }
+    .timeline-text { font-size: 14px; color: var(--text-secondary); line-height: 1.8; }
+
+    /* 牌型展示 */
+    .tile-grid {
+      display: flex; gap: 4px; flex-wrap: wrap; margin: 8px 0;
+    }
+    .tile {
+      width: 36px; height: 48px; border-radius: 4px;
+      background: var(--bg-card); border: 1px solid var(--glass-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; color: var(--text-primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .tile.bamboo { color: var(--accent-green); }
+    .tile.char { color: var(--accent-red); }
+    .tile.dot { color: var(--accent-cyan); }
+    .tile.wind { color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+<div class="app-wrap">
+  <header class="app-header">
+    <div class="app-logo">🀄 <span>宁海三中98届麻将交流群</span></div>
+    <nav class="app-nav">
+      <a href="../index.html">首页</a>
+      <a href="records.html">战绩</a>
+      <a href="stats.html">统计</a>
+      <a href="friendship.html">友谊时刻</a>
+      <a href="mahjong-culture.html" class="active">麻将文化</a>
+      <a href="posts.html">心得</a>
+    </nav>
+    <div style="display:flex;gap:4px;align-items:center;position:relative;">
+      <button class="btn btn-outline btn-sm" id="auth-btn" onclick="showLoginOverlay()" style="font-size:13px;padding:4px 12px;white-space:nowrap;">未登录</button>
+      <button class="btn btn-outline btn-sm" id="theme-btn" onclick="toggleTheme()" style="font-size:13px;padding:4px 10px;">☀️</button>
+    </div>
+  </header>
+
+  <div class="page-header">
+    <h2>🀄 麻将文化</h2>
+  </div>
+
+  <!-- 封面 -->
+  <div class="card" style="text-align:center;padding:40px 20px;background:linear-gradient(135deg,var(--accent-orange-dim),transparent);">
+    <div style="font-size:72px;margin-bottom:12px;">🀄</div>
+    <h2 style="font-family:var(--font-title);font-size:28px;letter-spacing:4px;">麻 将</h2>
+    <p style="color:var(--text-tertiary);margin-top:8px;">中国国粹 · 智力运动 · 友谊桥梁</p>
+  </div>
+
+  <div class="article">
+
+    <!-- 一、麻将起源 -->
+    <h3>📜 麻将的起源</h3>
+
+    <p>麻将，又称麻雀、雀牌，是中国最著名的传统牌戏之一，与骨牌、叶子戏等有着深厚的渊源。关于麻将的起源，有多种说法，最广为人知的有以下几种：</p>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-year">唐代 · 叶子戏</div>
+        <div class="timeline-text">相传唐代有一种名为"叶子戏"的纸牌游戏，被认为是麻将最早的雏形。叶子戏在文人雅士中流行，类似于今天的纸牌。</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-year">明代 · 马吊牌</div>
+        <div class="timeline-text">明代万历年间，一种叫"马吊牌"的纸牌游戏风靡南北，玩法已包含类似"碰"、"吃"等概念。马吊牌共 40 张，分四门。</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-year">清代 · 麻雀牌</div>
+        <div class="timeline-text">清代中期，马吊牌演变为"麻雀牌"，增加了东、南、西、北风和中、发、白等牌张，牌数逐渐发展为 136 张。麻将（麻雀）这个名称也由此而来。</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-year">清末 · 定型繁荣</div>
+        <div class="timeline-text">清末至民国时期，麻将最终定型并在全国广泛流行，成为"国牌"。1920 年代传入美国、日本等地，逐渐成为世界性的棋牌运动。</div>
+      </div>
+    </div>
+
+    <blockquote>
+      "麻将是中国智慧的结晶，它不仅是一种游戏，更是一种哲学——在混乱中寻找秩序，在随机中把握机会。"
+    </blockquote>
+
+    <!-- 二、麻将的文化内涵 -->
+    <h3>🎯 麻将的文化内涵</h3>
+
+    <p>麻将牌的设计蕴含了丰富的中国文化：</p>
+
+    <ul>
+      <li><strong>万、条、筒</strong> — 分别代表财富（万贯）、丝织（条状物）、货币（铜钱），体现了古代社会的经济生活。</li>
+      <li><strong>东南西北</strong> — 代表四方，象征天地宇宙的空间概念。</li>
+      <li><strong>中发白</strong> — "中"代表中正，"发"代表发财，"白"代表清白，体现了传统的价值观。</li>
+      <li><strong>四季花牌</strong> — 春、夏、秋、冬象征时间的流转。</li>
+    </ul>
+
+    <p>麻将的 136 张牌（加上花牌共 144 张）也有其深意——一年 12 个月，每个月的天数与某些牌数相对应，暗合天地运行的规律。</p>
+
+    <!-- 三、宁海麻将 -->
+    <h3>🏠 宁海麻将介绍</h3>
+
+    <p>宁海麻将，是流行于浙江省宁海县及周边地区的地方麻将变种，有着鲜明的地域特色和独特的玩法规则。作为宁海三中98届的同学，出门在外打麻将时，宁海麻将的规则就是我们共同的乡音。</p>
+
+    <h4>基本规则</h4>
+
+    <table class="rules-table">
+      <tr><th style="width:100px;">项目</th><th>说明</th></tr>
+      <tr><td>牌数</td><td>136 张（万1-9、条1-9、筒1-9各4张，东南西北各4张，中发白各4张）+ 8张花牌（春、夏、秋、冬、梅、兰、竹、菊）</td></tr>
+      <tr><td>人数</td><td>4 人，每人 13 张牌（庄家 14 张）</td></tr>
+      <tr><td>出牌</td><td>逆时针轮流摸牌→出牌，按顺序进行</td></tr>
+      <tr><td>吃</td><td>可吃上家打出的牌组成顺子</td></tr>
+      <tr><td>碰</td><td>任意一家打出的牌，可碰（3张相同）</td></tr>
+      <tr><td>杠</td><td>可明杠（别人打出的牌）或暗杠（自己摸到4张）</td></tr>
+      <tr><td>胡牌</td><td>符合胡牌牌型即可胡，可自摸或点炮胡</td></tr>
+      <tr><td>花牌</td><td>花牌作为加分牌，摸到花牌补摸一张</td></tr>
+    </table>
+
+    <h4>常见胡牌牌型</h4>
+
+    <table class="rules-table">
+      <tr><th>牌型</th><th>说明</th><th>难度</th></tr>
+      <tr><td>平胡</td><td>4副顺子/刻子 + 1对将</td><td>⭐</td></tr>
+      <tr><td>七对</td><td>7个对子</td><td>⭐⭐</td></tr>
+      <tr><td>碰碰胡</td><td>4副刻子 + 1对将</td><td>⭐⭐</td></tr>
+      <tr><td>清一色</td><td>全部同一花色（万或条或筒）</td><td>⭐⭐⭐</td></tr>
+      <tr><td>混一色</td><td>同一花色 + 字牌（东南西北中发白）</td><td>⭐⭐</td></tr>
+      <tr><td>字一色</td><td>全部都是字牌（东南西北中发白）</td><td>⭐⭐⭐⭐⭐</td></tr>
+      <tr><td>大三元</td><td>中、发、白各一副刻子</td><td>⭐⭐⭐⭐</td></tr>
+      <tr><td>小三元</td><td>中、发、白其中两副刻子 + 一对将</td><td>⭐⭐⭐</td></tr>
+    </table>
+
+    <h4>番数参考</h4>
+
+    <table class="rules-table">
+      <tr><th>番种</th><th>番数</th></tr>
+      <tr><td>平胡（自摸）</td><td>1 番</td></tr>
+      <tr><td>碰碰胡</td><td>2 番</td></tr>
+      <tr><td>混一色</td><td>2 番</td></tr>
+      <tr><td>清一色</td><td>3 番</td></tr>
+      <tr><td>七对</td><td>3 番</td></tr>
+      <tr><td>大三元</td><td>5 番</td></tr>
+      <tr><td>字一色</td><td>5 番</td></tr>
+    </table>
+
+    <p class="no-indent" style="font-size:13px;color:var(--text-tertiary);">注：以上番数为参考值，不同地区、不同圈子可能有所差异，请以朋友间约定为准。</p>
+
+    <!-- 四、麻将精神 -->
+    <h3>💡 麻将精神</h3>
+
+    <p>麻将不仅仅是一种娱乐方式，更蕴含了深刻的人生哲理：</p>
+
+    <ul>
+      <li><strong>审时度势</strong> — 根据牌面变化不断调整策略，一如人生需要随机应变。</li>
+      <li><strong>取舍之道</strong> — 打出去的牌就是你的选择，有舍才有得。</li>
+      <li><strong>运筹帷幄</strong> — 不仅要看自己的牌，还要观察对手的出牌，知己知彼。</li>
+      <li><strong>不以物喜</strong> — 手气好时不骄，手气差时不躁，平常心才是真功夫。</li>
+    </ul>
+
+    <blockquote>
+      宁海三中98届的同学们，无论身在何处，牌桌上见！
+    </blockquote>
+
+  </div>
+</div>
+
+<script src="../../js/i18n.js"></script>
+<script src="../js/main.js"></script>
+</body>
+</html>

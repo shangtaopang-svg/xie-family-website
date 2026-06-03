@@ -3,11 +3,110 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🀄 宁海三中98届麻将交流群</title>
+  <title>宁海三中98届麻将交流群</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ===== 麻将传播地图 ===== */
+    .mahjong-hero {
+      position: relative; width: 100%; border-radius: var(--radius);
+      overflow: hidden; margin-bottom: 24px;
+      border: 1px solid var(--glass-border);
+      background: #0a0a1a;
+    }
+    #mahjong-map-container {
+      width: 100%; height: 420px; z-index: 1;
+    }
+    .mahjong-hero-overlay {
+      position: absolute; top: 0; left: 0; right: 0;
+      padding: 20px 24px; z-index: 10;
+      background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
+      pointer-events: none;
+    }
+    .mahjong-hero-overlay h1 {
+      font-family: var(--font-title); font-size: 24px; color: #fff;
+      letter-spacing: 3px; text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    }
+    .mahjong-hero-overlay p {
+      font-size: 13px; color: rgba(255,255,255,0.6);
+      margin-top: 4px; letter-spacing: 1px;
+    }
+
+    /* Map markers */
+    .mj-map-marker {
+      background: none !important; border: none !important;
+    }
+    .mj-marker-inner {
+      width: 16px; height: 16px; display: flex;
+      align-items: center; justify-content: center;
+    }
+    .mj-marker-dot {
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--accent-orange);
+      border: 2px solid rgba(255,107,0,0.4);
+      box-shadow: 0 0 12px rgba(255,107,0,0.3);
+      transition: all 0.3s;
+    }
+    .mj-marker-active .mj-marker-dot {
+      width: 16px; height: 16px;
+      box-shadow: 0 0 20px rgba(255,107,0,0.6);
+      background: #ffd700;
+    }
+    .mj-map-tooltip {
+      background: rgba(0,0,0,0.8) !important;
+      border: 1px solid rgba(255,107,0,0.3) !important;
+      color: #fff !important; font-size: 12px !important;
+      border-radius: 6px !important; padding: 4px 10px !important;
+      box-shadow: none !important;
+    }
+    .mj-map-tooltip::before { border-top-color: rgba(0,0,0,0.8) !important; }
+    .leaflet-popup-content-wrapper {
+      background: rgba(15,15,22,0.95) !important;
+      color: #e8e6e0 !important; border-radius: 10px !important;
+      border: 1px solid rgba(255,255,255,0.08) !important;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4) !important;
+    }
+    .leaflet-popup-tip { background: rgba(15,15,22,0.95) !important; }
+    .leaflet-popup-close-button { color: #999 !important; }
+
+    /* Map legend */
+    .mj-legend {
+      position: absolute; bottom: 12px; right: 12px; z-index: 10;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+      border-radius: 8px; padding: 8px 12px; pointer-events: none;
+    }
+    .mj-legend span {
+      font-size: 11px; color: rgba(255,255,255,0.5);
+    }
+    .mj-legend .route-dot {
+      display: inline-block; width: 20px; height: 2px;
+      background: linear-gradient(to right, #ff6b00, #ffd700);
+      margin-right: 4px; border-radius: 1px;
+    }
+
+    @media (max-width: 700px) {
+      #mahjong-map-container { height: 280px; }
+      .mahjong-hero-overlay h1 { font-size: 18px; }
+      .mahjong-hero-overlay { padding: 12px 16px; }
+    }
+  </style>
 </head>
 <body>
+  <!-- ===== 麻将传播地图 Hero ===== -->
+  <div class="app-wrap">
+    <div class="mahjong-hero">
+      <div class="mahjong-hero-overlay">
+        <h1>🀄 宁海三中98届麻将交流群</h1>
+        <p>从宁海出发 · 麻将传播世界各地路线图</p>
+      </div>
+      <div id="mahjong-map-container"></div>
+      <div class="mj-legend">
+        <span><span class="route-dot"></span> 麻将传播路线 · 悬停暂停动画</span>
+      </div>
+    </div>
+  </div>
+
 <div class="app-wrap">
   <header class="app-header">
     <div class="app-logo">🀄 <span>宁海三中98届麻将交流群</span></div>
@@ -15,6 +114,8 @@
       <a href="index.html" class="active">首页</a>
       <a href="pages/records.html">战绩</a>
       <a href="pages/stats.html">统计</a>
+      <a href="pages/friendship.html">友谊时刻</a>
+      <a href="pages/mahjong-culture.html">麻将文化</a>
       <a href="pages/posts.html">心得</a>
     </nav>
     <div style="display:flex;gap:4px;align-items:center;position:relative;">
@@ -55,7 +156,7 @@
   </div>
 
   <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;">
-    <!-- Weekly Ranking -->
+    <!-- Ranking -->
     <div class="card">
       <div class="card-title">🏆 总排行</div>
       <div id="weekly-ranking"><div class="empty-state">暂无数据</div></div>
@@ -71,8 +172,10 @@
   </div>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="../js/i18n.js"></script>
 <script src="js/main.js"></script>
+<script src="js/mahjong-map.js"></script>
 <script>
 // Dashboard: load overview data
 (async function() {
@@ -80,11 +183,10 @@
     var records = await api.get('mj_records') || [];
     var posts = await api.get('mj_posts') || [];
 
-    // Calculate stats
     var totalGames = records.length;
     var totalAmount = records.reduce(function(s, r) {
       return s + r.players.reduce(function(ss, p) { return ss + Math.abs(p.score); }, 0);
-    }, 0) / 2; // flow = sum of abs / 2
+    }, 0) / 2;
     var allPlayers = {};
     records.forEach(function(r) {
       r.players.forEach(function(p) { allPlayers[p.name] = true; });
@@ -120,7 +222,7 @@
       }).join('');
     }
 
-    // Weekly ranking (net score per player)
+    // Ranking
     var rankEl = document.getElementById('weekly-ranking');
     var playerScores = {};
     records.forEach(function(r) {
@@ -141,6 +243,7 @@
         return '<li class="rank-item"><span class="rank-badge ' + medal + '">' + (i + 1) + '</span><span class="rank-name">' + escapeHtml(name) + '</span><span class="rank-score ' + cls + '">' + sign + score + '</span></li>';
       }).join('') + '</ol>';
     }
+
     // Personal monthly stats (if logged in)
     var loggedIn = localStorage.getItem('mj_player');
     if (loggedIn) {
@@ -157,8 +260,7 @@
       monthRecords.forEach(function(r) {
         (r.players || []).forEach(function(p) {
           if (p.name === loggedIn) {
-            myTotal += p.score;
-            myGames++;
+            myTotal += p.score; myGames++;
             if (p.score > 0) myWins++;
             else if (p.score < 0) myLosses++;
           }
@@ -170,9 +272,8 @@
         '<div class="stat-card"><div class="stat-num positive">' + myWins + '</div><div class="stat-label">赢</div></div>' +
         '<div class="stat-card"><div class="stat-num negative">' + myLosses + '</div><div class="stat-label">输</div></div>';
 
-      // Personal monthly chart
       var personalCtx = document.getElementById('personal-month-chart');
-      if (personalCtx && typeof Chart !== 'undefined') {
+      if (personalCtx) {
         var myRecords = records.filter(function(r) {
           return r.date && r.date.substring(0, 7) === thisMonth;
         });
@@ -192,9 +293,7 @@
                 data: myScores.map(function(s) { return s.score; }),
                 borderColor: '#ff6b00',
                 backgroundColor: 'rgba(255,107,0,0.1)',
-                fill: true,
-                tension: 0.3,
-                pointRadius: 4,
+                fill: true, tension: 0.3, pointRadius: 4,
               }]
             },
             options: {
@@ -210,11 +309,8 @@
       }
     }
 
-    // Render member list
-    var members = window.DEFAULT_PLAYERS || [
-      '王建军', '邵伟军', '冯善雷', '庞尚韬',
-      '冯悦', '张展', '张林松', '张和翔', '张文杰'
-    ];
+    // Member list
+    var members = window.DEFAULT_PLAYERS || [];
     var nicknames = {
       '王建军': '卯兔', '邵伟军': '猩猩/屌', '冯善雷': '蛇',
       '庞尚韬': '可与', '冯悦': '青蛙', '张和翔': '胖子', '张文杰': '德杰'
@@ -229,33 +325,6 @@
     console.warn('Dashboard load error:', e);
   }
 })();
-</script>
-
-<script>
-(function() {
-  var theme = localStorage.getItem('xie_theme') || 'light';
-  var btn = document.getElementById('theme-btn');
-  if (theme === 'dark') {
-    document.documentElement.setAttribute('data-theme', 'dark');
-    if (btn) btn.textContent = '🌙';
-  } else {
-    if (btn) btn.textContent = '☀️';
-  }
-})();
-function toggleTheme() {
-  var html = document.documentElement;
-  var btn = document.getElementById('theme-btn');
-  var isDark = html.getAttribute('data-theme') === 'dark';
-  if (isDark) {
-    html.removeAttribute('data-theme');
-    localStorage.setItem('xie_theme', 'light');
-    if (btn) btn.textContent = '☀️';
-  } else {
-    html.setAttribute('data-theme', 'dark');
-    localStorage.setItem('xie_theme', 'dark');
-    if (btn) btn.textContent = '🌙';
-  }
-}
 </script>
 </body>
 </html>

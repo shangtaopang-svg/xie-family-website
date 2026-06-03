@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>友谊时刻 - 宁海三中98届</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ===== 媒体行布局 ===== */
+    .media-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    .media-col-header { text-align: center; margin-bottom: 16px; }
+    .media-col-header h2 { font-family: var(--font-title); font-size: 18px; }
+    .media-col-header p { font-size: 13px; color: var(--text-tertiary); margin-top: 4px; }
+    .divider { width: 40px; height: 2px; background: var(--accent-orange); margin: 8px auto; border-radius: 2px; }
+
+    /* 视频滑动区 */
+    .reels-wrapper { position: relative; }
+    .reels-container {
+      display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory;
+      padding: 8px 4px 12px; scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+    }
+    .reels-container::-webkit-scrollbar { height: 4px; }
+    .reels-container::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 2px; }
+    .reel-item {
+      flex: 0 0 260px; scroll-snap-align: start;
+      border-radius: 12px; overflow: hidden;
+      background: var(--glass-bg); border: 1px solid var(--glass-border);
+      transition: transform 0.3s;
+    }
+    .reel-item:hover { transform: translateY(-2px); }
+    .reel-video { width: 100%; aspect-ratio: 9/16; object-fit: cover; display: block; }
+    .reel-info { padding: 10px 12px; }
+    .reel-info .title { font-size: 13px; font-weight: 600; }
+    .reel-info .desc { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+
+    /* 照片轮播 */
+    .photo-wrapper { position: relative; }
+    .friend-carousel {
+      position: relative; border-radius: 12px; overflow: hidden;
+      background: var(--glass-bg); border: 1px solid var(--glass-border);
+      aspect-ratio: 4/3;
+    }
+    .friend-carousel-track {
+      display: flex; transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+      height: 100%;
+    }
+    .friend-carousel-slide {
+      flex: 0 0 100%; height: 100%; position: relative;
+    }
+    .friend-carousel-slide img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      cursor: pointer;
+    }
+    .friend-carousel-slide .slide-label {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 30px 14px 10px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.6));
+      color: #fff; font-size: 13px;
+    }
+    .carousel-btn {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(0,0,0,0.3); backdrop-filter: blur(8px);
+      color: #fff; font-size: 20px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.25s; z-index: 5;
+    }
+    .carousel-btn:hover { background: rgba(0,0,0,0.5); }
+    .carousel-prev { left: 10px; }
+    .carousel-next { right: 10px; }
+    .carousel-dots {
+      display: flex; justify-content: center; gap: 6px; margin-top: 10px;
+    }
+    .carousel-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--glass-border); cursor: pointer; transition: all 0.3s;
+    }
+    .carousel-dot.active { width: 24px; border-radius: 4px; background: var(--accent-orange); }
+
+    /* 上传区 */
+    .upload-area {
+      border: 2px dashed var(--glass-border); border-radius: 12px;
+      padding: 30px; text-align: center; cursor: pointer;
+      transition: all 0.3s; margin-bottom: 16px;
+    }
+    .upload-area:hover { border-color: var(--accent-orange); background: var(--accent-orange-dim); }
+    .upload-area .icon { font-size: 36px; margin-bottom: 8px; }
+    .upload-area .hint { font-size: 13px; color: var(--text-tertiary); }
+
+    @media (max-width: 700px) {
+      .media-row { grid-template-columns: 1fr; }
+      .reel-item { flex: 0 0 200px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-wrap">
+  <header class="app-header">
+    <div class="app-logo">🀄 <span>宁海三中98届麻将交流群</span></div>
+    <nav class="app-nav">
+      <a href="../index.html">首页</a>
+      <a href="records.html">战绩</a>
+      <a href="stats.html">统计</a>
+      <a href="friendship.html" class="active">友谊时刻</a>
+      <a href="mahjong-culture.html">麻将文化</a>
+      <a href="posts.html">心得</a>
+    </nav>
+    <div style="display:flex;gap:4px;align-items:center;position:relative;">
+      <button class="btn btn-outline btn-sm" id="auth-btn" onclick="showLoginOverlay()" style="font-size:13px;padding:4px 12px;white-space:nowrap;">未登录</button>
+      <button class="btn btn-outline btn-sm" id="theme-btn" onclick="toggleTheme()" style="font-size:13px;padding:4px 10px;">☀️</button>
+    </div>
+  </header>
+
+  <div class="page-header">
+    <h2>🤝 友谊时刻</h2>
+  </div>
+
+  <!-- 上传区 -->
+  <div class="upload-area" onclick="document.getElementById('file-input').click()" id="upload-area">
+    <div class="icon">📸</div>
+    <div style="font-size:15px;font-weight:600;margin-bottom:4px;">分享友谊瞬间</div>
+    <div class="hint">点击上传照片或视频，记录同学之间的美好时光</div>
+    <input type="file" id="file-input" accept="image/*,video/*" multiple style="display:none;" onchange="handleUpload(this)">
+  </div>
+
+  <!-- 媒体行 -->
+  <div class="media-row">
+    <!-- 左：视频 -->
+    <div class="card" style="padding:16px;">
+      <div class="media-col-header">
+        <h2>🎬 视频</h2>
+        <div class="divider"></div>
+        <p>影像记录 · 同窗情谊</p>
+      </div>
+      <div class="reels-wrapper">
+        <div class="reels-container" id="video-container">
+          <div class="empty-state" style="padding:20px;">暂无视频<br><small>上传你们的聚会视频吧</small></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右：照片轮播 -->
+    <div class="card" style="padding:16px;">
+      <div class="media-col-header">
+        <h2>📷 照片</h2>
+        <div class="divider"></div>
+        <p>定格瞬间 · 永恒回忆</p>
+      </div>
+      <div class="photo-wrapper">
+        <div class="friend-carousel" id="photo-carousel">
+          <div class="friend-carousel-track" id="photo-track"></div>
+          <button class="carousel-btn carousel-prev" onclick="movePhoto(-1)">‹</button>
+          <button class="carousel-btn carousel-next" onclick="movePhoto(1)">›</button>
+        </div>
+        <div class="carousel-dots" id="photo-dots"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../../js/i18n.js"></script>
+<script src="../js/main.js"></script>
+<script>
+var friendshipData = { videos: [], photos: [] };
+var photoIndex = 0;
+
+// Load data
+(async function init() {
+  try {
+    friendshipData = await api.get('mj_friendship') || { videos: [], photos: [] };
+    renderVideos();
+    renderPhotos();
+  } catch(e) { console.error(e); }
+})();
+
+// ---- Upload ----
+async function handleUpload(input) {
+  var files = input.files;
+  if (!files.length) return;
+  for (var i = 0; i < files.length; i++) {
+    var file = files[i];
+    if (file.type.startsWith('video/')) {
+      // Upload video via server API
+      var url = await uploadFile(file);
+      if (url) {
+        friendshipData.videos.push({
+          url: url,
+          title: prompt('视频标题：', file.name) || file.name,
+          date: fmtDate(new Date())
+        });
+      }
+    } else if (file.type.startsWith('image/')) {
+      var url = await uploadFile(file);
+      if (url) {
+        friendshipData.photos.push({
+          url: url,
+          title: prompt('照片描述：', file.name) || file.name,
+          date: fmtDate(new Date())
+        });
+      }
+    }
+  }
+  await saveData();
+  renderVideos();
+  renderPhotos();
+  input.value = '';
+}
+
+async function uploadFile(file) {
+  var formData = new FormData();
+  formData.append('file', file);
+  try {
+    var res = await fetch('/api/upload/bin/' + encodeURIComponent(file.name), {
+      method: 'POST',
+      body: file
+    });
+    var data = await res.json();
+    return data.url || null;
+  } catch(e) {
+    // Fallback: base64 upload
+    return new Promise(function(resolve) {
+      var reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          var res = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: file.name, data: e.target.result })
+          });
+          var data = await res.json();
+          resolve(data.url || null);
+        } catch(e2) { resolve(null); }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+}
+
+async function saveData() {
+  try {
+    await api.save('mj_friendship', friendshipData);
+  } catch(e) { console.error(e); }
+}
+
+// ---- Videos ----
+function renderVideos() {
+  var container = document.getElementById('video-container');
+  var videos = friendshipData.videos || [];
+  if (!videos.length) {
+    container.innerHTML = '<div class="empty-state" style="padding:20px;">暂无视频<br><small>上传你们的聚会视频吧</small></div>';
+    return;
+  }
+  container.innerHTML = videos.slice().reverse().map(function(v) {
+    var isVideo = v.url && (v.url.endsWith('.mp4') || v.url.includes('video'));
+    return '<div class="reel-item">' +
+      (isVideo
+        ? '<video class="reel-video" src="' + v.url + '" controls playsinline preload="metadata"></video>'
+        : '<div class="reel-video" style="display:flex;align-items:center;justify-content:center;background:var(--bg-secondary);font-size:40px;">📹</div>') +
+      '<div class="reel-info"><div class="title">' + escapeHtml(v.title || '') + '</div><div class="desc">' + fmtDate(v.date) + '</div></div>' +
+      '<div style="padding:4px 12px 8px;"><button class="btn btn-danger btn-sm" onclick="deleteVideo(\'' + escapeHtml(v.url) + '\')">删除</button></div>' +
+    '</div>';
+  }).join('');
+}
+
+function deleteVideo(url) {
+  if (!confirm('确定删除此视频？')) return;
+  friendshipData.videos = (friendshipData.videos || []).filter(function(v) { return v.url !== url; });
+  saveData();
+  renderVideos();
+}
+
+// ---- Photos ----
+function renderPhotos() {
+  var track = document.getElementById('photo-track');
+  var dots = document.getElementById('photo-dots');
+  var photos = friendshipData.photos || [];
+  if (!photos.length) {
+    track.innerHTML = '<div class="friend-carousel-slide"><div class="empty-state" style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div class="icon" style="font-size:36px;">📷</div>暂无照片<br><small>上传聚会照片吧</small></div></div>';
+    dots.innerHTML = '';
+    return;
+  }
+  track.innerHTML = photos.map(function(p, i) {
+    return '<div class="friend-carousel-slide">' +
+      '<img src="' + p.url + '" alt="' + escapeHtml(p.title) + '" onclick="viewPhoto(' + i + ')">' +
+      '<div class="slide-label">' + escapeHtml(p.title) + ' · ' + fmtDate(p.date) + '</div>' +
+    '</div>';
+  }).join('');
+  dots.innerHTML = photos.map(function(_, i) {
+    return '<div class="carousel-dot' + (i === 0 ? ' active' : '') + '" onclick="goToPhoto(' + i + ')"></div>';
+  }).join('');
+  photoIndex = 0;
+}
+
+function movePhoto(dir) { goToPhoto(photoIndex + dir); }
+
+function goToPhoto(idx) {
+  var photos = friendshipData.photos || [];
+  if (idx < 0) idx = photos.length - 1;
+  if (idx >= photos.length) idx = 0;
+  photoIndex = idx;
+  var track = document.getElementById('photo-track');
+  if (track) track.style.transform = 'translateX(-' + (idx * 100) + '%)';
+  var dots = document.querySelectorAll('#photo-dots .carousel-dot');
+  dots.forEach(function(d, i) { d.classList.toggle('active', i === idx); });
+}
+
+function viewPhoto(idx) {
+  var photos = friendshipData.photos || [];
+  var p = photos[idx];
+  if (!p) return;
+  if (typeof openPhotoLightbox === 'function') {
+    openPhotoLightbox(p.url, p.title);
+  } else {
+    // Simple lightbox
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+    overlay.onclick = function() { overlay.remove(); };
+    var img = document.createElement('img');
+    img.src = p.url;
+    img.style.cssText = 'max-width:92vw;max-height:90vh;object-fit:contain;border-radius:8px;';
+    overlay.appendChild(img);
+    document.body.appendChild(overlay);
+  }
+}
+
+function deletePhotoFromCarousel(url) {
+  if (!confirm('确定删除此照片？')) return;
+  friendshipData.photos = (friendshipData.photos || []).filter(function(p) { return p.url !== url; });
+  saveData();
+  renderPhotos();
+}
+
+// Auto-play photo carousel
+setInterval(function() {
+  var photos = friendshipData.photos || [];
+  if (photos.length > 1) movePhoto(1);
+}, 4000);
+</script>
+</body>
+</html>
