@@ -87,8 +87,8 @@
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             <select class="form-input" id="record-venue" style="width:auto;flex:1;min-width:120px;" onchange="toggleCustomVenue()">
               <option value="">-- 选择场地 --</option>
-              <option value="棋牌室">🀄 棋牌室</option>
-              <option value="茶楼">🍵 茶楼</option>
+              <option value="四海（原天河）">🀄 四海（原天河）</option>
+              <option value="传祺坊">🀄 传祺坊</option>
               <option value="朋友家">🏠 朋友家</option>
               <option value="线上">📱 线上</option>
               <option value="其他">✏️ 其他</option>
@@ -327,7 +327,7 @@ function editRecord(idx) {
   // Restore venue
   var venueSel = document.getElementById('record-venue');
   var venueCustom = document.getElementById('custom-venue');
-  var knownVenues = ['棋牌室','茶楼','朋友家','线上'];
+  var knownVenues = ['四海（原天河）','传祺坊','朋友家','线上'];
   if (r.venue && knownVenues.indexOf(r.venue) >= 0) {
     venueSel.value = r.venue;
     venueCustom.style.display = 'none';

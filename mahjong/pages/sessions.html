@@ -209,15 +209,9 @@
         // Assign positions: order matters for visual
         // East, South, West, North -> positions on the table
         // If 4 players, use all. If fewer, leave seats empty
-        var seats = [
-          { name: '', score: 0 },
-          { name: '', score: 0 },
-          { name: '', score: 0 },
-          { name: '', score: 0 }
-        ];
+        var seats = ['', '', '', ''];
         for (var i = 0; i < Math.min(players.length, 4); i++) {
-          seats[i].name = players[i].name;
-          seats[i].score = players[i].score;
+          seats[i] = players[i].name;
         }
 
         var notes = r.notes ? '<div class="table-notes">📝 ' + escapeHtml(r.notes) + '</div>' : '';
@@ -230,7 +224,6 @@
           return '<div class="player-seat ' + cls + '">' +
             avatarHtml(p.name, 44) +
             '<div class="pname">' + escapeHtml(p.name) + '</div>' +
-            '<div class="pscore ' + scoreCls + '">' + sign + p.score + '</div>' +
             '<div class="seat-label">' + label + '</div>' +
           '</div>';
         }
