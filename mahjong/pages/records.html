@@ -164,7 +164,8 @@ function renderRecords(records) {
     var date = fmtDate(r.date) || '未知日期';
     var venueHtml = r.venue ? ' <span style="font-size:11px;color:var(--text-tertiary);">📍 '+escapeHtml(r.venue)+'</span>' : '';
     var players = (r.players || []).map(function(p) {
-      return '<span class="record-player">' + escapeHtml(p.name) + '</span>';
+      var pname = typeof p === 'string' ? p : (p ? p.name : '');
+      return '<span class="record-player">' + escapeHtml(pname) + '</span>';
     }).join('');
     var notes = r.notes ? '<span class="record-notes">— ' + escapeHtml(r.notes) + '</span>' : '';
     var realIdx = allRecords.indexOf(r);
@@ -312,7 +313,7 @@ function editRecord(idx) {
     venueSel.value = '';
     venueCustom.style.display = 'none';
   }
-  selectedPlayers = (r.players || []).map(function(p) { return typeof p === 'string' ? p : p.name; });
+  selectedPlayers = (r.players || []).map(function(p) { return typeof p === "string" ? p : p.name; });
   updatePlayerSelector();
 
 
