@@ -50,7 +50,7 @@ function fmtDate(d) {
 // Get all unique player names from records
 async function getAllPlayers() {
   try {
-    var records = await api.get('records');
+    var records = await api.get('mj_records');
     var names = {};
     (records || []).forEach(function(r) {
       (r.players || []).forEach(function(p) {

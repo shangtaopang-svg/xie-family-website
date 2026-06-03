@@ -79,7 +79,13 @@
 
         <div class="form-group">
           <label>日期</label>
-          <input class="form-input" type="date" id="record-date" required>
+          <div style="display:flex;gap:8px;">
+            <input class="form-input" type="date" id="record-date" required style="flex:1;">
+            <select class="form-input" id="record-time" style="width:auto;min-width:90px;">
+              <option value="下午">🌤 下午</option>
+              <option value="晚上">🌙 晚上</option>
+            </select>
+          </div>
         </div>
 
         <div class="form-group">
@@ -317,12 +323,21 @@ function editRecord(idx) {
   if (!r) return;
   document.getElementById('modal-title').textContent = '✎ 编辑牌局';
   document.getElementById('edit-id').value = idx;
-  document.getElementById('record-date').value = r.date || '';
+//   document.getElementById('record-date').value = r.date || '';
   document.getElementById('record-notes').value = r.notes || '';
   // Restore venue
   var venueSel = document.getElementById('record-venue');
   var venueCustom = document.getElementById('custom-venue');
   var knownVenues = ['四海（原天河）','传祺坊','朋友家','线上'];
+  // Restore time
+  var dateParts = (r.date || '').split(' ');
+  if (dateParts.length > 1) {
+    document.getElementById('record-date').value = dateParts[0];
+    var timeOpts = ['下午','晚上'];
+    if (timeOpts.indexOf(dateParts[1]) >= 0) document.getElementById('record-time').value = dateParts[1];
+  } else {
+    document.getElementById('record-date').value = r.date || '';
+  }
   if (r.venue && knownVenues.indexOf(r.venue) >= 0) {
     venueSel.value = r.venue;
     venueCustom.style.display = 'none';
@@ -371,7 +386,8 @@ async function saveRecord(e) {
   }
 
 
-  var record = { date: date, venue: getVenue(), players: players, notes: notes };
+  var time = document.getElementById('record-time').value || '';
+  var record = { date: date + ' ' + time, venue: getVenue(), players: players, notes: notes };
 
   if (editId !== '') {
     allRecords[parseInt(editId)] = record;
