@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理后台 - 宁海三中98届</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .admin-section { margin-bottom: 20px; }
+    .admin-section h3 { font-family: var(--font-title); font-size: 16px; margin-bottom: 12px; }
+    .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 700px) { .admin-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<canvas id="weather-canvas" class="weather-canvas"></canvas>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="../index.html" class="logo">
+      <div class="logo-icon">🀄</div>
+      <div class="logo-text"><h1>宁海三中98届</h1><small>麻将交流群</small></div>
+    </a>
+    <button class="nav-toggle" aria-label="菜单">☰</button>
+    <nav class="main-nav">
+      <ul>
+        <li><a href="../index.html" data-i18n="nav.home">🏠 首页</a></li>
+        <li><a href="records.html" data-i18n="nav.records">📊 战绩</a></li>
+        <li><a href="stats.html" data-i18n="nav.stats">📈 统计</a></li>
+        <li><a href="friendship.html" data-i18n="nav.friendship">🤝 友谊时刻</a></li>
+        <li><a href="mahjong-culture.html" data-i18n="nav.culture">🀄 麻将文化</a></li>
+        <li><a href="posts.html" data-i18n="nav.posts">📝 心得</a></li>
+        <li><a href="admin.html" class="active" style="color:var(--accent-orange);">⚙️ 后台</a></li>
+      </ul>
+      <div class="sidebar-controls">
+        <div class="sc-row">
+          <button class="sidebar-btn" id="theme-btn" onclick="toggleTheme()" data-i18n="nav.theme">☀️</button>
+          <button class="sidebar-btn lang-btn" id="lang-btn" onclick="toggleMjLang()">EN</button>
+          <button class="sidebar-btn" id="auth-btn" onclick="showLoginOverlay()">👤</button>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+<div class="content">
+  <div class="page-header"><h2>⚙️ 管理后台</h2></div>
+
+  <!-- Login gate -->
+  <div class="card" id="admin-login-gate">
+    <div style="text-align:center;padding:20px;">
+      <div style="font-size:48px;margin-bottom:8px;">🔐</div>
+      <p style="color:var(--text-tertiary);margin-bottom:16px;">请先登录后进入后台管理</p>
+      <button class="btn btn-primary" onclick="showLoginOverlay()">去登录</button>
+    </div>
+  </div>
+
+  <!-- Admin Panel (hidden until login) -->
+  <div id="admin-panel" style="display:none;">
+    <div id="admin-welcome" class="card" style="text-align:center;padding:16px;">
+      <span style="font-size:18px;">👋</span> 欢迎回来，<strong id="admin-username"></strong>
+      <button class="btn btn-outline btn-sm" onclick="logout()" style="margin-left:12px;">退出</button>
+    </div>
+
+    <div class="admin-grid">
+      <!-- Password Change -->
+      <div class="card admin-section">
+        <h3>🔑 修改密码</h3>
+        <div class="form-group">
+          <label>当前密码</label>
+          <input class="form-input" type="password" id="old-pwd" placeholder="输入当前密码">
+        </div>
+        <div class="form-group">
+          <label>新密码</label>
+          <input class="form-input" type="password" id="new-pwd" placeholder="输入新密码（至少4位）">
+        </div>
+        <div class="form-group">
+          <label>确认新密码</label>
+          <input class="form-input" type="password" id="confirm-pwd" placeholder="再次输入新密码">
+        </div>
+        <div id="pwd-msg" style="font-size:13px;color:var(--accent-green);margin-bottom:8px;"></div>
+        <button class="btn btn-primary" onclick="changePassword()">修改密码</button>
+      </div>
+
+      <!-- Photo Upload -->
+      <div class="card admin-section">
+        <h3>📷 上传照片到友谊时刻</h3>
+        <div class="form-group">
+          <label>选择照片</label>
+          <input class="form-input" type="file" id="admin-photo-upload" accept="image/*" onchange="uploadAdminPhoto(this)">
+        </div>
+        <div class="form-group">
+          <label>照片描述</label>
+          <input class="form-input" id="admin-photo-desc" placeholder="比如：2026年6月聚会">
+        </div>
+        <div id="photo-msg" style="font-size:13px;color:var(--accent-green);margin-bottom:8px;"></div>
+      </div>
+
+      <!-- Video Upload -->
+      <div class="card admin-section">
+        <h3>🎬 上传视频到友谊时刻</h3>
+        <div class="form-group">
+          <label>选择视频</label>
+          <input class="form-input" type="file" id="admin-video-upload" accept="video/*" onchange="uploadAdminVideo(this)">
+        </div>
+        <div class="form-group">
+          <label>视频标题</label>
+          <input class="form-input" id="admin-video-title" placeholder="比如：棋牌室激战">
+        </div>
+        <div id="video-msg" style="font-size:13px;color:var(--accent-green);margin-bottom:8px;"></div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="card admin-section">
+        <h3>📊 数据管理</h3>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <a href="records.html" class="btn btn-outline" style="text-align:center;">📋 管理战绩</a>
+          <a href="posts.html" class="btn btn-outline" style="text-align:center;">📝 管理心得</a>
+          <a href="friendship.html" class="btn btn-outline" style="text-align:center;">🤝 管理友谊时刻</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<footer class="site-footer">© 2026 宁海三中98届麻将交流群</footer>
+
+<script src="../js/i18n-mj.js"></script>
+<script src="../js/main.js"></script>
+<script>
+// Check login state on page load
+(function() {
+  var player = localStorage.getItem('mj_player');
+  if (player) {
+    document.getElementById('admin-login-gate').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+    document.getElementById('admin-username').textContent = player;
+  }
+})();
+
+// Password change
+async function changePassword() {
+  var msgEl = document.getElementById('pwd-msg');
+  var oldPwd = document.getElementById('old-pwd').value;
+  var newPwd = document.getElementById('new-pwd').value;
+  var confirmPwd = document.getElementById('confirm-pwd').value;
+  var player = localStorage.getItem('mj_player');
+
+  if (!player) { msgEl.textContent = '请先登录'; msgEl.style.color = 'var(--accent-red)'; return; }
+  if (!oldPwd || !newPwd || !confirmPwd) { msgEl.textContent = '请填写所有字段'; msgEl.style.color = 'var(--accent-red)'; return; }
+  if (newPwd.length < 4) { msgEl.textContent = '新密码至少4位'; msgEl.style.color = 'var(--accent-red)'; return; }
+  if (newPwd !== confirmPwd) { msgEl.textContent = '两次密码不一致'; msgEl.style.color = 'var(--accent-red)'; return; }
+
+  try {
+    var passwords = await api.get('passwords') || {};
+    var oldHash = sha256(oldPwd);
+    if (passwords[player] !== oldHash) {
+      msgEl.textContent = '当前密码错误'; msgEl.style.color = 'var(--accent-red)'; return;
+    }
+    passwords[player] = sha256(newPwd);
+    await api.save('passwords', passwords);
+    msgEl.textContent = '✅ 密码修改成功！'; msgEl.style.color = 'var(--accent-green)';
+    document.getElementById('old-pwd').value = '';
+    document.getElementById('new-pwd').value = '';
+    document.getElementById('confirm-pwd').value = '';
+  } catch(e) {
+    msgEl.textContent = '修改失败，请重试'; msgEl.style.color = 'var(--accent-red)';
+  }
+}
+
+// Photo upload
+async function uploadAdminPhoto(input) {
+  var file = input.files[0];
+  var desc = document.getElementById('admin-photo-desc').value.trim() || '聚会照片';
+  var msgEl = document.getElementById('photo-msg');
+  if (!file) return;
+  try {
+    msgEl.textContent = '上传中...'; msgEl.style.color = 'var(--text-tertiary)';
+    var url = await uploadFile(file);
+    if (!url) { msgEl.textContent = '上传失败'; msgEl.style.color = 'var(--accent-red)'; return; }
+    var friendship = await api.get('mj_friendship') || {videos:[],photos:[]};
+    friendship.photos.push({url:url, title:desc, date:fmtDate(new Date())});
+    await api.save('mj_friendship', friendship);
+    msgEl.textContent = '✅ 照片已上传到友谊时刻'; msgEl.style.color = 'var(--accent-green)';
+    input.value = '';
+  } catch(e) { msgEl.textContent = '上传失败: '+e.message; msgEl.style.color = 'var(--accent-red)'; }
+}
+
+// Video upload
+async function uploadAdminVideo(input) {
+  var file = input.files[0];
+  var title = document.getElementById('admin-video-title').value.trim() || '聚会视频';
+  var msgEl = document.getElementById('video-msg');
+  if (!file) return;
+  try {
+    msgEl.textContent = '上传中（较大视频可能需要时间）...'; msgEl.style.color = 'var(--text-tertiary)';
+    var url = await uploadFile(file);
+    if (!url) { msgEl.textContent = '上传失败'; msgEl.style.color = 'var(--accent-red)'; return; }
+    var friendship = await api.get('mj_friendship') || {videos:[],photos:[]};
+    friendship.videos.push({url:url, title:title, date:fmtDate(new Date())});
+    await api.save('mj_friendship', friendship);
+    msgEl.textContent = '✅ 视频已上传到友谊时刻'; msgEl.style.color = 'var(--accent-green)';
+    input.value = '';
+  } catch(e) { msgEl.textContent = '上传失败: '+e.message; msgEl.style.color = 'var(--accent-red)'; }
+}
+
+// Upload helper (reuse from main site)
+async function uploadFile(file) {
+  try {
+    var res = await fetch('/api/upload/bin/' + encodeURIComponent(file.name), { method: 'POST', body: file });
+    var data = await res.json();
+    return data.url || null;
+  } catch(e) {
+    return new Promise(function(resolve) {
+      var reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          var r = await fetch('/api/upload', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({name:file.name, data:e.target.result})
+          });
+          var d = await r.json();
+          resolve(d.url || null);
+        } catch(e2) { resolve(null); }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+}
+
+document.querySelector('.nav-toggle')?.addEventListener('click',function(){document.querySelector('.main-nav').classList.toggle('open');});
+</script>
+</body>
+</html>
