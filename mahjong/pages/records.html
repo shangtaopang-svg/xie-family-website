@@ -127,6 +127,25 @@
       </form>
     </div>
   </div>
+
+	<!-- Prediction Modal -->
+	<div class="modal-overlay" id="prediction-modal">
+	  <div class="modal" style="max-width:420px;text-align:center;">
+	    <div style="font-size:28px;margin-bottom:8px;">🀄</div>
+	    <h3 style="font-family:var(--font-title);margin-bottom:4px;">牌局已组建</h3>
+	    <p style="font-size:13px;color:var(--text-tertiary);margin-bottom:14px;" id="prediction-info"></p>
+	    <div style="position:relative;width:200px;height:200px;margin:0 auto 14px;">
+	      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:55%;height:55%;background:linear-gradient(135deg,#2d8a4e,#1a6b3a);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;color:rgba(255,255,255,0.12);z-index:1;">🀄</div>
+	      <div id="prediction-seats" style="position:absolute;top:0;left:0;right:0;bottom:0;"></div>
+	    </div>
+	    <div id="prediction-result" style="background:var(--accent-orange-dim);border-radius:10px;padding:12px;margin-bottom:12px;font-size:14px;line-height:1.8;">
+	      <div style="font-weight:600;font-size:12px;color:var(--accent-orange);margin-bottom:4px;">🔮 AI 预测</div>
+	      <div id="prediction-text">分析中...</div>
+	    </div>
+	    <button class="btn btn-primary" onclick="closePrediction()" style="width:100%;">开始打牌！</button>
+	  </div>
+	</div>
+
 </div>
 <footer class="site-footer">© 2026 宁海三中98届麻将交流群</footer>
 
@@ -358,6 +377,120 @@ async function deleteRecord(idx) {
     showToast('删除失败', 'error');
   }
 }
+
+function showPrediction(players) {
+  var names = players.filter(function(n) { return n; });
+  var info = document.getElementById('prediction-info');
+  info.textContent = names.slice(0, 4).join(' · ') + ' 的牌局';
+  var seatsHtml = '';
+  var positions = [
+    {cls: 'bottom', label: '南'},
+    {cls: 'left', label: '西'},
+    {cls: 'top', label: '北'},
+    {cls: 'right', label: '东'},
+  ];
+  var styles = {
+    bottom: 'bottom:0;left:50%;transform:translateX(-50%);',
+    left: 'top:50%;left:0;transform:translateY(-50%);',
+    top: 'top:0;left:50%;transform:translateX(-50%);',
+    right: 'top:50%;right:0;transform:translateY(-50%);',
+  };
+  names.slice(0, 4).forEach(function(name, i) {
+    var pos = positions[i];
+    var a = getAvatar(name);
+    seatsHtml += '<div style="position:absolute;' + styles[pos.cls] + ';display:flex;flex-direction:column;align-items:center;gap:2px;z-index:2;">' +
+      '<div style="width:36px;height:36px;border-radius:50%;background:' + a.bg + ';display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">' + a.emoji + '</div>' +
+      '<div style="font-size:10px;font-weight:600;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);padding:1px 6px;border-radius:3px;color:#fff;white-space:nowrap;">' + escapeHtml(name) + '</div>' +
+      '<div style="font-size:8px;color:var(--text-tertiary);letter-spacing:1px;">' + pos.label + '</div>' +
+    '</div>';
+  });
+  document.getElementById('prediction-seats').innerHTML = seatsHtml;
+  calcPrediction(names);
+  document.getElementById('prediction-modal').classList.add('open');
+}
+
+function calcPrediction(names) {
+  var allRecords = typeof window.__allRecords !== 'undefined' ? window.__allRecords : [];
+  // Calculate win rates from history
+  var stats = {};
+  names.forEach(function(n) { stats[n] = {wins:0, losses:0, games:0, net:0}; });
+  allRecords.forEach(function(r) {
+    (r.players || []).forEach(function(p) {
+      var pname = typeof p === 'string' ? p : p.name;
+      var pscore = typeof p === 'object' && p.score !== undefined ? p.score : 0;
+      if (stats[pname]) {
+        stats[pname].games++;
+        stats[pname].net += pscore;
+        if (pscore > 0) stats[pname].wins++;
+        else if (pscore < 0) stats[pname].losses++;
+      }
+    });
+  });
+
+  // Calculate base win probability
+  var totalGames = 0;
+  names.forEach(function(n) { totalGames += stats[n].games; });
+  var probs = {};
+  names.forEach(function(n) {
+    var base = 25; // base 25%
+    if (stats[n].games > 0) {
+      var winRate = stats[n].wins / stats[n].games;
+      base += (winRate - 0.5) * 30; // adjust by win rate
+      // Recent form bonus
+      if (stats[n].net > 0) base += 5;
+      if (stats[n].net > 50) base += 3;
+    }
+    // Random fun factor
+    base += (Math.random() - 0.5) * 10;
+    probs[n] = Math.max(5, Math.min(90, Math.round(base)));
+  });
+
+  // Normalize to sum ~100%
+  var sum = 0;
+  names.forEach(function(n) { sum += probs[n]; });
+  var factor = 100 / sum;
+  names.forEach(function(n) { probs[n] = Math.round(probs[n] * factor); });
+  // Adjust rounding
+  var total = 0;
+  names.forEach(function(n) { total += probs[n]; });
+  if (total !== 100 && names.length > 0) {
+    probs[names[0]] += 100 - total;
+  }
+
+  // Sort by probability
+  var sorted = names.slice().sort(function(a, b) { return probs[b] - probs[a]; });
+  var topTwo = sorted.slice(0, 2);
+
+  // Generate prediction text
+  var scenarios = [
+    '今晚 ' + topTwo[0] + ' 和 ' + topTwo[1] + ' 赢面较大',
+    topTwo[0] + ' 最近手气正旺，看好今晚',
+    '注意 ' + sorted[sorted.length-1] + ' 可能有后手',
+    '预测 ' + topTwo[0] + ' 胜率最高',
+  ];
+  var pick = scenarios[Math.floor(Math.random() * scenarios.length)];
+
+  var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">' +
+    sorted.map(function(n) {
+      var cls = probs[n] >= 50 ? 'color:var(--accent-green);' : 'color:var(--text-secondary);';
+      return '<div style="font-size:12px;padding:2px 6px;background:rgba(255,255,255,0.05);border-radius:6px;">' +
+        '<span style="display:flex;justify-content:space-between;"><span>' + escapeHtml(n) + '</span><span style="font-weight:700;' + cls + '">' + probs[n] + '%</span></span>' +
+        '<div style="height:3px;background:var(--glass-border);border-radius:2px;margin-top:2px;">' +
+        '<div style="height:100%;width:' + probs[n] + '%;background:var(--accent-orange);border-radius:2px;transition:width 0.5s;"></div></div></div>';
+    }).join('') + '</div>' +
+    '<div style="font-size:13px;">🔮 ' + pick + '</div>';
+
+  document.getElementById('prediction-text').innerHTML = html;
+}
+
+function closePrediction() {
+  document.getElementById('prediction-modal').classList.remove('open');
+}
+
+// Store records for prediction
+document.addEventListener('DOMContentLoaded', function() {
+  api.get('mj_records').then(function(r) { window.__allRecords = r || []; });
+});
 
 // Close modal on overlay click
 document.getElementById('record-modal').addEventListener('click', function(e) {
