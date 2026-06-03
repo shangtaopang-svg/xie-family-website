@@ -3,17 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>宁海三中98届麻将交流群</title>
+  <title data-i18n="site.title">宁海三中98届麻将交流群</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    #mahjong-map-container { width:100%;height:420px; }
+    #mahjong-map-container { width:100%;height:420px;z-index:0; }
     .hero-map-bg #mahjong-map-container { position:absolute;top:0;left:0;width:100%;height:100%; }
-    @media(max-width:900px){ #mahjong-map-container{height:260px;} }
+    .hero-section { position:relative;z-index:1;min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden; }
+    .weather-canvas { position:fixed;top:0;left:220px;right:0;bottom:0;z-index:0;pointer-events:none; }
+    @media(max-width:900px){ #mahjong-map-container{height:260px;} .weather-canvas{left:0;} }
   </style>
 </head>
 <body>
+
+<!-- Weather Particle Canvas -->
+<canvas id="weather-canvas" class="weather-canvas"></canvas>
+
 <!-- ===== Sidebar ===== -->
 <header class="site-header">
   <div class="header-inner">
@@ -27,19 +33,32 @@
     <button class="nav-toggle" aria-label="菜单">☰</button>
     <nav class="main-nav">
       <ul>
-        <li><a href="index.html" class="active">🏠 首页</a></li>
-        <li><a href="pages/records.html">📊 战绩</a></li>
-        <li><a href="pages/stats.html">📈 统计</a></li>
-        <li><a href="pages/friendship.html">🤝 友谊时刻</a></li>
-        <li><a href="pages/mahjong-culture.html">🀄 麻将文化</a></li>
-        <li><a href="pages/posts.html">📝 心得</a></li>
+        <li><a href="index.html" class="active" data-i18n="nav.home">🏠 首页</a></li>
+        <li><a href="pages/records.html" data-i18n="nav.records">📊 战绩</a></li>
+        <li><a href="pages/stats.html" data-i18n="nav.stats">📈 统计</a></li>
+        <li><a href="pages/friendship.html" data-i18n="nav.friendship">🤝 友谊时刻</a></li>
+        <li><a href="pages/mahjong-culture.html" data-i18n="nav.culture">🀄 麻将文化</a></li>
+        <li><a href="pages/posts.html" data-i18n="nav.posts">📝 心得</a></li>
       </ul>
       <div class="sidebar-controls">
         <div class="sc-row">
-          <button class="sidebar-btn" id="auth-btn" onclick="showLoginOverlay()" title="登录">👤</button>
-          <button class="sidebar-btn" id="theme-btn" onclick="toggleTheme()" title="切换主题">☀️</button>
+          <button class="weather-btn sidebar-btn" data-weather="off" title="关闭特效">✕</button>
+          <button class="weather-btn sidebar-btn" data-weather="sunny" title="晴天">☀</button>
+          <button class="weather-btn sidebar-btn" data-weather="rain" title="下雨">🌧</button>
+          <button class="weather-btn sidebar-btn" data-weather="snow" title="下雪">❄</button>
+          <button class="weather-btn sidebar-btn" data-weather="meteor" title="流星">☄</button>
         </div>
-        <div class="sc-row" id="user-info" style="display:none;font-size:11px;color:var(--text-tertiary);padding-top:4px;"></div>
+        <div class="sc-row">
+          <button class="sidebar-btn" id="music-prev" title="上一首">⏮</button>
+          <button class="sidebar-btn" id="music-toggle" title="播放/暂停">🔈</button>
+          <button class="sidebar-btn" id="music-next" title="下一首">⏭</button>
+        </div>
+        <div class="sc-row">
+          <button class="sidebar-btn" id="theme-btn" onclick="toggleTheme()" data-i18n="nav.theme" title="切换主题">☀️</button>
+          <button class="sidebar-btn lang-btn" id="lang-btn" onclick="toggleMjLang()" title="中英文切换">EN</button>
+          <button class="sidebar-btn" id="auth-btn" onclick="showLoginOverlay()" title="登录">👤</button>
+        </div>
+        <div class="sc-row" id="user-info" style="display:none;font-size:10px;color:var(--text-tertiary);padding-top:4px;"></div>
       </div>
     </nav>
   </div>
@@ -48,7 +67,7 @@
 <!-- ===== Content ===== -->
 <div class="content">
 
-  <!-- Hero / Map -->
+  <!-- Hero -->
   <section class="hero-section hero-map-bg">
     <div id="mahjong-map-container"></div>
     <div class="hero-info">
@@ -58,41 +77,50 @@
           <div class="hero-date-detail">
             <div class="hero-date-month" id="hero-month">6月</div>
             <div class="hero-date-weekday" id="hero-weekday">星期三</div>
+            <div class="hero-date-lunar" id="hero-lunar">农历四月十八</div>
+            <div class="hero-date-year" id="hero-year">2026年</div>
           </div>
+        </div>
+        <div class="hero-divider"></div>
+        <div class="hero-weather">
+          <div class="hero-weather-icon">🌤</div>
+          <div class="hero-weather-info">
+            <div class="hero-weather-location" data-i18n="weather.location">宁波宁海</div>
+            <div class="hero-weather-desc" id="hero-weather-desc" data-i18n="weather.fetching">获取天气中...</div>
+          </div>
+          <div class="hero-weather-temp" id="hero-weather-temp"></div>
         </div>
       </div>
     </div>
-    <div class="hero-motto">以牌会友 · 乐在其中</div>
-    <div class="hero-sub">—— 宁海三中98届 · 麻将交流群 ——</div>
+    <div class="hero-motto" data-i18n="site.subtitle">以牌会友 · 乐在其中</div>
+    <div class="hero-sub" data-i18n="hero.sub">—— 宁海三中98届 · 麻将交流群 ——</div>
   </section>
 
   <!-- Stats Bar -->
   <div class="stats-bar">
-    <div class="stat-item"><div class="num" id="total-games">0</div><div class="label">总场次</div></div>
-    <div class="stat-item"><div class="num positive" id="total-amount">¥0</div><div class="label">总流水</div></div>
-    <div class="stat-item"><div class="num" id="active-players">0</div><div class="label">活跃玩家</div></div>
-    <div class="stat-item"><div class="num" id="total-posts">0</div><div class="label">心得</div></div>
-    <div class="stat-item"><div class="num positive" id="my-month">-</div><div class="label">我的本月</div></div>
+    <div class="stat-item"><div class="num" id="total-games">0</div><div class="label" data-i18n="stats.games">总场次</div></div>
+    <div class="stat-item"><div class="num positive" id="total-amount">¥0</div><div class="label" data-i18n="stats.amount">总流水</div></div>
+    <div class="stat-item"><div class="num" id="active-players">0</div><div class="label" data-i18n="stats.players">活跃玩家</div></div>
+    <div class="stat-item"><div class="num" id="total-posts">0</div><div class="label" data-i18n="stats.posts">心得</div></div>
+    <div class="stat-item"><div class="num positive" id="my-month">-</div><div class="label" data-i18n="stats.mymonth">我的本月</div></div>
   </div>
 
-  <!-- Media Row: Video + Photo -->
+  <!-- Media Row -->
   <div class="media-row-section">
     <div class="media-row">
       <div class="media-col">
         <div class="media-col-header">
-          <h3>🎬 友谊视频</h3>
+          <h3 data-i18n="media.video">🎬 友谊视频</h3>
           <div class="divider"></div>
-          <p>影像记录 · 同窗情谊</p>
+          <p data-i18n="media.video.sub">影像记录 · 同窗情谊</p>
         </div>
-        <div class="reels-container" id="video-container">
-          <div class="empty-state" style="padding:20px;">暂无视频</div>
-        </div>
+        <div class="reels-container" id="video-container"><div class="empty-state" style="padding:20px;" data-i18n="media.empty">暂无视频</div></div>
       </div>
       <div class="media-col">
         <div class="media-col-header">
-          <h3>📷 友谊照片</h3>
+          <h3 data-i18n="media.photo">📷 友谊照片</h3>
           <div class="divider"></div>
-          <p>定格瞬间 · 永恒回忆</p>
+          <p data-i18n="media.photo.sub">定格瞬间 · 永恒回忆</p>
         </div>
         <div class="photo-carousel-wrap">
           <div class="friend-carousel" id="photo-carousel">
@@ -106,194 +134,215 @@
     </div>
   </div>
 
-  <!-- Dashboard Grid -->
+  <!-- Dashboard -->
   <div class="section-wrap" style="padding-top:0;">
     <div class="grid-2-1">
-      <!-- Recent Records -->
       <div class="card">
-        <div class="card-title">📊 最近战绩</div>
-        <div id="recent-records"><div class="empty-state">暂无战绩，快去记录吧</div></div>
-        <div style="text-align:center;margin-top:12px;">
-          <a href="pages/records.html" class="btn btn-outline btn-sm">查看全部 →</a>
-        </div>
+        <div class="card-title" data-i18n="dashboard.recent">📊 最近战绩</div>
+        <div id="recent-records"><div class="empty-state" data-i18n="dashboard.empty">暂无战绩，快去记录吧</div></div>
+        <div style="text-align:center;margin-top:12px;"><a href="pages/records.html" class="btn btn-outline btn-sm" data-i18n="dashboard.viewall">查看全部 →</a></div>
       </div>
-
-      <!-- Ranking -->
       <div class="card">
-        <div class="card-title">🏆 总排行</div>
-        <div id="weekly-ranking"><div class="empty-state">暂无数据</div></div>
+        <div class="card-title" data-i18n="dashboard.ranking">🏆 总排行</div>
+        <div id="weekly-ranking"><div class="empty-state" data-i18n="dashboard.nodata">暂无数据</div></div>
       </div>
     </div>
-
     <div class="grid-2">
-      <!-- Monthly Personal Chart -->
       <div class="card" id="personal-card" style="display:none;">
-        <div class="card-title">👤 本月走势 <span id="personal-month-label" style="font-weight:400;font-size:12px;color:var(--text-tertiary);"></span></div>
+        <div class="card-title" data-i18n="dashboard.mymonth">👤 本月走势</div>
         <canvas id="personal-month-chart" height="120"></canvas>
       </div>
-
-      <!-- Group Members -->
       <div class="card">
-        <div class="card-title">👥 群成员</div>
-        <div id="member-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;">
-          <div class="empty-state" style="padding:10px;">加载中...</div>
-        </div>
+        <div class="card-title" data-i18n="dashboard.members">👥 群成员</div>
+        <div id="member-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Footer -->
-<footer class="site-footer">© 2026 宁海三中98届麻将交流群 · 以牌会友</footer>
+<footer class="site-footer">© 2026 <span data-i18n="site.title">宁海三中98届麻将交流群</span></footer>
+
+<!-- Background Music -->
+<audio id="bg-music" loop src="../music/background.mp3"></audio>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/i18n-mj.js"></script>
 <script src="js/main.js"></script>
 <script src="js/mahjong-map.js"></script>
 <script>
-// ---- Date ----
+// ===== 1. Date + Weather (reinit on lang change) =====
 (function() {
-  var d = new Date();
-  document.getElementById('hero-day').textContent = d.getDate();
-  document.getElementById('hero-month').textContent = (d.getMonth()+1)+'月';
-  var weekdays = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
-  document.getElementById('hero-weekday').textContent = weekdays[d.getDay()];
+  var now = new Date();
+  document.getElementById('hero-day').textContent = now.getDate();
+  document.getElementById('hero-month').textContent = (now.getMonth()+1)+'月';
+  var wds = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+  document.getElementById('hero-weekday').textContent = wds[now.getDay()];
 })();
 
-// ---- Nav toggle ----
+// Weather
+(function() {
+  var descEl = document.getElementById('hero-weather-desc');
+  var tempEl = document.getElementById('hero-weather-temp');
+  if (!descEl) return;
+  var cache = localStorage.getItem('xie_weather_cache');
+  var cached = null;
+  if (cache) { try { cached = JSON.parse(cache); } catch(e) {} }
+  var now = Date.now();
+  if (cached && (now - cached.time < 3600000)) {
+    descEl.textContent = cached.condition;
+    if (tempEl) tempEl.textContent = cached.temp;
+    return;
+  }
+  if (cached) { descEl.textContent = cached.condition; if (tempEl) tempEl.textContent = cached.temp; }
+  else descEl.textContent = '宁海';
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'https://wttr.in/Ninghai?format=%C|%t&lang=zh&m', true);
+  xhr.timeout = 4000;
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      var raw = xhr.responseText;
+      var sep = raw.indexOf('|');
+      var condition = sep !== -1 ? raw.substring(0, sep).trim() : raw;
+      var temp = sep !== -1 ? raw.substring(sep + 1).trim() : '—';
+      descEl.textContent = condition;
+      if (tempEl) tempEl.textContent = temp;
+      localStorage.setItem('xie_weather_cache', JSON.stringify({condition, temp, time: Date.now()}));
+    }
+  };
+  xhr.send();
+})();
+
+// ===== 2. Theme =====
+(function() {
+  var theme = localStorage.getItem('xie_theme') || 'light';
+  var btn = document.getElementById('theme-btn');
+  if (theme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    if (btn) btn.textContent = '\u{1F319}';
+  } else if (btn) btn.textContent = '\u{2600}\u{FE0F}';
+})();
+window.toggleTheme = function() {
+  var html = document.documentElement;
+  var btn = document.getElementById('theme-btn');
+  var isDark = html.getAttribute('data-theme') === 'dark';
+  if (isDark) {
+    html.removeAttribute('data-theme');
+    localStorage.setItem('xie_theme', 'light');
+    if (btn) btn.textContent = '\u{2600}\u{FE0F}';
+  } else {
+    html.setAttribute('data-theme', 'dark');
+    localStorage.setItem('xie_theme', 'dark');
+    if (btn) btn.textContent = '\u{1F319}';
+  }
+};
+
+// ===== 3. Nav toggle =====
 document.querySelector('.nav-toggle')?.addEventListener('click', function() {
   document.querySelector('.main-nav').classList.toggle('open');
 });
 
-// ---- Dashboard ----
+// ===== 4. Weather Particles =====
+(function() {
+  var canvas = document.getElementById('weather-canvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W, H;
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize(); window.addEventListener('resize', resize);
+  var currentEffect = 'off', particles = [], animId = null;
+  function makeRain(n) { var a=[]; for(var i=0;i<n;i++) a.push({x:Math.random()*W,y:Math.random()*H*-1,len:Math.random()*15+10,speed:Math.random()*6+4,opacity:Math.random()*0.4+0.2}); return a; }
+  function drawRain(ctx,a) { ctx.strokeStyle='rgba(174,194,224,0.6)';ctx.lineWidth=1.2; for(var i=0;i<a.length;i++){var p=a[i];p.y+=p.speed;p.x+=1.5;if(p.y>H+20){p.y=-20;p.x=Math.random()*W;}if(p.x>W+20)p.x=-20;ctx.globalAlpha=p.opacity;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-4,p.y-p.len);ctx.stroke();} ctx.globalAlpha=1; }
+  function makeSnow(n) { var a=[]; for(var i=0;i<n;i++) a.push({x:Math.random()*W,y:Math.random()*H*-1,r:Math.random()*3+1,speed:Math.random()*1.2+0.4,sway:Math.random()*2+0.5,phase:Math.random()*Math.PI*2,opacity:Math.random()*0.5+0.2}); return a; }
+  function drawSnow(ctx,a) { for(var i=0;i<a.length;i++){var p=a[i];p.y+=p.speed;p.x+=Math.sin(p.phase)*0.3;p.phase+=0.02;if(p.y>H+10){p.y=-10;p.x=Math.random()*W;}ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle='rgba(255,255,255,'+p.opacity+')';ctx.fill();} }
+  function makeSunny(n) { var a=[]; for(var i=0;i<n;i++) a.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*2.5+0.5,speed:Math.random()*0.3+0.1,angle:Math.random()*6.28,drift:Math.random()*0.3-0.15,opacity:Math.random()*0.3+0.05}); return a; }
+  function drawSunny(ctx,a) { for(var i=0;i<a.length;i++){var p=a[i];p.y-=p.speed;p.x+=Math.sin(p.angle)*p.drift;p.angle+=0.005;if(p.y<-10){p.y=H+10;p.x=Math.random()*W;}ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle='rgba(255,200,120,'+p.opacity+')';ctx.fill();ctx.beginPath();ctx.arc(p.x,p.y,p.r*3,0,7);ctx.fillStyle='rgba(255,200,120,'+(p.opacity*0.2)+')';ctx.fill();} }
+  function spawnMeteor(rY) { return {x:Math.random()*W,y:rY?Math.random()*H*0.4:-20,vx:Math.random()*-8-4,vy:Math.random()*4+3,len:Math.random()*40+30,opacity:Math.random()*0.6+0.4,life:1}; }
+  function drawMeteors(ctx,a) { var t=a._timer||0;t++;if(t>80+Math.random()*120){var act=a.filter(function(m){return m.life>0}).length;if(act<4)a.push(spawnMeteor(false));t=0;}a._timer=t;for(var i=a.length-1;i>=0;i--){var m=a[i];if(m.life<=0){a.splice(i,1);continue}m.x+=m.vx;m.y+=m.vy;m.life-=0.008;if(m.life<0)m.life=0;if(m.x<-100||m.y>H+50){a.splice(i,1);continue}var g=ctx.createLinearGradient(m.x,m.y,m.x-m.vx*2,m.y-m.vy*2);g.addColorStop(0,'rgba(255,255,255,'+(m.life*m.opacity)+')');g.addColorStop(0.5,'rgba(200,220,255,'+(m.life*m.opacity*0.4)+')');g.addColorStop(1,'transparent');ctx.strokeStyle=g;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(m.x,m.y);ctx.lineTo(m.x-m.vx*3,m.y-m.vy*3);ctx.stroke();ctx.beginPath();ctx.arc(m.x,m.y,2,0,7);ctx.fillStyle='rgba(255,255,255,'+(m.life*0.8)+')';ctx.fill();} }
+  function startEffect(t) { stopEffect();currentEffect=t;localStorage.setItem('xie_weather_effect',t);switch(t){case'rain':particles=makeRain(300);break;case'sunny':particles=makeSunny(80);break;case'snow':particles=makeSnow(180);break;case'meteor':particles=makeMeteors(2);break;default:return;}loop(); }
+  function loop() { ctx.clearRect(0,0,W,H);switch(currentEffect){case'rain':drawRain(ctx,particles);break;case'sunny':drawSunny(ctx,particles);break;case'snow':drawSnow(ctx,particles);break;case'meteor':drawMeteors(ctx,particles);break;default:return;}animId=requestAnimationFrame(loop); }
+  function stopEffect() { if(animId){cancelAnimationFrame(animId);animId=null;}ctx.clearRect(0,0,W,H);particles=[]; }
+  var saved=localStorage.getItem('xie_weather_effect')||'off';if(saved!=='off')startEffect(saved);
+  document.addEventListener('click',function(e){var btn=e.target.closest('.weather-btn');if(!btn)return;var t=btn.getAttribute('data-weather');if(t==='off'){stopEffect();currentEffect='off';localStorage.setItem('xie_weather_effect','off');return}if(t===currentEffect){stopEffect();currentEffect='off';localStorage.setItem('xie_weather_effect','off');return}startEffect(t);});
+})();
+
+// ===== 5. Music Player =====
+(function() {
+  var audio = document.getElementById('bg-music');
+  var toggle = document.getElementById('music-toggle');
+  var prev = document.getElementById('music-prev');
+  var next = document.getElementById('music-next');
+  if (!audio || !toggle) return;
+  var playlist = [{title:'背景音乐',file_url:'../music/background.mp3'}];
+  var index = 0;
+  function doPlay() { var p=audio.play();if(p&&p.catch)p.catch(function(){toggle.textContent='🔈';}); }
+  function togglePlay() { if(audio.paused){doPlay();toggle.textContent='🔊';localStorage.setItem('xie_music_playing','true');}else{audio.pause();toggle.textContent='🔈';localStorage.setItem('xie_music_playing','false');} }
+  var savedPlaying=localStorage.getItem('xie_music_playing')==='true';
+  var savedTime=parseFloat(localStorage.getItem('xie_music_time'))||0;
+  audio.currentTime=savedTime;
+  if(savedPlaying){doPlay();toggle.textContent='🔊';}
+  toggle.addEventListener('click',togglePlay);
+  audio.addEventListener('timeupdate',function(){localStorage.setItem('xie_music_time',audio.currentTime);});
+})();
+
+// ===== 6. Dashboard Data =====
 (async function() {
   try {
     var records = await api.get('mj_records') || [];
     var posts = await api.get('mj_posts') || [];
     var friendship = await api.get('mj_friendship') || {videos:[],photos:[]};
-
-    // Stats
     var totalGames = records.length;
-    var totalAmount = records.reduce(function(s, r) {
-      return s + r.players.reduce(function(ss, p) { return ss + Math.abs(p.score); }, 0);
-    }, 0) / 2;
+    var totalAmount = records.reduce(function(s,r){return s+r.players.reduce(function(ss,p){return ss+Math.abs(p.score);},0);},0)/2;
     var allPlayers = {};
-    records.forEach(function(r) { r.players.forEach(function(p) { allPlayers[p.name] = true; }); });
+    records.forEach(function(r){r.players.forEach(function(p){allPlayers[p.name]=true;});});
     document.getElementById('total-games').textContent = totalGames;
-    document.getElementById('total-amount').textContent = '¥' + Math.round(totalAmount);
+    document.getElementById('total-amount').textContent = '¥'+Math.round(totalAmount);
     document.getElementById('active-players').textContent = Object.keys(allPlayers).length;
     document.getElementById('total-posts').textContent = posts.length;
-
-    // Recent records
     var recentEl = document.getElementById('recent-records');
     var recent = records.slice(-5).reverse();
     if (recent.length) {
-      recentEl.innerHTML = recent.map(function(r) {
-        return '<div class="record-item"><span class="record-date">' + (r.date||'') + '</span><div class="record-players">' +
-          r.players.map(function(p) {
-            var cls = p.score >= 0 ? 'positive' : 'negative';
-            var sign = p.score >= 0 ? '+' : '';
-            return '<span class="record-player">' + playerWithAvatar(p.name, 18) + ' <span class="record-score ' + cls + '">' + sign + p.score + '</span></span>';
-          }).join('') + '</div></div>';
-      }).join('');
+      recentEl.innerHTML = recent.map(function(r){return '<div class="record-item"><span class="record-date">'+(r.date||'')+'</span><div class="record-players">'+r.players.map(function(p){var c=p.score>=0?'positive':'negative';return '<span class="record-player">'+playerWithAvatar(p.name,18)+' <span class="record-score '+c+'">'+(p.score>=0?'+':'')+p.score+'</span></span>';}).join('')+'</div></div>';}).join('');
     }
-
-    // Ranking
     var playerScores = {};
-    records.forEach(function(r) { r.players.forEach(function(p) { playerScores[p.name] = (playerScores[p.name]||0) + p.score; }); });
+    records.forEach(function(r){r.players.forEach(function(p){playerScores[p.name]=(playerScores[p.name]||0)+p.score;});});
     var sorted = Object.keys(playerScores).sort(function(a,b){return playerScores[b]-playerScores[a];});
     if (sorted.length) {
-      document.getElementById('weekly-ranking').innerHTML = '<ol class="rank-list">' +
-        sorted.map(function(name, i) {
-          var score = playerScores[name];
-          var medal = i < 3 ? ['rank-1','rank-2','rank-3'][i] : '';
-          var cls = score >= 0 ? 'positive' : 'negative';
-          var sign = score >= 0 ? '+' : '';
-          return '<li class="rank-item"><span class="rank-badge '+medal+'">'+(i+1)+'</span><span class="rank-name">'+playerWithAvatar(name,20)+'</span><span class="rank-score '+cls+'">'+sign+score+'</span></li>';
-        }).join('') + '</ol>';
+      document.getElementById('weekly-ranking').innerHTML = '<ol class="rank-list">'+sorted.map(function(n,i){var s=playerScores[n];return '<li class="rank-item"><span class="rank-badge '+(i<3?['rank-1','rank-2','rank-3'][i]:'')+'">'+(i+1)+'</span><span class="rank-name">'+playerWithAvatar(n,20)+'</span><span class="rank-score '+(s>=0?'positive':'negative')+'">'+(s>=0?'+':'')+s+'</span></li>';}).join('')+'</ol>';
     }
-
-    // Personal monthly
     var loggedIn = localStorage.getItem('mj_player');
     if (loggedIn) {
-      document.getElementById('personal-card').style.display = 'block';
-      var now = new Date();
-      var thisMonth = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-      document.getElementById('personal-month-label').textContent = thisMonth;
-      var monthRecs = records.filter(function(r) { return r.date && r.date.substring(0,7) === thisMonth; });
-      var myTotal = 0, myScores = [];
-      monthRecs.forEach(function(r) {
-        r.players.forEach(function(p) {
-          if (p.name === loggedIn) { myTotal += p.score; myScores.push({date:r.date,score:p.score}); }
-        });
-      });
-      document.getElementById('my-month').textContent = (myTotal>=0?'+':'')+myTotal;
-      if (myScores.length > 0) {
-        new Chart(document.getElementById('personal-month-chart'), {
-          type: 'line',
-          data: {
-            labels: myScores.map(function(s) { return s.date ? s.date.slice(5) : ''; }),
-            datasets: [{
-              label: loggedIn, data: myScores.map(function(s) { return s.score; }),
-              borderColor: '#ff6b00', backgroundColor: 'rgba(255,107,0,0.1)',
-              fill: true, tension: 0.3, pointRadius: 4,
-            }]
-          },
-          options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{grid:{color:'rgba(0,0,0,0.05)'}},x:{grid:{display:false}}} }
-        });
-      }
+      var pc = document.getElementById('personal-card'); pc.style.display = 'block';
+      var now = new Date(), m = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+      var mr = records.filter(function(r){return r.date&&r.date.substring(0,7)===m;});
+      var mt = 0, ms = [];
+      mr.forEach(function(r){r.players.forEach(function(p){if(p.name===loggedIn){mt+=p.score;ms.push({date:r.date,score:p.score});}});});
+      document.getElementById('my-month').textContent = (mt>=0?'+':'')+mt;
+      if (ms.length) new Chart(document.getElementById('personal-month-chart'),{type:'line',data:{labels:ms.map(function(s){return s.date?s.date.slice(5):'';}),datasets:[{label:loggedIn,data:ms.map(function(s){return s.score;}),borderColor:'#ff6b00',backgroundColor:'rgba(255,107,0,0.1)',fill:true,tension:0.3,pointRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(0,0,0,0.05)'}},x:{grid:{display:false}}}}});
     }
-
-    // Members
-    var members = window.DEFAULT_PLAYERS || [];
-    var nicknames = {'王建军':'卯兔','邵伟军':'猩猩','冯善雷':'蛇','庞尚韬':'可与','冯悦':'青蛙','张展':'展昭','张和翔':'胖子','张文杰':'德杰'};
-    document.getElementById('member-list').innerHTML = members.map(function(name) {
-      var nick = nicknames[name] ? '<span style="font-size:10px;color:var(--text-tertiary);">'+nicknames[name]+'</span>' : '';
-      return '<div style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:8px;border:1px solid var(--glass-border);background:var(--glass-bg);">' +
-        avatarHtml(name,24) + '<div><div style="font-size:12px;">'+escapeHtml(name)+'</div>'+nick+'</div></div>';
-    }).join('');
-
-    // Friendship media
-    var videos = friendship.videos || [];
+    var members = window.DEFAULT_PLAYERS||[];
+    var nicks = {'王建军':'卯兔','邵伟军':'猩猩','冯善雷':'蛇','庞尚韬':'可与','冯悦':'青蛙','张展':'展昭','张和翔':'胖子','张文杰':'德杰'};
+    document.getElementById('member-list').innerHTML = members.map(function(n){return '<div style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:8px;border:1px solid var(--glass-border);background:var(--glass-bg);">'+avatarHtml(n,24)+'<div><div style="font-size:12px;">'+escapeHtml(n)+'</div>'+(nicks[n]?'<span style="font-size:10px;color:var(--text-tertiary);">'+nicks[n]+'</span>':'')+'</div></div>';}).join('');
+    var videos = (friendship.videos||[]);
     var vc = document.getElementById('video-container');
-    if (videos.length) {
-      vc.innerHTML = videos.slice().reverse().map(function(v) {
-        return '<div class="reel-item"><video class="reel-video" src="'+v.url+'" controls playsinline preload="metadata"></video>' +
-          '<div class="reel-info"><div class="title">'+escapeHtml(v.title||'')+'</div><div class="desc">'+(v.date||'')+'</div></div></div>';
-      }).join('');
-    }
-    var photos = friendship.photos || [];
+    if (videos.length) vc.innerHTML = videos.slice().reverse().map(function(v){return '<div class="reel-item"><video class="reel-video" src="'+v.url+'" controls playsinline preload="metadata"></video><div class="reel-info"><div class="title">'+escapeHtml(v.title||'')+'</div><div class="desc">'+(v.date||'')+'</div></div></div>';}).join('');
+    var photos = friendship.photos||[];
     renderPhotos(photos);
   } catch(e) { console.warn(e); }
 })();
 
-// Photo carousel
-var photoIndex = 0;
-var photoData = [];
+var photoIndex = 0, photoData = [];
 function renderPhotos(photos) {
   photoData = photos;
   var track = document.getElementById('photo-track');
   var dots = document.getElementById('photo-dots');
-  if (!photos.length) {
-    track.innerHTML = '<div class="friend-carousel-slide"><div class="empty-state" style="height:100%;display:flex;align-items:center;justify-content:center;">暂无照片</div></div>';
-    dots.innerHTML = ''; return;
-  }
-  track.innerHTML = photos.map(function(p) {
-    return '<div class="friend-carousel-slide"><img src="'+p.url+'" alt="'+escapeHtml(p.title||'')+'"><div class="slide-label">'+escapeHtml(p.title||'')+'</div></div>';
-  }).join('');
-  dots.innerHTML = photos.map(function(_,i) {
-    return '<div class="carousel-dot'+(i===0?' active':'')+'" onclick="goToPhoto('+i+')"></div>';
-  }).join('');
+  if (!photos.length) { track.innerHTML='<div class="friend-carousel-slide"><div class="empty-state" style="height:100%;display:flex;align-items:center;justify-content:center;">暂无照片</div></div>'; dots.innerHTML=''; return; }
+  track.innerHTML = photos.map(function(p){return '<div class="friend-carousel-slide"><img src="'+p.url+'" alt="'+escapeHtml(p.title||'')+'"><div class="slide-label">'+escapeHtml(p.title||'')+'</div></div>';}).join('');
+  dots.innerHTML = photos.map(function(_,i){return '<div class="carousel-dot'+(i===0?' active':'')+'" onclick="goToPhoto('+i+')"></div>';}).join('');
   photoIndex = 0;
 }
-function movePhoto(dir) { goToPhoto(photoIndex+dir); }
-function goToPhoto(idx) {
-  if (!photoData.length) return;
-  if (idx<0) idx=photoData.length-1; if(idx>=photoData.length) idx=0;
-  photoIndex=idx;
-  document.getElementById('photo-track').style.transform='translateX(-'+(idx*100)+'%)';
-  document.querySelectorAll('#photo-dots .carousel-dot').forEach(function(d,i){d.classList.toggle('active',i===idx);});
-}
-setInterval(function() { if (photoData.length>1) movePhoto(1); }, 4000);
+function movePhoto(dir){goToPhoto(photoIndex+dir);}
+function goToPhoto(idx){if(!photoData.length)return;if(idx<0)idx=photoData.length-1;if(idx>=photoData.length)idx=0;photoIndex=idx;document.getElementById('photo-track').style.transform='translateX(-'+(idx*100)+'%)';document.querySelectorAll('#photo-dots .carousel-dot').forEach(function(d,i){d.classList.toggle('active',i===idx);});}
+setInterval(function(){if(photoData.length>1)movePhoto(1);},4000);
 </script>
 </body>
 </html>
