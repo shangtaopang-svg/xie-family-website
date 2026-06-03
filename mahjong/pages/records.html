@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>战绩 - 麻将朋友圈</title>
+  <title>战绩 - 宁海三中98届麻将交流群</title>
   <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
 <div class="app-wrap">
   <header class="app-header">
-    <div class="app-logo">🀄 <span>麻将朋友圈</span></div>
+    <div class="app-logo">🀄 <span>宁海三中98届麻将交流群</span></div>
     <nav class="app-nav">
       <a href="../index.html">首页</a>
       <a href="records.html" class="active">战绩</a>
@@ -152,7 +152,12 @@ function resetFilter() {
 
 // ---- Player Selector ----
 async function updatePlayerSelector() {
-  var players = await getAllPlayers();
+  var players = (window.DEFAULT_PLAYERS || []).slice();
+  // Also add any players from existing records not in the default list
+  var fromRecords = await getAllPlayers();
+  fromRecords.forEach(function(n) {
+    if (players.indexOf(n) < 0) players.push(n);
+  });
   var container = document.getElementById('player-selector');
   container.innerHTML = players.map(function(name) {
     var selected = selectedPlayers.indexOf(name) >= 0;

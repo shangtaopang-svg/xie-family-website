@@ -60,3 +60,7 @@ async function getAllPlayers() {
     return Object.keys(names).sort();
   } catch(e) { return []; }
 }
+
+
+// Default players for Ninghai No.3 High School 1998 class
+window.DEFAULT_PLAYERS = ["王建军", "邵伟军", "冯善雷", "庞尚韬", "冯悦", "张展", "张林松", "张和翔", "张文杰"];

@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🀄 麻将朋友圈</title>
+  <title>🀄 宁海三中98届麻将交流群</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="app-wrap">
   <header class="app-header">
-    <div class="app-logo">🀄 <span>麻将朋友圈</span></div>
+    <div class="app-logo">🀄 <span>宁海三中98届麻将交流群</span></div>
     <nav class="app-nav">
       <a href="index.html" class="active">首页</a>
       <a href="pages/records.html">战绩</a>
@@ -40,10 +40,20 @@
     </div>
   </div>
 
-  <!-- Weekly Ranking -->
-  <div class="card">
-    <div class="card-title">🏆 本周排行</div>
-    <div id="weekly-ranking"><div class="empty-state">暂无数据</div></div>
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;">
+    <!-- Weekly Ranking -->
+    <div class="card">
+      <div class="card-title">🏆 总排行</div>
+      <div id="weekly-ranking"><div class="empty-state">暂无数据</div></div>
+    </div>
+
+    <!-- Group Members -->
+    <div class="card">
+      <div class="card-title">👥 群成员</div>
+      <div id="member-list" style="font-size:13px;line-height:2;">
+        <div class="empty-state">加载中...</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -117,6 +127,21 @@
         return '<li class="rank-item"><span class="rank-badge ' + medal + '">' + (i + 1) + '</span><span class="rank-name">' + escapeHtml(name) + '</span><span class="rank-score ' + cls + '">' + sign + score + '</span></li>';
       }).join('') + '</ol>';
     }
+    // Render member list
+    var members = window.DEFAULT_PLAYERS || [
+      '王建军', '邵伟军', '冯善雷', '庞尚韬',
+      '冯悦', '张展', '张林松', '张和翔', '张文杰'
+    ];
+    var nicknames = {
+      '王建军': '卯兔', '邵伟军': '猩猩/屌', '冯善雷': '蛇',
+      '庞尚韬': '可与', '冯悦': '青蛙', '张和翔': '胖子', '张文杰': '德杰'
+    };
+    var memberEl = document.getElementById('member-list');
+    memberEl.innerHTML = members.map(function(name) {
+      var nick = nicknames[name] ? '（' + nicknames[name] + '）' : '';
+      return '<div>' + escapeHtml(name) + '<span style="color:var(--text-secondary);font-size:12px;margin-left:4px;">' + nick + '</span></div>';
+    }).join('');
+
   } catch(e) {
     console.warn('Dashboard load error:', e);
   }
