@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>组局 - 宁海三中98届</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .table-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 20px;
+    }
+    .mj-table-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      transition: all 0.3s;
+    }
+    .mj-table-card:hover {
+      background: var(--glass-hover);
+      box-shadow: 0 4px 20px var(--shadow);
+    }
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--divider);
+      font-size: 13px;
+    }
+    .table-date { color: var(--text-tertiary); }
+    .table-venue {
+      background: var(--accent-orange-dim);
+      color: var(--accent-orange);
+      padding: 2px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Mahjong Table Visual */
+    .table-visual {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+      max-width: 280px;
+      margin: 0 auto 12px;
+    }
+    .table-bg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 50%;
+      height: 50%;
+      background: linear-gradient(135deg, #2d8a4e, #1a6b3a);
+      border-radius: 12px;
+      border: 2px solid rgba(255,255,255,0.1);
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: rgba(255,255,255,0.15);
+      font-family: serif;
+      z-index: 1;
+    }
+    .player-seat {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      z-index: 2;
+    }
+    .player-seat .avatar-wrap {
+      width: 44px;
+      height: 44px;
+    }
+    .player-seat .pname {
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: #fff;
+    }
+    .player-seat .pscore {
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .pscore.positive { color: var(--accent-green); }
+    .pscore.negative { color: var(--accent-red); }
+    .seat-east { top: 50%; right: 0; transform: translateY(-50%); }
+    .seat-south { bottom: 0; left: 50%; transform: translateX(-50%); }
+    .seat-west { top: 50%; left: 0; transform: translateY(-50%); }
+    .seat-north { top: 0; left: 50%; transform: translateX(-50%); }
+    .seat-label {
+      font-size: 9px;
+      color: var(--text-tertiary);
+      letter-spacing: 1px;
+    }
+
+    .table-notes {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-tertiary);
+      font-style: italic;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--divider);
+    }
+
+    .empty-sessions {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-tertiary);
+    }
+    .empty-sessions .icon { font-size: 56px; margin-bottom: 12px; }
+
+    @media (max-width: 700px) {
+      .table-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+<canvas id="weather-canvas" class="weather-canvas"></canvas>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="../index.html" class="logo">
+      <div class="logo-icon">🀄</div>
+      <div class="logo-text"><h1>宁海三中98届</h1><small>麻将交流群</small></div>
+    </a>
+    <button class="nav-toggle" aria-label="菜单">☰</button>
+    <nav class="main-nav">
+      <ul>
+        <li><a href="../index.html" data-i18n="nav.home">🏠 首页</a></li>
+        <li><a href="sessions.html" class="active">🀄 组局</a></li>
+        <li><a href="records.html" data-i18n="nav.records">📊 战绩</a></li>
+        <li><a href="stats.html" data-i18n="nav.stats">📈 统计</a></li>
+        <li><a href="mahjong-culture.html" data-i18n="nav.culture">🀄 麻将文化</a></li>
+        <li><a href="posts.html" data-i18n="nav.posts">📝 心得</a></li>
+        <li><a href="admin.html" style="color:var(--accent-orange);">⚙️ 后台</a></li>
+      </ul>
+      <div class="sidebar-controls">
+        <div class="sc-row">
+          <button class="weather-btn sidebar-btn" data-weather="off">✕</button>
+          <button class="weather-btn sidebar-btn" data-weather="sunny">☀</button>
+          <button class="weather-btn sidebar-btn" data-weather="rain">🌧</button>
+          <button class="weather-btn sidebar-btn" data-weather="snow">❄</button>
+          <button class="weather-btn sidebar-btn" data-weather="meteor">☄</button>
+        </div>
+        <div class="sc-row">
+          <button class="sidebar-btn" id="music-prev">⏮</button>
+          <button class="sidebar-btn" id="music-toggle">🔈</button>
+          <button class="sidebar-btn" id="music-next">⏭</button>
+        </div>
+        <div class="sc-row">
+          <button class="sidebar-btn" id="theme-btn" onclick="toggleTheme()">☀️</button>
+          <button class="sidebar-btn lang-btn" id="lang-btn" onclick="toggleMjLang()">EN</button>
+          <button class="sidebar-btn" id="auth-btn" onclick="showLoginOverlay()">👤</button>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+<div class="content">
+  <div class="page-header">
+    <h2>🀄 牌局回顾</h2>
+    <a href="records.html" class="btn btn-primary btn-sm">+ 记录新牌局</a>
+  </div>
+
+  <div id="sessions-container">
+    <div class="empty-sessions"><div class="icon">🀄</div>加载中...</div>
+  </div>
+</div>
+<footer class="site-footer">© 2026 宁海三中98届麻将交流群</footer>
+
+<audio id="bg-music" loop src="../../music/background.mp3"></audio>
+<script src="../js/i18n-mj.js"></script>
+<script src="../js/main.js"></script>
+<script>
+(async function() {
+  try {
+    var records = await api.get('mj_records') || [];
+    var container = document.getElementById('sessions-container');
+
+    if (!records.length) {
+      container.innerHTML = '<div class="empty-sessions"><div class="icon">🀄</div><p>暂无牌局记录</p><p style="font-size:13px;margin-top:8px;"><a href="records.html" style="color:var(--accent-orange);">去记录第一场牌局 →</a></p></div>';
+      return;
+    }
+
+    // Sort by date descending
+    var sorted = records.slice().sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
+
+    container.innerHTML = '<div class="table-grid">' +
+      sorted.map(function(r) {
+        var players = r.players || [];
+        var date = r.date || '未知日期';
+        var venue = r.venue || '未指定';
+
+        // Assign positions: order matters for visual
+        // East, South, West, North -> positions on the table
+        // If 4 players, use all. If fewer, leave seats empty
+        var seats = [
+          { name: '', score: 0 },
+          { name: '', score: 0 },
+          { name: '', score: 0 },
+          { name: '', score: 0 }
+        ];
+        for (var i = 0; i < Math.min(players.length, 4); i++) {
+          seats[i].name = players[i].name;
+          seats[i].score = players[i].score;
+        }
+
+        var notes = r.notes ? '<div class="table-notes">📝 ' + escapeHtml(r.notes) + '</div>' : '';
+
+        function seatHtml(pos, cls, label) {
+          var p = seats[pos];
+          if (!p.name) return '<div class="player-seat ' + cls + '"><div class="avatar-wrap" style="width:44px;height:44px;border-radius:50%;background:var(--glass-border);"></div><div class="pname" style="opacity:0.3;">空位</div></div>';
+          var scoreCls = p.score >= 0 ? 'positive' : 'negative';
+          var sign = p.score >= 0 ? '+' : '';
+          return '<div class="player-seat ' + cls + '">' +
+            avatarHtml(p.name, 44) +
+            '<div class="pname">' + escapeHtml(p.name) + '</div>' +
+            '<div class="pscore ' + scoreCls + '">' + sign + p.score + '</div>' +
+            '<div class="seat-label">' + label + '</div>' +
+          '</div>';
+        }
+
+        return '<div class="mj-table-card">' +
+          '<div class="table-header">' +
+            '<span class="table-date">📅 ' + date + '</span>' +
+            '<span class="table-venue">📍 ' + escapeHtml(venue) + '</span>' +
+          '</div>' +
+          '<div class="table-visual">' +
+            seatHtml(0, 'seat-south', '南') +
+            seatHtml(1, 'seat-west', '西') +
+            seatHtml(2, 'seat-north', '北') +
+            seatHtml(3, 'seat-east', '东') +
+            '<div class="table-bg">🀄</div>' +
+          '</div>' +
+          notes +
+        '</div>';
+      }).join('') +
+    '</div>';
+
+  } catch(e) {
+    document.getElementById('sessions-container').innerHTML = '<div class="empty-sessions"><div class="icon">❌</div><p>加载失败，请刷新重试</p></div>';
+    console.warn(e);
+  }
+})();
+
+document.querySelector('.nav-toggle')?.addEventListener('click',function(){document.querySelector('.main-nav').classList.toggle('open');});
+</script>
+</body>
+</html>
