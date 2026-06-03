@@ -16,6 +16,9 @@
       <a href="pages/stats.html">统计</a>
       <a href="pages/posts.html">心得</a>
     </nav>
+    <div style="display:flex;gap:4px;">
+      <button class="btn btn-outline btn-sm" id="theme-btn" onclick="toggleTheme()" style="font-size:13px;padding:4px 10px;">☀️</button>
+    </div>
   </header>
 
   <!-- Stats Overview -->
@@ -146,6 +149,33 @@
     console.warn('Dashboard load error:', e);
   }
 })();
+</script>
+
+<script>
+(function() {
+  var theme = localStorage.getItem('xie_theme') || 'light';
+  var btn = document.getElementById('theme-btn');
+  if (theme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    if (btn) btn.textContent = '🌙';
+  } else {
+    if (btn) btn.textContent = '☀️';
+  }
+})();
+function toggleTheme() {
+  var html = document.documentElement;
+  var btn = document.getElementById('theme-btn');
+  var isDark = html.getAttribute('data-theme') === 'dark';
+  if (isDark) {
+    html.removeAttribute('data-theme');
+    localStorage.setItem('xie_theme', 'light');
+    if (btn) btn.textContent = '☀️';
+  } else {
+    html.setAttribute('data-theme', 'dark');
+    localStorage.setItem('xie_theme', 'dark');
+    if (btn) btn.textContent = '🌙';
+  }
+}
 </script>
 </body>
 </html>
