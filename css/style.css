@@ -3,6 +3,7 @@
    参考风格：童寂 (light gradient + glassmorphism)
    ============================================ */
 
+/* ===== VARIABLES & THEME ===== */
 :root {
   --bg-primary: #ffffff;
   --bg-secondary: #f5f5f4;
@@ -29,6 +30,7 @@
 }
 
 /* ===== Dark Mode ===== */
+/* ===== DARK MODE ===== */
 [data-theme="dark"] {
   --bg-primary: #0f0f16;
   --bg-secondary: #161622;
@@ -76,7 +78,8 @@
 [data-theme="dark"] .carousel-slide .slide-label {
   background: linear-gradient(transparent, rgba(0,0,0,0.8));
 }
-[data-theme="dark"] .site-header {
+[data-theme="dark"] /* ===== SIDEBAR HEADER ===== */
+.site-header {
   background: rgba(20,20,30,0.7);
 }
 [data-theme="dark"] .main-nav.open {
@@ -89,10 +92,12 @@
   color: var(--text-tertiary);
 }
 
+/* ===== RESET & BASE ===== */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 
 /* ===== Background Canvas (fixed behind everything, no flow space) ===== */
+/* ===== BACKGROUND CANVAS ===== */
 #bg-canvas {
   position: fixed;
   top: 0; left: 0;
@@ -117,6 +122,7 @@ body {
                     radial-gradient(ellipse at 80% 90%, rgba(34,211,238,0.03) 0%, transparent 50%);
 }
 
+/* ===== WEATHER CANVAS ===== */
 #weather-canvas {
   position: fixed;
   top: 0; left: 0;
@@ -126,6 +132,7 @@ body {
 }
 
 /* ===== Weather Controls ===== */
+/* ===== WEATHER CONTROLS ===== */
 .weather-controls {
   position: fixed;
   left: 240px;
@@ -154,6 +161,7 @@ body {
 }
 
 /* ===== Scrollbar ===== */
+/* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 3px; }
@@ -162,6 +170,7 @@ body {
 [data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
 /* ===== Common ===== */
+/* ===== LAYOUT ===== */
 .content { position: relative; z-index: 1; }
 
 /* ===== Sidebar Header ===== */
@@ -193,6 +202,7 @@ body {
   min-height: 0;
 }
 
+/* ===== LOGO ===== */
 .logo {
   display: flex;
   flex-direction: column;
@@ -233,6 +243,7 @@ body {
 }
 
 /* ===== Navigation (Vertical) ===== */
+/* ===== NAVIGATION ===== */
 .nav-toggle {
   display: none;
 }
@@ -328,6 +339,7 @@ body {
 }
 
 /* ===== Sidebar 底部控制面板 ===== */
+/* ===== SIDEBAR CONTROLS ===== */
 .sidebar-controls {
   margin-top: auto;
   padding: 12px 8px 8px;
@@ -657,6 +669,7 @@ body {
 }
 
 /* ===== Hero Section ===== */
+/* ===== HERO SECTION ===== */
 .hero-section {
   position: relative;
   z-index: 1;
@@ -722,6 +735,7 @@ body {
 }
 
 /* ===== Hero 数据统计 ===== */
+/* ===== HERO STATS ===== */
 .hero-stats {
   display: flex;
   align-items: center;
@@ -805,6 +819,7 @@ body {
   background: rgba(251,146,60,0.15);
   box-shadow: 0 0 12px rgba(251,146,60,0.2);
 }
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .hero-bg-toggle { bottom: 100px; }
   .hbg-btn { width: 28px; height: 28px; font-size: 14px; }
@@ -1073,7 +1088,8 @@ body {
 }
 
 /* Override carousel-container max-width inside media-pair */
-.media-frame .carousel-container {
+.media-frame /* ===== CAROUSEL ===== */
+.carousel-container {
   max-width: 100%;
 }
 
@@ -1858,6 +1874,7 @@ body {
 }
 
 /* ===== 视频 + 摄影 并排布局 ===== */
+/* ===== MEDIA ROW ===== */
 .media-row-section {
   position: relative;
   z-index: 1;
@@ -1918,6 +1935,7 @@ body {
   flex-direction: column;
 }
 
+/* ===== REELS / VIDEO ===== */
 .reels-wrapper {
   display: flex;
   flex-direction: column;
@@ -2731,6 +2749,7 @@ body {
 }
 
 /* ===== Lightbox ===== */
+/* ===== LIGHTBOX ===== */
 .lightbox-overlay {
   display: none;
   position: fixed;
@@ -3133,6 +3152,7 @@ body {
 .branch-tab.active { background: var(--accent-orange-dim); border-color: rgba(212,119,58,0.3); color: var(--accent-orange); }
 
 /* ===== Footer ===== */
+/* ===== FOOTER ===== */
 .site-footer {
   position: relative;
   z-index: 1;
@@ -3352,6 +3372,7 @@ body {
 .countdown-bar .cd-bar-date { color: var(--text-secondary); font-size: 11px; margin-left: 4px; letter-spacing: 0.5px; }
 
 /* ===== Full-width Quote ===== */
+/* ===== QUOTE DIVIDER ===== */
 .fullwidth-quote {
   padding: 48px 20px;
   text-align: center;
@@ -4390,6 +4411,7 @@ body {
 .btn-xs { padding:3px 12px;font-size:12px;border-radius:6px;border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--text-secondary);cursor:pointer;transition:all 0.2s;white-space:nowrap; } .btn-xs:hover { border-color:var(--accent-orange);color:var(--accent-orange); }
 
 /* Mobile back button */
+/* ===== BACK BUTTONS ===== */
 .back-page-btn {
   display: none;
   position: fixed;

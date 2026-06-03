@@ -1,13 +1,35 @@
 !data/.gitkeep
 !uploads/.gitkeep
+
+# Logs
 *.log
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Backup / generated
+*.bak
+*.wav
+*.zip
+*.tar.gz
+
+# Data directories (keep .gitkeep files)
 data/*
-dd/
-node_modules/
 uploads/*
+
+# Large media collections (never commit binary blobs)
+dd/
+摄影中的照片/
 谢总提供照片/
-族谱
+族谱/
 做宣传片资料/
 大礼堂资料/
 轮播时视频/
+
+# Node
+node_modules/
+xie-family-promo/node_modules/
+
+# Server runtime
+server.log
