@@ -171,8 +171,9 @@
           <button class="btn btn-sm" onclick="filterBranch('攒【后枫槎】')" id="filter-houfengcha" style="font-size:15px;font-weight:700;padding:6px 18px;background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.4);">🌳 后枫槎世系图</button>
           <button class="btn btn-sm" onclick="filterBranch('撰【前枫槎】')" id="filter-qianfengcha" style="font-size:15px;font-weight:700;padding:6px 18px;background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.4);">🌳 前枫槎世系图</button>
           <span style="flex:1;min-width:20px;"></span>
-          <input type="text" id="tree-search-input" placeholder="搜姓名定位世系图..." style="padding:4px 10px;border:1px solid var(--glass-border);border-radius:6px 0 0 6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;width:150px;border-right:none;" oninput="var t=this;clearTimeout(t._st);t._st=setTimeout(function(){if(t.value.trim())searchInTree()},600)">
-          <button class="btn btn-xs" onclick="doTreeSearch()" style="border-radius:0 6px 6px 0;padding:4px 10px;background:var(--accent-orange);color:#fff;border:none;font-size:12px;cursor:pointer;">定位</button>
+          <input type="text" id="tree-search-input" placeholder="搜姓名定位世系图..." style="padding:4px 10px;border:1px solid var(--glass-border);border-radius:6px 0 0 6px;background:var(--bg-card);color:var(--text-primary);font-size:13px;width:160px;border-right:none;">
+          <button class="btn btn-xs" onclick="doTreeSearch()" style="border-radius:0 6px 0 0;padding:4px 10px;background:var(--accent-orange);color:#fff;border:none;font-size:12px;font-weight:600;cursor:pointer;">定位</button>
+          <span id="tree-search-status" style="font-size:11px;color:var(--text-tertiary);padding:4px 8px;white-space:nowrap;"></span>
         </div>
         <div class="genealogy-tree-scroll" id="tree-scroll-container">
           <div id="tree-container"></div>
@@ -806,11 +807,14 @@ function applyTreeTransformSVG() {
 
 // ===== Locate person in SVG tree =====
 function doTreeSearch() {
+  document.getElementById('tree-search-status').textContent = '搜索中...';
+  document.getElementById('tree-search-status').style.color = 'var(--text-tertiary)';
   searchInTree();
 }
 
 function searchInTree() {
   var q = document.getElementById('tree-search-input').value.trim();
+  var status = document.getElementById('tree-search-status');
   if (!q) return;
   var data = getGenealogyData();
   var found = null;
@@ -826,8 +830,13 @@ function searchInTree() {
   if (found) {
     treeAutoLocate(found.id);
     document.getElementById('tree-search-input').value = found.name;
+    status.textContent = '✓ ' + found.name;
+    status.style.color = '#22c55e';
+    setTimeout(function() { status.textContent = ''; }, 3000);
   } else {
-    alert('在世系图中未找到「' + q + '」');
+    status.textContent = '未找到';
+    status.style.color = 'var(--accent-red)';
+    setTimeout(function() { status.textContent = ''; }, 2000);
   }
 }
 
@@ -841,6 +850,9 @@ function treeAutoLocate(personId, retries) {
       bg.classList.add('highlight');
       bg.style.animation = 'pulse-highlight 1.5s ease-in-out 3';
     }
+    document.getElementById('tree-search-status').textContent = '已定位';
+    document.getElementById('tree-search-status').style.color = '#22c55e';
+    setTimeout(function() { document.getElementById('tree-search-status').textContent = ''; }, 2000);
     return;
   }
   // Try expanding and retrying
