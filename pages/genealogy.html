@@ -904,6 +904,9 @@ function scrollToCardSVG(card) {
   treePanY += (containerCY - cy) / treeScale;
   applyTreeTransformSVG();
 
+  // Fallback: try scrollIntoView on the SVG element directly
+  try { card.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' }); } catch(e) {}
+
   setTimeout(function() { if (bg) bg.classList.remove('highlight'); }, 3500);
 }
 
