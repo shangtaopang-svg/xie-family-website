@@ -979,16 +979,14 @@ function exportTreePNG() {
       var rules = document.styleSheets[si].cssRules || document.styleSheets[si].rules;
       for (var ri = 0; ri < rules.length; ri++) {
         var css = rules[ri].cssText;
-        if (css.indexOf('.card-') >= 0 || css.indexOf('.tree-') >= 0 || css.indexOf('.ancestor-') >= 0) cssText += css + '
-';
+        if (css.indexOf('.card-') >= 0 || css.indexOf('.tree-') >= 0 || css.indexOf('.ancestor-') >= 0) cssText += css + '\n';
       }
     } catch(e) {}
   }
   var styles = document.querySelectorAll('style');
   for (var si2 = 0; si2 < styles.length; si2++) {
     var txt = styles[si2].textContent;
-    if (txt.indexOf('.card-') >= 0 || txt.indexOf('.tree-') >= 0) cssText += txt + '
-';
+    if (txt.indexOf('.card-') >= 0 || txt.indexOf('.tree-') >= 0) cssText += txt + '\n';
   }
   var defs = document.createElementNS('http://www.w3.org/2000/svg', 'style');
   defs.textContent = cssText;
