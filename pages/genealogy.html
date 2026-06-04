@@ -1001,7 +1001,7 @@ function exportTreeSVG() {
     var txt = styles[si2].textContent;
     if (txt.indexOf('.card-') >= 0 || txt.indexOf('.tree-') >= 0) cssText += txt + '\n';
   }
-  var defsvar defs = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+  var defs = document.createElementNS('http://www.w3.org/2000/svg', 'style');
   defs.textContent = cssText;
   clone.insertBefore(defs, clone.firstChild);
   // White background
