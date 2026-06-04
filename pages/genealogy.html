@@ -158,6 +158,7 @@
             <button class="btn btn-sm" onclick="expandAllTree()" title="展开全部">全部展开</button>
             <button class="btn btn-sm" onclick="collapseAllTree()" title="收起全部">全部收起</button>
             <button class="btn btn-sm" onclick="toggleTreeFullscreen()" title="全屏观看" style="background:var(--accent-orange-dim);border-color:var(--accent-orange);">⛶ 全屏</button>
+            <button class="btn btn-sm" onclick="exportTreePNG()" title="导出为图片" style="background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3);">📥 导出</button>
           </div>
         </div>
         <!-- Branch filter + tree search -->
@@ -947,6 +948,35 @@ function treeAutoLocate(personId) {
   }, 400);
 }
 
+function exportTreePNG() {
+  var container = document.getElementById('tree-container');
+  var svg = container.querySelector('svg');
+  if (!svg) { alert('世系图尚未加载'); return; }
+  var svgData = new XMLSerializer().serializeToString(svg);
+  var canvas = document.createElement('canvas');
+  var rect = svg.getBoundingClientRect();
+  var scale = 2;
+  canvas.width = rect.width * scale;
+  canvas.height = rect.height * scale;
+  var ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  var img = new Image();
+  var blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  img.onload = function() {
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
+    canvas.toBlob(function(b) {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = 'xie-family-tree-' + new Date().toISOString().slice(0,10) + '.png';
+      a.click();
+    });
+  };
+  img.src = url;
+}
+
 function locateInTree(personId) {
   var overlay = document.querySelector('.person-overlay');
   if (overlay) overlay.remove();
@@ -1233,6 +1263,35 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ===== Locate person in tree =====  // ===== Locate person in tree =====
+function exportTreePNG() {
+  var container = document.getElementById('tree-container');
+  var svg = container.querySelector('svg');
+  if (!svg) { alert('世系图尚未加载'); return; }
+  var svgData = new XMLSerializer().serializeToString(svg);
+  var canvas = document.createElement('canvas');
+  var rect = svg.getBoundingClientRect();
+  var scale = 2;
+  canvas.width = rect.width * scale;
+  canvas.height = rect.height * scale;
+  var ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  var img = new Image();
+  var blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  img.onload = function() {
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
+    canvas.toBlob(function(b) {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = 'xie-family-tree-' + new Date().toISOString().slice(0,10) + '.png';
+      a.click();
+    });
+  };
+  img.src = url;
+}
+
 function locateInTree(personId) {
     // Close any open detail popup
     var existingOverlay = document.querySelector('.person-overlay');

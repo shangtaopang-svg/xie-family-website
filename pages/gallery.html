@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="gallery.title">影像记忆 · 下枫槎谢氏</title>
+  <link rel="stylesheet" href="../css/style.css?v=3">
+  <style>
+    .gallery-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; }
+    .gallery-item { border-radius:10px; overflow:hidden; cursor:pointer; position:relative; background:var(--glass-bg); border:1px solid var(--glass-border); transition:all 0.3s; aspect-ratio:4/3; }
+    .gallery-item:hover { transform:scale(1.02); box-shadow:0 6px 24px var(--shadow); }
+    .gallery-item img { width:100%; height:100%; object-fit:cover; display:block; }
+    .gallery-item .caption { position:absolute; bottom:0; left:0; right:0; padding:24px 10px 8px; background:linear-gradient(transparent,rgba(0,0,0,0.6)); color:#fff; font-size:12px; opacity:0; transition:opacity 0.3s; }
+    .gallery-item:hover .caption { opacity:1; }
+    @media(max-width:600px){ .gallery-grid{grid-template-columns:repeat(2,1fr);gap:8px;} }
+  </style>
+</head>
+<body>
+<canvas id="weather-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;"></canvas>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="../index.html" class="logo"><div class="logo-icon">谢</div><div class="logo-text"><h1>下枫槎谢氏</h1><small>宁海 · 下枫槎村</small></div></a>
+    <button class="nav-toggle" data-i18n-aria="nav.toggle" aria-label="菜单">☰</button>
+    <nav class="main-nav">
+      <ul>
+        <li><a href="../index.html" data-i18n="nav.home">首页</a></li>
+        <li><a href="history.html" data-i18n="nav.history">家族历史</a></li>
+        <li><a href="genealogy.html" data-i18n="nav.genealogy">族谱查询</a></li>
+        <li><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a></li>
+        <li><a href="gallery.html" class="active" style="color:var(--accent-orange);">📷 影像</a></li>
+        <li><a href="news.html" data-i18n="nav.news">消息发布</a></li>
+        <li><a href="members.html" data-i18n="nav.members">家族成员</a></li>
+        <li><a href="activities.html" data-i18n="nav.activities">家族活动</a></li>
+        <li><a href="today.html" data-i18n="nav.today">今日下枫槎</a></li>
+        <li><a href="reports.html" data-i18n="nav.reports">新闻报道</a></li>
+        <li><a href="contact.html" data-i18n="nav.contact">联系我们</a></li>
+        <li><a href="admin.html" style="color:var(--accent-orange);">🔐 管理后台</a></li>
+      </ul>
+      <div class="sidebar-controls">
+        <div class="sc-row">
+          <button class="nav-action-btn" id="theme-toggle" onclick="toggleTheme()">☀️</button>
+          <button class="nav-action-btn lang-btn" id="lang-toggle" onclick="toggleLanguage()">EN</button>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+<div class="content">
+  <section class="hero-section" style="min-height:auto;padding:40px 24px;text-align:center;">
+    <h2 style="font-family:var(--font-title);font-size:24px;letter-spacing:2px;">📷 家族影像</h2>
+    <p style="color:var(--text-tertiary);margin-top:6px;">镜头记录 · 时光印记</p>
+  </section>
+  <section class="section-wrap" style="padding-top:0;">
+    <div class="gallery-grid" id="gallery-grid">
+      <div class="empty-state" style="grid-column:1/-1;">加载中...</div>
+    </div>
+  </section>
+</div>
+<footer class="site-footer">
+  <p>© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p>
+</footer>
+<script src="../js/i18n.js?v=9"></script>
+<script src="../js/lightbox-viewer.js?v=af0a9a"></script>
+<script src="../js/file-store.js?v=6"></script>
+<script>
+(function() {
+  var theme = localStorage.getItem('xie_theme') || 'light';
+  if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();
+function toggleTheme() {
+  var html = document.documentElement;
+  var isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? '' : 'dark');
+  localStorage.setItem('xie_theme', isDark ? 'light' : 'dark');
+}
+// Load photos from admin data or carousel directory
+(async function() {
+  var grid = document.getElementById('gallery-grid');
+  try {
+    // Try admin photos first
+    var adminPhotos = JSON.parse(localStorage.getItem('xie_admin_photos') || '[]');
+    var carouselImgs = [
+      'images/carousel/11.jpg','images/carousel/23.jpg','images/carousel/121.jpg','images/carousel/123.jpg',
+      'images/carousel/38.jpg','images/carousel/40.jpg','images/carousel/42.jpg','images/carousel/51.jpg',
+      'images/carousel/88.jpg','images/carousel/W020230307562232959074.jpg','images/carousel/W020230307562236561236.jpg',
+      'images/carousel/W020230307562239043622.png','images/carousel/W020230307562241110405.jpg'
+    ];
+    var allPhotos = [];
+    if (adminPhotos.length) {
+      // Get file store data
+      var files = await (window.getAllFiles ? getAllFiles('photo_') : Promise.resolve([]));
+      var fileMap = {};
+      (files || []).forEach(function(f) { var id = parseInt(f.name.replace('photo_','')); fileMap[id] = f.dataUrl; });
+      adminPhotos.forEach(function(p) {
+        if (p.file_url || fileMap[p.id]) allPhotos.push({ src: p.file_url || fileMap[p.id], title: p.title || '家族照片' });
+      });
+    }
+    // Fallback: carousel images
+    if (!allPhotos.length) {
+      carouselImgs.forEach(function(src) { allPhotos.push({ src: src, title: '' }); });
+    }
+    if (!allPhotos.length) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">暂无照片</div>'; return; }
+    grid.innerHTML = allPhotos.map(function(p) {
+      return '<div class="gallery-item" onclick="openPhotoLightbox(\'' + p.src + '\',\'' + (p.title||'') + '\')">' +
+        '<img src="' + p.src + '" alt="' + (p.title||'') + '" loading="lazy">' +
+        (p.title ? '<div class="caption">' + p.title + '</div>' : '') +
+      '</div>';
+    }).join('');
+  } catch(e) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">加载失败</div>'; }
+})();
+</script>
+</body>
+</html>
