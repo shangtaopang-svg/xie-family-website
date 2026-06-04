@@ -731,11 +731,13 @@ function renderTreeSVG(data) {
       // Skip stats for 前枫槎/后枫槎
     } else {
     var totalPeople = cardIds.length;
-    var alive = 0, deceased = 0;
+    var aliveNames = {}, deceasedNames = {};
     for (var i = 0; i < data.length; i++) {
-      if (data[i].is_alive === '是') alive++;
-      else if (data[i].is_alive === '否') deceased++;
+      if (data[i].is_alive === '是') aliveNames[data[i].name] = true;
+      else if (data[i].is_alive === '否') deceasedNames[data[i].name] = true;
     }
+    var alive = Object.keys(aliveNames).length;
+    var deceased = Object.keys(deceasedNames).length;
     var statsDiv = document.createElement('div');
     statsDiv.id = 'branch-stats-overlay';
     statsDiv.style.cssText = 'position:absolute;top:16px;right:16px;z-index:100;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:10px;padding:6px 14px;border:1px solid rgba(255,255,255,0.08);font-size:12px;';
@@ -1007,7 +1009,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var genderFilter = document.getElementById('search-gender').value;
     var aliveFilter = document.getElementById('search-alive').value;
 
-    var results = data.filter(function(p) {
+    var rawResults = data.filter(function(p) {
       if (q && !(p.name && p.name.toLowerCase().indexOf(q) >= 0)) return false;
       if (genFrom > 0 || genTo < 9999) {
         var g = parseInt(p.generation_num) || 0;
@@ -1018,6 +1020,17 @@ document.addEventListener('DOMContentLoaded', function() {
       if (aliveFilter && p.is_alive !== aliveFilter) return false;
       return true;
     });
+
+    // Deduplicate by name (出继/入继 same person = one record)
+    var seenNames = {};
+    var results = [];
+    for (var ri = 0; ri < rawResults.length; ri++) {
+      var rp = rawResults[ri];
+      if (!seenNames[rp.name]) {
+        seenNames[rp.name] = true;
+        results.push(rp);
+      }
+    }
 
     var container = document.getElementById('search-results');
     var summary = document.getElementById('search-summary');
