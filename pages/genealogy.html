@@ -865,17 +865,18 @@ function treeAutoLocate(personId) {
   var chain = buildAncestorChain(person, data);
   var statusEl = document.getElementById('tree-search-status');
 
-  // Create a mini data set with ONLY the chain people
+  // Create a mini data set with ONLY the chain people (deep copy to avoid modifying originals)
+  function cloneObj(obj) { var c = {}; for (var k in obj) c[k] = obj[k]; return c; }
   var chainData = [];
   // Include person, all ancestors, and their spouses (for display)
   for (var i = 0; i < chain.length; i++) {
-    chainData.push(chain[i]);
+    chainData.push(cloneObj(chain[i]));
     // Add spouse records
     if (chain[i].spouse_ids) {
       var spNames = chain[i].spouse_ids.split(',').map(function(n){return n.trim();}).filter(function(n){return n;});
       for (var s = 0; s < spNames.length; s++) {
         for (var di = 0; di < data.length; di++) {
-          if (data[di].name === spNames[s] && chainData.indexOf(data[di]) < 0) {
+          if (data[di].name === spNames[s]) { var already = false; for (var _cd = 0; _cd < chainData.length; _cd++) { if (chainData[_cd].id === data[di].id) { already = true; break; } } if (!already) {
             chainData.push(data[di]);
           }
         }
