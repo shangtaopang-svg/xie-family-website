@@ -834,22 +834,13 @@ function searchInTree() {
 function treeAutoLocate(personId) {
   var card = document.querySelector('.tree-svg-card[data-id="' + personId + '"]');
   if (card) {
-    document.querySelectorAll('.card-bg.highlight').forEach(function(c) { c.classList.remove('highlight'); });
+    scrollToCardSVG(card);
+    // Extra highlight pulse
     var bg = card.querySelector('.card-bg');
-    if (bg) bg.classList.add('highlight');
-    setTimeout(function() { card.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' }); }, 100);
-    // Zoom to a reasonable level
-    var targetScale = 1.0;
-    if (treeScale < targetScale) {
-      var steps = 5;
-      function stepZoom() {
-        if (treeScale < targetScale) {
-          treeScale = Math.min(targetScale, treeScale * 1.15);
-          applyTreeTransformSVG();
-          setTimeout(stepZoom, 50);
-        }
-      }
-      stepZoom();
+    if (bg) {
+      bg.classList.add('highlight');
+      bg.style.animation = 'pulse-highlight 1.5s ease-in-out 3';
+      setTimeout(function() { bg.style.animation = ''; }, 5000);
     }
     return;
   }
