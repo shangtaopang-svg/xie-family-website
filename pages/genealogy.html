@@ -1245,92 +1245,96 @@ document.addEventListener('DOMContentLoaded', function() {
     html += '<button class="btn btn-sm" onclick="this.closest(\'.ancestor-tree-wrap\').parentElement.parentElement.remove()">✕ 关闭</button>';
     html += '</div>';
 
-    // Identify split node index (adopted ancestor)
+    // Identify split node (the adopted person, e.g. 世常 at splitIdx)
     var splitIdx = -1;
     for (var si = 0; si < mainChain.length; si++) {
       if (bioBranches[mainChain[si].id]) { splitIdx = si; break; }
     }
     var hasSplit = (splitIdx >= 0);
     var splitId = hasSplit ? mainChain[splitIdx].id : null;
-    var mergeAt = hasSplit ? mergePoints[splitId] : -1;
 
-    // Render from oldest (index=length-1) to youngest (index=0)
+    // Find where parallel region starts above split node: the youngest ancestor
+    // where the main chain and bio chain share the SAME person
+    var parallelTopIdx = -1;
+    if (hasSplit) {
+      var bio = bioBranches[splitId];
+      var bioChain = bio.chain;
+      for (var si = splitIdx + 1; si < mainChain.length; si++) {
+        var anc = mainChain[si];
+        var found = false;
+        for (var bj = 0; bj < bioChain.length; bj++) {
+          if (bioChain[bj].name === anc.name && bioChain[bj].generation_num === anc.generation_num) {
+            found = true; break;
+          }
+        }
+        if (found) { parallelTopIdx = si; break; }
+      }
+      // parallel region is from splitIdx+1 to parallelTopIdx-1
+    }
+
+    // Render from oldest (top) to youngest (bottom)
     for (var k = mainChain.length - 1; k >= 0; k--) {
       var a = mainChain[k];
       var nextA = k > 0 ? mainChain[k-1] : null;
       var isTarget = (k === 0);
-      var isLastAbove = (k === mainChain.length - 1); // is this the topmost node?
       var mainColor = 'var(--accent-orange)';
-      var inParallel = hasSplit && (k < splitIdx && k > mergeAt);
-      var isMergePoint = hasSplit && (k === mergeAt);
-      var isSplitNode = hasSplit && (k === splitIdx);
 
-      if (isMergePoint && hasSplit) {
-        // Merge/rejoin point: show parallel branches converging
-        var bio = bioBranches[mainChain[splitIdx].id];
-        var bioChain = bio.chain;
-        html += '<div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;">';
-        // Left (adoptive)
-        html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;">';
+      // Above parallel region: single chain
+      if (hasSplit && k > parallelTopIdx && parallelTopIdx >= 0) {
+        html += '<div style="display:flex;flex-direction:column;align-items:center;">';
         html += renderNode(a, false, mainColor, '');
-        html += '<div class="ancestor-connector" style="background:' + mainColor + ';height:10px;"></div>';
-        html += '</div>';
-        // Merge symbol
-        html += '<div style="font-size:18px;color:' + mainColor + ';padding:0 4px;">⨝</div>';
-        // Right (bio)
-        html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;">';
-        html += '<div class="ancestor-card" style="border-color:rgba(34,211,238,0.3);min-width:100px;" onclick="showPersonDetail(' + a.id + ', getGenealogyData());">';
-        html += '<div class="ancestor-gen" style="color:#22d3ee;">第' + a.generation_num + '世</div>';
-        html += '<div class="ancestor-name">' + escapeHtml(a.name) + '</div>';
-        if (a.gender) html += '<div class="ancestor-meta">👤' + (a.branch && a.branch !== '—' ? ' · ' + escapeHtml(a.branch) : '') + '</div>';
-        if (a.spouse_ids) {
-          var sp = a.spouse_ids.split(',').map(function(n){return n.trim();}).filter(function(n){return n;}).join('、');
-          if (sp) html += '<div class="ancestor-meta">💑 ' + escapeHtml(sp) + '</div>';
-        }
-        html += '</div>';
-        html += '<div class="ancestor-connector" style="background:#22d3ee;height:10px;"></div>';
-        html += '</div>';
+        html += '<div class="ancestor-down-arrow" style="color:' + mainColor + ';">⬇</div>';
         html += '</div>';
         continue;
       }
 
-      if (inParallel && hasSplit) {
-        // Parallel region: show both adoptive and bio line side by side
-        var bio = bioBranches[mainChain[splitIdx].id];
+      // Top of parallel: the shared ancestor (e.g. 昌申) - show it, then fork
+      if (hasSplit && k === parallelTopIdx && parallelTopIdx >= 0) {
+        html += '<div style="display:flex;flex-direction:column;align-items:center;">';
+        html += renderNode(a, false, mainColor, '');
+        html += '</div>';
+        // Fork symbol
+        html += '<div style="display:flex;gap:8px;align-items:center;justify-content:center;padding:2px 0;">';
+        html += '<div style="flex:1;height:2px;background:' + mainColor + ';"></div>';
+        html += '<div style="font-size:10px;color:var(--text-tertiary);">过继 ↙&nbsp;&nbsp;↘ 生父</div>';
+        html += '<div style="flex:1;height:2px;background:#22d3ee;"></div>';
+        html += '</div>';
+        continue;
+      }
+
+      // Parallel region: show adoptive (left) and bio (right) side by side
+      if (hasSplit && k > splitIdx && k < parallelTopIdx) {
+        var bio = bioBranches[splitId];
         var bioChain = bio.chain;
+        // Find matching bio person at same generation
         var matchedBio = null;
-        for (var bi = 0; bi < bioChain.length; bi++) {
-          if (bioChain[bi].generation_num === a.generation_num) {
-            matchedBio = bioChain[bi]; break;
+        for (var bj = 0; bj < bioChain.length; bj++) {
+          if (bioChain[bj].generation_num === a.generation_num) {
+            matchedBio = bioChain[bj]; break;
           }
         }
-        html += '<div style="display:flex;gap:8px;align-items:center;justify-content:center;position:relative;">';
-        // Adoptive (left)
+        html += '<div style="display:flex;gap:10px;align-items:center;justify-content:center;">';
+        // Left: adoptive
         html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;">';
-        html += renderNode(a, false, mainColor, '');
-        html += '<div style="display:flex;align-items:center;gap:4px;padding:2px 0;">';
-        html += '<div class="ancestor-connector" style="background:' + mainColor + ';height:10px;width:2px;"></div>';
-        html += '<span style="font-size:9px;color:var(--text-tertiary);">继</span>';
-        html += '</div>';
+        html += renderNode(a, false, mainColor, '<div class="ancestor-meta" style="font-size:10px;color:var(--accent-orange);">继</div>');
+        html += '<div class="ancestor-down-arrow" style="color:' + mainColor + ';">⬇</div>';
         html += '</div>';
         // Separator
         html += '<div style="width:1px;height:50px;background:var(--divider);"></div>';
-        // Bio (right)
+        // Right: bio
         html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;">';
         if (matchedBio) {
           html += '<div class="ancestor-card" style="border-color:rgba(34,211,238,0.3);min-width:100px;" onclick="showPersonDetail(' + matchedBio.id + ', getGenealogyData());">';
           html += '<div class="ancestor-gen" style="color:#22d3ee;">第' + matchedBio.generation_num + '世</div>';
           html += '<div class="ancestor-name">' + escapeHtml(matchedBio.name) + '</div>';
+          html += '<div class="ancestor-meta" style="font-size:10px;color:#22d3ee;">生</div>';
           if (matchedBio.gender) html += '<div class="ancestor-meta">👤' + (matchedBio.branch && matchedBio.branch !== '—' ? ' · ' + escapeHtml(matchedBio.branch) : '') + '</div>';
           if (matchedBio.spouse_ids) {
             var sp = matchedBio.spouse_ids.split(',').map(function(n){return n.trim();}).filter(function(n){return n;}).join('、');
             if (sp) html += '<div class="ancestor-meta">💑 ' + escapeHtml(sp) + '</div>';
           }
           html += '</div>';
-          html += '<div style="display:flex;align-items:center;gap:4px;padding:2px 0;">';
-          html += '<div class="ancestor-connector" style="background:#22d3ee;height:10px;width:2px;"></div>';
-          html += '<span style="font-size:9px;color:#22d3ee;">生</span>';
-          html += '</div>';
+          html += '<div class="ancestor-down-arrow" style="color:#22d3ee;">⬇</div>';
         } else {
           html += '<div style="padding:10px;color:var(--text-tertiary);font-size:11px;">—</div>';
         }
@@ -1339,28 +1343,33 @@ document.addEventListener('DOMContentLoaded', function() {
         continue;
       }
 
-      if (isSplitNode && hasSplit) {
-        // Split node: the adopted person, show forking
-        var bio = bioBranches[a.id];
-        var bioChain = bio.chain;
+      // Split node (世常): two lines converge here
+      if (hasSplit && k === splitIdx) {
+        html += '<div style="display:flex;gap:10px;align-items:center;justify-content:center;">';
+        // Left connector from adoptive
+        html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;">';
+        html += '<div class="ancestor-connector" style="background:' + mainColor + ';height:12px;"></div>';
+        html += '</div>';
+        // Merge symbol
+        html += '<div style="font-size:14px;color:var(--accent-orange);">⨝</div>';
+        // Right connector from bio
+        html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;">';
+        html += '<div class="ancestor-connector" style="background:#22d3ee;height:12px;"></div>';
+        html += '</div>';
+        html += '</div>';
+        // 世常 node
         html += '<div style="display:flex;flex-direction:column;align-items:center;">';
         if (nextA) html += '<div class="ancestor-connector" style="background:' + mainColor + ';"></div>';
         html += renderNode(a, isTarget, mainColor, '<div class="ancestor-meta" style="color:var(--accent-orange);font-size:11px;">📌 入继</div>');
         html += '</div>';
-        // Fork downward
-        html += '<div style="display:flex;gap:8px;align-items:center;justify-content:center;">';
-        html += '<div style="flex:1;height:2px;background:' + mainColor + ';"></div>';
-        html += '<div style="font-size:9px;color:var(--text-tertiary);white-space:nowrap;">过继线 &nbsp; 生父线</div>';
-        html += '<div style="flex:1;height:2px;background:#22d3ee;"></div>';
-        html += '</div>';
         continue;
       }
 
-      // Normal single node (above merge or below split)
+      // Below split: single chain (伟中)
       html += '<div style="display:flex;flex-direction:column;align-items:center;">';
-      if (nextA && !isSplitNode) html += '<div class="ancestor-connector" style="background:' + mainColor + ';"></div>';
+      if (nextA) html += '<div class="ancestor-connector" style="background:' + mainColor + ';"></div>';
       html += renderNode(a, isTarget, mainColor, '');
-      if (!isTarget && !isSplitNode) html += '<div class="ancestor-down-arrow" style="color:' + mainColor + ';">⬇</div>';
+      if (!isTarget) html += '<div class="ancestor-down-arrow" style="color:' + mainColor + ';">⬇</div>';
       html += '</div>';
     }
 
