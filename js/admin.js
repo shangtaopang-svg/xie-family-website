@@ -20,7 +20,7 @@ const MODULES = {
       { key: 'mother_id', label: '母亲ID', type: 'number', placeholder: '填写母亲的编号' },
       { key: 'spouse_ids', label: '配偶', type: 'text', placeholder: '直接输入姓名，多个用逗号分隔' },
       { key: 'adopted', label: '是否过继', type: 'select', options: ['否', '是(嗣子)', '是(继子)', '是(养子)', '出继'] },
-      { key: 'branch', label: '支系', type: 'select', options: ['长房', '二房', '三房', '四房', '—'] },
+      { key: 'branch', label: '支系', type: 'select', options: ['—', '长房', '二房', '三房', '四房'] },
       { key: 'birth_date', label: '出生', type: 'text', placeholder: '如: 1950 或 1950-03-15' },
       { key: 'death_date', label: '逝世', type: 'text', placeholder: '在世则留空' },
       { key: 'is_alive', label: '是否在世', type: 'select', options: ['是', '否'] },
