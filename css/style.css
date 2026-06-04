@@ -2644,6 +2644,7 @@ body {
   font-size: 28px;
 }
 
+.celebrity-info { text-align: left; }
 .celebrity-info h3 { font-size: 17px; color: var(--text-primary); font-weight: 500; margin-bottom: 2px; }
 .celebrity-info .era { font-size: 12px; color: var(--accent-orange); margin-bottom: 8px; }
 .celebrity-info p { font-size: 13px; color: var(--text-tertiary); line-height: 1.8; }
