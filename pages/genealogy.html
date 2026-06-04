@@ -898,6 +898,8 @@ function scrollToCardSVG(card) {
   var cy = cardRect.top + cardRect.height/2 - containerRect.top;
   var containerCX = containerRect.width / 2;
   var containerCY = containerRect.height / 2;
+  // Debug info
+  window._treeDebug = { cardRect: {l:cardRect.left,t:cardRect.top,w:cardRect.width,h:cardRect.height}, cx:cx, cy:cy, panX:treePanX, panY:treePanY, scale:treeScale, adjX:(containerCX-cx)/treeScale, adjY:(containerCY-cy)/treeScale };
   treePanX += (containerCX - cx) / treeScale;
   treePanY += (containerCY - cy) / treeScale;
   applyTreeTransformSVG();
