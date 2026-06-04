@@ -109,7 +109,7 @@
         <span style="font-size:13px;color:var(--text-tertiary);">支系：</span>
         <div id="branch-tabs" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
         <span style="font-size:13px;color:var(--text-tertiary);margin-left:20px;">世代：</span>
-        <div id="gen-tabs" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+        <select id="gen-tabs" style="padding:6px 10px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:13px;min-width:120px;" onchange="setGenFilterDropdown(this.value)"></select>
       </div>
     </section>
 
@@ -460,11 +460,11 @@
       });
       document.getElementById('branch-tabs').innerHTML = branchHtml;
 
-      // Gen tabs
+            // Gen dropdown
       var gens = Object.keys(genSet).map(Number).sort(function(a,b){return a-b;});
-      var genHtml = '<button class="btn btn-sm gen-tab active-tab" data-gen="" onclick="setGenFilter(this,\'\')">全部</button>';
+      var genHtml = '<option value="">全部世代</option>';
       gens.forEach(function(g) {
-        genHtml += '<button class="btn btn-sm gen-tab" data-gen="' + g + '" onclick="setGenFilter(this,' + g + ')">第' + g + '世</button>';
+        genHtml += '<option value="' + g + '">第' + g + '世</option>';
       });
       document.getElementById('gen-tabs').innerHTML = genHtml;
 
@@ -483,9 +483,11 @@
     }
 
     function setGenFilter(btn, gen) {
-      document.querySelectorAll('.gen-tab').forEach(function(b) { b.classList.remove('active-tab'); });
-      btn.classList.add('active-tab');
       _genFilter = gen;
+      applyFilters(window._membersData);
+    }
+    function setGenFilterDropdown(val) {
+      _genFilter = val ? parseInt(val) : '';
       applyFilters(window._membersData);
     }
 
