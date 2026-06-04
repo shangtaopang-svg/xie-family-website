@@ -1619,7 +1619,8 @@ function highlightGeneration(genNum, data) {
     data.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0) || (a.name || '').localeCompare(b.name || ''); });
 
     // Highlight active generation if filter is active
-    var activeGen = document.getElementById('gen-table-container').getAttribute('data-active-gen');
+    var genTableContainer = document.getElementById('gen-table-container');
+    var activeGen = genTableContainer ? genTableContainer.getAttribute('data-active-gen') : null;
     if (activeGen) {
       var genNum = parseInt(activeGen);
       highlightGeneration(genNum, data);
