@@ -847,34 +847,38 @@ function treeAutoLocate(personId, retries) {
   for (var i = 0; i < data.length; i++) { if (data[i].id === personId) { person = data[i]; break; } }
   if (!person) return;
 
-  // Build the direct ancestral path: person → father → grandfather → ...
+  // Build direct ancestral path IDs
   var pathIds = {};
   var cur = person;
   pathIds[cur.id] = true;
-  while (cur && cur.father_id) {
+  for (var loop = 0; loop < 300 && cur && cur.father_id; loop++) {
     var fid = parseInt(cur.father_id);
-    for (var i = 0; i < data.length; i++) { if (data[i].id === fid) { cur = data[i]; pathIds[cur.id] = true; break; } }
-    // Also add mother
-    if (cur && cur.mother_id) {
-      var mid = parseInt(cur.mother_id);
-      for (var i = 0; i < data.length; i++) { if (data[i].id === mid) { pathIds[data[i].id] = true; break; } }
+    var found = false;
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].id === fid) { cur = data[i]; pathIds[cur.id] = true; found = true; break; }
     }
-    if (!fid) break;
+    if (!found) break;
   }
 
-  // Re-render tree: expand all, then hide non-path nodes
+  // Re-render tree fully expanded, then collapse everything
   expandAllTree();
   setTimeout(function() {
+    // First collapse ALL nodes
+    var allNodes = document.querySelectorAll('.tree-svg-node');
+    for (var i = 0; i < allNodes.length; i++) allNodes[i].classList.add('tree-svg-node-hidden');
+    // Then expand only the ancestral path
     var allCards = document.querySelectorAll('.tree-svg-card');
     for (var i = 0; i < allCards.length; i++) {
-      var id = parseInt(allCards[i].getAttribute('data-id'));
-      if (pathIds[id]) {
-        allCards[i].style.opacity = '1';
-        // Expand this node and all its ancestors
-        var node = allCards[i].closest('.tree-svg-node');
-        if (node) node.classList.remove('tree-svg-node-hidden');
-      } else {
-        allCards[i].style.opacity = '0.08';
+      var cardId = parseInt(allCards[i].getAttribute('data-id'));
+      if (pathIds[cardId]) {
+        var el = allCards[i];
+        el.style.opacity = '1';
+        // Walk up and expand all parents
+        var p = el.parentElement;
+        while (p) {
+          if (p.classList && p.classList.contains('tree-svg-node-hidden')) p.classList.remove('tree-svg-node-hidden');
+          p = p.parentElement;
+        }
       }
     }
     // Highlight the person
@@ -885,17 +889,7 @@ function treeAutoLocate(personId, retries) {
         bg.classList.add('highlight');
         bg.style.animation = 'pulse-highlight 1.5s ease-in-out 5';
       }
-      // Expand all ancestors of this card
-      var parent = card.parentElement;
-      while (parent) {
-        if (parent.classList && parent.classList.contains('tree-svg-node-hidden')) {
-          parent.classList.remove('tree-svg-node-hidden');
-        }
-        parent = parent.parentElement;
-      }
-      // Scroll into view - try multiple approaches
-      try { card.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' }); } catch(e) {}
-      // Also try SVG pan
+      try { card.scrollIntoView({ block: 'center' }); } catch(e) {}
       scrollToCardSVG(card);
     }
     document.getElementById('tree-search-status').textContent = '✓ ' + person.name;
