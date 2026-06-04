@@ -467,30 +467,16 @@ window.adminLogin = function adminLogin() {
         return;
       }
     }
-    // 2. Fallback: local check (for offline/dev)
-    if (password === 'admin2025') {
-      console.warn('⚠️ 使用本地密码验证——建议配置 ADMIN_PASSWORD 环境变量');
-      enterPanel();
-    } else {
-      showError();
-    }
+    // 2. Server returned error
+    showError();
   };
   xhr.onerror = function() {
-    // Server offline — fallback to local check
-    if (password === 'admin2025') {
-      console.warn('⚠️ 服务器离线，使用本地密码验证');
-      enterPanel();
-    } else {
-      showError();
-    }
+    document.getElementById('admin-error').textContent = '无法连接服务器，请检查网络后重试';
+    document.getElementById('admin-error').style.display = 'block';
   };
   xhr.ontimeout = function() {
-    if (password === 'admin2025') {
-      console.warn('⚠️ 服务器超时，使用本地密码验证');
-      enterPanel();
-    } else {
-      showError();
-    }
+    document.getElementById('admin-error').textContent = '服务器响应超时，请刷新后重试';
+    document.getElementById('admin-error').style.display = 'block';
   };
   xhr.send(JSON.stringify({ password: password }));
 }

@@ -3,7 +3,7 @@
    管理后台 CRUD v1
    ============================================ */
 
-const ADMIN_PASSWORD = 'admin2025';
+// Password is managed server-side via ADMIN_PASSWORD env var
 
 // ===== Data store =====
 const MODULES = {
@@ -1617,7 +1617,7 @@ function renderSettings(area) {
   html += '<div class="form-group">';
   html += '<label>管理员密码</label>';
   html += '<div style="display:flex;gap:8px;">';
-  html += '<input type="text" id="settings-password" value="' + ADMIN_PASSWORD + '" style="flex:1;">';
+  html += '<input type="text" id="settings-password" value="****** (服务器管理)" style="flex:1;" disabled>';
   html += '<button class="btn btn-accent btn-sm" onclick="saveSettings()">保存</button>';
   html += '</div>';
   html += '<p style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">修改后需同步更新 js/main.js 中的 adminLogin() 函数</p>';
@@ -1689,8 +1689,8 @@ function renderSettings(area) {
 
 function saveSettings() {
   var pwd = document.getElementById('settings-password').value;
-  if (pwd && pwd !== ADMIN_PASSWORD) {
-    alert('密码修改需要同步更新代码中的 ADMIN_PASSWORD 常量。当前功能为预览，实际修改请编辑 js/admin.js 文件。');
+  if (pwd && pwd.length > 0) {
+    alert('密码修改请联系服务器管理员配置 ADMIN_PASSWORD 环境变量。');
   } else {
     showToast('已保存');
   }
