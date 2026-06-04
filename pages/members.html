@@ -430,7 +430,7 @@
       // Stats
       var total = data.length;
       var aliveNames = {};
-      data.forEach(function(p) { if (p.is_alive === '是') aliveNames[p.name] = true; });
+      data.forEach(function(p) { if (p.is_alive === '是') aliveNames[p.name + '_' + (p.generation_num||'0')] = true; });
       var alive = Object.keys(aliveNames).length;
       var males = 0, females = 0;
       var genSet = {}, branchSet = {};
@@ -648,7 +648,7 @@ function renderMemberCharts() {
     var brSeenNames = {};
     if (root) {
       ids.push(root.id);
-      brSeenNames[root.name] = true;
+      brSeenNames[root.name + '_' + (root.generation_num||'0')] = true;
       if (root.is_alive === '是') alive++; else deceased++;
       (function collect(pid) {
         for (var i = 0; i < data.length; i++) {
@@ -657,7 +657,7 @@ function renderMemberCharts() {
           if ((f === pid || m === pid) && ids.indexOf(data[i].id) === -1) {
             ids.push(data[i].id);
             if (!brSeenNames[data[i].name]) {
-              brSeenNames[data[i].name] = true;
+              brSeenNames[data[i].name + '_' + (data[i].generation_num||'0')] = true;
               if (data[i].is_alive === '是') alive++;
               else deceased++;
             }

@@ -733,7 +733,7 @@ function renderTreeSVG(data) {
     var totalPeople = cardIds.length;
     var aliveNames = {}, deceasedNames = {};
     for (var i = 0; i < data.length; i++) {
-      if (data[i].is_alive === '是') aliveNames[data[i].name] = true;
+      if (data[i].is_alive === '是') aliveNames[data[i].name + '_' + (data[i].generation_num||'0')] = true;
       else if (data[i].is_alive === '否') deceasedNames[data[i].name] = true;
     }
     var alive = Object.keys(aliveNames).length;
@@ -1184,7 +1184,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // 2. Auto-find: look for another record with same name and adopted="出继"
       if (!bfId || isNaN(bfId) || bfId <= 0) {
         for (var di = 0; di < data.length; di++) {
-          if (data[di].name === anc.name && data[di].adopted === '出继' && data[di].father_id) {
+          if (data[di].name === anc.name && data[di].generation_num === anc.generation_num && data[di].adopted === '出继' && data[di].father_id) {
             bfId = parseInt(data[di].father_id);
             break;
           }
