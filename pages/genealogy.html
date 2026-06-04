@@ -80,7 +80,7 @@
       <!-- 谱序 -->
       <div class="glass-card" style="padding:28px;margin-bottom:30px;opacity:0;" id="genealogy-preface">
         <h3 style="font-family:'STKaiti','KaiTi',serif;color:var(--text-primary);margin-bottom:16px;font-size:20px;font-weight:700;letter-spacing:2px;text-align:center;">谱序</h3>
-        <div style="font-family:'STKaiti','KaiTi','Noto Serif SC',serif;font-size:16px;line-height:2.2;color:var(--text-primary);font-weight:500;letter-spacing:0.5px;">
+        <div style="font-family:'STKaiti','KaiTi','Noto Serif SC',serif;font-size:18px;line-height:2.3;color:var(--text-primary);font-weight:500;letter-spacing:0.5px;">
           <p style="margin-bottom:14px;text-indent:2em;font-weight:600;">盖闻木有本而枝叶茂，水有源而流派长。吾谢氏之先，出自姬姓。周宣王封元舅申伯于谢邑，因以国为氏，至今两千八百余载矣。自申伯受封，历代相承，或显于周秦，或盛于汉魏。至东晋时，文靖公谢安、康乐公谢玄叔侄，以八万北府之师破苻坚百万之众于淝水，拯社稷于将倾。一门数公，位极人臣，与琅琊王氏并称"王谢"，为天下望族之冠。此吾族千载之荣光也。</p>
           <p style="margin-bottom:14px;text-indent:2em;font-weight:600;">溯吾枫槎一脉，世系源远流长。自申伯传三十六世至东山会稽，再由会稽南下经临海下渡，至石马（下谢）小四公，乃入浙东之近祖也。由石马传十二世，至文杲公，字克源，北宋宣和年间（约公元一一二五年）任越溪司巡检，始居岩下。公为枫槎谢氏之始迁祖，至今近九百载，传三十六世，瓜瓞绵绵。二世祖攒公、撰公，析居后枫槎与前枫槎，两支并茂，各立门户。</p>
           <p style="margin-bottom:14px;text-indent:2em;font-weight:600;">初，吾族世居岩下。迨明隆庆壬申（公元一五七二年），山洪暴发，庐舍为墟。十六世祖乾公、彬公昆仲，相度地势，遂迁于双枫古槎之下，因名其地曰"下枫槎"。斩荆棘，辟草莱，筑室于兹，开基立业。自此一脉繁衍，枝分派衍，或习儒术而登科第，或事商贾而通有无，或精农桑而富仓廪。清乾隆间，合族建宗祠于村北，三进两厢，门楣高悬"谢氏宗祠"匾额，堂号"敦睦堂"，寓敦宗睦族之意。春秋二祭，少长咸集，尊祖敬宗，礼行肃穆。</p>
@@ -1146,59 +1146,6 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ===== Locate person in tree =====  // ===== Locate person in tree =====
-  function searchInTree() {
-  var q = document.getElementById('tree-search-input').value.trim();
-  if (!q) return;
-  var data = getGenealogyData();
-  var found = null;
-  for (var i = 0; i < data.length; i++) {
-    if (data[i].name === q) { found = data[i]; break; }
-  }
-  if (!found) {
-    // Partial match
-    for (var i = 0; i < data.length; i++) {
-      if (data[i].name.indexOf(q) >= 0) { found = data[i]; break; }
-    }
-  }
-  if (found) {
-    treeAutoLocate(found.id);
-    document.getElementById('tree-search-input').value = found.name;
-  } else {
-    alert('在世系图中未找到「' + q + '」');
-  }
-}
-
-function treeAutoLocate(personId) {
-  var card = document.querySelector('.tree-svg-card[data-id="' + personId + '"]');
-  if (card) {
-    document.querySelectorAll('.card-bg.highlight').forEach(function(c) { c.classList.remove('highlight'); });
-    var bg = card.querySelector('.card-bg');
-    if (bg) bg.classList.add('highlight');
-    setTimeout(function() { card.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' }); }, 100);
-    // Zoom to a reasonable level
-    var targetScale = 1.0;
-    if (treeScale < targetScale) {
-      var steps = 5;
-      function stepZoom() {
-        if (treeScale < targetScale) {
-          treeScale = Math.min(targetScale, treeScale * 1.15);
-          applyTreeTransformSVG();
-          setTimeout(stepZoom, 50);
-        }
-      }
-      stepZoom();
-    }
-    return;
-  }
-  // Tree not rendered or person not visible - expand and retry
-  expandAllTree();
-  setTimeout(function() {
-    var card2 = document.querySelector('.tree-svg-card[data-id="' + personId + '"]');
-    if (card2) treeAutoLocate(personId);
-    else locateInTree(personId);
-  }, 500);
-}
-
 function locateInTree(personId) {
     // Close any open detail popup
     var existingOverlay = document.querySelector('.person-overlay');
