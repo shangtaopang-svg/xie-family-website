@@ -493,12 +493,14 @@
 
     function applyFilters(data) {
       if (!data) return;
-      var filtered = data.filter(function(p) {
+      var filtered = [];
+      var seenFilter = {};
+      data.forEach(function(p) {
         // Living-only filter
-        if (_showAliveOnly && p.is_alive !== '是') return false;
-        if (_branchFilter && (p.branch !== _branchFilter)) return false;
+        if (_showAliveOnly && p.is_alive !== '是') return;
+        if (_branchFilter && (p.branch !== _branchFilter)) return;
         if (_genFilter !== '' && _genFilter !== null && _genFilter !== undefined) {
-          if ((p.generation_num || 0) !== _genFilter) return false;
+          if ((p.generation_num || 0) !== _genFilter) return;
         }
         if (_searchFilter) {
           var q = _searchFilter.toLowerCase();
@@ -506,9 +508,14 @@
             || (p.generation && p.generation.toLowerCase().indexOf(q) !== -1)
             || (p.branch && p.branch.toLowerCase().indexOf(q) !== -1)
             || (p.address && p.address.toLowerCase().indexOf(q) !== -1);
-          if (!match) return false;
+          if (!match) return;
         }
-        return true;
+        // Dedup by name + generation
+        var fk = p.name + '_' + (p.generation_num||'0');
+        if (!seenFilter[fk]) {
+          seenFilter[fk] = true;
+          filtered.push(p);
+        }
       });
 
       var container = document.getElementById('members-grid');
