@@ -113,6 +113,26 @@ document.addEventListener('DOMContentLoaded', function() {
     fadeEls.forEach(function(el) { el.classList.add('visible'); });
   }
 
+  // === 消息推送通知 ===
+  (function() {
+    fetch('/api/data/news').then(function(r){return r.json()}).then(function(news) {
+      if (!news || !news.length) return;
+      var lastVisit = localStorage.getItem('xie_last_visit') || 0;
+      var latestTime = new Date(news[0].date || 0).getTime();
+      if (latestTime > lastVisit && lastVisit > 0) {
+        var count = 0;
+        news.forEach(function(n) { if (new Date(n.date||0).getTime() > lastVisit) count++; });
+        var toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;bottom:80px;right:20px;z-index:9999;background:var(--accent-orange);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,0.2);cursor:pointer;animation:slideIn 0.3s ease;max-width:300px;';
+        toast.innerHTML = '<div style="font-weight:700;">📢 有新消息</div><div style="font-size:12px;margin-top:4px;">' + count + ' 条新消息发布</div>';
+        toast.onclick = function() { window.location.href = 'pages/news.html'; };
+        document.body.appendChild(toast);
+        setTimeout(function() { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.5s'; setTimeout(function(){toast.remove();},500); }, 8000);
+      }
+      localStorage.setItem('xie_last_visit', Date.now().toString());
+    }).catch(function(){});
+  })();
+
   // === 按钮水波纹 ===
   document.addEventListener('click', function(e) {
     var btn = e.target.closest('.ripple-btn');
