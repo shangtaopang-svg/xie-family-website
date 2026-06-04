@@ -1161,7 +1161,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var bioBranches = {};
     for (var ci = 0; ci < mainChain.length; ci++) {
       var anc = mainChain[ci];
-      var isAdopted = anc.adopted && anc.adopted !== '否' && anc.adopted !== '出继';
+      var isAdopted = anc.adopted && anc.adopted !== '否';
       var hasBio = anc.bio_father_id !== undefined && anc.bio_father_id !== null && anc.bio_father_id !== '' && anc.bio_father_id !== 0;
       if (isAdopted && hasBio) {
         var bfId = parseInt(anc.bio_father_id);
