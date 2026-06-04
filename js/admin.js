@@ -1138,7 +1138,7 @@ function showForm(mod, m, item) {
   // 族谱表单：分组显示，基本资料 + 高级信息
   if (mod === 'genealogy') {
     var basicKeys = ['generation_num', 'name', 'gender', 'generation', 'branch', 'father_id', 'mother_id', 'spouse_ids'];
-    var advancedKeys = ['birth_date', 'death_date', 'is_alive', 'adopted', 'address', 'biography', 'photo'];
+    var advancedKeys = ['birth_date', 'death_date', 'is_alive', 'adopted', 'bio_father_id', 'bio_mother_id', 'address', 'biography', 'photo'];
 
     html += '<div style="background:var(--accent-orange-dim);border-radius:8px;padding:10px 14px;margin-bottom:16px;">';
     html += '<div style="font-size:12px;font-weight:500;color:var(--accent-orange);margin-bottom:4px;">📋 基本资料</div>';
