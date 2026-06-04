@@ -861,65 +861,84 @@ function treeAutoLocate(personId) {
   var person = findById(personId, data);
   if (!person) return;
 
+  // Build ancestral chain
   var chain = buildAncestorChain(person, data);
   var statusEl = document.getElementById('tree-search-status');
 
-  // Build HTML lineage popup
-  var titles = ['', '父亲', '祖父', '曾祖父', '高祖父', '天祖', '烈祖', '太祖', '远祖', '鼻祖'];
-  function getTitle(k) { return k < titles.length ? titles[k] : '上' + k + '世祖'; }
-
-  var html = '<div style="background:var(--bg-primary);border:1px solid var(--glass-border);border-radius:14px;padding:24px;max-width:420px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);">';
-  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
-  html += '<h3 style="margin:0;font-family:var(--font-title);font-size:17px;">⬆ ' + escapeHtml(person.name) + ' 的直系祖先</h3>';
-  html += '<button onclick="this.parentElement.parentElement.parentElement.remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-tertiary);">✕</button>';
-  html += '</div>';
-
-  // Render from oldest to youngest
-  for (var k = chain.length - 1; k >= 0; k--) {
-    var a = chain[k];
-    var isTarget = (k === 0);
-    var title = isTarget ? '本人' : getTitle(k);
-    html += '<div style="display:flex;flex-direction:column;align-items:center;">';
-    if (k < chain.length - 1) html += '<div style="width:2px;height:12px;background:var(--accent-orange);opacity:0.3;"></div>';
-    html += '<div style="background:' + (isTarget ? 'var(--accent-orange-dim)' : 'var(--glass-bg)') + ';border:2px solid ' + (isTarget ? 'var(--accent-orange)' : 'var(--glass-border)') + ';border-radius:10px;padding:8px 14px;text-align:center;min-width:120px;cursor:pointer;" onclick="showPersonDetail(' + a.id + ', getGenealogyData())">';
-    html += '<div style="font-size:10px;color:var(--accent-orange);font-weight:600;">第' + a.generation_num + '世 · ' + title + '</div>';
-    html += '<div style="font-size:15px;font-weight:600;color:var(--text-primary);margin:2px 0;">' + (isTarget ? '👉 ' : '') + escapeHtml(a.name) + '</div>';
-    if (a.spouse_ids) {
-      var sp = a.spouse_ids.split(',').map(function(n){return n.trim();}).filter(function(n){return n;}).join('、');
-      if (sp) html += '<div style="font-size:11px;color:var(--text-tertiary);">配 ' + escapeHtml(sp) + '</div>';
+  // Create a mini data set with ONLY the chain people
+  var chainData = [];
+  // Include person, all ancestors, and their spouses (for display)
+  for (var i = 0; i < chain.length; i++) {
+    chainData.push(chain[i]);
+    // Add spouse records
+    if (chain[i].spouse_ids) {
+      var spNames = chain[i].spouse_ids.split(',').map(function(n){return n.trim();}).filter(function(n){return n;});
+      for (var s = 0; s < spNames.length; s++) {
+        for (var di = 0; di < data.length; di++) {
+          if (data[di].name === spNames[s] && chainData.indexOf(data[di]) < 0) {
+            chainData.push(data[di]);
+          }
+        }
+      }
     }
-    html += '</div>';
-    if (!isTarget) html += '<div style="font-size:12px;color:var(--accent-orange);opacity:0.4;padding:2px 0;">⬇</div>';
-    html += '</div>';
   }
 
-  html += '<div style="text-align:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--divider);">';
-  html += '<button class="btn btn-sm" onclick="this.parentElement.parentElement.parentElement.remove()" style="font-size:12px;">关闭</button>';
-  html += '</div></div>';
+  // Add a parent-child relationship: link each ancestor to the next as father
+  for (var ci = 0; ci < chain.length - 1; ci++) {
+    // chain[ci] is older, chain[ci+1] is younger
+    // Set chain[ci+1].father_id = chain[ci].id so the tree connects them
+    // But we need to preserve the original father_id for data integrity
+    // Instead, manipulate the data copy
+    var younger = chainData.indexOf(chain[ci+1]);
+    var older = chainData.indexOf(chain[ci]);
+    if (younger >= 0 && older >= 0) {
+      chainData[younger].father_id = chain[ci].id;
+    }
+  }
+  // Root has no father
+  var root = chainData[chain.length - 1];
+  if (root) root.father_id = null;
 
-  // Show as a fixed overlay
-  var overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);';
-  overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
-  overlay.innerHTML = html;
-  document.body.appendChild(overlay);
+  // Re-render tree with only this lineage data
+  treePanX = 0;
+  treePanY = 0;
+  treeScale = 1;
+  renderTreeSVG(chainData);
 
-  // Also try to highlight in SVG tree (non-blocking)
-  expandAllTree();
+  // Highlight the person
   setTimeout(function() {
     var card = document.querySelector('.tree-svg-card[data-id="' + personId + '"]');
     if (card) {
       var bg = card.querySelector('.card-bg');
       if (bg) {
         bg.classList.add('highlight');
-        bg.style.animation = 'pulse-highlight 2s ease-in-out 3';
+        bg.style.animation = 'pulse-highlight 2s ease-in-out 5';
       }
-      try { card.scrollIntoView({ block: 'center' }); } catch(e) {}
-      scrollToCardSVG(card);
     }
-  }, 300);
+    // Zoom to fit
+    treeZoomReset();
+  }, 100);
 
-  if (statusEl) { statusEl.textContent = '✓ ' + person.name; statusEl.style.color = '#22c55e'; setTimeout(function() { statusEl.textContent = ''; }, 3000); }
+  // Add a "恢复全部世系" button
+  var existing = document.getElementById('lineage-restore-btn');
+  if (!existing) {
+    var btn = document.createElement('button');
+    btn.id = 'lineage-restore-btn';
+    btn.className = 'btn btn-xs';
+    btn.textContent = '↩ 恢复全部世系';
+    btn.style.cssText = 'position:absolute;top:10px;right:10px;z-index:50;background:var(--accent-orange);color:#fff;border:none;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;';
+    btn.onclick = function() {
+      treePanX = 0; treePanY = 0; treeScale = 1;
+      renderTreeSVG(getGenealogyData());
+      this.remove();
+    };
+    var treeSection = document.getElementById('genealogy-tree-section');
+    if (treeSection) treeSection.style.position = 'relative';
+    var treeScroll = document.getElementById('tree-scroll-container');
+    if (treeScroll) treeScroll.appendChild(btn);
+  }
+
+  if (statusEl) { statusEl.textContent = '✓ ' + person.name + ' 的直系链条'; statusEl.style.color = '#22c55e'; setTimeout(function() { statusEl.textContent = ''; }, 4000); }
 }
 
 function locateInTree(personId) {
