@@ -1678,7 +1678,6 @@ function locateInTree(personId) {
   function renderGenealogyPageSVG() {
     var data = getGenealogyData();
     if (!data || data.length === 0) {
-      document.getElementById('genealogy-preface').style.opacity = '1';
       document.getElementById('genealogy-generation-chart').style.opacity = '1';
       document.getElementById('genealogy-stats').style.opacity = '1';
       document.getElementById('genealogy-search-section').style.opacity = '1';
@@ -1740,7 +1739,6 @@ function locateInTree(personId) {
     renderTreeSVG(data);
 
     // Fade in
-    document.getElementById('genealogy-preface').style.opacity = '1';
     document.getElementById('genealogy-generation-chart').style.opacity = '1';
     document.getElementById('genealogy-stats').style.opacity = '1';
     document.getElementById('genealogy-search-section').style.opacity = '1';
