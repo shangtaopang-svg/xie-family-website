@@ -879,6 +879,7 @@ function treeAutoLocate(personId) {
           if (data[di].name === spNames[s]) { var already = false; for (var _cd = 0; _cd < chainData.length; _cd++) { if (chainData[_cd].id === data[di].id) { already = true; break; } } if (!already) {
             chainData.push(data[di]);
           }
+          }
         }
       }
     }
