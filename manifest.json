@@ -1,0 +1,17 @@
+{
+  "name": "下枫槎谢氏 · 数字宗祠",
+  "short_name": "谢氏宗祠",
+  "description": "宁海下枫槎村谢氏家族数字宗祠 — 族谱查询 · 家族历史 · 名人事迹",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0f14",
+  "theme_color": "#fb923c",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "/favicon.ico", "sizes": "48x48", "type": "image/x-icon" }
+  ],
+  "categories": ["family", "culture", "genealogy"],
+  "lang": "zh-CN",
+  "dir": "ltr"
+}

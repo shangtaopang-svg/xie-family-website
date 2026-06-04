@@ -11,7 +11,9 @@
 .site-header{position:fixed;top:0;left:0;right:0;z-index:100}
 #bg-canvas{display:none}
 </style>
-<script src="../js/i18n.js"></script>
+<script defer src="../js/i18n.js"></script>
+  <link rel="manifest" href="../manifest.json">
+  <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
 </head>
 <body>
 <div class="content">
@@ -220,7 +222,7 @@
 <script>
 function fc(cat){document.querySelectorAll('.celebrity-filters .btn').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-filter')===cat)});document.querySelectorAll('.celebrity-card').forEach(function(e){e.style.display=cat==='all'||e.getAttribute('data-category')===cat?'flex':'none'})}
 </script>
-<script src="../js/main.js?v=8"></script>
+<script defer src="../js/main.js?v=8"></script>
 <audio id="bg-music" loop src="../music/background.mp3"></audio>
 </body>
 </html>

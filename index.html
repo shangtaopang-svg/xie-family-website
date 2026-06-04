@@ -11,8 +11,10 @@
 
   <link rel="stylesheet" href="css/style.css?v=3">
   <style>.logo-text small { display: none; }</style>
-  <script src="js/i18n.js?v=9"></script>
-  <script src="js/file-store.js?v=6"></script>
+  <script defer src="js/i18n.js?v=9"></script>
+  <script defer src="js/file-store.js?v=6"></script>
+  <link rel="manifest" href="/manifest.json">
+  <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");</script>
 </head>
 <body>
 <canvas id="weather-canvas"></canvas>
@@ -109,8 +111,8 @@
       <button class="hbg-btn" data-style="photo" title="照片背景">🖼️</button>
       <button class="hbg-btn" data-style="map" title="迁徙地图">🗺️</button>
     </div>
-<script src="js/map-migration.js?v=21"></script>
-    <script src="js/hero-effects.js?v=d8c6ea"></script>
+<script defer src="js/map-migration.js?v=21"></script>
+    <script defer src="js/hero-effects.js?v=d8c6ea"></script>
 
     <!-- ===== Hero 数据统计 ===== -->
     <div class="hero-stats">
@@ -139,7 +141,7 @@
         <span class="hero-stat-label">新闻</span>
       </div>
     </div>
-    <script src="js/hero-stats.js?v=ec37b4"></script>
+    <script defer src="js/hero-stats.js?v=ec37b4"></script>
 
     <div class="hero-marquee">
       <div class="hm-track">
@@ -303,18 +305,18 @@
 
   <audio id="bg-music" loop src="music/background.mp3"></audio>
 
-  <script src="js/main.js?v=8"></script>
+  <script defer src="js/main.js?v=8"></script>
 
   <!-- ===== 天气特效粒子引擎 ===== -->
 
   <!-- ===== 全屏查看 ===== -->
-  <script src="js/lightbox-viewer.js?v=af0a9a"></script>
+  <script defer src="js/lightbox-viewer.js?v=af0a9a"></script>
 
   <!-- ===== 动态加载 ===== -->
-  <script src="js/dynamic-content.js?v=3d3790"></script>
+  <script defer src="js/dynamic-content.js?v=3d3790"></script>
 
 
 
 
-  <script src="js/weather-particle.js?v=b977c9"></script>
+  <script defer src="js/weather-particle.js?v=b977c9"></script>
 </body>

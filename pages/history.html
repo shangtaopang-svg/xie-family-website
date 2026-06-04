@@ -8,8 +8,8 @@
 
   
   <link rel="stylesheet" href="../css/style.css?v=3">
-  <script src="../js/i18n.js"></script>
-  <script src="../js/supabase.js?v=3"></script>
+  <script defer src="../js/i18n.js"></script>
+  <script defer src="../js/supabase.js?v=3"></script>
   <style>
     .zoom-in-title {
       animation: zoomIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -26,6 +26,8 @@
       100% { opacity: 1; transform: translateY(0); }
     }
   </style>
+  <link rel="manifest" href="../manifest.json">
+  <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
 </head>
 <body>
 
@@ -748,7 +750,7 @@
   
   <a href="javascript:history.back()" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
-  <script src="../js/main.js?v=8"></script>
+  <script defer src="../js/main.js?v=8"></script>
   <script>
     // bg-canvas removed
   </script>
