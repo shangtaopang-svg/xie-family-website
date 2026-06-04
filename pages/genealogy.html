@@ -171,7 +171,7 @@
             <button class="btn btn-sm" onclick="toggleTreeFullscreen()" title="全屏观看" style="background:var(--accent-orange-dim);border-color:var(--accent-orange);">⛶ 全屏</button>
           </div>
         </div>
-        <!-- Branch filter -->
+        <!-- Branch filter + tree search -->
         <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
           <span style="font-size:12px;color:var(--text-tertiary);margin-right:4px;">筛选：</span>
           <button class="btn btn-xs" onclick="filterBranch('all')" style="background:var(--accent-orange);color:#fff;border:none;" id="filter-all">全部世系</button>
@@ -181,6 +181,8 @@
           <span style="margin:0 4px;color:var(--text-muted);">|</span>
           <button class="btn btn-sm" onclick="filterBranch('攒【后枫槎】')" id="filter-houfengcha" style="font-size:15px;font-weight:700;padding:6px 18px;background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.4);">🌳 后枫槎世系图</button>
           <button class="btn btn-sm" onclick="filterBranch('撰【前枫槎】')" id="filter-qianfengcha" style="font-size:15px;font-weight:700;padding:6px 18px;background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.4);">🌳 前枫槎世系图</button>
+          <span style="flex:1;min-width:20px;"></span>
+          <input type="text" id="tree-search-input" placeholder="🔍 在世系图中搜姓名..." style="padding:4px 10px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;width:180px;" onkeydown="if(event.key==='Enter')searchInTree()">
         </div>
         <div class="genealogy-tree-scroll" id="tree-scroll-container">
           <div id="tree-container"></div>
@@ -813,6 +815,59 @@ function applyTreeTransformSVG() {
 }
 
 // ===== Locate person in SVG tree =====
+function searchInTree() {
+  var q = document.getElementById('tree-search-input').value.trim();
+  if (!q) return;
+  var data = getGenealogyData();
+  var found = null;
+  for (var i = 0; i < data.length; i++) {
+    if (data[i].name === q) { found = data[i]; break; }
+  }
+  if (!found) {
+    // Partial match
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].name.indexOf(q) >= 0) { found = data[i]; break; }
+    }
+  }
+  if (found) {
+    treeAutoLocate(found.id);
+    document.getElementById('tree-search-input').value = found.name;
+  } else {
+    alert('在世系图中未找到「' + q + '」');
+  }
+}
+
+function treeAutoLocate(personId) {
+  var card = document.querySelector('.tree-svg-card[data-id="' + personId + '"]');
+  if (card) {
+    document.querySelectorAll('.card-bg.highlight').forEach(function(c) { c.classList.remove('highlight'); });
+    var bg = card.querySelector('.card-bg');
+    if (bg) bg.classList.add('highlight');
+    setTimeout(function() { card.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' }); }, 100);
+    // Zoom to a reasonable level
+    var targetScale = 1.0;
+    if (treeScale < targetScale) {
+      var steps = 5;
+      function stepZoom() {
+        if (treeScale < targetScale) {
+          treeScale = Math.min(targetScale, treeScale * 1.15);
+          applyTreeTransformSVG();
+          setTimeout(stepZoom, 50);
+        }
+      }
+      stepZoom();
+    }
+    return;
+  }
+  // Tree not rendered or person not visible - expand and retry
+  expandAllTree();
+  setTimeout(function() {
+    var card2 = document.querySelector('.tree-svg-card[data-id="' + personId + '"]');
+    if (card2) treeAutoLocate(personId);
+    else locateInTree(personId);
+  }, 500);
+}
+
 function locateInTree(personId) {
   var overlay = document.querySelector('.person-overlay');
   if (overlay) overlay.remove();
@@ -1091,7 +1146,60 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ===== Locate person in tree =====  // ===== Locate person in tree =====
-  function locateInTree(personId) {
+  function searchInTree() {
+  var q = document.getElementById('tree-search-input').value.trim();
+  if (!q) return;
+  var data = getGenealogyData();
+  var found = null;
+  for (var i = 0; i < data.length; i++) {
+    if (data[i].name === q) { found = data[i]; break; }
+  }
+  if (!found) {
+    // Partial match
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].name.indexOf(q) >= 0) { found = data[i]; break; }
+    }
+  }
+  if (found) {
+    treeAutoLocate(found.id);
+    document.getElementById('tree-search-input').value = found.name;
+  } else {
+    alert('在世系图中未找到「' + q + '」');
+  }
+}
+
+function treeAutoLocate(personId) {
+  var card = document.querySelector('.tree-svg-card[data-id="' + personId + '"]');
+  if (card) {
+    document.querySelectorAll('.card-bg.highlight').forEach(function(c) { c.classList.remove('highlight'); });
+    var bg = card.querySelector('.card-bg');
+    if (bg) bg.classList.add('highlight');
+    setTimeout(function() { card.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' }); }, 100);
+    // Zoom to a reasonable level
+    var targetScale = 1.0;
+    if (treeScale < targetScale) {
+      var steps = 5;
+      function stepZoom() {
+        if (treeScale < targetScale) {
+          treeScale = Math.min(targetScale, treeScale * 1.15);
+          applyTreeTransformSVG();
+          setTimeout(stepZoom, 50);
+        }
+      }
+      stepZoom();
+    }
+    return;
+  }
+  // Tree not rendered or person not visible - expand and retry
+  expandAllTree();
+  setTimeout(function() {
+    var card2 = document.querySelector('.tree-svg-card[data-id="' + personId + '"]');
+    if (card2) treeAutoLocate(personId);
+    else locateInTree(personId);
+  }, 500);
+}
+
+function locateInTree(personId) {
     // Close any open detail popup
     var existingOverlay = document.querySelector('.person-overlay');
     if (existingOverlay) existingOverlay.remove();
