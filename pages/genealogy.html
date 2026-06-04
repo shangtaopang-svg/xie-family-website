@@ -171,7 +171,7 @@
           <button class="btn btn-sm" onclick="filterBranch('攒【后枫槎】')" id="filter-houfengcha" style="font-size:15px;font-weight:700;padding:6px 18px;background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.4);">🌳 后枫槎世系图</button>
           <button class="btn btn-sm" onclick="filterBranch('撰【前枫槎】')" id="filter-qianfengcha" style="font-size:15px;font-weight:700;padding:6px 18px;background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.4);">🌳 前枫槎世系图</button>
           <span style="flex:1;min-width:20px;"></span>
-          <input type="text" id="tree-search-input" placeholder="搜姓名定位世系图..." style="padding:4px 10px;border:1px solid var(--glass-border);border-radius:6px 0 0 6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;width:150px;border-right:none;">
+          <input type="text" id="tree-search-input" placeholder="搜姓名定位世系图..." style="padding:4px 10px;border:1px solid var(--glass-border);border-radius:6px 0 0 6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;width:150px;border-right:none;" oninput="var t=this;clearTimeout(t._st);t._st=setTimeout(function(){if(t.value.trim())searchInTree()},600)">
           <button class="btn btn-xs" onclick="doTreeSearch()" style="border-radius:0 6px 6px 0;padding:4px 10px;background:var(--accent-orange);color:#fff;border:none;font-size:12px;cursor:pointer;">定位</button>
         </div>
         <div class="genealogy-tree-scroll" id="tree-scroll-container">
@@ -831,26 +831,25 @@ function searchInTree() {
   }
 }
 
-function treeAutoLocate(personId) {
+function treeAutoLocate(personId, retries) {
+  retries = retries || 0;
   var card = document.querySelector('.tree-svg-card[data-id="' + personId + '"]');
   if (card) {
     scrollToCardSVG(card);
-    // Extra highlight pulse
     var bg = card.querySelector('.card-bg');
     if (bg) {
       bg.classList.add('highlight');
       bg.style.animation = 'pulse-highlight 1.5s ease-in-out 3';
-      setTimeout(function() { bg.style.animation = ''; }, 5000);
     }
     return;
   }
-  // Tree not rendered or person not visible - expand and retry
+  // Try expanding and retrying
   expandAllTree();
-  setTimeout(function() {
-    var card2 = document.querySelector('.tree-svg-card[data-id="' + personId + '"]');
-    if (card2) treeAutoLocate(personId);
-    else locateInTree(personId);
-  }, 500);
+  if (retries < 3) {
+    setTimeout(function() {
+      treeAutoLocate(personId, retries + 1);
+    }, 800);
+  }
 }
 
 function locateInTree(personId) {
