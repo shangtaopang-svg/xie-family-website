@@ -732,11 +732,14 @@ function renderTreeSVG(data) {
       // Skip stats for 前枫槎/后枫槎
     } else {
     var totalPeople = cardIds.length;
-    var alive = 0, deceased = 0;
+    var aliveNames = {}, deceasedNames = {};
     for (var i = 0; i < data.length; i++) {
-      if (data[i].is_alive === '是') alive++;
-      else if (data[i].is_alive === '否') deceased++;
+      var pn = data[i].name;
+      if (data[i].is_alive === '是') aliveNames[pn] = true;
+      else if (data[i].is_alive === '否') deceasedNames[pn] = true;
     }
+    var alive = Object.keys(aliveNames).length;
+    var deceased = Object.keys(deceasedNames).length;
     var statsDiv = document.createElement('div');
     statsDiv.id = 'branch-stats-overlay';
     statsDiv.style.cssText = 'position:absolute;top:16px;right:16px;z-index:100;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:10px;padding:6px 14px;border:1px solid rgba(255,255,255,0.08);font-size:12px;';
@@ -1506,6 +1509,35 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
+function filterByGeneration(genNum, data) {
+  // Show only people of this generation in the table
+  var container = document.getElementById('gen-table-container');
+  container.setAttribute('data-active-gen', genNum);
+  highlightGeneration(genNum, data);
+  // Scroll to table
+  container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function highlightGeneration(genNum, data) {
+  var rows = document.querySelectorAll('#gen-table-body tr');
+  var seen = {};
+  rows.forEach(function(row) {
+    var name = row.getAttribute('data-name');
+    var gen = parseInt(row.getAttribute('data-gen'));
+    if (gen === genNum) {
+      if (seen[name]) {
+        row.style.display = 'none'; // hide duplicate
+      } else {
+        seen[name] = true;
+        row.style.display = '';
+        row.style.background = 'rgba(34,197,94,0.08)';
+      }
+    } else {
+      row.style.display = 'none';
+    }
+  });
+}
+
     // Stats
     var total = data.length;
     var gens = {};
@@ -1532,8 +1564,51 @@ document.addEventListener('DOMContentLoaded', function() {
     statsHtml += '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + females + '</div><div style="font-size:11px;color:var(--text-tertiary);">女</div></div>';
     document.getElementById('stats-container').innerHTML = statsHtml;
 
+    // Populate generation filter buttons
+    var genCharsDiv = document.getElementById('generation-chars');
+    if (genCharsDiv) {
+      genCharsDiv.innerHTML = '';
+      var allGens = {};
+      // Use unique names within each generation
+      data.forEach(function(p) {
+        if (!allGens[p.generation_num]) allGens[p.generation_num] = { seen: {}, count: 0, alive: 0 };
+        var gn = allGens[p.generation_num];
+        // Dedup by name within generation
+        if (!gn.seen[p.name]) {
+          gn.seen[p.name] = true;
+          gn.count++;
+          if (p.is_alive === '是') gn.alive++;
+        }
+      });
+      var sortedGens = Object.keys(allGens).map(Number).sort(function(a,b){return a-b;});
+      sortedGens.forEach(function(g) {
+        var info = allGens[g];
+        var btn = document.createElement('button');
+        btn.className = 'btn btn-xs';
+        btn.style.cssText = 'font-size:12px;padding:4px 12px;border-radius:6px;border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--text-secondary);cursor:pointer;transition:all 0.2s;';
+        btn.textContent = '第' + g + '世 (' + info.count + '人';
+        if (info.alive > 0) {
+          btn.textContent += ' · 🌱' + info.alive + '在世';
+          btn.style.borderColor = 'rgba(34,197,94,0.3)';
+          btn.style.color = '#22c55e';
+        }
+        btn.textContent += ')';
+        btn.onclick = function() {
+          filterByGeneration(g, data);
+        };
+        genCharsDiv.appendChild(btn);
+      });
+    }
+
     // Table
     data.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0) || (a.name || '').localeCompare(b.name || ''); });
+
+    // Highlight active generation if filter is active
+    var activeGen = document.getElementById('gen-table-container').getAttribute('data-active-gen');
+    if (activeGen) {
+      var genNum = parseInt(activeGen);
+      highlightGeneration(genNum, data);
+    }
     var tbody = document.getElementById('gen-table-body');
     var tableHtml = '';
     data.forEach(function(p) {
@@ -1542,7 +1617,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return n.trim();
       }).filter(function(n) { return n; }).join('、') : '—';
       if (!spouseNames) spouseNames = '—';
-      tableHtml += '<tr onclick="showPersonDetail(' + p.id + ', getGenealogyData())" style="cursor:pointer;">';
+      tableHtml += '<tr onclick="showPersonDetail(' + p.id + ', getGenealogyData())" style="cursor:pointer;" data-gen="' + (p.generation_num || '') + '" data-name="' + escapeHtml(p.name) + '">';
       tableHtml += '<td class="gen-label">第' + (p.generation_num || '?') + '世</td>';
       tableHtml += '<td>' + escapeHtml(p.name) + '</td>';
       tableHtml += '<td>' + (p.gender || '—') + '</td>';
