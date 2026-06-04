@@ -1924,8 +1924,8 @@ function locateInTree(personId) {
     // Tree
     renderTreeSVG(data);
 
-    // Fade in (BEFORE star map, so errors there won't hide the page)
-    document.getElementById('genealogy-starmap').style.opacity = '1';
+    // Fade in (starmap only when server data is loaded)
+    if (data.length > 20) document.getElementById('genealogy-starmap').style.opacity = '1';
     document.getElementById('genealogy-generation-chart').style.opacity = '1';
     document.getElementById('genealogy-stats').style.opacity = '1';
     document.getElementById('genealogy-search-section').style.opacity = '1';
@@ -1933,8 +1933,10 @@ function locateInTree(personId) {
     document.getElementById('genealogy-tree-section').style.opacity = '1';
     document.getElementById('genealogy-table-section').style.opacity = '1';
 
-    // Star map (isolated from main rendering)
-    try { renderGenerationStarMap(); } catch(e) { console.warn('Star map error:', e); }
+    // Star map (skip for small seed data, render after server data loads)
+    if (data.length > 20) {
+      try { renderGenerationStarMap(); } catch(e) { console.warn('Star map error:', e); }
+    }
   }
 
   // ===== 字辈星图 =====
