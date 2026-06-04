@@ -110,16 +110,21 @@ body {
   font-family: var(--font-body);
   color: var(--text-primary);
   background: var(--bg-primary);
-  background-image: radial-gradient(ellipse at 20% 10%, rgba(212,119,58,0.04) 0%, transparent 50%),
-                    radial-gradient(ellipse at 80% 90%, rgba(58,157,171,0.04) 0%, transparent 50%),
-                    radial-gradient(ellipse at 50% 50%, rgba(245,240,235,0.5) 0%, transparent 100%);
+  background-color: #e8f4ed;
+  background-image:
+    linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
   line-height: 1.7;
   min-height: 100vh;
 }
 
 [data-theme="dark"] body {
-  background-image: radial-gradient(ellipse at 20% 10%, rgba(251,146,60,0.04) 0%, transparent 50%),
-                    radial-gradient(ellipse at 80% 90%, rgba(34,211,238,0.03) 0%, transparent 50%);
+  background-color: #0a1628;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
 }
 
 /* ===== WEATHER CANVAS ===== */
