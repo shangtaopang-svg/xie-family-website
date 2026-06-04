@@ -658,8 +658,9 @@ function renderMemberCharts() {
           var m = parseInt(data[i].mother_id);
           if ((f === pid || m === pid) && ids.indexOf(data[i].id) === -1) {
             ids.push(data[i].id);
-            if (!brSeenNames[data[i].name]) {
-              brSeenNames[data[i].name + '_' + (data[i].generation_num||'0')] = true;
+            var brKey = data[i].name + '_' + (data[i].generation_num||'0');
+            if (!brSeenNames[brKey]) {
+              brSeenNames[brKey] = true;
               if (data[i].is_alive === '是') alive++;
               else deceased++;
             }
