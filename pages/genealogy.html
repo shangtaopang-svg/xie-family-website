@@ -315,7 +315,6 @@
       var ver = localStorage.getItem('xie_admin_genealogy_ver');
       if (stored && ver === '4') {
         var d = JSON.parse(stored);
-        d.forEach(function(p) { p.is_alive = '否'; });
         return d;
       }
       // Fresh seed data or upgrade old cache
@@ -339,7 +338,6 @@
             parsed.push(fullSeed[i]);
           }
         }
-        parsed.forEach(function(p) { p.is_alive = '否'; });
         localStorage.setItem('xie_admin_genealogy', JSON.stringify(parsed));
         localStorage.setItem('xie_admin_genealogy_ver', '4');
         return parsed;
@@ -467,7 +465,8 @@ function buildCardSvg(person, data, hasChildren, descendantCount, childCount) {
   }
   var nameText = escapeHtml(person.name || '未知');
   if (person.adopted && person.adopted !== '否') {
-    card += '<text class="card-adopted-badge" x="-' + (CARD_W/2-12) + '" y="-' + (CARD_H/2+4) + '" text-anchor="middle">嗣</text>';
+    var label = person.adopted === '出继' ? '出' : '嗣';
+    card += '<text class="card-adopted-badge" x="-' + (CARD_W/2-12) + '" y="-' + (CARD_H/2+4) + '" text-anchor="middle">' + label + '</text>';
   }
   card += '<text class="card-name" x="0" y="0">' + nameText + '</text>';
   var metaParts = [];
@@ -1049,7 +1048,7 @@ document.addEventListener('DOMContentLoaded', function() {
     results.forEach(function(p) {
       html += '<tr style="border-bottom:1px solid var(--divider);transition:background 0.15s;" onmouseover="this.style.background=\'var(--accent-orange-dim)\" onmouseout="this.style.background=\'transparent\'">';
       html += '<td style="padding:6px 8px;color:var(--text-secondary);">' + (p.generation_num || '—') + '</td>';
-      html += '<td style="padding:6px 8px;"><span style="cursor:pointer;font-weight:500;color:var(--text-primary);" onclick="showPersonDetail(' + p.id + ', getGenealogyData());">' + escapeHtml(p.name) + '</span></td>';
+      html += '<td style="padding:6px 8px;"><span style="cursor:pointer;font-weight:500;color:var(--text-primary);" onclick="showPersonDetail(' + p.id + ', getGenealogyData());">' + escapeHtml(p.name) + '</span>' + (p.adopted && p.adopted !== '否' ? (p.adopted === '出继' ? '<span style="font-size:10px;color:#22c55e;font-weight:600;margin-left:3px;">(出继)</span>' : '<span style="font-size:10px;color:var(--accent-orange);font-weight:600;margin-left:3px;">(入继)</span>') : '') + '</td>';
       html += '<td style="padding:6px 8px;text-align:center;">' + (p.gender === '男' ? '👤' : '👩') + '</td>';
       html += '<td style="padding:6px 8px;color:var(--text-secondary);font-size:12px;">' + (p.branch && p.branch !== '—' ? escapeHtml(p.branch) : '—') + '</td>';
       html += '<td style="padding:6px 8px;text-align:center;"><span style="font-size:10px;padding:1px 8px;border-radius:10px;background:' + (p.is_alive === '是' ? 'rgba(34,197,94,0.15)' : 'rgba(100,100,120,0.15)') + ';color:' + (p.is_alive === '是' ? '#22c55e' : 'var(--text-tertiary)') + ';">' + (p.is_alive === '是' ? '在世' : '已故') + '</span></td>';

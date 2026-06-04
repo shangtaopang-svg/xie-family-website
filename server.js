@@ -214,7 +214,6 @@ const server = http.createServer(async (req, res) => {
           var parsed = JSON.parse(content);
           if (Array.isArray(parsed)) {
             parsed.forEach(function(p) {
-              p.is_alive = '否';
               if (!p.branch || p.branch === '—' || p.branch.trim() === '') {
                 p.branch = '—';
               }
