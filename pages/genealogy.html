@@ -182,7 +182,7 @@
           <button class="btn btn-sm" onclick="filterBranch('攒【后枫槎】')" id="filter-houfengcha" style="font-size:15px;font-weight:700;padding:6px 18px;background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.4);">🌳 后枫槎世系图</button>
           <button class="btn btn-sm" onclick="filterBranch('撰【前枫槎】')" id="filter-qianfengcha" style="font-size:15px;font-weight:700;padding:6px 18px;background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.4);">🌳 前枫槎世系图</button>
           <span style="flex:1;min-width:20px;"></span>
-          <input type="text" id="tree-search-input" placeholder="🔍 在世系图中搜姓名..." style="padding:4px 10px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;width:180px;" onkeydown="if(event.key==='Enter')searchInTree()">
+          <input type="text" id="tree-search-input" placeholder="🔍 在世系图中搜姓名..." style="padding:4px 10px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;width:180px;" onkeypress="if(event.key==='Enter'||event.keyCode===13)searchInTree()">
         </div>
         <div class="genealogy-tree-scroll" id="tree-scroll-container">
           <div id="tree-container"></div>
