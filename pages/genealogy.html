@@ -1047,7 +1047,7 @@ function exportFullData() {
   URL.revokeObjectURL(a.href);
 }
 
-function scrollToCardSVG(card) {function scrollToCardSVG(card) {
+function scrollToCardSVG(card) {
   document.querySelectorAll('.card-bg.highlight').forEach(function(c) { c.classList.remove('highlight'); });
   var bg = card.querySelector('.card-bg');
   if (bg) bg.classList.add('highlight');
