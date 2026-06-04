@@ -77,78 +77,267 @@
       var allVideos = [];
 
       function buildReels(videos) {
-  container.innerHTML = '';
-  if (!videos.length) {
-    container.innerHTML = '<div class="reel-empty">暂无视频</div>';
-    return;
-  }
-  var coverSrc = 'images/carousel/123.jpg';
-  videos.forEach(function(v, idx) {
-    var wrapper = document.createElement('div');
-    wrapper.className = 'reel-flip-wrap';
-    // Inner container for 3D flip
-    var inner = document.createElement('div');
-    inner.className = 'reel-flip-inner';
-    // Front face: cover image
-    var front = document.createElement('div');
-    front.className = 'reel-flip-front';
-    front.style.backgroundImage = 'url(' + coverSrc + ')';
-    front.style.backgroundSize = 'cover';
-    front.style.backgroundPosition = 'center';
-    // Play button overlay on front
-    var playBtn = document.createElement('div');
-    playBtn.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:50px;height:50px;border-radius:50%;background:rgba(0,0,0,0.5);border:2px solid rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.3s;';
-    playBtn.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg>';
-    playBtn.onmouseover = function() { this.style.background = 'rgba(255,107,0,0.7)'; this.style.borderColor = 'var(--accent-orange)'; };
-    playBtn.onmouseout = function() { this.style.background = 'rgba(0,0,0,0.5)'; this.style.borderColor = 'rgba(255,255,255,0.3)'; };
-    front.appendChild(playBtn);
-    // Title on front
-    if (v.title) {
-      var titleEl = document.createElement('div');
-      titleEl.style.cssText = 'position:absolute;bottom:8px;left:8px;right:8px;color:#fff;font-size:12px;font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,0.6);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
-      titleEl.textContent = v.title;
-      front.appendChild(titleEl);
-    }
-    // Back face: video
-    var back = document.createElement('div');
-    back.className = 'reel-flip-back';
-    var video = document.createElement('video');
-    video.className = 'reel-video';
-    video.src = v.src;
-    if (v.poster) video.poster = v.poster; else video.poster = coverSrc;
-    video.muted = false;
-    video.loop = false;
-    video.playsInline = true;
-    video.preload = 'metadata';
-    video.controls = true;
-    back.appendChild(video);
-    // Assemble flip card
-    inner.appendChild(front);
-    inner.appendChild(back);
-    wrapper.appendChild(inner);
-    // Click to flip
-    var flipped = false;
-    wrapper.addEventListener('click', function(e) {
-      if (e.target.closest('.reel-video') || e.target.closest('video')) return;
-      if (!flipped) {
-        inner.style.transform = 'rotateY(180deg)';
-        flipped = true;
-        setTimeout(function() { video.play().catch(function(){}); }, 400);
+        container.innerHTML = '';
+
+        if (!videos.length) {
+          container.innerHTML = '<div class="reel-empty">暂无视频</div>';
+          return;
+        }
+
+        // Build each reel item — 完全独立的卡片
+        videos.forEach(function(v, idx) {
+          var item = document.createElement('div');
+          item.className = 'reel-item';
+          // 所有视频默认暂停，互不影响
+          item.classList.add('paused');
+
+          var video = document.createElement('video');
+          video.className = 'reel-video';
+          video.src = v.src;
+          if (v.poster) video.poster = v.poster; else video.poster = 'images/carousel/123.jpg';
+          video.muted = false;
+          video.loop = true;
+          video.playsInline = true;
+          video.preload = 'metadata';
+
+          item.appendChild(video);
+
+          // 视频比例检测
+          video.addEventListener('loadedmetadata', function() {
+            if (video.videoHeight > video.videoWidth) {
+              item.classList.add('is-portrait');
+            } else if (video.videoWidth / video.videoHeight > 1.5) {
+              item.classList.add('is-landscape');
+            }
+          });
+
+          // Play icon overlay — 直接点击播放，防止被其他元素拦截
+          var playIcon = document.createElement('div');
+          playIcon.className = 'reel-play-icon';
+          playIcon.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>';
+          playIcon.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (video.paused) {
+              video.play().catch(function(){});
+              item.classList.remove('paused');
+            } else {
+              video.pause();
+              item.classList.add('paused');
+            }
+          });
+          item.appendChild(playIcon);
+
+          // Bottom gradient overlay
+          var overlay = document.createElement('div');
+          overlay.className = 'reel-overlay';
+
+          if (v.title) {
+            var titleEl = document.createElement('div');
+            titleEl.className = 'reel-title';
+            titleEl.textContent = v.title;
+            overlay.appendChild(titleEl);
+          }
+
+          // 进度条 + 时间
+          var progressWrap = document.createElement('div');
+          progressWrap.className = 'reel-progress-wrap';
+
+          var progressBar = document.createElement('div');
+          progressBar.className = 'reel-progress-bar';
+          var progressFill = document.createElement('div');
+          progressFill.className = 'reel-progress-fill';
+          progressBar.appendChild(progressFill);
+
+          var timeDisplay = document.createElement('span');
+          timeDisplay.className = 'reel-time';
+          timeDisplay.textContent = '0:00 / 0:00';
+
+          progressWrap.appendChild(progressBar);
+          progressWrap.appendChild(timeDisplay);
+
+          // 进度条点击拖拽
+          var _seeking = false;
+          function getClickPct(e) {
+            var rect = progressBar.getBoundingClientRect();
+            var cx = e.clientX || (e.changedTouches && e.changedTouches[0].clientX) || 0;
+            var x = Math.max(0, Math.min(cx - rect.left, rect.width));
+            return x / rect.width;
+          }
+          function seekTo(e) {
+            var pct = getClickPct(e);
+            progressFill.classList.add('is-seeking');
+            progressFill.style.width = (pct * 100) + '%';
+            var dur = video.duration;
+            if (dur && isFinite(dur) && dur > 0) {
+              video.currentTime = pct * dur;
+            }
+          }
+          progressBar.addEventListener('mousedown', function(e) {
+            e.stopPropagation(); _seeking = true; seekTo(e);
+          });
+          document.addEventListener('mousemove', function(e) {
+            if (!_seeking) return;
+            e.preventDefault();
+            var pct = getClickPct(e);
+            progressFill.style.width = (pct * 100) + '%';
+          });
+          document.addEventListener('mouseup', function() {
+            if (_seeking) { _seeking = false; progressFill.classList.remove('is-seeking'); }
+          });
+          progressBar.addEventListener('click', function(e) { e.stopPropagation(); seekTo(e); });
+          progressBar.addEventListener('touchstart', function(e) {
+            e.stopPropagation(); _seeking = true; seekTo(e.changedTouches[0]);
+          }, { passive: true });
+          progressBar.addEventListener('touchmove', function(e) {
+            e.preventDefault(); seekTo(e.changedTouches[0]);
+          }, { passive: false });
+
+          // 进度和时间更新
+          var _rafTick = false;
+          video.addEventListener('timeupdate', function() {
+            if (_rafTick) return;
+            if (!video.duration) return;
+            _rafTick = true;
+            requestAnimationFrame(function() {
+              _rafTick = false;
+              progressFill.style.width = ((video.currentTime / video.duration) * 100) + '%';
+              var cm = Math.floor(video.currentTime / 60);
+              var cs = Math.floor(video.currentTime % 60);
+              var dm = Math.floor(video.duration / 60);
+              var ds = Math.floor(video.duration % 60);
+              timeDisplay.textContent = cm + ':' + (cs < 10 ? '0' : '') + cs + ' / ' + dm + ':' + (ds < 10 ? '0' : '') + ds;
+            });
+          });
+
+          overlay.appendChild(progressWrap);
+
+          // Controls
+          var controls = document.createElement('div');
+          controls.className = 'reel-controls';
+
+          var playBtn = document.createElement('button');
+          playBtn.className = 'reel-btn reel-btn-play';
+          playBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>';
+          playBtn.setAttribute('aria-label', '播放/暂停');
+          playBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (video.paused) {
+              video.play().catch(function(){});
+              item.classList.remove('paused');
+            } else {
+              video.pause();
+              item.classList.add('paused');
+            }
+          });
+          video.addEventListener('play', function() {
+            playBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+            // 暂停背景音乐
+            var bgMusic = document.getElementById('bg-music');
+            if (bgMusic && !bgMusic.paused) {
+              bgMusic.dataset._wasPlaying = 'true';
+              bgMusic.pause();
+            }
+          });
+          video.addEventListener('pause', function() {
+            playBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>';
+          });
+          controls.appendChild(playBtn);
+
+          var spacer = document.createElement('div');
+          spacer.style.flex = '1';
+          controls.appendChild(spacer);
+
+          // 缩放
+          var zoomBtn = document.createElement('button');
+          zoomBtn.className = 'reel-btn reel-btn-zoom';
+          zoomBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>';
+          zoomBtn.setAttribute('aria-label', '缩放模式');
+          zoomBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            item.classList.toggle('is-zoomed');
+            var isZoomed = item.classList.contains('is-zoomed');
+            zoomBtn.innerHTML = isZoomed
+              ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>'
+              : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>';
+          });
+          controls.appendChild(zoomBtn);
+
+          // 关闭按钮
+          var closeBtn = document.createElement('button');
+          closeBtn.className = 'reel-btn reel-btn-close';
+          closeBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+          closeBtn.setAttribute('aria-label', '关闭');
+          closeBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            video.pause();
+            video.currentTime = 0;
+            video.loop = false;
+            item.classList.add('paused');
+          });
+          controls.appendChild(closeBtn);
+
+          // 全屏
+          var fsBtn = document.createElement('button');
+          fsBtn.className = 'reel-btn reel-btn-fs';
+          fsBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>';
+          fsBtn.setAttribute('aria-label', '全屏播放');
+          fsBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+              if (item.requestFullscreen) item.requestFullscreen();
+              else if (item.webkitRequestFullscreen) item.webkitRequestFullscreen();
+            } else {
+              if (document.exitFullscreen) document.exitFullscreen();
+              else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            }
+          });
+          function updateFsIcon() {
+            var isFS = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            fsBtn.innerHTML = isFS
+              ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>'
+              : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>';
+          }
+          document.addEventListener('fullscreenchange', updateFsIcon);
+          document.addEventListener('webkitfullscreenchange', updateFsIcon);
+          controls.appendChild(fsBtn);
+
+          overlay.appendChild(controls);
+          item.appendChild(overlay);
+
+          // 点击视频切换播放/暂停
+          item.addEventListener('click', function(e) {
+            if (e.target.closest('.reel-controls') || e.target.closest('.reel-progress-wrap')) return;
+            if (video.paused) {
+              video.play().catch(function(){});
+              item.classList.remove('paused');
+            } else {
+              video.pause();
+              item.classList.add('paused');
+            }
+          });
+
+          container.appendChild(item);
+        });
+
+        // BGM: 当 reels 区域离开视口时恢复背景音乐
+        var reelsContainer = document.getElementById('reels-container');
+        if (reelsContainer) {
+          var sectionObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+              if (!entry.isIntersecting) {
+                var bgMusic = document.getElementById('bg-music');
+                if (bgMusic && bgMusic.dataset._wasPlaying === 'true' && bgMusic.paused) {
+                  bgMusic.play().catch(function(){});
+                }
+              }
+            });
+          }, { threshold: 0 });
+          sectionObserver.observe(reelsContainer);
+        }
       }
-    });
-    // When video ends, flip back
-    video.addEventListener('ended', function() {
-      inner.style.transform = 'rotateY(0deg)';
-      flipped = false;
-    });
-    video.addEventListener('pause', function() {
-      if (video.currentTime > 0 && !video.ended) return;
-      inner.style.transform = 'rotateY(0deg)';
-      flipped = false;
-    });
-    container.appendChild(wrapper);
-  });
-}function loadVideosFromServer(callback) {
+
+      // Load videos from server data
+      function loadVideosFromServer(callback) {
         var vxhr = new XMLHttpRequest();
         vxhr.open("GET", "/api/data/videos", true);
         vxhr.timeout = 20000;
