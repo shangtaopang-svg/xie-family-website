@@ -338,13 +338,13 @@
           }
         }
         localStorage.setItem('xie_admin_genealogy', JSON.stringify(parsed));
-        localStorage.setItem('xie_admin_genealogy_ver', '4');
+        localStorage.setItem('xie_admin_genealogy_ver', '5');
         return parsed;
       }
       // Seed default ancestor data from PDF族谱
       var seedData = getFullSeedData();
       localStorage.setItem('xie_admin_genealogy', JSON.stringify(seedData));
-      localStorage.setItem('xie_admin_genealogy_ver', '4');
+      localStorage.setItem('xie_admin_genealogy_ver', '5');
       return seedData;
     } catch(e) { return []; }
   }
