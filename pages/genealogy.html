@@ -1282,7 +1282,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Above parallel region: single chain
       if (hasSplit && k > parallelTopIdx && parallelTopIdx >= 0) {
         html += '<div style="display:flex;flex-direction:column;align-items:center;">';
-        html += renderNode(a, false, mainColor, '');
+        html += renderNode(a, false, mainColor, '', k);
         html += '<div class="ancestor-down-arrow" style="color:' + mainColor + ';">⬇</div>';
         html += '</div>';
         continue;
@@ -1291,7 +1291,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Top of parallel: the shared ancestor (e.g. 昌申) - show it, then fork
       if (hasSplit && k === parallelTopIdx && parallelTopIdx >= 0) {
         html += '<div style="display:flex;flex-direction:column;align-items:center;">';
-        html += renderNode(a, false, mainColor, '');
+        html += renderNode(a, false, mainColor, '', k);
         html += '</div>';
         // Fork symbol
         html += '<div style="display:flex;gap:8px;align-items:center;justify-content:center;padding:2px 0;">';
@@ -1316,7 +1316,7 @@ document.addEventListener('DOMContentLoaded', function() {
         html += '<div style="display:flex;gap:10px;align-items:center;justify-content:center;">';
         // Left: adoptive
         html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;">';
-        html += renderNode(a, false, mainColor, '<div class="ancestor-meta" style="font-size:10px;color:var(--accent-orange);">继</div>');
+        html += renderNode(a, false, mainColor, '<div class="ancestor-meta" style="font-size:10px;color:var(--accent-orange);">继</div>', k);
         html += '<div class="ancestor-down-arrow" style="color:' + mainColor + ';">⬇</div>';
         html += '</div>';
         // Separator
@@ -1360,7 +1360,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 世常 node
         html += '<div style="display:flex;flex-direction:column;align-items:center;">';
         if (nextA) html += '<div class="ancestor-connector" style="background:' + mainColor + ';"></div>';
-        html += renderNode(a, isTarget, mainColor, '<div class="ancestor-meta" style="color:var(--accent-orange);font-size:11px;">📌 入继</div>');
+        html += renderNode(a, isTarget, mainColor, '<div class="ancestor-meta" style="color:var(--accent-orange);font-size:11px;">📌 入继</div>', k);
         html += '</div>';
         continue;
       }
@@ -1368,7 +1368,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Below split: single chain (伟中)
       html += '<div style="display:flex;flex-direction:column;align-items:center;">';
       if (nextA) html += '<div class="ancestor-connector" style="background:' + mainColor + ';"></div>';
-      html += renderNode(a, isTarget, mainColor, '');
+      html += renderNode(a, isTarget, mainColor, '', k);
       if (!isTarget) html += '<div class="ancestor-down-arrow" style="color:' + mainColor + ';">⬇</div>';
       html += '</div>';
     }
