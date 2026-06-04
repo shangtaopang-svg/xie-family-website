@@ -1161,11 +1161,16 @@ document.addEventListener('DOMContentLoaded', function() {
     var bioBranches = {};
     for (var ci = 0; ci < mainChain.length; ci++) {
       var anc = mainChain[ci];
-      if (anc.adopted && anc.adopted !== '否' && anc.adopted !== '出继' && anc.bio_father_id) {
-        var bioP = findById(parseInt(anc.bio_father_id));
-        if (bioP) {
-          var bioRes = buildChain(bioP, 'father_id');
-          bioBranches[anc.id] = { chain: bioRes.chain, broken: bioRes.broken };
+      var isAdopted = anc.adopted && anc.adopted !== '否' && anc.adopted !== '出继';
+      var hasBio = anc.bio_father_id !== undefined && anc.bio_father_id !== null && anc.bio_father_id !== '' && anc.bio_father_id !== 0;
+      if (isAdopted && hasBio) {
+        var bfId = parseInt(anc.bio_father_id);
+        if (!isNaN(bfId) && bfId > 0) {
+          var bioP = findById(bfId);
+          if (bioP) {
+            var bioRes = buildChain(bioP, 'father_id');
+            bioBranches[anc.id] = { chain: bioRes.chain, broken: bioRes.broken };
+          }
         }
       }
     }
