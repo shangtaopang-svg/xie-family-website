@@ -505,7 +505,7 @@
         if (_showAliveOnly && p.is_alive !== '是') return;
         if (_branchFilter && (p.branch !== _branchFilter)) return;
         if (_genFilter !== '' && _genFilter !== null && _genFilter !== undefined) {
-          if ((p.generation_num || 0) !== _genFilter) return;
+          if (parseInt(p.generation_num) !== _genFilter) return;
         }
         if (_searchFilter) {
           var q = _searchFilter.toLowerCase();
