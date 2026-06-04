@@ -94,6 +94,7 @@
           var video = document.createElement('video');
           video.className = 'reel-video';
           video.src = v.src;
+          if (v.poster) video.poster = v.poster; else video.poster = 'images/carousel/123.jpg';
           video.muted = false;
           video.loop = true;
           video.playsInline = true;
