@@ -1159,20 +1159,35 @@ document.addEventListener('DOMContentLoaded', function() {
     var mainChain = main.chain;
     var mainBroken = main.broken;
 
-    // Scan main chain for ANY adopted ancestor who has bio_father_id
+    // Scan main chain for ANY adopted ancestor:
+    // 1. Use bio_father_id if set, OR
+    // 2. Auto-find by matching a "出继" record with the same name
     var bioBranches = {};
+    var dataAll = data;
     for (var ci = 0; ci < mainChain.length; ci++) {
       var anc = mainChain[ci];
       var isAdopted = anc.adopted && anc.adopted !== '否';
-      var hasBio = anc.bio_father_id !== undefined && anc.bio_father_id !== null && anc.bio_father_id !== '' && anc.bio_father_id !== 0;
-      if (isAdopted && hasBio) {
-        var bfId = parseInt(anc.bio_father_id);
-        if (!isNaN(bfId) && bfId > 0) {
-          var bioP = findById(bfId);
-          if (bioP) {
-            var bioRes = buildChain(bioP, 'father_id');
-            bioBranches[anc.id] = { chain: bioRes.chain, broken: bioRes.broken };
+      if (!isAdopted) continue;
+
+      var bfId = null;
+      // First try explicit bio_father_id
+      if (anc.bio_father_id !== undefined && anc.bio_father_id !== null && anc.bio_father_id !== '' && anc.bio_father_id !== 0) {
+        bfId = parseInt(anc.bio_father_id);
+      }
+      // If no bio_father_id, auto-find by looking for a "出继" record with same name
+      if (!bfId || isNaN(bfId) || bfId <= 0) {
+        for (var di = 0; di < dataAll.length; di++) {
+          if (dataAll[di].name === anc.name && dataAll[di].adopted === '出继' && dataAll[di].father_id) {
+            bfId = parseInt(dataAll[di].father_id);
+            break;
           }
+        }
+      }
+      if (bfId && !isNaN(bfId) && bfId > 0) {
+        var bioP = findById(bfId);
+        if (bioP) {
+          var bioRes = buildChain(bioP, 'father_id');
+          bioBranches[anc.id] = { chain: bioRes.chain, broken: bioRes.broken };
         }
       }
     }
