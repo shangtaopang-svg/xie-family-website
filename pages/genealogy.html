@@ -1586,9 +1586,9 @@ function locateInTree(personId) {
     var genMin = Math.min(gen1, gen2);
 
     if (genMin === 0) {
-      if (genDiff === 1) relation = gen1 === 0 ? '父子/父女' : '子女';
-      else if (genDiff === 2) relation = gen1 === 0 ? '祖孙' : '孙辈';
-      else relation = gen1 === 0 ? (genDiff + '世孙') : '上' + genDiff + '世祖先';
+      if (genDiff === 1) relation = gen1 === 0 ? (escapeHtml(p1.name) + ' 是 ' + escapeHtml(p2.name) + ' 的父/母') : (escapeHtml(p2.name) + ' 是 ' + escapeHtml(p1.name) + ' 的父/母');
+      else if (genDiff === 2) relation = gen1 === 0 ? (escapeHtml(p1.name) + ' 是 ' + escapeHtml(p2.name) + ' 的祖父母') : (escapeHtml(p2.name) + ' 是 ' + escapeHtml(p1.name) + ' 的祖父母');
+      else relation = gen1 === 0 ? (escapeHtml(p1.name) + ' 是 ' + escapeHtml(p2.name) + ' 的上' + genDiff + '世祖') : (escapeHtml(p2.name) + ' 是 ' + escapeHtml(p1.name) + ' 的上' + genDiff + '世祖');
     } else if (genMin === 1) {
       if (genDiff === 0) relation = '兄弟/姐妹';
       else if (genDiff === 1) relation = '叔侄/姑侄';
