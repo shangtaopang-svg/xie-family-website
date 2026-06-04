@@ -24,8 +24,8 @@
   --radius: 16px;
   --radius-sm: 12px;
   --radius-xl: 24px;
-  --font-title: 'Noto Serif SC', 'STSong', 'SimSun', 'Songti SC', serif;
-  --font-body: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  --font-title: 'Inter', 'Noto Serif SC', 'STSong', 'SimSun', 'Songti SC', serif;
+  --font-body: 'Inter', 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;
 }
 
 [data-theme="dark"] {
@@ -597,6 +597,24 @@ body {
 .toast.success { background: rgba(90,158,111,0.92); }
 .toast.error { background: rgba(201,74,74,0.92); }
 @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+
+/* ===== 滚动渐入 ===== */
+.fade-in-section { opacity:0; transform:translateY(16px); transition:opacity 0.5s ease-out,transform 0.5s ease-out; }
+.fade-in-section.visible { opacity:1; transform:translateY(0); }
+
+/* ===== 按钮水波纹 ===== */
+.ripple-btn { position:relative; overflow:hidden; }
+.ripple-btn .ripple-effect { position:absolute; border-radius:50%; background:rgba(255,255,255,0.25); transform:scale(0); animation:rippleAnim 0.5s ease-out; pointer-events:none; }
+@keyframes rippleAnim { to { transform:scale(4); opacity:0; } }
+
+/* ===== 卡片3D ===== */
+.card-3d { transition:transform 0.3s ease; }
+.card-3d:hover { transform:translateY(-2px); box-shadow:0 6px 24px var(--shadow); }
+
+/* ===== Hero渐变 ===== */
+@keyframes heroGradient { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+.hero-gradient-anim { background-size:200% 200%; animation:heroGradient 8s ease infinite; }
 
 /* ===== Chart wraps ===== */
 .chart-wrap { max-width: 100%; overflow: hidden; margin: 10px 0; }

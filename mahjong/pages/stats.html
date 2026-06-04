@@ -59,7 +59,7 @@
 
   <div class="page-header"><h2>📈 统计看板</h2></div>
   <!-- Filters -->
-  <div class="card" style="padding:12px 16px;">
+  <div class="card fade-in-section" style="padding:12px 16px;">
     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
       <label style="font-size:13px;color:var(--text-secondary);">选择玩家：</label>
       <select class="form-input" id="player-select" style="width:auto;min-width:120px;" onchange="updatePlayerStats()">
@@ -72,7 +72,7 @@
     </div>
   </div>
   <!-- Monthly summary -->
-  <div class="card" id="month-summary" style="display:none;">
+  <div class="card fade-in-section" id="month-summary" style="display:none;">
     <div class="card-title">📅 月度汇总 <span id="month-label" style="font-weight:400;font-size:13px;color:var(--text-tertiary);"></span></div>
     <div class="stats-row" id="month-stats-grid" style="margin-bottom:0;"></div>
     <div style="margin-top:12px;">
@@ -80,19 +80,19 @@
     </div>
   </div>
   <!-- Player detail -->
-  <div class="card" id="player-detail" style="display:none;">
+  <div class="card fade-in-section" id="player-detail" style="display:none;">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px;text-align:center;" id="player-stats-grid"></div>
     <div style="margin-top:16px;">
       <canvas id="trend-chart" height="200"></canvas>
     </div>
   </div>
   <!-- Ranking chart -->
-  <div class="card">
+  <div class="card fade-in-section">
     <div class="card-title">🏆 胜率排行</div>
     <div class="chart-wrap"><canvas id="rank-chart" height="250"></canvas></div>
   </div>
   <!-- All players comparison -->
-  <div class="card">
+  <div class="card fade-in-section">
     <div class="card-title">📊 净胜总额对比</div>
     <div class="chart-wrap"><canvas id="net-chart" height="250"></canvas></div>
   </div>

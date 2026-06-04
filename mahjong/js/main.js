@@ -246,6 +246,18 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+
+// ===== Scroll fade-in =====
+document.addEventListener('DOMContentLoaded', function() {
+  var els = document.querySelectorAll('.fade-in-section');
+  if ('IntersectionObserver' in window) {
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+    }, {threshold:0.1});
+    els.forEach(function(el) { obs.observe(el); });
+  } else { els.forEach(function(el) { el.classList.add('visible'); }); }
+});
+
 // ===== AVATAR SYSTEM =====
 // Each player gets a unique avatar based on their nickname/personality
 window.PLAYER_AVATARS = {

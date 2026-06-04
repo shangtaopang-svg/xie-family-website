@@ -661,6 +661,17 @@ function toggleLanguage() {
   var next = current === 'zh' ? 'en' : 'zh';
   setLang(next);
   applyLanguage(next);
+  // Refresh weather description text
+  var descEl = document.getElementById('hero-weather-desc');
+  if (descEl) {
+    var cache = localStorage.getItem('xie_weather_cache');
+    if (cache) {
+      try { var c = JSON.parse(cache); descEl.textContent = c.condition; } catch(e) {}
+    }
+  }
+  // Refresh location text
+  var locEl = document.getElementById('weather-location');
+  if (locEl) locEl.textContent = TRANSLATIONS['weather.location'][next] || '宁波宁海';
 }
 
 function initLanguage() {
