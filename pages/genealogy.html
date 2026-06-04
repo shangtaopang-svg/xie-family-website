@@ -14,6 +14,7 @@
 </head>
 <body>
 
+<canvas id="bg-canvas"></canvas>
 
 <div class="content">
 
@@ -1618,8 +1619,7 @@ function highlightGeneration(genNum, data) {
     data.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0) || (a.name || '').localeCompare(b.name || ''); });
 
     // Highlight active generation if filter is active
-    var genTableContainer = document.getElementById('gen-table-container');
-    var activeGen = genTableContainer ? genTableContainer.getAttribute('data-active-gen') : null;
+    var activeGen = document.getElementById('gen-table-container').getAttribute('data-active-gen');
     if (activeGen) {
       var genNum = parseInt(activeGen);
       highlightGeneration(genNum, data);
@@ -1677,7 +1677,50 @@ function highlightGeneration(genNum, data) {
   </script>
 
   <script>
-    // bg-canvas removed
+    const canvas = document.getElementById('bg-canvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let w, h;
+      function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+      resize(); window.addEventListener('resize', resize);
+      const dots = [];
+      for (let i = 0; i < 80; i++) dots.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, r: Math.random() * 2 + 1, a: Math.random() * 0.3 + 0.1 });
+      const orbs = [
+        { x: 0.2, y: 0.3, r: 0.35, color: 'rgba(251,146,60,0.06)' },
+        { x: 0.8, y: 0.7, r: 0.3, color: 'rgba(34,211,238,0.05)' },
+        { x: 0.5, y: 0.1, r: 0.25, color: 'rgba(251,146,60,0.04)' }
+      ];
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const dotRgb = isDark ? '255,255,255' : '100,100,100';
+        orbs.forEach(o => {
+          const grad = ctx.createRadialGradient(o.x * w, o.y * h, 0, o.x * w, o.y * h, o.r * w);
+          grad.addColorStop(0, o.color); grad.addColorStop(1, 'transparent');
+          ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+        });
+        dots.forEach(d => {
+          d.x += d.vx; d.y += d.vy;
+          if (d.x < 0) d.x = w; if (d.x > w) d.x = 0;
+          if (d.y < 0) d.y = h; if (d.y > h) d.y = 0;
+          ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${dotRgb},${d.a})`; ctx.fill();
+        });
+        for (let i = 0; i < dots.length; i++) {
+          for (let j = i + 1; j < dots.length; j++) {
+            const dx = dots[i].x - dots[j].x, dy = dots[i].y - dots[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 150) {
+              ctx.beginPath(); ctx.moveTo(dots[i].x, dots[i].y); ctx.lineTo(dots[j].x, dots[j].y);
+              ctx.strokeStyle = `rgba(${dotRgb},${(1 - dist / 150) * 0.08})`;
+              ctx.lineWidth = 0.5; ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
   
 
 // ===== Fullscreen toggle (CSS position:fixed approach) =====
