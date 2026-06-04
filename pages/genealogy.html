@@ -1926,8 +1926,8 @@ function locateInTree(personId) {
     // Tree
     renderTreeSVG(data);
 
-    // Fade in (starmap only when server data is loaded)
-    if (data.length > 20) document.getElementById('genealogy-starmap').style.opacity = '1';
+    // Fade in
+    document.getElementById('genealogy-starmap').style.opacity = '1';
     document.getElementById('genealogy-generation-chart').style.opacity = '1';
     document.getElementById('genealogy-stats').style.opacity = '1';
     document.getElementById('genealogy-search-section').style.opacity = '1';
@@ -1935,14 +1935,16 @@ function locateInTree(personId) {
     document.getElementById('genealogy-tree-section').style.opacity = '1';
     document.getElementById('genealogy-table-section').style.opacity = '1';
 
-    // Star map (skip for small seed data, render after server data loads)
-    if (data.length > 20) {
-      try { renderGenerationStarMap(); } catch(e) { console.warn('Star map error:', e); }
-    }
+    // Star map
+    try { renderGenerationStarMap(); } catch(e) { console.warn('Star map error:', e); }
   }
 
   // ===== 字辈星图 =====
   var _starMapStars = [];
+  // Initialize interaction globals early (before DOMContentLoaded)
+  window._starMapDragRot = window._starMapDragRot || { val: 0 };
+  window._starMapHovered = window._starMapHovered || { gen: -1 };
+  window._starMapPause = false;
   function renderGenerationStarMap() {
     _starMapStars = [];
     var canvas = document.getElementById('star-map-canvas');
@@ -2068,8 +2070,10 @@ function locateInTree(personId) {
 
       // --- 3. Calculate dynamic star positions (rotation + wobble) ---
       if (!window._starMapPause) window._starMapPause = false;
-      if (window._starMapDragRot) rotationAngle += window._starMapDragRot.val;
-      window._starMapDragRot.val *= 0.92; // friction
+      if (window._starMapDragRot && window._starMapDragRot.val) {
+        rotationAngle += window._starMapDragRot.val;
+        window._starMapDragRot.val *= 0.92;
+      }
       if (!window._starMapPause && !_pauseRotation) rotationAngle += 0.0035;
 
       var cosR = Math.cos(rotationAngle), sinR = Math.sin(rotationAngle);
