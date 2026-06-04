@@ -20,6 +20,8 @@ const MODULES = {
       { key: 'mother_id', label: '母亲ID', type: 'number', placeholder: '填写母亲的编号' },
       { key: 'spouse_ids', label: '配偶', type: 'text', placeholder: '直接输入姓名，多个用逗号分隔' },
       { key: 'adopted', label: '是否过继', type: 'select', options: ['否', '是(嗣子)', '是(继子)', '是(养子)', '出继'] },
+      { key: 'bio_father_id', label: '生父ID（嗣子填写，显示原生 lineage）', type: 'number', placeholder: '嗣子的亲生父亲ID' },
+      { key: 'bio_mother_id', label: '生母ID', type: 'number', placeholder: '嗣子的亲生母亲ID' },
       { key: 'branch', label: '支系', type: 'select', options: ['—', '长房', '二房', '三房', '四房'] },
       { key: 'birth_date', label: '出生', type: 'text', placeholder: '如: 1950 或 1950-03-15' },
       { key: 'death_date', label: '逝世', type: 'text', placeholder: '在世则留空' },
@@ -498,6 +500,18 @@ function buildAdminTreeHtml(data) {
     if (person.mother_id) {
       var mn = getPersonName(parseInt(person.mother_id), data) || person.mother_id;
       if (mn) html += '<div class="apt-mother">母: ' + escapeHtml(mn) + '</div>';
+    }
+    // 嗣子显示双 lineage：过继父 + 生父
+    if (person.adopted && person.adopted !== '否' && person.adopted !== '出继') {
+      if (person.bio_father_id) {
+        var bfn = getPersonName(parseInt(person.bio_father_id), data) || person.bio_father_id;
+        if (bfn) html += '<div class="apt-bio-father" style="font-size:11px;color:#22d3ee;margin-top:2px;">🌱 生父: ' + escapeHtml(bfn) + '</div>';
+      }
+      if (person.bio_mother_id) {
+        var bmn = getPersonName(parseInt(person.bio_mother_id), data) || person.bio_mother_id;
+        if (bmn) html += '<div class="apt-bio-mother" style="font-size:11px;color:#22d3ee;margin-top:1px;">🌱 生母: ' + escapeHtml(bmn) + '</div>';
+      }
+      html += '<div class="apt-dual-lineage" style="font-size:10px;color:var(--text-tertiary);margin-top:3px;padding:2px 4px;border:1px dashed rgba(34,211,238,0.2);border-radius:4px;">🔄 双 lineage：过继入本支 · 原生可查</div>';
     }
     html += '<div class="apt-children-count">' + (childrenOf(person).length > 0 ? childrenOf(person).length + ' 子女, ' + countDescendants(person) + ' 后代' : '') + '</div>';
     html += '</div>'; // apt-card-inner
