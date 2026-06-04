@@ -840,62 +840,86 @@ function searchInTree() {
   }
 }
 
-function treeAutoLocate(personId, retries) {
-  retries = retries || 0;
+function findById(id, data) {
+  for (var i = 0; i < data.length; i++) { if (data[i].id === id) return data[i]; }
+  return null;
+}
+
+function buildAncestorChain(person, data) {
+  var chain = [];
+  var cur = person;
+  for (var loop = 0; loop < 300 && cur; loop++) {
+    chain.push(cur);
+    var fid = cur.father_id ? parseInt(cur.father_id) : null;
+    cur = fid ? findById(fid, data) : null;
+  }
+  return chain;
+}
+
+function treeAutoLocate(personId) {
   var data = getGenealogyData();
-  var person = null;
-  for (var i = 0; i < data.length; i++) { if (data[i].id === personId) { person = data[i]; break; } }
+  var person = findById(personId, data);
   if (!person) return;
 
-  // Build direct ancestral path IDs
-  var pathIds = {};
-  var cur = person;
-  pathIds[cur.id] = true;
-  for (var loop = 0; loop < 300 && cur && cur.father_id; loop++) {
-    var fid = parseInt(cur.father_id);
-    var found = false;
-    for (var i = 0; i < data.length; i++) {
-      if (data[i].id === fid) { cur = data[i]; pathIds[cur.id] = true; found = true; break; }
+  var chain = buildAncestorChain(person, data);
+  var statusEl = document.getElementById('tree-search-status');
+
+  // Build HTML lineage popup
+  var titles = ['', '父亲', '祖父', '曾祖父', '高祖父', '天祖', '烈祖', '太祖', '远祖', '鼻祖'];
+  function getTitle(k) { return k < titles.length ? titles[k] : '上' + k + '世祖'; }
+
+  var html = '<div style="background:var(--bg-primary);border:1px solid var(--glass-border);border-radius:14px;padding:24px;max-width:420px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
+  html += '<h3 style="margin:0;font-family:var(--font-title);font-size:17px;">⬆ ' + escapeHtml(person.name) + ' 的直系祖先</h3>';
+  html += '<button onclick="this.parentElement.parentElement.parentElement.remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-tertiary);">✕</button>';
+  html += '</div>';
+
+  // Render from oldest to youngest
+  for (var k = chain.length - 1; k >= 0; k--) {
+    var a = chain[k];
+    var isTarget = (k === 0);
+    var title = isTarget ? '本人' : getTitle(k);
+    html += '<div style="display:flex;flex-direction:column;align-items:center;">';
+    if (k < chain.length - 1) html += '<div style="width:2px;height:12px;background:var(--accent-orange);opacity:0.3;"></div>';
+    html += '<div style="background:' + (isTarget ? 'var(--accent-orange-dim)' : 'var(--glass-bg)') + ';border:2px solid ' + (isTarget ? 'var(--accent-orange)' : 'var(--glass-border)') + ';border-radius:10px;padding:8px 14px;text-align:center;min-width:120px;cursor:pointer;" onclick="showPersonDetail(' + a.id + ', getGenealogyData())">';
+    html += '<div style="font-size:10px;color:var(--accent-orange);font-weight:600;">第' + a.generation_num + '世 · ' + title + '</div>';
+    html += '<div style="font-size:15px;font-weight:600;color:var(--text-primary);margin:2px 0;">' + (isTarget ? '👉 ' : '') + escapeHtml(a.name) + '</div>';
+    if (a.spouse_ids) {
+      var sp = a.spouse_ids.split(',').map(function(n){return n.trim();}).filter(function(n){return n;}).join('、');
+      if (sp) html += '<div style="font-size:11px;color:var(--text-tertiary);">配 ' + escapeHtml(sp) + '</div>';
     }
-    if (!found) break;
+    html += '</div>';
+    if (!isTarget) html += '<div style="font-size:12px;color:var(--accent-orange);opacity:0.4;padding:2px 0;">⬇</div>';
+    html += '</div>';
   }
 
-  // Re-render tree fully expanded, then collapse everything
+  html += '<div style="text-align:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--divider);">';
+  html += '<button class="btn btn-sm" onclick="this.parentElement.parentElement.parentElement.remove()" style="font-size:12px;">关闭</button>';
+  html += '</div></div>';
+
+  // Show as a fixed overlay
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);';
+  overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+
+  // Also try to highlight in SVG tree (non-blocking)
   expandAllTree();
   setTimeout(function() {
-    // First collapse ALL nodes
-    var allNodes = document.querySelectorAll('.tree-svg-node');
-    for (var i = 0; i < allNodes.length; i++) allNodes[i].classList.add('tree-svg-node-hidden');
-    // Then expand only the ancestral path
-    var allCards = document.querySelectorAll('.tree-svg-card');
-    for (var i = 0; i < allCards.length; i++) {
-      var cardId = parseInt(allCards[i].getAttribute('data-id'));
-      if (pathIds[cardId]) {
-        var el = allCards[i];
-        el.style.opacity = '1';
-        // Walk up and expand all parents
-        var p = el.parentElement;
-        while (p) {
-          if (p.classList && p.classList.contains('tree-svg-node-hidden')) p.classList.remove('tree-svg-node-hidden');
-          p = p.parentElement;
-        }
-      }
-    }
-    // Highlight the person
     var card = document.querySelector('.tree-svg-card[data-id="' + personId + '"]');
     if (card) {
       var bg = card.querySelector('.card-bg');
       if (bg) {
         bg.classList.add('highlight');
-        bg.style.animation = 'pulse-highlight 1.5s ease-in-out 5';
+        bg.style.animation = 'pulse-highlight 2s ease-in-out 3';
       }
       try { card.scrollIntoView({ block: 'center' }); } catch(e) {}
       scrollToCardSVG(card);
     }
-    document.getElementById('tree-search-status').textContent = '✓ ' + person.name;
-    document.getElementById('tree-search-status').style.color = '#22c55e';
-    setTimeout(function() { document.getElementById('tree-search-status').textContent = ''; }, 3000);
-  }, 200);
+  }, 300);
+
+  if (statusEl) { statusEl.textContent = '✓ ' + person.name; statusEl.style.color = '#22c55e'; setTimeout(function() { statusEl.textContent = ''; }, 3000); }
 }
 
 function locateInTree(personId) {
