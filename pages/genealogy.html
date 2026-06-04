@@ -1223,10 +1223,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Render a single chain node
-    function renderNode(a, isTarget, color, extraLabel) {
+    function relationTitle(genDiff) {
+      var t = ['本人', '父亲', '祖父', '曾祖父', '高祖父', '天祖', '烈祖', '太祖', '远祖', '鼻祖'];
+      if (genDiff < 0) return '后裔';
+      return genDiff < t.length ? t[genDiff] : '上' + genDiff + '世祖';
+    }
+
+    function renderNode(a, isTarget, color, extraLabel, genDiff) {
+      genDiff = genDiff || 0;
       var h = '<div class="ancestor-node' + (isTarget ? ' ancestor-self' : '') + '">';
       h += '<div class="ancestor-card" style="border-color:' + color + ';min-width:100px;" onclick="showPersonDetail(' + a.id + ', getGenealogyData());" title="点击查看详情">';
       h += '<div class="ancestor-gen" style="color:' + color + ';">第' + a.generation_num + '世</div>';
+      if (!isTarget && genDiff > 0) {
+        h += '<div style="font-size:10px;color:var(--accent-orange);font-weight:600;background:var(--accent-orange-dim);border-radius:3px;padding:0 6px;display:inline-block;margin-bottom:2px;">' + relationTitle(genDiff) + '</div>';
+      }
       h += '<div class="ancestor-name">' + (isTarget ? '👉 ' : '') + escapeHtml(a.name) + '</div>';
       if (extraLabel) h += extraLabel;
       if (a.gender) h += '<div class="ancestor-meta">' + (a.gender === '男' ? '👤' : '👩') + (a.branch && a.branch !== '—' ? ' · ' + escapeHtml(a.branch) : '') + '</div>';
