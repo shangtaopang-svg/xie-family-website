@@ -1010,8 +1010,7 @@ function exportTreeSVG() {
   bgRect.setAttribute('fill', '#ffffff'); bgRect.setAttribute('x', '0'); bgRect.setAttribute('y', '0');
   clone.insertBefore(bgRect, clone.firstChild);
   // Export as SVG
-  var svgData = '<?xml version="1.0" encoding="UTF-8"?>
-' + new XMLSerializer().serializeToString(clone);
+  var svgData = '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(clone);
   var blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -1024,12 +1023,9 @@ function exportFullData() {
   var data = getGenealogyData();
   if (!data || !data.length) { alert('无数据可导出'); return; }
   // Create a readable text report
-  var text = '===== 下枫槎谢氏族谱数据 =====
-';
+  var text = '===== 下枫槎谢氏族谱数据 =====\n';
   text += '导出时间: ' + new Date().toLocaleString() + '\n';
-  text += '总人数: ' + data.length + '
-
-';
+  text += '总人数: ' + data.length + '\n\n';
   data.sort(function(a,b){return (a.generation_num||0)-(b.generation_num||0)||(a.name||'').localeCompare(b.name||'');});
   data.forEach(function(p) {
     var gen = p.generation_num ? '第' + p.generation_num + '世' : '?';
