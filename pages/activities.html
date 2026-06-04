@@ -191,6 +191,35 @@
     // Store carousel timers for cleanup
     var carouselTimers = {};
 
+    function renderCalendar() {
+        var calEl = document.getElementById('activity-calendar');
+        if (!calEl) return;
+        var data = JSON.parse(localStorage.getItem('xie_admin_activities') || '[]');
+        if (!data.length) { calEl.innerHTML = ''; return; }
+        var months = {};
+        data.forEach(function(a) {
+          if (!a.date) return;
+          var m = a.date.substring(0, 7);
+          if (!months[m]) months[m] = [];
+          months[m].push(a);
+        });
+        var sorted = Object.keys(months).sort(function(a,b){return b.localeCompare(a);});
+        var html = '<div class="section-title"><h2>📅 活动日历</h2><div class="divider"></div></div><div style="max-height:400px;overflow-y:auto;padding-right:8px;">';
+        sorted.forEach(function(m) {
+          var label = m.split('-')[0] + '年' + parseInt(m.split('-')[1]) + '月';
+          html += '<div style="margin-bottom:16px;"><div style="font-size:14px;font-weight:600;color:var(--accent-orange);margin-bottom:6px;padding:4px 0;border-bottom:1px solid var(--accent-orange-dim);">' + label + '</div>';
+          months[m].forEach(function(a) {
+            html += '<div style="display:flex;gap:8px;margin-bottom:6px;padding:4px 8px;border-radius:6px;background:var(--glass-bg);">';
+            html += '<span style="font-size:11px;color:var(--text-tertiary);white-space:nowrap;padding-top:2px;">' + (a.date || '') + '</span>';
+            html += '<span style="font-size:13px;">' + (a.title || '') + '</span>';
+            html += '</div>';
+          });
+          html += '</div>';
+        });
+        html += '</div>';
+        calEl.innerHTML = html;
+    }
+
     function renderActivities(data) {
       if (!data || data.length === 0) {
         container.innerHTML = '<section style="margin-bottom:50px;"><div class="section-title"><h2>活动回顾</h2><div class="divider"></div></div><p style="text-align:center;color:var(--text-tertiary);padding:40px 0;">暂无活动数据</p></section>';
@@ -393,6 +422,7 @@
           var d = JSON.parse(local);
           if (d && d.length) {
             window._allActivities = d;
+            renderCalendar();
             renderActivities(d);
           }
         } catch(e) {}
