@@ -858,89 +858,31 @@ function buildAncestorChain(person, data) {
 
 function treeAutoLocate(personId) {
   var data = getGenealogyData();
-  var person = findById(personId, data);
+  var person = null;
+  for (var i = 0; i < data.length; i++) { if (data[i].id === personId) { person = data[i]; break; } }
   if (!person) return;
-
-  // Build ancestral chain
-  var chain = buildAncestorChain(person, data);
   var statusEl = document.getElementById('tree-search-status');
 
-  // Create a mini data set with ONLY the chain people (deep copy to avoid modifying originals)
-  function cloneObj(obj) { var c = {}; for (var k in obj) c[k] = obj[k]; return c; }
-  var chainData = [];
-  // Include person, all ancestors, and their spouses (for display)
-  for (var i = 0; i < chain.length; i++) {
-    chainData.push(cloneObj(chain[i]));
-    // Add spouse records
-    if (chain[i].spouse_ids) {
-      var spNames = chain[i].spouse_ids.split(',').map(function(n){return n.trim();}).filter(function(n){return n;});
-      for (var s = 0; s < spNames.length; s++) {
-        for (var di = 0; di < data.length; di++) {
-          if (data[di].name === spNames[s]) { var already = false; for (var _cd = 0; _cd < chainData.length; _cd++) { if (chainData[_cd].id === data[di].id) { already = true; break; } } if (!already) {
-            chainData.push(data[di]);
-          }
-          }
-        }
-      }
-    }
-  }
-
-  // Add a parent-child relationship: link each ancestor to the next as father
-  for (var ci = 0; ci < chain.length - 1; ci++) {
-    // chain[ci] is older, chain[ci+1] is younger
-    // Set chain[ci+1].father_id = chain[ci].id so the tree connects them
-    // But we need to preserve the original father_id for data integrity
-    // Instead, manipulate the data copy
-    var younger = chainData.indexOf(chain[ci+1]);
-    var older = chainData.indexOf(chain[ci]);
-    if (younger >= 0 && older >= 0) {
-      chainData[younger].father_id = chain[ci].id;
-    }
-  }
-  // Root has no father
-  var root = chainData[chain.length - 1];
-  if (root) root.father_id = null;
-
-  // Re-render tree with only this lineage data
+  // Expand tree, reset view
+  expandAllTree();
   treePanX = 0;
   treePanY = 0;
-  treeScale = 1;
-  renderTreeSVG(chainData);
+  treeScale = 0.7;
+  applyTreeTransformSVG();
 
-  // Highlight the person
   setTimeout(function() {
     var card = document.querySelector('.tree-svg-card[data-id="' + personId + '"]');
     if (card) {
+      scrollToCardSVG(card);
       var bg = card.querySelector('.card-bg');
       if (bg) {
         bg.classList.add('highlight');
-        bg.style.animation = 'pulse-highlight 2s ease-in-out 5';
+        bg.style.animation = 'pulse-highlight 1s ease-in-out 6';
+        bg.style.filter = 'drop-shadow(0 0 20px rgba(255,107,0,0.9))';
       }
     }
-    // Zoom to fit
-    treeZoomReset();
-  }, 100);
-
-  // Add a "恢复全部世系" button
-  var existing = document.getElementById('lineage-restore-btn');
-  if (!existing) {
-    var btn = document.createElement('button');
-    btn.id = 'lineage-restore-btn';
-    btn.className = 'btn btn-xs';
-    btn.textContent = '↩ 恢复全部世系';
-    btn.style.cssText = 'position:absolute;top:10px;right:10px;z-index:50;background:var(--accent-orange);color:#fff;border:none;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;';
-    btn.onclick = function() {
-      treePanX = 0; treePanY = 0; treeScale = 1;
-      renderTreeSVG(getGenealogyData());
-      this.remove();
-    };
-    var treeSection = document.getElementById('genealogy-tree-section');
-    if (treeSection) treeSection.style.position = 'relative';
-    var treeScroll = document.getElementById('tree-scroll-container');
-    if (treeScroll) treeScroll.appendChild(btn);
-  }
-
-  if (statusEl) { statusEl.textContent = '✓ ' + person.name + ' 的直系链条'; statusEl.style.color = '#22c55e'; setTimeout(function() { statusEl.textContent = ''; }, 4000); }
+    if (statusEl) { statusEl.textContent = '✓ ' + person.name; statusEl.style.color = '#22c55e'; setTimeout(function() { statusEl.textContent = ''; }, 3000); }
+  }, 400);
 }
 
 function locateInTree(personId) {
