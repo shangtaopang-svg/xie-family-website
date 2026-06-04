@@ -969,58 +969,91 @@ function locateInTree(personId) {
 
 
 function exportTreePNG() {
+  // Show export options menu
+  var menu = document.createElement('div');
+  menu.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg-primary);border:1px solid var(--glass-border);border-radius:14px;padding:24px;z-index:99999;box-shadow:0 20px 60px rgba(0,0,0,0.2);min-width:280px;text-align:center;';
+  menu.innerHTML = '<h3 style="margin-bottom:12px;font-family:var(--font-title);">📥 导出族谱</h3>' +
+    '<button class="btn btn-primary ripple-btn" onclick="this.parentElement.remove();exportTreeSVG()" style="display:block;width:100%;margin-bottom:8px;">导出世系图 (SVG)</button>' +
+    '<button class="btn btn-primary ripple-btn" onclick="this.parentElement.remove();exportFullData()" style="display:block;width:100%;margin-bottom:8px;">导出全部数据 (JSON)</button>' +
+    '<button class="btn btn-outline ripple-btn" onclick="this.parentElement.remove()" style="display:block;width:100%;">取消</button>' +
+    '<div style="font-size:11px;color:var(--text-tertiary);margin-top:8px;">SVG：世系树状图<br>JSON：全部族谱数据</div>';
+  document.body.appendChild(menu);
+}
+
+function exportTreeSVG() {
   var container = document.getElementById('tree-container');
   var svg = container.querySelector('svg');
   if (!svg) { alert('世系图尚未加载'); return; }
   var clone = svg.cloneNode(true);
+  // Inline all CSS
   var cssText = '';
   for (var si = 0; si < document.styleSheets.length; si++) {
     try {
       var rules = document.styleSheets[si].cssRules || document.styleSheets[si].rules;
       for (var ri = 0; ri < rules.length; ri++) {
         var css = rules[ri].cssText;
-        if (css.indexOf('.card-') >= 0 || css.indexOf('.tree-') >= 0 || css.indexOf('.ancestor-') >= 0) cssText += css + '\n';
+        if (css.indexOf('.card-') >= 0 || css.indexOf('.tree-') >= 0 || css.indexOf('.ancestor-') >= 0 || css.indexOf('.tree-svg') >= 0) cssText += css + '
+';
       }
     } catch(e) {}
   }
   var styles = document.querySelectorAll('style');
   for (var si2 = 0; si2 < styles.length; si2++) {
     var txt = styles[si2].textContent;
-    if (txt.indexOf('.card-') >= 0 || txt.indexOf('.tree-') >= 0) cssText += txt + '\n';
+    if (txt.indexOf('.card-') >= 0 || txt.indexOf('.tree-') >= 0) cssText += txt + '
+';
   }
   var defs = document.createElementNS('http://www.w3.org/2000/svg', 'style');
   defs.textContent = cssText;
   clone.insertBefore(defs, clone.firstChild);
+  // White background
   var bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
   bgRect.setAttribute('width', '100%'); bgRect.setAttribute('height', '100%');
   bgRect.setAttribute('fill', '#ffffff'); bgRect.setAttribute('x', '0'); bgRect.setAttribute('y', '0');
   clone.insertBefore(bgRect, clone.firstChild);
-  var svgData = new XMLSerializer().serializeToString(clone);
-  var canvas = document.createElement('canvas');
-  var rect = svg.getBoundingClientRect();
-  var scale = 2;
-  canvas.width = Math.max(rect.width, 800) * scale;
-  canvas.height = Math.max(rect.height, 600) * scale;
-  var ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-  var img = new Image();
+  // Export as SVG
+  var svgData = '<?xml version="1.0" encoding="UTF-8"?>
+' + new XMLSerializer().serializeToString(clone);
   var blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-  var url = URL.createObjectURL(blob);
-  img.onload = function() {
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    URL.revokeObjectURL(url);
-    canvas.toBlob(function(b) {
-      var a = document.createElement('a');
-      a.href = URL.createObjectURL(b);
-      a.download = 'xie-family-tree-' + new Date().toISOString().slice(0,10) + '.png';
-      a.click();
-    });
-  };
-  img.onerror = function() { alert('导出失败，请尝试截图'); };
-  img.src = url;
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'xie-family-tree-' + new Date().toISOString().slice(0,10) + '.svg';
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
-function scrollToCardSVG(card) {
+function exportFullData() {
+  var data = getGenealogyData();
+  if (!data || !data.length) { alert('无数据可导出'); return; }
+  // Create a readable text report
+  var text = '===== 下枫槎谢氏族谱数据 =====
+';
+  text += '导出时间: ' + new Date().toLocaleString() + '
+';
+  text += '总人数: ' + data.length + '
+
+';
+  data.sort(function(a,b){return (a.generation_num||0)-(b.generation_num||0)||(a.name||'').localeCompare(b.name||'');});
+  data.forEach(function(p) {
+    var gen = p.generation_num ? '第' + p.generation_num + '世' : '?';
+    var status = p.is_alive === '是' ? '在世' : '已故';
+    var branch = (p.branch && p.branch !== '—') ? ' [' + p.branch + ']' : '';
+    text += gen + ' ' + p.name + branch + ' ' + status + '
+';
+    if (p.spouse_ids) text += '  配: ' + p.spouse_ids + '
+';
+    if (p.biography) text += '  简介: ' + p.biography.replace(/<[^>]+>/g,'') + '
+';
+  });
+  var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'xie-genealogy-data-' + new Date().toISOString().slice(0,10) + '.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function scrollToCardSVG(card) {function scrollToCardSVG(card) {
   document.querySelectorAll('.card-bg.highlight').forEach(function(c) { c.classList.remove('highlight'); });
   var bg = card.querySelector('.card-bg');
   if (bg) bg.classList.add('highlight');
