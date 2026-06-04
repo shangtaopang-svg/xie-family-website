@@ -238,8 +238,13 @@
 .card-bg { fill:var(--glass-bg); stroke:var(--glass-border); stroke-width:2.5; rx:8; ry:8; transition:stroke 0.15s, stroke-width 0.15s; }
 .card-bg.male { }
 .card-bg.female { }
-.card-bg.highlight { stroke:#ff4400; stroke-width:6; filter:url(#glow); animation:hlFlash 0.8s ease-in-out 5; }
-@keyframes hlFlash { 0%,100% { stroke:#ff4400; stroke-width:6; } 50% { stroke:#ffdd00; stroke-width:10; } }
+.card-bg.highlight { stroke:#ff2200; stroke-width:7; filter:url(#glow); animation:hlFlash 0.6s ease-in-out 6; }
+@keyframes hlFlash { 0%,100% { stroke:#ff2200; stroke-width:7; } 50% { stroke:#ffdd00; stroke-width:11; } }
+.tree-svg-highlight .card-bg,
+.card-bg.highlight + .card-name,
+.card-bg.highlight ~ .card-name { fill:#cc0000 !important; font-weight:900 !important; font-size:18px; }
+g.tree-svg-card.highlight-name .card-name { fill:#ff0000 !important; font-weight:900 !important; font-size:18px; }
+g.tree-svg-card.highlight-name .card-bg { fill:rgba(255,0,0,0.15) !important; }
 .card-name { fill:var(--text-primary); font-size:14px; font-weight:600; text-anchor:middle; }
 .card-meta { fill:var(--text-tertiary); font-size:10px; text-anchor:middle; }
 .card-branch { fill:var(--accent-orange); font-size:9px; text-anchor:middle; }
@@ -875,14 +880,14 @@ function treeAutoLocate(personId) {
     var card = document.querySelector('.tree-svg-card[data-id="' + personId + '"]');
     if (card) {
       scrollToCardSVG(card);
+      card.classList.add('highlight-name');
       var bg = card.querySelector('.card-bg');
       if (bg) {
         bg.classList.add('highlight');
         bg.style.animation = 'pulse-highlight 1s ease-in-out 6';
-        bg.style.filter = 'drop-shadow(0 0 20px rgba(255,107,0,0.9))';
       }
     }
-    if (statusEl) { statusEl.textContent = '✓ ' + person.name; statusEl.style.color = '#22c55e'; setTimeout(function() { statusEl.textContent = ''; }, 3000); }
+    if (statusEl) { statusEl.textContent = person.name; statusEl.style.background = '#cc0000'; statusEl.style.color = '#fff'; statusEl.style.padding = '2px 8px'; statusEl.style.borderRadius = '4px'; statusEl.style.fontWeight = '700'; setTimeout(function() { statusEl.textContent = ''; statusEl.style.background = ''; }, 4000); }
   }, 400);
 }
 
