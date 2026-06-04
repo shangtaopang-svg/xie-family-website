@@ -842,28 +842,66 @@ function searchInTree() {
 
 function treeAutoLocate(personId, retries) {
   retries = retries || 0;
-  // Always expand tree first so hidden cards get valid bounding rects
+  var data = getGenealogyData();
+  var person = null;
+  for (var i = 0; i < data.length; i++) { if (data[i].id === personId) { person = data[i]; break; } }
+  if (!person) return;
+
+  // Build the direct ancestral path: person → father → grandfather → ...
+  var pathIds = {};
+  var cur = person;
+  pathIds[cur.id] = true;
+  while (cur && cur.father_id) {
+    var fid = parseInt(cur.father_id);
+    for (var i = 0; i < data.length; i++) { if (data[i].id === fid) { cur = data[i]; pathIds[cur.id] = true; break; } }
+    // Also add mother
+    if (cur && cur.mother_id) {
+      var mid = parseInt(cur.mother_id);
+      for (var i = 0; i < data.length; i++) { if (data[i].id === mid) { pathIds[data[i].id] = true; break; } }
+    }
+    if (!fid) break;
+  }
+
+  // Re-render tree: expand all, then hide non-path nodes
   expandAllTree();
   setTimeout(function() {
-    var card = document.querySelector('.tree-svg-card[data-id="' + personId + '"]');
-    if (!card) {
-      if (retries < 3) {
-        setTimeout(function() { treeAutoLocate(personId, retries + 1); }, 600);
+    var allCards = document.querySelectorAll('.tree-svg-card');
+    for (var i = 0; i < allCards.length; i++) {
+      var id = parseInt(allCards[i].getAttribute('data-id'));
+      if (pathIds[id]) {
+        allCards[i].style.opacity = '1';
+        // Expand this node and all its ancestors
+        var node = allCards[i].closest('.tree-svg-node');
+        if (node) node.classList.remove('tree-svg-node-hidden');
+      } else {
+        allCards[i].style.opacity = '0.08';
       }
-      return;
     }
-    requestAnimationFrame(function() {
-      scrollToCardSVG(card);
+    // Highlight the person
+    var card = document.querySelector('.tree-svg-card[data-id="' + personId + '"]');
+    if (card) {
       var bg = card.querySelector('.card-bg');
       if (bg) {
         bg.classList.add('highlight');
-        bg.style.animation = 'pulse-highlight 1.5s ease-in-out 3';
+        bg.style.animation = 'pulse-highlight 1.5s ease-in-out 5';
       }
-    });
-    document.getElementById('tree-search-status').textContent = '已定位';
+      // Expand all ancestors of this card
+      var parent = card.parentElement;
+      while (parent) {
+        if (parent.classList && parent.classList.contains('tree-svg-node-hidden')) {
+          parent.classList.remove('tree-svg-node-hidden');
+        }
+        parent = parent.parentElement;
+      }
+      // Scroll into view - try multiple approaches
+      try { card.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' }); } catch(e) {}
+      // Also try SVG pan
+      scrollToCardSVG(card);
+    }
+    document.getElementById('tree-search-status').textContent = '✓ ' + person.name;
     document.getElementById('tree-search-status').style.color = '#22c55e';
-    setTimeout(function() { document.getElementById('tree-search-status').textContent = ''; }, 2000);
-  }, 150);
+    setTimeout(function() { document.getElementById('tree-search-status').textContent = ''; }, 3000);
+  }, 200);
 }
 
 function locateInTree(personId) {
