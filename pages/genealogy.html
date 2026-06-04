@@ -238,7 +238,8 @@
 .card-bg { fill:var(--glass-bg); stroke:var(--glass-border); stroke-width:2.5; rx:8; ry:8; transition:stroke 0.15s, stroke-width 0.15s; }
 .card-bg.male { }
 .card-bg.female { }
-.card-bg.highlight { stroke:var(--accent-orange); stroke-width:3; filter:url(#glow); }
+.card-bg.highlight { stroke:#ff4400; stroke-width:6; filter:url(#glow); animation:hlFlash 0.8s ease-in-out 5; }
+@keyframes hlFlash { 0%,100% { stroke:#ff4400; stroke-width:6; } 50% { stroke:#ffdd00; stroke-width:10; } }
 .card-name { fill:var(--text-primary); font-size:14px; font-weight:600; text-anchor:middle; }
 .card-meta { fill:var(--text-tertiary); font-size:10px; text-anchor:middle; }
 .card-branch { fill:var(--accent-orange); font-size:9px; text-anchor:middle; }
@@ -281,7 +282,7 @@
 .person-detail-modal { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px; }
 .person-detail-box { background:var(--bg-primary); border:1px solid var(--glass-border); border-radius:12px; max-width:500px; width:100%; padding:30px; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.3); max-height:80vh; overflow-y:auto; }
 .genealogy-page { max-width:1200px !important; }
-@keyframes pulse-highlight { 0%,100% { filter:drop-shadow(0 0 6px rgba(251,146,60,0.6)); } 50% { filter:drop-shadow(0 0 14px rgba(251,146,60,0.2)); } }
+@keyframes pulse-highlight { 0%,100% { filter:drop-shadow(0 0 30px rgba(255,68,0,0.8)) drop-shadow(0 0 60px rgba(255,68,0,0.4)); } 50% { filter:drop-shadow(0 0 10px rgba(255,68,0,0.3)); } }
 .locate-btn { font-size:11px; padding:3px 10px; border-radius:6px; border:1px solid rgba(251,146,60,0.3); background:rgba(251,146,60,0.1); color:var(--accent-orange); cursor:pointer; white-space:nowrap; transition:all 0.2s; flex-shrink:0; }
 .locate-btn:hover { background:rgba(251,146,60,0.2); border-color:var(--accent-orange); }
 
