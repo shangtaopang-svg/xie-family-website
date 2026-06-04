@@ -11,7 +11,9 @@
         var membersEl = document.getElementById('stat-members');
         try {
           var gData = JSON.parse(localStorage.getItem('xie_admin_genealogy') || '[]');
-          if (gData.length && membersEl) membersEl.textContent = gData.length;
+          var aliveCount = 0;
+          for (var gi = 0; gi < gData.length; gi++) { if (gData[gi].is_alive === '是') aliveCount++; }
+          if (membersEl) membersEl.textContent = aliveCount || gData.length;
         } catch(e) {}
 
         // 视频
