@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title data-i18n="page.members.title">家族成员 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 
@@ -487,11 +490,13 @@
       applyFilters(window._membersData);
     }
     function setGenFilterDropdown(val) {
+      console.log("setGenFilterDropdown:", val, "parsed:", parseInt(val));
       _genFilter = val ? parseInt(val) : '';
       applyFilters(window._membersData);
     }
 
     function applyFilters(data) {
+      console.log("applyFilters called, _showAliveOnly:", _showAliveOnly, "_genFilter:", _genFilter, "_branchFilter:", _branchFilter, "data.length:", data ? data.length : 0);
       if (!data) return;
       var filtered = [];
       var seenFilter = {};
