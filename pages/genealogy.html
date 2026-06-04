@@ -174,6 +174,11 @@
           <input type="text" id="tree-search-input" placeholder="搜姓名定位世系图..." style="padding:4px 10px;border:1px solid var(--glass-border);border-radius:6px 0 0 6px;background:var(--bg-card);color:var(--text-primary);font-size:13px;width:160px;border-right:none;">
           <button class="btn btn-xs" onclick="doTreeSearch()" style="border-radius:0 6px 0 0;padding:4px 10px;background:var(--accent-orange);color:#fff;border:none;font-size:12px;font-weight:600;cursor:pointer;">定位</button>
           <span id="tree-search-status" style="font-size:11px;color:var(--text-tertiary);padding:4px 8px;white-space:nowrap;"></span>
+          <span style="width:1px;height:20px;background:var(--divider);margin:0 4px;"></span>
+          <input type="text" id="gen-compare-a" placeholder="A姓名" style="padding:4px 8px;border:1px solid var(--glass-border);border-radius:6px 0 0 6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;width:80px;border-right:none;">
+          <input type="text" id="gen-compare-b" placeholder="B姓名" style="padding:4px 8px;border:1px solid var(--glass-border);border-radius:0;background:var(--bg-card);color:var(--text-primary);font-size:12px;width:80px;border-right:none;">
+          <button class="btn btn-xs" onclick="compareGeneration()" style="border-radius:0 6px 6px 0;padding:4px 10px;background:var(--accent-orange-dim);color:var(--accent-orange);border:1px solid var(--accent-orange);font-size:11px;font-weight:600;cursor:pointer;">世代对比</button>
+          <span id="gen-compare-result" style="font-size:11px;padding:4px 8px;white-space:nowrap;"></span>
         </div>
         <div class="genealogy-tree-scroll" id="tree-scroll-container">
           <div id="tree-container"></div>
@@ -860,6 +865,38 @@ function buildAncestorChain(person, data) {
     cur = fid ? findById(fid, data) : null;
   }
   return chain;
+}
+
+function compareGeneration() {
+  var data = getGenealogyData();
+  var nameA = document.getElementById('gen-compare-a').value.trim();
+  var nameB = document.getElementById('gen-compare-b').value.trim();
+  var resultEl = document.getElementById('gen-compare-result');
+  if (!nameA || !nameB) { resultEl.textContent = '请输入两人姓名'; resultEl.style.color = 'var(--accent-red)'; return; }
+  var pA = null, pB = null;
+  for (var i = 0; i < data.length; i++) {
+    if (data[i].name === nameA) pA = data[i];
+    if (data[i].name === nameB) pB = data[i];
+  }
+  if (!pA || !pB) { resultEl.textContent = '未找到「' + (!pA ? nameA : nameB) + '」'; resultEl.style.color = 'var(--accent-red)'; return; }
+  var genA = parseInt(pA.generation_num) || 0;
+  var genB = parseInt(pB.generation_num) || 0;
+  var diff = Math.abs(genA - genB);
+  var elder = genA < genB ? pA.name : pB.name;
+  var younger = genA < genB ? pB.name : pA.name;
+  var genDiff = genA < genB ? genB - genA : genA - genB;
+  var relation = '';
+  if (diff === 0) relation = '同辈（兄弟/姐妹）';
+  else if (diff === 1) relation = elder + ' 是 ' + younger + ' 的父/母辈';
+  else if (diff === 2) relation = elder + ' 是 ' + younger + ' 的祖父母辈';
+  else relation = elder + ' 是 ' + younger + ' 的上' + diff + '世祖辈';
+  resultEl.innerHTML = '<span style="color:var(--accent-orange);font-weight:600;">' + escapeHtml(pA.name) + '</span>（第' + genA + '世） vs <span style="color:var(--accent-orange);font-weight:600;">' + escapeHtml(pB.name) + '</span>（第' + genB + '世）<br><span style="font-weight:600;">相差 ' + diff + ' 代 · ' + relation + '</span>';
+  resultEl.style.color = 'var(--text-primary)';
+  // Also locate both in tree
+  var cardA = document.querySelector('.tree-svg-card[data-id="' + pA.id + '"]');
+  var cardB = document.querySelector('.tree-svg-card[data-id="' + pB.id + '"]');
+  if (cardA) { var bgA = cardA.querySelector('.card-bg'); if (bgA) { bgA.classList.add('highlight'); } }
+  if (cardB) { var bgB = cardB.querySelector('.card-bg'); if (bgB) { bgB.classList.add('highlight'); } }
 }
 
 function treeAutoLocate(personId) {
