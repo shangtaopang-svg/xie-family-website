@@ -77,18 +77,7 @@
         <p>乌衣世泽 · 宝树家声</p>
       </div>
 
-      <!-- 谱序 -->
-      <div class="glass-card" style="padding:28px;margin-bottom:30px;opacity:0;" id="genealogy-preface">
-        <h3 style="font-family:'STKaiti','KaiTi',serif;color:var(--text-primary);margin-bottom:16px;font-size:20px;font-weight:700;letter-spacing:2px;text-align:center;">谱序</h3>
-        <div style="font-family:'STKaiti','KaiTi','Noto Serif SC',serif;font-size:18px;line-height:2.3;color:var(--text-primary);font-weight:500;letter-spacing:0.5px;">
-          <p style="margin-bottom:14px;text-indent:2em;font-weight:600;">盖闻木有本而枝叶茂，水有源而流派长。吾谢氏之先，出自姬姓。周宣王封元舅申伯于谢邑，因以国为氏，至今两千八百余载矣。自申伯受封，历代相承，或显于周秦，或盛于汉魏。至东晋时，文靖公谢安、康乐公谢玄叔侄，以八万北府之师破苻坚百万之众于淝水，拯社稷于将倾。一门数公，位极人臣，与琅琊王氏并称"王谢"，为天下望族之冠。此吾族千载之荣光也。</p>
-          <p style="margin-bottom:14px;text-indent:2em;font-weight:600;">溯吾枫槎一脉，世系源远流长。自申伯传三十六世至东山会稽，再由会稽南下经临海下渡，至石马（下谢）小四公，乃入浙东之近祖也。由石马传十二世，至文杲公，字克源，北宋宣和年间（约公元一一二五年）任越溪司巡检，始居岩下。公为枫槎谢氏之始迁祖，至今近九百载，传三十六世，瓜瓞绵绵。二世祖攒公、撰公，析居后枫槎与前枫槎，两支并茂，各立门户。</p>
-          <p style="margin-bottom:14px;text-indent:2em;font-weight:600;">初，吾族世居岩下。迨明隆庆壬申（公元一五七二年），山洪暴发，庐舍为墟。十六世祖乾公、彬公昆仲，相度地势，遂迁于双枫古槎之下，因名其地曰"下枫槎"。斩荆棘，辟草莱，筑室于兹，开基立业。自此一脉繁衍，枝分派衍，或习儒术而登科第，或事商贾而通有无，或精农桑而富仓廪。清乾隆间，合族建宗祠于村北，三进两厢，门楣高悬"谢氏宗祠"匾额，堂号"敦睦堂"，寓敦宗睦族之意。春秋二祭，少长咸集，尊祖敬宗，礼行肃穆。</p>
-          <p style="margin-bottom:14px;text-indent:2em;font-weight:600;">吾族行第字辈，自十九世起，依次为：一、懋、之、嘉、永、孝、思、台、邦、令、序、善、道、开、时、天，凡十六字，周而复始。今已传至"天"字辈，族众蕃衍，蔚为大观。散居四方者，或负笈远游而求学于外，或投身实业而建功于业，或捐资修路以利乡邻，或助学奖教以育英才。然心系故土，情牵宗亲，每逢清明冬至，千里归来，聚首祖祠，其乐融融。</p>
-          <p style="margin-bottom:14px;text-indent:2em;font-weight:600;">今值盛世，国运昌隆，族谱重修于丙午之春（公元二〇二六年），敦睦堂珍藏。建数字宗祠于云端，录世系于网络，使四海宗亲皆可随时查阅，虽隔山海，犹在目前。乌衣世泽，源远流长；宝树家声，继往开来。凡我族人，当念创业之艰难、守成之不易，同心同德，以光大门楣、垂裕后昆。则吾谢氏之兴，岂有艾乎？</p>
-          <div style="text-align:right;margin-top:20px;font-size:15px;font-weight:700;letter-spacing:1px;color:var(--accent-orange);">下枫槎谢氏阖族敬撰<br>公元二〇二六年岁次丙午仲夏</div>
-        </div>
-      </div>
+
 
       <!-- 字辈 -->
       <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-generation-chart">
@@ -182,7 +171,8 @@
           <button class="btn btn-sm" onclick="filterBranch('攒【后枫槎】')" id="filter-houfengcha" style="font-size:15px;font-weight:700;padding:6px 18px;background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.4);">🌳 后枫槎世系图</button>
           <button class="btn btn-sm" onclick="filterBranch('撰【前枫槎】')" id="filter-qianfengcha" style="font-size:15px;font-weight:700;padding:6px 18px;background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.4);">🌳 前枫槎世系图</button>
           <span style="flex:1;min-width:20px;"></span>
-          <input type="text" id="tree-search-input" placeholder="🔍 在世系图中搜姓名..." style="padding:4px 10px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;width:180px;" onkeypress="if(event.key==='Enter'||event.keyCode===13)searchInTree()">
+          <input type="text" id="tree-search-input" placeholder="搜姓名定位世系图..." style="padding:4px 10px;border:1px solid var(--glass-border);border-radius:6px 0 0 6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;width:150px;border-right:none;">
+          <button class="btn btn-xs" onclick="doTreeSearch()" style="border-radius:0 6px 6px 0;padding:4px 10px;background:var(--accent-orange);color:#fff;border:none;font-size:12px;cursor:pointer;">定位</button>
         </div>
         <div class="genealogy-tree-scroll" id="tree-scroll-container">
           <div id="tree-container"></div>
@@ -815,6 +805,10 @@ function applyTreeTransformSVG() {
 }
 
 // ===== Locate person in SVG tree =====
+function doTreeSearch() {
+  searchInTree();
+}
+
 function searchInTree() {
   var q = document.getElementById('tree-search-input').value.trim();
   if (!q) return;
@@ -909,6 +903,9 @@ function scrollToCardSVG(card) {
 
 // ===== Setup SVG tree interactions =====
 document.addEventListener('DOMContentLoaded', function() {
+  // Tree search Enter key handler
+  var tsInput = document.getElementById('tree-search-input');
+  if (tsInput) tsInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') doTreeSearch(); });
   var scrollContainer = document.getElementById('tree-scroll-container');
   if (!scrollContainer) return;
 
@@ -1476,6 +1473,9 @@ function locateInTree(personId) {
 
   // Allow Enter key to search
   document.addEventListener('DOMContentLoaded', function() {
+  // Tree search Enter key handler
+  var tsInput = document.getElementById('tree-search-input');
+  if (tsInput) tsInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') doTreeSearch(); });
     var searchInput = document.getElementById('genealogy-search');
     if (searchInput) {
       searchInput.addEventListener('keyup', function(e) {
