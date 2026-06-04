@@ -2,6 +2,8 @@
    宁海下枫槎村 · 谢氏家族网站
    参考风格：童寂 (light gradient + glassmorphism)
    ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 
 /* ===== VARIABLES & THEME ===== */
 :root {
@@ -25,8 +27,8 @@
   --radius: 16px;
   --radius-sm: 12px;
   --radius-xl: 24px;
-  --font-title: 'Noto Serif SC', 'STSong', 'SimSun', 'Songti SC', serif;
-  --font-body: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  --font-title: 'Inter', 'Noto Serif SC', 'STSong', 'SimSun', 'Songti SC', serif;
+  --font-body: 'Inter', 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;
 }
 
 /* ===== Dark Mode ===== */
@@ -95,6 +97,84 @@
 /* ===== RESET & BASE ===== */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
+
+/* ===== 滚动渐入动画 ===== */
+.fade-in-section {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.fade-in-section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== 按钮水波纹 ===== */
+.ripple-btn {
+  position: relative;
+  overflow: hidden;
+}
+.ripple-btn .ripple-effect {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  transform: scale(0);
+  animation: rippleAnim 0.6s ease-out;
+  pointer-events: none;
+}
+@keyframes rippleAnim {
+  to { transform: scale(4); opacity: 0; }
+}
+
+/* ===== 卡片悬浮 3D 效果 ===== */
+.card-3d {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+  perspective: 800px;
+}
+.card-3d:hover {
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+/* ===== Hero 动态渐变背景 ===== */
+@keyframes heroGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.hero-gradient-anim {
+  background-size: 200% 200%;
+  animation: heroGradient 8s ease infinite;
+}
+
+/* ===== 数字跳动 ===== */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.stat-num-anim {
+  animation: countUp 0.5s ease both;
+}
+
+/* ===== 链接悬浮下划线动画 ===== */
+.underline-anim {
+  position: relative;
+  text-decoration: none;
+}
+.underline-anim::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--accent-orange);
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+.underline-anim:hover::after {
+  width: 100%;
+}
 
 /* ===== Background Canvas (fixed behind everything, no flow space) ===== */
 /* ===== BACKGROUND CANVAS ===== */
