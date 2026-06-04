@@ -1026,8 +1026,7 @@ function exportFullData() {
   // Create a readable text report
   var text = '===== 下枫槎谢氏族谱数据 =====
 ';
-  text += '导出时间: ' + new Date().toLocaleString() + '
-';
+  text += '导出时间: ' + new Date().toLocaleString() + '\n';
   text += '总人数: ' + data.length + '
 
 ';
@@ -1036,12 +1035,9 @@ function exportFullData() {
     var gen = p.generation_num ? '第' + p.generation_num + '世' : '?';
     var status = p.is_alive === '是' ? '在世' : '已故';
     var branch = (p.branch && p.branch !== '—') ? ' [' + p.branch + ']' : '';
-    text += gen + ' ' + p.name + branch + ' ' + status + '
-';
-    if (p.spouse_ids) text += '  配: ' + p.spouse_ids + '
-';
-    if (p.biography) text += '  简介: ' + p.biography.replace(/<[^>]+>/g,'') + '
-';
+    text += gen + ' ' + p.name + branch + ' ' + status + '\n';
+    if (p.spouse_ids) text += '  配: ' + p.spouse_ids + '\n';
+    if (p.biography) text += '  简介: ' + p.biography.replace(/<[^>]+>/g,'') + '\n';
   });
   var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
   var a = document.createElement('a');
