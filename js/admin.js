@@ -536,6 +536,40 @@ function buildAdminTreeHtml(data) {
       html += '</div>'; // apt-children-wrap
     }
 
+    // Bio lineage for adopted persons: show biological ancestors as a separate branch
+    if (person.adopted && person.adopted !== '否' && person.adopted !== '出继' && person.bio_father_id) {
+      html += '<div class="apt-bio-lineage" style="margin:6px 0 4px 20px;padding:6px 10px;border-left:2px dashed rgba(34,211,238,0.3);border-radius:0 6px 6px 0;background:rgba(34,211,238,0.03);">';
+      html += '<div style="font-size:10px;font-weight:600;color:#22d3ee;margin-bottom:4px;letter-spacing:1px;">🌱 原生 lineage（生父系）</div>';
+      // Traverse bio father chain upward
+      var bioChain = [];
+      var curBioId = parseInt(person.bio_father_id);
+      var maxGen = 20; // prevent infinite loops
+      while (curBioId && maxGen > 0) {
+        maxGen--;
+        var bioPerson = null;
+        for (var bi = 0; bi < data.length; bi++) {
+          if (data[bi].id === curBioId) { bioPerson = data[bi]; break; }
+        }
+        if (!bioPerson) break;
+        bioChain.push(bioPerson);
+        curBioId = bioPerson.father_id ? parseInt(bioPerson.father_id) : null;
+      }
+      // Render bio chain from oldest to youngest (reverse)
+      bioChain.reverse();
+      for (var bci = 0; bci < bioChain.length; bci++) {
+        var bp = bioChain[bci];
+        var isLast = (bci === bioChain.length - 1);
+        html += '<div style="display:flex;align-items:center;gap:6px;padding:2px 0;' + (isLast ? '' : '') + '">';
+        html += '<div style="width:24px;height:24px;border-radius:50%;background:' + (bp.gender === '女' ? 'rgba(244,114,182,0.2)' : 'rgba(34,211,238,0.15)') + ';display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">' + (bp.gender === '女' ? '👩' : '👤') + '</div>';
+        html += '<span style="font-size:12px;">' + escapeHtml(bp.name) + '</span>';
+        html += '<span style="font-size:10px;color:var(--text-tertiary);">' + (bp.generation_num || '?') + '世</span>';
+        if (!isLast) html += '<span style="color:var(--text-tertiary);font-size:10px;margin-left:auto;">⬇</span>';
+        else html += '<span style="color:#22d3ee;font-size:11px;margin-left:auto;font-weight:600;">→ ' + escapeHtml(person.name) + '（嗣子）</span>';
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+
     html += '</div>';
     return html;
   }
