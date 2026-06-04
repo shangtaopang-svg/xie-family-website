@@ -2049,18 +2049,19 @@ function locateInTree(personId) {
     var maxCount = 1;
     genNums.forEach(function(g) { maxCount = Math.max(maxCount, genMap[g].length); });
 
-    // Draw background stars
+    // Background stars (fixed positions)
     var bgStars = [];
-    for (var i = 0; i < 150; i++) {
+    for (var i = 0; i < 180; i++) {
       bgStars.push({
         x: Math.random() * w, y: Math.random() * h,
         r: Math.random() * 1.5 + 0.3,
         a: Math.random() * 0.5 + 0.1,
-        s: Math.random() * 0.02 + 0.005
+        s: Math.random() * 0.02 + 0.005,
+        phase: Math.random() * 100
       });
     }
 
-    // Golden angle spiral layout
+    // Golden angle spiral layout — store base positions (before rotation)
     var cx = w / 2, cy = h / 2 + 6;
     var goldAngle = 137.508 * Math.PI / 180;
     var scale = Math.min(w, h) / (Math.sqrt(genNums.length) * 3.2 + 2);
@@ -2071,75 +2072,155 @@ function locateInTree(personId) {
     genNums.forEach(function(gen, i) {
       var angle = i * goldAngle;
       var radius = Math.sqrt(i) * scale;
-      var x = cx + radius * Math.cos(angle);
-      var y = cy + radius * Math.sin(angle);
       var count = genMap[gen].length;
       var size = 5 + (count / maxCount) * 20;
       var brightness = 0.35 + (count / maxCount) * 0.55;
-      stars.push({ gen: gen, x: x, y: y, size: size, count: count, brightness: brightness, angle: angle, radius: radius, i: i });
+      // Each star's unique orbital params
+      var wobbleAmp = 2 + Math.random() * 4;    // wobble amplitude
+      var wobbleSpeed = 0.4 + Math.random() * 0.6; // wobble speed
+      var wobblePhase = Math.random() * 6.28;
+      stars.push({
+        gen: gen, baseAngle: angle, radius: radius,
+        size: size, count: count, brightness: brightness, i: i,
+        wobbleAmp: wobbleAmp, wobbleSpeed: wobbleSpeed, wobblePhase: wobblePhase
+      });
     });
 
-    // Animate background twinkle
+    // Shooting star system
+    var shootingStars = [];
+    function spawnShootingStar() {
+      shootingStars.push({
+        x: Math.random() * w * 1.2 - w * 0.1,
+        y: Math.random() * h * 0.3,
+        len: 40 + Math.random() * 80,
+        speed: 300 + Math.random() * 400,
+        angle: Math.PI * 0.2 + Math.random() * 0.3,
+        life: 1,
+        decay: 0.005 + Math.random() * 0.01
+      });
+    }
+
+    // Start spawning shooting stars periodically
+    var shootTimer = 0;
+
+    // Floating particles
+    var particles = [];
+    for (var i = 0; i < 30; i++) {
+      particles.push({
+        x: Math.random() * w, y: Math.random() * h,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4 - 0.2,
+        r: Math.random() * 2 + 0.5,
+        life: 0.5 + Math.random() * 0.5,
+        maxLife: 0.5 + Math.random() * 0.5,
+        phase: Math.random() * 6.28
+      });
+    }
+
+    // Animate — dynamic rotation, orbit, shooting stars
     var animId = null;
+    var rotationAngle = 0;
+
     function drawFrame(time) {
+      var t = time / 1000;
       ctx.clearRect(0, 0, w, h);
 
-      // Draw faint nebula glow at center
-      var nebGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(w, h) * 0.35);
-      nebGrad.addColorStop(0, 'rgba(251,146,60,0.04)');
-      nebGrad.addColorStop(0.5, 'rgba(180,100,200,0.02)');
+      // --- 1. Nebula glow at center ---
+      var nebGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(w, h) * 0.4);
+      nebGrad.addColorStop(0, 'rgba(251,146,60,' + (0.04 + Math.sin(t * 0.3) * 0.015) + ')');
+      nebGrad.addColorStop(0.4, 'rgba(180,100,200,' + (0.025 + Math.sin(t * 0.5 + 1) * 0.01) + ')');
       nebGrad.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = nebGrad;
       ctx.fillRect(0, 0, w, h);
 
-      // Draw background twinkling stars
-      var t = time / 1000;
+      // --- 2. Background twinkling stars ---
       bgStars.forEach(function(s) {
-        var alpha = s.a + Math.sin(t * 3 + s.x * 7 + s.y * 11) * 0.2;
+        var alpha = s.a + Math.sin(t * 2.5 + s.x * 7 + s.y * 11 + s.phase) * 0.18;
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,255,255,' + Math.max(0, alpha) + ')';
+        ctx.fillStyle = 'rgba(255,255,255,' + Math.max(0.05, alpha) + ')';
         ctx.fill();
       });
 
-      // Draw constellation lines (connect consecutive generations)
-      ctx.lineWidth = 1;
-      for (var i = 1; i < stars.length; i++) {
-        var s1 = stars[i-1], s2 = stars[i];
+      // --- 3. Calculate dynamic star positions (rotation + wobble) ---
+      rotationAngle += 0.0035; // slow continuous rotation
+      var cosR = Math.cos(rotationAngle), sinR = Math.sin(rotationAngle);
+
+      var dynStars = stars.map(function(s) {
+        // Wobble offset
+        var wobble = Math.sin(t * s.wobbleSpeed + s.wobblePhase) * s.wobbleAmp;
+        var currentRadius = s.radius + wobble;
+        // Rotation
+        var finalAngle = s.baseAngle + rotationAngle;
+        var x = cx + currentRadius * Math.cos(finalAngle);
+        var y = cy + currentRadius * Math.sin(finalAngle);
+        // Vertical float
+        y += Math.sin(t * 0.8 + s.i * 0.3) * 1.5;
+        return { x: x, y: y, gen: s.gen, size: s.size, brightness: s.brightness, count: s.count, i: s.i, baseAngle: s.baseAngle };
+      });
+
+      // --- 4. Constellation lines (animated glow) ---
+      for (var i = 1; i < dynStars.length; i++) {
+        var s1 = dynStars[i-1], s2 = dynStars[i];
         if (s2.gen - s1.gen <= 5 && s1.gen > 0) {
+          // Animated dash offset
+          var dashOffset = -t * 30;
+          var lineAlpha = 0.08 + (i / dynStars.length) * 0.1 + Math.sin(t * 0.5 + i * 0.2) * 0.04;
           ctx.beginPath();
           ctx.moveTo(s1.x, s1.y);
           ctx.lineTo(s2.x, s2.y);
-          ctx.strokeStyle = 'rgba(251,146,60,' + (0.06 + (i / stars.length) * 0.08) + ')';
+          ctx.setLineDash([4, 8]);
+          ctx.lineDashOffset = dashOffset;
+          ctx.strokeStyle = 'rgba(251,146,60,' + lineAlpha + ')';
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Glow line (thicker, more transparent)
+          ctx.beginPath();
+          ctx.moveTo(s1.x, s1.y);
+          ctx.lineTo(s2.x, s2.y);
+          ctx.strokeStyle = 'rgba(251,146,60,' + (lineAlpha * 0.3) + ')';
+          ctx.lineWidth = 4;
           ctx.stroke();
         }
       }
 
-      // Draw constellation lines from center
-      if (stars.length > 0) {
-        var first = stars[0];
+      // Center origin line
+      if (dynStars.length > 0) {
+        var first = dynStars[0];
         ctx.beginPath();
         ctx.moveTo(cx, cy);
         ctx.lineTo(first.x, first.y);
-        ctx.strokeStyle = 'rgba(251,146,60,0.15)';
+        ctx.strokeStyle = 'rgba(251,146,60,' + (0.1 + Math.sin(t * 0.4) * 0.05) + ')';
         ctx.lineWidth = 1.5;
         ctx.stroke();
       }
 
-      // Draw pulsating glow and stars
-      stars.forEach(function(s) {
-        var pulse = 1 + Math.sin(t * 1.5 + s.i * 0.5) * 0.08;
+      // --- 5. Draw stars with dynamic glow ---
+      dynStars.forEach(function(s) {
+        var pulse = 1 + Math.sin(t * 2 + s.i * 0.7) * 0.12;
         var r = s.size / 2 * pulse;
-        var alpha = Math.min(1, s.brightness + Math.sin(t * 2 + s.i * 0.7) * 0.08);
+        var alpha = Math.min(1, s.brightness + Math.sin(t * 2.5 + s.i * 0.9) * 0.1);
 
-        // Outer glow
-        var grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, r * 4);
-        grad.addColorStop(0, 'rgba(251,146,60,' + (alpha * 0.5) + ')');
-        grad.addColorStop(0.3, 'rgba(251,146,60,' + (alpha * 0.15) + ')');
+        // Outer glow (larger pulse)
+        var glowR = r * (3 + Math.sin(t * 1.2 + s.i * 0.4) * 0.5);
+        var grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, glowR);
+        grad.addColorStop(0, 'rgba(251,146,60,' + (alpha * 0.45) + ')');
+        grad.addColorStop(0.3, 'rgba(251,146,60,' + (alpha * 0.12) + ')');
         grad.addColorStop(1, 'rgba(251,146,60,0)');
         ctx.fillStyle = grad;
         ctx.beginPath();
-        ctx.arc(s.x, s.y, r * 4, 0, Math.PI * 2);
+        ctx.arc(s.x, s.y, glowR, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Secondary glow (cool tone)
+        var grad2 = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, r * 2);
+        grad2.addColorStop(0, 'rgba(180,160,255,' + (alpha * 0.08) + ')');
+        grad2.addColorStop(1, 'rgba(180,160,255,0)');
+        ctx.fillStyle = grad2;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, r * 2, 0, Math.PI * 2);
         ctx.fill();
 
         // Star core
@@ -2151,31 +2232,111 @@ function locateInTree(personId) {
         // Inner bright core
         ctx.beginPath();
         ctx.arc(s.x, s.y, r * 0.4, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,240,220,' + alpha + ')';
+        ctx.fillStyle = 'rgba(255,240,225,' + (alpha * 0.9) + ')';
         ctx.fill();
 
-        // Generation character label (for ones with known 字辈)
+        // Cross flare for larger stars
+        if (s.size > 16) {
+          ctx.strokeStyle = 'rgba(255,220,180,' + (alpha * 0.15) + ')';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(s.x - r * 1.8, s.y);
+          ctx.lineTo(s.x + r * 1.8, s.y);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(s.x, s.y - r * 1.8);
+          ctx.lineTo(s.x, s.y + r * 1.8);
+          ctx.stroke();
+        }
+
+        // Generation character label (floating up/down)
         var ch = genChars[s.gen];
         if (ch && s.size > 10) {
-          ctx.fillStyle = 'rgba(255,220,180,0.6)';
+          var labelY = s.y + r + 12 + Math.sin(t * 1.2 + s.i) * 2;
+          ctx.fillStyle = 'rgba(255,220,180,0.55)';
           ctx.font = '10px sans-serif';
           ctx.textAlign = 'center';
-          ctx.fillText(ch, s.x, s.y + r + 13);
+          ctx.fillText(ch, s.x, labelY);
         }
       });
 
-      // Draw info
-      ctx.fillStyle = 'rgba(255,255,255,0.08)';
-      ctx.font = '12px sans-serif';
+      // --- 6. Floating particles ---
+      particles.forEach(function(p) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.003;
+        if (p.life <= 0 || p.x < 0 || p.x > w || p.y < 0 || p.y > h) {
+          p.x = Math.random() * w;
+          p.y = h + 5;
+          p.vx = (Math.random() - 0.5) * 0.4;
+          p.vy = -(Math.random() * 0.3 + 0.1);
+          p.life = p.maxLife;
+        }
+        var pAlpha = (p.life / p.maxLife) * 0.4;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,200,150,' + pAlpha + ')';
+        ctx.fill();
+      });
+
+      // --- 7. Shooting stars ---
+      shootTimer += 1;
+      if (shootTimer > 120 + Math.random() * 180) {
+        shootTimer = 0;
+        spawnShootingStar();
+      }
+      for (var i = shootingStars.length - 1; i >= 0; i--) {
+        var ss = shootingStars[i];
+        ss.x += Math.cos(ss.angle) * ss.speed * 0.016;
+        ss.y += Math.sin(ss.angle) * ss.speed * 0.016;
+        ss.life -= ss.decay;
+        if (ss.life <= 0 || ss.x > w + 50 || ss.y > h + 50) {
+          shootingStars.splice(i, 1);
+          continue;
+        }
+        ctx.beginPath();
+        ctx.moveTo(ss.x, ss.y);
+        ctx.lineTo(ss.x - Math.cos(ss.angle) * ss.len, ss.y - Math.sin(ss.angle) * ss.len);
+        ctx.strokeStyle = 'rgba(255,255,255,' + ss.life + ')';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        // Glow
+        ctx.beginPath();
+        ctx.moveTo(ss.x, ss.y);
+        ctx.lineTo(ss.x - Math.cos(ss.angle) * ss.len * 0.5, ss.y - Math.sin(ss.angle) * ss.len * 0.5);
+        ctx.strokeStyle = 'rgba(255,220,180,' + (ss.life * 0.3) + ')';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+      }
+
+      // --- 8. Info overlay ---
+      ctx.fillStyle = 'rgba(255,255,255,0.07)';
+      ctx.font = '11px sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText('共 ' + genNums.length + ' 代 · 每星一代', 14, 24);
+      ctx.fillText('🌌 共 ' + genNums.length + ' 代 · 每星一代 · 星座旋转中', 14, 22);
 
       animId = requestAnimationFrame(drawFrame);
     }
     drawFrame(0);
 
-    // Store stars data for click handler
-    _starMapStars = stars;
+    // Update stored star positions for click/hover (use latest dynamic positions)
+    function updateStarPositions() {
+      var cosR = Math.cos(rotationAngle), sinR = Math.sin(rotationAngle);
+      _starMapStars = stars.map(function(s) {
+        var wobble = Math.sin(performance.now() / 1000 * s.wobbleSpeed + s.wobblePhase) * s.wobbleAmp;
+        var currentRadius = s.radius + wobble;
+        var finalAngle = s.baseAngle + rotationAngle;
+        var x = cx + currentRadius * Math.cos(finalAngle);
+        var y = cy + currentRadius * Math.sin(finalAngle);
+        y += Math.sin(performance.now() / 1000 * 0.8 + s.i * 0.3) * 1.5;
+        return { x: x, y: y, gen: s.gen, size: s.size + 6, count: s.count };
+      });
+    }
+
+    // Update positions every 50ms for interaction accuracy
+    setInterval(updateStarPositions, 50);
+
+    // Store data for click handler
     canvas._genMap = genMap;
     canvas._genNums = genNums;
 
