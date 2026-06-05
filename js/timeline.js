@@ -1,7 +1,5 @@
 /* 世代时间轴 v3 - HTML/CSS 横向卷轴 */
 (function() {
-  function estimateYear(g) { return Math.round(-2800 + g * 28.6); }
-
   function renderTimeline() {
     var wrap = document.getElementById('timeline-wrap');
     if (!wrap) return;
@@ -49,8 +47,6 @@
     var html = '';
     gens.forEach(function(g) {
       var pop = genPop[g]||0;
-      var yr = estimateYear(g);
-      var yrStr = (yr<0?(-yr)+'BC':yr+'年');
       var ch = genChars[g]||'';
       var names = genNames[g]||[];
       var keyName = findKeyName(g, names);
@@ -68,7 +64,6 @@
       html += '</div></div>';
       if (ch) html += '<div style="font-size:11px;color:var(--accent-orange);font-weight:600;margin-top:4px;line-height:1.2;">'+ch+'</div>';
       html += '<div style="font-size:10px;color:var(--text-tertiary);line-height:1.3;font-weight:600;">'+g+'世</div>';
-      html += '<div style="font-size:8px;color:var(--text-muted);opacity:0.5;line-height:1.2;">'+yrStr+'</div>';
       html += '</div>';
     });
     wrap.innerHTML = html;
@@ -92,10 +87,8 @@
       var pop = (wrap._genPop||{})[g]||0;
       var ch = (wrap._genChars||{})[g]||'';
       var names = (wrap._genNames||{})[g]||[];
-      var yr = estimateYear(g);
-      var yrStr = (yr<0?(-yr)+'BC':yr+'年');
       ch = (ch&&ch!=='—')?'「'+ch+'」字辈·':'';
-      tip.innerHTML = ch+'第'+g+'世 ('+yrStr+')<br><b>'+pop+'人</b>'+(names.length?'<br><span style="font-size:11px;opacity:0.7;">'+names.slice(0,4).join('、')+'</span>':'');
+      tip.innerHTML = ch+'第'+g+'世<br><b>'+pop+'人</b>'+(names.length?'<br><span style="font-size:11px;opacity:0.7;">'+names.slice(0,4).join('、')+'</span>':'');
       tip.style.display='block';
       el._tipGen = g;
     });
