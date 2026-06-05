@@ -127,13 +127,21 @@
     var ch = people[0]&&people[0].generation;
     var gl = (ch&&ch!=='—')?'「'+ch+'」字辈·':'';
     var title = gl+'第'+gen+'世 共'+people.length+'人';
-    var htm = '<div style="padding:20px;max-height:70vh;overflow-y:auto;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><h3 style="margin:0;font-family:var(--font-title);color:var(--accent-orange);font-size:18px;font-weight:600;">'+title+'</h3><button onclick="this.closest(&#39;.person-detail-modal&#39;).remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-tertiary);">&times;</button></div><div style="display:grid;gap:8px;">';
+    var overlay=document.createElement('div'); overlay.className='person-detail-modal'; overlay.onclick=function(ev){if(ev.target===overlay)overlay.remove();};
+    var box=document.createElement('div'); box.className='person-detail-box'; box.style.maxWidth='550px';
+    var inner='<div style="padding:20px;max-height:70vh;overflow-y:auto;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><h3 style="margin:0;font-family:var(--font-title);color:var(--accent-orange);font-size:18px;font-weight:600;">'+title+'</h3></div><div style="display:grid;gap:8px;" id="tl-people-list">';
     people.sort(function(a,b){return(a.name||'').localeCompare(b.name||'');});
     people.forEach(function(p){
-      htm += '<div onclick="showPersonDetail('+p.id+',getGenealogyData())" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:8px;cursor:pointer;"><div><span style="font-weight:600;color:var(--text-primary);">'+escapeHtml(p.name)+'</span><span style="font-size:12px;color:var(--text-tertiary);margin-left:8px;">'+(p.gender||'')+'</span></div><div style="font-size:12px;">'+(p.is_alive==='是'?'<span style="color:#22c55e;">在世</span>':'<span style="color:var(--text-tertiary);">已故</span>')+'<span style="margin-left:12px;color:var(--accent-orange);">→ 详情</span></div></div>';
+      inner += '<div onclick="showPersonDetail('+p.id+',getGenealogyData())" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:8px;cursor:pointer;"><div><span style="font-weight:600;color:var(--text-primary);">'+escapeHtml(p.name)+'</span><span style="font-size:12px;color:var(--text-tertiary);margin-left:8px;">'+(p.gender||'')+'</span></div><div style="font-size:12px;">'+(p.is_alive==='是'?'<span style="color:#22c55e;">在世</span>':'<span style="color:var(--text-tertiary);">已故</span>')+'<span style="margin-left:12px;color:var(--accent-orange);">→ 详情</span></div></div>';
     });
-    htm += '</div></div>';
-    var overlay=document.createElement('div'); overlay.className='person-detail-modal'; overlay.onclick=function(ev){if(ev.target===overlay)overlay.remove();};
-    var box=document.createElement('div'); box.className='person-detail-box'; box.style.maxWidth='550px'; box.innerHTML=htm; overlay.appendChild(box); document.body.appendChild(overlay);
+    inner += '</div></div>';
+    box.innerHTML = inner;
+    // Create close button with DOM (avoid HTML entity issues)
+    var closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '&times;';
+    closeBtn.style.cssText = 'background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-tertiary);';
+    closeBtn.onclick = function() { overlay.remove(); };
+    box.querySelector('div[style*="display:flex"]').appendChild(closeBtn);
+    overlay.appendChild(box); document.body.appendChild(overlay);
   };
 })();
