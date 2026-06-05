@@ -1,16 +1,14 @@
-/* 世代时间轴 v2 - 带年代映射和人名标注 */
+/* 世代时间轴 v3 - HTML/CSS 横向卷轴 */
 (function() {
   function estimateYear(genNum) {
-    // Approximate: gen 1 (炎帝) ~ -2800, gen 162 ~ 2026
-    // Roughly 28.6 years per generation
     return Math.round(-2800 + genNum * 28.6);
   }
 
   function renderTimeline() {
-    var canvas = document.getElementById('timeline-canvas');
-    if (!canvas) return;
+    var wrap = document.getElementById('timeline-wrap');
+    if (!wrap) return;
     var data = (typeof getGenealogyData === 'function') ? getGenealogyData() : null;
-    if (!data || data.length === 0) return;
+    if (!data || data.length === 0) { wrap.innerHTML = '<div style="padding:40px;color:var(--text-tertiary);font-size:13px;">暂无数据</div>'; return; }
 
     // Group by generation
     var genPop = {}, genChars = {}, genNames = {};
@@ -19,177 +17,125 @@
       if (!genPop[g]) { genPop[g] = 0; genNames[g] = []; }
       genPop[g]++;
       if (p.generation && p.generation !== '—') genChars[g] = p.generation;
-      genNames[g].push(p.name.replace(/[（(].*[）)]/g,'').substring(0,6));
+      genNames[g].push(p.name.replace(/[（(].*[）)]/g,'').substring(0,8));
     });
     var genNums = Object.keys(genPop).map(Number).sort(function(a,b){return a-b});
     var maxPop = 1;
     genNums.forEach(function(g) { if (genPop[g] > maxPop) maxPop = genPop[g]; });
 
-    // Key ancestors with year
+    // Dynasties
+    var dynasties = [
+      {start:0,end:60,label:'上古',color:'#8B5CF6'},
+      {start:61,end:80,label:'周',color:'#F59E0B'},
+      {start:81,end:100,label:'秦汉',color:'#3B82F6'},
+      {start:101,end:120,label:'魏晋南北朝',color:'#EC4899'},
+      {start:121,end:130,label:'隋唐',color:'#10B981'},
+      {start:131,end:140,label:'宋',color:'#F97316'},
+      {start:141,end:150,label:'元明',color:'#EF4444'},
+      {start:151,end:165,label:'清·近代',color:'#6366F1'},
+    ];
+
+    // Key ancestors
     var keyAncestors = {};
     data.forEach(function(p) {
       var gn = parseInt(p.generation_num) || 0;
       if (!keyAncestors[gn] && /^(炎帝|申伯|小四|文杲|攒|撰|彬|乾|深甫|云先|临魁|谢安|谢玄)/.test(p.name)) {
-        var name = p.name.replace(/[（(].*[）)]/g,'').substring(0,5);
-        keyAncestors[gn] = {name: name, year: estimateYear(gn)};
+        keyAncestors[gn] = p.name.replace(/[（(].*[）)]/g,'').substring(0,6);
       }
     });
 
-    // Dynasties with year range
-    var dynasties = [
-      {start:0,end:60,label:'上古·传说', yearStart:-2800, yearEnd:-1000, color:'rgba(180,100,80,0.12)'},
-      {start:61,end:80,label:'周', yearStart:-1000, yearEnd:-200, color:'rgba(200,150,80,0.12)'},
-      {start:81,end:100,label:'秦汉', yearStart:-200, yearEnd:200, color:'rgba(80,130,180,0.12)'},
-      {start:101,end:120,label:'魏晋南北朝', yearStart:200, yearEnd:600, color:'rgba(150,100,180,0.12)'},
-      {start:121,end:130,label:'隋唐', yearStart:600, yearEnd:900, color:'rgba(180,120,80,0.12)'},
-      {start:131,end:140,label:'宋', yearStart:900, yearEnd:1300, color:'rgba(80,160,120,0.12)'},
-      {start:141,end:150,label:'元明', yearStart:1300, yearEnd:1650, color:'rgba(160,80,80,0.12)'},
-      {start:151,end:165,label:'清·近代', yearStart:1650, yearEnd:2026, color:'rgba(80,80,160,0.12)'},
-    ];
+    // Estimate max people for bar height scaling
+    var maxPopForScale = Math.max(maxPop, 10);
 
-    var container = canvas.parentElement;
-    var cw = container.clientWidth || 900;
-    var ch = 340;
-    var dpr = window.devicePixelRatio || 1;
-    var totalW = Math.max(cw, genNums.length * 24 + 120);
-    canvas.width = totalW * dpr;
-    canvas.height = ch * dpr;
-    canvas.style.width = totalW + 'px';
-    canvas.style.height = ch + 'px';
-    var ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
-    var margin = {top:34,bottom:50,left:60,right:20};
-    var plotW = totalW - margin.left - margin.right;
-    var plotH = ch - margin.top - margin.bottom;
+    // Build HTML
+    var html = '';
+    genNums.forEach(function(g, idx) {
+      var pop = genPop[g] || 0;
+      var yr = estimateYear(g);
+      var yrStr = (yr < 0 ? (-yr) + 'BC' : yr);
+      var ch = genChars[g] || '';
+      var chStr = (ch && ch !== '—') ? ch : '';
+      var names = genNames[g] || [];
+      var keyName = keyAncestors[g] || '';
 
-    function genX(g) {
-      var idx = genNums.indexOf(g);
-      return idx < 0 ? margin.left : margin.left + (idx / (genNums.length - 1 || 1)) * plotW;
-    }
-
-    // Dynasty bands with year labels
-    dynasties.forEach(function(dy) {
-      var x1=genX(dy.start), x2=genX(dy.end);
-      ctx.fillStyle=dy.color; ctx.fillRect(x1,margin.top,x2-x1,plotH);
-      // Dynasty label
-      ctx.shadowColor='rgba(0,0,0,0.8)'; ctx.shadowBlur=4;
-      ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.font='bold 10px sans-serif'; ctx.textAlign='center';
-      ctx.fillText(dy.label,(x1+x2)/2,margin.top+13);
-      ctx.shadowBlur=0;
-      // Year label
-      var yearLabel = (dy.yearStart < 0 ? (-dy.yearStart)+'BC' : dy.yearStart) + ' - ' + dy.yearEnd;
-      ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font='9px sans-serif';
-      ctx.fillText(yearLabel,(x1+x2)/2,margin.top+25);
-    });
-
-    // Baseline
-    var blY = margin.top + plotH * 0.82;
-    ctx.strokeStyle='rgba(251,146,60,0.2)'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(margin.left,blY); ctx.lineTo(totalW-margin.right,blY); ctx.stroke();
-
-    // Draw bars with person count and names
-    genNums.forEach(function(g) {
-      var x=genX(g)-10;
-      var barH=Math.max(3, (genPop[g]/maxPop)*plotH*0.68);
-      var y=blY-barH;
-      // Bar fill
-      ctx.fillStyle='rgba(251,146,60,'+(0.35+(genPop[g]/maxPop)*0.55)+')';
-      ctx.fillRect(x,y,20,barH);
-      ctx.strokeStyle='rgba(251,146,60,0.25)'; ctx.lineWidth=0.5; ctx.strokeRect(x,y,20,barH);
-      // Person count above bar
-      if (genPop[g] > 1 || keyAncestors[g]) {
-        ctx.shadowColor='rgba(0,0,0,0.7)'; ctx.shadowBlur=3;
-        ctx.fillStyle='rgba(255,200,150,0.9)'; ctx.font='9px sans-serif'; ctx.textAlign='center';
-        ctx.fillText(genPop[g]+'人', genX(g), y-4);
-        ctx.shadowBlur=0;
+      // Dynasty color
+      var dyColor = '';
+      for (var d = 0; d < dynasties.length; d++) {
+        if (g >= dynasties[d].start && g <= dynasties[d].end) {
+          dyColor = dynasties[d].color;
+          break;
+        }
       }
-      // Name label on bar for small-population generations
-      if (genPop[g] <= 3 && genNames[g].length > 0) {
-        ctx.shadowColor='rgba(0,0,0,0.7)'; ctx.shadowBlur=3;
-        ctx.fillStyle='rgba(255,220,200,0.85)'; ctx.font='9px sans-serif'; ctx.textAlign='center';
-        ctx.fillText(genNames[g][0], genX(g), y + barH/2 + 3);
-        ctx.shadowBlur=0;
+
+      // Bar height (proportional to population)
+      var barH = Math.max(8, (pop / maxPopForScale) * 160);
+
+      // Pop count color intensity
+      var intensity = Math.min(1, 0.35 + (pop / maxPopForScale) * 0.65);
+
+      html += '<div class="tl-gen" data-gen="' + g + '" style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:60px;cursor:pointer;padding:6px 2px;border-radius:6px;transition:background 0.2s;position:relative;" onmouseover="this.style.background=\'rgba(251,146,60,0.15)\';var t=document.getElementById(\'timeline-tooltip\');t.style.display=\'block\';t.innerHTML=\'' + (chStr ? '「' + chStr + '」字辈 · ' : '') + '第' + g + '世 (' + yrStr + ')<br><b>' + pop + '人</b>' + (names.length > 0 ? '<br><span style=\\"font-size:11px;opacity:0.7;\\">' + names.slice(0,4).join('、') + '</span>' : '') + '\' onmousemove="var t=document.getElementById(\'timeline-tooltip\');var r=this.closest(\'.glass-card\').getBoundingClientRect();t.style.left=Math.min(event.clientX-r.left+14,580)+\'px\';t.style.top=(event.clientY-r.top-50)+\'px\';" onmouseout="document.getElementById(\'timeline-tooltip\').style.display=\'none\';this.style.background=\'transparent\'" onclick="showGenPeople(' + g + ')">';
+
+      // Dynasty indicator top bar
+      if (dyColor) {
+        html += '<div style="width:40px;height:3px;border-radius:2px;background:' + dyColor + ';margin-bottom:6px;opacity:0.8;"></div>';
+      } else {
+        html += '<div style="height:9px;"></div>';
       }
+
+      // Population bar
+      html += '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;min-height:180px;padding:2px 0;">';
+      // Key ancestor name
+      if (keyName) {
+        html += '<div style="font-size:9px;color:#fb923c;font-weight:700;text-align:center;line-height:1.2;margin-bottom:2px;white-space:nowrap;">' + keyName + '</div>';
+      }
+      // Bar
+      html += '<div style="width:28px;height:' + barH + 'px;border-radius:4px 4px 2px 2px;background:rgba(251,146,60,' + intensity + ');transition:all 0.2s;position:relative;display:flex;align-items:flex-start;justify-content:center;" onmouseover="this.style.opacity=\'0.8\';this.style.transform=\'scaleX(1.2)\'" onmouseout="this.style.opacity=\'1\';this.style.transform=\'scaleX(1)\'">';
+      // Pop count on bar
+      if (pop > 1 || pop === 0) {
+        html += '<span style="font-size:9px;color:rgba(255,255,255,0.8);margin-top:3px;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,0.5);">' + pop + '</span>';
+      }
+      html += '</div></div>';
+
+      // Character + gen number
+      if (chStr) {
+        html += '<div style="font-size:11px;color:var(--accent-orange);font-weight:600;margin-top:4px;line-height:1.2;">' + chStr + '</div>';
+      }
+      html += '<div style="font-size:10px;color:var(--text-tertiary);line-height:1.3;">' + g + '世</div>';
+      html += '<div style="font-size:8px;color:var(--text-muted);opacity:0.5;line-height:1.2;">' + yrStr + '</div>';
+      html += '</div>';
     });
 
-    // Generation & year labels
-    var ls = Math.max(1, Math.floor(genNums.length / 35));
-    genNums.forEach(function(g,i) {
-      if(i%ls!==0 && g!==1 && g!==genNums[genNums.length-1]) return;
-      var x=genX(g);
-      ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.font='10px sans-serif'; ctx.textAlign='center';
-      ctx.fillText(g+'世', x, blY+16);
-      ctx.fillStyle='rgba(255,255,255,0.45)'; ctx.font='9px sans-serif';
-      var y = estimateYear(g);
-      ctx.fillText((y<0?(-y)+'BC':y), x, blY+30);
-    });
+    wrap.innerHTML = html;
 
-    // Key ancestor markers
-    genNums.forEach(function(g) {
-      if(!keyAncestors[g]) return;
-      var x=genX(g), barH=Math.max(3,(genPop[g]/maxPop)*plotH*0.68), y=blY-barH-8;
-      ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2);
-      ctx.fillStyle='#ff6b00'; ctx.fill(); ctx.strokeStyle='rgba(255,255,255,0.8)'; ctx.lineWidth=1.5; ctx.stroke();
-      ctx.fillStyle='rgba(255,200,150,0.95)'; ctx.font='bold 10px sans-serif'; ctx.textAlign='center';
-      ctx.fillText(keyAncestors[g].name, x, y-10);
-    });
-
-    // Store for interaction
-    canvas._tData = {genPop:genPop, genNums:genNums, genChars:genChars, genNames:genNames, genXfn:genX, blY:blY, estimateYear:estimateYear};
+    // Store gen data for click handler
+    wrap._genPop = genPop;
+    wrap._genNames = genNames;
+    wrap._genChars = genChars;
+    wrap._genNums = genNums;
   }
 
   window.renderTimeline = renderTimeline;
 
+  // Click handler for generation
+  window.showGenPeople = function(gen) {
+    var data = (typeof getGenealogyData === 'function') ? getGenealogyData() : [];
+    var people = data.filter(function(p) { return parseInt(p.generation_num) === gen; });
+    if (!people.length) return;
+    var ch = people[0] && people[0].generation;
+    var gl = (ch && ch !== '—') ? '「' + ch + '」字辈 · ' : '';
+    var title = gl + '第' + gen + '世 共' + people.length + '人';
+    var htm = '<div style="padding:20px;max-height:70vh;overflow-y:auto;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><h3 style="margin:0;font-family:var(--font-title);color:var(--accent-orange);font-size:18px;font-weight:600;">' + title + '</h3><button onclick="this.closest(\'.person-detail-modal\').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-tertiary);">&times;</button></div><div style="display:grid;gap:8px;">';
+    people.sort(function(a,b){return (a.name||'').localeCompare(b.name||'');});
+    people.forEach(function(p) {
+      htm += '<div onclick="showPersonDetail(' + p.id + ',getGenealogyData())" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:8px;cursor:pointer;"><div><span style="font-weight:600;color:var(--text-primary);">' + escapeHtml(p.name) + '</span><span style="font-size:12px;color:var(--text-tertiary);margin-left:8px;">' + (p.gender || '') + '</span></div><div style="font-size:12px;">' + (p.is_alive === '是' ? '<span style="color:#22c55e;">在世</span>' : '<span style="color:var(--text-tertiary);">已故</span>') + '<span style="margin-left:12px;color:var(--accent-orange);">→ 详情</span></div></div>';
+    });
+    htm += '</div></div>';
+    var overlay = document.createElement('div'); overlay.className = 'person-detail-modal'; overlay.onclick = function(ev) { if (ev.target === overlay) overlay.remove(); };
+    var box = document.createElement('div'); box.className = 'person-detail-box'; box.style.maxWidth = '550px'; box.innerHTML = htm; overlay.appendChild(box); document.body.appendChild(overlay);
+  };
+
+  // Auto-render
   document.addEventListener('DOMContentLoaded', function() {
     renderTimeline();
-  });
-
-  // Tooltip + click interaction
-  document.addEventListener('DOMContentLoaded', function() {
-    var canvas = document.getElementById('timeline-canvas');
-    if (!canvas) return;
-    var tip = document.getElementById('timeline-tooltip');
-    if (!tip) return;
-
-    canvas.addEventListener('mousemove', function(e) {
-      if (!canvas._tData) return;
-      var d=canvas._tData, rect=canvas.getBoundingClientRect();
-      var mx=(e.clientX-rect.left)*(canvas.width/rect.width);
-      var best=null,bd=Infinity;
-      d.genNums.forEach(function(g){var a=Math.abs(d.genXfn(g)-mx);if(a<bd){bd=a;best=g;}});
-      if(best!==null&&bd<30){
-        var pop=d.genPop[best]||0,ch=d.genChars[best]||'', yr=d.estimateYear(best);
-        var yrStr=(yr<0?(-yr)+' BC':yr+' AD');
-        ch=(ch&&ch!=='—')?'「'+ch+'」字辈 ':'';
-        var names = (d.genNames[best]||[]).slice(0,4).join('、');
-        tip.innerHTML='<b>第'+best+'世</b> ('+yrStr+')<br>'+ch+'<b>'+pop+'人</b><br><span style="font-size:11px;opacity:0.7;">'+names+'</span>';
-        tip.style.display='block'; tip.style.left=Math.min((e.clientX-rect.left+14),rect.width-200)+'px';
-        tip.style.top=(e.clientY-rect.top-50)+'px';
-        canvas.style.cursor='pointer';
-      }else{tip.style.display='none';canvas.style.cursor='crosshair';}
-    });
-    canvas.addEventListener('mouseleave',function(){tip.style.display='none';});
-    canvas.addEventListener('click',function(e){
-      if(!canvas._tData)return;
-      var d=canvas._tData,rect=canvas.getBoundingClientRect();
-      var mx=(e.clientX-rect.left)*(canvas.width/rect.width);
-      var best=null,bd=Infinity;
-      d.genNums.forEach(function(g){var a=Math.abs(d.genXfn(g)-mx);if(a<bd){bd=a;best=g;}});
-      if(best===null||bd>=30)return;
-      var data=(typeof getGenealogyData==='function')?getGenealogyData():[];
-      var people=data.filter(function(p){return parseInt(p.generation_num)===best;});
-      if(!people.length)return;
-      var ch=people[0]&&people[0].generation;
-      var gl=(ch&&ch!=='—')?'「'+ch+'」字辈 ':'';
-      var title=gl+'第'+best+'世 共'+people.length+'人';
-      var htm='<div style="padding:20px;max-height:70vh;overflow-y:auto;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><h3 style="margin:0;font-family:var(--font-title);color:var(--accent-orange);font-size:18px;font-weight:600;">'+title+'</h3><button onclick="this.closest(\'.person-detail-modal\').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-tertiary);">&times;</button></div><div style="display:grid;gap:8px;">';
-      people.sort(function(a,b){return(a.name||'').localeCompare(b.name||'');});
-      people.forEach(function(p){
-        htm+='<div onclick="showPersonDetail('+p.id+',getGenealogyData())" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:8px;cursor:pointer;"><div><span style="font-weight:600;color:var(--text-primary);">'+escapeHtml(p.name)+'</span><span style="font-size:12px;color:var(--text-tertiary);margin-left:8px;">'+(p.gender||'')+'</span></div><div style="font-size:12px;">'+(p.is_alive==='是'?'在世':'已故')+'<span style="margin-left:12px;color:var(--accent-orange);">→ 详情</span></div></div>';
-      });
-      htm+='</div></div>';
-      var overlay=document.createElement('div');overlay.className='person-detail-modal';overlay.onclick=function(ev){if(ev.target===overlay)overlay.remove();};
-      var box=document.createElement('div');box.className='person-detail-box';box.style.maxWidth='550px';box.innerHTML=htm;overlay.appendChild(box);document.body.appendChild(overlay);
-    });
   });
 })();
