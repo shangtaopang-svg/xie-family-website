@@ -74,7 +74,10 @@
       var container = document.getElementById('reels-container');
       if (!container) return;
 
-      var allVideos = [];
+      var allVideos = [
+        { id: 'promo1', src: 'video/promo1.mp4', title: '宣传片1', poster: 'images/carousel/123.jpg' },
+        { id: 'promo2', src: 'video/promo2.mp4', title: '宣传片2', poster: 'images/carousel/123.jpg' }
+      ];
 
       function buildReels(videos) {
         container.innerHTML = '';
@@ -367,21 +370,22 @@
               allVideos.push({ id: v.id, src: v.file_url, embed: v.embed || '', title: v.title || '', desc: v.desc || '', poster: v.poster || '' });
             }
           });
-          buildReels(allVideos);
         }
-      } catch(e) {}
+        buildReels(allVideos);
+      } catch(e) { buildReels(allVideos); }
 
       // Then fresh data
       loadVideosFromServer(function(serverVideos) {
         if (serverVideos && serverVideos.length) {
-          allVideos = [];
+          allVideos = [
+            { id: 'promo1', src: 'video/promo1.mp4', title: '宣传片1', poster: 'images/carousel/123.jpg' },
+            { id: 'promo2', src: 'video/promo2.mp4', title: '宣传片2', poster: 'images/carousel/123.jpg' }
+          ];
           serverVideos.forEach(function(v) {
             if (v.file_url || (v.embed && v.embed.trim()) || v.url) {
               allVideos.push({ id: v.id, src: v.file_url, embed: v.embed || '', title: v.title || '', desc: v.desc || '', poster: v.poster || '' });
             }
           });
-          buildReels(allVideos);
-        } else if (!allVideos.length) {
           buildReels(allVideos);
         }
       });
