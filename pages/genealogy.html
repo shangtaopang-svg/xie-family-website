@@ -1261,7 +1261,7 @@ function renderHorizontalTree(data) {
   var svgW = (maxX + 2) * (CARD_W + H_GAP) + 60;
   var svgH = (maxY + 2) * (CARD_H + V_GAP) + 60;
 
-  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + svgW + ' ' + svgH + '" style="display:block;width:100%;min-height:450px;">';
+  var svg = '<div class="tree-viewport" style="transform-origin:0 0;transform:translate(' + (_hPanX||0) + 'px,' + (_hPanY||0) + 'px) scale(' + (_hScale||1) + ');"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + svgW + ' ' + svgH + '" style="display:block;">';
 
   // Draw connectors
   data.forEach(function(p) {
