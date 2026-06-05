@@ -175,6 +175,8 @@
             <button class="btn btn-sm" onclick="collapseAllTree()" title="收起全部">全部收起</button>
             <button class="btn btn-sm" onclick="toggleTreeFullscreen()" title="全屏观看" style="background:var(--accent-orange-dim);border-color:var(--accent-orange);">⛶ 全屏</button>
             <button class="btn btn-sm" onclick="exportTreePNG()" title="导出为图片" style="background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3);">📥 导出</button>
+            <span style="width:1px;height:18px;background:var(--divider);margin:0 4px;"></span>
+            <button class="btn btn-sm" id="tree-layout-toggle" onclick="toggleTreeLayout()" style="background:rgba(251,146,60,0.2);border-color:rgba(251,146,60,0.4);">↔ 横向</button>
           </div>
         </div>
         <!-- Branch filter + tree search -->
@@ -199,6 +201,9 @@
         </div>
         <div class="genealogy-tree-scroll" id="tree-scroll-container">
           <div id="tree-container"></div>
+        </div>
+        <div class="genealogy-tree-scroll" id="tree-scroll-container-h" style="display:none;">
+          <div id="tree-container-h"></div>
         </div>
         <button id="fs-close-btn" onclick="exitTreeFullscreen()" style="display:none;position:fixed;top:20px;right:24px;z-index:99999;background:rgba(0,0,0,0.7);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:14px;cursor:pointer;align-items:center;gap:6px;">✕ 退出全屏</button>
       </div>
@@ -312,6 +317,18 @@ g.tree-svg-card.highlight-name .card-bg { fill:rgba(255,0,0,0.15) !important; }
 @keyframes pulse-highlight { 0%,100% { filter:drop-shadow(0 0 30px rgba(255,68,0,0.8)) drop-shadow(0 0 60px rgba(255,68,0,0.4)); } 50% { filter:drop-shadow(0 0 10px rgba(255,68,0,0.3)); } }
 .locate-btn { font-size:11px; padding:3px 10px; border-radius:6px; border:1px solid rgba(251,146,60,0.3); background:rgba(251,146,60,0.1); color:var(--accent-orange); cursor:pointer; white-space:nowrap; transition:all 0.2s; flex-shrink:0; }
 .locate-btn:hover { background:rgba(251,146,60,0.2); border-color:var(--accent-orange); }
+
+/* Horizontal tree (横向世系图) */
+.h-tree-card { cursor:pointer; transition:opacity 0.15s; }
+.h-tree-card:hover .h-card-bg { stroke:var(--accent-orange); stroke-width:2.5; }
+.h-card-bg { fill:var(--glass-bg); stroke:var(--glass-border); stroke-width:1.5; rx:6; ry:6; }
+.h-card-bg.scale { stroke:#22c55e; stroke-width:2; }
+.h-card-name { fill:var(--text-primary); font-size:11px; font-weight:500; text-anchor:middle; }
+.h-card-gen { fill:var(--text-tertiary); font-size:9px; text-anchor:middle; }
+.h-card-branch { fill:var(--accent-orange); font-size:8px; text-anchor:middle; }
+.h-connector { stroke:var(--accent-orange); stroke-width:1.5; fill:none; opacity:0.3; }
+.h-connector:hover { opacity:0.6; }
+.h-btn-expand { cursor:pointer; fill:var(--accent-orange); font-size:10px; user-select:none; }
 
 /* Fullscreen tree - native browser fullscreen API */
 /* Fullscreen mode: fixed position covers entire viewport */
@@ -1084,6 +1101,172 @@ function scrollToCardSVG(card) {
   try { card.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' }); } catch(e) {}
 
   setTimeout(function() { if (bg) bg.classList.remove('highlight'); }, 3500);
+}
+
+// ===== Horizontal tree layout toggle =====
+var _treeLayoutMode = 'vertical';
+function toggleTreeLayout() {
+  var v = document.getElementById('tree-scroll-container');
+  var h = document.getElementById('tree-scroll-container-h');
+  var btn = document.getElementById('tree-layout-toggle');
+  if (!v || !h || !btn) return;
+  if (_treeLayoutMode === 'vertical') {
+    _treeLayoutMode = 'horizontal';
+    v.style.display = 'none';
+    h.style.display = 'block';
+    btn.textContent = '↕ 纵向';
+    renderHorizontalTree(getGenealogyData());
+  } else {
+    _treeLayoutMode = 'vertical';
+    v.style.display = 'block';
+    h.style.display = 'none';
+    btn.textContent = '↔ 横向';
+    renderTreeSVG(getGenealogyData());
+  }
+}
+
+// ===== Horizontal tree (left-to-right) =====
+function renderHorizontalTree(data) {
+  var container = document.getElementById('tree-container-h');
+  if (!container || !data || data.length === 0) {
+    if (container) container.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-tertiary);">暂无数据</div>';
+    return;
+  }
+
+  // Build parent-child map
+  var childMap = {};
+  var nodeMap = {};
+  data.forEach(function(p) {
+    nodeMap[p.id] = p;
+    var fid = parseInt(p.father_id);
+    if (fid) {
+      if (!childMap[fid]) childMap[fid] = [];
+      childMap[fid].push(p);
+    }
+  });
+
+  // Find roots (no father in data)
+  var existingIds = {};
+  data.forEach(function(p) { existingIds[p.id] = true; });
+  var roots = data.filter(function(p) { return !p.father_id || !existingIds[parseInt(p.father_id)]; });
+  if (roots.length === 0 && data.length > 0) roots = [data[0]];
+
+  // Collapsed state (for branch folding)
+  if (!window._hTreeCollapsed) window._hTreeCollapsed = {};
+
+  // Layout: assign (x, y) for each node
+  // x = generation depth, y = vertical stacking
+  var layout = {};
+  var CARD_W = 120, CARD_H = 36, H_GAP = 20, V_GAP = 12;
+
+  function countDescendants(id) {
+    var kids = childMap[id] || [];
+    var total = 0;
+    kids.forEach(function(k) { total += 1 + countDescendants(k.id); });
+    return total;
+  }
+
+  function verticalSpan(id) {
+    if (window._hTreeCollapsed[id]) return 1;
+    var kids = childMap[id] || [];
+    if (kids.length === 0) return 1;
+    var total = 0;
+    kids.forEach(function(k) { total += verticalSpan(k.id); });
+    return total;
+  }
+
+  function layoutNode(id, x, yStart, ySpanTotal) {
+    var node = nodeMap[id];
+    if (!node) return;
+    var mySpan = window._hTreeCollapsed[id] ? 1 : verticalSpan(id);
+    var myCenter = yStart + (mySpan / 2 - 0.5) * (CARD_H + V_GAP);
+    layout[id] = { x: x, y: myCenter, span: mySpan };
+    if (window._hTreeCollapsed[id]) return;
+    var kids = childMap[id] || [];
+    if (kids.length === 0) return;
+    var totalChildSpan = 0;
+    kids.forEach(function(k) { totalChildSpan += verticalSpan(k.id); });
+    var childY = yStart;
+    kids.forEach(function(k) {
+      var ks = verticalSpan(k.id);
+      var kSpan = (ks / totalChildSpan) * ySpanTotal;
+      layoutNode(k.id, x + 1, childY, kSpan);
+      childY += ks * (CARD_H + V_GAP);
+    });
+  }
+
+  roots.forEach(function(root) {
+    var totalSpan = verticalSpan(root.id);
+    var startY = 0;
+    layoutNode(root.id, 0, startY, totalSpan);
+  });
+
+  // Calculate SVG dimensions
+  var maxX = 0, maxY = 0;
+  Object.keys(layout).forEach(function(id) {
+    var l = layout[parseInt(id)];
+    if (l.x > maxX) maxX = l.x;
+    if (l.y > maxY) maxY = l.y;
+  });
+  var svgW = (maxX + 2) * (CARD_W + H_GAP) + 60;
+  var svgH = (maxY + 2) * (CARD_H + V_GAP) + 60;
+
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + svgW + ' ' + svgH + '" style="display:block;width:100%;min-height:450px;">';
+
+  // Draw connectors
+  data.forEach(function(p) {
+    var pl = layout[p.id];
+    if (!pl) return;
+    var kids = childMap[p.id] || [];
+    kids.forEach(function(k) {
+      var kl = layout[k.id];
+      if (!kl) return;
+      var px1 = pl.x * (CARD_W + H_GAP) + CARD_W + 30;
+      var py1 = pl.y;
+      var px2 = kl.x * (CARD_W + H_GAP) + 30;
+      var py2 = kl.y;
+      svg += '<path class="h-connector" d="M' + px1 + ',' + py1 + ' L' + (px1 + (px2-px1)/2) + ',' + py1 + ' L' + (px1 + (px2-px1)/2) + ',' + py2 + ' L' + px2 + ',' + py2 + '"/>';
+    });
+  });
+
+  // Draw cards
+  data.forEach(function(p) {
+    var l = layout[p.id];
+    if (!l) return;
+    var x = l.x * (CARD_W + H_GAP) + 30;
+    var y = l.y;
+    var isHighlight = /^(炎帝|小四|文杲|攒|撰|彬|乾|文对|申伯)/.test(p.name);
+    var hasKids = childMap[p.id] && childMap[p.id].length > 0;
+    var isCollapsed = window._hTreeCollapsed[p.id];
+
+    svg += '<g class="h-tree-card" onclick="onHCardClick(' + p.id + ', event)" style="cursor:pointer;">';
+    svg += '<rect class="h-card-bg' + (isHighlight ? ' highlight' : '') + '" x="' + x + '" y="' + (y - CARD_H/2) + '" width="' + CARD_W + '" height="' + CARD_H + '"/>';
+    svg += '<text class="h-card-name" x="' + (x + CARD_W/2) + '" y="' + (y + 4) + '">' + escapeHtml(p.name.length > 8 ? p.name.substring(0,8) : p.name) + '</text>';
+    svg += '<text class="h-card-gen" x="' + (x + CARD_W/2) + '" y="' + (y + CARD_H/2 - 4) + '">' + (p.generation_num ? '第' + p.generation_num + '世' : '') + '</text>';
+
+    if (hasKids) {
+      svg += '<text class="h-btn-expand" x="' + (x + CARD_W + 4) + '" y="' + (y + 4) + '" onclick="event.stopPropagation();toggleHCollapse(' + p.id + ')">' + (isCollapsed ? '⊕' : '⊖') + '</text>';
+    }
+    svg += '</g>';
+  });
+
+  svg += '</svg>';
+  container.innerHTML = svg;
+}
+
+// Horizontal tree node click → show detail
+function onHCardClick(id, event) {
+  showPersonDetail(id, getGenealogyData());
+}
+
+// Horizontal tree collapse/expand toggle
+function toggleHCollapse(id) {
+  if (window._hTreeCollapsed[id]) {
+    delete window._hTreeCollapsed[id];
+  } else {
+    window._hTreeCollapsed[id] = true;
+  }
+  renderHorizontalTree(getGenealogyData());
 }
 
 // ===== Setup SVG tree interactions =====
