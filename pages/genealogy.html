@@ -1105,6 +1105,68 @@ function scrollToCardSVG(card) {
 
 // ===== Horizontal tree layout toggle =====
 var _treeLayoutMode = 'vertical';
+var _hScale = 1, _hPanX = 0, _hPanY = 0;
+
+function applyHTransform() {
+  var vp = document.querySelector('#tree-scroll-container-h .tree-viewport');
+  if (!vp) return;
+  vp.style.transform = 'translate(' + _hPanX + 'px,' + _hPanY + 'px) scale(' + _hScale + ')';
+}
+
+function setupHScroll() {
+  var sc = document.getElementById('tree-scroll-container-h');
+  if (!sc) return;
+  sc.onwheel = function(e) {
+    e.preventDefault();
+    var r = sc.getBoundingClientRect();
+    var mx = e.clientX - r.left, my = e.clientY - r.top;
+    var f = e.deltaY < 0 ? 1.10 : 0.90;
+    var ns = Math.max(0.3, Math.min(30, _hScale * f));
+    _hPanX = mx - (mx - _hPanX) * (ns / _hScale);
+    _hPanY = my - (my - _hPanY) * (ns / _hScale);
+    _hScale = ns;
+    applyHTransform();
+    var el = document.getElementById('tree-zoom-level');
+    if (el) el.textContent = Math.round(_hScale * 100) + '%';
+  };
+  var drag = false, sx, sy;
+  sc.onmousedown = function(e) {
+    if (e.target.closest('.h-tree-card,button,text')) return;
+    drag = true; sx = e.clientX - _hPanX; sy = e.clientY - _hPanY;
+    sc.style.cursor = 'grabbing';
+  };
+  document.onmousemove = function(e) {
+    if (!drag) return;
+    _hPanX = e.clientX - sx; _hPanY = e.clientY - sy;
+    applyHTransform();
+  };
+  document.onmouseup = function() { drag = false; sc.style.cursor = 'grab'; };
+  sc.style.cursor = 'grab';
+}
+
+// Override zoom buttons for horizontal mode
+(function() {
+  var _zi = treeZoomIn, _zo = treeZoomOut, _zr = treeZoomReset;
+  treeZoomIn = function() {
+    if (_treeLayoutMode === 'horizontal') {
+      _hScale = Math.min(30, _hScale + 0.3); applyHTransform();
+      document.getElementById('tree-zoom-level').textContent = Math.round(_hScale * 100) + '%';
+    } else _zi();
+  };
+  treeZoomOut = function() {
+    if (_treeLayoutMode === 'horizontal') {
+      _hScale = Math.max(0.3, _hScale - 0.2); applyHTransform();
+      document.getElementById('tree-zoom-level').textContent = Math.round(_hScale * 100) + '%';
+    } else _zo();
+  };
+  treeZoomReset = function() {
+    if (_treeLayoutMode === 'horizontal') {
+      _hScale = 1; _hPanX = 0; _hPanY = 0; applyHTransform();
+      document.getElementById('tree-zoom-level').textContent = '100%';
+    } else _zr();
+  };
+})();
+
 function toggleTreeLayout() {
   var v = document.getElementById('tree-scroll-container');
   var h = document.getElementById('tree-scroll-container-h');
@@ -1115,7 +1177,9 @@ function toggleTreeLayout() {
     v.style.display = 'none';
     h.style.display = 'block';
     btn.textContent = '↕ 纵向';
+    _hScale = 1; _hPanX = 0; _hPanY = 0;
     renderHorizontalTree(getGenealogyData());
+    setupHScroll();
   } else {
     _treeLayoutMode = 'vertical';
     v.style.display = 'block';
@@ -1250,7 +1314,7 @@ function renderHorizontalTree(data) {
     svg += '</g>';
   });
 
-  svg += '</svg>';
+  svg += '</svg></div>';
   container.innerHTML = svg;
 }
 
