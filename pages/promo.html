@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>下枫槎谢氏 · 数字宗祠宣传片</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a0f; color: #fff; font-family: 'Noto Serif SC', serif; overflow: hidden; height: 100vh; }
+
+.video-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; }
+.video-container video { width: 100%; height: 100%; object-fit: cover; opacity: 0.85; }
+
+/* Overlay gradient */
+.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(135deg, rgba(10,10,15,0.7) 0%, rgba(10,10,15,0.3) 50%, rgba(10,10,15,0.7) 100%);
+  z-index: 1; }
+
+/* Narration text */
+.narration { position: fixed; bottom: 12%; left: 5%; right: 5%; z-index: 2; max-width: 800px; margin: 0 auto; }
+.narration .line { font-size: clamp(18px, 2.5vw, 32px); line-height: 1.6; opacity: 0; transform: translateY(20px);
+  transition: all 1s cubic-bezier(0.34,1.56,0.64,1); text-shadow: 0 2px 20px rgba(0,0,0,0.8); }
+.narration .line.active { opacity: 1; transform: translateY(0); }
+.narration .line .highlight { color: #fb923c; }
+.narration .line .small { font-size: 0.65em; opacity: 0.7; display: block; margin-top: 8px; }
+
+/* Logo top-left */
+.logo { position: fixed; top: 30px; left: 30px; z-index: 3; display: flex; align-items: center; gap: 12px; opacity: 0.8; }
+.logo .icon { width: 44px; height: 44px; background: #fb923c; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; color: #0a0a0f; }
+.logo .text { font-size: 14px; letter-spacing: 2px; opacity: 0.6; }
+
+/* Progress bar */
+.progress { position: fixed; bottom: 0; left: 0; height: 3px; background: linear-gradient(90deg, #fb923c, #f97316); z-index: 3; transition: width 0.3s; }
+.progress-track { position: fixed; bottom: 0; left: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.1); z-index: 2; }
+
+/* Controls */
+.controls { position: fixed; bottom: 4%; right: 4%; z-index: 3; display: flex; gap: 12px; align-items: center; }
+.controls button { background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
+.controls button:hover { background: rgba(251,146,60,0.3); border-color: rgba(251,146,60,0.5); }
+.controls .time { font-size: 12px; opacity: 0.5; letter-spacing: 1px; }
+
+/* Scene indicator */
+.scene { position: fixed; top: 30px; right: 30px; z-index: 3; font-size: 12px; opacity: 0.4; letter-spacing: 2px; }
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .narration { bottom: 18%; left: 5%; right: 5%; }
+  .narration .line { font-size: 16px; }
+  .logo { top: 16px; left: 16px; }
+  .logo .icon { width: 36px; height: 36px; font-size: 18px; }
+  .controls { bottom: 2%; right: 5%; }
+}
+</style>
+</head>
+<body>
+
+<div class="logo">
+  <div class="icon">谢</div>
+  <div class="text">数字宗祠</div>
+</div>
+
+<div class="scene" id="sceneLabel">序幕</div>
+
+<div class="video-container">
+  <video id="mainVideo" muted playsinline></video>
+</div>
+<div class="overlay"></div>
+
+<div class="narration" id="narration">
+  <div class="line" id="line0"></div>
+</div>
+
+<div class="progress-track"></div>
+<div class="progress" id="progress"></div>
+
+<div class="controls">
+  <span class="time" id="timeDisplay">0:00 / 0:00</span>
+  <button id="playBtn" onclick="togglePlay()">⏸</button>
+  <button onclick="restart()">↺ 重播</button>
+</div>
+
+<audio id="bgMusic" loop>
+  <source src="../music/background.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+// ===== Script =====
+const video = document.getElementById('mainVideo');
+const progress = document.getElementById('progress');
+const timeDisplay = document.getElementById('timeDisplay');
+const playBtn = document.getElementById('playBtn');
+const sceneLabel = document.getElementById('sceneLabel');
+const bgMusic = document.getElementById('bgMusic');
+
+const videos = [
+  { src: '../宣传片/4a91de3282b63609a8c0682b6da34134.mp4', dur: 174 },
+  { src: '../宣传片/abcf1e6cc8057d75d7d88fb22e4b3dd8.mp4', dur: 125 }
+];
+
+// Narration script — each entry: { time (seconds), text, scene? }
+const script = [
+  { t: 0, text: '从周宣王封申伯于谢邑，<br>谢氏一脉，绵延两千八百载。', scene: '谢氏之源' },
+  { t: 6, text: '宁海下枫槎，<br>一座千年古村，谢氏族人世代聚居之地。', scene: '下枫槎村' },
+  { t: 12, text: '今天，我们以数字技术，<br>为这个古老的家族建造一座 <span class="highlight">数字宗祠</span>。', scene: '数字宗祠' },
+  { t: 19, text: '<span class="highlight">族谱查询</span> ——<br>594条世系记录，106代传承脉络，一键可查。', scene: '族谱查询' },
+  { t: 27, text: '<span class="highlight">横向世系图</span> ——<br>从左到右展开千年家族树，可折叠、可缩放、可拖拽。', scene: '世系图' },
+  { t: 35, text: '<span class="highlight">世代时间轴</span> ——<br>柱高见人丁，底色见朝代，先祖大事一目了然。', scene: '时间轴' },
+  { t: 43, text: '<span class="highlight">字辈排行</span> ——<br>一懋之嘉永孝思台邦令序善道开时天，字字传承有序。', scene: '字辈' },
+  { t: 51, text: '从炎帝到现代，<br>从上古传说到当代族人，每一个名字都被铭记。', scene: '家族记忆' },
+  { t: 58, text: '<span class="highlight">迁徙地图</span> ——<br>Leaflet动态地图，南阳→会稽→临海→宁海→下枫槎，千年迁徙之路。', scene: '迁徙地图' },
+  { t: 66, text: '<span class="highlight">3D地球</span> ——<br>Canvas手绘地球，星空背景，谢氏族人遍布全球。', scene: '3D地球' },
+  { t: 73, text: '<span class="highlight">名人事迹</span> ——<br>谢安、谢灵运、谢玄、谢深甫…先贤风范，后世楷模。', scene: '名人事迹' },
+  { t: 81, text: '<span class="highlight">天气粒子特效</span> ——<br>晴雪雨流星，Canvas粒子引擎，为网站注入生命力。', scene: '粒子特效' },
+  { t: 88, text: '暗色模式 · 中英文切换 · 背景音乐<br>每一个细节，都为了让家族文化更好地传承。', scene: '细腻体验' },
+  { t: 96, text: '这不仅仅是一个网站，<br>这是一座 <span class="highlight">永不落幕的数字宗祠</span>。', scene: '数字宗祠' },
+  { t: 104, text: '—— 强大的管理后台 ——<br>12大模块 · CRUD引擎 · 数据自主可控 · 一键部署', scene: '管理后台' },
+  { t: 112, text: '<span class="small">技术栈：纯Vanilla JS · Node.js · Nginx · 玻璃拟态UI · 暗色模式 · 响应式设计</span>', scene: '技术架构' },
+  { t: 120, text: '可推广 · 可定制 · 可商业化<br>为每一个家族打造专属的数字宗祠', scene: '商业推广' },
+  { t: 128, text: '<span class="highlight">下枫槎谢氏 · 数字宗祠</span><br><span class="small">宁海下枫槎村谢氏家族 · 传承千年 · 数字新生</span>', scene: '谢氏·新生' },
+];
+
+let currentVideoIdx = 0;
+let scriptIdx = 0;
+let isPlaying = true;
+
+function getTotalDuration() {
+  return videos.reduce((sum, v) => sum + v.dur, 0);
+}
+
+function getAbsoluteTime() {
+  let abs = 0;
+  for (let i = 0; i < currentVideoIdx; i++) abs += videos[i].dur;
+  return abs + video.currentTime;
+}
+
+function updateUI() {
+  const abs = getAbsoluteTime();
+  const total = getTotalDuration();
+  const pct = (abs / total) * 100;
+  progress.style.width = pct + '%';
+  timeDisplay.textContent = formatTime(abs) + ' / ' + formatTime(total);
+
+  // Update narration
+  while (scriptIdx < script.length - 1 && script[scriptIdx + 1].t <= abs) scriptIdx++;
+  while (scriptIdx > 0 && script[scriptIdx].t > abs) scriptIdx--;
+
+  const currentLine = document.getElementById('line0');
+  const entry = script[scriptIdx];
+  if (entry) {
+    currentLine.innerHTML = entry.text;
+    currentLine.classList.add('active');
+    if (entry.scene) sceneLabel.textContent = entry.scene;
+  }
+}
+
+function formatTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+
+function loadVideo(idx) {
+  if (idx >= videos.length) return;
+  currentVideoIdx = idx;
+  video.src = videos[idx].src;
+  video.currentTime = 0;
+  video.play().catch(() => {});
+  isPlaying = true;
+  playBtn.textContent = '⏸';
+}
+
+function togglePlay() {
+  if (isPlaying) {
+    video.pause(); bgMusic.pause();
+    playBtn.textContent = '▶';
+  } else {
+    video.play(); bgMusic.play().catch(() => {});
+    playBtn.textContent = '⏸';
+  }
+  isPlaying = !isPlaying;
+}
+
+function restart() {
+  scriptIdx = 0;
+  loadVideo(0);
+  bgMusic.currentTime = 0;
+  bgMusic.play().catch(() => {});
+}
+
+// Video ended → next
+video.addEventListener('ended', function() {
+  if (currentVideoIdx < videos.length - 1) {
+    loadVideo(currentVideoIdx + 1);
+  } else {
+    isPlaying = false;
+    playBtn.textContent = '▶';
+  }
+});
+
+// Time updates
+video.addEventListener('timeupdate', updateUI);
+
+// Click video to toggle play
+document.querySelector('.video-container').addEventListener('click', togglePlay);
+
+// Start
+loadVideo(0);
+bgMusic.volume = 0.3;
+bgMusic.play().catch(function() {
+  // Auto-play blocked — user needs to interact
+  document.addEventListener('click', function handler() {
+    bgMusic.play().catch(() => {});
+    document.removeEventListener('click', handler);
+  }, { once: true });
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+  if (e.key === ' ' || e.key === 'Space') { e.preventDefault(); togglePlay(); }
+});
+</script>
+</body>
+</html>
