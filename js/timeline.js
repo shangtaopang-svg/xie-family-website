@@ -72,11 +72,13 @@
       var x1=genX(dy.start), x2=genX(dy.end);
       ctx.fillStyle=dy.color; ctx.fillRect(x1,margin.top,x2-x1,plotH);
       // Dynasty label
-      ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.font='10px sans-serif'; ctx.textAlign='center';
+      ctx.shadowColor='rgba(0,0,0,0.8)'; ctx.shadowBlur=4;
+      ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.font='bold 10px sans-serif'; ctx.textAlign='center';
       ctx.fillText(dy.label,(x1+x2)/2,margin.top+13);
+      ctx.shadowBlur=0;
       // Year label
       var yearLabel = (dy.yearStart < 0 ? (-dy.yearStart)+'BC' : dy.yearStart) + ' - ' + dy.yearEnd;
-      ctx.fillStyle='rgba(255,255,255,0.15)'; ctx.font='8px sans-serif';
+      ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font='9px sans-serif';
       ctx.fillText(yearLabel,(x1+x2)/2,margin.top+25);
     });
 
@@ -96,13 +98,17 @@
       ctx.strokeStyle='rgba(251,146,60,0.25)'; ctx.lineWidth=0.5; ctx.strokeRect(x,y,20,barH);
       // Person count above bar
       if (genPop[g] > 1 || keyAncestors[g]) {
-        ctx.fillStyle='rgba(255,200,150,0.6)'; ctx.font='8px sans-serif'; ctx.textAlign='center';
+        ctx.shadowColor='rgba(0,0,0,0.7)'; ctx.shadowBlur=3;
+        ctx.fillStyle='rgba(255,200,150,0.9)'; ctx.font='9px sans-serif'; ctx.textAlign='center';
         ctx.fillText(genPop[g]+'人', genX(g), y-4);
+        ctx.shadowBlur=0;
       }
       // Name label on bar for small-population generations
       if (genPop[g] <= 3 && genNames[g].length > 0) {
-        ctx.fillStyle='rgba(255,220,200,0.5)'; ctx.font='8px sans-serif'; ctx.textAlign='center';
+        ctx.shadowColor='rgba(0,0,0,0.7)'; ctx.shadowBlur=3;
+        ctx.fillStyle='rgba(255,220,200,0.85)'; ctx.font='9px sans-serif'; ctx.textAlign='center';
         ctx.fillText(genNames[g][0], genX(g), y + barH/2 + 3);
+        ctx.shadowBlur=0;
       }
     });
 
@@ -111,9 +117,9 @@
     genNums.forEach(function(g,i) {
       if(i%ls!==0 && g!==1 && g!==genNums[genNums.length-1]) return;
       var x=genX(g);
-      ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.font='9px sans-serif'; ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.font='10px sans-serif'; ctx.textAlign='center';
       ctx.fillText(g+'世', x, blY+16);
-      ctx.fillStyle='rgba(255,255,255,0.18)'; ctx.font='8px sans-serif';
+      ctx.fillStyle='rgba(255,255,255,0.45)'; ctx.font='9px sans-serif';
       var y = estimateYear(g);
       ctx.fillText((y<0?(-y)+'BC':y), x, blY+30);
     });
