@@ -131,7 +131,6 @@
           <input type="number" id="search-gen-from" placeholder="世代从" style="width:75px;padding:8px 6px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;">
           <span style="color:var(--text-muted);font-size:12px;">—</span>
           <input type="number" id="search-gen-to" placeholder="到" style="width:65px;padding:8px 6px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;">
-          <select id="search-branch" onchange="searchGenealogy()" style="padding:8px 6px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;min-width:85px;"><option value="">全部支系</option></select>
           <select id="search-gender" onchange="searchGenealogy()" style="padding:8px 6px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;">
             <option value="">全部性别</option><option value="男">男</option><option value="女">女</option>
           </select>
@@ -175,17 +174,8 @@
             <span style="width:1px;height:18px;background:var(--divider);margin:0 4px;"></span>
           </div>
         </div>
-        <!-- Branch filter + tree search -->
+        <!-- Tree search -->
         <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
-          <span style="font-size:12px;color:var(--text-tertiary);margin-right:4px;">筛选：</span>
-          <button class="btn btn-xs" onclick="filterBranch('all')" style="background:var(--accent-orange);color:#fff;border:none;" id="filter-all">全部世系</button>
-          <button class="btn btn-xs" onclick="filterBranch('彬（东房祖）')" id="filter-bin">🔴 彬公支系</button>
-          <button class="btn btn-xs" onclick="filterBranch('乾（西房祖）')" id="filter-qian">🟠 乾公支系</button>
-          <button class="btn btn-xs" onclick="filterBranch('文对')" id="filter-wendui">🔵 文对支系</button>
-          <span style="margin:0 4px;color:var(--text-muted);">|</span>
-          <button class="btn btn-sm" onclick="filterBranch('攒【后枫槎】')" id="filter-houfengcha" style="font-size:15px;font-weight:700;padding:6px 18px;background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.4);">🌳 后枫槎世系图</button>
-          <button class="btn btn-sm" onclick="filterBranch('撰【前枫槎】')" id="filter-qianfengcha" style="font-size:15px;font-weight:700;padding:6px 18px;background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.4);">🌳 前枫槎世系图</button>
-          <span style="flex:1;min-width:20px;"></span>
           <input type="text" id="tree-search-input" placeholder="搜姓名定位世系图..." style="padding:4px 10px;border:1px solid var(--glass-border);border-radius:6px 0 0 6px;background:var(--bg-card);color:var(--text-primary);font-size:13px;width:160px;border-right:none;">
           <button class="btn btn-xs" onclick="doTreeSearch()" style="border-radius:0 6px 0 0;padding:4px 10px;background:var(--accent-orange);color:#fff;border:none;font-size:12px;font-weight:600;cursor:pointer;">定位</button>
           <span id="tree-search-status" style="font-size:11px;color:var(--text-tertiary);padding:4px 8px;white-space:nowrap;"></span>
@@ -1494,32 +1484,11 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ===== Enhanced Search =====
-  function populateBranchOptions() {
-    var data = getGenealogyData();
-    var branches = {};
-    data.forEach(function(p) {
-      var b = p.branch || '';
-      if (b && b !== '—') branches[b] = true;
-    });
-    var sel = document.getElementById('search-branch');
-    if (!sel) return;
-    var skipBranches = ['长房', '二房', '三房', '四房', '后枫椿', '前枫椿', '临海下渡', '石马下谢', '枫椿分支'];
-    // Also skip any empty or placeholder branches
-    sel.innerHTML = '<option value="">全部支系</option>';
-    // Only show branches that actually exist in data AND are not in skipBranches
-    Object.keys(branches).sort().forEach(function(b) {
-      if (skipBranches.indexOf(b) < 0 && b.trim() !== '') {
-        sel.innerHTML += '<option value="' + escapeHtml(b) + '">' + escapeHtml(b) + '</option>';
-      }
-    });
-  }
-
   function searchGenealogy() {
     var data = getGenealogyData();
     var q = document.getElementById('genealogy-search').value.trim().toLowerCase();
     var genFrom = parseInt(document.getElementById('search-gen-from').value) || 0;
     var genTo = parseInt(document.getElementById('search-gen-to').value) || 9999;
-    var branchFilter = document.getElementById('search-branch').value;
     var genderFilter = document.getElementById('search-gender').value;
     var aliveFilter = document.getElementById('search-alive').value;
 
@@ -1529,7 +1498,6 @@ document.addEventListener('DOMContentLoaded', function() {
         var g = parseInt(p.generation_num) || 0;
         if (g < genFrom || g > genTo) return false;
       }
-      if (branchFilter && p.branch !== branchFilter) return false;
       if (genderFilter && p.gender !== genderFilter) return false;
       if (aliveFilter && p.is_alive !== aliveFilter) return false;
       return true;
@@ -1593,7 +1561,6 @@ html += '<tr style="border-bottom:1px solid var(--divider);background:' + rowBg 
     document.getElementById('genealogy-search').value = '';
     document.getElementById('search-gen-from').value = '';
     document.getElementById('search-gen-to').value = '';
-    document.getElementById('search-branch').value = '';
     document.getElementById('search-gender').value = '';
     document.getElementById('search-alive').value = '';
     document.getElementById('search-results').innerHTML = '';

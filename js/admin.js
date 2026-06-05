@@ -588,10 +588,11 @@ function renderGenealogy(area) {
 
   var gens = {};
   var branchSet = {};
+  var skipBranches = ['长房', '二房', '三房', '四房', '后枫椿', '前枫椿', '临海下渡', '石马下谢', '枫椿分支', '前枫槎派', '后枫槎东房', '枫槎始祖'];
   data.forEach(function(p) {
     var g = p.generation_num || 0;
     gens[g] = (gens[g] || 0) + 1;
-    if (p.branch && p.branch !== '—') branchSet[p.branch] = true;
+    if (p.branch && p.branch !== '—' && skipBranches.indexOf(p.branch) < 0) branchSet[p.branch] = true;
   });
 
   var html = '<div class="admin-module">';
@@ -615,11 +616,6 @@ function renderGenealogy(area) {
   html += '<select id="tree-filter-gen" onchange="renderGenealogyTree()"><option value="">全部世代</option>';
   for (var g = 1; g <= 150; g++) {
     if (gens[g]) html += '<option value="' + g + '">' + g + '世 (' + gens[g] + '人)</option>';
-  }
-  html += '</select>';
-  html += '<select id="tree-filter-branch" onchange="renderGenealogyTree()"><option value="">全部支系</option>';
-  for (var b in branchSet) {
-    html += '<option value="' + escapeHtml(b) + '">' + escapeHtml(b) + '</option>';
   }
   html += '</select>';
   html += '</div>';
@@ -2381,13 +2377,9 @@ function renderGenealogyTree() {
   if (!treeEl) return;
   var allData = getData('genealogy');
   var genFilter = document.getElementById('tree-filter-gen');
-  var branchFilter = document.getElementById('tree-filter-branch');
   var filtered = allData;
   if (genFilter && genFilter.value) {
     filtered = filtered.filter(function(p) { return String(p.generation_num) === genFilter.value; });
-  }
-  if (branchFilter && branchFilter.value) {
-    filtered = filtered.filter(function(p) { return (p.branch || '') === branchFilter.value; });
   }
   treeEl.innerHTML = buildAdminTreeHtml(filtered);
 }
@@ -2468,9 +2460,10 @@ function generateGenealogyBook() {
   // Stats
   var total = data.length;
   var gens = {}, branchSet = {}, males = 0, females = 0;
+  var skipBranches = ['长房', '二房', '三房', '四房', '后枫椿', '前枫椿', '临海下渡', '石马下谢', '枫椿分支', '前枫槎派', '后枫槎东房', '枫槎始祖'];
   data.forEach(function(p) {
     gens[p.generation_num || 0] = (gens[p.generation_num || 0] || 0) + 1;
-    if (p.branch && p.branch !== '—') branchSet[p.branch] = true;
+    if (p.branch && p.branch !== '—' && skipBranches.indexOf(p.branch) < 0) branchSet[p.branch] = true;
     if (p.gender === '男') males++;
     if (p.gender === '女') females++;
   });

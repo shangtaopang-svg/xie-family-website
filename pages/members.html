@@ -108,12 +108,10 @@
       </div>
     </section>
 
-    <!-- 支系 + 世代筛选 -->
+    <!-- 世代筛选 -->
     <section style="margin-bottom:24px;">
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <span style="font-size:13px;color:var(--text-tertiary);">支系：</span>
-        <div id="branch-tabs" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
-        <span style="font-size:13px;color:var(--text-tertiary);margin-left:20px;">世代：</span>
+        <span style="font-size:13px;color:var(--text-tertiary);">世代：</span>
         <select id="gen-tabs" style="padding:6px 10px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:13px;min-width:120px;" onchange="setGenFilterDropdown(this.value)"></select>
       </div>
     </section>
@@ -204,7 +202,6 @@
 
     // ===== State =====
     var _showAliveOnly = true;
-    var _branchFilter = '';
     var _genFilter = '';
     var _searchFilter = '';
 
@@ -438,12 +435,11 @@
       data.forEach(function(p) { if (p.is_alive === '是') aliveNames[p.name + '_' + (p.generation_num||'0')] = true; });
       var alive = Object.keys(aliveNames).length;
       var males = 0, females = 0;
-      var genSet = {}, branchSet = {};
+      var genSet = {};
       data.forEach(function(p) {
         if (p.gender === '男') males++;
         if (p.gender === '女') females++;
         if (p.generation_num) genSet[p.generation_num] = true;
-        if (p.branch && p.branch !== '—') branchSet[p.branch] = true;
       });
 
       var hint = document.getElementById('alive-count-hint');
@@ -454,18 +450,9 @@
         + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--text-primary);">' + total + '</div><div style="font-size:11px;color:var(--text-tertiary);">总人数</div></div>'
         + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--text-primary);">' + males + '</div><div style="font-size:11px;color:var(--text-tertiary);">男</div></div>'
         + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--text-primary);">' + females + '</div><div style="font-size:11px;color:var(--text-tertiary);">女</div></div>'
-        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--text-primary);">' + Object.keys(genSet).length + '</div><div style="font-size:11px;color:var(--text-tertiary);">世代</div></div>'
-        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--text-primary);">' + Object.keys(branchSet).length + '</div><div style="font-size:11px;color:var(--text-tertiary);">支系</div></div>';
+        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--text-primary);">' + Object.keys(genSet).length + '</div><div style="font-size:11px;color:var(--text-tertiary);">世代</div></div>';
 
-      // Branch tabs
-      var branches = Object.keys(branchSet).sort();
-      var branchHtml = '<button class="btn btn-sm branch-tab active-tab" data-branch="">全部</button>';
-      branches.forEach(function(b) {
-        branchHtml += '<button class="btn btn-sm branch-tab" data-branch="' + b.replace(/"/g, '&quot;') + '">' + escapeHtml(b) + '</button>';
-      });
-      document.getElementById('branch-tabs').innerHTML = branchHtml;
-
-            // Gen dropdown
+      // Gen dropdown
       var gens = Object.keys(genSet).map(Number).sort(function(a,b){return a-b;});
       var genHtml = '<option value="">全部世代</option>';
       gens.forEach(function(g) {
@@ -480,13 +467,6 @@
       applyFilters(data);
     }
 
-    function setBranchFilter(btn, branch) {
-      document.querySelectorAll('.branch-tab').forEach(function(b) { b.classList.remove('active-tab'); });
-      btn.classList.add('active-tab');
-      _branchFilter = branch;
-      applyFilters(window._membersData);
-    }
-
     function setGenFilter(btn, gen) {
       _genFilter = gen;
       applyFilters(window._membersData);
@@ -498,14 +478,13 @@
     }
 
     function applyFilters(data) {
-      console.log("applyFilters called, _showAliveOnly:", _showAliveOnly, "_genFilter:", _genFilter, "_branchFilter:", _branchFilter, "data.length:", data ? data.length : 0);
+      console.log("applyFilters called, _showAliveOnly:", _showAliveOnly, "_genFilter:", _genFilter, "data.length:", data ? data.length : 0);
       if (!data) return;
       var filtered = [];
       var seenFilter = {};
       data.forEach(function(p) {
         // Living-only filter
         if (_showAliveOnly && p.is_alive !== '是') return;
-        if (_branchFilter && (p.branch !== _branchFilter)) return;
         if (_genFilter !== '' && _genFilter !== null && _genFilter !== undefined) {
           if (parseInt(p.generation_num) !== _genFilter) return;
         }
@@ -568,16 +547,6 @@
       container.innerHTML = html;
     }
 
-    // Branch tab click via delegation (avoid inline onclick encoding issues)
-    document.addEventListener('click', function(e) {
-      var tab = e.target.closest('.branch-tab');
-      if (!tab) return;
-      document.querySelectorAll('.branch-tab').forEach(function(b) { b.classList.remove('active-tab'); });
-      tab.classList.add('active-tab');
-      _branchFilter = tab.getAttribute('data-branch') || '';
-      applyFilters(window._membersData);
-    });
-
     // Search
     document.addEventListener('DOMContentLoaded', function() {
       renderMembers();
@@ -615,7 +584,7 @@
     .member-card { transition:transform 0.2s,box-shadow 0.2s; }
     .member-card.hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
     #members-grid { min-height:200px; }
-    .branch-tab, .gen-tab { font-family:var(--font-body); }
+    .gen-tab { font-family:var(--font-body); }
   </style>
   <script>
     // bg-canvas removed
