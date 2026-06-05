@@ -580,7 +580,6 @@ var _currentBranch = 'all';
 
 function filterBranch(branch) {
   _currentBranch = branch;
-  // Update button styles - map branch name to button id
   var btnId = 'filter-all';
   if (branch.indexOf('彬') >= 0) btnId = 'filter-bin';
   else if (branch.indexOf('乾') >= 0) btnId = 'filter-qian';
@@ -590,7 +589,14 @@ function filterBranch(branch) {
   document.querySelectorAll('[id^="filter-"]').forEach(function(b) { b.style.background = ''; b.style.color = ''; b.style.border = '1px solid var(--glass-border)'; });
   var btn = document.getElementById(btnId);
   if (btn) { btn.style.background = 'var(--accent-orange)'; btn.style.color = '#fff'; btn.style.border = 'none'; }
-  renderTreeSVG(getGenealogyData());
+  // Re-render horizontal tree with filter
+  var data = getGenealogyData();
+  if (branch !== 'all') {
+    data = getBranchData(data, branch);
+  }
+  document.getElementById('tree-scroll-container-h').style.display = 'block';
+  document.getElementById('tree-container-h').innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-tertiary);font-size:14px;">⏳ 筛选渲染中...</div>';
+  setTimeout(function() { renderHorizontalTree(data); setupHScroll(); }, 50);
 }
 
 function renderTreeSVG(data) {
@@ -1497,13 +1503,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     var sel = document.getElementById('search-branch');
     if (!sel) return;
-    var fixedBranches = ['二房', '三房', '四房', '后枫椿', '前枫椿', '临海下渡', '石马下谢', '枫椿分支'];
+    var skipBranches = ['长房', '二房', '三房', '四房', '后枫椿', '前枫椿', '临海下渡', '石马下谢', '枫椿分支'];
+    // Also skip any empty or placeholder branches
     sel.innerHTML = '<option value="">全部支系</option>';
-    fixedBranches.forEach(function(b) {
-      sel.innerHTML += '<option value="' + b + '">' + b + '</option>';
-    });
+    // Only show branches that actually exist in data AND are not in skipBranches
     Object.keys(branches).sort().forEach(function(b) {
-      if (fixedBranches.indexOf(b) < 0) {
+      if (skipBranches.indexOf(b) < 0 && b.trim() !== '') {
         sel.innerHTML += '<option value="' + escapeHtml(b) + '">' + escapeHtml(b) + '</option>';
       }
     });
