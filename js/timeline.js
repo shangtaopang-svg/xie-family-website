@@ -106,7 +106,10 @@
       ch = (ch&&ch!=='—')?'「'+ch+'」字辈·':'';
       var dyn = getDynLabel(g);
       var dynStr = dyn ? '<span style="color:'+dyn.text+'">'+dyn.label+'</span> ' : '';
-      tip.innerHTML = dynStr+ch+'第'+g+'世<br><b>'+pop+'人</b>'+(names.length?'<br><span style="font-size:11px;opacity:0.7;">'+names.slice(0,4).join('、')+'</span>':'');
+      var showN = Math.min(names.length, 8);
+      var nameList = names.slice(0,showN).join('、');
+      if (names.length > showN) nameList += '…';
+      tip.innerHTML = dynStr+ch+'第'+g+'世<br><b>'+pop+'人</b>'+(names.length?'<br><span style="font-size:11px;opacity:0.7;">'+nameList+'</span>':'');
       tip.style.display='block';
       el._tipGen = g;
     });
