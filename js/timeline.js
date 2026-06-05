@@ -19,7 +19,7 @@
     var keyAncestors = {};
     data.forEach(function(p) {
       var gn = parseInt(p.generation_num) || 0;
-      if (!keyAncestors[gn] && /^(炎帝|申伯|小四|文柲|攒|撰|彬|乾|深甫|云先)/.test(p.name)) {
+      if (!keyAncestors[gn] && /^(炎帝|申伯|小四|文杲|攒|撰|彬|乾|深甫|云先)/.test(p.name)) {
         keyAncestors[gn] = p.name.replace(/[（(].*[）)]/g,'').substring(0,4);
       }
     });
@@ -93,6 +93,11 @@
   }
 
   window.renderTimeline = renderTimeline;
+
+  // Auto-render on DOMContentLoaded
+  document.addEventListener('DOMContentLoaded', function() {
+    renderTimeline();
+  });
 
   document.addEventListener('DOMContentLoaded', function() {
     var canvas = document.getElementById('timeline-canvas');

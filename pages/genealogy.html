@@ -1110,10 +1110,13 @@ function applyHTransform() {
   vp.style.transform = 'translate(' + _hPanX + 'px,' + _hPanY + 'px) scale(' + _hScale + ')';
 }
 
+var _hDragHandlers = null;
 function setupHScroll() {
+  cleanupHScroll();
   var sc = document.getElementById('tree-scroll-container-h');
   if (!sc) return;
-  sc.onwheel = function(e) {
+  var drag = false, sx, sy;
+  var wheelFn = function(e) {
     e.preventDefault();
     var r = sc.getBoundingClientRect();
     var mx = e.clientX - r.left, my = e.clientY - r.top;
@@ -1126,19 +1129,32 @@ function setupHScroll() {
     var el = document.getElementById('tree-zoom-level');
     if (el) el.textContent = Math.round(_hScale * 100) + '%';
   };
-  var drag = false, sx, sy;
-  sc.onmousedown = function(e) {
+  var mdFn = function(e) {
     if (e.target.closest('.h-tree-card,button,text')) return;
     drag = true; sx = e.clientX - _hPanX; sy = e.clientY - _hPanY;
     sc.style.cursor = 'grabbing';
   };
-  document.onmousemove = function(e) {
+  var mmFn = function(e) {
     if (!drag) return;
     _hPanX = e.clientX - sx; _hPanY = e.clientY - sy;
     applyHTransform();
   };
-  document.onmouseup = function() { drag = false; sc.style.cursor = 'grab'; };
+  var muFn = function() { drag = false; sc.style.cursor = 'grab'; };
+  sc.addEventListener('wheel', wheelFn, { passive: false });
+  sc.addEventListener('mousedown', mdFn);
+  document.addEventListener('mousemove', mmFn);
+  document.addEventListener('mouseup', muFn);
   sc.style.cursor = 'grab';
+  _hDragHandlers = { sc: sc, wheel: wheelFn, md: mdFn, mm: mmFn, mu: muFn };
+}
+function cleanupHScroll() {
+  if (_hDragHandlers) {
+    _hDragHandlers.sc.removeEventListener('wheel', _hDragHandlers.wheel);
+    _hDragHandlers.sc.removeEventListener('mousedown', _hDragHandlers.md);
+    document.removeEventListener('mousemove', _hDragHandlers.mm);
+    document.removeEventListener('mouseup', _hDragHandlers.mu);
+    _hDragHandlers = null;
+  }
 }
 
 // Override zoom buttons for horizontal mode
@@ -1182,6 +1198,7 @@ function toggleTreeLayout() {
     v.style.display = 'block';
     h.style.display = 'none';
     btn.textContent = '↔ 横向';
+    cleanupHScroll();
     renderTreeSVG(getGenealogyData());
   }
 }
