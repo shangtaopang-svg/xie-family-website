@@ -131,11 +131,11 @@
           <input type="number" id="search-gen-from" placeholder="世代从" style="width:75px;padding:8px 6px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;">
           <span style="color:var(--text-muted);font-size:12px;">—</span>
           <input type="number" id="search-gen-to" placeholder="到" style="width:65px;padding:8px 6px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;">
-          <select id="search-branch" style="padding:8px 6px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;min-width:85px;"><option value="">全部支系</option></select>
-          <select id="search-gender" style="padding:8px 6px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;">
+          <select id="search-branch" onchange="searchGenealogy()" style="padding:8px 6px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;min-width:85px;"><option value="">全部支系</option></select>
+          <select id="search-gender" onchange="searchGenealogy()" style="padding:8px 6px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;">
             <option value="">全部性别</option><option value="男">男</option><option value="女">女</option>
           </select>
-          <select id="search-alive" style="padding:8px 6px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;">
+          <select id="search-alive" onchange="searchGenealogy()" style="padding:8px 6px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;">
             <option value="">全部状态</option><option value="否">已故</option><option value="是">在世</option>
           </select>
           <button class="btn btn-accent" onclick="searchGenealogy()" style="padding:7px 14px;font-size:13px;">搜索</button>
@@ -1497,7 +1497,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     var sel = document.getElementById('search-branch');
     if (!sel) return;
-    var fixedBranches = ['长房', '二房', '三房', '四房', '后枫椿', '前枫椿', '临海下渡', '石马下谢', '枫椿分支'];
+    var fixedBranches = ['二房', '三房', '四房', '后枫椿', '前枫椿', '临海下渡', '石马下谢', '枫椿分支'];
     sel.innerHTML = '<option value="">全部支系</option>';
     fixedBranches.forEach(function(b) {
       sel.innerHTML += '<option value="' + b + '">' + b + '</option>';
@@ -1567,7 +1567,8 @@ document.addEventListener('DOMContentLoaded', function() {
     html += '<th style="padding:6px 8px;text-align:center;color:var(--text-tertiary);font-weight:500;font-size:11px;">操作</th>';
     html += '</tr></thead><tbody>';
     results.forEach(function(p) {
-      html += '<tr style="border-bottom:1px solid var(--divider);transition:background 0.15s;" onmouseover="this.style.background=\'var(--accent-orange-dim)\" onmouseout="this.style.background=\'transparent\'">';
+      var rowBg = p.is_alive === '是' ? 'rgba(220,38,38,0.04)' : 'rgba(0,0,0,0.08)';
+html += '<tr style="border-bottom:1px solid var(--divider);background:' + rowBg + ';transition:background 0.15s;" onmouseover="this.style.background=\'var(--accent-orange-dim)\'" onmouseout="this.style.background=\'' + rowBg + '\'">';
       html += '<td style="padding:6px 8px;color:var(--text-secondary);">' + (p.generation_num || '—') + '</td>';
       html += '<td style="padding:6px 8px;"><span style="cursor:pointer;font-weight:500;color:var(--text-primary);" onclick="showPersonDetail(' + p.id + ', getGenealogyData());locateInTree(' + p.id + ');">' + escapeHtml(p.name) + '</span>' + (p.adopted && p.adopted !== '否' ? (p.adopted === '出继' ? '<span style="font-size:10px;color:#22c55e;font-weight:600;margin-left:3px;">(出继)</span>' : '<span style="font-size:10px;color:var(--accent-orange);font-weight:600;margin-left:3px;">(入继)</span>') : '') + '</td>';
       html += '<td style="padding:6px 8px;text-align:center;">' + (p.gender === '男' ? '👤' : '👩') + '</td>';
