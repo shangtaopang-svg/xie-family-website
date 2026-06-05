@@ -64,10 +64,10 @@
       html += '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;min-height:175px;padding:2px 0;">';
       if (keyName) html += '<div style="font-size:9px;color:#fb923c;font-weight:700;line-height:1.2;margin-bottom:2px;white-space:nowrap;">'+keyName+'</div>';
       html += '<div class="tl-bar" style="width:26px;height:'+barH+'px;border-radius:4px 4px 2px 2px;background:rgba(251,146,60,'+bright+');transition:all 0.15s;display:flex;align-items:flex-start;justify-content:center;">';
-      if (pop>0) html += '<span style="font-size:9px;color:#fff;margin-top:3px;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,0.5);">'+pop+'人</span>';
+      if (pop>0) html += '<span style="font-size:9px;color:#fff;margin-top:3px;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,0.5);">'+pop+'人</span>'; else html += '<span style="font-size:7px;color:rgba(255,255,255,0.3);margin-top:2px;">'+g+'</span>';
       html += '</div></div>';
       if (ch) html += '<div style="font-size:11px;color:var(--accent-orange);font-weight:600;margin-top:4px;line-height:1.2;">'+ch+'</div>';
-      html += '<div style="font-size:10px;color:var(--text-tertiary);line-height:1.3;">'+g+'世</div>';
+      html += '<div style="font-size:10px;color:var(--text-tertiary);line-height:1.3;font-weight:600;">'+g+'世</div>';
       html += '<div style="font-size:8px;color:var(--text-muted);opacity:0.5;line-height:1.2;">'+yrStr+'</div>';
       html += '</div>';
     });
