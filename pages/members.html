@@ -459,9 +459,9 @@
 
       // Branch tabs
       var branches = Object.keys(branchSet).sort();
-      var branchHtml = '<button class="btn btn-sm branch-tab active-tab" data-branch="" onclick="setBranchFilter(this,\'\')">全部</button>';
+      var branchHtml = '<button class="btn btn-sm branch-tab active-tab" data-branch="">全部</button>';
       branches.forEach(function(b) {
-        branchHtml += '<button class="btn btn-sm branch-tab" data-branch="' + escapeHtml(b) + '" onclick="setBranchFilter(this,\'' + escapeHtml(b).replace(/'/g, "\\'") + '\')">' + escapeHtml(b) + '</button>';
+        branchHtml += '<button class="btn btn-sm branch-tab" data-branch="' + b.replace(/"/g, '&quot;') + '">' + escapeHtml(b) + '</button>';
       });
       document.getElementById('branch-tabs').innerHTML = branchHtml;
 
@@ -567,6 +567,16 @@
       });
       container.innerHTML = html;
     }
+
+    // Branch tab click via delegation (avoid inline onclick encoding issues)
+    document.addEventListener('click', function(e) {
+      var tab = e.target.closest('.branch-tab');
+      if (!tab) return;
+      document.querySelectorAll('.branch-tab').forEach(function(b) { b.classList.remove('active-tab'); });
+      tab.classList.add('active-tab');
+      _branchFilter = tab.getAttribute('data-branch') || '';
+      applyFilters(window._membersData);
+    });
 
     // Search
     document.addEventListener('DOMContentLoaded', function() {
