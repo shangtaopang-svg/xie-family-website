@@ -74,21 +74,24 @@
       var container = document.getElementById('reels-container');
       if (!container) return;
 
-      var allVideos = [
-        { id: 'promo1', src: 'video/promo1.mp4', title: '宣传片1', poster: 'images/carousel/123.jpg' },
-        { id: 'promo2', src: 'video/promo2.mp4', title: '宣传片2', poster: 'images/carousel/123.jpg' }
-      ];
+      var allVideos = [];
 
       function buildReels(videos) {
         container.innerHTML = '';
 
-        if (!videos.length) {
+        // Always prepend promo videos first
+        var allVids = [
+          { id: 'promo1', src: 'video/promo1.mp4', title: '宣传片1', poster: 'images/carousel/123.jpg' },
+          { id: 'promo2', src: 'video/promo2.mp4', title: '宣传片2', poster: 'images/carousel/123.jpg' }
+        ].concat(videos);
+
+        if (!allVids.length) {
           container.innerHTML = '<div class="reel-empty">暂无视频</div>';
           return;
         }
 
         // Build each reel item — 完全独立的卡片
-        videos.forEach(function(v, idx) {
+        allVids.forEach(function(v, idx) {
           var item = document.createElement('div');
           item.className = 'reel-item';
           // 所有视频默认暂停，互不影响
@@ -377,15 +380,14 @@
       // Then fresh data
       loadVideosFromServer(function(serverVideos) {
         if (serverVideos && serverVideos.length) {
-          allVideos = [
-            { id: 'promo1', src: 'video/promo1.mp4', title: '宣传片1', poster: 'images/carousel/123.jpg' },
-            { id: 'promo2', src: 'video/promo2.mp4', title: '宣传片2', poster: 'images/carousel/123.jpg' }
-          ];
+          allVideos = [];
           serverVideos.forEach(function(v) {
             if (v.file_url || (v.embed && v.embed.trim()) || v.url) {
               allVideos.push({ id: v.id, src: v.file_url, embed: v.embed || '', title: v.title || '', desc: v.desc || '', poster: v.poster || '' });
             }
           });
+          buildReels(allVideos);
+        } else if (!allVideos.length) {
           buildReels(allVideos);
         }
       });
