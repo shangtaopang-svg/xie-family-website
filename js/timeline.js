@@ -78,7 +78,6 @@
       if (dc) html += '<div style="width:36px;height:5px;border-radius:2px;background:'+dc+';margin-bottom:4px;opacity:0.9;"></div>';
       else html += '<div style="height:9px;"></div>';
       html += '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;min-height:175px;padding:2px 0;">';
-      if (keyName) html += '<div style="font-size:9px;color:#fb923c;font-weight:700;line-height:1.2;margin-bottom:2px;white-space:nowrap;">'+keyName+'</div>';
       // Bar: deceased bottom (dark), alive top (green)
       html += '<div class="tl-bar" style="width:26px;height:'+barH+'px;border-radius:3px;overflow:hidden;display:flex;flex-direction:column-reverse;transition:all 0.15s;">';
       if (deceased > 0) {
