@@ -1191,8 +1191,8 @@ function toggleTreeLayout() {
     h.style.display = 'block';
     btn.textContent = '↕ 纵向';
     _hScale = 1; _hPanX = 0; _hPanY = 0;
-    renderHorizontalTree(getGenealogyData());
-    setupHScroll();
+    document.getElementById('tree-container-h').innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-tertiary);font-size:14px;">⏳ 渲染世系图中...</div>';
+    setTimeout(function() { renderHorizontalTree(getGenealogyData()); setupHScroll(); }, 50);
   } else {
     _treeLayoutMode = 'vertical';
     v.style.display = 'block';
@@ -1229,8 +1229,15 @@ function renderHorizontalTree(data) {
   var roots = data.filter(function(p) { return !p.father_id || !existingIds[parseInt(p.father_id)]; });
   if (roots.length === 0 && data.length > 0) roots = [data[0]];
 
-  // Collapsed state (for branch folding)
+  // Collapsed state: default collapse only branching points
   if (!window._hTreeCollapsed) window._hTreeCollapsed = {};
+  // Auto-collapse multi-child nodes (branches hidden, main line visible)
+  data.forEach(function(p) {
+    var kids = childMap[p.id];
+    if (kids && kids.length > 1) {
+      kids.forEach(function(k, idx) { if (idx > 0) window._hTreeCollapsed[k.id] = true; });
+    }
+  });
 
   // Layout: assign (x, y) for each node
   // x = generation depth, y = vertical stacking
