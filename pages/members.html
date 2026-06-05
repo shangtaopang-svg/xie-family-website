@@ -99,7 +99,7 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <div class="glass-card" style="padding:16px;">
           <h4 style="font-size:14px;color:var(--text-primary);margin-bottom:10px;text-align:center;">各世代人口分布</h4>
-          <div id="chart-gen" style="height:400px;"></div>
+          <div id="chart-gen" style="height:280px;"></div>
         </div>
         <div class="glass-card" style="padding:16px;">
           <h4 style="font-size:14px;color:var(--text-primary);margin-bottom:10px;text-align:center;">彬/乾/文对分支人数对比</h4>
@@ -608,37 +608,24 @@ function renderMemberCharts() {
   
   document.getElementById('chart-section').style.opacity = '1';
 
-  // 1. Generation distribution - stacked bar (alive/deceased)
+  // 1. Generation distribution
   var genData = {};
   data.forEach(function(p) {
     var g = parseInt(p.generation_num) || 0;
-    if (!genData[g]) genData[g] = { total: 0, alive: 0, deceased: 0 };
-    genData[g].total++;
-    if (p.is_alive === '是') genData[g].alive++;
-    else genData[g].deceased++;
+    genData[g] = (genData[g] || 0) + 1;
   });
   var sorted = Object.keys(genData).map(Number).sort(function(a,b){return a-b});
   var maxCount = 1;
-  sorted.forEach(function(g){if(genData[g].total>maxCount)maxCount=genData[g].total;});
+  sorted.forEach(function(g){if(genData[g]>maxCount)maxCount=genData[g];});
 
-  var genHtml = '<div style="padding:2px 4px;overflow-y:auto;height:100%;font-size:10px;">';
+  var genHtml = '<div style="padding:4px;overflow-y:auto;height:100%;font-size:11px;">';
   sorted.forEach(function(g) {
-    var d = genData[g];
-    var totalPct = (d.total / maxCount * 100).toFixed(0);
-    genHtml += '<div style="display:flex;align-items:center;gap:2px;margin-bottom:1px;">';
-    genHtml += '<span style="width:30px;text-align:right;color:var(--text-tertiary);flex-shrink:0;font-size:9px;">' + g + '世</span>';
-    // Stacked bar: left = deceased (地下/已故), right = alive (在世)
-    genHtml += '<div style="flex:1;height:12px;background:var(--glass-bg);border-radius:2px;overflow:hidden;display:flex;">';
-    if (d.deceased > 0) {
-      var dW = (d.deceased / d.total * 100).toFixed(0);
-      genHtml += '<div style="height:100%;width:' + dW + '%;background:rgba(100,100,120,0.5);" title="已故 ' + d.deceased + '人"></div>';
-    }
-    if (d.alive > 0) {
-      var aW = (d.alive / d.total * 100).toFixed(0);
-      genHtml += '<div style="height:100%;width:' + aW + '%;background:#22c55e;border-radius:0 2px 2px 0;animation:barGlow 2.5s ease-in-out infinite;" title="在世 ' + d.alive + '人"></div>';
-    }
-    genHtml += '</div>';
-    genHtml += '<span style="width:36px;flex-shrink:0;text-align:right;font-size:9px;color:var(--text-secondary);">' + d.alive + '/' + d.deceased + '</span>';
+    var pct = (genData[g] / maxCount * 100).toFixed(0);
+    genHtml += '<div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">';
+    genHtml += '<span style="width:45px;text-align:right;color:var(--text-tertiary);flex-shrink:0;font-size:10px;">' + g + '世</span>';
+    genHtml += '<div style="flex:1;height:16px;background:var(--glass-bg);border-radius:3px;overflow:hidden;">';
+    genHtml += '<div style="height:100%;width:' + pct + '%;background:#fb923c;border-radius:3px;animation:barGlow 2s ease-in-out infinite;"></div></div>';
+    genHtml += '<span style="width:28px;color:var(--text-secondary);flex-shrink:0;text-align:right;font-size:10px;">' + genData[g] + '</span>';
     genHtml += '</div>';
   });
   genHtml += '</div>';
