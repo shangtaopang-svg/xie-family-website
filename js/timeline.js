@@ -50,7 +50,7 @@
     gens.forEach(function(g) {
       var pop = genPop[g]||0;
       var yr = estimateYear(g);
-      var yrStr = (yr<0?(-yr)+'BC':yr+'');
+      var yrStr = (yr<0?(-yr)+'BC':yr+'年');
       var ch = genChars[g]||'';
       var names = genNames[g]||[];
       var keyName = findKeyName(g, names);
@@ -64,7 +64,7 @@
       html += '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;min-height:175px;padding:2px 0;">';
       if (keyName) html += '<div style="font-size:9px;color:#fb923c;font-weight:700;line-height:1.2;margin-bottom:2px;white-space:nowrap;">'+keyName+'</div>';
       html += '<div class="tl-bar" style="width:26px;height:'+barH+'px;border-radius:4px 4px 2px 2px;background:rgba(251,146,60,'+bright+');transition:all 0.15s;display:flex;align-items:flex-start;justify-content:center;">';
-      if (pop>0) html += '<span style="font-size:9px;color:#fff;margin-top:3px;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,0.5);">'+pop+'</span>';
+      if (pop>0) html += '<span style="font-size:9px;color:#fff;margin-top:3px;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,0.5);">'+pop+'人</span>';
       html += '</div></div>';
       if (ch) html += '<div style="font-size:11px;color:var(--accent-orange);font-weight:600;margin-top:4px;line-height:1.2;">'+ch+'</div>';
       html += '<div style="font-size:10px;color:var(--text-tertiary);line-height:1.3;">'+g+'世</div>';
@@ -93,7 +93,7 @@
       var ch = (wrap._genChars||{})[g]||'';
       var names = (wrap._genNames||{})[g]||[];
       var yr = estimateYear(g);
-      var yrStr = (yr<0?(-yr)+'BC':yr+'');
+      var yrStr = (yr<0?(-yr)+'BC':yr+'年');
       ch = (ch&&ch!=='—')?'「'+ch+'」字辈·':'';
       tip.innerHTML = ch+'第'+g+'世 ('+yrStr+')<br><b>'+pop+'人</b>'+(names.length?'<br><span style="font-size:11px;opacity:0.7;">'+names.slice(0,4).join('、')+'</span>':'');
       tip.style.display='block';
