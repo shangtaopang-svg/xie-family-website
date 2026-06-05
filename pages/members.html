@@ -618,11 +618,16 @@ function renderMemberCharts() {
     else genData[g].deceased++;
   });
   var sorted = Object.keys(genData).map(Number).sort(function(a,b){return a-b});
+  // Filter: skip sparse deceased-only generations (total<3) to keep chart readable
+  var filteredGens = sorted.filter(function(g) {
+    var d = genData[g];
+    return d.alive > 0 || d.deceased >= 3;
+  });
   var maxCount = 1;
-  sorted.forEach(function(g){if(genData[g].total>maxCount)maxCount=genData[g].total;});
+  filteredGens.forEach(function(g){if(genData[g].total>maxCount)maxCount=genData[g].total;});
 
   var genHtml = '<div style="padding:4px;overflow-y:auto;height:100%;font-size:11px;">';
-  sorted.forEach(function(g) {
+  filteredGens.forEach(function(g) {
     var d = genData[g];
     var totalPct = (d.total / maxCount * 100).toFixed(0);
     genHtml += '<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;">';
