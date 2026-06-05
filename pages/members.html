@@ -618,11 +618,13 @@ function renderMemberCharts() {
     else genData[g].deceased++;
   });
   var sorted = Object.keys(genData).map(Number).sort(function(a,b){return a-b});
-  // Filter: skip sparse deceased-only generations (total<3) to keep chart readable
-  var filteredGens = sorted.filter(function(g) {
-    var d = genData[g];
-    return d.alive > 0 || d.deceased >= 3;
-  });
+  // Find first generation with living people, show from there (with some context before)
+  var firstAliveGen = null;
+  for (var si = 0; si < sorted.length; si++) {
+    if (genData[sorted[si]].alive > 0) { firstAliveGen = sorted[si]; break; }
+  }
+  var cutoff = Math.max(0, (firstAliveGen || 999) - 5);
+  var filteredGens = sorted.filter(function(g) { return g >= cutoff; });
   var maxCount = 1;
   filteredGens.forEach(function(g){if(genData[g].total>maxCount)maxCount=genData[g].total;});
 
