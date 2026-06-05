@@ -52,7 +52,7 @@
       for (var i=0;i<names.length;i++) {
         var n = names[i];
         if (n.indexOf('炎帝')>=0||n.indexOf('申伯')>=0||n.indexOf('小四')>=0||
-            n.indexOf('文柲')>=0||n.indexOf('彬')>=0||n.indexOf('乾')>=0||
+            n.indexOf('文杲')>=0||n.indexOf('彬')>=0||n.indexOf('乾')>=0||
             n.indexOf('深甫')>=0||n.indexOf('云先')>=0) {
           return n.replace(/[（(].*[）)]/g,'').substring(0,6);
         }
