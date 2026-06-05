@@ -81,8 +81,8 @@
 
         // Always prepend promo videos first
         var allVids = [
-          { id: 'promo1', src: 'video/promo1.mp4', title: '宣传片1', poster: 'images/carousel/123.jpg' },
-          { id: 'promo2', src: 'video/promo2.mp4', title: '宣传片2', poster: 'images/carousel/123.jpg' }
+          { id: 'promo1', src: '/video/promo1.mp4', title: '宣传片1', poster: '/images/carousel/123.jpg' },
+          { id: 'promo2', src: '/video/promo2.mp4', title: '宣传片2', poster: '/images/carousel/123.jpg' }
         ].concat(videos);
 
         if (!allVids.length) {
