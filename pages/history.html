@@ -450,7 +450,7 @@
             images.forEach(function(img, i) {
               var slide = document.createElement('div');
               slide.className = 'carousel-slide';
-              slide.innerHTML = '<img src="'+img.src+'" alt="'+img.title+'" loading="lazy" loading="lazy"><div class="carousel-caption">'+img.title+'</div>';
+              slide.innerHTML = '<img src="'+img.src+'" alt="'+img.title+'" loading="lazy"><div class="carousel-caption">'+img.title+'</div>';
               slide.onclick = function(){ openLightbox(i); };
               track.appendChild(slide);
 
