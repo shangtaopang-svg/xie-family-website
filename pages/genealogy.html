@@ -241,33 +241,13 @@
 .tree-html-card.highlight-name { border-color:#ff5555;background:rgba(255,85,85,0.12);box-shadow:0 0 10px rgba(255,85,85,0.3);z-index:20; }
 .tree-html-card.highlight-name .card-name { color:#ff5555;font-size:16px;font-weight:800; }
 .tree-connector { stroke:var(--accent-orange); stroke-width:1.5; fill:none; opacity:0.25; }
-.tree-connector-h { stroke:var(--accent-orange); stroke-width:1.5; fill:none; opacity:0.2; }
-/* Tree node */
-.ct-node { user-select:none; }
-.ct-node-bar { display:flex; align-items:center; gap:6px; padding:5px 12px; border-radius:6px; cursor:pointer; transition:background 0.15s; margin:1px 0; }
-.ct-node-bar:hover { background:var(--accent-orange-dim); }
-.ct-node-bar.highlight { background:rgba(255,107,0,0.15); border-left:3px solid var(--accent-orange); }
-.ct-expand { font-size:10px; width:16px; text-align:center; color:var(--text-muted); flex-shrink:0; transition:transform 0.2s; }
-.ct-expand.expanded { transform:rotate(90deg); }
-.ct-name { font-size:14px; font-weight:500; color:var(--text-primary); }
-.ct-name.highlight-name { color:#ff5555; font-weight:700; }
-.ct-gen { font-size:11px; color:var(--text-tertiary); margin-left:auto; white-space:nowrap; }
-.ct-branch { font-size:10px; padding:1px 8px; border-radius:10px; background:rgba(251,146,60,0.12); color:var(--accent-orange); white-space:nowrap; }
-.ct-star { font-size:12px; margin-right:2px; }
-.ct-children { overflow:hidden; transition:max-height 0.35s ease, opacity 0.25s ease; max-height:0; opacity:0; }
-.ct-children.open { max-height:20000px; opacity:1; }
-.ct-children .ct-node-bar { padding-left:32px; }
-.ct-children .ct-children .ct-node-bar { padding-left:52px; }
-.ct-children .ct-children .ct-children .ct-node-bar { padding-left:72px; }
-.ct-children .ct-children .ct-children .ct-children .ct-node-bar { padding-left:92px; }
-/* Connector line via pseudo-element */
-.ct-node { position:relative; }
-.ct-node::before { content:''; position:absolute; left:20px; top:0; bottom:0; width:1px; background:var(--glass-border); opacity:0.3; pointer-events:none; }
-.ct-children > .ct-node:last-child::before { display:none; }
 /* Summary card for overview */
 
 .tree-connector { stroke:var(--accent-orange); stroke-width:1.5; fill:none; opacity:0.25; }
 .tree-connector-h { stroke:var(--accent-orange); stroke-width:1.5; fill:none; opacity:0.2; }
+.tree-viewport { will-change:transform; }
+.tree-loading { display:flex; align-items:center; justify-content:center; min-height:200px; color:var(--text-tertiary); font-size:14px; gap:10px; }
+.tree-loading-spinner { display:inline-block; width:18px; height:18px; border:2px solid var(--text-tertiary); border-top-color:var(--accent-orange); border-radius:50%; animation:spin 0.8s linear infinite; }
 .tree-svg-node-hidden > .tree-svg-children { display:none; }
 .tree-svg-node-hidden .card-expand-text { display:block; }
 .tree-svg-node:not(.tree-svg-node-hidden) .card-expand-text { display:none; }
@@ -615,11 +595,14 @@ function filterBranch(branch) {
       if (data[i].name.indexOf(branch) >= 0) { branchLabel = data[i].name; break; }
     }
   }
-  // Render tree with filter
+  // Render tree with filter — defer layout so UI stays responsive
   localStorage.setItem('xie_tree_collapsed', '[]');
   var el1 = document.getElementById('tree-scroll-container');
   if (el1) el1.style.display = 'block';
-  renderTreeSVG(data);
+  // Show loading state immediately
+  var tc = document.getElementById('tree-container');
+  if (tc) tc.innerHTML = '<div class="tree-loading"><span class="tree-loading-spinner"></span> 加载世系图中…</div>';
+  setTimeout(function() { renderTreeSVG(data); }, 30);
   // If viewing a specific branch, auto-locate to the root person
   if (branch !== 'all') {
     setTimeout(function() {
