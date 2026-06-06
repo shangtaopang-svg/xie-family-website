@@ -128,20 +128,7 @@
   function getGenealogyData() {
     try {
       var stored = localStorage.getItem('xie_admin_genealogy');
-      var ver = localStorage.getItem('xie_admin_genealogy_ver');
-      if (stored && ver === '4') {
-        var d = JSON.parse(stored);
-        return d;
-      }
-      // Fresh seed data or upgrade old cache
-      if (stored) {
-        var parsed = JSON.parse(stored);
-        var fullSeed = getFullSeedData();
-        var existingIds = {};
-        parsed.forEach(function(p) { existingIds[p.id] = true; });
-        // Update existing entries with fresh seed data (especially highlight field)
-        for (var i = 0; i < parsed.length; i++) {
-          for (var j = 0; j < fullSeed.length; j++) {
+      if (stored) { return JSON.parse(stored); }
       var seedData = getFullSeedData();
       localStorage.setItem('xie_admin_genealogy', JSON.stringify(seedData));
       localStorage.setItem('xie_admin_genealogy_ver', '5');
