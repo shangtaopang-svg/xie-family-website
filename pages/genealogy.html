@@ -1187,6 +1187,18 @@ function renderCompactOverview(data, container) {
   // Find roots and render them
   var existingIds = {}; data.forEach(function(p) { existingIds[p.id] = true; });
   var roots = data.filter(function(p) { return !p.father_id || !existingIds[parseInt(p.father_id)]; });
+  // Filter out superseded seed entries when real data exists
+  if (total > 20) {
+    roots = roots.filter(function(r) {
+      var rGen = parseInt(r.generation_num) || 0;
+      for (var i = 0; i < data.length; i++) {
+        if (data[i].id !== r.id && data[i].name.indexOf(r.name.substring(0,2)) === 0 && parseInt(data[i].generation_num) > rGen + 10) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }
   // Sort by generation
   roots.sort(function(a,b) { return (parseInt(a.generation_num)||0) - (parseInt(b.generation_num)||0); });
   // Show first 5 roots, collapsed by default
