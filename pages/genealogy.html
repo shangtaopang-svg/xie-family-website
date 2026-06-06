@@ -1187,8 +1187,9 @@ function renderCompactOverview(data, container) {
   // Find roots and render them
   var existingIds = {}; data.forEach(function(p) { existingIds[p.id] = true; });
   var roots = data.filter(function(p) { return !p.father_id || !existingIds[parseInt(p.father_id)]; });
-  // Filter out superseded seed entries when real data exists
+  // Show only branches gen >= 100 (actual 下枫槎 ancestors, not ancient lineage)
   if (total > 20) {
+    roots = roots.filter(function(r) { return parseInt(r.generation_num) >= 100; });
     roots = roots.filter(function(r) {
       var rGen = parseInt(r.generation_num) || 0;
       for (var i = 0; i < data.length; i++) {
