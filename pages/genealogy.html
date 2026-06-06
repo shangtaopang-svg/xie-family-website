@@ -1187,9 +1187,15 @@ function renderCompactOverview(data, container) {
   // Find roots and render them
   var existingIds = {}; data.forEach(function(p) { existingIds[p.id] = true; });
   var roots = data.filter(function(p) { return !p.father_id || !existingIds[parseInt(p.father_id)]; });
-  // Show only branches gen >= 100 (actual 下枫槎 ancestors, not ancient lineage)
+  // Show only the two main branch roots
   if (total > 20) {
-    roots = roots.filter(function(r) { return parseInt(r.generation_num) >= 100; });
+    var branchRoots = [];
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].name.indexOf('攒【后枫槎】') >= 0 || data[i].name.indexOf('撰【前枫槎】') >= 0) {
+        branchRoots.push(data[i]);
+      }
+    }
+    if (branchRoots.length > 0) roots = branchRoots;
     roots = roots.filter(function(r) {
       var rGen = parseInt(r.generation_num) || 0;
       for (var i = 0; i < data.length; i++) {
