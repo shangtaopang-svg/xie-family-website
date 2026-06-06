@@ -626,6 +626,11 @@ function filterBranch(branch) {
 function renderTreeSVG(data) {
   var container = document.getElementById('tree-container');
   if (!container) return;
+  // Remove stale overlays from previous filter renders
+  var oldMsg = document.getElementById('branch-empty-msg');
+  if (oldMsg) oldMsg.remove();
+  var oldStats = document.getElementById('branch-stats-overlay');
+  if (oldStats) oldStats.remove();
   // Apply branch filter
   if (_currentBranch && _currentBranch !== 'all') {
     var filteredData = getBranchData(data, _currentBranch);
