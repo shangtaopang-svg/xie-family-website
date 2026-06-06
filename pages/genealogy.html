@@ -594,6 +594,8 @@ function filterBranch(branch) {
   if (branch !== 'all') {
     data = getBranchData(data, branch);
   }
+  // Clear collapse state so filtered branch shows fully expanded
+  localStorage.setItem('xie_tree_collapsed', '[]');
   // Update vertical tree
   document.getElementById('tree-scroll-container').style.display = 'block';
   renderTreeSVG(data);
@@ -828,11 +830,23 @@ function toggleTreeSVG(personId) {
 }
 
 function expandAllTree() {
+  _currentBranch = 'all';
+  document.querySelectorAll('[id^="filter-"]').forEach(function(b) {
+    b.style.background = ''; b.style.color = ''; b.style.border = '1px solid var(--glass-border)';
+  });
+  var allBtn = document.getElementById('filter-all');
+  if (allBtn) { allBtn.style.background = 'var(--accent-orange)'; allBtn.style.color = '#fff'; allBtn.style.border = 'none'; }
   localStorage.setItem('xie_tree_collapsed', '[]');
   renderTreeSVG(getGenealogyData());
 }
 
 function collapseAllTree() {
+  _currentBranch = 'all';
+  document.querySelectorAll('[id^="filter-"]').forEach(function(b) {
+    b.style.background = ''; b.style.color = ''; b.style.border = '1px solid var(--glass-border)';
+  });
+  var allBtn = document.getElementById('filter-all');
+  if (allBtn) { allBtn.style.background = 'var(--accent-orange)'; allBtn.style.color = '#fff'; allBtn.style.border = 'none'; }
   var data = getGenealogyData();
   var allIds = [];
   data.forEach(function(p) {
