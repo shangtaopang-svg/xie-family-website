@@ -630,6 +630,28 @@ function filterBranch(branch) {
 function renderTreeSVG(data) {
   var container = document.getElementById('tree-container');
   if (!container) return;
+  // Check cache for current branch filter (instant re-render)
+  var _treeCache = window._treeCache || {};
+  window._treeCache = _treeCache;
+  var cacheKey = _currentBranch || 'all';
+  if (_treeCache[cacheKey]) {
+    container.innerHTML = _treeCache[cacheKey];
+    // Re-bind card events (innerHTML loses event listeners)
+    var viewport = container.querySelector('.tree-viewport');
+    if (viewport) {
+      viewport.style.transform = 'translate(' + treePanX + 'px,' + treePanY + 'px) scale(' + treeScale + ')';
+    }
+    var oldMsg = document.getElementById('branch-empty-msg');
+    if (oldMsg) oldMsg.remove();
+    var oldStats = document.getElementById('branch-stats-overlay');
+    if (oldStats) oldStats.remove();
+    // Show empty message if needed
+    if (_currentBranch && _currentBranch !== 'all') {
+      var cardCount = container.querySelectorAll('.tree-html-card').length;
+      if (cardCount <= 1) { showBranchEmptyMsg(container); }
+    }
+    return;
+  }
   // Remove stale overlays from previous filter renders
   var oldMsg = document.getElementById('branch-empty-msg');
   if (oldMsg) oldMsg.remove();
@@ -733,7 +755,7 @@ function renderTreeSVG(data) {
   // Now render cards in chunks using requestAnimationFrame
   var cardsLayer = container.querySelector('.tree-cards-layer');
   var cardIdx = 0;
-  var CHUNK = 80; // cards per batch
+  var CHUNK = 300; // cards per batch
 
   function renderCardChunk() {
     var html = '';
@@ -766,20 +788,16 @@ function renderTreeSVG(data) {
     cardsLayer.insertAdjacentHTML('beforeend', html);
     if (cardIdx < cardIdsNum.length) {
       requestAnimationFrame(renderCardChunk);
+    } else {
+      // All cards rendered — save to cache
+      _treeCache[cacheKey] = container.innerHTML;
     }
   }
   // Start chunked rendering
   requestAnimationFrame(renderCardChunk);
 
   // Show message when branch filter has no connected descendants
-  if (_currentBranch && _currentBranch !== 'all' && cardIds.length <= 1) {
-    var msgDiv = document.createElement('div');
-    msgDiv.id = 'branch-empty-msg';
-    msgDiv.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:50;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);border-radius:12px;padding:20px 28px;border:1px solid rgba(251,146,60,0.2);text-align:center;pointer-events:none;';
-    msgDiv.innerHTML = '<div style="font-size:28px;margin-bottom:8px;">📋</div><div style="color:#fb923c;font-size:14px;font-weight:600;">该支系暂无详细的世代连接数据</div><div style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:6px;">请在管理后台补充父ID关联后，即可查看完整世系图</div>';
-    var scrollContainer = document.getElementById('tree-scroll-container');
-    if (scrollContainer) scrollContainer.appendChild(msgDiv);
-  }
+  showBranchEmptyMsg(container);
 
   // Add branch stats overlay (HTML, not SVG - stays in place during zoom)
   var existingStats = document.getElementById('branch-stats-overlay');
@@ -811,6 +829,22 @@ function renderTreeSVG(data) {
   var cards2 = container.querySelectorAll('.tree-html-card');
   for (var i = 0; i < cards2.length; i++) {
     allNodes.push({id: parseInt(cards2[i].getAttribute('data-id')), el: cards2[i]});
+  }
+}
+
+function showBranchEmptyMsg(container) {
+  if (_currentBranch && _currentBranch !== 'all' && container) {
+    var existing = document.getElementById('branch-empty-msg');
+    if (existing) existing.remove();
+    var cardCount = container.querySelectorAll('.tree-html-card').length;
+    if (cardCount <= 1) {
+      var msgDiv = document.createElement('div');
+      msgDiv.id = 'branch-empty-msg';
+      msgDiv.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:50;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);border-radius:12px;padding:20px 28px;border:1px solid rgba(251,146,60,0.2);text-align:center;pointer-events:none;';
+      msgDiv.innerHTML = '<div style="font-size:28px;margin-bottom:8px;">📋</div><div style="color:#fb923c;font-size:14px;font-weight:600;">该支系暂无详细的世代连接数据</div><div style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:6px;">请在管理后台补充父ID关联后，即可查看完整世系图</div>';
+      var sc = document.getElementById('tree-scroll-container');
+      if (sc) sc.appendChild(msgDiv);
+    }
   }
 }
 
