@@ -1146,12 +1146,12 @@ function switchCompactView(view) {
   } else if (view === 'houfengcha') {
     var root = null;
     for (var i = 0; i < data.length; i++) { if (data[i].name.indexOf('攒') === 0 && data[i].name.indexOf('后枫槎') > 0) { root = data[i]; break; } }
-    if (root) renderCompactTree(data, container, root.id, true);
+    if (root) { _ctExpanded[root.id] = true; container.innerHTML = buildCompactNode(data, root.id, 0, false, 1); }
     else container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-tertiary);">未找到后枫槎数据</div>';
   } else if (view === 'qianfengcha') {
     var root = null;
     for (var i = 0; i < data.length; i++) { if (data[i].name.indexOf('撰') === 0 && data[i].name.indexOf('前枫槎') > 0) { root = data[i]; break; } }
-    if (root) renderCompactTree(data, container, root.id, true);
+    if (root) { _ctExpanded[root.id] = true; container.innerHTML = buildCompactNode(data, root.id, 0, false, 1); }
     else container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-tertiary);">未找到前枫槎数据</div>';
   }
 }
@@ -1186,7 +1186,7 @@ function renderCompactOverview(data, container) {
   var showCount = Math.min(5, roots.length);
   for (var r = 0; r < showCount; r++) {
     _ctExpanded[roots[r].id] = true; // expand first level for roots
-    html += buildCompactNode(data, roots[r].id, 0, false);
+    html += buildCompactNode(data, roots[r].id, 0, false, 1); // maxDepth=1: only 2 levels
   }
   if (roots.length > showCount) {
     html += '<div style="padding:8px 16px;color:var(--text-tertiary);font-size:12px;">还有 ' + (roots.length - showCount) + ' 个分支… 点击上方支系标签查看</div>';
@@ -1194,18 +1194,22 @@ function renderCompactOverview(data, container) {
   container.innerHTML = html;
 }
 
-function buildCompactNode(data, personId, depth, parentExpanded) {
+function buildCompactNode(data, personId, depth, parentExpanded, maxDepth) {
   var person = getPersonById(personId, data);
   if (!person) return '';
   var kids = getChildrenOf(personId, data);
   var isHighlight = person.highlight === true ||
     /^(小四|文杲|攒|撰|彬|乾|文对|炎帝|临魁|申伯)/.test(person.name);
   var isExpanded = _ctExpanded[personId] === true;
+  // Honor maxDepth: don't recurse past this level (children will load on expand)
+  var limitHit = (maxDepth !== undefined && depth >= maxDepth);
   var style = (depth > 0 && !parentExpanded) ? ' style="display:none;"' : '';
   var html = '<div class="ct-node"' + style + '>';
   html += '<div class="ct-node-bar' + (isHighlight ? ' highlight' : '') + '" onclick="event.stopPropagation();onCompactNodeClick(' + personId + ')">';
-  if (kids.length > 0) {
+  if (kids.length > 0 && !limitHit) {
     html += '<span class="ct-expand' + (isExpanded ? ' expanded' : '') + '" onclick="event.stopPropagation();toggleCompactNode(' + personId + ')">▶</span>';
+  } else if (kids.length > 0 && limitHit) {
+    html += '<span class="ct-expand" style="color:var(--accent-orange);font-size:10px;" onclick="event.stopPropagation();_ctExpanded[' + personId + ']=true;switchCompactView(_ctView);">+</span>';
   } else {
     html += '<span class="ct-expand" style="visibility:hidden;">▶</span>';
   }
@@ -1217,12 +1221,11 @@ function buildCompactNode(data, personId, depth, parentExpanded) {
     html += '<span style="font-size:10px;color:var(--text-muted);margin-left:8px;">' + kids.length + '子·' + countAllDescendants(personId, data) + '后</span>';
   }
   html += '</div>';
-  if (kids.length > 0) {
+  if (kids.length > 0 && !limitHit) {
     html += '<div class="ct-children' + (isExpanded ? ' open' : '') + '">';
-    // Sort children by generation then name
     kids.sort(function(a,b) { return (parseInt(a.generation_num)||0) - (parseInt(b.generation_num)||0) || (a.name||'').localeCompare(b.name||''); });
     for (var i = 0; i < kids.length; i++) {
-      html += buildCompactNode(data, kids[i].id, depth + 1, isExpanded);
+      html += buildCompactNode(data, kids[i].id, depth + 1, isExpanded, maxDepth);
     }
     html += '</div>';
   }
@@ -1237,24 +1240,38 @@ function onCompactNodeClick(personId) {
 
 function toggleCompactNode(personId) {
   if (_ctExpanded[personId]) { delete _ctExpanded[personId]; } else { _ctExpanded[personId] = true; }
-  // Re-render current view
-  switchCompactView(_ctView);
+  // Re-render with enough depth to show expanded children
+  var data = getGenealogyData();
+  var container = document.getElementById('ct-container');
+  if (!container) return;
+  if (_ctView === 'overview') {
+    renderCompactOverview(data, container);
+  } else {
+    var rootId = _ctView === 'houfengcha' ? 173 : 174;
+    var root = getPersonById(rootId, data);
+    if (root) container.innerHTML = buildCompactNode(data, root.id, 0, false, 10);
+  }
 }
 
 function ctExpandAll() {
   var data = getGenealogyData();
   if (_ctView === 'overview') {
     data.forEach(function(p) { if (getChildrenOf(p.id, data).length > 0) _ctExpanded[p.id] = true; });
+    var container = document.getElementById('ct-container');
+    if (container) renderCompactOverview(data, container);
   } else {
     var rootId = _ctView === 'houfengcha' ? 173 : 174;
-    // Expand all descendants of the root
     function expandAll(pid) {
       var kids = getChildrenOf(pid, data);
       if (kids.length > 0) { _ctExpanded[pid] = true; kids.forEach(function(k) { expandAll(k.id); }); }
     }
     expandAll(rootId);
+    var container = document.getElementById('ct-container');
+    if (container) {
+      var root = getPersonById(rootId, data);
+      if (root) container.innerHTML = buildCompactNode(data, root.id, 0, false, 10);
+    }
   }
-  switchCompactView(_ctView);
 }
 
 function ctCollapseAll() {
