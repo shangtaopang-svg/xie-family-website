@@ -179,9 +179,6 @@
         <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center;padding:6px 0;">
           <span style="font-size:12px;color:var(--text-tertiary);font-weight:500;">支系：</span>
           <button class="btn btn-xs" id="filter-all" onclick="filterBranch('all')" style="background:var(--accent-orange);color:#fff;border:none;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;">全部</button>
-          <button class="btn btn-xs" id="filter-bin" onclick="filterBranch('彬')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">彬公世系</button>
-          <button class="btn btn-xs" id="filter-qian" onclick="filterBranch('乾')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">乾公世系</button>
-          <button class="btn btn-xs" id="filter-wendui" onclick="filterBranch('文对')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">文对公世系</button>
           <button class="btn btn-xs" id="filter-houfengcha" onclick="filterBranch('后枫槎')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">后枫槎世系</button>
           <button class="btn btn-xs" id="filter-qianfengcha" onclick="filterBranch('前枫槎')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">前枫槎世系</button>
         </div>
@@ -605,10 +602,7 @@ var _currentBranch = 'all';
 function filterBranch(branch) {
   _currentBranch = branch;
   var btnId = 'filter-all';
-  if (branch.indexOf('彬') >= 0) btnId = 'filter-bin';
-  else if (branch.indexOf('乾') >= 0) btnId = 'filter-qian';
-  else if (branch.indexOf('文对') >= 0) btnId = 'filter-wendui';
-  else if (branch.indexOf('后枫槎') >= 0) btnId = 'filter-houfengcha';
+  if (branch.indexOf('后枫槎') >= 0) btnId = 'filter-houfengcha';
   else if (branch.indexOf('前枫槎') >= 0) btnId = 'filter-qianfengcha';
   document.querySelectorAll('[id^="filter-"]').forEach(function(b) { b.style.background = ''; b.style.color = ''; b.style.border = '1px solid var(--glass-border)'; });
   var btn = document.getElementById(btnId);
