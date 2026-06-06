@@ -354,7 +354,14 @@
             }
           }
         }
-        // Add new entries not in localStorage
+        // Only merge seed when database is empty (<=20 entries)
+      if (parsed.length <= 20) {
+        for (var i = 0; i < fullSeed.length; i++) {
+          if (!existingIds[fullSeed[i].id]) {
+            parsed.push(fullSeed[i]);
+          }
+        }
+      }
         for (var i = 0; i < fullSeed.length; i++) {
           if (!existingIds[fullSeed[i].id]) {
             parsed.push(fullSeed[i]);
@@ -1146,12 +1153,12 @@ function switchCompactView(view) {
   } else if (view === 'houfengcha') {
     var root = null;
     for (var i = 0; i < data.length; i++) { if (data[i].name.indexOf('攒') === 0 && data[i].name.indexOf('后枫槎') > 0) { root = data[i]; break; } }
-    if (root) { _ctExpanded[root.id] = true; container.innerHTML = buildCompactNode(data, root.id, 0, false, 1); }
+    if (root) { _ctExpanded[root.id] = true; container.innerHTML = buildCompactNode(data, root.id, 0, false, 5); }
     else container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-tertiary);">未找到后枫槎数据</div>';
   } else if (view === 'qianfengcha') {
     var root = null;
     for (var i = 0; i < data.length; i++) { if (data[i].name.indexOf('撰') === 0 && data[i].name.indexOf('前枫槎') > 0) { root = data[i]; break; } }
-    if (root) { _ctExpanded[root.id] = true; container.innerHTML = buildCompactNode(data, root.id, 0, false, 1); }
+    if (root) { _ctExpanded[root.id] = true; container.innerHTML = buildCompactNode(data, root.id, 0, false, 5); }
     else container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-tertiary);">未找到前枫槎数据</div>';
   }
 }
@@ -1186,7 +1193,7 @@ function renderCompactOverview(data, container) {
   var showCount = Math.min(5, roots.length);
   for (var r = 0; r < showCount; r++) {
     _ctExpanded[roots[r].id] = true; // expand first level for roots
-    html += buildCompactNode(data, roots[r].id, 0, false, 1); // maxDepth=1: only 2 levels
+    html += buildCompactNode(data, roots[r].id, 0, false, 5);
   }
   if (roots.length > showCount) {
     html += '<div style="padding:8px 16px;color:var(--text-tertiary);font-size:12px;">还有 ' + (roots.length - showCount) + ' 个分支… 点击上方支系标签查看</div>';
@@ -1249,7 +1256,7 @@ function toggleCompactNode(personId) {
   } else {
     var rootId = _ctView === 'houfengcha' ? 173 : 174;
     var root = getPersonById(rootId, data);
-    if (root) container.innerHTML = buildCompactNode(data, root.id, 0, false, 10);
+    if (root) container.innerHTML = buildCompactNode(data, root.id, 0, false, 30);
   }
 }
 
@@ -1269,7 +1276,7 @@ function ctExpandAll() {
     var container = document.getElementById('ct-container');
     if (container) {
       var root = getPersonById(rootId, data);
-      if (root) container.innerHTML = buildCompactNode(data, root.id, 0, false, 10);
+      if (root) container.innerHTML = buildCompactNode(data, root.id, 0, false, 30);
     }
   }
 }
