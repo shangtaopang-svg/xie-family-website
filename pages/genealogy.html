@@ -323,54 +323,21 @@
     ];
   }
   function getGenealogyData() {
-    try {
-      var stored = localStorage.getItem('xie_admin_genealogy');
-      var ver = localStorage.getItem('xie_admin_genealogy_ver');
-      if (stored && ver === '4') {
-        var d = JSON.parse(stored);
-        return d;
-      }
-      // Fresh seed data or upgrade old cache
-      if (stored) {
-        var parsed = JSON.parse(stored);
-        var fullSeed = getFullSeedData();
-        var existingIds = {};
-        parsed.forEach(function(p) { existingIds[p.id] = true; });
-        // Update existing entries with fresh seed data (especially highlight field)
-        for (var i = 0; i < parsed.length; i++) {
-          for (var j = 0; j < fullSeed.length; j++) {
-            if (parsed[i].id === fullSeed[j].id) {
-              if (fullSeed[j].highlight) parsed[i].highlight = true;
-              break;
-            }
-          }
-        }
-        // Only merge seed when database is empty (<=20 entries)
-      if (parsed.length <= 20) {
-        for (var i = 0; i < fullSeed.length; i++) {
-          if (!existingIds[fullSeed[i].id]) {
-            parsed.push(fullSeed[i]);
-          }
-        }
-      }
-        for (var i = 0; i < fullSeed.length; i++) {
-          if (!existingIds[fullSeed[i].id]) {
-            parsed.push(fullSeed[i]);
-          }
-        }
-        localStorage.setItem('xie_admin_genealogy', JSON.stringify(parsed));
-        localStorage.setItem('xie_admin_genealogy_ver', '5');
-        return parsed;
-      }
-      // Seed default ancestor data from PDF族谱
-      var seedData = getFullSeedData();
-      localStorage.setItem('xie_admin_genealogy', JSON.stringify(seedData));
-      localStorage.setItem('xie_admin_genealogy_ver', '5');
-      return seedData;
-    } catch(e) { return []; }
-  }
+  // Simply return localStorage data, no seed merging
+  try {
+    var stored = localStorage.getItem('xie_admin_genealogy');
+    if (stored) {
+      var data = JSON.parse(stored);
+      return data;
+    }
+  } catch(e) {}
+  // Fallback: seed data when nothing in localStorage
+  var seed = getFullSeedData();
+  localStorage.setItem('xie_admin_genealogy', JSON.stringify(seed));
+  return seed;
+}
 
-  function getPersonNameById(id, data) {
+function getPersonNameByIdfunction getPersonNameById(id, data) {
     if (!id && id !== 0) return null;
     for (var i = 0; i < data.length; i++) {
       if (data[i].id === id) return data[i].name;
