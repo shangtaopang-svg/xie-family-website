@@ -630,18 +630,20 @@ function filterBranch(branch) {
       if (data[i].name.indexOf(branch) >= 0) { branchLabel = data[i].name; break; }
     }
   }
-  if (branch === 'all') {
-    // "全部" → show vertical tree (expandable, full tree view)
-    localStorage.setItem('xie_tree_collapsed', '[]');
-    document.getElementById('tree-scroll-container').style.display = 'block';
-    document.getElementById('tree-scroll-container-h').style.display = 'none';
-    renderTreeSVG(data);
-  } else {
-    // Branch filter → show horizontal tree with branch name header
-    document.getElementById('tree-scroll-container').style.display = 'none';
-    document.getElementById('tree-scroll-container-h').style.display = 'block';
-    document.getElementById('tree-container-h').innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-tertiary);font-size:14px;">⏳ 筛选渲染中...</div>';
-    setTimeout(function() { renderHorizontalTree(data); setupHScroll(); }, 50);
+  // Always use vertical tree (unified view)
+  localStorage.setItem('xie_tree_collapsed', '[]');
+  document.getElementById('tree-scroll-container').style.display = 'block';
+  document.getElementById('tree-scroll-container-h').style.display = 'none';
+  renderTreeSVG(data);
+  // If viewing a specific branch, auto-locate to the root person
+  if (branch !== 'all') {
+    setTimeout(function() {
+      var rootId = null;
+      for (var i = 0; i < data.length; i++) {
+        if (data[i].name.indexOf(branch) >= 0) { rootId = data[i].id; break; }
+      }
+      if (rootId) treeAutoLocate(rootId);
+    }, 200);
   }
   // Auto-scroll to tree section
   setTimeout(function() {
