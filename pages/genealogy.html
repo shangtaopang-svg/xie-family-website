@@ -166,7 +166,7 @@
             <button class="btn btn-sm" onclick="treeZoomIn()" title="放大">🔍+</button>
             <button class="btn btn-sm" onclick="treeZoomOut()" title="缩小">🔍−</button>
             <button class="btn btn-sm" onclick="treeZoomReset()" title="重置缩放">1:1</button>
-            <span id="tree-zoom-level" style="font-size:11px;color:var(--text-tertiary;min-width:32px;text-align:center;">100%</span>
+            <span id="tree-zoom-level" style="font-size:11px;color:var(--text-tertiary);min-width:32px;text-align:center;">100%</span>
             <button class="btn btn-sm" onclick="expandAllTree()" title="展开全部">全部展开</button>
             <button class="btn btn-sm" onclick="collapseAllTree()" title="收起全部">全部收起</button>
             <button class="btn btn-sm" onclick="toggleTreeFullscreen()" title="全屏观看" style="background:var(--accent-orange-dim);border-color:var(--accent-orange);">⛶ 全屏</button>
@@ -579,17 +579,28 @@ function getBranchData(data, rootNamePattern) {
     var rootGen = parseInt(root.generation_num);
     // Only apply fallback for gen >= 10 (avoid ancient ancestors swallowing everything)
     if (rootGen >= 10) {
-      // Also match by branch field if set
       var branchMatch = root.branch && root.branch !== '—';
+      // Step 1: include all people from root's generation onwards
       data.forEach(function(p) {
         if (ids.indexOf(p.id) >= 0) return;
         var pGen = parseInt(p.generation_num);
         if (pGen && pGen >= rootGen) {
-          // Include if same branch or branch not specified
           if (!branchMatch || p.branch === root.branch || !p.branch || p.branch === '—') {
             ids.push(p.id);
           }
         }
+      });
+      // Step 2: include direct parents of people in the set (one level up)
+      // This ensures the tree stays connected when children have fathers outside the gen range
+      var parentIds = [];
+      data.forEach(function(p) {
+        if (ids.indexOf(p.id) >= 0 && p.father_id) {
+          var fid = parseInt(p.father_id);
+          if (fid && ids.indexOf(fid) === -1) parentIds.push(fid);
+        }
+      });
+      parentIds.forEach(function(fid) {
+        if (ids.indexOf(fid) === -1) ids.push(fid);
       });
     }
   }
@@ -609,20 +620,34 @@ function filterBranch(branch) {
   document.querySelectorAll('[id^="filter-"]').forEach(function(b) { b.style.background = ''; b.style.color = ''; b.style.border = '1px solid var(--glass-border)'; });
   var btn = document.getElementById(btnId);
   if (btn) { btn.style.background = 'var(--accent-orange)'; btn.style.color = '#fff'; btn.style.border = 'none'; }
-  // Re-render both trees with filter
+  // Get and filter data
   var data = getGenealogyData();
+  var branchLabel = '全部';
   if (branch !== 'all') {
     data = getBranchData(data, branch);
+    // Get a human-readable label for this branch
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].name.indexOf(branch) >= 0) { branchLabel = data[i].name; break; }
+    }
   }
-  // Clear collapse state so filtered branch shows fully expanded
-  localStorage.setItem('xie_tree_collapsed', '[]');
-  // Update vertical tree
-  document.getElementById('tree-scroll-container').style.display = 'block';
-  renderTreeSVG(data);
-  // Also render horizontal tree
-  document.getElementById('tree-scroll-container-h').style.display = 'block';
-  document.getElementById('tree-container-h').innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-tertiary);font-size:14px;">⏳ 筛选渲染中...</div>';
-  setTimeout(function() { renderHorizontalTree(data); setupHScroll(); }, 50);
+  if (branch === 'all') {
+    // "全部" → show vertical tree (expandable, full tree view)
+    localStorage.setItem('xie_tree_collapsed', '[]');
+    document.getElementById('tree-scroll-container').style.display = 'block';
+    document.getElementById('tree-scroll-container-h').style.display = 'none';
+    renderTreeSVG(data);
+  } else {
+    // Branch filter → show horizontal tree with branch name header
+    document.getElementById('tree-scroll-container').style.display = 'none';
+    document.getElementById('tree-scroll-container-h').style.display = 'block';
+    document.getElementById('tree-container-h').innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-tertiary);font-size:14px;">⏳ 筛选渲染中...</div>';
+    setTimeout(function() { renderHorizontalTree(data); setupHScroll(); }, 50);
+  }
+  // Auto-scroll to tree section
+  setTimeout(function() {
+    var treeSection = document.getElementById('genealogy-tree-section');
+    if (treeSection) treeSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
 }
 
 function renderTreeSVG(data) {
@@ -1323,10 +1348,11 @@ function renderHorizontalTree(data) {
     });
   }
 
+  var rootY = 0;
   roots.forEach(function(root) {
     var totalSpan = verticalSpan(root.id);
-    var startY = 0;
-    layoutNode(root.id, 0, startY, totalSpan);
+    layoutNode(root.id, 0, rootY, totalSpan);
+    rootY += totalSpan * (CARD_H + V_GAP) + V_GAP + 20;
   });
 
   // Calculate SVG dimensions
