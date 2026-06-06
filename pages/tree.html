@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title data-i18n="page.genealogy.title">族谱查询 · 下枫槎谢氏</title>
+  <title data-i18n="page.genealogy.title">世系图谱 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 
   
@@ -67,100 +67,14 @@
     </div>
   </header>
 
-  <div class="page-wrap genealogy-page">
+<div class="content">
+  <div class="page-wrap" style="max-width:1400px;">
     <div class="page-title">
-      <h2 data-i18n="genealogy.lock.title">族谱查询</h2>
-      <p data-i18n="page.genealogy">追本溯源 · 知根知底</p>
+      <h2>🌳 世系图谱</h2>
+      <p>追本溯源 · 枝繁叶茂</p>
     </div>
-
-    <!-- ===== 族谱内容 ===== -->
-    <div id="genealogy-content" class="genealogy-content" style="display:block;">
-
-      <div class="section-title">
-        <h2>《下枫槎谢氏宗谱》</h2>
-        <div class="divider"></div>
-        <p>乌衣世泽 · 宝树家声</p>
-      </div>
-
-
-      
-<!-- 字辈 -->
-      <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-generation-chart">
-        <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:12px;font-size:17px;font-weight:500;">字辈排行</h3>
-        <p style="font-size:13px;color:var(--text-tertiary);margin-bottom:12px;">下枫槎谢氏字辈，自迁居始祖起，排行如下：</p>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;" id="generation-chars">
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">一(19)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">懋(20)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">之(21)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">嘉(22)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">永(23)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">孝(24)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">思(25)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">台(26)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">邦(27)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">令(28)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">序(29)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">善(30)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">道(31)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">开(32)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">时(33)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">天(34)</span>
-        </div>
-        <p style="font-size:13px;color:var(--text-tertiary);margin-top:12px;">目前已传至"天"字辈（第三十四世）</p>
-      </div>
-
-      <!-- 统计 -->
-      <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-stats">
-        <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:16px;font-size:17px;font-weight:500;">📊 族谱统计</h3>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px;" id="stats-container"></div>
-      </div>
-
-      <!-- ===== 世代时间轴 ===== -->
-      <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-timeline">
-        <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:6px;font-size:17px;font-weight:500;">📅 世代时间轴</h3>
-        <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:14px;">横向滚动浏览 · 每格一代 · 柱高=人丁 · 点击查看该世族人</p>
-        <div style="position:relative;width:100%;border-radius:10px;overflow-x:auto;overflow-y:hidden;background:var(--glass-bg);border:1px solid var(--glass-border);padding:16px 0;">
-          <div id="timeline-wrap" style="display:flex;gap:2px;min-height:240px;padding:0 12px;"></div>
-          <div id="timeline-tooltip" style="display:none;position:absolute;pointer-events:none;background:rgba(0,0,0,0.9);color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;white-space:nowrap;z-index:10;backdrop-filter:blur(4px);border:1px solid rgba(251,146,60,0.3);line-height:1.7;"></div>
-        </div>
-      </div>
-
-      <!-- 搜索 -->
-      <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-search-section">
-        <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:12px;font-size:17px;font-weight:500;">🔍 高级搜索</h3>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
-          <input type="text" id="genealogy-search" placeholder="姓名关键字..." style="flex:1;min-width:130px;padding:8px 12px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:13px;">
-          <input type="number" id="search-gen-from" placeholder="世代从" style="width:75px;padding:8px 6px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;">
-          <span style="color:var(--text-muted);font-size:12px;">—</span>
-          <input type="number" id="search-gen-to" placeholder="到" style="width:65px;padding:8px 6px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;">
-          <select id="search-gender" onchange="searchGenealogy()" style="padding:8px 6px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;">
-            <option value="">全部性别</option><option value="男">男</option><option value="女">女</option>
-          </select>
-          <select id="search-alive" onchange="searchGenealogy()" style="padding:8px 6px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;">
-            <option value="">全部状态</option><option value="否">已故</option><option value="是">在世</option>
-          </select>
-          <button class="btn btn-accent" onclick="searchGenealogy()" style="padding:7px 14px;font-size:13px;">搜索</button>
-          <button class="btn" onclick="clearSearch()" style="padding:7px 14px;font-size:13px;">清除</button>
-        </div>
-        <div id="search-summary" style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px;min-height:18px;"></div>
-        <div id="search-results" style="margin-top:2px;"></div>
-      </div>
-
-      <!-- 关系查询 -->
-      <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-relation-section">
-        <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:16px;font-size:17px;font-weight:500;">🔗 亲缘关系查询</h3>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
-          <input type="text" id="relation-p1" placeholder="输入第一个人姓名..." style="flex:1;min-width:180px;padding:10px 14px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:14px;">
-          <span style="color:var(--text-muted);font-size:18px;">↔</span>
-          <input type="text" id="relation-p2" placeholder="输入第二个人姓名..." style="flex:1;min-width:180px;padding:10px 14px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:14px;">
-          <button class="btn btn-accent" onclick="calcRelation()">查关系</button>
-        </div>
-        <div id="relation-result" style="margin-top:16px;display:none;"></div>
-        <div id="relation-ancestor-path" style="margin-top:12px;display:none;"></div>
-      </div>
-
       <!-- ===== 世系图谱（卡片树状图 + 视图切换） ===== -->
-      <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-tree-section">
+      <div class="glass-card" style="padding:24px;margin-bottom:30px;" id="genealogy-tree-section">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
           <h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:17px;font-weight:500;margin:0;">🌳 世系图谱</h3>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
@@ -183,183 +97,21 @@
           <div id="tree-container"></div>
         </div>
       </div>
-
-      <!-- 世系表 -->
-      <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-table-section">
-        <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:16px;font-size:17px;font-weight:500;">📋 世系简表</h3>
-        <div style="overflow-x:auto;">
-          <table class="gen-table" id="gen-table">
-            <thead>
-              <tr><th>世代</th><th>姓名</th><th>性别</th><th>字辈</th><th>支系</th><th>父亲</th><th>配偶</th><th>生卒</th></tr>
-            </thead>
-            <tbody id="gen-table-body"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- 管理提示 -->
-      <div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:20px;text-align:center;" class="fade-in">
-        <h4 style="font-family:var(--font-title);color:var(--accent-orange);margin-bottom:8px;font-weight:500;">🔧 管理员操作</h4>
-        <p style="font-size:13px;color:var(--text-tertiary);margin-bottom:12px;">族谱数据管理请通过后台管理系统进行操作。</p>
-        <p style="font-size:12px;color:var(--text-muted);">族谱数据管理请通过后台管理系统操作<span style="margin-left:16px;opacity:0.4;">（需管理员权限）</span></p>
-      </div>
-
-    </div>
   </div>
-
 </div>
 
-  <footer class="site-footer">
-    <div class="footer-inner">
-      <div class="footer-section"><h4 data-i18n="footer.section1.title">下枫槎谢氏</h4><p data-i18n="footer.desc">宁海下枫槎村谢氏家族数字宗祠</p></div>
-      <div class="footer-section"><h4 data-i18n="footer.section2.title">快捷链接</h4><a href="../index.html" data-i18n="nav.home">首页</a><a href="history.html" data-i18n="nav.history">家族历史</a><a href="genealogy.html">族谱查询</a>
-      <div class="footer-section"><h4 data-i18n="footer.section.content">内容</h4><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a><a href="news.html" data-i18n="nav.news">消息发布</a><a href="today.html" data-i18n="nav.today">今日下枫槎</a><a href="reports.html" data-i18n="nav.reports">新闻报道</a></div>
-      <div class="footer-section"><h4 data-i18n="footer.section.contact">联系</h4><a href="contact.html" data-i18n="nav.contact">联系我们</a></div>
-    </div>
-    <div class="footer-bottom">
-      <p data-i18n="footer.copyright">© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p>
-    </div>
-  </footer>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-section"><h4>下枫槎谢氏</h4><p>宁海下枫槎村谢氏家族数字宗祠 · 世系图谱</p></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p>
+  </div>
+</footer>
 
-  
-  <a href="javascript:history.back()" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
-  <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
-  <script defer src="../js/main.js?v=9"></script>
-
-  <style>
-/* === Compact Tree (vertical, nested) === */
-.genealogy-tree-scroll { overflow:hidden; border:1px solid var(--glass-border); border-radius:12px; background:var(--bg-card); cursor:grab; min-height:450px; position:relative; width:100%; }
-.tree-connector-layer { position:absolute;top:0;left:0;z-index:0; }
-.tree-cards-layer { position:relative;z-index:1; }
-.tree-html-card { position:absolute;border-radius:8px;background:var(--glass-bg);border:2px solid var(--glass-border);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;transition:border-color 0.15s,box-shadow 0.15s;padding:4px;box-sizing:border-box; }
-.tree-html-card:hover { border-color:var(--accent-orange);box-shadow:0 0 0 2px rgba(251,146,60,0.15);z-index:10; }
-.tree-html-card.highlight { border-color:#ff6b00;background:rgba(255,107,0,0.1);box-shadow:0 0 0 3px rgba(255,107,0,0.2); }
-.tree-html-card .star { position:absolute;top:2px;right:4px;font-size:12px;line-height:1; }
-.tree-html-card .card-name { font-size:13px;font-weight:600;color:var(--text-primary);text-align:center;line-height:1.3;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-.tree-html-card .card-meta { font-size:10px;color:var(--text-tertiary);text-align:center;line-height:1.3;margin-top:1px; }
-.tree-html-card .card-expand { font-size:9px;color:var(--accent-orange);cursor:pointer;margin-top:2px;text-align:center;line-height:1.2; }
-.tree-html-card .card-expand:hover { text-decoration:underline; }
-.tree-html-card.highlight-name { border-color:#ff5555;background:rgba(255,85,85,0.12);box-shadow:0 0 10px rgba(255,85,85,0.3);z-index:20; }
-.tree-html-card.highlight-name .card-name { color:#ff5555;font-size:16px;font-weight:800; }
-.tree-connector { stroke:var(--accent-orange); stroke-width:1.5; fill:none; opacity:0.25; }
-/* Summary card for overview */
-
-.tree-connector { stroke:var(--accent-orange); stroke-width:1.5; fill:none; opacity:0.25; }
-.tree-connector-h { stroke:var(--accent-orange); stroke-width:1.5; fill:none; opacity:0.2; }
-.tree-viewport { will-change:transform; }
-.tree-loading { display:flex; align-items:center; justify-content:center; min-height:200px; color:var(--text-tertiary); font-size:14px; gap:10px; }
-.tree-loading-spinner { display:inline-block; width:18px; height:18px; border:2px solid var(--text-tertiary); border-top-color:var(--accent-orange); border-radius:50%; animation:spin 0.8s linear infinite; }
-.tree-svg-node-hidden > .tree-svg-children { display:none; }
-.tree-svg-node-hidden .card-expand-text { display:block; }
-.tree-svg-node:not(.tree-svg-node-hidden) .card-expand-text { display:none; }
-.tree-svg-node:not(.tree-svg-node-hidden) .card-collapse-text { display:block; }
-.tree-svg-node-hidden .card-collapse-text { display:none; }
-/* Larger cards */
-.tree-svg-card .card-bg { width:140px; height:85px; }
-.tree-svg-highlight .card-bg { stroke-width:4; }
-.card-name { transform:translateY(-10px); }
-.card-meta { transform:translateY(10px); }
-.card-branch { transform:translateY(22px); }
-.card-spouse { transform:translateY(32px); }
-.card-mother { transform:translateY(32px); }
-.card-count { transform:translateY(40px); }
-.card-adopted-badge { transform:translate(-48px, -28px); }
-.card-expand { transform:translate(58px, -28px); }
-/* Ancestor tree */
-.ancestor-tree-wrap { background:var(--glass-bg); border:1px solid var(--accent-orange); border-radius:12px; padding:20px; margin-top:16px; }
-.ancestor-node { display:flex; flex-direction:column; align-items:center; position:relative; }
-.ancestor-self .ancestor-card { border:2px solid var(--accent-orange); background:var(--accent-orange-dim); }
-.ancestor-card { background:var(--bg-card); border:1px solid var(--glass-border); border-radius:10px; padding:10px 16px; text-align:center; min-width:120px; transition:all 0.2s; }
-.ancestor-card:hover { border-color:var(--accent-orange); box-shadow:0 2px 8px rgba(251,146,60,0.12); }
-.ancestor-gen { font-size:11px; color:var(--accent-orange); font-weight:600; margin-bottom:2px; }
-.ancestor-name { font-size:15px; font-weight:600; color:var(--text-primary); }
-.ancestor-meta { font-size:11px; color:var(--text-tertiary); margin-top:2px; }
-.ancestor-connector { width:2px; height:14px; background:var(--accent-orange); opacity:0.2; }
-.ancestor-down-arrow { font-size:12px; color:var(--accent-orange); opacity:0.4; padding:2px 0; line-height:1; }
-/* Person detail modal (keep) */
-.person-detail-modal { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px; }
-.person-detail-box { background:var(--bg-primary); border:1px solid var(--glass-border); border-radius:12px; max-width:500px; width:100%; padding:30px; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.3); max-height:80vh; overflow-y:auto; }
-.genealogy-page { max-width:1200px !important; }
-@keyframes pulse-highlight { 0%,100% { filter:drop-shadow(0 0 30px rgba(255,68,0,0.8)) drop-shadow(0 0 60px rgba(255,68,0,0.4)); } 50% { filter:drop-shadow(0 0 10px rgba(255,68,0,0.3)); } }
-.locate-btn { font-size:11px; padding:3px 10px; border-radius:6px; border:1px solid rgba(251,146,60,0.3); background:rgba(251,146,60,0.1); color:var(--accent-orange); cursor:pointer; white-space:nowrap; transition:all 0.2s; flex-shrink:0; }
-.locate-btn:hover { background:rgba(251,146,60,0.2); border-color:var(--accent-orange); }
-
-/* Horizontal tree (横向世系图) */
-.h-tree-card { cursor:pointer; transition:opacity 0.15s; }
-.h-tree-card:hover .h-card-bg { stroke:var(--accent-orange); stroke-width:2.5; }
-.h-card-bg { fill:var(--glass-bg); stroke:var(--glass-border); stroke-width:1.5; rx:6; ry:6; }
-.h-card-bg.scale { stroke:#22c55e; stroke-width:2; }
-.h-card-name { fill:var(--text-primary); font-size:11px; font-weight:500; text-anchor:middle; }
-.h-card-gen { fill:var(--text-tertiary); font-size:9px; text-anchor:middle; }
-.h-card-branch { fill:var(--accent-orange); font-size:8px; text-anchor:middle; }
-.h-connector { stroke:var(--accent-orange); stroke-width:1.5; fill:none; opacity:0.3; }
-.h-connector:hover { opacity:0.6; }
-.h-btn-expand { cursor:pointer; fill:var(--accent-orange); font-size:10px; user-select:none; }
-
-@keyframes spin { to { transform:rotate(360deg); } }
-
-/* Fullscreen tree - native browser fullscreen API */
-/* Fullscreen mode: fixed position covers entire viewport */
-.genealogy-tree-section-fullscreen { position:fixed !important; top:0 !important; left:0 !important; right:0 !important; bottom:0 !important; z-index:99999 !important; padding:20px !important; margin:0 !important; background:var(--bg-primary) !important; overflow:hidden !important; }
-.genealogy-tree-section-fullscreen .genealogy-tree-scroll { width:100% !important; height:100% !important; border:none !important; border-radius:0 !important; padding:0 !important; margin:0 !important; }
-.genealogy-tree-section-fullscreen #tree-container { width:100% !important; height:100% !important; }
-</style>
-
-<script>
-  // ===== Load data =====
-  function getFullSeedData() {
-    return [
-      {id:1,name:'谢小四',gender:'男',generation:'—',generation_num:0,branch:'石马(下谢)',birth_date:'宋靖康年间',is_alive:'否',highlight:true,biography:'会稽人，宋靖康年间迁居石马，入浙东之近祖。下枫槎谢氏之直系渊源。'},
-      {id:2,name:'文杲公',gender:'男',generation:'—',generation_num:1,branch:'枫槎始祖',father_id:1,birth_date:'北宋宣和(约1125)',is_alive:'否',highlight:true,biography:'字克源，宋登仕郎，越溪司巡检。英敏卓荦，文武兼备，始居岩下，为枫槎谢氏之始迁祖。至今近九百载，传三十六世。'},
-      {id:3,name:'攒公',gender:'男',generation:'—',generation_num:2,branch:'后枫槎派',father_id:2,is_alive:'否',highlight:true,biography:'文杲公长子，分居后枫槎，开一派之先河。'},
-      {id:4,name:'撰公',gender:'男',generation:'—',generation_num:2,branch:'前枫槎派',father_id:2,is_alive:'否',highlight:true,biography:'文杲公次子，分居前枫槎，与前枫槎派并立。'},
-      {id:5,name:'彬公',gender:'男',generation:'—',generation_num:16,branch:'后枫槎东房',birth_date:'明隆庆壬申(1572)',is_alive:'否',highlight:true,biography:'字叔仅，十六世祖。明隆庆六年壬申（1572年），时遭洪水之患，岁季始迁枫槎，为下枫槎开基之祖。'},
-      {id:6,name:'乾公',gender:'男',generation:'—',generation_num:16,branch:'后枫槎东房',birth_date:'明隆庆壬申(1572)',is_alive:'否',highlight:true,biography:'与彬公昆仲，明隆庆六年壬申（1572年），山洪暴发，庐舍为墟。与彬公相度地势，遂迁于双枫古槎之下，因名其地曰下枫槎。'},
-      {id:7,name:'云先公',gender:'男',generation:'之',generation_num:21,branch:'西大房二份',birth_date:'清乾隆间',is_alive:'否',biography:'名大性，西大房二份之祖。乾隆二十七年（1762年）首倡并主持修建下枫槎谢氏宗祠，敦睦堂由此而立。'},
-      {id:8,name:'文对',gender:'男',generation:'—',generation_num:1,branch:'枫槎分支',father_id:2,is_alive:'否',highlight:true,biography:'文杲公之子，枫槎谢氏分支祖。'}
-    ];
-  }
-  function getGenealogyData() {
-    try {
-      var stored = localStorage.getItem('xie_admin_genealogy');
-      var ver = localStorage.getItem('xie_admin_genealogy_ver');
-      if (stored && ver === '4') {
-        var d = JSON.parse(stored);
-        return d;
-      }
-      // Fresh seed data or upgrade old cache
-      if (stored) {
-        var parsed = JSON.parse(stored);
-        var fullSeed = getFullSeedData();
-        var existingIds = {};
-        parsed.forEach(function(p) { existingIds[p.id] = true; });
-        // Update existing entries with fresh seed data (especially highlight field)
-        for (var i = 0; i < parsed.length; i++) {
-          for (var j = 0; j < fullSeed.length; j++) {
-            if (parsed[i].id === fullSeed[j].id) {
-              if (fullSeed[j].highlight) parsed[i].highlight = true;
-              break;
-            }
-          }
-        }
-        // Only merge seed when database is empty (<=20 entries)
-      if (parsed.length <= 20) {
-        for (var i = 0; i < fullSeed.length; i++) {
-          if (!existingIds[fullSeed[i].id]) {
-            parsed.push(fullSeed[i]);
-          }
-        }
-      }
-        for (var i = 0; i < fullSeed.length; i++) {
-          if (!existingIds[fullSeed[i].id]) {
-            parsed.push(fullSeed[i]);
-          }
-        }
-        localStorage.setItem('xie_admin_genealogy', JSON.stringify(parsed));
-        localStorage.setItem('xie_admin_genealogy_ver', '5');
-        return parsed;
-      }
-      // Seed default ancestor data from PDF族谱
+<a href="javascript:history.back()" class="back-page-btn" aria-label="返回上一页">← 返回</a>
+<button class="back-top" aria-label="回到顶部">↑</button>
+<script defer src="../js/main.js?v=9"></script>
       var seedData = getFullSeedData();
       localStorage.setItem('xie_admin_genealogy', JSON.stringify(seedData));
       localStorage.setItem('xie_admin_genealogy_ver', '5');
@@ -2335,4 +2087,3 @@ document.addEventListener('keydown', function(e) {
   <audio id="bg-music" loop></audio>
 
 </body>
-</html>
