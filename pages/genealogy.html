@@ -231,7 +231,7 @@
 
   <style>
 /* === Compact Tree (vertical, nested) === */
-.genealogy-tree-scroll { overflow:hidden; border:1px solid var(--glass-border); border-radius:12px; background:var(--bg-card); cursor:grab; min-height:450px; position:relative; width:100%; }
+.genealogy-tree-scroll { overflow:hidden; border:1px solid var(--glass-border); border-radius:12px; background:var(--bg-card); cursor:grab; min-height:500px; position:relative; width:100%; }
 .tree-connector-layer { position:absolute;top:0;left:0;z-index:0; }
 .tree-cards-layer { position:relative;z-index:1; }
 .tree-html-card { position:absolute;border-radius:8px;background:var(--glass-bg);border:2px solid var(--glass-border);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;transition:border-color 0.15s,box-shadow 0.15s;padding:4px;box-sizing:border-box; }
@@ -2239,8 +2239,9 @@ function locateInTree(personId) {
     });
     tbody.innerHTML = tableHtml;
 
-    // Tree — synchronous render (no jump)
-    renderTreeSVG(data);
+    // Tree — deferred for fast page load
+    document.getElementById("tree-container").innerHTML = '<div class="tree-loading"><span class="tree-loading-spinner"></span> 世系图加载中…</div>';
+    setTimeout(function() { renderTreeSVG(data); }, 10);
 
     // Fade in
     document.getElementById('genealogy-generation-chart').style.opacity = '1';
@@ -2257,7 +2258,7 @@ function locateInTree(personId) {
 
   // Wait for page ready
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    setTimeout(renderGenealogyPageSVG, 10);
+    renderGenealogyPageSVG();
   } else {
     document.addEventListener('DOMContentLoaded', renderGenealogyPageSVG);
   }
