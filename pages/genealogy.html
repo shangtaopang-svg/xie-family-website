@@ -1653,34 +1653,30 @@ function locateInTree(personId) {
     var mainBroken = main.broken;
 
     // Scan main chain for ANY adopted ancestor
-    // Show dual lineage: adoptive line (main) + bio line (from bio father or matching "出继" record)
+    // Show dual lineage: main line + side branch (bio or adoptive)
     var bioBranches = {};
     for (var ci = 0; ci < mainChain.length; ci++) {
       var anc = mainChain[ci];
       var isAdopted = anc.adopted && anc.adopted !== '否';
       if (!isAdopted) continue;
-      // "出继" means adopted OUT — record is already in biological family, skip bio search
-      if (anc.adopted === '出继') continue;
-      // Determine biological father ID
-      var bfId = null;
-      // 1. Try explicit bio_father_id
-      if (anc.bio_father_id !== undefined && anc.bio_father_id !== null && anc.bio_father_id !== '' && anc.bio_father_id !== 0) {
-        bfId = parseInt(anc.bio_father_id);
-      }
-      // 2. Auto-find: look for another record with same name and adopted="出继" (skip self)
-      if (!bfId || isNaN(bfId) || bfId <= 0) {
-        for (var di = 0; di < data.length; di++) {
-          if (data[di].id !== anc.id && data[di].name === anc.name && data[di].generation_num === anc.generation_num && data[di].adopted === '出继' && data[di].father_id) {
-            bfId = parseInt(data[di].father_id);
-            break;
-          }
+      var isOut = (anc.adopted === '出继');
+      // Find the OTHER matching record (出继 ↔ 是(继子) pair)
+      var otherRec = null;
+      var otherType = isOut ? '是(继子)' : '出继';
+      for (var di = 0; di < data.length; di++) {
+        if (data[di].id !== anc.id && data[di].name === anc.name && data[di].generation_num === anc.generation_num && data[di].adopted === otherType && data[di].father_id) {
+          otherRec = data[di]; break;
         }
       }
-      if (bfId && !isNaN(bfId) && bfId > 0) {
-        var bioP = findById(bfId);
-        if (bioP) {
-          var bioRes = buildChain(bioP, 'father_id');
-          bioBranches[anc.id] = { chain: bioRes.chain, broken: bioRes.broken };
+      if (!otherRec) continue;
+      // For "出继" (main = bio line): side = adoptive chain from the 入继 record's father_id
+      // For "是(继子)" (main = adoptive line): side = bio chain from the 出继 record's father_id
+      var sideRootId = isOut ? parseInt(otherRec.father_id) : parseInt(otherRec.father_id);
+      if (sideRootId && !isNaN(sideRootId) && sideRootId > 0) {
+        var sideP = findById(sideRootId);
+        if (sideP) {
+          var sideRes = buildChain(sideP, 'father_id');
+          bioBranches[anc.id] = { chain: sideRes.chain, broken: sideRes.broken, isAdoptive: isOut };
         }
       }
     }
@@ -1748,6 +1744,11 @@ function locateInTree(personId) {
     }
     var hasSplit = (splitIdx >= 0);
     var splitId = hasSplit ? mainChain[splitIdx].id : null;
+    // Determine split direction: 出继 => main=bio(生父), side=继 | is(继子) => main=继, side=bio(生父)
+    var splitPerson = splitId ? findById(splitId) : null;
+    var splitIsOut = splitPerson && splitPerson.adopted === '出继';
+    var mainSideLabel = splitIsOut ? '生父' : '继';
+    var sideSideLabel = splitIsOut ? '继' : '生父';
 
     // Find where parallel region starts above split node: the youngest ancestor
     // where the main chain and bio chain share the SAME person
@@ -1792,7 +1793,7 @@ function locateInTree(personId) {
         // Fork symbol
         html += '<div style="display:flex;gap:8px;align-items:center;justify-content:center;padding:2px 0;">';
         html += '<div style="flex:1;height:2px;background:' + mainColor + ';"></div>';
-        html += '<div style="font-size:10px;color:var(--text-tertiary);">过继 ↙&nbsp;&nbsp;↘ 生父</div>';
+        html += '<div style="font-size:10px;color:var(--text-tertiary);">' + sideSideLabel + ' ↙&nbsp;&nbsp;↘ ' + mainSideLabel + '</div>';
         html += '<div style="flex:1;height:2px;background:#22d3ee;"></div>';
         html += '</div>';
         continue;
@@ -1810,20 +1811,21 @@ function locateInTree(personId) {
           }
         }
         html += '<div style="display:flex;gap:10px;align-items:center;justify-content:center;">';
-        // Left: adoptive
+        // Left: main line (adoptive or bio depending on direction)
         html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;">';
-        html += renderNode(a, false, mainColor, '<div class="ancestor-meta" style="font-size:10px;color:var(--accent-orange);">继</div>', k);
+        var leftLabel = splitIsOut ? '生' : '继';
+        html += renderNode(a, false, mainColor, '<div class="ancestor-meta" style="font-size:10px;color:' + mainColor + ';">' + leftLabel + '</div>', k);
         html += '<div class="ancestor-down-arrow" style="color:' + mainColor + ';">⬇</div>';
         html += '</div>';
         // Separator
         html += '<div style="width:1px;height:50px;background:var(--divider);"></div>';
-        // Right: bio
+        // Right: side branch
         html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;">';
         if (matchedBio) {
           html += '<div class="ancestor-card" style="border-color:rgba(34,211,238,0.3);min-width:100px;" onclick="showPersonDetail(' + matchedBio.id + ', getGenealogyData());">';
           html += '<div class="ancestor-gen" style="color:#22d3ee;">第' + matchedBio.generation_num + '世</div>';
           html += '<div class="ancestor-name">' + escapeHtml(matchedBio.name) + '</div>';
-          html += '<div class="ancestor-meta" style="font-size:10px;color:#22d3ee;">生</div>';
+          html += '<div class="ancestor-meta" style="font-size:10px;color:#22d3ee;">' + sideSideLabel + '</div>';
           if (matchedBio.gender) html += '<div class="ancestor-meta">👤' + (matchedBio.branch && matchedBio.branch !== '—' ? ' · ' + escapeHtml(matchedBio.branch) : '') + '</div>';
           if (matchedBio.spouse_ids) {
             var sp = matchedBio.spouse_ids.split(',').map(function(n){return n.trim();}).filter(function(n){return n;}).join('、');
