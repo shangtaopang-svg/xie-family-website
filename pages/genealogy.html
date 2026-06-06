@@ -562,7 +562,7 @@ function getBranchData(data, rootNamePattern) {
     if (data[i].name.indexOf(rootNamePattern) >= 0) { root = data[i]; break; }
   }
   if (!root) return data;
-  // Collect all descendants
+  // Collect all descendants through father_id/mother_id
   var ids = [root.id];
   function collect(pid) {
     for (var i = 0; i < data.length; i++) {
@@ -573,6 +573,26 @@ function getBranchData(data, rootNamePattern) {
     }
   }
   collect(root.id);
+  // Fallback: if no descendants found via father_id, collect by generation range
+  // This handles cases where father_id connections are missing in the data
+  if (ids.length <= 1 && root.generation_num) {
+    var rootGen = parseInt(root.generation_num);
+    // Only apply fallback for gen >= 10 (avoid ancient ancestors swallowing everything)
+    if (rootGen >= 10) {
+      // Also match by branch field if set
+      var branchMatch = root.branch && root.branch !== '—';
+      data.forEach(function(p) {
+        if (ids.indexOf(p.id) >= 0) return;
+        var pGen = parseInt(p.generation_num);
+        if (pGen && pGen >= rootGen) {
+          // Include if same branch or branch not specified
+          if (!branchMatch || p.branch === root.branch || !p.branch || p.branch === '—') {
+            ids.push(p.id);
+          }
+        }
+      });
+    }
+  }
   return data.filter(function(p) { return ids.indexOf(p.id) >= 0; });
 }
 
