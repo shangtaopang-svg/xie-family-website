@@ -573,37 +573,8 @@ function getBranchData(data, rootNamePattern) {
     }
   }
   collect(root.id);
-  // Fallback: if no descendants found via father_id, collect by generation range
-  // This handles cases where father_id connections are missing in the data
-  if (ids.length <= 1 && root.generation_num) {
-    var rootGen = parseInt(root.generation_num);
-    // Only apply fallback for gen >= 10 (avoid ancient ancestors swallowing everything)
-    if (rootGen >= 10) {
-      var branchMatch = root.branch && root.branch !== '—';
-      // Step 1: include all people from root's generation onwards
-      data.forEach(function(p) {
-        if (ids.indexOf(p.id) >= 0) return;
-        var pGen = parseInt(p.generation_num);
-        if (pGen && pGen >= rootGen) {
-          if (!branchMatch || p.branch === root.branch || !p.branch || p.branch === '—') {
-            ids.push(p.id);
-          }
-        }
-      });
-      // Step 2: include direct parents of people in the set (one level up)
-      // This ensures the tree stays connected when children have fathers outside the gen range
-      var parentIds = [];
-      data.forEach(function(p) {
-        if (ids.indexOf(p.id) >= 0 && p.father_id) {
-          var fid = parseInt(p.father_id);
-          if (fid && ids.indexOf(fid) === -1) parentIds.push(fid);
-        }
-      });
-      parentIds.forEach(function(fid) {
-        if (ids.indexOf(fid) === -1) ids.push(fid);
-      });
-    }
-  }
+  // If the root has no descendants in the data, just return the root itself
+  // (the tree will show the root with a note that branch data is incomplete)
   return data.filter(function(p) { return ids.indexOf(p.id) >= 0; });
 }
 
@@ -821,6 +792,16 @@ function renderTreeSVG(data) {
   // Place SVG in container
   container.innerHTML = svg;
 
+  // Show message when branch filter has no connected descendants
+  if (_currentBranch && _currentBranch !== 'all' && cardIds.length <= 1) {
+    var msgDiv = document.createElement('div');
+    msgDiv.id = 'branch-empty-msg';
+    msgDiv.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:50;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);border-radius:12px;padding:20px 28px;border:1px solid rgba(251,146,60,0.2);text-align:center;pointer-events:none;';
+    msgDiv.innerHTML = '<div style="font-size:28px;margin-bottom:8px;">📋</div><div style="color:#fb923c;font-size:14px;font-weight:600;">该支系暂无详细的世代连接数据</div><div style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:6px;">请在管理后台补充父ID关联后，即可查看完整世系图</div>';
+    var scrollContainer = document.getElementById('tree-scroll-container');
+    if (scrollContainer) scrollContainer.appendChild(msgDiv);
+  }
+
   // Add branch stats overlay (HTML, not SVG - stays in place during zoom)
   var existingStats = document.getElementById('branch-stats-overlay');
   if (existingStats) existingStats.remove();
@@ -1007,8 +988,8 @@ function treeAutoLocate(personId) {
   if (!person) return;
   var statusEl = document.getElementById('tree-search-status');
 
-  // Expand tree, reset view
-  expandAllTree();
+  // Expand tree (clear collapse state, but DON'T reset the current branch filter)
+  localStorage.setItem('xie_tree_collapsed', '[]');
   treePanX = 0;
   treePanY = 0;
   treeScale = 0.7;
