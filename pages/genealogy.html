@@ -158,48 +158,28 @@
         <div id="relation-ancestor-path" style="margin-top:12px;display:none;"></div>
       </div>
 
-      <!-- 世系图 -->
+      <!-- ===== 世系图谱（新版：垂直树 + 三视图） ===== -->
       <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-tree-section">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
           <h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:17px;font-weight:500;margin:0;">🌳 世系图谱</h3>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
             <span style="font-size:12px;color:var(--text-tertiary);">点击姓名查看详情</span>
-            <button class="btn btn-sm" onclick="treeZoomIn()" title="放大">🔍+</button>
-            <button class="btn btn-sm" onclick="treeZoomOut()" title="缩小">🔍−</button>
-            <button class="btn btn-sm" onclick="treeZoomReset()" title="重置缩放">1:1</button>
-            <span id="tree-zoom-level" style="font-size:11px;color:var(--text-tertiary);min-width:32px;text-align:center;">100%</span>
-            <button class="btn btn-sm" onclick="expandAllTree()" title="展开全部">全部展开</button>
-            <button class="btn btn-sm" onclick="collapseAllTree()" title="收起全部">全部收起</button>
-            <button class="btn btn-sm" onclick="toggleTreeFullscreen()" title="全屏观看" style="background:var(--accent-orange-dim);border-color:var(--accent-orange);">⛶ 全屏</button>
-            <button class="btn btn-sm" onclick="exportTreePNG()" title="导出为图片" style="background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3);">📥 导出</button>
-            <span style="width:1px;height:18px;background:var(--divider);margin:0 4px;"></span>
+            <button class="btn btn-sm" onclick="ctExpandAll()" title="展开全部">全部展开</button>
+            <button class="btn btn-sm" onclick="ctCollapseAll()" title="收起全部">全部收起</button>
           </div>
         </div>
-        <!-- 支系筛选按钮 -->
-        <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center;padding:6px 0;">
-          <span style="font-size:12px;color:var(--text-tertiary);font-weight:500;">支系：</span>
-          <button class="btn btn-xs" id="filter-all" onclick="filterBranch('all')" style="background:var(--accent-orange);color:#fff;border:none;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;">全部</button>
-          <button class="btn btn-xs" id="filter-houfengcha" onclick="filterBranch('后枫槎')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">后枫槎世系</button>
-          <button class="btn btn-xs" id="filter-qianfengcha" onclick="filterBranch('前枫槎')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">前枫槎世系</button>
+        <!-- 三视图切换标签 -->
+        <div style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;">
+          <button class="ct-tab ct-tab-active" data-view="overview" onclick="switchCompactView('overview')">📋 总览</button>
+          <button class="ct-tab" data-view="houfengcha" onclick="switchCompactView('houfengcha')">🌿 后枫槎世系</button>
+          <button class="ct-tab" data-view="qianfengcha" onclick="switchCompactView('qianfengcha')">🍃 前枫槎世系</button>
         </div>
-        <!-- Tree search -->
-        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
-          <input type="text" id="tree-search-input" placeholder="搜姓名定位世系图..." style="padding:4px 10px;border:1px solid var(--glass-border);border-radius:6px 0 0 6px;background:var(--bg-card);color:var(--text-primary);font-size:13px;width:160px;border-right:none;">
-          <button class="btn btn-xs" onclick="doTreeSearch()" style="border-radius:0 6px 0 0;padding:4px 10px;background:var(--accent-orange);color:#fff;border:none;font-size:12px;font-weight:600;cursor:pointer;">定位</button>
-          <span id="tree-search-status" style="font-size:11px;color:var(--text-tertiary);padding:4px 8px;white-space:nowrap;"></span>
-          <span style="width:1px;height:20px;background:var(--divider);margin:0 4px;"></span>
-          <input type="text" id="gen-compare-a" placeholder="A姓名" style="padding:4px 8px;border:1px solid var(--glass-border);border-radius:6px 0 0 6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;width:80px;border-right:none;">
-          <input type="text" id="gen-compare-b" placeholder="B姓名" style="padding:4px 8px;border:1px solid var(--glass-border);border-radius:0;background:var(--bg-card);color:var(--text-primary);font-size:12px;width:80px;border-right:none;">
-          <button class="btn btn-xs" onclick="compareGeneration()" style="border-radius:0 6px 6px 0;padding:4px 10px;background:var(--accent-orange-dim);color:var(--accent-orange);border:1px solid var(--accent-orange);font-size:11px;font-weight:600;cursor:pointer;">世代对比</button>
-          <span id="gen-compare-result" style="font-size:11px;padding:4px 8px;white-space:nowrap;"></span>
+        <!-- 紧凑树容器 -->
+        <div class="ct-container" id="ct-container">
+          <div style="display:flex;align-items:center;justify-content:center;min-height:200px;color:var(--text-tertiary);font-size:14px;gap:10px;">
+            <span style="display:inline-block;width:18px;height:18px;border:2px solid var(--text-tertiary);border-top-color:var(--accent-orange);border-radius:50%;animation:spin 0.8s linear infinite;"></span> 加载中…
+          </div>
         </div>
-        <div class="genealogy-tree-scroll" id="tree-scroll-container">
-          <div id="tree-container"></div>
-        </div>
-        <div class="genealogy-tree-scroll" id="tree-scroll-container-h" style="display:none;">
-          <div id="tree-container-h"></div>
-        </div>
-        <button id="fs-close-btn" onclick="exitTreeFullscreen()" style="display:none;position:fixed;top:20px;right:24px;z-index:99999;background:rgba(0,0,0,0.7);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:14px;cursor:pointer;align-items:center;gap:6px;">✕ 退出全屏</button>
       </div>
 
       <!-- 世系表 -->
@@ -245,24 +225,40 @@
   <script defer src="../js/main.js?v=9"></script>
 
   <style>
-/* Tree visualization - HTML cards (chunked rendering) */
-.genealogy-tree-scroll { overflow:hidden; border:1px solid var(--glass-border); border-radius:12px; background:var(--bg-card); cursor:grab; min-height:450px; position:relative; width:100%; }
-.genealogy-tree-scroll svg { display:block; pointer-events:none; }
-.tree-connector-layer { position:absolute;top:0;left:0;z-index:0; }
-.tree-cards-layer { position:relative;z-index:1; }
-.tree-html-card { position:absolute;border-radius:8px;background:var(--glass-bg);border:2px solid var(--glass-border);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;transition:border-color 0.15s,box-shadow 0.15s;padding:4px;box-sizing:border-box; }
-.tree-html-card:hover { border-color:var(--accent-orange);box-shadow:0 0 0 2px rgba(251,146,60,0.15);z-index:10; }
-.tree-html-card.highlight { border-color:#ff6b00;background:rgba(255,107,0,0.1);box-shadow:0 0 0 3px rgba(255,107,0,0.2); }
-.tree-html-card .star { position:absolute;top:2px;right:4px;font-size:12px;line-height:1; }
-.tree-html-card .card-name { font-size:13px;font-weight:600;color:var(--text-primary);text-align:center;line-height:1.3;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-.tree-html-card .card-meta { font-size:10px;color:var(--text-tertiary);text-align:center;line-height:1.3;margin-top:1px; }
-.tree-html-card .card-expand { font-size:9px;color:var(--accent-orange);cursor:pointer;margin-top:2px;text-align:center;line-height:1.2; }
-.tree-html-card .card-expand:hover { text-decoration:underline; }
-/* Search highlight */
-.tree-html-card.highlight-name { border-color:#ff5555;background:rgba(255,85,85,0.12);box-shadow:0 0 10px rgba(255,85,85,0.3);z-index:20; }
-.tree-html-card.highlight-name .card-name { color:#ff5555;font-size:16px;font-weight:800; }
-@keyframes hlFlash { 0%,100% { border-color:#ff5533;box-shadow:0 0 0 4px rgba(255,85,51,0.3); } 50% { border-color:#ffcc44;box-shadow:0 0 0 8px rgba(255,204,68,0.3); } }
-.tree-html-card .hl-flash { animation:hlFlash 0.6s ease-in-out 6; }
+/* === Compact Tree (vertical, nested) === */
+.ct-container { border:1px solid var(--glass-border); border-radius:12px; background:var(--bg-card); min-height:300px; max-height:70vh; overflow-y:auto; width:100%; padding:12px 0; }
+.ct-tab { padding:6px 16px; font-size:13px; border:1px solid var(--glass-border); border-radius:8px; background:var(--glass-bg); color:var(--text-secondary); cursor:pointer; transition:all 0.2s; font-weight:500; }
+.ct-tab:hover { border-color:var(--accent-orange); color:var(--accent-orange); }
+.ct-tab-active { background:var(--accent-orange); color:#fff; border-color:var(--accent-orange); }
+.ct-tab-active:hover { color:#fff; }
+/* Tree node */
+.ct-node { user-select:none; }
+.ct-node-bar { display:flex; align-items:center; gap:6px; padding:5px 12px; border-radius:6px; cursor:pointer; transition:background 0.15s; margin:1px 0; }
+.ct-node-bar:hover { background:var(--accent-orange-dim); }
+.ct-node-bar.highlight { background:rgba(255,107,0,0.15); border-left:3px solid var(--accent-orange); }
+.ct-expand { font-size:10px; width:16px; text-align:center; color:var(--text-muted); flex-shrink:0; transition:transform 0.2s; }
+.ct-expand.expanded { transform:rotate(90deg); }
+.ct-name { font-size:14px; font-weight:500; color:var(--text-primary); }
+.ct-name.highlight-name { color:#ff5555; font-weight:700; }
+.ct-gen { font-size:11px; color:var(--text-tertiary); margin-left:auto; white-space:nowrap; }
+.ct-branch { font-size:10px; padding:1px 8px; border-radius:10px; background:rgba(251,146,60,0.12); color:var(--accent-orange); white-space:nowrap; }
+.ct-star { font-size:12px; margin-right:2px; }
+.ct-children { overflow:hidden; transition:max-height 0.35s ease, opacity 0.25s ease; max-height:0; opacity:0; }
+.ct-children.open { max-height:20000px; opacity:1; }
+.ct-children .ct-node-bar { padding-left:32px; }
+.ct-children .ct-children .ct-node-bar { padding-left:52px; }
+.ct-children .ct-children .ct-children .ct-node-bar { padding-left:72px; }
+.ct-children .ct-children .ct-children .ct-children .ct-node-bar { padding-left:92px; }
+/* Connector line via pseudo-element */
+.ct-node { position:relative; }
+.ct-node::before { content:''; position:absolute; left:20px; top:0; bottom:0; width:1px; background:var(--glass-border); opacity:0.3; pointer-events:none; }
+.ct-children > .ct-node:last-child::before { display:none; }
+/* Summary card for overview */
+.ct-summary { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; padding:16px; margin-bottom:12px; }
+.ct-summary-card { background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:10px; padding:14px; text-align:center; cursor:pointer; transition:all 0.2s; }
+.ct-summary-card:hover { border-color:var(--accent-orange); transform:translateY(-2px); }
+.ct-summary-card .num { font-size:28px; font-weight:700; color:var(--accent-orange); }
+.ct-summary-card .label { font-size:12px; color:var(--text-tertiary); margin-top:4px; }
 .tree-connector { stroke:var(--accent-orange); stroke-width:1.5; fill:none; opacity:0.25; }
 .tree-connector-h { stroke:var(--accent-orange); stroke-width:1.5; fill:none; opacity:0.2; }
 .tree-svg-node-hidden > .tree-svg-children { display:none; }
@@ -605,11 +601,15 @@ function filterBranch(branch) {
       if (data[i].name.indexOf(branch) >= 0) { branchLabel = data[i].name; break; }
     }
   }
-  // Always use vertical tree (unified view)
+  // Redirect to compact tree
+  switchCompactView(branch === 'all' ? 'overview' : (branch.indexOf('后枫槎') >= 0 ? 'houfengcha' : 'qianfengcha'));
+  return;
+  // Old code below (kept for reference)
   localStorage.setItem('xie_tree_collapsed', '[]');
-  document.getElementById('tree-scroll-container').style.display = 'block';
-  document.getElementById('tree-scroll-container-h').style.display = 'none';
-  renderTreeSVG(data);
+  var el1 = document.getElementById('tree-scroll-container');
+  if (el1) el1.style.display = 'block';
+  var el2 = document.getElementById('tree-scroll-container-h');
+  if (el2) el2.style.display = 'none';
   // If viewing a specific branch, auto-locate to the root person
   if (branch !== 'all') {
     setTimeout(function() {
@@ -1106,6 +1106,160 @@ function exportFullData() {
   a.download = 'xie-genealogy-data-' + new Date().toISOString().slice(0,10) + '.txt';
   a.click();
   URL.revokeObjectURL(a.href);
+}
+
+// ===== Compact Tree (vertical, expandable) =====
+var _ctView = 'overview';
+var _ctExpanded = {}; // {id: true} for expanded nodes
+
+function getChildrenOf(personId, data) {
+  var result = [];
+  for (var i = 0; i < data.length; i++) {
+    if (parseInt(data[i].father_id) === personId) result.push(data[i]);
+  }
+  return result;
+}
+
+function getPersonById(id, data) {
+  for (var i = 0; i < data.length; i++) { if (data[i].id === id) return data[i]; }
+  return null;
+}
+
+function countAllDescendants(personId, data) {
+  var count = 0;
+  var kids = getChildrenOf(personId, data);
+  for (var i = 0; i < kids.length; i++) { count += 1 + countAllDescendants(kids[i].id, data); }
+  return count;
+}
+
+function switchCompactView(view) {
+  _ctView = view;
+  // Update tab styles
+  document.querySelectorAll('.ct-tab').forEach(function(t) {
+    t.classList.toggle('ct-tab-active', t.getAttribute('data-view') === view);
+  });
+  var data = getGenealogyData();
+  var container = document.getElementById('ct-container');
+  if (!container) return;
+  if (view === 'overview') {
+    renderCompactOverview(data, container);
+  } else if (view === 'houfengcha') {
+    var root = null;
+    for (var i = 0; i < data.length; i++) { if (data[i].name.indexOf('攒') === 0 && data[i].name.indexOf('后枫槎') > 0) { root = data[i]; break; } }
+    if (root) renderCompactTree(data, container, root.id, true);
+    else container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-tertiary);">未找到后枫槎数据</div>';
+  } else if (view === 'qianfengcha') {
+    var root = null;
+    for (var i = 0; i < data.length; i++) { if (data[i].name.indexOf('撰') === 0 && data[i].name.indexOf('前枫槎') > 0) { root = data[i]; break; } }
+    if (root) renderCompactTree(data, container, root.id, true);
+    else container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-tertiary);">未找到前枫槎数据</div>';
+  }
+}
+
+function renderCompactOverview(data, container) {
+  // Show a summary + all roots with one level expanded
+  var total = data.length;
+  var gens = {}; var branches = {}; var males = 0; var females = 0;
+  data.forEach(function(p) {
+    var g = p.generation_num || 0; gens[g] = (gens[g]||0)+1;
+    if (p.branch && p.branch !== '—') branches[p.branch] = (branches[p.branch]||0)+1;
+    if (p.gender === '男') males++; if (p.gender === '女') females++;
+  });
+  var genMax = 0; data.forEach(function(p) { var g = parseInt(p.generation_num,10)||0; if (g > genMax) genMax = g; });
+
+  var html = '<div class="ct-summary">';
+  html += '<div class="ct-summary-card"><div class="num">' + total + '</div><div class="label">总人数</div></div>';
+  html += '<div class="ct-summary-card"><div class="num">' + genMax + '</div><div class="label">世代</div></div>';
+  html += '<div class="ct-summary-card"><div class="num">' + Object.keys(branches).length + '</div><div class="label">支系</div></div>';
+  html += '<div class="ct-summary-card"><div class="num">' + males + '</div><div class="label">男</div></div>';
+  html += '<div class="ct-summary-card"><div class="num">' + females + '</div><div class="label">女</div></div>';
+  html += '<div class="ct-summary-card" onclick="switchCompactView(\'houfengcha\')" style="cursor:pointer;"><div class="num">🌿</div><div class="label">后枫槎 →</div></div>';
+  html += '<div class="ct-summary-card" onclick="switchCompactView(\'qianfengcha\')" style="cursor:pointer;"><div class="num">🍃</div><div class="label">前枫槎 →</div></div>';
+  html += '</div>';
+
+  // Find roots and render them
+  var existingIds = {}; data.forEach(function(p) { existingIds[p.id] = true; });
+  var roots = data.filter(function(p) { return !p.father_id || !existingIds[parseInt(p.father_id)]; });
+  // Sort by generation
+  roots.sort(function(a,b) { return (parseInt(a.generation_num)||0) - (parseInt(b.generation_num)||0); });
+  // Show first 5 roots, collapsed by default
+  var showCount = Math.min(5, roots.length);
+  for (var r = 0; r < showCount; r++) {
+    _ctExpanded[roots[r].id] = true; // expand first level for roots
+    html += buildCompactNode(data, roots[r].id, 0, false);
+  }
+  if (roots.length > showCount) {
+    html += '<div style="padding:8px 16px;color:var(--text-tertiary);font-size:12px;">还有 ' + (roots.length - showCount) + ' 个分支… 点击上方支系标签查看</div>';
+  }
+  container.innerHTML = html;
+}
+
+function buildCompactNode(data, personId, depth, parentExpanded) {
+  var person = getPersonById(personId, data);
+  if (!person) return '';
+  var kids = getChildrenOf(personId, data);
+  var isHighlight = person.highlight === true ||
+    /^(小四|文杲|攒|撰|彬|乾|文对|炎帝|临魁|申伯)/.test(person.name);
+  var isExpanded = _ctExpanded[personId] === true;
+  var style = (depth > 0 && !parentExpanded) ? ' style="display:none;"' : '';
+  var html = '<div class="ct-node"' + style + '>';
+  html += '<div class="ct-node-bar' + (isHighlight ? ' highlight' : '') + '" onclick="event.stopPropagation();onCompactNodeClick(' + personId + ')">';
+  if (kids.length > 0) {
+    html += '<span class="ct-expand' + (isExpanded ? ' expanded' : '') + '" onclick="event.stopPropagation();toggleCompactNode(' + personId + ')">▶</span>';
+  } else {
+    html += '<span class="ct-expand" style="visibility:hidden;">▶</span>';
+  }
+  if (isHighlight) html += '<span class="ct-star">⭐</span>';
+  html += '<span class="ct-name">' + escapeHtml(person.name) + '</span>';
+  if (person.generation_num) html += '<span class="ct-gen">第' + person.generation_num + '世</span>';
+  if (person.branch && person.branch !== '—') html += '<span class="ct-branch">' + escapeHtml(person.branch) + '</span>';
+  if (kids.length > 0) {
+    html += '<span style="font-size:10px;color:var(--text-muted);margin-left:8px;">' + kids.length + '子·' + countAllDescendants(personId, data) + '后</span>';
+  }
+  html += '</div>';
+  if (kids.length > 0) {
+    html += '<div class="ct-children' + (isExpanded ? ' open' : '') + '">';
+    // Sort children by generation then name
+    kids.sort(function(a,b) { return (parseInt(a.generation_num)||0) - (parseInt(b.generation_num)||0) || (a.name||'').localeCompare(b.name||''); });
+    for (var i = 0; i < kids.length; i++) {
+      html += buildCompactNode(data, kids[i].id, depth + 1, isExpanded);
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function onCompactNodeClick(personId) {
+  var data = getGenealogyData();
+  for (var i = 0; i < data.length; i++) { if (data[i].id === personId) { showPersonDetail(personId, data); return; } }
+}
+
+function toggleCompactNode(personId) {
+  if (_ctExpanded[personId]) { delete _ctExpanded[personId]; } else { _ctExpanded[personId] = true; }
+  // Re-render current view
+  switchCompactView(_ctView);
+}
+
+function ctExpandAll() {
+  var data = getGenealogyData();
+  if (_ctView === 'overview') {
+    data.forEach(function(p) { if (getChildrenOf(p.id, data).length > 0) _ctExpanded[p.id] = true; });
+  } else {
+    var rootId = _ctView === 'houfengcha' ? 173 : 174;
+    // Expand all descendants of the root
+    function expandAll(pid) {
+      var kids = getChildrenOf(pid, data);
+      if (kids.length > 0) { _ctExpanded[pid] = true; kids.forEach(function(k) { expandAll(k.id); }); }
+    }
+    expandAll(rootId);
+  }
+  switchCompactView(_ctView);
+}
+
+function ctCollapseAll() {
+  _ctExpanded = {};
+  switchCompactView(_ctView);
 }
 
 function scrollToCardSVG(card) {
@@ -2216,6 +2370,8 @@ function locateInTree(personId) {
     });
     tbody.innerHTML = tableHtml;
 
+    // Tree — compact vertical tree, instant render
+    switchCompactView('overview');
     // Tree — defer rendering so page navigation completes quickly
     document.getElementById('tree-scroll-container').style.display = 'block';
     document.getElementById('tree-scroll-container-h').style.display = 'none';
