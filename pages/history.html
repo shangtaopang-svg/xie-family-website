@@ -450,7 +450,7 @@
             images.forEach(function(img, i) {
               var slide = document.createElement('div');
               slide.className = 'carousel-slide';
-              slide.innerHTML = '<img src="'+img.src+'" alt="'+img.title+'" loading="lazy"><div class="carousel-caption">'+img.title+'</div>';
+              slide.innerHTML = '<img src="'+img.src+'" alt="'+img.title+'" loading="lazy" loading="lazy"><div class="carousel-caption">'+img.title+'</div>';
               slide.onclick = function(){ openLightbox(i); };
               track.appendChild(slide);
 
@@ -550,7 +550,7 @@
             overlay.innerHTML = '<button class="lightbox-close" onclick="closeLightbox()">&#10005;</button>' +
               '<button class="lightbox-btn lightbox-prev" onclick="lbPrev(event)">&#10094;</button>' +
               '<button class="lightbox-btn lightbox-next" onclick="lbNext(event)">&#10095;</button>' +
-              '<img src="" alt="" id="lightboxImg">' +
+              '<img src="" alt="" id="lightboxImg" loading="lazy">' +
               '<div class="lightbox-counter" id="lightboxCounter"></div>';
             document.body.appendChild(overlay);
             window._lbIdx = idx;
@@ -641,67 +641,67 @@
       </div>
       <div class="portrait-gallery" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;">
         <div class="glass-card" style="padding:12px;text-align:center;">
-          <img src="../images/ancestors/shenbo.jpg" alt="申伯" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <img src="../images/ancestors/shenbo.jpg" alt="申伯" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);" loading="lazy">
           <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">申伯</p>
           <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">谢姓鼻祖，扶周中兴，周宣王赐封于谢邑，子孙以谢为姓（摘自三门下谢谱）</p>
         </div>
         <div class="glass-card" style="padding:12px;text-align:center;">
-          <img src="../images/ancestors/xieshang.jpg" alt="谢尚（308-357）" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <img src="../images/ancestors/xieshang.jpg" alt="谢尚（308-357）" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);" loading="lazy">
           <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">谢尚（308-357）</p>
           <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">东晋名将，豫州刺史，领镇西将军（摘自下谢谱）</p>
         </div>
         <div class="glass-card" style="padding:12px;text-align:center;">
-          <img src="../images/ancestors/xiexuan.jpg" alt="谢玄（343-388）" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <img src="../images/ancestors/xiexuan.jpg" alt="谢玄（343-388）" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);" loading="lazy">
           <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">谢玄（343-388）</p>
           <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">东晋名将，历官冠军将军、前都督，以军功诏加七州大都督（摘自三门下谢宗谱）</p>
         </div>
         <div class="glass-card" style="padding:12px;text-align:center;">
-          <img src="../images/ancestors/xiean.jpg" alt="谢安（320-385）" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <img src="../images/ancestors/xiean.jpg" alt="谢安（320-385）" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);" loading="lazy">
           <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">谢安（320-385）</p>
           <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">东晋名相，赠太傅，谥文靖。淝水之战以八万兵战符坚八十万大军之胜，创中国历史上以少胜多战例史篇（摘自三门下谢宗谱）</p>
         </div>
         <div class="glass-card" style="padding:12px;text-align:center;">
-          <img src="../images/ancestors/xiehongdao.jpg" alt="谢宏道" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <img src="../images/ancestors/xiehongdao.jpg" alt="谢宏道" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);" loading="lazy">
           <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">谢宏道</p>
           <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">字宏道，宋中叶张镇孙榜进士，历官国子监司（摘自三门下谢宗谱）</p>
         </div>
         <div class="glass-card" style="padding:12px;text-align:center;">
-          <img src="../images/ancestors/xielingyun.jpg" alt="谢灵运（385-433）" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <img src="../images/ancestors/xielingyun.jpg" alt="谢灵运（385-433）" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);" loading="lazy">
           <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">谢灵运（385-433）</p>
           <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">南朝宋著名诗人，玄公之孙。十八岁封康乐公，世称谢康乐。入宋降公爵为侯爵。温州太守、秘书监、内史（摘自中国通史·榧树宗谱）</p>
         </div>
         <div class="glass-card" style="padding:12px;text-align:center;">
-          <img src="../images/ancestors/wengaogong.jpg" alt="文杲公" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <img src="../images/ancestors/wengaogong.jpg" alt="文杲公" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);" loading="lazy">
           <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">文杲公</p>
           <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">三世祖杲公，字克，枫槎始迁祖。宋登仕郎，英敏卓荦，文武兼备，任司巡检。岩下开基置产居卜</p>
         </div>
         <div class="glass-card" style="padding:12px;text-align:center;">
-          <img src="../images/ancestors/xiaosigong.jpg" alt="小四公" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <img src="../images/ancestors/xiaosigong.jpg" alt="小四公" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);" loading="lazy">
           <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">小四公</p>
           <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">三门石马下谢始祖小四公（谢聪孙），朝奉郎谢奕信之孙、将仕郎兼文学家谢在纲之子</p>
         </div>
         <div class="glass-card" style="padding:12px;text-align:center;">
-          <img src="../images/ancestors/si4zhangong.jpg" alt="四世（杲公长子）" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <img src="../images/ancestors/si4zhangong.jpg" alt="四世（杲公长子）" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);" loading="lazy">
           <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">四世（杲公长子）</p>
           <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">四世杲公长子，宋仕工部侍中，性和厚，在位小心醇谨，葬石马龙头山之原</p>
         </div>
         <div class="glass-card" style="padding:12px;text-align:center;">
-          <img src="../images/ancestors/san3jugong.jpg" alt="三世榘公" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <img src="../images/ancestors/san3jugong.jpg" alt="三世榘公" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);" loading="lazy">
           <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">三世榘公</p>
           <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">三世榘公，宋居士，下延邑城桃源祖，杲公胞弟。派下子孙邑城内东乡南乡西乡北乡各地。七世敬乙为复兴祖</p>
         </div>
         <div class="glass-card" style="padding:12px;text-align:center;">
-          <img src="../images/ancestors/bingong.jpg" alt="彬公" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <img src="../images/ancestors/bingong.jpg" alt="彬公" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);" loading="lazy">
           <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">彬公</p>
           <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">十八世叔仅公长子，出仕明祭酒，冠带荣身，素有孝行（岁隆庆始迁今枫槎，居为东房祖）</p>
         </div>
         <div class="glass-card" style="padding:12px;text-align:center;">
-          <img src="../images/ancestors/zangong.jpg" alt="攒公" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <img src="../images/ancestors/zangong.jpg" alt="攒公" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);" loading="lazy">
           <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">攒公</p>
           <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">五世攒公子，宋乡榜举人，好古力学，博通经史</p>
         </div>
         <div class="glass-card" style="padding:12px;text-align:center;">
-          <img src="../images/ancestors/qiangong.jpg" alt="乾公" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);">
+          <img src="../images/ancestors/qiangong.jpg" alt="乾公" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--bg-secondary);" loading="lazy">
           <p style="margin-top:8px;font-size:13px;font-weight:500;color:var(--text-primary);">乾公</p>
           <p style="font-size:11px;color:var(--text-tertiary);line-height:1.5;margin-top:4px;">十八世叔仅公次子，与兄同为省祭酒，冠带荣身，素有孝行（与兄同迁枫槎，派在西房之祖）</p>
         </div>
@@ -771,7 +771,7 @@
   <script>
     // bg-canvas removed
   </script>
-  <audio id="bg-music" loop src="../music/background.mp3"></audio>
+  <audio id="bg-music" loop></audio>
 
 </body>
 </html>

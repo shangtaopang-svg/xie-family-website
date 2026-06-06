@@ -99,12 +99,12 @@
 
           var video = document.createElement('video');
           video.className = 'reel-video';
-          video.src = v.src;
+          video.dataset.src = v.src;  // lazy load: don't set src until play
           if (v.poster) video.poster = v.poster; else video.poster = 'images/carousel/123.jpg';
           video.muted = false;
           video.loop = true;
           video.playsInline = true;
-          video.preload = 'metadata';
+          video.preload = 'none';
 
           item.appendChild(video);
 
@@ -124,6 +124,11 @@
           playIcon.addEventListener('click', function(e) {
             e.stopPropagation();
             if (video.paused) {
+              // Lazy-load video src on first play
+              if (!video.src && video.dataset.src) {
+                video.src = video.dataset.src;
+                video.load();
+              }
               video.play().catch(function(){});
               item.classList.remove('paused');
             } else {

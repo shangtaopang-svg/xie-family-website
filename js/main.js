@@ -279,6 +279,10 @@ function initMusicPlayer() {
   }
 
   function doPlay() {
+    // Lazy-load audio: set src only when user actually clicks play
+    if (!musicAudio.src || musicAudio.src === window.location.href || musicAudio.src === '') {
+      setTrack(currentIndex);
+    }
     var p = musicAudio.play();
     if (p && typeof p.catch === 'function') {
       p.catch(function(e) {
@@ -319,7 +323,8 @@ function initMusicPlayer() {
   var savedIndex = parseInt(localStorage.getItem('xie_music_index')) || 0;
 
   if (savedIndex < playlist.length) currentIndex = savedIndex;
-  setTrack(currentIndex);
+  // Don't pre-load audio file — wait until user clicks play
+  // setTrack(currentIndex);  (removed for performance)
   if (isPlaying && playlist.length) {
     musicAudio.currentTime = savedTime;
     doPlay();
