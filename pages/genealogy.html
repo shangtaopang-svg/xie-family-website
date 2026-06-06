@@ -245,36 +245,24 @@
   <script defer src="../js/main.js?v=9"></script>
 
   <style>
-/* Tree visualization - SVG */
+/* Tree visualization - HTML cards (chunked rendering) */
 .genealogy-tree-scroll { overflow:hidden; border:1px solid var(--glass-border); border-radius:12px; background:var(--bg-card); cursor:grab; min-height:450px; position:relative; width:100%; }
-.genealogy-tree-scroll svg { display:block; width:100%; height:100%; min-height:450px; }
-.tree-svg-card { cursor:pointer; transition:opacity 0.15s; }
-.tree-svg-card:hover .card-bg { stroke:var(--accent-orange); stroke-width:3.5; }
-.tree-svg-highlight .card-bg { stroke:#ff6b00; stroke-width:5; fill:rgba(255,107,0,0.2); }
-.tree-svg-highlight .card-name { fill:#ff6b00; font-weight:800; font-size:16px; }
-.tree-svg-highlight .card-meta { fill:#ff6b00; font-weight:600; }
-.tree-svg-highlight .card-branch { fill:#ff6b00; font-weight:700; font-size:10px; }
-.tree-svg-highlight .card-bg:hover { stroke:#e04400; stroke-width:6; fill:rgba(255,107,0,0.3); }
-.tree-svg-card:hover { opacity:0.92; }
-.card-bg { fill:var(--glass-bg); stroke:var(--glass-border); stroke-width:2.5; rx:8; ry:8; transition:stroke 0.15s, stroke-width 0.15s; }
-.card-bg.male { }
-.card-bg.female { }
-.card-bg.highlight { stroke:#ff5533; stroke-width:5; filter:url(#glow); animation:hlFlash 0.6s ease-in-out 6; }
-@keyframes hlFlash { 0%,100% { stroke:#ff5533; stroke-width:5; } 50% { stroke:#ffcc44; stroke-width:8; } }
-.tree-svg-highlight .card-bg,
-.card-bg.highlight + .card-name,
-.card-bg.highlight ~ .card-name { fill:#e06060 !important; font-weight:800 !important; font-size:17px; }
-g.tree-svg-card.highlight-name .card-name { fill:#ff5555 !important; font-weight:800 !important; font-size:20px; }
-g.tree-svg-card.highlight-name .card-bg { fill:rgba(255,100,80,0.10) !important; }
-.card-name { fill:var(--text-primary); font-size:14px; font-weight:600; text-anchor:middle; }
-.card-meta { fill:var(--text-tertiary); font-size:10px; text-anchor:middle; }
-.card-branch { fill:var(--accent-orange); font-size:9px; text-anchor:middle; }
-.card-spouse { fill:var(--text-tertiary); font-size:9px; text-anchor:middle; opacity:0.7; }
-.card-mother { fill:#8b5cf6; font-size:9px; text-anchor:middle; opacity:0.55; }
-.card-expand { cursor:pointer; fill:var(--accent-orange); font-size:11px; font-family:monospace; }
-.card-expand:hover { opacity:0.7; }
-.card-count { fill:var(--text-muted); font-size:8px; text-anchor:middle; }
-.card-adopted-badge { fill:#e74c3c; font-size:8px; font-weight:700; }
+.genealogy-tree-scroll svg { display:block; pointer-events:none; }
+.tree-connector-layer { position:absolute;top:0;left:0;z-index:0; }
+.tree-cards-layer { position:relative;z-index:1; }
+.tree-html-card { position:absolute;border-radius:8px;background:var(--glass-bg);border:2px solid var(--glass-border);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;transition:border-color 0.15s,box-shadow 0.15s;padding:4px;box-sizing:border-box; }
+.tree-html-card:hover { border-color:var(--accent-orange);box-shadow:0 0 0 2px rgba(251,146,60,0.15);z-index:10; }
+.tree-html-card.highlight { border-color:#ff6b00;background:rgba(255,107,0,0.1);box-shadow:0 0 0 3px rgba(255,107,0,0.2); }
+.tree-html-card .star { position:absolute;top:2px;right:4px;font-size:12px;line-height:1; }
+.tree-html-card .card-name { font-size:13px;font-weight:600;color:var(--text-primary);text-align:center;line-height:1.3;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.tree-html-card .card-meta { font-size:10px;color:var(--text-tertiary);text-align:center;line-height:1.3;margin-top:1px; }
+.tree-html-card .card-expand { font-size:9px;color:var(--accent-orange);cursor:pointer;margin-top:2px;text-align:center;line-height:1.2; }
+.tree-html-card .card-expand:hover { text-decoration:underline; }
+/* Search highlight */
+.tree-html-card.highlight-name { border-color:#ff5555;background:rgba(255,85,85,0.12);box-shadow:0 0 10px rgba(255,85,85,0.3);z-index:20; }
+.tree-html-card.highlight-name .card-name { color:#ff5555;font-size:16px;font-weight:800; }
+@keyframes hlFlash { 0%,100% { border-color:#ff5533;box-shadow:0 0 0 4px rgba(255,85,51,0.3); } 50% { border-color:#ffcc44;box-shadow:0 0 0 8px rgba(255,204,68,0.3); } }
+.tree-html-card .hl-flash { animation:hlFlash 0.6s ease-in-out 6; }
 .tree-connector { stroke:var(--accent-orange); stroke-width:1.5; fill:none; opacity:0.25; }
 .tree-connector-h { stroke:var(--accent-orange); stroke-width:1.5; fill:none; opacity:0.2; }
 .tree-svg-node-hidden > .tree-svg-children { display:none; }
@@ -711,14 +699,13 @@ function renderTreeSVG(data) {
   var svgW = Math.max(400, maxX - minX + CARD_W + 80);
   var svgH = Math.max(400, maxY - minY + CARD_H + 80);
 
-  // Build SVG - wrapped in CSS-transform div for correct mouse zoom
-  var svg = '<div class="tree-viewport" style="transform-origin:0 0;transform:translate(' + treePanX + 'px,' + treePanY + 'px) scale(' + treeScale + ');">';
-  svg += '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + svgW + ' ' + svgH + '" width="' + svgW + '" height="' + svgH + '" style="display:block;">';
-  svg += '<defs><filter id="glow"><feGaussianBlur stdDeviation="2" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
-
-
-  // Draw connectors (all cards visible)
+  // === Chunked rendering: separate connectors (SVG) + cards (HTML) ===
   var cardIdsNum = cardIds.map(function(id) { return parseInt(id); });
+  // Build viewport + SVG connector layer
+  var viewportHtml = '<div class="tree-viewport" style="transform-origin:0 0;transform:translate(' + treePanX + 'px,' + treePanY + 'px) scale(' + treeScale + ');">';
+  // SVG layer for connectors only
+  viewportHtml += '<svg class="tree-connector-layer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + svgW + ' ' + svgH + '" width="' + svgW + '" height="' + svgH + '" style="display:block;position:absolute;top:0;left:0;pointer-events:none;">';
+  // Draw connectors
   for (var i = 0; i < cardIdsNum.length; i++) {
     var pid = cardIdsNum[i];
     var person = null;
@@ -731,87 +718,58 @@ function renderTreeSVG(data) {
         if (treeLayout[children[k].id]) childIds.push(children[k].id);
       }
       if (childIds.length > 0) {
-        svg += buildConnectorPath(pid, childIds, treeLayout);
+        viewportHtml += buildConnectorPath(pid, childIds, treeLayout);
       }
     }
   }
+  viewportHtml += '</svg>';
+  // HTML cards layer (positioned absolutely)
+  viewportHtml += '<div class="tree-cards-layer" style="position:relative;width:' + svgW + 'px;height:' + svgH + 'px;">';
+  viewportHtml += '</div></div>'; // close cards-layer + viewport
 
-  // Draw cards
-  for (var i = 0; i < cardIdsNum.length; i++) {
-    var pid = cardIdsNum[i];
-    var p = treeLayout[pid];
-    var person = null;
-    for (var j = 0; j < data.length; j++) { if (data[j].id === pid) { person = data[j]; break; } }
-    if (!person) continue;
-    var children = getFilteredChildren(person, data);
-    var dCount = getDescendantCount(pid, data);
-    var cardSvg = buildCardSvg(person, data, children.length > 0, dCount, children.length);
-    var isHidden = collapsedNodes[pid] && children.length > 0;
-    svg += '<g class="tree-svg-node' + (isHidden ? ' tree-svg-node-hidden' : '') + '" transform="translate(' + p.x + ',' + p.y + ')">';
-    svg += cardSvg;
-    if (children.length > 0) {
-      svg += '<g class="tree-svg-children">';
-      for (var k = 0; k < children.length; k++) {
-        if (treeLayout[children[k].id]) {
-          svg += '<use href="#node-' + children[k].id + '"/>';
-        }
+  // Set skeleton (connectors + empty card layer)
+  container.innerHTML = viewportHtml;
+
+  // Now render cards in chunks using requestAnimationFrame
+  var cardsLayer = container.querySelector('.tree-cards-layer');
+  var cardIdx = 0;
+  var CHUNK = 80; // cards per batch
+
+  function renderCardChunk() {
+    var html = '';
+    var end = Math.min(cardIdx + CHUNK, cardIdsNum.length);
+    for (; cardIdx < end; cardIdx++) {
+      var pid = cardIdsNum[cardIdx];
+      var p = treeLayout[pid];
+      var person = null;
+      for (var j = 0; j < data.length; j++) { if (data[j].id === pid) { person = data[j]; break; } }
+      if (!person) continue;
+      var isHighlight = person.highlight === true ||
+        /^(小四|文杲|攒|撰|彬|乾|文对|炎帝|临魁|申伯)(（|【|$)/.test(person.name);
+      var isHidden = collapsedNodes[pid] && getFilteredChildren(person, data).length > 0;
+      var style = 'left:' + (p.x - CARD_W/2) + 'px;top:' + (p.y - CARD_H/2) + 'px;width:' + CARD_W + 'px;height:' + CARD_H + 'px;';
+      if (isHidden) style += 'display:none;';
+      html += '<div class="tree-html-card' + (isHighlight ? ' highlight' : '') + '" data-id="' + pid + '" onclick="onCardClick(' + pid + ', event)" style="' + style + '">';
+      if (isHighlight) html += '<span class="star">⭐</span>';
+      html += '<div class="card-name">' + escapeHtml(person.name || '未知') + '</div>';
+      var meta = [];
+      if (person.generation && person.generation !== '—') meta.push(person.generation + '字辈');
+      if (person.generation_num) meta.push('第' + person.generation_num + '世');
+      if (person.branch && person.branch !== '—') meta.push(escapeHtml(person.branch));
+      if (meta.length) html += '<div class="card-meta">' + meta.join(' · ') + '</div>';
+      if (getFilteredChildren(person, data).length > 0) {
+        var dc = getDescendantCount(pid, data);
+        html += '<div class="card-expand" onclick="event.stopPropagation();toggleTreeSVG(' + pid + ');">' + (isHidden ? '▶' : '▼') + ' ' + getFilteredChildren(person, data).length + '子女, ' + dc + '后代</div>';
       }
-      svg += '</g>';
+      html += '</div>';
     }
-    svg += '</g>';
+    cardsLayer.insertAdjacentHTML('beforeend', html);
+    if (cardIdx < cardIdsNum.length) {
+      requestAnimationFrame(renderCardChunk);
+    }
   }
-
-  // Draw group boxes for each branch
-  var groups = ['彬（东房祖）', '乾（西房祖）', '攒【后枫槎】', '撰【前枫槎】'];
-  var groupColors = ['#ef4444', '#ef4444', '#22c55e', '#22c55e'];
-  var groupWidths = [3, 3, 8, 8];
-  var groupFills = ['rgba(239,68,68,0.06)', 'rgba(251,146,60,0.06)', 'rgba(34,197,94,0.06)', 'rgba(25,25,112,0.15)'];
-  for (var g = 0; g < groups.length; g++) {
-    var rootPerson = null;
-    for (var i = 0; i < data.length; i++) {
-      if (data[i].name.indexOf(groups[g].substring(0, 1)) === 0 && data[i].name.indexOf(groups[g].substring(1)) > 0) {
-        rootPerson = data[i]; break;
-      }
-    }
-    if (!rootPerson) continue;
-    var descendantIds = [rootPerson.id];
-    function collectDescendants(pid) {
-      for (var i = 0; i < data.length; i++) {
-        if (parseInt(data[i].father_id) === pid || parseInt(data[i].mother_id) === pid) {
-          if (descendantIds.indexOf(data[i].id) === -1) {
-            descendantIds.push(data[i].id);
-            collectDescendants(data[i].id);
-          }
-        }
-      }
-    }
-    collectDescendants(rootPerson.id);
-    var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    var hasAny = false;
-    for (var i = 0; i < descendantIds.length; i++) {
-      var pos = treeLayout[descendantIds[i]];
-      if (pos) {
-        if (pos.x < minX) minX = pos.x;
-        if (pos.x > maxX) maxX = pos.x;
-        if (pos.y < minY) minY = pos.y;
-        if (pos.y > maxY) maxY = pos.y;
-        hasAny = true;
-      }
-    }
-    if (!hasAny) continue;
-    var pad = 25;
-    var bx = minX - CARD_W/2 - pad;
-    var by = minY - CARD_H/2 - pad;
-    var bw = (maxX - minX) + CARD_W + pad * 2;
-    var bh = (maxY - minY) + CARD_H + pad * 2;
-    svg += '<rect x="' + bx + '" y="' + by + '" width="' + bw + '" height="' + bh + '" fill="' + groupFills[g] + '" stroke="' + groupColors[g] + '" stroke-width="' + groupWidths[g] + '" stroke-dasharray="10,5" rx="14" opacity="0.85"/>';
-    svg += '<text x="' + (bx + 14) + '" y="' + (by + 20) + '" fill="' + groupColors[g] + '" font-size="13" font-weight="700" opacity="0.85">' + groups[g] + '</text>';
-  }
-
-  svg += '</svg></div>';
-
-  // Place SVG in container
-  container.innerHTML = svg;
+  // Start chunked rendering
+  requestAnimationFrame(renderCardChunk);
 
   // Show message when branch filter has no connected descendants
   if (_currentBranch && _currentBranch !== 'all' && cardIds.length <= 1) {
@@ -848,16 +806,12 @@ function renderTreeSVG(data) {
     }
   }
 
-  // Store node refs
+  // Store node refs (for search)
   allNodes = [];
-  var cards = container.querySelectorAll('.tree-svg-card');
-  for (var i = 0; i < cards.length; i++) {
-    allNodes.push({id: parseInt(cards[i].getAttribute('data-id')), el: cards[i]});
+  var cards2 = container.querySelectorAll('.tree-html-card');
+  for (var i = 0; i < cards2.length; i++) {
+    allNodes.push({id: parseInt(cards2[i].getAttribute('data-id')), el: cards2[i]});
   }
-
-  // Reset zoom
-  treeScale = 1; treePanX = 0; treePanY = 0;
-  applyTreeTransformSVG();
 }
 
 function onCardClick(personId, event) {
@@ -996,10 +950,10 @@ function compareGeneration() {
   resultEl.innerHTML = '<span style="color:var(--accent-orange);font-weight:600;">' + escapeHtml(pA.name) + '</span>（第' + genA + '世） vs <span style="color:var(--accent-orange);font-weight:600;">' + escapeHtml(pB.name) + '</span>（第' + genB + '世）<br><span style="font-weight:600;">相差 ' + diff + ' 代 · ' + relation + '</span>';
   resultEl.style.color = 'var(--text-primary)';
   // Also locate both in tree
-  var cardA = document.querySelector('.tree-svg-card[data-id="' + pA.id + '"]');
-  var cardB = document.querySelector('.tree-svg-card[data-id="' + pB.id + '"]');
-  if (cardA) { var bgA = cardA.querySelector('.card-bg'); if (bgA) { bgA.classList.add('highlight'); } }
-  if (cardB) { var bgB = cardB.querySelector('.card-bg'); if (bgB) { bgB.classList.add('highlight'); } }
+  var cardA = document.querySelector('.tree-html-card[data-id="' + pA.id + '"]');
+  var cardB = document.querySelector('.tree-html-card[data-id="' + pB.id + '"]');
+  if (cardA) cardA.classList.add('highlight-name');
+  if (cardB) cardB.classList.add('highlight-name');
 }
 
 function treeAutoLocate(personId) {
@@ -1018,13 +972,13 @@ function treeAutoLocate(personId) {
 
   setTimeout(function() {
     // Dim ALL cards first
-    var allCards = document.querySelectorAll('.tree-svg-card');
+    var allCards = document.querySelectorAll('.tree-html-card');
     for (var i = 0; i < allCards.length; i++) {
-      allCards[i].style.opacity = '0.1';
+      allCards[i].style.opacity = '0.15';
       allCards[i].style.transition = 'opacity 0.5s';
     }
     // Brighten the target card
-    var card = document.querySelector('.tree-svg-card[data-id="' + personId + '"]');
+    var card = document.querySelector('.tree-html-card[data-id="' + personId + '"]');
     if (card) {
       scrollToCardSVG(card);
       card.style.opacity = '1';
@@ -1032,10 +986,9 @@ function treeAutoLocate(personId) {
       card.style.transformOrigin = 'center center';
       card.style.transition = 'all 0.5s cubic-bezier(0.34,1.56,0.64,1)';
       card.classList.add('highlight-name');
-      var bg = card.querySelector('.card-bg');
-      if (bg) {
-        bg.classList.add('highlight');
-        bg.style.animation = 'pulse-highlight 0.6s ease-in-out 8';
+      var inner = card.querySelector('.card-name');
+      if (inner) {
+        inner.style.animation = 'hlFlash 0.6s ease-in-out 8';
       }
     }
     // Auto restore after 6 seconds
@@ -1056,12 +1009,12 @@ function locateInTree(personId) {
   var overlay = document.querySelector('.person-overlay');
   if (overlay) overlay.remove();
 
-  // Find the card in SVG
-  var card = document.querySelector('.tree-svg-card[data-id="' + personId + '"]');
+  // Find the card
+  var card = document.querySelector('.tree-html-card[data-id="' + personId + '"]');
   if (!card) {
     expandAllTree();
     setTimeout(function() {
-      var card2 = document.querySelector('.tree-svg-card[data-id="' + personId + '"]');
+      var card2 = document.querySelector('.tree-html-card[data-id="' + personId + '"]');
       if (card2) scrollToCardSVG(card2);
     }, 200);
     return;
@@ -1146,9 +1099,8 @@ function exportFullData() {
 }
 
 function scrollToCardSVG(card) {
-  document.querySelectorAll('.card-bg.highlight').forEach(function(c) { c.classList.remove('highlight'); });
-  var bg = card.querySelector('.card-bg');
-  if (bg) bg.classList.add('highlight');
+  document.querySelectorAll('.tree-html-card.highlight-name').forEach(function(c) { c.classList.remove('highlight-name'); });
+  if (card) card.classList.add('highlight-name');
 
   var scrollContainer = document.getElementById('tree-scroll-container');
   if (!scrollContainer) return;
@@ -1453,7 +1405,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Drag to pan
   var isDragging = false, startX, startY;
   scrollContainer.addEventListener('mousedown', function(e) {
-    if (e.target.closest('.tree-svg-card') || e.target.closest('button') || e.target.tagName === 'text') return;
+    if (e.target.closest('.tree-html-card') || e.target.closest('button') || e.target.tagName === 'text') return;
     isDragging = true;
     startX = e.clientX - treePanX;
     startY = e.clientY - treePanY;
