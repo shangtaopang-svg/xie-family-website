@@ -1928,100 +1928,23 @@ function locateInTree(personId) {
     // ===== Render everything =====
   function renderGenealogyPageSVG() {
     var data = getGenealogyData();
-    if (!data || data.length === 0) {
-      document.getElementById('genealogy-generation-chart').style.opacity = '1';
-      document.getElementById('genealogy-stats').style.opacity = '1';
-      document.getElementById('genealogy-timeline').style.opacity = '1';
-    setTimeout(function() { if (window.renderTimeline) window.renderTimeline(); }, 100);
-      document.getElementById('genealogy-search-section').style.opacity = '1';
-      document.getElementById('genealogy-tree-section').style.opacity = '1';
-      document.getElementById('genealogy-table-section').style.opacity = '1';
-      return;
-    }
-
-    // Stats
-    var total = data.length;
-    var gens = {};
-    var branches = {};
-    var males = 0, females = 0;
-    data.forEach(function(p) {
-      var g = p.generation_num || 0;
-      gens[g] = (gens[g] || 0) + 1;
-      if (p.branch && p.branch !== '—') branches[p.branch] = (branches[p.branch] || 0) + 1;
-      if (p.gender === '男') males++;
-      if (p.gender === '女') females++;
-    });
-    var genMax = 0;
-    data.forEach(function(p) {
-      var g = parseInt(p.generation_num, 10) || 0;
-      if (g > genMax) genMax = g;
-    });
-
-    var statsHtml = '';
-    statsHtml += '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--accent-orange);">' + total + '</div><div style="font-size:11px;color:var(--text-tertiary);">总人数</div></div>';
-    statsHtml += '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + genMax + '</div><div style="font-size:11px;color:var(--text-tertiary);">世代</div></div>';
-    statsHtml += '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + Object.keys(branches).length + '</div><div style="font-size:11px;color:var(--text-tertiary);">支系</div></div>';
-    statsHtml += '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + males + '</div><div style="font-size:11px;color:var(--text-tertiary);">男</div></div>';
-    statsHtml += '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + females + '</div><div style="font-size:11px;color:var(--text-tertiary);">女</div></div>';
-    document.getElementById('stats-container').innerHTML = statsHtml;
-
-    // Table
-    data.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0) || (a.name || '').localeCompare(b.name || ''); });
-    var tbody = document.getElementById('gen-table-body');
-    var tableHtml = '';
-    data.forEach(function(p) {
-      var fatherName = p.father_id ? getPersonNameById(parseInt(p.father_id), data) : '—';
-      var spouseNames = p.spouse_ids ? p.spouse_ids.toString().split(',').map(function(n) {
-        return n.trim();
-      }).filter(function(n) { return n; }).join('、') : '—';
-      if (!spouseNames) spouseNames = '—';
-      tableHtml += '<tr onclick="showPersonDetail(' + p.id + ', getGenealogyData())" style="cursor:pointer;">';
-      tableHtml += '<td class="gen-label">第' + (p.generation_num || '?') + '世</td>';
-      tableHtml += '<td>' + escapeHtml(p.name) + '</td>';
-      tableHtml += '<td>' + (p.gender || '—') + '</td>';
-      tableHtml += '<td>' + escapeHtml(p.generation || '—') + '</td>';
-      tableHtml += '<td>' + (p.branch || '—') + '</td>';
-      tableHtml += '<td style="font-size:12px;">' + fatherName + '</td>';
-      tableHtml += '<td style="font-size:12px;">' + spouseNames + '</td>';
-      tableHtml += '<td style="font-size:12px;color:var(--text-tertiary);">' + (p.birth_date || '') + (p.death_date ? '~' + p.death_date : '') + '</td>';
-      tableHtml += '</tr>';
-    });
-    tbody.innerHTML = tableHtml;
-
-    // Tree — card tree layout
+    if (!data || data.length === 0) { return; }
     renderTreeSVG(data);
-
-    // Fade in
-    document.getElementById('genealogy-generation-chart').style.opacity = '1';
-    document.getElementById('genealogy-stats').style.opacity = '1';
-    document.getElementById('genealogy-timeline').style.opacity = '1';
-    setTimeout(function() { if (window.renderTimeline) window.renderTimeline(); }, 100);
-    document.getElementById('genealogy-search-section').style.opacity = '1';
-    document.getElementById('genealogy-relation-section').style.opacity = '1';
-    document.getElementById('genealogy-tree-section').style.opacity = '1';
-    document.getElementById('genealogy-table-section').style.opacity = '1';
-
+    fadeInSections();
   }
-
-
-  // Wait for page ready
+  function fadeInSections() {
+    ['genealogy-generation-chart','genealogy-stats','genealogy-timeline',
+     'genealogy-search-section','genealogy-relation-section',
+     'genealogy-tree-section','genealogy-table-section'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.style.opacity = '1';
+    });
+    setTimeout(function() { if (window.renderTimeline) window.renderTimeline(); }, 100);
+  }
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
     renderGenealogyPageSVG();
   } else {
     document.addEventListener('DOMContentLoaded', renderGenealogyPageSVG);
-  }
-  // Try loading from Supabase for up-to-date genealogy data across devices
-  if (window.dbGetAll) {
-    dbGetAll('genealogy', { order: 'id.asc' }).then(function(supabaseData) {
-      if (supabaseData && supabaseData.length > 0) {
-        localStorage.setItem('xie_admin_genealogy', JSON.stringify(supabaseData));
-        // Re-render with Supabase data
-        renderGenealogyPageSVG();
-        // Render timeline when its script loads
-        setTimeout(function() { if (window.renderTimeline) { document.getElementById('genealogy-timeline').style.opacity = '1';
-    setTimeout(function() { if (window.renderTimeline) window.renderTimeline(); }, 100); window.renderTimeline(); } }, 200);
-      }
-    }).catch(function() {});
   }
   </script>
 
