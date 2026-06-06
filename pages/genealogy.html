@@ -1131,7 +1131,7 @@ function scrollToCardSVG(card) {
   // Fallback: try scrollIntoView on the SVG element directly
   try { card.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' }); } catch(e) {}
 
-  setTimeout(function() { if (bg) bg.classList.remove('highlight'); }, 3500);
+  setTimeout(function() { if (card) card.classList.remove('highlight-name'); }, 3500);
 }
 
 // ===== Horizontal tree layout toggle =====
