@@ -2258,7 +2258,7 @@ function locateInTree(personId) {
 
   // Wait for page ready
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    renderGenealogyPageSVG();
+    setTimeout(renderGenealogyPageSVG, 10);
   } else {
     document.addEventListener('DOMContentLoaded', renderGenealogyPageSVG);
   }
@@ -2268,7 +2268,7 @@ function locateInTree(personId) {
       if (supabaseData && supabaseData.length > 0) {
         localStorage.setItem('xie_admin_genealogy', JSON.stringify(supabaseData));
         // Re-render with Supabase data
-        renderGenealogyPageSVG();
+        setTimeout(renderGenealogyPageSVG, 10);
         // Render timeline when its script loads
         setTimeout(function() { if (window.renderTimeline) { document.getElementById('genealogy-timeline').style.opacity = '1';
     setTimeout(function() { if (window.renderTimeline) window.renderTimeline(); }, 100); window.renderTimeline(); } }, 200);
