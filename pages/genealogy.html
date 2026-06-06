@@ -1660,12 +1660,20 @@ function locateInTree(personId) {
       var isAdopted = anc.adopted && anc.adopted !== '否';
       if (!isAdopted) continue;
       var isOut = (anc.adopted === '出继');
+      // Normalize name for matching: strip common suffixes like (出继) (入继) (德全又美） etc.
+      function stripSuffix(n) {
+        return n.replace(/[（(].*[）)]/g,'').replace(/[【\[].*[】\]]/g,'').trim();
+      }
+      var ancBase = stripSuffix(anc.name);
       // Find the OTHER matching record (出继 ↔ 是(继子) pair)
       var otherRec = null;
       var otherType = isOut ? '是(继子)' : '出继';
       for (var di = 0; di < data.length; di++) {
-        if (data[di].id !== anc.id && data[di].name === anc.name && data[di].generation_num === anc.generation_num && data[di].adopted === otherType && data[di].father_id) {
-          otherRec = data[di]; break;
+        if (data[di].id !== anc.id && data[di].generation_num === anc.generation_num && data[di].adopted === otherType && data[di].father_id) {
+          var otherBase = stripSuffix(data[di].name);
+          if (otherBase === ancBase || data[di].name.indexOf(ancBase) >= 0 || ancBase.indexOf(otherBase) >= 0) {
+            otherRec = data[di]; break;
+          }
         }
       }
       if (!otherRec) continue;
