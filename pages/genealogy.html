@@ -721,13 +721,11 @@ function renderTreeSVG(data) {
   var svgW = Math.max(400, maxX - minX + CARD_W + 80);
   var svgH = Math.max(400, maxY - minY + CARD_H + 80);
 
-  // === Chunked rendering: separate connectors (SVG) + cards (HTML) ===
+  // === Fast rendering: connectors (SVG) + all cards (HTML, single batch) ===
   var cardIdsNum = cardIds.map(function(id) { return parseInt(id); });
-  // Build viewport + SVG connector layer
-  var viewportHtml = '<div class="tree-viewport" style="transform-origin:0 0;transform:translate(' + treePanX + 'px,' + treePanY + 'px) scale(' + treeScale + ');">';
+  var html = '<div class="tree-viewport" style="transform-origin:0 0;transform:translate(' + treePanX + 'px,' + treePanY + 'px) scale(' + treeScale + ');">';
   // SVG layer for connectors only
-  viewportHtml += '<svg class="tree-connector-layer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + svgW + ' ' + svgH + '" width="' + svgW + '" height="' + svgH + '" style="display:block;position:absolute;top:0;left:0;pointer-events:none;">';
-  // Draw connectors
+  html += '<svg class="tree-connector-layer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + svgW + ' ' + svgH + '" width="' + svgW + '" height="' + svgH + '" style="display:block;position:absolute;top:0;left:0;pointer-events:none;">';
   for (var i = 0; i < cardIdsNum.length; i++) {
     var pid = cardIdsNum[i];
     var person = null;
@@ -736,65 +734,43 @@ function renderTreeSVG(data) {
     var children = getFilteredChildren(person, data);
     if (children.length > 0) {
       var childIds = [];
-      for (var k = 0; k < children.length; k++) {
-        if (treeLayout[children[k].id]) childIds.push(children[k].id);
-      }
-      if (childIds.length > 0) {
-        viewportHtml += buildConnectorPath(pid, childIds, treeLayout);
-      }
+      for (var k = 0; k < children.length; k++) { if (treeLayout[children[k].id]) childIds.push(children[k].id); }
+      if (childIds.length > 0) html += buildConnectorPath(pid, childIds, treeLayout);
     }
   }
-  viewportHtml += '</svg>';
-  // HTML cards layer (positioned absolutely)
-  viewportHtml += '<div class="tree-cards-layer" style="position:relative;width:' + svgW + 'px;height:' + svgH + 'px;">';
-  viewportHtml += '</div></div>'; // close cards-layer + viewport
-
-  // Set skeleton (connectors + empty card layer)
-  container.innerHTML = viewportHtml;
-
-  // Now render cards in chunks using requestAnimationFrame
-  var cardsLayer = container.querySelector('.tree-cards-layer');
-  var cardIdx = 0;
-  var CHUNK = 300; // cards per batch
-
-  function renderCardChunk() {
-    var html = '';
-    var end = Math.min(cardIdx + CHUNK, cardIdsNum.length);
-    for (; cardIdx < end; cardIdx++) {
-      var pid = cardIdsNum[cardIdx];
-      var p = treeLayout[pid];
-      var person = null;
-      for (var j = 0; j < data.length; j++) { if (data[j].id === pid) { person = data[j]; break; } }
-      if (!person) continue;
-      var isHighlight = person.highlight === true ||
-        /^(小四|文杲|攒|撰|彬|乾|文对|炎帝|临魁|申伯)(（|【|$)/.test(person.name);
-      var isHidden = collapsedNodes[pid] && getFilteredChildren(person, data).length > 0;
-      var style = 'left:' + (p.x - CARD_W/2) + 'px;top:' + (p.y - CARD_H/2) + 'px;width:' + CARD_W + 'px;height:' + CARD_H + 'px;';
-      if (isHidden) style += 'display:none;';
-      html += '<div class="tree-html-card' + (isHighlight ? ' highlight' : '') + '" data-id="' + pid + '" onclick="onCardClick(' + pid + ', event)" style="' + style + '">';
-      if (isHighlight) html += '<span class="star">⭐</span>';
-      html += '<div class="card-name">' + escapeHtml(person.name || '未知') + '</div>';
-      var meta = [];
-      if (person.generation && person.generation !== '—') meta.push(person.generation + '字辈');
-      if (person.generation_num) meta.push('第' + person.generation_num + '世');
-      if (person.branch && person.branch !== '—') meta.push(escapeHtml(person.branch));
-      if (meta.length) html += '<div class="card-meta">' + meta.join(' · ') + '</div>';
-      if (getFilteredChildren(person, data).length > 0) {
-        var dc = getDescendantCount(pid, data);
-        html += '<div class="card-expand" onclick="event.stopPropagation();toggleTreeSVG(' + pid + ');">' + (isHidden ? '▶' : '▼') + ' ' + getFilteredChildren(person, data).length + '子女, ' + dc + '后代</div>';
-      }
-      html += '</div>';
+  html += '</svg>';
+  // HTML cards (positioned absolutely) — fast single innerHTML
+  html += '<div class="tree-cards-layer" style="position:relative;width:' + svgW + 'px;height:' + svgH + 'px;">';
+  for (var i = 0; i < cardIdsNum.length; i++) {
+    var pid = cardIdsNum[i];
+    var p = treeLayout[pid];
+    var person = null;
+    for (var j = 0; j < data.length; j++) { if (data[j].id === pid) { person = data[j]; break; } }
+    if (!person) continue;
+    var isHighlight = person.highlight === true ||
+      /^(小四|文杲|攒|撰|彬|乾|文对|炎帝|临魁|申伯)(（|【|$)/.test(person.name);
+    var isHidden = collapsedNodes[pid] && getFilteredChildren(person, data).length > 0;
+    var style = 'left:' + (p.x - CARD_W/2) + 'px;top:' + (p.y - CARD_H/2) + 'px;width:' + CARD_W + 'px;height:' + CARD_H + 'px;';
+    if (isHidden) style += 'display:none;';
+    html += '<div class="tree-html-card' + (isHighlight ? ' highlight' : '') + '" data-id="' + pid + '" onclick="onCardClick(' + pid + ', event)" style="' + style + '">';
+    if (isHighlight) html += '<span class="star">⭐</span>';
+    html += '<div class="card-name">' + escapeHtml(person.name || '未知') + '</div>';
+    var meta = [];
+    if (person.generation && person.generation !== '—') meta.push(person.generation + '字辈');
+    if (person.generation_num) meta.push('第' + person.generation_num + '世');
+    if (person.branch && person.branch !== '—') meta.push(escapeHtml(person.branch));
+    if (meta.length) html += '<div class="card-meta">' + meta.join(' · ') + '</div>';
+    if (getFilteredChildren(person, data).length > 0) {
+      var dc = getDescendantCount(pid, data);
+      html += '<div class="card-expand" onclick="event.stopPropagation();toggleTreeSVG(' + pid + ');">' + (isHidden ? '▶' : '▼') + ' ' + getFilteredChildren(person, data).length + '子女, ' + dc + '后代</div>';
     }
-    cardsLayer.insertAdjacentHTML('beforeend', html);
-    if (cardIdx < cardIdsNum.length) {
-      requestAnimationFrame(renderCardChunk);
-    } else {
-      // All cards rendered — save to cache
-      _treeCache[cacheKey] = container.innerHTML;
-    }
+    html += '</div>';
   }
-  // Start chunked rendering
-  requestAnimationFrame(renderCardChunk);
+  html += '</div></div>';
+  // Single innerHTML — HTML divs are orders of magnitude faster than SVG
+  container.innerHTML = html;
+  // Save to cache for instant re-render on filter switch
+  _treeCache[cacheKey] = container.innerHTML;
 
   // Show message when branch filter has no connected descendants
   showBranchEmptyMsg(container);
