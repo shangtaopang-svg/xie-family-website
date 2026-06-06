@@ -558,12 +558,31 @@ function buildConnectorPath(parentId, childIds, layout) {
 
 // Branch filter: collect all descendants of a root person
 function getBranchData(data, rootNamePattern) {
-  // Find root person
-  var root = null;
+  // Find ALL matching people and pick the best one (with most descendants)
+  var candidates = [];
   for (var i = 0; i < data.length; i++) {
-    if (data[i].name.indexOf(rootNamePattern) >= 0) { root = data[i]; break; }
+    if (data[i].name.indexOf(rootNamePattern) >= 0) {
+      // Count descendants for this candidate
+      var cIds = [data[i].id];
+      function cCollect(pid) {
+        for (var j = 0; j < data.length; j++) {
+          if ((parseInt(data[j].father_id) === pid || parseInt(data[j].mother_id) === pid) && cIds.indexOf(data[j].id) === -1) {
+            cIds.push(data[j].id);
+            cCollect(data[j].id);
+          }
+        }
+      }
+      cCollect(data[i].id);
+      candidates.push({ person: data[i], descendantCount: cIds.length - 1 });
+    }
   }
-  if (!root) return data;
+  if (candidates.length === 0) return data;
+  // Sort by descendant count desc, then by generation_num desc (prefer more recent)
+  candidates.sort(function(a, b) {
+    if (b.descendantCount !== a.descendantCount) return b.descendantCount - a.descendantCount;
+    return (parseInt(b.person.generation_num)||0) - (parseInt(a.person.generation_num)||0);
+  });
+  var root = candidates[0].person;
   // Collect all descendants through father_id/mother_id
   var ids = [root.id];
   function collect(pid) {
