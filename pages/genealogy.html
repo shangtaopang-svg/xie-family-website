@@ -174,6 +174,16 @@
             <span style="width:1px;height:18px;background:var(--divider);margin:0 4px;"></span>
           </div>
         </div>
+        <!-- 支系筛选按钮 -->
+        <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center;padding:6px 0;">
+          <span style="font-size:12px;color:var(--text-tertiary);font-weight:500;">支系：</span>
+          <button class="btn btn-xs" id="filter-all" onclick="filterBranch('all')" style="background:var(--accent-orange);color:#fff;border:none;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;">全部</button>
+          <button class="btn btn-xs" id="filter-bin" onclick="filterBranch('彬')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">彬公世系</button>
+          <button class="btn btn-xs" id="filter-qian" onclick="filterBranch('乾')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">乾公世系</button>
+          <button class="btn btn-xs" id="filter-wendui" onclick="filterBranch('文对')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">文对公世系</button>
+          <button class="btn btn-xs" id="filter-houfengcha" onclick="filterBranch('后枫槎')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">后枫槎世系</button>
+          <button class="btn btn-xs" id="filter-qianfengcha" onclick="filterBranch('前枫槎')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">前枫槎世系</button>
+        </div>
         <!-- Tree search -->
         <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
           <input type="text" id="tree-search-input" placeholder="搜姓名定位世系图..." style="padding:4px 10px;border:1px solid var(--glass-border);border-radius:6px 0 0 6px;background:var(--bg-card);color:var(--text-primary);font-size:13px;width:160px;border-right:none;">
@@ -579,11 +589,15 @@ function filterBranch(branch) {
   document.querySelectorAll('[id^="filter-"]').forEach(function(b) { b.style.background = ''; b.style.color = ''; b.style.border = '1px solid var(--glass-border)'; });
   var btn = document.getElementById(btnId);
   if (btn) { btn.style.background = 'var(--accent-orange)'; btn.style.color = '#fff'; btn.style.border = 'none'; }
-  // Re-render horizontal tree with filter
+  // Re-render both trees with filter
   var data = getGenealogyData();
   if (branch !== 'all') {
     data = getBranchData(data, branch);
   }
+  // Update vertical tree
+  document.getElementById('tree-scroll-container').style.display = 'block';
+  renderTreeSVG(data);
+  // Also render horizontal tree
   document.getElementById('tree-scroll-container-h').style.display = 'block';
   document.getElementById('tree-container-h').innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-tertiary);font-size:14px;">⏳ 筛选渲染中...</div>';
   setTimeout(function() { renderHorizontalTree(data); setupHScroll(); }, 50);
