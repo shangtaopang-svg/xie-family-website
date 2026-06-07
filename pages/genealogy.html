@@ -403,15 +403,12 @@ var allNodes = [];
 var allConnectors = [];
 
 function getFilteredChildren(person, data) {
-  var existingIds = {};
-  data.forEach(function(p) { existingIds[p.id] = true; });
   var children = getChildren(person.id, data);
   var result = [];
   children.forEach(function(child) {
     var fatherId = parseInt(child.father_id);
     var motherId = parseInt(child.mother_id);
-    if (fatherId === person.id) result.push(child);
-    else if (motherId === person.id && (!child.father_id || !existingIds[parseInt(child.father_id)])) result.push(child);
+    if (fatherId === person.id || motherId === person.id) result.push(child);
   });
   return result;
 }

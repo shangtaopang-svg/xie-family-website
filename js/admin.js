@@ -431,9 +431,7 @@ function buildAdminTreeHtml(data) {
       var child = data[ci];
       var fid = parseInt(child.father_id);
       var mid = parseInt(child.mother_id);
-      if (fid === person.id) {
-        result.push(child);
-      } else if (mid === person.id && (!child.father_id || !existingIds[parseInt(child.father_id)])) {
+      if (fid === person.id || mid === person.id) {
         result.push(child);
       }
     }
