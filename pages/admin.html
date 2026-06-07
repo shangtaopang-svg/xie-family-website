@@ -101,8 +101,7 @@
         <!-- Sidebar -->
         <div class="admin-sidebar">
           
-          <div class="admin-sidebar-item active" data-module="genealogy" onclick="switchModule('genealogy')"><span class="icon">📖</span><span class="label" data-i18n="admin.genealogy">族谱管理</span></div>
-          <div class="admin-sidebar-item" data-module="members" onclick="switchModule('members')"><span class="icon">👥</span><span class="label" data-i18n="admin.members">成员管理</span></div>
+          <div class="admin-sidebar-item active" data-module="members" onclick="switchModule('members')"><span class="icon">👥</span><span class="label" data-i18n="admin.members">成员管理</span></div>
           <div class="admin-sidebar-item" data-module="activities" onclick="switchModule('activities')"><span class="icon">🎉</span><span class="label" data-i18n="admin.activities">活动管理</span></div>
           <div class="admin-sidebar-item" data-module="news" onclick="switchModule('news')"><span class="icon">📢</span><span class="label" data-i18n="admin.news">消息发布</span></div>
           <div class="admin-sidebar-item" data-module="honors" onclick="switchModule('honors')"><span class="icon">🏆</span><span class="label" data-i18n="admin.honors">村荣誉管理</span></div>
@@ -150,7 +149,7 @@
       panel.classList.add('active');
       localStorage.setItem('xie_admin_authed', 'true');
       if (typeof renderModule === 'function') {
-        renderModule(currentModule || 'genealogy');
+        renderModule(currentModule || 'members');
         if (typeof updateStats === 'function') updateStats();
       }
       if (typeof loadFromSupabase === 'function') {
