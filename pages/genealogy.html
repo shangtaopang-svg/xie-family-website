@@ -111,7 +111,7 @@ function buildNode(data, pid, depth, open) {
   var isOpen = _exp[pid] === true;
   var style = (depth > 0 && !open) ? ' style="display:none;"' : '';
   var h = '<div' + style + '>';
-  h += '<div style="cursor:pointer;padding:4px 8px;border-radius:4px;display:flex;align-items:center;gap:6px;" onclick="showDetail(' + pid + ')" onmouseover="this.style.background="rgba(251,146,60,0.1)'" onmouseout="this.style.background=""">';
+  h += '<div style="cursor:pointer;padding:4px 6px;border-radius:4px;display:flex;align-items:center;gap:4px;" onclick="showDetail(' + pid + ')" onmouseover="this.style.background="rgba(251,146,60,0.1)'" onmouseout="this.style.background=""">';
   if (kids.length > 0) {
     h += '<span style="font-size:10px;width:16px;text-align:center;" onclick="event.stopPropagation();toggle(' + pid + ')">' + (isOpen ? '▼' : '▶') + '</span>';
   } else {
