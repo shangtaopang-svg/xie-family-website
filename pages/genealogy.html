@@ -639,7 +639,7 @@ function toggleTreeLayout() {
     h.style.display = 'none';
     btn.textContent = '↔ 横向';
     cleanupHScroll();
-    renderTreeSVG(getGenealogyData());
+    renderFullTree();
   }
 }
 
@@ -1025,7 +1025,7 @@ function locateInTree(personId) {
     var card = document.querySelector('.pcard[data-id="' + personId + '"]');
     if (!card) {
       // Maybe tree isn't expanded enough — expand all first
-      expandAllTree();
+      /* expandAllTree removed */
       // Try again after a brief delay
       setTimeout(function() {
         var card2 = document.querySelector('.pcard[data-id="' + personId + '"]');
@@ -1624,7 +1624,7 @@ function locateInTree(personId) {
 
     // Tree — deferred for fast page load
     document.getElementById("tree-container").innerHTML = '<div class="tree-loading"><span class="tree-loading-spinner"></span> 世系图加载中…</div>';
-    setTimeout(function() { renderTreeSVG(data); }, 10);
+    setTimeout(function() { renderFullTree(); }, 10);
 
     // Fade in
     document.getElementById('genealogy-generation-chart').style.opacity = '1';
