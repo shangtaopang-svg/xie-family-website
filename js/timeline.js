@@ -1,5 +1,23 @@
 /* 世代时间轴 v3 - HTML/CSS 横向卷轴 */
 (function() {
+  var dynInfo = [
+    {min:0,max:60,label:'上古·传说',color:'#8B5CF6',text:'#C4B5FD'},
+    {min:61,max:80,label:'周',color:'#F59E0B',text:'#FDE68A'},
+    {min:81,max:100,label:'秦汉',color:'#3B82F6',text:'#93C5FD'},
+    {min:101,max:120,label:'魏晋南北朝',color:'#EC4899',text:'#F9A8D4'},
+    {min:121,max:130,label:'隋唐',color:'#10B981',text:'#6EE7B7'},
+    {min:131,max:140,label:'宋',color:'#F97316',text:'#FDBA74'},
+    {min:141,max:150,label:'元明',color:'#EF4444',text:'#FCA5A5'},
+    {min:151,max:165,label:'清·近代',color:'#6366F1',text:'#A5B4FC'},
+  ];
+  function getDynColor(g) {
+    for (var i=0;i<dynInfo.length;i++){if(g>=dynInfo[i].min&&g<=dynInfo[i].max)return dynInfo[i].color;}
+    return '#6366F1';
+  }
+  function getDynLabel(g) {
+    for (var i=0;i<dynInfo.length;i++){if(g>=dynInfo[i].min&&g<=dynInfo[i].max)return dynInfo[i];}
+    return null;
+  }
   function renderTimeline() {
     var wrap = document.getElementById('timeline-wrap');
     if (!wrap) return;
@@ -18,25 +36,6 @@
     var gens = Object.keys(genPop).map(Number).sort(function(a,b){return a-b});
     var maxPop = 1; gens.forEach(function(g){if(genPop[g]>maxPop)maxPop=genPop[g];});
     var maxH = Math.max(maxPop, 10);
-
-    var dynInfo = [
-      {min:0,max:60,label:'上古·传说',color:'#8B5CF6',text:'#C4B5FD'},
-      {min:61,max:80,label:'周',color:'#F59E0B',text:'#FDE68A'},
-      {min:81,max:100,label:'秦汉',color:'#3B82F6',text:'#93C5FD'},
-      {min:101,max:120,label:'魏晋南北朝',color:'#EC4899',text:'#F9A8D4'},
-      {min:121,max:130,label:'隋唐',color:'#10B981',text:'#6EE7B7'},
-      {min:131,max:140,label:'宋',color:'#F97316',text:'#FDBA74'},
-      {min:141,max:150,label:'元明',color:'#EF4444',text:'#FCA5A5'},
-      {min:151,max:165,label:'清·近代',color:'#6366F1',text:'#A5B4FC'},
-    ];
-    function getDynColor(g) {
-      for (var i=0;i<dynInfo.length;i++){if(g>=dynInfo[i].min&&g<=dynInfo[i].max)return dynInfo[i].color;}
-      return '#6366F1';
-    }
-    function getDynLabel(g) {
-      for (var i=0;i<dynInfo.length;i++){if(g>=dynInfo[i].min&&g<=dynInfo[i].max)return dynInfo[i];}
-      return null;
-    }
 
     // Build dynasty legend bar
     var legendHtml = '<div style="display:flex;gap:0;margin-bottom:10px;border-radius:6px;overflow:hidden;">';
