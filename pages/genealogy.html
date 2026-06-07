@@ -622,6 +622,31 @@ function filterBranch(branch) {
   }, 100);
 }
 
+function renderSimpleTree(data) {
+  var c = document.getElementById("tree-container");
+  if (!c || !data) return;
+  function esc(t) { if(!t)return""; var d=document.createElement("div"); d.textContent=t; return d.innerHTML; }
+  var gens = {};
+  data.forEach(function(p) {
+    var g = p.generation_num || 0;
+    if (!gens[g]) gens[g] = [];
+    gens[g].push(p);
+  });
+  var nums = Object.keys(gens).sort(function(a,b){return a-b});
+  var h = "<div style=\"padding:8px;\">";
+  nums.forEach(function(g) {
+    h += "<div style=\"margin-bottom:12px;\"><div style=\"font-size:12px;color:var(--accent-orange);font-weight:600;margin-bottom:6px;padding:4px 8px;background:rgba(251,146,60,0.08);border-radius:4px;\">第" + g + "世 (" + gens[g].length + "人)</div><div style=\"display:flex;flex-wrap:wrap;gap:4px;\">";
+    gens[g].forEach(function(p) {
+      var hl = p.highlight === true || /^(炎帝|小四|文杲|攒|撰|彬|乾|文对|申伯|临魁)/.test(p.name);
+      h += "<span onclick=\"showPersonDetail(" + p.id + ", getGenealogyData())\" style=\"cursor:pointer;padding:4px 10px;border-radius:4px;font-size:12px;background:" + (hl ? "rgba(251,146,60,0.12)" : "var(--glass-bg)") + ";border:1px solid var(--glass-border);\">" + (hl ? "⭐" : "") + esc(p.name) + "</span>";
+    });
+    h += "</div></div>";
+  });
+  h += "</div>";
+  c.innerHTML = h;
+}
+
+
 function renderTreeSVG(data) {
   var container = document.getElementById('tree-container');
   if (!container) return;
@@ -2254,9 +2279,8 @@ function locateInTree(personId) {
     });
     tbody.innerHTML = tableHtml;
 
-    // Tree — deferred for fast page load
-    document.getElementById("tree-container").innerHTML = '<div class="tree-loading"><span class="tree-loading-spinner"></span> 世系图加载中…</div>';
-    setTimeout(function() { renderTreeSVG(data); }, 10);
+    // Tree — simple expandable list (instant)
+    renderSimpleTree(data);
 
     // Fade in
     document.getElementById('genealogy-generation-chart').style.opacity = '1';
