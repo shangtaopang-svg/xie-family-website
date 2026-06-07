@@ -2216,64 +2216,18 @@ function locateInTree(personId) {
     // ===== Render everything =====
   function renderGenealogyPageSVG() {
     var data = getGenealogyData();
-    if (!data || data.length === 0) {
-      document.getElementById('genealogy-generation-chart').style.opacity = '1';
-      document.getElementById('genealogy-stats').style.opacity = '1';
-      document.getElementById('genealogy-timeline').style.opacity = '1';
-    setTimeout(function() { if (window.renderTimeline) window.renderTimeline(); }, 100);
-      document.getElementById('genealogy-search-section').style.opacity = '1';
-      document.getElementById('genealogy-tree-section').style.opacity = '1';
-      document.getElementById('genealogy-table-section').style.opacity = '1';
-      return;
-    }
-
-    // Stats
-    var total = data.length;
-    var gens = {};
-    var branches = {};
-    var males = 0, females = 0;
-    data.forEach(function(p) {
-      var g = p.generation_num || 0;
-      gens[g] = (gens[g] || 0) + 1;
-      if (p.branch && p.branch !== '—') branches[p.branch] = (branches[p.branch] || 0) + 1;
-      if (p.gender === '男') males++;
-      if (p.gender === '女') females++;
-    });
-    var genMax = 0;
-    data.forEach(function(p) {
-      var g = parseInt(p.generation_num, 10) || 0;
-      if (g > genMax) genMax = g;
-    });
-
-    var statsHtml = '';
-    statsHtml += '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--accent-orange);">' + total + '</div><div style="font-size:11px;color:var(--text-tertiary);">总人数</div></div>';
-    statsHtml += '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + genMax + '</div><div style="font-size:11px;color:var(--text-tertiary);">世代</div></div>';
-    statsHtml += '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + Object.keys(branches).length + '</div><div style="font-size:11px;color:var(--text-tertiary);">支系</div></div>';
-    statsHtml += '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + males + '</div><div style="font-size:11px;color:var(--text-tertiary);">男</div></div>';
-    statsHtml += '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + females + '</div><div style="font-size:11px;color:var(--text-tertiary);">女</div></div>';
-    document.getElementById('stats-container').innerHTML = statsHtml;
-
-    // Table (deferred for fast page load)
-    var tableData = data.slice();
-
-    // Tree — simple expandable list (instant)
-    document.getElementById("tree-container").innerHTML = '<div class="tree-loading"><span class="tree-loading-spinner"></span> 世系图加载中…</div>';
+    if (!data || data.length === 0) { return; }
+    // Show loading state immediately
+    var tc = document.getElementById('tree-container');
+    if (tc) tc.innerHTML = '<div class="tree-loading"><span class="tree-loading-spinner"></span> 世系图加载中…</div>';
+    // Render tree deferred
     setTimeout(function() { renderTreeSVG(data); }, 10);
-
-    // Fade in
-    document.getElementById('genealogy-generation-chart').style.opacity = '1';
-    document.getElementById('genealogy-stats').style.opacity = '1';
-    document.getElementById('genealogy-timeline').style.opacity = '1';
-    setTimeout(function() { if (window.renderTimeline) window.renderTimeline(); }, 100);
-    document.getElementById('genealogy-search-section').style.opacity = '1';
-    document.getElementById('genealogy-relation-section').style.opacity = '1';
-    document.getElementById('genealogy-tree-section').style.opacity = '1';
-    document.getElementById('genealogy-table-section').style.opacity = '1';
-
+    // Fade in sections
+    var sections = ['genealogy-generation-chart','genealogy-stats','genealogy-timeline','genealogy-search-section','genealogy-relation-section','genealogy-tree-section','genealogy-table-section'];
+    sections.forEach(function(id) { var el = document.getElementById(id); if (el) el.style.opacity = '1'; });
   }
-
-
-  // Wait for page ready
+  
+  // Wait for page ready// Wait for page ready
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
     setTimeout(renderGenealogyPageSVG, 50);
   } else {
