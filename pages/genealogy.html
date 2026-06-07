@@ -7,9 +7,73 @@
   <link rel="stylesheet" href="../css/style.css?v=3">
 </head>
 <body>
-<div style="max-width:1200px;margin:0 auto;padding:20px;">
-  <h2>🌳 世系图谱测试</h2>
-  <div style="display:flex;gap:6px;margin-bottom:12px;">
+<div class="content">
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        <div class="logo-icon">谢</div>
+        <div class="logo-text"><h1>下枫槎谢氏</h1><small>宁海 · 下枫槎村</small></div>
+      </a>
+      <button class="nav-toggle" aria-label="菜单">☰</button>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="../index.html">首页</a></li>
+          <li><a href="history.html">家族历史</a></li>
+          <li><a href="genealogy.html" class="active">族谱查询</a></li>
+          <li><a href="celebrities.html">名人事迹</a></li>
+          <li><a href="news.html">消息发布</a></li>
+          <li><a href="members.html">家族成员</a></li>
+          <li><a href="activities.html">家族活动</a></li>
+          <li><a href="today.html">今日下枫槎</a></li>
+          <li><a href="reports.html">新闻报道</a></li>
+          <li><a href="contact.html">联系我们</a></li>
+        </ul>
+        <div class="sidebar-controls">
+          <div class="sc-row">
+            <button class="weather-btn" data-weather="off" title="关闭特效">✕</button>
+            <button class="weather-btn" data-weather="sunny" title="晴天">☀</button>
+            <button class="weather-btn" data-weather="rain" title="下雨">🌧</button>
+            <button class="weather-btn" data-weather="snow" title="下雪">❄</button>
+            <button class="weather-btn" data-weather="meteor" title="流星">☄</button>
+          </div>
+          <div class="sc-row">
+            <button class="music-btn" id="music-prev" title="上一首">⏮</button>
+            <button class="music-btn" id="music-toggle" title="播放/暂停">🔈</button>
+            <button class="music-btn" id="music-next" title="下一首">⏭</button>
+          </div>
+          <div class="sc-row">
+            <button class="nav-action-btn" id="theme-toggle" title="切换主题">☀️</button>
+            <button class="nav-action-btn lang-btn" id="lang-toggle" title="中英文切换">EN</button>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrap tree-page">
+    <div class="page-title">
+      <h2>🌳 世系图谱</h2>
+      <p>炎帝血脉 · 世代相传</p>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">
+      <button class="btn btn-sm" onclick="switchView('all')" style="background:var(--accent-orange);color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;">全部</button>
+      <button class="btn btn-sm" onclick="switchView('houfengcha')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:6px 16px;border-radius:6px;cursor:pointer;">后枫槎世系</button>
+      <button class="btn btn-sm" onclick="switchView('qianfengcha')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:6px 16px;border-radius:6px;cursor:pointer;">前枫槎世系</button>
+    </div>
+    <div id="tree-container" style="border:1px solid var(--glass-border);border-radius:12px;background:var(--bg-card);min-height:400px;padding:8px 0;overflow-y:auto;max-height:80vh;">加载中…</div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-section"><h4>下枫槎谢氏</h4><p>宁海下枫槎村谢氏家族数字宗祠</p></div>
+    <div class="footer-section"><h4>快捷链接</h4><a href="../index.html">首页</a><a href="history.html">家族历史</a><a href="genealogy.html">族谱查询</a></div>
+  </div>
+  <div class="footer-bottom"><p>© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p></div>
+</footer>
+
+<script defer src="../js/main.js?v=9"></script>
+<audio id="bg-music" loop></audio>
     <button onclick="switchView('all')">全部</button>
     <button onclick="switchView('houfengcha')">后枫槎</button>
     <button onclick="switchView('qianfengcha')">前枫槎</button>
