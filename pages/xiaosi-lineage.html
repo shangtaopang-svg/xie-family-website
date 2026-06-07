@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>石马枫槎世系 · 小四→丹一→文杲→彬/乾</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css?v=3">
+  <script defer src="../js/i18n.js"></script>
+  <script defer src="../js/main.js?v=9"></script>
+  <style>
+    body { max-width:900px; margin:0 auto; padding:20px; }
+    h2 { margin-bottom:20px; }
+    .tab { display:inline-block; padding:6px 16px; margin-right:4px; border:1px solid var(--glass-border); border-radius:6px; cursor:pointer; font-size:13px; }
+    .tab.active { background:var(--accent-orange); color:#fff; border-color:var(--accent-orange); }
+    .node { margin:2px 0; }
+    .bar { display:flex; align-items:center; gap:6px; padding:5px 10px; border-radius:4px; cursor:pointer; transition:background 0.1s; }
+    .bar:hover { background:var(--accent-orange-dim); }
+    .bar .name { font-size:14px; font-weight:500; }
+    .bar .gen { font-size:11px; color:#888; margin-left:8px; }
+    .expand { font-size:10px; width:16px; text-align:center; cursor:pointer; }
+    .children { padding-left:24px; overflow:hidden; transition:max-height 0.3s; max-height:0; }
+    .children.open { max-height:20000px; }
+    .h-g { font-size:12px; color:var(--accent-orange); font-weight:600; margin:8px 0 4px 10px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading { display:flex; align-items:center; justify-content:center; min-height:200px; color:#888; gap:8px; }
+    .loading::before { content:''; width:18px; height:18px; border:2px solid #ddd; border-top-color:var(--accent-orange); border-radius:50%; animation:spin 0.8s linear infinite; }
+  </style>
+</head>
+<body>
+  <h2>🌳 石马枫槎世系</h2>
+  <p style="margin-bottom:16px;color:#888;">小四 → 丹一 → 文杲 → 彬/乾 直系脉络</p>
+  <div id="tree" class="loading">加载中…</div>
+
+<script>
+function getData() {
+  try { var s = localStorage.getItem('xie_admin_genealogy'); if (s) return JSON.parse(s); } catch(e) {}
+  return [];
+}
+
+function esc(t) { if (!t) return ''; var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+function countKids(pid, data) {
+  var c = 0;
+  function walk(id) { data.forEach(function(p) { if (parseInt(p.father_id) === id) { c++; walk(p.id); } }); }
+  walk(pid);
+  return c;
+}
+
+var _exp = {};
+
+function buildTree(data, rootId, depth, open) {
+  var p = null;
+  for (var i = 0; i < data.length; i++) { if (data[i].id === rootId) { p = data[i]; break; } }
+  if (!p) return '';
+  var kids = [];
+  data.forEach(function(d) { if (parseInt(d.father_id) === rootId) kids.push(d); });
+  kids.sort(function(a,b) { return (a.generation_num||0) - (b.generation_num||0); });
+  var isOpen = _exp[rootId] === true;
+  var style = (depth > 0 && !open) ? ' style="display:none;"' : '';
+  var html = '<div class="node"' + style + '>';
+  html += '<div class="bar" onclick="showDetail(' + rootId + ')">';
+  if (kids.length > 0) {
+    html += '<span class="expand" onclick="event.stopPropagation();toggle(' + rootId + ')">' + (isOpen ? '▼' : '▶') + '</span>';
+  } else {
+    html += '<span class="expand" style="visibility:hidden;">▶</span>';
+  }
+  html += '<span class="name">' + esc(p.name) + '</span>';
+  if (p.generation_num) html += '<span class="gen">第' + p.generation_num + '世</span>';
+  if (p.branch && p.branch !== '—') html += '<span style="font-size:10px;color:var(--accent-orange);padding:1px 6px;border-radius:6px;background:rgba(251,146,60,0.1);margin-left:6px;">' + esc(p.branch) + '</span>';
+  if (kids.length > 0) html += '<span style="font-size:10px;color:#999;margin-left:10px;">' + kids.length + '子 ' + countKids(rootId, data) + '后</span>';
+  html += '</div>';
+  if (kids.length > 0) {
+    html += '<div class="children' + (isOpen ? ' open' : '') + '">';
+    kids.forEach(function(k) { html += buildTree(data, k.id, depth+1, isOpen); });
+    html += '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function toggle(id) {
+  if (_exp[id]) delete _exp[id]; else _exp[id] = true;
+  render();
+}
+
+function showDetail(id) {
+  var data = getData();
+  var p = null;
+  for (var i = 0; i < data.length; i++) { if (data[i].id === id) { p = data[i]; break; } }
+  if (!p) return;
+  var html = '<div style="font-size:18px;font-weight:600;margin-bottom:10px;">' + esc(p.name) + '</div>';
+  html += '<div style="font-size:13px;line-height:1.8;">';
+  if (p.generation_num) html += '<div>世代：第' + p.generation_num + '世</div>';
+  if (p.gender) html += '<div>性别：' + p.gender + '</div>';
+  if (p.branch && p.branch !== '—') html += '<div>支系：' + esc(p.branch) + '</div>';
+  if (p.birth_date && p.birth_date !== '—') html += '<div>出生：' + p.birth_date + '</div>';
+  if (p.spouse_ids) {
+    var sp = p.spouse_ids.toString().split(',').filter(function(s) { return s.trim(); }).join('、');
+    if (sp) html += '<div>配偶：' + esc(sp) + '</div>';
+  }
+  if (p.biography && p.biography !== '—') html += '<div style="margin-top:8px;padding-top:8px;border-top:1px solid #eee;">简介：' + esc(p.biography) + '</div>';
+  html += '</div>';
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  var box = document.createElement('div');
+  box.style.cssText = 'background:var(--bg-primary);border:1px solid var(--glass-border);border-radius:12px;max-width:480px;width:100%;padding:28px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
+  box.innerHTML = '<button onclick="this.parentElement.parentElement.remove()" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-tertiary);">✕</button>' + html;
+  overlay.appendChild(box);
+  overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+  document.body.appendChild(overlay);
+}
+
+function render() {
+  var data = getData();
+  var container = document.getElementById('tree');
+  if (!data || data.length === 0) { container.innerHTML = '<div style="padding:40px;text-align:center;">暂无数据</div>'; return; }
+
+  // Find the root: 小四（石马下谢祖）at id 130
+  var rootId = 130;
+  // Auto-expand the main line: 小四→丹一→文杲
+  var lineage = [130, 131, 134];
+  lineage.forEach(function(id) { _exp[id] = true; });
+
+  container.innerHTML = buildTree(data, rootId, 0, true);
+}
+
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>
