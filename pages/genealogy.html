@@ -300,12 +300,15 @@ function getFilteredChildren(person, data) {
   return result;
 }
 
+var _descCache = {};
 function getDescendantCount(personId, data) {
+  if (_descCache[personId] !== undefined) return _descCache[personId];
   var count = 0;
   var direct = getChildren(personId, data);
   for (var i = 0; i < direct.length; i++) {
     count += 1 + getDescendantCount(direct[i].id, data);
   }
+  _descCache[personId] = count;
   return count;
 }
 
@@ -503,7 +506,7 @@ function filterBranch(branch) {
   }, 100);
 }
 
-function renderTreeSVG(data) {
+function renderTreeSVG(data) { _descCache = {};
   var container = document.getElementById('tree-container');
   if (!container) return;
   // Check cache for current branch filter (instant re-render)
