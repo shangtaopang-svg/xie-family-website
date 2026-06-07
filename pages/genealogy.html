@@ -12,8 +12,6 @@
   <script defer src="../js/i18n.js"></script>
   <script defer src="../js/file-store.js?v=3"></script>
   <script defer src="../js/supabase.js?v=3"></script>
-  <script defer src="../js/timeline.js?v=2"></script>
-  <script defer src="../js/timeline.js?v=2"></script>
   <link rel="manifest" href="../manifest.json">
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
 </head>
@@ -339,7 +337,6 @@
 </style>
 
 <script>
-  document.getElementById('tree-container').innerHTML = '<div class="tree-loading"><span class="tree-loading-spinner"></span> 世系图加载中…</div>';
   // ===== Load data =====
   function getFullSeedData() {
     return [
