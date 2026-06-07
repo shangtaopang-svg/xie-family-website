@@ -732,6 +732,23 @@ function renderTreeSVG(data) {
       if (childIds.length > 0) html += buildConnectorPath(pid, childIds, treeLayout);
     }
   }
+  // Draw branch group boxes
+  var groups = [['攒【后枫槎】','#22c55e',3,'rgba(34,197,94,0.06)'],['撰【前枫槎】','#6366f1',3,'rgba(99,102,241,0.06)'],['彬（东房祖）','#ef4444',3,'rgba(239,68,68,0.06)'],['乾（西房祖）','#f97316',3,'rgba(249,115,22,0.06)']];
+  for (var g = 0; g < groups.length; g++) {
+    var rootPerson = null;
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].name.indexOf(groups[g][0].substring(0,1)) === 0 && data[i].name.indexOf(groups[g][0].substring(1)) > 0) { rootPerson = data[i]; break; }
+    }
+    if (!rootPerson) continue;
+    var descendantIds = [rootPerson.id];
+    (function cp(pid){for(var i=0;i<data.length;i++){if((parseInt(data[i].father_id)===pid||parseInt(data[i].mother_id)===pid)&&descendantIds.indexOf(data[i].id)===-1){descendantIds.push(data[i].id);cp(data[i].id);}}})(rootPerson.id);
+    var mnX=Infinity,mxX=-Infinity,mnY=Infinity,mxY=-Infinity,ha=false;
+    for(var i=0;i<descendantIds.length;i++){var pos=treeLayout[descendantIds[i]];if(pos){if(pos.x<mnX)mnX=pos.x;if(pos.x>mxX)mxX=pos.x;if(pos.y<mnY)mnY=pos.y;if(pos.y>mxY)mxY=pos.y;ha=true;}}
+    if(!ha)continue;
+    var pd=25,bx=mnX-CARD_W/2-pd,by=mnY-CARD_H/2-pd,bw=(mxX-mnX)+CARD_W+pd*2,bh=(mxY-mnY)+CARD_H+pd*2;
+    html+='<rect x="'+bx+'" y="'+by+'" width="'+bw+'" height="'+bh+'" fill="'+groups[g][3]+'" stroke="'+groups[g][1]+'" stroke-width="'+groups[g][2]+'" stroke-dasharray="10,5" rx="14" opacity="0.85"/>';
+    html+='<text x="'+(bx+14)+'" y="'+(by+20)+'" fill="'+groups[g][1]+'" font-size="13" font-weight="700" opacity="0.85">'+groups[g][0]+'</text>';
+  }
   html += '</svg>';
   // HTML cards (positioned absolutely) — fast single innerHTML
   html += '<div class="tree-cards-layer" style="position:relative;width:' + svgW + 'px;height:' + svgH + 'px;">';
