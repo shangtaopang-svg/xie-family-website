@@ -4606,3 +4606,93 @@ body {
   #members-grid { grid-template-columns: repeat(2, 1fr); }
   .carousel-slide { height: 320px; }
 }
+
+/* ===== 移动端增强优化 ===== */
+
+/* 横屏模式 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .site-header { padding: 4px 12px; }
+  .site-header .logo { gap: 6px; }
+  .site-header .logo-icon { width: 32px; height: 32px; font-size: 14px; }
+  .site-header .logo-text h1 { font-size: 15px; }
+  .page-title { padding: 12px 0; }
+  .page-title h2 { font-size: 18px; }
+  .hero-section { min-height: 200px !important; max-height: 300px !important; }
+  .reels-wrapper { height: 60vh; max-height: 300px; }
+  .carousel-slide { height: 200px; }
+  .genealogy-tree-scroll { min-height: 200px; max-height: 50vh; }
+}
+
+/* 小屏竖屏优化 */
+@media (max-width: 480px) and (orientation: portrait) {
+  /* 内边距统一 */
+  .page-wrap { padding: 0 8px; }
+  .glass-card { padding: 16px !important; }
+
+  /* 标题字号 */
+  .page-title h2 { font-size: 18px; margin-bottom: 4px; }
+  .page-title p { font-size: 11px; }
+
+  /* 导航 */
+  .main-nav.open { padding: 12px; top: 52px; }
+  .main-nav ul li a { padding: 10px 14px; font-size: 14px; }
+
+  /* 首页媒体 */
+  .carousel-slide { height: 180px; }
+  .reels-wrapper { height: 35vh; max-height: 280px; }
+
+  /* 族谱树 */
+  .tree-html-card { width: 80px !important; height: 48px !important; }
+  .tree-html-card .card-name { font-size: 9px; }
+  .tree-html-card .card-meta { font-size: 8px; display: none; }
+  .tree-html-card .card-expand { font-size: 7px; }
+
+  /* 按钮组紧凑 */
+  #genealogy-tree-section .btn-sm { font-size: 10px; padding: 3px 6px; margin: 1px; }
+  .btn-xs { font-size: 10px !important; padding: 2px 6px !important; }
+
+  /* 搜索框 */
+  #genealogy-search { min-width: 80px !important; font-size: 12px !important; padding: 6px 8px !important; }
+  #members-search { font-size: 13px !important; padding: 8px 12px !important; }
+
+  /* 表格滚动 */
+  .gen-table { font-size: 10px; }
+  .gen-table th, .gen-table td { padding: 3px 4px; white-space: nowrap; }
+  #gen-table { min-width: 500px; }
+
+  /* 分支筛选标签 */
+  .ct-tab { font-size: 11px; padding: 4px 10px; }
+
+  /* 照片墙 */
+  #gallery-grid { grid-template-columns: 1fr 1fr !important; gap: 4px; }
+
+  /* 家族成员卡片 */
+  #members-grid { grid-template-columns: 1fr; }
+
+  /* 世代筛选 */
+  #gen-tabs { font-size: 12px; padding: 4px 8px; max-width: 120px; }
+
+  /* 关系查询输入框 */
+  #relation-p1, #relation-p2 { min-width: 100px !important; font-size: 13px !important; padding: 6px 10px !important; }
+
+  /* 统计卡片 */
+  #members-stats { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  #members-stats .glass-card { padding: 10px !important; }
+  #members-stats .glass-card div:first-child { font-size: 18px !important; }
+
+  /* 数据可视化 */
+  #chart-section > div { grid-template-columns: 1fr !important; }
+}
+
+/* 族谱页树容器触摸优化 */
+@media (pointer: coarse) {
+  .genealogy-tree-scroll { cursor: default; }
+  .tree-html-card { cursor: default; }
+  .tree-html-card:active { opacity: 0.8; }
+}
+
+/* 选项卡/标签换行 */
+@media (max-width: 600px) {
+  .tree-tabs { gap: 4px; }
+  .tree-tab { font-size: 12px; padding: 5px 10px; }
+}
