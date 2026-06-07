@@ -2253,28 +2253,8 @@ function locateInTree(personId) {
     statsHtml += '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + females + '</div><div style="font-size:11px;color:var(--text-tertiary);">女</div></div>';
     document.getElementById('stats-container').innerHTML = statsHtml;
 
-    // Table
-    data.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0) || (a.name || '').localeCompare(b.name || ''); });
-    var tbody = document.getElementById('gen-table-body');
-    var tableHtml = '';
-    data.forEach(function(p) {
-      var fatherName = p.father_id ? getPersonNameById(parseInt(p.father_id), data) : '—';
-      var spouseNames = p.spouse_ids ? p.spouse_ids.toString().split(',').map(function(n) {
-        return n.trim();
-      }).filter(function(n) { return n; }).join('、') : '—';
-      if (!spouseNames) spouseNames = '—';
-      tableHtml += '<tr onclick="showPersonDetail(' + p.id + ', getGenealogyData())" style="cursor:pointer;">';
-      tableHtml += '<td class="gen-label">第' + (p.generation_num || '?') + '世</td>';
-      tableHtml += '<td>' + escapeHtml(p.name) + '</td>';
-      tableHtml += '<td>' + (p.gender || '—') + '</td>';
-      tableHtml += '<td>' + escapeHtml(p.generation || '—') + '</td>';
-      tableHtml += '<td>' + (p.branch || '—') + '</td>';
-      tableHtml += '<td style="font-size:12px;">' + fatherName + '</td>';
-      tableHtml += '<td style="font-size:12px;">' + spouseNames + '</td>';
-      tableHtml += '<td style="font-size:12px;color:var(--text-tertiary);">' + (p.birth_date || '') + (p.death_date ? '~' + p.death_date : '') + '</td>';
-      tableHtml += '</tr>';
-    });
-    tbody.innerHTML = tableHtml;
+    // Table (deferred for fast page load)
+    var tableData = data.slice();
 
     // Tree — simple expandable list (instant)
     document.getElementById("tree-container").innerHTML = '<div class="tree-loading"><span class="tree-loading-spinner"></span> 世系图加载中…</div>';
