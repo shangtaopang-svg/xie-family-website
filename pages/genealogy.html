@@ -176,9 +176,9 @@
         <!-- 视图切换标签 -->
         <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center;padding:6px 0;">
           <span style="font-size:12px;color:var(--text-tertiary);font-weight:500;">分支：</span>
-          <button class="btn btn-xs" id="filter-all" onclick="filterBranch('all')" style="background:var(--accent-orange);color:#fff;border:none;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;">全部</button>
-          <button class="btn btn-xs" id="filter-houfengcha" onclick="filterBranch('后枫槎')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">后枫槎世系</button>
-          <button class="btn btn-xs" id="filter-qianfengcha" onclick="filterBranch('前枫槎')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">前枫槎世系</button>
+          <button class="btn btn-xs" id="filter-all" onclick="switchView('all')" style="background:var(--accent-orange);color:#fff;border:none;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;">全部</button>
+          <button class="btn btn-xs" id="filter-houfengcha" onclick="switchView('后枫槎')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">后枫槎世系</button>
+          <button class="btn btn-xs" id="filter-qianfengcha" onclick="switchView('前枫槎')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">前枫槎世系</button>
         </div>
         <!-- 树容器 -->
         <div class="genealogy-tree-scroll" id="tree-scroll-container">
@@ -299,6 +299,26 @@
 .h-connector:hover { opacity:0.6; }
 .h-btn-expand { cursor:pointer; fill:var(--accent-orange); font-size:10px; user-select:none; }
 
+/* Expandable tree */
+.tree-nodes { padding:4px 0; }
+.tree-node { user-select:none; }
+.tree-bar { display:flex; align-items:center; gap:6px; padding:6px 14px; border-radius:6px; cursor:pointer; transition:background 0.12s; margin:1px 4px; }
+.tree-bar:hover { background:var(--accent-orange-dim); }
+.tree-bar.root { border-left:3px solid var(--accent-orange); background:rgba(251,146,60,0.06); }
+.tree-expand { font-size:10px; width:18px; text-align:center; color:var(--text-muted); flex-shrink:0; transition:transform 0.2s; }
+.tree-expand.open { transform:rotate(90deg); }
+.tree-name { font-size:14px; font-weight:500; color:var(--text-primary); }
+.tree-gen { font-size:11px; color:var(--text-tertiary); margin-left:8px; white-space:nowrap; }
+.tree-branch { font-size:10px; padding:1px 8px; border-radius:8px; background:rgba(251,146,60,0.1); color:var(--accent-orange); margin-left:6px; white-space:nowrap; }
+.tree-count { font-size:10px; color:var(--text-muted); margin-left:12px; white-space:nowrap; }
+.tree-children { overflow:hidden; transition:max-height 0.3s ease, opacity 0.2s ease; max-height:0; opacity:0; }
+.tree-children.open { max-height:20000px; opacity:1; }
+.tree-children .tree-bar { padding-left:34px; }
+.tree-children .tree-children .tree-bar { padding-left:54px; }
+.tree-children .tree-children .tree-children .tree-bar { padding-left:74px; }
+.tree-loading { display:flex; align-items:center; justify-content:center; min-height:300px; color:var(--text-tertiary); font-size:14px; gap:10px; }
+.tree-loading-spinner { display:inline-block; width:18px; height:18px; border:2px solid var(--text-tertiary); border-top-color:var(--accent-orange); border-radius:50%; animation:spin 0.8s linear infinite; }
+
 @keyframes spin { to { transform:rotate(360deg); } }
 
 /* Fullscreen tree - native browser fullscreen API */
@@ -368,687 +388,110 @@ function getPersonNameById(id, data) {
   }
 
   // ===== SVG Tree rendering =====
-var CARD_W = 150, CARD_H = 85, H_GAP = 50, V_GAP = 110;
-var treeScale = 1, treePanX = 0, treePanY = 0;
-var treeLayout = {}; // { personId: {x, y} }
-var allNodes = [];
-var allConnectors = [];
+var _expanded = {};
+var _currentView = 'all';
 
-function getFilteredChildren(person, data) {
-  var existingIds = {};
-  data.forEach(function(p) { existingIds[p.id] = true; });
-  var children = getChildren(person.id, data);
+function getChildren(pid, data) {
   var result = [];
-  children.forEach(function(child) {
-    var fatherId = parseInt(child.father_id);
-    var motherId = parseInt(child.mother_id);
-    if (fatherId === person.id) result.push(child);
-    else if (motherId === person.id && (!child.father_id || !existingIds[parseInt(child.father_id)])) result.push(child);
-  });
+  for (var i = 0; i < data.length; i++) {
+    if (parseInt(data[i].father_id) === pid) result.push(data[i]);
+  }
   return result;
 }
 
-function getDescendantCount(personId, data) {
-  var count = 0;
-  var direct = getChildren(personId, data);
-  for (var i = 0; i < direct.length; i++) {
-    count += 1 + getDescendantCount(direct[i].id, data);
-  }
-  return count;
+function countDesc(pid, data) {
+  var c = 0;
+  function walk(id) { getChildren(id, data).forEach(function(k) { c++; walk(k.id); }); }
+  walk(pid);
+  return c;
 }
 
-function calcSubtreeWidth(personId, data, collapsed) {
-  var person = null;
-  for (var i = 0; i < data.length; i++) { if (data[i].id === personId) { person = data[i]; break; } }
-  if (!person) return CARD_W;
-  if (collapsed) return CARD_W;
-  var children = getFilteredChildren(person, data);
-  if (children.length === 0) return CARD_W;
-  var total = 0;
-  for (var i = 0; i < children.length; i++) {
-    total += calcSubtreeWidth(children[i].id, data, collapsed) + (i < children.length - 1 ? H_GAP : 0);
-  }
-  return Math.max(CARD_W, total);
-}
+function escHtml(t) { if (!t) return ''; var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
-function layoutTree(personId, x, y, data, collapsed, visited) {
-  if (!visited) visited = {};
-  if (visited[personId]) return;
-  visited[personId] = true;
-  treeLayout[personId] = {x: x, y: y};
-  var person = null;
-  for (var i = 0; i < data.length; i++) { if (data[i].id === personId) { person = data[i]; break; } }
-  if (!person || collapsed) return;
-  var children = getFilteredChildren(person, data);
-  if (children.length === 0) return;
-  var childWidths = [];
-  for (var i = 0; i < children.length; i++) {
-    childWidths.push(calcSubtreeWidth(children[i].id, data, collapsed));
-  }
-  var totalW = 0;
-  for (var i = 0; i < childWidths.length; i++) totalW += childWidths[i] + (i < childWidths.length - 1 ? H_GAP : 0);
-  var cx = x - totalW / 2 + childWidths[0] / 2;
-  for (var i = 0; i < children.length; i++) {
-    layoutTree(children[i].id, cx, y + V_GAP, data, collapsed, visited);
-    cx += childWidths[i] / 2 + H_GAP + (i < childWidths.length - 1 ? (childWidths[i+1] || 0) / 2 : 0);
-  }
-}
-
-function buildCardSvg(person, data, hasChildren, descendantCount, childCount) {
-  var id = person.id;
-  var isHighlight = person.highlight === true ||
-    /^(小四|文杲|攒|撰|彬|乾|文对)(（|【|$)/.test(person.name) ||
-    /^小四（石马/.test(person.name) ||
-    /^文杲（司检/.test(person.name) ||
-    /^攒（后枫槎|^攒【后枫槎】/.test(person.name) ||
-    /^撰（前枫槎|^撰【前枫槎】/.test(person.name) ||
-    /^彬（东房/.test(person.name) ||
-    /^乾（西房/.test(person.name) ||
-    person.name === '文对';
-  var card = '<g class="tree-svg-card' + (isHighlight ? ' tree-svg-highlight' : '') + '" data-id="' + id + '" onclick="onCardClick(' + id + ', event)">';
-  card += '<rect class="card-bg ' + (person.gender === '男' ? 'male' : 'female') + '" x="-' + (CARD_W/2) + '" y="-' + (CARD_H/2) + '" width="' + CARD_W + '" height="' + CARD_H + '"/>';
-  if (isHighlight) {
-    card += '<text x="' + (CARD_W/2 - 8) + '" y="-' + (CARD_H/2 + 6) + '" fill="#ff6b00" font-size="14">⭐</text>';
-  }
-  var nameText = escapeHtml(person.name || '未知');
-  if (person.adopted && person.adopted !== '否') {
-    var label = person.adopted === '出继' ? '出' : '嗣';
-    card += '<text class="card-adopted-badge" x="-' + (CARD_W/2-12) + '" y="-' + (CARD_H/2+4) + '" text-anchor="middle">' + label + '</text>';
-  }
-  card += '<text class="card-name" x="0" y="0">' + nameText + '</text>';
-  var metaParts = [];
-  if (person.generation && person.generation !== '—') metaParts.push(person.generation + '字辈');
-  if (person.generation_num) metaParts.push('第' + person.generation_num + '世');
-  if (metaParts.length) card += '<text class="card-meta" x="0" y="0">' + metaParts.join(' · ') + '</text>';
-  if (person.branch && person.branch !== '—') card += '<text class="card-branch" x="0" y="0">' + escapeHtml(person.branch) + '</text>';
-  var spouses = getSpouses(person.id, data);
-  if (spouses.length > 0) {
-    card += '<text class="card-spouse" x="0" y="0">配: ' + spouses.map(function(s){return s.name||'';}).join('、') + '</text>';
-  }
-  if (person.mother_id) {
-    var mn = getPersonNameById(parseInt(person.mother_id), data) || '';
-    if (mn) card += '<text class="card-mother" x="0" y="0">母: ' + escapeHtml(mn) + '</text>';
-  }
-  if (hasChildren) {
-    card += '<text class="card-expand card-expand-text" x="0" y="0" onclick="event.stopPropagation();toggleTreeSVG(' + id + ');">▶</text>';
-    card += '<text class="card-expand card-collapse-text" x="0" y="0" onclick="event.stopPropagation();toggleTreeSVG(' + id + ');">▼</text>';
-    card += '<text class="card-count" x="0" y="0">' + childCount + '子女, ' + descendantCount + '后代</text>';
-  }
-  card += '</g>';
-  return card;
-}
-
-function buildConnectorPath(parentId, childIds, layout) {
-  if (!layout[parentId] || childIds.length === 0) return '';
-  var px = layout[parentId].x, py = layout[parentId].y;
-  var paths = '';
-  // Vertical from parent bottom to mid-point
-  var midY = py + CARD_H/2 + V_GAP/2;
-  if (childIds.length === 1) {
-    var cx = layout[childIds[0]].x, cy = layout[childIds[0]].y;
-    paths += '<line class="tree-connector" x1="' + px + '" y1="' + (py + CARD_H/2) + '" x2="' + cx + '" y2="' + (cy - CARD_H/2) + '"/>';
+function buildNode(data, pid, depth, parentOpen) {
+  var p = null;
+  for (var i = 0; i < data.length; i++) { if (data[i].id === pid) { p = data[i]; break; } }
+  if (!p) return '';
+  var kids = getChildren(pid, data);
+  var isOpen = _expanded[pid] === true;
+  var style = (depth > 0 && !parentOpen) ? ' style="display:none;"' : '';
+  var isHighlight = p.highlight === true || /^(炎帝|小四|文杲|攒|撰|彬|乾|文对|申伯|临魁)/.test(p.name);
+  var h = '<div class="tree-node"' + style + '>';
+  h += '<div class="tree-bar' + (depth === 0 ? ' root' : '') + '" onclick="showDetail(' + pid + ')">';
+  if (kids.length > 0) {
+    h += '<span class="tree-expand' + (isOpen ? ' open' : '') + '" onclick="event.stopPropagation();toggleNode(' + pid + ')">▶</span>';
   } else {
-    // Vertical from parent
-    paths += '<line class="tree-connector" x1="' + px + '" y1="' + (py + CARD_H/2) + '" x2="' + px + '" y2="' + midY + '"/>';
-    // Horizontal bar
-    var firstX = layout[childIds[0]].x;
-    var lastX = layout[childIds[childIds.length-1]].x;
-    paths += '<line class="tree-connector-h" x1="' + firstX + '" y1="' + midY + '" x2="' + lastX + '" y2="' + midY + '"/>';
-    // Vertical to each child
-    for (var i = 0; i < childIds.length; i++) {
-      var cx = layout[childIds[i]].x;
-      paths += '<line class="tree-connector" x1="' + cx + '" y1="' + midY + '" x2="' + cx + '" y2="' + (layout[childIds[i]].y - CARD_H/2) + '"/>';
-    }
+    h += '<span class="tree-expand" style="visibility:hidden;">▶</span>';
   }
-  return paths;
+  if (isHighlight) h += '<span style="font-size:12px;margin-right:2px;">⭐</span>';
+  h += '<span class="tree-name">' + escHtml(p.name) + '</span>';
+  if (p.generation_num) h += '<span class="tree-gen">第' + p.generation_num + '世</span>';
+  if (p.branch && p.branch !== '—') h += '<span class="tree-branch">' + escHtml(p.branch) + '</span>';
+  if (kids.length > 0) h += '<span class="tree-count">' + kids.length + '子 ' + countDesc(pid, data) + '后</span>';
+  h += '</div>';
+  if (kids.length > 0) {
+    h += '<div class="tree-children' + (isOpen ? ' open' : '') + '">';
+    kids.sort(function(a,b) { return (parseInt(a.generation_num)||0) - (parseInt(b.generation_num)||0); });
+    kids.forEach(function(k) { h += buildNode(data, k.id, depth + 1, isOpen); });
+    h += '</div>';
+  }
+  h += '</div>';
+  return h;
 }
 
-// Branch filter: collect all descendants of a root person
-function getBranchData(data, rootNamePattern) {
-  // Find ALL matching people and pick the best one (with most descendants)
-  var candidates = [];
-  for (var i = 0; i < data.length; i++) {
-    if (data[i].name.indexOf(rootNamePattern) >= 0) {
-      // Count descendants for this candidate
-      var cIds = [data[i].id];
-      function cCollect(pid) {
-        for (var j = 0; j < data.length; j++) {
-          if ((parseInt(data[j].father_id) === pid || parseInt(data[j].mother_id) === pid) && cIds.indexOf(data[j].id) === -1) {
-            cIds.push(data[j].id);
-            cCollect(data[j].id);
-          }
-        }
-      }
-      cCollect(data[i].id);
-      candidates.push({ person: data[i], descendantCount: cIds.length - 1 });
-    }
-  }
-  if (candidates.length === 0) return data;
-  // Sort by descendant count desc, then by generation_num desc (prefer more recent)
-  candidates.sort(function(a, b) {
-    if (b.descendantCount !== a.descendantCount) return b.descendantCount - a.descendantCount;
-    return (parseInt(b.person.generation_num)||0) - (parseInt(a.person.generation_num)||0);
+function toggleNode(id) {
+  if (_expanded[id]) { delete _expanded[id]; } else { _expanded[id] = true; }
+  renderFullTree();
+}
+
+function switchView(view) {
+  _currentView = view;
+  document.querySelectorAll('#filter-all, #filter-houfengcha, #filter-qianfengcha').forEach(function(b) {
+    b.style.background = ''; b.style.color = ''; b.style.border = '1px solid var(--glass-border)';
   });
-  var root = candidates[0].person;
-  // Collect all descendants through father_id/mother_id
-  var ids = [root.id];
-  function collect(pid) {
-    for (var i = 0; i < data.length; i++) {
-      if ((parseInt(data[i].father_id) === pid || parseInt(data[i].mother_id) === pid) && ids.indexOf(data[i].id) === -1) {
-        ids.push(data[i].id);
-        collect(data[i].id);
-      }
-    }
-  }
-  collect(root.id);
-  // If the root has no descendants in the data, just return the root itself
-  // (the tree will show the root with a note that branch data is incomplete)
-  return data.filter(function(p) { return ids.indexOf(p.id) >= 0; });
-}
-
-var _currentBranch = 'all';
-
-function filterBranch(branch) {
-  _currentBranch = branch;
-  var btnId = 'filter-all';
-  if (branch.indexOf('后枫槎') >= 0) btnId = 'filter-houfengcha';
-  else if (branch.indexOf('前枫槎') >= 0) btnId = 'filter-qianfengcha';
-  document.querySelectorAll('[id^="filter-"]').forEach(function(b) { b.style.background = ''; b.style.color = ''; b.style.border = '1px solid var(--glass-border)'; });
+  var btnId = view === 'all' ? 'filter-all' : (view === '后枫槎' ? 'filter-houfengcha' : 'filter-qianfengcha');
   var btn = document.getElementById(btnId);
   if (btn) { btn.style.background = 'var(--accent-orange)'; btn.style.color = '#fff'; btn.style.border = 'none'; }
-  // Get and filter data
-  var data = getGenealogyData();
-  var branchLabel = '全部';
-  if (branch !== 'all') {
-    data = getBranchData(data, branch);
-    // Get a human-readable label for this branch
-    for (var i = 0; i < data.length; i++) {
-      if (data[i].name.indexOf(branch) >= 0) { branchLabel = data[i].name; break; }
-    }
-  }
-  // Render tree with filter — defer layout so UI stays responsive
-  localStorage.setItem('xie_tree_collapsed', '[]');
-  var el1 = document.getElementById('tree-scroll-container');
-  if (el1) el1.style.display = 'block';
-  // Show loading state immediately
-  var tc = document.getElementById('tree-container');
-  if (tc) tc.innerHTML = '<div class="tree-loading"><span class="tree-loading-spinner"></span> 加载世系图中…</div>';
-  setTimeout(function() { renderTreeSVG(data); }, 30);
-  // If viewing a specific branch, auto-locate to the root person
-  if (branch !== 'all') {
-    setTimeout(function() {
-      var rootId = null;
-      for (var i = 0; i < data.length; i++) {
-        if (data[i].name.indexOf(branch) >= 0) { rootId = data[i].id; break; }
-      }
-      if (rootId) treeAutoLocate(rootId);
-    }, 200);
-  }
-  // Auto-scroll to tree section
-  setTimeout(function() {
-    var treeSection = document.getElementById('genealogy-tree-section');
-    if (treeSection) treeSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 100);
+  renderFullTree();
 }
 
-function renderTreeSVG(data) {
+function renderFullTree() {
   var container = document.getElementById('tree-container');
   if (!container) return;
-  // Check cache for current branch filter (instant re-render)
-  var _treeCache = window._treeCache || {};
-  window._treeCache = _treeCache;
-  var cacheKey = _currentBranch || 'all';
-  if (_treeCache[cacheKey]) {
-    container.innerHTML = _treeCache[cacheKey];
-    // Re-bind card events (innerHTML loses event listeners)
-    var viewport = container.querySelector('.tree-viewport');
-    if (viewport) {
-      viewport.style.transform = 'translate(' + treePanX + 'px,' + treePanY + 'px) scale(' + treeScale + ')';
-    }
-    var oldMsg = document.getElementById('branch-empty-msg');
-    if (oldMsg) oldMsg.remove();
-    var oldStats = document.getElementById('branch-stats-overlay');
-    if (oldStats) oldStats.remove();
-    // Show empty message if needed
-    if (_currentBranch && _currentBranch !== 'all') {
-      var cardCount = container.querySelectorAll('.tree-html-card').length;
-      if (cardCount <= 1) { showBranchEmptyMsg(container); }
-    }
-    return;
-  }
-  // Remove stale overlays from previous filter renders
-  var oldMsg = document.getElementById('branch-empty-msg');
-  if (oldMsg) oldMsg.remove();
-  var oldStats = document.getElementById('branch-stats-overlay');
-  if (oldStats) oldStats.remove();
-  // Apply branch filter
-  if (_currentBranch && _currentBranch !== 'all') {
-    var filteredData = getBranchData(data, _currentBranch);
-    if (filteredData && filteredData.length > 0) data = filteredData;
-  }
-  if (!data || data.length === 0) {
-    container.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-tertiary);font-size:14px;">暂无族谱数据，请在管理后台添加</div>';
-    return;
-  }
-  // Find root nodes
-  var existingIds = {};
-  data.forEach(function(p) { existingIds[p.id] = true; });
-  var roots = data.filter(function(p) { return !p.father_id || !existingIds[parseInt(p.father_id)]; });
-  var spouseIds = {};
-  data.forEach(function(p) {
-    if (p.spouse_ids) {
-      var names = p.spouse_ids.toString().split(',').map(function(n){return n.trim();}).filter(function(n){return n;});
-      data.forEach(function(other) {
-        if (other.id !== p.id && names.indexOf(other.name) !== -1) spouseIds[other.id] = p.id;
-      });
-    }
-  });
-  roots = roots.filter(function(p) { return !spouseIds[p.id] || spouseIds[p.id] > p.id; });
-  if (roots.length === 0 && data.length > 0) roots = [data[0]];
-
-  // Calculate layout for all roots
-  treeLayout = {};
-  var collapsedNodes = {};
-  // Load saved collapse state
-  try {
-    var saved = JSON.parse(localStorage.getItem('xie_tree_collapsed') || '[]');
-    saved.forEach(function(id) { collapsedNodes[id] = true; });
-  } catch(e) {}
-
-  for (var i = 0; i < roots.length; i++) {
-    layoutTree(roots[i].id, 0, 100, data, collapsedNodes[roots[i].id], null);
-  }
-  // Reposition roots side by side
-  var rootOffsets = [];
-  var totalRW = 0;
-  for (var i = 0; i < roots.length; i++) {
-    var rw = calcSubtreeWidth(roots[i].id, data, collapsedNodes[roots[i].id]);
-    rootOffsets.push({id: roots[i].id, w: rw});
-    totalRW += rw + (i < roots.length - 1 ? H_GAP * 2 : 0);
-  }
-  treeLayout = {};
-  var offsetX = 100;
-  for (var i = 0; i < roots.length; i++) {
-    layoutTree(rootOffsets[i].id, offsetX + rootOffsets[i].w/2, 100, data, collapsedNodes[rootOffsets[i].id], null);
-    offsetX += rootOffsets[i].w + H_GAP * 2;
-  }
-
-  // Calculate SVG dimensions
-  var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-  var cardIds = Object.keys(treeLayout);
-  if (cardIds.length === 0) { container.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-tertiary);">暂无显示数据</div>'; return; }
-  cardIds.forEach(function(id) {
-    var p = treeLayout[parseInt(id)];
-    if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
-    if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
-  });
-  var svgW = Math.max(400, maxX - minX + CARD_W + 80);
-  var svgH = Math.max(400, maxY - minY + CARD_H + 80);
-
-  // === Fast rendering: connectors (SVG) + all cards (HTML, single batch) ===
-  var cardIdsNum = cardIds.map(function(id) { return parseInt(id); });
-  var html = '<div class="tree-viewport" style="transform-origin:0 0;transform:translate(' + treePanX + 'px,' + treePanY + 'px) scale(' + treeScale + ');">';
-  // SVG layer for connectors only
-  html += '<svg class="tree-connector-layer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + svgW + ' ' + svgH + '" width="' + svgW + '" height="' + svgH + '" style="display:block;position:absolute;top:0;left:0;pointer-events:none;">';
-  for (var i = 0; i < cardIdsNum.length; i++) {
-    var pid = cardIdsNum[i];
-    var person = null;
-    for (var j = 0; j < data.length; j++) { if (data[j].id === pid) { person = data[j]; break; } }
-    if (!person) continue;
-    var children = getFilteredChildren(person, data);
-    if (children.length > 0) {
-      var childIds = [];
-      for (var k = 0; k < children.length; k++) { if (treeLayout[children[k].id]) childIds.push(children[k].id); }
-      if (childIds.length > 0) html += buildConnectorPath(pid, childIds, treeLayout);
-    }
-  }
-  html += '</svg>';
-  // HTML cards (positioned absolutely) — fast single innerHTML
-  html += '<div class="tree-cards-layer" style="position:relative;width:' + svgW + 'px;height:' + svgH + 'px;">';
-  for (var i = 0; i < cardIdsNum.length; i++) {
-    var pid = cardIdsNum[i];
-    var p = treeLayout[pid];
-    var person = null;
-    for (var j = 0; j < data.length; j++) { if (data[j].id === pid) { person = data[j]; break; } }
-    if (!person) continue;
-    var isHighlight = person.highlight === true ||
-      /^(小四|文杲|攒|撰|彬|乾|文对|炎帝|临魁|申伯)(（|【|$)/.test(person.name);
-    var isHidden = collapsedNodes[pid] && getFilteredChildren(person, data).length > 0;
-    var style = 'left:' + (p.x - CARD_W/2) + 'px;top:' + (p.y - CARD_H/2) + 'px;width:' + CARD_W + 'px;height:' + CARD_H + 'px;';
-    if (isHidden) style += 'display:none;';
-    html += '<div class="tree-html-card' + (isHighlight ? ' highlight' : '') + '" data-id="' + pid + '" onclick="onCardClick(' + pid + ', event)" style="' + style + '">';
-    if (isHighlight) html += '<span class="star">⭐</span>';
-    html += '<div class="card-name">' + escapeHtml(person.name || '未知') + '</div>';
-    var meta = [];
-    if (person.generation && person.generation !== '—') meta.push(person.generation + '字辈');
-    if (person.generation_num) meta.push('第' + person.generation_num + '世');
-    if (person.branch && person.branch !== '—') meta.push(escapeHtml(person.branch));
-    if (meta.length) html += '<div class="card-meta">' + meta.join(' · ') + '</div>';
-    if (getFilteredChildren(person, data).length > 0) {
-      var dc = getDescendantCount(pid, data);
-      html += '<div class="card-expand" onclick="event.stopPropagation();toggleTreeSVG(' + pid + ');">' + (isHidden ? '▶' : '▼') + ' ' + getFilteredChildren(person, data).length + '子女, ' + dc + '后代</div>';
-    }
-    html += '</div>';
-  }
-  html += '</div></div>';
-  // Single innerHTML — HTML divs are orders of magnitude faster than SVG
-  container.innerHTML = html;
-  // Save to cache for instant re-render on filter switch
-  _treeCache[cacheKey] = container.innerHTML;
-
-  // Show message when branch filter has no connected descendants
-  showBranchEmptyMsg(container);
-
-  // Add branch stats overlay (HTML, not SVG - stays in place during zoom)
-  var existingStats = document.getElementById('branch-stats-overlay');
-  if (existingStats) existingStats.remove();
-  if (_currentBranch && _currentBranch !== 'all') {
-    if (_currentBranch.indexOf('枫槎') >= 0) {
-      // Skip stats for 前枫槎/后枫槎
-    } else {
-    var totalPeople = cardIds.length;
-    var aliveNames = {}, deceasedNames = {};
-    for (var i = 0; i < data.length; i++) {
-      if (data[i].is_alive === '是') aliveNames[data[i].name + '_' + (data[i].generation_num||'0')] = true;
-      else if (data[i].is_alive === '否') deceasedNames[data[i].name] = true;
-    }
-    var alive = Object.keys(aliveNames).length;
-    var deceased = Object.keys(deceasedNames).length;
-    var statsDiv = document.createElement('div');
-    statsDiv.id = 'branch-stats-overlay';
-    statsDiv.style.cssText = 'position:absolute;top:16px;right:16px;z-index:100;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:10px;padding:6px 14px;border:1px solid rgba(255,255,255,0.08);font-size:12px;';
-    statsDiv.innerHTML = '<div style="color:#fb923c;font-size:13px;font-weight:700;">支系总人口: ' + totalPeople + '人</div>' +
-      '<div style="color:rgba(255,255,255,0.55);font-size:11px;">在世 ' + alive + ' · 已故 ' + deceased + '</div>';
-    var scrollContainer = document.getElementById('tree-scroll-container');
-    scrollContainer.appendChild(statsDiv);
-    }
-  }
-
-  // Store node refs (for search)
-  allNodes = [];
-  var cards2 = container.querySelectorAll('.tree-html-card');
-  for (var i = 0; i < cards2.length; i++) {
-    allNodes.push({id: parseInt(cards2[i].getAttribute('data-id')), el: cards2[i]});
-  }
-}
-
-function showBranchEmptyMsg(container) {
-  if (_currentBranch && _currentBranch !== 'all' && container) {
-    var existing = document.getElementById('branch-empty-msg');
-    if (existing) existing.remove();
-    var cardCount = container.querySelectorAll('.tree-html-card').length;
-    if (cardCount <= 1) {
-      var msgDiv = document.createElement('div');
-      msgDiv.id = 'branch-empty-msg';
-      msgDiv.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:50;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);border-radius:12px;padding:20px 28px;border:1px solid rgba(251,146,60,0.2);text-align:center;pointer-events:none;';
-      msgDiv.innerHTML = '<div style="font-size:28px;margin-bottom:8px;">📋</div><div style="color:#fb923c;font-size:14px;font-weight:600;">该支系暂无详细的世代连接数据</div><div style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:6px;">请在管理后台补充父ID关联后，即可查看完整世系图</div>';
-      var sc = document.getElementById('tree-scroll-container');
-      if (sc) sc.appendChild(msgDiv);
-    }
-  }
-}
-
-function onCardClick(personId, event) {
-  var data = getGenealogyData();
-  showPersonDetail(personId, data);
-}
-
-function toggleTreeSVG(personId) {
-  var data = getGenealogyData();
-  var collapsed = {};
-  try {
-    var saved = JSON.parse(localStorage.getItem('xie_tree_collapsed') || '[]');
-    saved.forEach(function(id) { collapsed[id] = true; });
-  } catch(e) {}
-  if (collapsed[personId]) delete collapsed[personId];
-  else collapsed[personId] = true;
-  localStorage.setItem('xie_tree_collapsed', JSON.stringify(Object.keys(collapsed).map(Number)));
-  renderTreeSVG(data);
-}
-
-function expandAllTree() {
-  _currentBranch = 'all';
-  document.querySelectorAll('[id^="filter-"]').forEach(function(b) {
-    b.style.background = ''; b.style.color = ''; b.style.border = '1px solid var(--glass-border)';
-  });
-  var allBtn = document.getElementById('filter-all');
-  if (allBtn) { allBtn.style.background = 'var(--accent-orange)'; allBtn.style.color = '#fff'; allBtn.style.border = 'none'; }
-  localStorage.setItem('xie_tree_collapsed', '[]');
-  renderTreeSVG(getGenealogyData());
-}
-
-function collapseAllTree() {
-  _currentBranch = 'all';
-  document.querySelectorAll('[id^="filter-"]').forEach(function(b) {
-    b.style.background = ''; b.style.color = ''; b.style.border = '1px solid var(--glass-border)';
-  });
-  var allBtn = document.getElementById('filter-all');
-  if (allBtn) { allBtn.style.background = 'var(--accent-orange)'; allBtn.style.color = '#fff'; allBtn.style.border = 'none'; }
-  var data = getGenealogyData();
-  var allIds = [];
-  data.forEach(function(p) {
-    var children = getFilteredChildren(p, data);
-    if (children.length > 0) allIds.push(p.id);
-  });
-  localStorage.setItem('xie_tree_collapsed', JSON.stringify(allIds));
-  renderTreeSVG(data);
-}
-
-// ===== SVG Zoom & Pan =====
-function treeZoomIn() { if (treeScale < 30) { treeScale = Math.min(30, treeScale + 0.3); applyTreeTransformSVG(); } }
-function treeZoomOut() { if (treeScale > 0.3) { treeScale = Math.max(0.3, treeScale - 0.2); applyTreeTransformSVG(); } }
-function treeZoomReset() { treeScale = 1; treePanX = 0; treePanY = 0; applyTreeTransformSVG(); }
-
-function applyTreeTransformSVG() {
-  var vp = document.querySelector('.tree-viewport');
-  if (!vp) return;
-  vp.style.transform = 'translate(' + treePanX + 'px,' + treePanY + 'px) scale(' + treeScale + ')';
-  var el = document.getElementById('tree-zoom-level');
-  if (el) el.textContent = Math.round(treeScale * 100) + '%';
-}
-
-// ===== Locate person in SVG tree =====
-function doTreeSearch() {
-  document.getElementById('tree-search-status').textContent = '搜索中...';
-  document.getElementById('tree-search-status').style.color = 'var(--text-tertiary)';
-  searchInTree();
-}
-
-function searchInTree() {
-  var q = document.getElementById('tree-search-input').value.trim();
-  var status = document.getElementById('tree-search-status');
-  if (!q) return;
-  var data = getGenealogyData();
-  var found = null;
-  for (var i = 0; i < data.length; i++) {
-    if (data[i].name === q) { found = data[i]; break; }
-  }
-  if (!found) {
-    // Partial match
-    for (var i = 0; i < data.length; i++) {
-      if (data[i].name.indexOf(q) >= 0) { found = data[i]; break; }
-    }
-  }
-  if (found) {
-    treeAutoLocate(found.id);
-    document.getElementById('tree-search-input').value = found.name;
-    status.textContent = '✓ ' + found.name;
-    status.style.color = '#22c55e';
-    setTimeout(function() { status.textContent = ''; }, 3000);
-  } else {
-    status.textContent = '未找到';
-    status.style.color = 'var(--accent-red)';
-    setTimeout(function() { status.textContent = ''; }, 2000);
-  }
-}
-
-function findById(id, data) {
-  for (var i = 0; i < data.length; i++) { if (data[i].id === id) return data[i]; }
-  return null;
-}
-
-function buildAncestorChain(person, data) {
-  var chain = [];
-  var cur = person;
-  for (var loop = 0; loop < 300 && cur; loop++) {
-    chain.push(cur);
-    var fid = cur.father_id ? parseInt(cur.father_id) : null;
-    cur = fid ? findById(fid, data) : null;
-  }
-  return chain;
-}
-
-function compareGeneration() {
-  var data = getGenealogyData();
-  var nameA = document.getElementById('gen-compare-a').value.trim();
-  var nameB = document.getElementById('gen-compare-b').value.trim();
-  var resultEl = document.getElementById('gen-compare-result');
-  if (!nameA || !nameB) { resultEl.textContent = '请输入两人姓名'; resultEl.style.color = 'var(--accent-red)'; return; }
-  var pA = null, pB = null;
-  for (var i = 0; i < data.length; i++) {
-    if (data[i].name === nameA) pA = data[i];
-    if (data[i].name === nameB) pB = data[i];
-  }
-  if (!pA || !pB) { resultEl.textContent = '未找到「' + (!pA ? nameA : nameB) + '」'; resultEl.style.color = 'var(--accent-red)'; return; }
-  var genA = parseInt(pA.generation_num) || 0;
-  var genB = parseInt(pB.generation_num) || 0;
-  var diff = Math.abs(genA - genB);
-  var elder = genA < genB ? pA.name : pB.name;
-  var younger = genA < genB ? pB.name : pA.name;
-  var genDiff = genA < genB ? genB - genA : genA - genB;
-  var relation = '';
-  if (diff === 0) relation = '同辈（兄弟/姐妹）';
-  else if (diff === 1) relation = elder + ' 是 ' + younger + ' 的父/母辈';
-  else if (diff === 2) relation = elder + ' 是 ' + younger + ' 的祖父母辈';
-  else relation = elder + ' 是 ' + younger + ' 的上' + diff + '世祖辈';
-  resultEl.innerHTML = '<span style="color:var(--accent-orange);font-weight:600;">' + escapeHtml(pA.name) + '</span>（第' + genA + '世） vs <span style="color:var(--accent-orange);font-weight:600;">' + escapeHtml(pB.name) + '</span>（第' + genB + '世）<br><span style="font-weight:600;">相差 ' + diff + ' 代 · ' + relation + '</span>';
-  resultEl.style.color = 'var(--text-primary)';
-  // Also locate both in tree
-  var cardA = document.querySelector('.tree-html-card[data-id="' + pA.id + '"]');
-  var cardB = document.querySelector('.tree-html-card[data-id="' + pB.id + '"]');
-  if (cardA) cardA.classList.add('highlight-name');
-  if (cardB) cardB.classList.add('highlight-name');
-}
-
-function treeAutoLocate(personId) {
-  var data = getGenealogyData();
-  var person = null;
-  for (var i = 0; i < data.length; i++) { if (data[i].id === personId) { person = data[i]; break; } }
-  if (!person) return;
-  var statusEl = document.getElementById('tree-search-status');
-
-  // Expand tree (clear collapse state, but DON'T reset the current branch filter)
-  localStorage.setItem('xie_tree_collapsed', '[]');
-  treePanX = 0;
-  treePanY = 0;
-  treeScale = 0.7;
-  applyTreeTransformSVG();
-
+  container.innerHTML = '<div class="tree-loading"><span class="tree-loading-spinner"></span> 世系图加载中…</div>';
   setTimeout(function() {
-    // Dim ALL cards first
-    var allCards = document.querySelectorAll('.tree-html-card');
-    for (var i = 0; i < allCards.length; i++) {
-      allCards[i].style.opacity = '0.15';
-      allCards[i].style.transition = 'opacity 0.5s';
+    var data = getGenealogyData();
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div style="padding:60px;text-align:center;color:var(--text-tertiary);">暂无数据</div>';
+      return;
     }
-    // Brighten the target card
-    var card = document.querySelector('.tree-html-card[data-id="' + personId + '"]');
-    if (card) {
-      scrollToCardSVG(card);
-      card.style.opacity = '1';
-      card.style.transform = 'scale(1.3)';
-      card.style.transformOrigin = 'center center';
-      card.style.transition = 'all 0.5s cubic-bezier(0.34,1.56,0.64,1)';
-      card.classList.add('highlight-name');
-      var inner = card.querySelector('.card-name');
-      if (inner) {
-        inner.style.animation = 'hlFlash 0.6s ease-in-out 8';
-      }
+    var rootIds = [];
+    if (_currentView === 'all' || _currentView === 'all') {
+      rootIds = [1];
+    } else if (_currentView === '后枫槎') {
+      data.forEach(function(p) { if (p.name.indexOf('攒【后枫槎】') >= 0) rootIds.push(p.id); });
+    } else if (_currentView === '前枫槎') {
+      data.forEach(function(p) { if (p.name.indexOf('撰【前枫槎】') >= 0) rootIds.push(p.id); });
     }
-    // Auto restore after 6 seconds
-    setTimeout(function() {
-      for (var i = 0; i < allCards.length; i++) {
-        allCards[i].style.opacity = '';
-        allCards[i].style.transition = '';
-      }
-      if (card) { card.style.transform = ''; card.style.transition = ''; }
-    }, 6000);
-    if (statusEl) { statusEl.textContent = person.name; statusEl.style.background = '#cc0000'; statusEl.style.color = '#fff'; statusEl.style.padding = '2px 8px'; statusEl.style.borderRadius = '4px'; statusEl.style.fontWeight = '700'; setTimeout(function() { statusEl.textContent = ''; statusEl.style.background = ''; }, 4000); }
-  }, 400);
+    if (rootIds.length === 0) { container.innerHTML = '<div style="padding:60px;text-align:center;color:var(--text-tertiary);">未找到该分支</div>'; return; }
+    rootIds.forEach(function(id) { _expanded[id] = true; });
+    if (_currentView === 'all') {
+      getChildren(rootIds[0], data).forEach(function(k) { _expanded[k.id] = true; });
+    }
+    var html = '<div class="tree-nodes">';
+    rootIds.forEach(function(id) { html += buildNode(data, id, 0, true); });
+    html += '</div>';
+    container.innerHTML = html;
+  }, 10);
 }
 
-
-
-function locateInTree(personId) {
-  var overlay = document.querySelector('.person-overlay');
-  if (overlay) overlay.remove();
-
-  // Find the card
-  var card = document.querySelector('.tree-html-card[data-id="' + personId + '"]');
-  if (!card) {
-    expandAllTree();
-    setTimeout(function() {
-      var card2 = document.querySelector('.tree-html-card[data-id="' + personId + '"]');
-      if (card2) scrollToCardSVG(card2);
-    }, 200);
-    return;
-  }
-  scrollToCardSVG(card);
-}
-
-
-function exportTreePNG() {
-  // Show export options menu
-  var menu = document.createElement('div');
-  menu.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg-primary);border:1px solid var(--glass-border);border-radius:14px;padding:24px;z-index:99999;box-shadow:0 20px 60px rgba(0,0,0,0.2);min-width:280px;text-align:center;';
-  menu.innerHTML = '<h3 style="margin-bottom:12px;font-family:var(--font-title);">📥 导出族谱</h3>' +
-    '<button class="btn btn-primary ripple-btn" onclick="this.parentElement.remove();exportTreeSVG()" style="display:block;width:100%;margin-bottom:8px;">导出世系图 (SVG)</button>' +
-    '<button class="btn btn-primary ripple-btn" onclick="this.parentElement.remove();exportFullData()" style="display:block;width:100%;margin-bottom:8px;">导出全部数据 (JSON)</button>' +
-    '<button class="btn btn-outline ripple-btn" onclick="this.parentElement.remove()" style="display:block;width:100%;">取消</button>' +
-    '<div style="font-size:11px;color:var(--text-tertiary);margin-top:8px;">SVG：世系树状图<br>JSON：全部族谱数据</div>';
-  document.body.appendChild(menu);
-}
-
-function exportTreeSVG() {
-  var container = document.getElementById('tree-container');
-  var svg = container.querySelector('svg');
-  if (!svg) { alert('世系图尚未加载'); return; }
-  var clone = svg.cloneNode(true);
-  // Inline all CSS
-  var cssText = '';
-  for (var si = 0; si < document.styleSheets.length; si++) {
-    try {
-      var rules = document.styleSheets[si].cssRules || document.styleSheets[si].rules;
-      for (var ri = 0; ri < rules.length; ri++) {
-        var css = rules[ri].cssText;
-        if (css.indexOf('.card-') >= 0 || css.indexOf('.tree-') >= 0 || css.indexOf('.ancestor-') >= 0 || css.indexOf('.tree-svg') >= 0) cssText += css + '\n';
-      }
-    } catch(e) {}
-  }
-  var styles = document.querySelectorAll('style');
-  for (var si2 = 0; si2 < styles.length; si2++) {
-    var txt = styles[si2].textContent;
-    if (txt.indexOf('.card-') >= 0 || txt.indexOf('.tree-') >= 0) cssText += txt + '\n';
-  }
-  var defs = document.createElementNS('http://www.w3.org/2000/svg', 'style');
-  defs.textContent = cssText;
-  clone.insertBefore(defs, clone.firstChild);
-  // White background
-  var bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-  bgRect.setAttribute('width', '100%'); bgRect.setAttribute('height', '100%');
-  bgRect.setAttribute('fill', '#ffffff'); bgRect.setAttribute('x', '0'); bgRect.setAttribute('y', '0');
-  clone.insertBefore(bgRect, clone.firstChild);
-  // Export as SVG
-  var svgData = '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(clone);
-  var blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'xie-family-tree-' + new Date().toISOString().slice(0,10) + '.svg';
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-
-function exportFullData() {
+function showDetail(id) {
+  var data = getGenealogyData();
+  var p = null;
+  for (var i = 0; i < data.length; i++) { if (data[i].id === id) { p = data[i]; break; } }
+  if (!p) return;
+  showPersonDetail(id, data);
+}function exportFullData() {
   var data = getGenealogyData();
   if (!data || !data.length) { alert('无数据可导出'); return; }
   // Create a readable text report
