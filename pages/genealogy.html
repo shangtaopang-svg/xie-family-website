@@ -164,12 +164,6 @@ function showDetail(id) {
   var p = null;
   for (var i = 0; i < data.length; i++) { if (data[i].id === id) { p = data[i]; break; } }
   if (!p) return;
-  alert(p.name + '
-第' + p.generation_num + '世
-' + (p.branch||''));
-}
-
-switchView('all');
-</script>
-</body>
+alert(p.name + ' 第' + p.generation_num + '世 ' + (p.branch||''));}switchView('all');
+</script></body>
 </html>
