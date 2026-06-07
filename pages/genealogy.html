@@ -12,7 +12,7 @@
   <script defer src="../js/i18n.js"></script>
   <script defer src="../js/file-store.js?v=3"></script>
   <script defer src="../js/supabase.js?v=3"></script>
-  <script defer src="../js/timeline.js?v=2"></script>
+  
   <link rel="manifest" href="../manifest.json">
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
 </head>
@@ -164,13 +164,7 @@
           <h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:17px;font-weight:500;margin:0;">🌳 世系图谱</h3>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
             <span style="font-size:12px;color:var(--text-tertiary);">点击姓名查看详情</span>
-            <button class="btn btn-sm" onclick="treeZoomIn()" title="放大">🔍+</button>
-            <button class="btn btn-sm" onclick="treeZoomOut()" title="缩小">🔍−</button>
-            <button class="btn btn-sm" onclick="treeZoomReset()" title="重置缩放">1:1</button>
-            <span id="tree-zoom-level" style="font-size:11px;color:var(--text-tertiary);min-width:32px;text-align:center;">100%</span>
-            <button class="btn btn-sm" onclick="toggleTreeFullscreen()" title="全屏观看" style="background:var(--accent-orange-dim);border-color:var(--accent-orange);">⛶ 全屏</button>
-            <button class="btn btn-sm" onclick="exportTreePNG()" title="导出为图片" style="background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3);">📥 导出</button>
-            <span style="width:1px;height:18px;background:var(--divider);margin:0 4px;"></span>
+            <span style="font-size:12px;color:var(--text-tertiary);">点击姓名查看详情 | 点击 ▶ 展开子女</span>
           </div>
         </div>
         <!-- 视图切换标签 -->
@@ -624,28 +618,7 @@ function cleanupHScroll() {
   }
 }
 
-// Override zoom buttons for horizontal mode
-(function() {
-  var _zi = treeZoomIn, _zo = treeZoomOut, _zr = treeZoomReset;
-  treeZoomIn = function() {
-    if (_treeLayoutMode === 'horizontal') {
-      _hScale = Math.min(30, _hScale + 0.3); applyHTransform();
-      document.getElementById('tree-zoom-level').textContent = Math.round(_hScale * 100) + '%';
-    } else _zi();
-  };
-  treeZoomOut = function() {
-    if (_treeLayoutMode === 'horizontal') {
-      _hScale = Math.max(0.3, _hScale - 0.2); applyHTransform();
-      document.getElementById('tree-zoom-level').textContent = Math.round(_hScale * 100) + '%';
-    } else _zo();
-  };
-  treeZoomReset = function() {
-    if (_treeLayoutMode === 'horizontal') {
-      _hScale = 1; _hPanX = 0; _hPanY = 0; applyHTransform();
-      document.getElementById('tree-zoom-level').textContent = '100%';
-    } else _zr();
-  };
-})();
+
 
 function toggleTreeLayout() {
   var v = document.getElementById('tree-scroll-container');
