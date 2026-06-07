@@ -518,6 +518,21 @@ function initCarousel() {
     dot.addEventListener('click', function() { goToCarousel(parseInt(this.getAttribute('data-index'))); });
     dots.appendChild(dot);
   }
+  // Touch/swipe support for mobile
+  var startX = 0, startY = 0;
+  track.addEventListener('touchstart', function(e) {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    stopAutoPlay();
+  }, { passive: true });
+  track.addEventListener('touchend', function(e) {
+    var dx = e.changedTouches[0].clientX - startX;
+    var dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+      if (dx > 0) moveCarousel(-1); else moveCarousel(1);
+    }
+    startAutoPlay();
+  }, { passive: true });
   startAutoPlay();
 }
 
