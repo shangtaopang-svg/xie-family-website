@@ -2280,7 +2280,8 @@ function locateInTree(personId) {
     tbody.innerHTML = tableHtml;
 
     // Tree — simple expandable list (instant)
-    renderSimpleTree(data);
+    document.getElementById("tree-container").innerHTML = '<div class="tree-loading"><span class="tree-loading-spinner"></span> 世系图加载中…</div>';
+    setTimeout(function() { renderTreeSVG(data); }, 10);
 
     // Fade in
     document.getElementById('genealogy-generation-chart').style.opacity = '1';
