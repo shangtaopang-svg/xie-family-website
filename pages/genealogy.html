@@ -2304,6 +2304,8 @@ function toggleTreeFullscreen() {
     // Enter fullscreen
     section.classList.add('genealogy-tree-section-fullscreen');
     document.body.style.overflow = 'hidden';
+    // Try native browser fullscreen for immersive view
+    try { if (section.requestFullscreen) section.requestFullscreen(); } catch(e) {}
     // Show close button
     var closeBtn = document.getElementById('fs-close-btn');
     if (closeBtn) closeBtn.style.display = 'flex';
@@ -2312,21 +2314,24 @@ function toggleTreeFullscreen() {
       requestAnimationFrame(function() {
         var container = document.getElementById('tree-scroll-container');
         if (container) {
-          var svg = container.querySelector('svg');
-          if (svg) {
-            var vb = svg.getAttribute('viewBox').split(' ').map(Number);
-            var cw = container.clientWidth || window.innerWidth;
-            var ch = container.clientHeight || window.innerHeight;
-            if (cw > 0 && ch > 0) {
-              var pad = 40;
-              var sx = (cw - pad) / vb[2];
-              var sy = (ch - pad) / vb[3];
-              treeScale = Math.min(sx, sy, 3);
-              if (treeScale < 0.3) treeScale = 0.3;
-              treePanX = (cw - vb[2] * treeScale) / 2;
-              treePanY = (ch - vb[3] * treeScale) / 2;
-              applyTreeTransformSVG();
-            }
+          var cards = container.querySelectorAll('.tree-html-card');
+          var cw = container.clientWidth || window.innerWidth;
+          var ch = container.clientHeight || window.innerHeight;
+          if (cards.length > 0 && cw > 0 && ch > 0) {
+            var mnX=Infinity,mxX=-Infinity,mnY=Infinity,mxY=-Infinity;
+            cards.forEach(function(c) {
+              var left = parseInt(c.style.left) || 0;
+              var top = parseInt(c.style.top) || 0;
+              if (left < mnX) mnX = left; if (left > mxX) mxX = left;
+              if (top < mnY) mnY = top; if (top > mxY) mxY = top;
+            });
+            var treeW = (mxX - mnX) + 160, treeH = (mxY - mnY) + 100, pad = 30;
+            var sx = (cw - pad) / treeW, sy = (ch - pad) / treeH;
+            treeScale = Math.min(sx, sy, 5);
+            if (treeScale < 0.05) treeScale = 0.05;
+            treePanX = (cw - treeW * treeScale) / 2 - mnX * treeScale;
+            treePanY = (ch - treeH * treeScale) / 2 - mnY * treeScale;
+            applyTreeTransformSVG();
           }
         }
       });
