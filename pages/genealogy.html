@@ -882,8 +882,8 @@ function collapseAllTree() {
 }
 
 // ===== SVG Zoom & Pan =====
-function treeZoomIn() { if (treeScale < 30) { treeScale = Math.min(30, treeScale + 0.5); applyTreeTransformSVG(); } }
-function treeZoomOut() { if (treeScale > 0.05) { treeScale = Math.max(0.05, treeScale - 0.15); applyTreeTransformSVG(); } }
+function treeZoomIn() { if (treeScale < 30) { treeScale = Math.min(30, treeScale * 1.4); applyTreeTransformSVG(); } }
+function treeZoomOut() { if (treeScale > 0.02) { treeScale = Math.max(0.02, treeScale * 0.7); applyTreeTransformSVG(); } }
 function treeZoomReset() { treeScale = 1; treePanX = 0; treePanY = 0; applyTreeTransformSVG(); }
 
 function applyTreeTransformSVG() {
@@ -1192,7 +1192,7 @@ function setupHScroll() {
     var r = sc.getBoundingClientRect();
     var mx = e.clientX - r.left, my = e.clientY - r.top;
     var f = e.deltaY < 0 ? 1.10 : 0.90;
-    var ns = Math.max(0.05, Math.min(30, _hScale * f));
+    var ns = Math.max(0.02, Math.min(30, _hScale * f));
     _hPanX = mx - (mx - _hPanX) * (ns / _hScale);
     _hPanY = my - (my - _hPanY) * (ns / _hScale);
     _hScale = ns;
@@ -1441,7 +1441,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var mx = e.clientX - rect.left;
     var my = e.clientY - rect.top;
     var factor = e.deltaY < 0 ? 1.10 : 0.90;
-    var newScale = Math.max(0.05, Math.min(30, treeScale * factor));
+    var newScale = Math.max(0.02, Math.min(30, treeScale * factor));
     // Zoom towards mouse position using CSS pixel coordinates
     treePanX = mx - (mx - treePanX) * (newScale / treeScale);
     treePanY = my - (my - treePanY) * (newScale / treeScale);
@@ -2328,7 +2328,7 @@ function toggleTreeFullscreen() {
             var treeW = (mxX - mnX) + 160, treeH = (mxY - mnY) + 100, pad = 30;
             var sx = (cw - pad) / treeW, sy = (ch - pad) / treeH;
             treeScale = Math.min(sx, sy, 5);
-            if (treeScale < 0.05) treeScale = 0.05;
+            if (treeScale < 0.02) treeScale = 0.02;
             treePanX = (cw - treeW * treeScale) / 2 - mnX * treeScale;
             treePanY = (ch - treeH * treeScale) / 2 - mnY * treeScale;
             applyTreeTransformSVG();
