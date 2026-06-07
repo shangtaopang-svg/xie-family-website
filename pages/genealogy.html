@@ -2094,6 +2094,23 @@ function locateInTree(personId) {
       return;
     }
 
+    // Check if they are spouses
+    function isSpouse(a, b) {
+      if (a.spouse_ids) {
+        var names = a.spouse_ids.toString().split(',').map(function(n){return n.trim();}).filter(function(n){return n;});
+        for (var i = 0; i < names.length; i++) {
+          if (names[i] === b.name) return true;
+        }
+      }
+      return false;
+    }
+    if (isSpouse(p1, p2) || isSpouse(p2, p1)) {
+      resultEl.style.display = 'block';
+      pathEl.style.display = 'none';
+      resultEl.innerHTML = '<div style="padding:20px;background:var(--glass-bg);border-radius:12px;text-align:center;"><div style="font-size:28px;font-weight:700;color:#ef4444;margin-bottom:8px;">💑 夫妻关系</div><div style="font-size:14px;color:var(--text-secondary);">' + escapeHtml(p1.name) + ' 与 ' + escapeHtml(p2.name) + ' 是夫妻</div></div>';
+      return;
+    }
+
     var a1 = findAncestors(p1, data);
     var a2 = findAncestors(p2, data);
 
