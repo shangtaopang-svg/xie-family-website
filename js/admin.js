@@ -471,7 +471,16 @@ function buildAdminTreeHtml(data) {
 
   function renderPerson(person) {
     var html = '<div class="apt-person">';
-    html += '<div class="apt-card ' + (person.gender === '男' ? 'apt-male' : 'apt-female') + '" onclick="showEditForm(\'genealogy\',' + person.id + ')" title="点击编辑">';
+    var isRuzhui = person.name.indexOf('入赘') >= 0 || person.name.indexOf('女婿') >= 0;
+    var ruzhuiPartner = false;
+    if (person.spouse_ids) {
+      var spN = person.spouse_ids.toString().split(',').map(function(n){return n.trim();}).filter(function(n){return n;});
+      for (var si = 0; si < spN.length; si++) { if (spN[si].indexOf('入赘') >= 0 || spN[si].indexOf('女婿') >= 0) { ruzhuiPartner = true; break; } }
+    }
+    var cClass = 'apt-card ' + (person.gender === '男' ? 'apt-male' : 'apt-female');
+    if (isRuzhui) cClass += ' apt-ruzhui';
+    if (ruzhuiPartner) cClass += ' apt-ruzhui-partner';
+    html += '<div class="' + cClass + '" onclick="showEditForm(\'genealogy\',' + person.id + ')" title="点击编辑">';
     html += '<div class="apt-card-inner">';
     html += '<div class="apt-card-actions" onclick="event.stopPropagation();">';
     html += '<button class="apt-btn-add" onclick="showAddChildForm(' + person.id + ')" title="添加子女">+</button>';
@@ -689,6 +698,8 @@ function renderGenealogy(area) {
     '.apt-btn-del{background:#e74c3c;color:#fff;}' +
     '.apt-card:hover{border-color:var(--accent-orange);box-shadow:0 2px 8px rgba(251,146,60,0.12);transform:translateY(-1px);}' +
     '.apt-male{border-left:3px solid #4a9eff;}.apt-female{border-left:3px solid #ff6b9d;}' +
+    '.apt-ruzhui{border:2px solid #ef4444 !important;background:rgba(239,68,68,0.08) !important;}' +
+    '.apt-ruzhui-partner{border:2px solid #f97316 !important;background:rgba(249,115,22,0.06) !important;}' +
     '.apt-name{font-size:15px;font-weight:600;color:var(--text-primary);white-space:nowrap;}' +
     '.apt-adopted-badge{display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#e74c3c;border-radius:3px;padding:0 5px;margin-right:4px;vertical-align:middle;line-height:16px;}' +
     '.apt-meta{font-size:11px;color:var(--text-tertiary);margin-top:2px;}' +
