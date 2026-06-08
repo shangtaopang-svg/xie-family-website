@@ -1010,9 +1010,22 @@ function renderGenealogyFieldHtml(mod, m, key, item) {
       if (allPeople[gi].gender === '男') males.push(allPeople[gi]);
     }
     males.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0) || (a.name || '').localeCompare(b.name || ''); });
-    for (var gi2 = 0; gi2 < males.length; gi2++) {
+    var maxOpt = Math.min(males.length, 500);
+    for (var gi2 = 0; gi2 < maxOpt; gi2++) {
       var sel = currentId === males[gi2].id;
-      html += '<option value="' + males[gi2].id + '"' + (sel ? ' selected' : '') + '>[' + (males[gi2].generation_num || '?') + '世] ' + escapeHtml(males[gi2].name) + (males[gi2].spouse_ids ? ' 配:' + escapeHtml(males[gi2].spouse_ids.toString().split(',').map(function(n){return n.trim();}).filter(function(n){return n;}).join('/')) : '') + '</option>';
+      html += '<option value="' + males[gi2].id + '"' + (sel ? ' selected' : '') + '>[' + (males[gi2].generation_num || '?') + '世] ' + escapeHtml(males[gi2].name) + '</option>';
+    }
+    if (males.length > 500) {
+      html += '<option disabled style="font-size:11px;color:var(--text-tertiary);">⋯ 共' + males.length + '人，仅显示前500人 ⋯</option>';
+    }
+    if (currentId && !males.slice(0,500).some(function(m){return m.id===currentId;})) {
+      for (var ci2 = 0; ci2 < allPeople.length; ci2++) {
+        if (allPeople[ci2].id === currentId) {
+          html += '<option disabled style="font-size:11px;color:var(--text-tertiary);border-top:1px solid var(--divider);">─ 当前选择 ─</option>';
+          html += '<option value="' + currentId + '" selected>[' + (allPeople[ci2].generation_num || '?') + '世] ' + escapeHtml(allPeople[ci2].name) + '</option>';
+          break;
+        }
+      }
     }
     if (currentId) {
       var inList = males.some(function(m) { return m.id === currentId; });
