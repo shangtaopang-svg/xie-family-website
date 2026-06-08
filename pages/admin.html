@@ -137,6 +137,7 @@
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
   <!-- Inline critical admin function — works even if external JS fails to load -->
   <script>
+    if (localStorage.getItem("xie_admin_authed") === "true") { var lb=document.getElementById("admin-login-box"); var pn=document.getElementById("admin-panel"); if(lb)lb.style.display="none"; if(pn)pn.classList.add("active"); if(typeof renderModule==="function")renderModule(currentModule||"members"); if(typeof updateStats==="function")updateStats(); if(typeof loadFromSupabase==="function")loadFromSupabase(); }
   window.adminLogin = function adminLogin() {
     var pwd = document.getElementById('admin-password');
     var error = document.getElementById('admin-error');
