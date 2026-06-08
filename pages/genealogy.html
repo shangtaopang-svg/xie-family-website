@@ -372,6 +372,15 @@ function getPersonNameById(id, data) {
     }
     return null;
   }
+  function calcAge(birth, death) {
+    if (!birth || !death) return '';
+    var by = parseInt(birth); if (isNaN(by)) { var m = birth.match(/(\d{3,4})年/); if (m) by = parseInt(m[1]); }
+    var dy = parseInt(death); if (isNaN(dy)) { var m = death.match(/(\d{3,4})年/); if (m) dy = parseInt(m[1]); }
+    if (isNaN(by) || isNaN(dy)) return '';
+    var age = dy - by;
+    if (age > 0 && age < 150) return '，享年' + age + '岁';
+    return '';
+  }
 
   function getChildren(personId, data) {
     return data.filter(function(p) {
@@ -1552,7 +1561,7 @@ document.addEventListener('DOMContentLoaded', function() {
     html += '<div>性别：' + (person.gender || '—') + '</div>';
     if (person.birth_date) html += '<div>出生：' + person.birth_date + '</div>';
     if (person.death_date) html += '<div>逝世：' + person.death_date + '</div>';
-    html += '<div>状态：' + (person.is_alive === '是' ? '在世' : '已故') + '</div>';
+    html += '<div>状态：' + (person.is_alive === '是' ? '在世' : '已故' + calcAge(person.birth_date, person.death_date)) + '</div>';
     if (person.adopted && person.adopted !== '否') html += '<div>过继：' + person.adopted + '</div>';
     if (person.address) html += '<div>居住地：' + escapeHtml(person.address) + '</div>';
     if (person.father_id) {
