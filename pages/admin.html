@@ -184,6 +184,13 @@
     };
     xhr.send(JSON.stringify({ password: pwd.value }));
   };
+  // Hash routing: admin.html#genealogy-{id} opens edit form directly
+  if (location.hash && location.hash.indexOf('genealogy-') >= 0) {
+    var id = parseInt(location.hash.replace('#genealogy-', ''));
+    setTimeout(function() {
+      if (typeof showEditForm === 'function') showEditForm('genealogy', id);
+    }, 500);
+  }
   </script>
   <script defer src="../js/main.js?v=9"></script>
   <script defer src="../js/admin.js?v=15"></script>
