@@ -228,7 +228,7 @@
     }
 
     // ===== State =====
-    var _showAliveOnly = true;
+    var _showAliveOnly = false;
     var _genFilter = '';
     var _searchFilter = '';
 
@@ -569,6 +569,10 @@
         if (spouseStr) {
           html += '<div style="font-size:12px;color:var(--text-secondary);padding-top:8px;border-top:1px solid var(--divider);">配：' + escapeHtml(spouseStr) + '</div>';
         }
+        html += '<div style="margin-top:8px;padding-top:6px;border-top:1px solid var(--divider);display:flex;gap:6px;">';
+        html += '<span style="font-size:11px;color:var(--text-tertiary);">' + (p.birth_date || '') + (p.death_date ? ' ~ ' + p.death_date : '') + '</span>';
+        html += '<span style="margin-left:auto;"><a href="admin.html#genealogy-' + p.id + '" onclick="event.stopPropagation();" style="font-size:11px;color:var(--accent-orange);text-decoration:none;padding:2px 8px;border:1px solid var(--accent-orange);border-radius:4px;">✏️ 编辑</a></span>';
+        html += '</div>';
         html += '</div>';
       });
       container.innerHTML = html;
