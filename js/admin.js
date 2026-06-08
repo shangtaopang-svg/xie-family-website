@@ -1541,12 +1541,13 @@ function saveForm(mod, editId) {
 
   var overlay = document.querySelector('.admin-modal-overlay');
   if (overlay) overlay.remove();
-  // Small delay to let file save complete
-  setTimeout(function() {
-    renderModule(mod);
-    updateStats();
-    showToast('已保存');
-  }, 100);
+  showToast('已保存');
+  // Refresh data in background but don't re-render full tree
+  if (mod !== 'genealogy') {
+    setTimeout(function() { renderModule(mod); updateStats(); }, 100);
+  } else {
+    setTimeout(function() { if (typeof updateStats === 'function') updateStats(); }, 100);
+  }
 }
 
 function deleteItem(mod, id) {
