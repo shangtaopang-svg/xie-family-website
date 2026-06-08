@@ -2237,10 +2237,26 @@ function locateInTree(personId) {
   function renderGenealogyPageSVG() {
     var data = getGenealogyData();
     if (!data || data.length === 0) { return; }
-    // Show loading state immediately
+    // Stats
+    var total = data.length;
+    var gens = {}, branches = {}, males = 0, females = 0, genMax = 0;
+    data.forEach(function(p) {
+      var g = p.generation_num || 0; gens[g] = (gens[g]||0)+1;
+      if (p.branch && p.branch !== '—') branches[p.branch] = (branches[p.branch]||0)+1;
+      if (p.gender === '男') males++; else if (p.gender === '女') females++;
+      if (parseInt(g) > genMax) genMax = parseInt(g);
+    });
+    var statsEl = document.getElementById('stats-container');
+    if (statsEl) statsEl.innerHTML = ''
+      + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--accent-orange);">' + total + '</div><div style="font-size:11px;color:var(--text-tertiary);">总人数</div></div>'
+      + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + genMax + '</div><div style="font-size:11px;color:var(--text-tertiary);">世代</div></div>'
+      + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + Object.keys(branches).length + '</div><div style="font-size:11px;color:var(--text-tertiary);">支系</div></div>'
+      + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + males + '</div><div style="font-size:11px;color:var(--text-tertiary);">男</div></div>'
+      + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + females + '</div><div style="font-size:11px;color:var(--text-tertiary);">女</div></div>';
+
+    // Show loading for tree
     var tc = document.getElementById('tree-container');
     if (tc) tc.innerHTML = '<div class="tree-loading"><span class="tree-loading-spinner"></span> 世系图加载中…</div>';
-    // Render tree deferred
     renderSimpleTree(data);
     // Fade in sections
     var sections = ['genealogy-generation-chart','genealogy-stats','genealogy-timeline','genealogy-search-section','genealogy-relation-section','genealogy-tree-section','genealogy-table-section'];
