@@ -15,7 +15,7 @@ const MODULES = {
       { key: 'generation_num', label: '世代数', type: 'number', required: true, help: '始祖为1，依次递增' },
       { key: 'name', label: '姓名', type: 'text', required: true },
       { key: 'gender', label: '性别', type: 'select', options: ['男', '女'], required: true },
-      { key: 'generation', label: '字辈', type: 'text', placeholder: '如：世、代、文、明' },
+      { key: 'generation', label: '字号', type: 'text', placeholder: '如：字成欢' },
       { key: 'father_id', label: '父亲ID', type: 'number', placeholder: '填写父亲的编号，始祖留空' },
       { key: 'mother_id', label: '母亲ID', type: 'number', placeholder: '填写母亲的编号' },
       { key: 'spouse_ids', label: '配偶', type: 'text', placeholder: '直接输入姓名，多个用逗号分隔' },
@@ -49,7 +49,7 @@ const MODULES = {
     fields: [
       { key: 'name', label: '姓名', type: 'text', required: true },
       { key: 'branch', label: '支系', type: 'select', options: ['长房', '二房', '三房', '四房'], required: true },
-      { key: 'generation', label: '字辈', type: 'select', options: ['世', '代', '文', '明', '昌', '盛'], required: true },
+      { key: 'generation', label: '字号', type: 'select', options: ['世', '代', '文', '明', '昌', '盛'], required: true },
       { key: 'avatar', label: '头像', type: 'select', options: ['👴', '👵', '👨', '👩', '🧑', '👧'] },
       { key: 'note', label: '备注', type: 'text' }
     ],
