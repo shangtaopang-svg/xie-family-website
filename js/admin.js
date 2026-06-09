@@ -1168,7 +1168,7 @@ function showForm(mod, m, item) {
     }
 
     html += '<div style="margin:12px 0;">';
-    html += '<button type="button" class="btn btn-sm" onclick="toggleAdvancedFields(this)" style="width:100%;padding:8px;font-size:12px;color:var(--text-tertiary);background:var(--glass-bg);border:1px dashed var(--glass-border);border-radius:8px;cursor:pointer;">📂 高级信息（生卒、支系、简介等）</button>';
+    html += '<button type="button" class="btn btn-sm" id="btn-advanced-toggle" style="width:100%;padding:8px;font-size:12px;color:var(--text-tertiary);background:var(--glass-bg);border:1px dashed var(--glass-border);border-radius:8px;cursor:pointer;">📂 高级信息（生卒、支系、简介等）</button>';
     html += '</div>';
 
     html += '<div id="genealogy-advanced-fields" style="display:none;">';
@@ -1186,6 +1186,14 @@ function showForm(mod, m, item) {
     box.innerHTML = html;
     overlay.appendChild(box);
     document.body.appendChild(overlay);
+    var advBtn = document.getElementById('btn-advanced-toggle');
+    if (advBtn) advBtn.onclick = function() {
+      var div = document.getElementById('genealogy-advanced-fields');
+      if (!div) return;
+      var isHidden = div.style.display === 'none';
+      div.style.display = isHidden ? 'block' : 'none';
+      advBtn.textContent = isHidden ? '📂 收起高级信息' : '📂 高级信息（生卒、支系、简介等）';
+    };
     // Trigger mother field update on next tick
     setTimeout(function() { if (typeof genealogyUpdateMother === 'function') genealogyUpdateMother(); }, 50);
     return;
