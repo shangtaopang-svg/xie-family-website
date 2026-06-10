@@ -240,6 +240,12 @@
       return false;
     }
 
+    /** 清理显示名称：移除入赘、女婿等隐私标记 */
+    function cleanDisplayName(name) {
+      if (!name) return name;
+      return name.replace(/[（(][^)）]*(入赘|女婿)[^)）]*[)）]/g, '').replace(/\/入赘[^）)]*/, '').trim();
+    }
+
     // ===== State =====
     var _showAliveOnly = false;
     var _genFilter = '';
@@ -417,7 +423,7 @@
       html += '<div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">';
       html += '<div style="font-size:36px;">' + (person.gender === '男' ? '👤' : '👩') + '</div>';
       html += '<div>';
-      html += '<h2 style="font-family:var(--font-title);color:var(--text-primary);font-size:20px;font-weight:600;">' + escapeHtml(person.name) + '</h2>';
+      html += '<h2 style="font-family:var(--font-title);color:var(--text-primary);font-size:20px;font-weight:600;">' + escapeHtml(cleanDisplayName(person.name)) + '</h2>';
       html += '<div style="font-size:12px;color:var(--text-tertiary);">';
       if (person.generation && person.generation !== '—') html += escapeHtml(person.generation) + '字辈 ';
       if (person.generation_num) html += '第' + person.generation_num + '世 ';
@@ -568,7 +574,7 @@
         html += '<div style="font-size:30px;">' + (isDeceased ? '🕊' : (p.gender === '男' ? '👤' : '👩')) + '</div>';
         html += '<div style="flex:1;min-width:0;">';
         html += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">';
-        html += '<span style="font-size:16px;font-weight:600;color:var(--text-primary);">' + escapeHtml(p.name) + '</span>';
+        html += '<span style="font-size:16px;font-weight:600;color:var(--text-primary);">' + escapeHtml(cleanDisplayName(p.name)) + '</span>';
         if (isDeceased) html += '<span style="font-size:10px;color:rgba(255,255,255,0.5);padding:1px 6px;border-radius:3px;background:rgba(0,0,0,0.3);font-weight:400;">已故</span>';
         else html += '<span style="font-size:10px;color:#ef4444;padding:1px 6px;border-radius:3px;background:rgba(220,38,38,0.15);font-weight:600;">在世</span>';
         if (p.adopted && p.adopted !== '否') html += '<span style="font-size:10px;background:var(--accent-orange-dim);color:var(--accent-orange);padding:1px 6px;border-radius:3px;font-weight:500;">団</span>';
