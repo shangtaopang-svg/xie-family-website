@@ -227,6 +227,19 @@
       return result;
     }
 
+    /** 判断是否入赘婚配（隐私数据，不在公共页面展示） */
+    function isRuzhuiRelated(person, data) {
+      if (!person) return false;
+      if (person.name.indexOf('入赘') >= 0 || person.name.indexOf('女婿') >= 0) return true;
+      if (person.spouse_ids) {
+        var names = person.spouse_ids.toString().split(',').map(function(n) { return n.trim(); }).filter(function(n) { return n; });
+        for (var si = 0; si < names.length; si++) {
+          if (names[si].indexOf('入赘') >= 0 || names[si].indexOf('女婿') >= 0) return true;
+        }
+      }
+      return false;
+    }
+
     // ===== State =====
     var _showAliveOnly = false;
     var _genFilter = '';
@@ -427,7 +440,7 @@
         if (mn) html += '<div>母亲：' + escapeHtml(mn) + '</div>';
       }
       var spNames = getSpouseNames(person.id, data).map(function(s) { return s.name; }).join('、');
-      if (spNames) html += '<div>配偶：' + escapeHtml(spNames) + '</div>';
+      if (spNames && !isRuzhuiRelated(person, data)) html += '<div>配偶：' + escapeHtml(spNames) + '</div>';
       html += '</div>';
 
       if (person.biography) {
@@ -543,7 +556,8 @@
       filtered.forEach(function(p) {
         var genStr = p.generation_num ? '第' + p.generation_num + '世' : '';
         var branchStr = (p.branch && p.branch !== '—') ? escapeHtml(p.branch) : '';
-        var spouseStr = getSpouseNames(p.id, data).map(function(s) { return s.name; }).join('、');
+        var isRuzhui = isRuzhuiRelated(p, data);
+        var spouseStr = isRuzhui ? '' : getSpouseNames(p.id, data).map(function(s) { return s.name; }).join('、');
         var hasBiography = p.biography && p.biography.trim() !== '';
 
         var isDeceased = p.is_alive !== '是';

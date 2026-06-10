@@ -601,7 +601,7 @@ function buildAdminTreeHtml(data) {
 function renderRuzhuiMarriage(area) {
   var html = '<div class="admin-module">';
   html += '<div class="admin-module-header">';
-  html += '<h3>🔒 入赘婚配（隐私数据）</h3>';
+  html += '<h3>💒 入赘婚配（隐私数据）</h3>';
   html += '</div>';
   html += '<p style="font-size:13px;color:var(--text-secondary);margin:0 0 16px 0;">以下为家族中入赘（女婿入赘）的夫妻关系</p>';
 
