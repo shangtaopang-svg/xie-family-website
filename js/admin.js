@@ -310,6 +310,12 @@ function autoRecordVersion(desc) {
 
 // ===== Render =====
 function renderModule(mod) {
+  if (mod === 'ruzhuimarry') {
+    var area = document.getElementById('admin-content-area');
+    if (!area) return;
+    renderRuzhuiMarriage(area);
+    return;
+  }
   var m = MODULES[mod];
   if (!m) return;
   var area = document.getElementById('admin-content-area');
@@ -587,6 +593,59 @@ function buildAdminTreeHtml(data) {
   }
   out += '</div>';
   return out;
+}
+
+/**
+ * 渲染入赘婚配列表（后台隐私数据，不公开）
+ */
+function renderRuzhuiMarriage(area) {
+  var ruzhuiData = [
+    { ruzhu: '金瑜',     origin: '本姓陈·一市下',  spouse: '聪林（三女）', gen: 162 },
+    { ruzhu: '施鹏',     origin: '杭州人',         spouse: '玮',          gen: 162 },
+    { ruzhu: '保岳',     origin: '本姓葛·白岩人',  spouse: '国芬',        gen: 160 },
+    { ruzhu: '王邦旭',   origin: '女婿入赘',       spouse: '开静（孝静）', gen: 163 },
+    { ruzhu: '张小兵',   origin: '女婿入赘',       spouse: '开蕾',        gen: 163 },
+    { ruzhu: '赵敏杰',   origin: '女婿/入赘',      spouse: '佳颖',        gen: 164 },
+    { ruzhu: '雪水',     origin: '前童人·入赘',    spouse: '聪芳',        gen: 162 }
+  ];
+
+  var html = '<div class="admin-module">';
+  html += '<div class="admin-module-header">';
+  html += '<h3>🔒 入赘婚配（隐私数据）</h3>';
+  html += '<span style="font-size:12px;color:var(--text-tertiary);">以下为家族中入赘（女婿入赘）的夫妻关系 · 仅管理员可见</span>';
+  html += '</div>';
+
+  // 统计
+  html += '<div class="apt-stats" style="margin-bottom:16px;">';
+  html += '<div class="apt-stat"><div class="apt-stat-nb">' + ruzhuiData.length + '</div><div class="apt-stat-lbl">入赘记录</div></div>';
+  html += '<div class="apt-stat"><div class="apt-stat-nb">' + ruzhuiData.filter(function(r){return r.origin.indexOf('女婿')>=0;}).length + '</div><div class="apt-stat-lbl">女婿入赘</div></div>';
+  html += '<div class="apt-stat"><div class="apt-stat-nb">' + ruzhuiData.filter(function(r){return r.origin.indexOf('女婿')<0;}).length + '</div><div class="apt-stat-lbl">其他入赘</div></div>';
+  html += '</div>';
+
+  // 表格
+  html += '<div class="admin-table-wrap"><table class="admin-table">';
+  html += '<thead><tr><th>👤 入赘方</th><th>原姓/籍贯</th><th style="width:30px;"></th><th>👩 配偶</th><th>世代</th></tr></thead><tbody>';
+
+  ruzhuiData.forEach(function(r) {
+    html += '<tr>';
+    html += '<td><strong>' + escapeHtml(r.ruzhu) + '</strong></td>';
+    html += '<td style="color:var(--text-secondary);font-size:12px;">' + escapeHtml(r.origin) + '</td>';
+    html += '<td style="text-align:center;color:var(--accent-orange);font-weight:600;">↔</td>';
+    html += '<td><strong>' + escapeHtml(r.spouse) + '</strong></td>';
+    html += '<td>' + r.gen + '世</td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+
+  // 说明
+  html += '<div style="margin-top:12px;padding:10px 14px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);border-radius:8px;font-size:11px;color:var(--text-tertiary);line-height:1.7;">';
+  html += '⚠️ 此数据仅限管理员查看，不在前端家族成员等公开页面显示。';
+  html += '如需补充或修改入赘记录，可编辑族谱数据中相关人员的姓名（标注入赘信息）。';
+  html += '</div>';
+
+  html += '</div>';
+  area.innerHTML = html;
 }
 
 function renderGenealogy(area) {
