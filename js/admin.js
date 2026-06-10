@@ -310,6 +310,12 @@ function autoRecordVersion(desc) {
 
 // ===== Render =====
 function renderModule(mod) {
+  if (mod === 'ruzhuimarry') {
+    var area = document.getElementById('admin-content-area');
+    if (!area) return;
+    renderRuzhuiMarriage(area);
+    return;
+  }
   var m = MODULES[mod];
   if (!m) return;
   var area = document.getElementById('admin-content-area');
@@ -587,6 +593,121 @@ function buildAdminTreeHtml(data) {
   }
   out += '</div>';
   return out;
+}
+
+/**
+ * 渲染入赘婚配列表（后台独立展示，不公开）
+ */
+function renderRuzhuiMarriage(area) {
+  var data = getData('genealogy');
+  data.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0); });
+
+  // 找出所有入赘相关人员
+  var ruzhuiList = [];
+  data.forEach(function(p) {
+    var isRuzhui = p.name.indexOf('入赘') >= 0 || p.name.indexOf('女婿') >= 0;
+    var partnerName = '';
+    if (p.spouse_ids) {
+      var spN = p.spouse_ids.toString().split(',').map(function(n){return n.trim();}).filter(function(n){return n;});
+      for (var si = 0; si < spN.length; si++) {
+        if (spN[si].indexOf('入赘') >= 0 || spN[si].indexOf('女婿') >= 0) {
+          partnerName = spN[si];
+          break;
+        }
+      }
+    }
+    if (isRuzhui || partnerName) {
+      // 找到对应的谢氏配偶
+      var spouseName = '';
+      var spouseBranch = '—';
+      var spouseGen = '';
+      if (p.spouse_ids) {
+        var names = p.spouse_ids.toString().split(',').map(function(n){return n.trim();}).filter(function(n){return n;});
+        names.forEach(function(nm) {
+          if (nm.indexOf('入赘') < 0 && nm.indexOf('女婿') < 0) {
+            spouseName = nm;
+          }
+        });
+        // 查找配偶的支系、世代等信息
+        if (spouseName) {
+          for (var si = 0; si < data.length; si++) {
+            if (data[si].name === spouseName) {
+              spouseBranch = data[si].branch || '—';
+              spouseGen = data[si].generation_num || '';
+              break;
+            }
+          }
+        }
+      }
+      // 对于配偶是入赘的情况（谢氏成员嫁给了入赘婿）
+      if (partnerName && !isRuzhui) {
+        spouseName = p.name;
+        spouseBranch = p.branch || '—';
+        spouseGen = p.generation_num || '';
+      }
+
+      ruzhuiList.push({
+        person: p,
+        isRuzhui: isRuzhui,
+        partnerName: partnerName,
+        spouseName: spouseName,
+        spouseBranch: spouseBranch,
+        spouseGen: spouseGen,
+        type: isRuzhui ? '入赘（男方入赘谢家）' : (partnerName ? '招赘（谢氏女招婿）' : '')
+      });
+    }
+  });
+
+  // 按世代排序
+  ruzhuiList.sort(function(a, b) {
+    return (a.person.generation_num || 0) - (b.person.generation_num || 0) || (a.person.name || '').localeCompare(b.person.name || '');
+  });
+
+  var html = '<div class="admin-module">';
+  html += '<div class="admin-module-header">';
+  html += '<h3>🔒 入赘婚配（隐私数据）</h3>';
+  html += '<span style="font-size:12px;color:var(--text-tertiary);">共 ' + ruzhuiList.length + ' 条记录 · 仅管理员可见</span>';
+  html += '</div>';
+
+  if (ruzhuiList.length === 0) {
+    html += '<div class="empty-state"><p style="text-align:center;padding:40px;color:var(--text-tertiary);">暂无入赘婚配记录</p></div>';
+  } else {
+    // 统计概要
+    html += '<div class="apt-stats" style="margin-bottom:16px;">';
+    html += '<div class="apt-stat"><div class="apt-stat-nb">' + ruzhuiList.length + '</div><div class="apt-stat-lbl">入赘记录</div></div>';
+    html += '<div class="apt-stat"><div class="apt-stat-nb">' + ruzhuiList.filter(function(r){return r.isRuzhui;}).length + '</div><div class="apt-stat-lbl">男方入赘</div></div>';
+    html += '<div class="apt-stat"><div class="apt-stat-nb">' + ruzhuiList.filter(function(r){return !r.isRuzhui;}).length + '</div><div class="apt-stat-lbl">谢氏招赘</div></div>';
+    html += '</div>';
+
+    // 表格
+    html += '<div class="admin-table-wrap"><table class="admin-table">';
+    html += '<thead><tr><th>类型</th><th>姓名</th><th>世代</th><th>原姓/籍贯</th><th>谢氏配偶</th><th>配偶支系</th><th>配偶世代</th><th style="width:90px;">操作</th></tr></thead><tbody>';
+
+    ruzhuiList.forEach(function(r) {
+      var p = r.person;
+      // 提取原姓和籍贯信息
+      var originInfo = '—';
+      var nameMatch = p.name.match(/[（(]([^)）]*)[)）]/);
+      if (nameMatch) originInfo = nameMatch[1];
+
+      var rowColor = r.isRuzhui ? 'rgba(239,68,68,0.06)' : 'rgba(249,115,22,0.06)';
+      html += '<tr style="background:' + rowColor + ';">';
+      html += '<td><span style="padding:2px 8px;border-radius:4px;font-size:11px;' + (r.isRuzhui ? 'background:rgba(239,68,68,0.15);color:#ef4444;' : 'background:rgba(249,115,22,0.15);color:#f97316;') + '">' + r.type + '</span></td>';
+      html += '<td><strong>' + escapeHtml(p.name) + '</strong></td>';
+      html += '<td>' + (p.generation_num || '—') + '世</td>';
+      html += '<td style="font-size:12px;color:var(--text-secondary);">' + escapeHtml(originInfo) + '</td>';
+      html += '<td><strong>' + escapeHtml(r.spouseName || '—') + '</strong></td>';
+      html += '<td>' + escapeHtml(r.spouseBranch) + '</td>';
+      html += '<td>' + (r.spouseGen || '—') + '世</td>';
+      html += '<td><button class="btn btn-sm" onclick="showEditForm(\'genealogy\',' + p.id + ')" style="font-size:11px;">✏️ 编辑</button></td>';
+      html += '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+  }
+
+  html += '</div>';
+  area.innerHTML = html;
 }
 
 function renderGenealogy(area) {
