@@ -136,4 +136,7 @@
       }
     }
   });
+  // Export functions globally for inline onclick use
+  window.openPhotoLightbox = openPhotoLightbox;
+  window.viewFullscreen = viewFullscreen;
 })();
