@@ -14,7 +14,7 @@
   function init() {
     container = document.getElementById('genealogy-overview-container');
     if(!container) return;
-    container.style.cssText='position:relative;overflow:hidden;cursor:grab;background:var(--bg-primary);border-radius:8px;';
+    container.style.cssText='position:relative;overflow:auto;cursor:grab;background:var(--bg-primary);border-radius:8px;';
 
     cv = document.createElement('canvas');
     cv.style.cssText='width:100%;height:100%;display:block;';
@@ -79,8 +79,8 @@
       var y=gens.indexOf(g)*ROW+ROW/2;
       list.forEach(function(p,i){
         var n=list.length;
-        var x=LEFT+(n>1?i/(n-1):0.5)*Math.max(800,n*50);
-        var w=Math.min(120, Math.max(50, 600/n));
+        var x=LEFT+(n>1?i/(n-1):0.5)*Math.max(1200,n*80);
+        var w=Math.min(160, Math.max(70, 1200/n));
         pos[p.id]={x:x,y:y,w:w,gen:g,name:p.name,branch:p.branch||'',hl:!!(p.highlight||/^(申伯|小四公|文杲公|攒公|撰公|彬公|乾公|谢安|谢玄|谢灵运|谢尚公|谢枋得|谢深甫)$/.test(p.name)),id:p.id};
       });
     });
@@ -144,15 +144,15 @@
         else if(p.branch&&p.branch.indexOf('前枫槎')>=0) col='#6366f1';
         else if(p.branch&&p.branch.indexOf('石马')>=0) col='#f59e0b';
 
-        var h2=26;
+        var h2=30;
         if(pp.hl){
           // Highlighted: larger card with bold name
           w=Math.max(w,80);
           ctx.shadowColor=col; ctx.shadowBlur=8;
           ctx.beginPath(); ctx.roundRect(x-w/2,y-h2/2,w,h2,6); ctx.fillStyle=col; ctx.fill();
           ctx.shadowBlur=0;
-          ctx.fillStyle='#fff'; ctx.font='bold 12px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-          var displayName=p.name.length>6?p.name.substring(0,5)+'..':p.name;
+          ctx.fillStyle='#fff'; ctx.font='bold 13px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+          var displayName=p.name.length>8?p.name.substring(0,7)+'..':p.name;
           ctx.fillText(displayName,x,y+1);
         } else {
           // Normal: smaller translucent card
@@ -160,8 +160,8 @@
           ctx.beginPath(); ctx.roundRect(x-w/2,y-h2/2,w,h2,4); ctx.fillStyle=col; ctx.fill();
           ctx.globalAlpha=1;
           if(w>50){
-            ctx.fillStyle='rgba(255,255,255,0.85)'; ctx.font='10px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-            var dn=p.name.length>8?p.name.substring(0,7)+'..':p.name;
+            ctx.fillStyle='rgba(255,255,255,0.85)'; ctx.font='12px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+            var dn=p.name.length>10?p.name.substring(0,9)+'..':p.name;
             ctx.fillText(dn,x,y+1);
           }
         }
