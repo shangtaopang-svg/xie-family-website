@@ -165,8 +165,13 @@
     ox=cx-(cx-ox)*ns/sc; oy=cy-(cy-oy)*ns/sc; sc=ns; draw();
   }
 
-  setTimeout(function t(){
-    if(typeof getGenealogyData==='function'){init();}
-    else setTimeout(t,500);
-  },800);
+  function boot(){
+    if(document.getElementById('genealogy-overview-container')&&typeof getGenealogyData==='function'){
+      try{init();}catch(e){console.error('[GenealogyOverview]',e);}
+    } else if(document.readyState!=='complete'){
+      setTimeout(boot,300);
+    }
+  }
+  if(document.readyState==='complete'||document.readyState==='interactive'){setTimeout(boot,100);}
+  else{document.addEventListener('DOMContentLoaded',function(){setTimeout(boot,100);});}
 })();
