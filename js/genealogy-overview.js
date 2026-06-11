@@ -7,7 +7,7 @@
 
   var cv, ctx, container, tip;
   var data = [], gens = [], pos = {};
-  var ox=0, oy=0, sc=1;
+  var ox=0, oy=0, sc=1, needW=1200;
   var drag=false, dsx,dsy,dox,doy;
   var ROW=100, LEFT=80;
 
@@ -73,14 +73,21 @@
     for(var g=min;g<=max;g++) all.push(g);
     gens = all;
 
+    // Calculate canvas dimensions based on densest generation
+    var maxN=1;
+    gens.forEach(function(g){var list=gmap[g]||[];if(list.length>maxN)maxN=list.length;});
+    var CARD_W=Math.min(140,Math.max(60,1200/maxN));
+    needW=LEFT+maxN*CARD_W*1.2+200; // Total content width
+
     pos={};
     gens.forEach(function(g){
       var list=gmap[g]||[];
       var y=gens.indexOf(g)*ROW+ROW/2;
       list.forEach(function(p,i){
-        var n=list.length;
-        var x=LEFT+(n>1?i/(n-1):0.5)*Math.max(1200,n*80);
-        var w=Math.min(160, Math.max(70, 1200/n));
+        var n=list.length>1?list.length:1;
+        var x=LEFT+(n>1?i/(n-1):0.5)*(n*CARD_W);
+        var w=CARD_W;
+        if(n<10) w=Math.min(160,Math.max(80,600/n)); // Few people = wider cards
         pos[p.id]={x:x,y:y,w:w,gen:g,name:p.name,branch:p.branch||'',hl:!!(p.highlight||/^(申伯|小四公|文杲公|攒公|撰公|彬公|乾公|谢安|谢玄|谢灵运|谢尚公|谢枋得|谢深甫)$/.test(p.name)),id:p.id};
       });
     });
@@ -90,9 +97,10 @@
 
   function draw() {
     var dpr=window.devicePixelRatio||1;
-    var w=container.clientWidth||1000;
+    var cw=container.clientWidth||1000;
+    var w=Math.max(cw, needW);
     var h=Math.max(container.clientHeight||500, gens.length*ROW+80);
-    cv.width=Math.max(w,1200)*dpr; cv.height=h*dpr;
+    cv.width=w*dpr; cv.height=h*dpr;
     cv.style.width=(cv.width/dpr)+'px'; cv.style.height=(cv.height/dpr)+'px';
     ctx.scale(dpr,dpr);
     var W=cv.width/dpr, H=cv.height/dpr;
