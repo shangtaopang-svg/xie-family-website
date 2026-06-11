@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>元胡种植与设备分析报告</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; background: #1a1a2e; overflow: hidden; }
+        .slide-container { width: 1920px; height: 1080px; transform-origin: top left; position: relative; }
+        .slide { width: 1920px; height: 1080px; position: absolute; top: 0; left: 0; display: none; padding: 60px 80px; }
+        .slide.active { display: flex; flex-direction: column; }
+        
+        /* Slide 1: Cover */
+        .slide-cover { background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 50%, #3d7a4f 100%); justify-content: center; align-items: center; text-align: center; }
+        .slide-cover h1 { font-size: 72px; color: #fff; font-weight: 700; margin-bottom: 30px; letter-spacing: 8px; }
+        .slide-cover h2 { font-size: 36px; color: rgba(255,255,255,0.9); font-weight: 400; margin-bottom: 60px; }
+        .slide-cover .subtitle { font-size: 28px; color: rgba(255,255,255,0.7); margin-top: 80px; }
+        .slide-cover .divider { width: 200px; height: 4px; background: linear-gradient(90deg, transparent, #ffd700, transparent); margin: 40px auto; }
+        
+        /* Content Slides */
+        .slide-content { background: linear-gradient(180deg, #0f1419 0%, #1a2332 100%); }
+        .slide-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 50px; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 30px; }
+        .slide-header h2 { font-size: 48px; color: #fff; font-weight: 600; }
+        .slide-header .page-num { font-size: 24px; color: rgba(255,255,255,0.5); }
+        .slide-body { flex: 1; display: flex; gap: 60px; }
+        .content-left { flex: 1; }
+        .content-right { flex: 1; }
+        
+        /* Cards */
+        .info-card { background: rgba(255,255,255,0.05); border-radius: 20px; padding: 40px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.1); }
+        .info-card h3 { font-size: 32px; color: #4ade80; margin-bottom: 20px; font-weight: 600; }
+        .info-card p { font-size: 26px; color: rgba(255,255,255,0.85); line-height: 1.8; }
+        .info-card .highlight { color: #ffd700; font-weight: 600; }
+        
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+        .stat-box { background: linear-gradient(135deg, rgba(74,222,128,0.1) 0%, rgba(74,222,128,0.05) 100%); border-radius: 16px; padding: 40px; text-align: center; border: 1px solid rgba(74,222,128,0.2); }
+        .stat-box .number { font-size: 56px; color: #4ade80; font-weight: 700; }
+        .stat-box .label { font-size: 22px; color: rgba(255,255,255,0.7); margin-top: 10px; }
+        
+        /* Table */
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { background: rgba(74,222,128,0.2); color: #4ade80; padding: 20px; font-size: 24px; text-align: left; }
+        .data-table td { color: rgba(255,255,255,0.85); padding: 18px; font-size: 22px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .data-table tr:hover { background: rgba(255,255,255,0.05); }
+        
+        /* List */
+        .content-list { list-style: none; }
+        .content-list li { font-size: 26px; color: rgba(255,255,255,0.9); padding: 15px 0; padding-left: 40px; position: relative; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .content-list li::before { content: "●"; color: #4ade80; position: absolute; left: 0; font-size: 20px; }
+        
+        /* Two Column Layout */
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
+        .col-section h4 { font-size: 28px; color: #4ade80; margin-bottom: 25px; font-weight: 600; }
+        .col-section p { font-size: 24px; color: rgba(255,255,255,0.8); line-height: 1.7; margin-bottom: 20px; }
+        
+        /* Process Flow */
+        .process-flow { display: flex; justify-content: space-between; align-items: center; padding: 40px 0; }
+        .process-step { text-align: center; flex: 1; }
+        .process-step .circle { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 36px; color: #fff; font-weight: 700; }
+        .process-step .label { font-size: 24px; color: rgba(255,255,255,0.9); }
+        .process-arrow { font-size: 40px; color: #4ade80; }
+        
+        /* Tags */
+        .tag { display: inline-block; background: rgba(74,222,128,0.2); color: #4ade80; padding: 8px 20px; border-radius: 20px; font-size: 20px; margin: 5px; }
+        .tag-warning { background: rgba(255,193,7,0.2); color: #ffc107; }
+        .tag-danger { background: rgba(244,67,54,0.2); color: #f44336; }
+        
+        /* Navigation */
+        .nav-hint { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); font-size: 20px; color: rgba(255,255,255,0.4); }
+        .slide-counter { position: fixed; top: 30px; right: 50px; font-size: 24px; color: rgba(255,255,255,0.5); }
+    </style>
+</head>
+<body>
+    <div class="slide-container" id="slideContainer">
+        
+        <!-- Slide 1: Cover -->
+        <div class="slide slide-cover active" data-screen-label="01 封面">
+            <h1>元胡种植与设备</h1>
+            <div class="divider"></div>
+            <h2>种植方法 · 采挖加工 · 成本测算 · 机械化设备</h2>
+            <p class="subtitle">分析报告</p>
+        </div>
+        
+        <!-- Slide 2: 概述 -->
+        <div class="slide slide-content" data-screen-label="02 概述">
+            <div class="slide-header">
+                <h2>一、概述</h2>
+                <span class="page-num">02 / 12</span>
+            </div>
+            <div class="slide-body">
+                <div class="content-left">
+                    <div class="info-card">
+                        <h3>元胡（延胡索）</h3>
+                        <p>罂粟科植物，以干燥块茎入药，具有<span class="highlight">活血、利气、止痛</span>等功效。</p>
+                        <p style="margin-top:20px;">种植周期：<span class="highlight">跨年栽培</span>，秋播次年夏收</p>
+                        <p>亩产鲜品：<span class="highlight">300-400公斤</span>，折干率约<span class="highlight">3:1</span></p>
+                    </div>
+                </div>
+                <div class="content-right">
+                    <div class="info-card">
+                        <h3>全国三大产区格局</h3>
+                        <div class="stats-grid" style="margin-top:30px;">
+                            <div class="stat-box">
+                                <div class="number">60%+</div>
+                                <div class="label">陕西汉中<br><small style="font-size:18px;color:rgba(255,255,255,0.5);">核心主产区</small></div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="number">20%</div>
+                                <div class="label">河南<br><small style="font-size:18px;color:rgba(255,255,255,0.5);">新兴产区</small></div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="number">&lt;10%</div>
+                                <div class="label">浙江磐安<br><small style="font-size:18px;color:rgba(255,255,255,0.5);">传统道地产区</small></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 3: 产地环境要求 -->
+        <div class="slide slide-content" data-screen-label="03 产地环境">
+            <div class="slide-header">
+                <h2>二、种植方法 - 产地与环境要求</h2>
+                <span class="page-num">03 / 12</span>
+            </div>
+            <div class="slide-body">
+                <div class="two-col">
+                    <div class="col-section">
+                        <h4>气候要求</h4>
+                        <p>喜温凉湿润环境</p>
+                        <p>适宜气温：<span class="highlight">5-25℃</span></p>
+                        <p>需<span class="highlight">雨热同季</span></p>
+                    </div>
+                    <div class="col-section">
+                        <h4>土壤要求</h4>
+                        <p>选择地势<span class="highlight">高、排水好</span>的地块</p>
+                        <p>疏松肥沃的<span class="highlight">砂质壤土</span></p>
+                        <p>耕层深度 <span class="highlight">≥30cm</span></p>
+                    </div>
+                </div>
+                <div style="margin-top:50px;">
+                    <div class="info-card">
+                        <h3>轮作模式</h3>
+                        <p style="font-size:32px; text-align:center;">普遍采用 <span class="highlight">"水稻 + 元胡"</span> 水旱轮作模式</p>
+                        <p style="text-align:center; margin-top:20px; color:rgba(255,255,255,0.6);">可减少病虫害，提高产量</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 4: 播前准备 -->
+        <div class="slide slide-content" data-screen-label="04 播前准备">
+            <div class="slide-header">
+                <h2>二、种植方法 - 播前准备</h2>
+                <span class="page-num">04 / 12</span>
+            </div>
+            <div class="slide-body">
+                <div class="content-left">
+                    <div class="info-card">
+                        <h3>① 整地施肥</h3>
+                        <ul class="content-list">
+                            <li>腐熟农家肥 <span class="highlight">1500-2000公斤/亩</span></li>
+                            <li>过磷酸钙 <span class="highlight">40-50公斤</span></li>
+                            <li>硫酸钾 <span class="highlight">25公斤</span> 作基肥</li>
+                            <li>畦宽 <span class="highlight">1-1.2米</span>，沟深 <span class="highlight">15-20厘米</span></li>
+                        </ul>
+                    </div>
+                    <div class="info-card">
+                        <h3>② 选种</h3>
+                        <p>选择无病虫、无损伤、饱满的子元胡</p>
+                        <p>千粒重约 <span class="highlight">1200克</span></p>
+                        <p>提倡<span class="highlight">异地换种</span>防止退化</p>
+                    </div>
+                </div>
+                <div class="content-right">
+                    <div class="info-card">
+                        <h3>③ 种子处理</h3>
+                        <p>播种前用：</p>
+                        <div style="margin-top:20px; padding:20px; background:rgba(74,222,128,0.1); border-radius:12px;">
+                            <p><span class="highlight">25%甲霜灵</span> 800倍液 或</p>
+                            <p><span class="highlight">50%瑞矾</span> 600倍液</p>
+                            <p style="margin-top:15px;">浸泡 <span class="highlight">10-15分钟</span></p>
+                            <p>捞出晾晒 <span class="highlight">1-2天</span> 至表皮略有皱缩</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 5: 播种技术 -->
+        <div class="slide slide-content" data-screen-label="05 播种技术">
+            <div class="slide-header">
+                <h2>二、种植方法 - 播种技术参数</h2>
+                <span class="page-num">05 / 12</span>
+            </div>
+            <div class="slide-body" style="flex-direction:column;">
+                <div class="stats-grid" style="margin-bottom:40px;">
+                    <div class="stat-box">
+                        <div class="number" style="font-size:42px;">9月20日-10月10日</div>
+                        <div class="label">平坝地区播种时间</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="number" style="font-size:42px;">9月10日-9月30日</div>
+                        <div class="label">浅山丘陵区播种时间</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="number" style="font-size:42px;">15×7.5cm</div>
+                        <div class="label">行株距</div>
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:30px;">
+                    <div class="info-card" style="text-align:center;">
+                        <h3>播种密度</h3>
+                        <p class="highlight" style="font-size:36px;">5.8-6.0万株/亩</p>
+                    </div>
+                    <div class="info-card" style="text-align:center;">
+                        <h3>亩用种量</h3>
+                        <p class="highlight" style="font-size:36px;">75-90公斤</p>
+                        <p style="font-size:18px; color:rgba(255,255,255,0.5);">免耕点播约40-45公斤</p>
+                    </div>
+                    <div class="info-card" style="text-align:center;">
+                        <h3>播种深度</h3>
+                        <p class="highlight" style="font-size:36px;">5-8厘米</p>
+                        <p style="font-size:18px; color:rgba(255,255,255,0.5);">芽向上</p>
+                    </div>
+                    <div class="info-card" style="text-align:center;">
+                        <h3>覆盖物</h3>
+                        <p class="highlight" style="font-size:36px;">750-1000公斤</p>
+                        <p style="font-size:18px; color:rgba(255,255,255,0.5);">稻草或栏肥</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 6: 田间管理 -->
+        <div class="slide slide-content" data-screen-label="06 田间管理">
+            <div class="slide-header">
+                <h2>二、种植方法 - 田间管理</h2>
+                <span class="page-num">06 / 12</span>
+            </div>
+            <div class="slide-body">
+                <div class="content-left">
+                    <div class="info-card">
+                        <h3>施肥管理原则</h3>
+                        <p style="font-size:28px; color:#ffd700; margin-bottom:20px;">"施足基肥、重施腊肥、巧施苗肥"</p>
+                        <table class="data-table">
+                            <tr><th>时期</th><th>肥料种类</th></tr>
+                            <tr><td>基肥</td><td>农家肥1500-2000kg + 过磷酸钙40-50kg + 硫酸钾25kg/亩</td></tr>
+                            <tr><td>腊肥（11月底-12月初）</td><td>尿素10-15kg 或 复合肥15kg/亩</td></tr>
+                            <tr><td>苗肥（2月初）</td><td>尿素5-10kg/亩</td></tr>
+                            <tr><td>叶面追肥（3-4月）</td><td>0.3%-0.4%磷酸二氢钾，7-10天一次</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="content-right">
+                    <div class="info-card">
+                        <h3>水分与除草管理</h3>
+                        <p><strong>水分管理：</strong></p>
+                        <p>元胡怕旱怕渍，需保持土壤湿润</p>
+                        <p>3-4月块茎膨大期需充足水分</p>
+                        <p style="margin-top:15px;"><strong>除草管理：</strong></p>
+                        <p>芽前封闭：50%乙草胺130-150ml兑水30-45kg</p>
+                        <p>出苗前：41%草甘膦200ml兑水30-45kg</p>
+                        <p>齐苗后：只能人工拔除（根系浅，不宜中耕）</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 7: 采挖与加工 -->
+        <div class="slide slide-content" data-screen-label="07 采挖加工">
+            <div class="slide-header">
+                <h2>三、采挖与加工方法</h2>
+                <span class="page-num">07 / 12</span>
+            </div>
+            <div class="slide-body" style="flex-direction:column;">
+                <div class="process-flow">
+                    <div class="process-step">
+                        <div class="circle">1</div>
+                        <div class="label">采收时间<br><small style="color:#ffd700;">4月下旬-5月中旬</small></div>
+                    </div>
+                    <div class="process-arrow">→</div>
+                    <div class="process-step">
+                        <div class="circle">2</div>
+                        <div class="label">采挖方法<br><small style="color:#ffd700;">晴天干燥时</small></div>
+                    </div>
+                    <div class="process-arrow">→</div>
+                    <div class="process-step">
+                        <div class="circle">3</div>
+                        <div class="label">分选分级<br><small style="color:#ffd700;">大/中/小三级</small></div>
+                    </div>
+                    <div class="process-arrow">→</div>
+                    <div class="process-step">
+                        <div class="circle">4</div>
+                        <div class="label">初加工<br><small style="color:#ffd700;">清洗→水煮→干燥</small></div>
+                    </div>
+                </div>
+                <div class="two-col" style="margin-top:40px;">
+                    <div class="col-section">
+                        <h4>采挖要点</h4>
+                        <p>选择晴天、土壤干燥时进行</p>
+                        <p>先浅翻，一边翻一边拣拾块茎</p>
+                        <p>拣拾完后再深翻一次，敲碎土块</p>
+                        <p style="margin-top:20px; color:#4ade80;">机械化采挖：汉中主产区人工成本降至<span class="highlight">1500元/亩</span>，较浙江低<span class="highlight">40%</span></p>
+                    </div>
+                    <div class="col-section">
+                        <h4>初加工方法</h4>
+                        <p><strong>清洗：</strong>在水中搓擦表皮，洗净沥干</p>
+                        <p><strong>水煮：</strong>大块茎煮4-6分钟，小块茎煮3-4分钟</p>
+                        <p>煮至切面中心呈黄色（尚留米粒大白点时）捞出</p>
+                        <p><strong>干燥：</strong>晴天晒3-4天，回潮后再晒2-3天至全干</p>
+                        <p style="margin-top:15px;"><span class="highlight">折干率：3:1</span>（3公斤鲜品出1公斤干货）</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 8: 成本测算 -->
+        <div class="slide slide-content" data-screen-label="08 成本测算">
+            <div class="slide-header">
+                <h2>四、成本测算 - 亩投入成本明细</h2>
+                <span class="page-num">08 / 12</span>
+            </div>
+            <div class="slide-body" style="flex-direction:column;">
+                <table class="data-table" style="font-size:22px;">
+                    <tr>
+                        <th style="width:25%;">成本项目</th>
+                        <th style="width:35%;">用量/标准</th>
+                        <th style="width:20%;">单价参考</th>
+                        <th style="width:20%;">亩成本（元）</th>
+                    </tr>
+                    <tr>
+                        <td><strong>种子</strong></td>
+                        <td>75-90公斤</td>
+                        <td>8-12元/公斤</td>
+                        <td><span class="highlight">600-1080</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>肥料</strong></td>
+                        <td>农家肥1500kg + 复合肥等</td>
+                        <td>-</td>
+                        <td><span class="highlight">400-600</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>农药</strong></td>
+                        <td>除草剂 + 杀菌剂</td>
+                        <td>-</td>
+                        <td><span class="highlight">100-150</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>人工（种植管理）</strong></td>
+                        <td>播种、施肥、除草、灌水等</td>
+                        <td>-</td>
+                        <td><span class="highlight">800-1200</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>采挖人工</strong></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td><span class="highlight">1500-2000</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>初加工</strong></td>
+                        <td>清洗、煮、晒/烘约7元/公斤干货</td>
+                        <td>-</td>
+                        <td><span class="highlight">700-900</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>土地租金</strong></td>
+                        <td>1亩</td>
+                        <td>500-800元/亩</td>
+                        <td><span class="highlight">500-800</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>其他</strong></td>
+                        <td>灌溉、工具等</td>
+                        <td>-</td>
+                        <td><span class="highlight">100-200</span></td>
+                    </tr>
+                </table>
+                <div style="text-align:center; margin-top:40px;">
+                    <span style="font-size:36px; color:#fff;">合计成本：约 </span>
+                    <span style="font-size:56px; color:#4ade80; font-weight:700;">4700-7930</span>
+                    <span style="font-size:36px; color:#fff;"> 元/亩</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 9: 产出与收益 -->
+        <div class="slide slide-content" data-screen-label="09 产出收益">
+            <div class="slide-header">
+                <h2>四、成本测算 - 产出与收益测算</h2>
+                <span class="page-num">09 / 12</span>
+            </div>
+            <div class="slide-body">
+                <div class="content-left">
+                    <div class="info-card">
+                        <h3>产出测算</h3>
+                        <table class="data-table" style="margin-top:20px;">
+                            <tr><th>项目</th><th>低产</th><th>中产</th><th>高产</th></tr>
+                            <tr><td>亩产鲜品（公斤）</td><td>300</td><td>400</td><td>500-600</td></tr>
+                            <tr><td>亩产干货（公斤）</td><td>100</td><td>133</td><td>167-200</td></tr>
+                            <tr><td>市场价（元/公斤）</td><td>70-80</td><td>70-80</td><td>70-80</td></tr>
+                            <tr><td>亩产值（元）</td><td>7000-8000</td><td>9300-10640</td><td>11690-16000</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="content-right">
+                    <div class="info-card">
+                        <h3>效益分析（汉中产区中产水平）</h3>
+                        <div style="margin-top:30px;">
+                            <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr);">
+                                <div class="stat-box">
+                                    <div class="number">5500-6500</div>
+                                    <div class="label">亩投入（元）</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="number">9300-10640</div>
+                                    <div class="label">亩产值（元）</div>
+                                </div>
+                            </div>
+                            <div style="text-align:center; margin-top:30px; padding:30px; background:rgba(74,222,128,0.15); border-radius:16px;">
+                                <p style="font-size:28px; color:rgba(255,255,255,0.8);">亩净利润</p>
+                                <p style="font-size:52px; color:#4ade80; font-weight:700; margin-top:10px;">约 3000-4000 元</p>
+                                <p style="font-size:26px; color:#ffd700; margin-top:15px;">投入产出比：约 1:1.5-1.7</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 10: 机械化种植 -->
+        <div class="slide slide-content" data-screen-label="10 机械化">
+            <div class="slide-header">
+                <h2>五、机械化种植 - 成本节约</h2>
+                <span class="page-num">10 / 12</span>
+            </div>
+            <div class="slide-body" style="flex-direction:column;">
+                <div class="two-col">
+                    <div class="col-section">
+                        <div class="info-card" style="height:100%;">
+                            <h3>播种环节：每亩节省约 700 元</h3>
+                            <table class="data-table" style="margin-top:20px;">
+                                <tr><th>对比项</th><th>人工种植</th><th>机械种植</th></tr>
+                                <tr><td>效率</td><td>4-5人劳作1天种1亩</td><td>半小时种1亩</td></tr>
+                                <tr><td>成本</td><td>人工成本高</td><td>每亩节省约700元</td></tr>
+                                <tr><td>用种量</td><td>用种量大，浪费多</td><td>精准播种，减少用种量</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-section">
+                        <div class="info-card" style="height:100%;">
+                            <h3>采挖环节：每亩节省约 30%</h3>
+                            <table class="data-table" style="margin-top:20px;">
+                                <tr><th>对比项</th><th>人工采挖</th><th>机械采挖</th></tr>
+                                <tr><td>效率</td><td>全家老小一天挖不完半亩</td><td>一天可收2亩多地</td></tr>
+                                <tr><td>成本</td><td>1500-2000元/亩</td><td>降低约30%</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align:center; margin-top:40px;">
+                    <div class="info-card" style="display:inline-block; padding:40px 80px;">
+                        <h3 style="font-size:28px;">综合成本节约测算</h3>
+                        <p style="font-size:36px; margin-top:20px;">
+                            全程机械化每亩可节约成本约
+                            <span class="highlight" style="font-size:52px;">1200-1300 元</span>
+                        </p>
+                        <p style="font-size:26px; color:rgba(255,255,255,0.7); margin-top:15px;">
+                            综合成本降低 <span class="highlight">15-20%</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 11: 设备厂家 -->
+        <div class="slide slide-content" data-screen-label="11 设备厂家">
+            <div class="slide-header">
+                <h2>五、机械化种植 - 设备厂家</h2>
+                <span class="page-num">11 / 12</span>
+            </div>
+            <div class="slide-body" style="flex-direction:column;">
+                <div class="two-col">
+                    <div class="col-section">
+                        <div class="info-card">
+                            <h3>播种机 - 城固县永生农机有限公司</h3>
+                            <p style="margin-top:15px;"><strong>地址：</strong>陕西省汉中市城固县博望街道民主街45号</p>
+                            <p style="margin-top:10px;"><strong>电话：</strong><span class="highlight">(0916)7366531</span></p>
+                            <p style="margin-top:15px;"><strong>产品特点：</strong></p>
+                            <p>全国首款智能元胡播种机，历经10年技术打磨、6次迭代升级</p>
+                            <p>播种精度：株距8cm、行距10cm</p>
+                            <p>日播量：小地块10亩，大地块20亩</p>
+                            <p style="color:#4ade80; margin-top:15px;">已销往全国8个省市，每亩节省人工成本约700元</p>
+                        </div>
+                    </div>
+                    <div class="col-section">
+                        <div class="info-card">
+                            <h3>收获机 - 主要厂家</h3>
+                            <div style="margin-top:15px;">
+                                <p><strong>1. 新乡地隆药业机械有限公司</strong></p>
+                                <p>电话：<span class="highlight">0373-7108687</span></p>
+                                <p style="font-size:20px; color:rgba(255,255,255,0.6);">专业生产根茎类药材收获机</p>
+                            </div>
+                            <div style="margin-top:20px;">
+                                <p><strong>2. 曲阜融兴机械设备有限公司</strong></p>
+                                <p>电话：<span class="highlight">0537-4567877</span></p>
+                                <p style="font-size:20px; color:rgba(255,255,255,0.6);">滚筒式收获机，起净率高达98%</p>
+                            </div>
+                            <div style="margin-top:20px;">
+                                <p><strong>3. 安国市尚锐农业机械制造有限公司</strong></p>
+                                <p>电话：<span class="highlight">13722201868</span></p>
+                                <p style="font-size:20px; color:rgba(255,255,255,0.6);">140型滚筒式，配套70马力以上拖拉机</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 12: 建议与风险 -->
+        <div class="slide slide-content" data-screen-label="12 建议风险">
+            <div class="slide-header">
+                <h2>六、种植建议与风险提示</h2>
+                <span class="page-num">12 / 12</span>
+            </div>
+            <div class="slide-body">
+                <div class="content-left">
+                    <div class="info-card">
+                        <h3>种植建议</h3>
+                        <ul class="content-list">
+                            <li>新手建议：从 <span class="highlight">5-10亩</span> 试种开始</li>
+                            <li>产区选择：优先选择<span class="highlight">汉中模式</span>（水稻轮作+机械化）</li>
+                            <li>种子管理：第一年购买优质种，次年可自留种降低成本</li>
+                            <li>销售渠道：提前对接产地合作社或药企</li>
+                            <li>成本控制：推广机械化采挖，降低人工成本占比</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="content-right">
+                    <div class="info-card">
+                        <h3>主要风险提示</h3>
+                        <div style="margin-top:20px;">
+                            <span class="tag tag-danger">价格波动风险</span>
+                            <span class="tag tag-danger">病害风险</span>
+                            <span class="tag tag-warning">气候风险</span>
+                            <span class="tag tag-warning">市场风险</span>
+                        </div>
+                        <p style="margin-top:25px; font-size:24px; color:rgba(255,255,255,0.8);">元胡价格周期性明显，2025年曾跌至36-39元/公斤，跌破成本线</p>
+                        <p style="margin-top:20px; font-size:24px; color:rgba(255,255,255,0.8);">霜霉病为主要病害，需要轮作和及时防治</p>
+                        <p style="margin-top:20px; font-size:24px; color:rgba(255,255,255,0.8);">怕旱怕渍，需精细水分管理</p>
+                        <p style="margin-top:20px; font-size:24px; color:rgba(255,255,255,0.8);">河南产区因2025年亏损，2026年种植面积大幅缩减</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <div class="slide-counter" id="slideCounter">1 / 12</div>
+    <div class="nav-hint">点击屏幕左半边=上一页 | 右半边=下一页</div>
+    
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        const container = document.getElementById('slideContainer');
+        const counter = document.getElementById('slideCounter');
+        
+        function updateScale() {
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const scaleX = windowWidth / 1920;
+            const scaleY = windowHeight / 1080;
+            const scale = Math.min(scaleX, scaleY);
+            container.style.transform = `scale(${scale})`;
+            container.style.left = `${(windowWidth - 1920 * scale) / 2}px`;
+            container.style.top = `${(windowHeight - 1080 * scale) / 2}px`;
+        }
+        
+        function goToSlide(index) {
+            if (index < 0) index = 0;
+            if (index >= totalSlides) index = totalSlides - 1;
+            slides[currentSlide].classList.remove('active');
+            currentSlide = index;
+            slides[currentSlide].classList.add('active');
+            counter.textContent = `${currentSlide + 1} / ${totalSlides}`;
+            localStorage.setItem('yuanhu_slide', currentSlide);
+        }
+        
+        function nextSlide() { goToSlide(currentSlide + 1); }
+        function prevSlide() { goToSlide(currentSlide - 1); }
+        
+        // Click navigation
+        document.addEventListener('click', function(e) {
+            const x = e.clientX;
+            const half = window.innerWidth / 2;
+            if (x < half) prevSlide();
+            else nextSlide();
+        });
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') nextSlide();
+            if (e.key === 'ArrowLeft' || e.key === 'PageUp') prevSlide();
+            if (e.key === 'Home') goToSlide(0);
+            if (e.key === 'End') goToSlide(totalSlides - 1);
+        });
+        
+        // Initialize
+        const savedSlide = localStorage.getItem('yuanhu_slide');
+        if (savedSlide !== null) {
+            currentSlide = parseInt(savedSlide);
+            slides.forEach(s => s.classList.remove('active'));
+            slides[currentSlide].classList.add('active');
+        }
+        
+        updateScale();
+        window.addEventListener('resize', updateScale);
+        counter.textContent = `${currentSlide + 1} / ${totalSlides}`;
+    </script>
+</body>
+</html>
