@@ -17,6 +17,7 @@
 </head>
   <script defer src="../js/timeline.js?v=2"></script>
 <script defer src="../js/genealogy-migration.js?v=1"></script>
+<script defer src="../js/genealogy-cards.js?v=1"></script>
 <body>
 
 
@@ -229,7 +230,77 @@
         </div>
       </div>
 
-            <!-- ===== 迁徙路线互动地图 ===== -->
+                  <!-- ===== 人物卡片瀑布流 ===== -->
+      <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:1;" id="genealogy-cards-section">
+        <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:6px;font-size:17px;font-weight:500;">📇 族人卡片</h3>
+        <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:14px;">竖向卡片浏览 · 点击可查看详情</p>
+        <div id="genealogy-cards-container"></div>
+      </div>
+      <style>
+        /* ===== 卡片瀑布流 ===== */
+        #genealogy-cards-container { font-size:14px; }
+        .gc-toolbar { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+        .gc-search-wrap { display:flex; gap:8px; }
+        .gc-search {
+          flex:1; padding:8px 14px; border-radius:8px; border:1px solid var(--glass-border);
+          background:var(--bg-card); color:var(--text-primary); font-size:14px;
+        }
+        .gc-search:focus { outline:none; border-color:var(--accent-orange); }
+        .gc-filters { display:flex; gap:6px; flex-wrap:wrap; }
+        .gc-filter {
+          padding:5px 10px; border-radius:6px; border:1px solid var(--glass-border);
+          background:var(--bg-card); color:var(--text-secondary); font-size:12px; cursor:pointer;
+        }
+        .gc-stats { font-size:12px; color:var(--text-tertiary); }
+        .gc-grid {
+          display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+          gap:10px; margin-top:8px;
+        }
+        .gc-card {
+          background:var(--glass-bg); border:1px solid var(--glass-border);
+          border-radius:10px; cursor:pointer; transition:all 0.2s;
+          overflow:hidden;
+        }
+        .gc-card:hover {
+          border-color:var(--accent-orange); transform:translateY(-2px);
+          box-shadow:0 6px 20px rgba(251,146,60,0.12);
+        }
+        .gc-card-header {
+          display:flex; align-items:center; gap:8px; padding:10px 12px 6px;
+        }
+        .gc-card-gen {
+          font-size:11px; color:var(--text-tertiary); white-space:nowrap;
+          background:var(--bg-secondary); padding:1px 8px; border-radius:4px;
+        }
+        .gc-card-name {
+          flex:1; font-size:15px; font-weight:600; color:var(--text-primary);
+          overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+        }
+        .gc-card-gender { font-size:14px; }
+        .gc-card-body { padding:4px 12px 10px; display:flex; flex-wrap:wrap; gap:4px; }
+        .gc-card-tag {
+          font-size:11px; padding:1px 8px; border-radius:4px; display:inline-block;
+        }
+        .gc-card-life { width:100%; font-size:11px; color:var(--text-tertiary); margin-top:2px; }
+        .gc-card-spouse { width:100%; font-size:11px; color:var(--text-muted); margin-top:1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .gc-pagination { display:flex; justify-content:center; margin-top:14px; }
+        .gc-pag-inner { display:flex; align-items:center; gap:16px; }
+        .gc-pag-btn {
+          padding:6px 18px; border:1px solid var(--glass-border); border-radius:6px;
+          background:transparent; color:var(--text-secondary); font-size:13px;
+          cursor:pointer; transition:all 0.2s; font-family:inherit;
+        }
+        .gc-pag-btn:hover:not(:disabled) { border-color:var(--accent-orange); color:var(--accent-orange); }
+        .gc-pag-btn:disabled { opacity:0.3; cursor:default; }
+        .gc-pag-info { font-size:13px; color:var(--text-tertiary); }
+        @media (max-width:600px) {
+          .gc-grid { grid-template-columns:1fr; }
+          .gc-filters { flex-wrap:wrap; }
+          .gc-filter { flex:1; min-width:80px; }
+        }
+      </style>
+
+<!-- ===== 迁徙路线互动地图 ===== -->
       <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:1;" id="genealogy-migration-section">
         <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:6px;font-size:17px;font-weight:500;">🗺️ 谢氏迁徙路线互动地图</h3>
         <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:14px;">从河南洛阳到宁海下枫槎 · 两千八百年的路 · 点击节点查看详情</p>
