@@ -19,7 +19,7 @@
 <script defer src="../js/genealogy-migration.js?v=1"></script>
 
 <script defer src="../js/genealogy-cards.js?v=1"></script>
-<script defer src="../js/genealogy-overview.js?v=1"></script>
+
 
 <body>
 
@@ -277,18 +277,7 @@
         }
       </style>
 
-            <!-- ===== 家族世代全景图 ===== -->
-      <div class="glass-card" style="padding:20px;margin-bottom:30px;opacity:1;" id="genealogy-overview-section">
-        <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:6px;font-size:17px;font-weight:500;">📊 家族世代全景图</h3>
-        <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;">纵向展示世系 · 拖拽平移 · 滚轮缩放 · 悬停查看姓名 · 点击可查看详情</p>
-        <div id="genealogy-overview-container" style="width:100%;min-height:460px;overflow:auto;"></div>
-      </div>
-      <style>
-        #genealogy-overview-container canvas { user-select:none; }
-        @media (max-width:600px) { #genealogy-overview-container { min-height:320px !important; } }
-      </style>
-
-<!-- 管理提示 -->
+            <!-- 管理提示 -->
       <div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:20px;text-align:center;" class="fade-in">
         <h4 style="font-family:var(--font-title);color:var(--accent-orange);margin-bottom:8px;font-weight:500;">🔧 管理员操作</h4>
         <p style="font-size:13px;color:var(--text-tertiary);margin-bottom:12px;">族谱数据管理请通过后台管理系统进行操作。</p>
