@@ -106,7 +106,7 @@
     // 筛选
     filteredData = allData.filter(function (p) {
       if (searchKeyword && !(p.name && p.name.toLowerCase().indexOf(searchKeyword) >= 0)) return false;
-      if (filterBranch && p.branch !== filterBranch) return false;
+      if (filterBranch && (!p.branch || p.branch.indexOf(filterBranch) < 0)) return false;
       if (filterGender && p.gender !== filterGender) return false;
       if (filterAlive) {
         if (filterAlive === '是' && p.is_alive !== '是') return false;
