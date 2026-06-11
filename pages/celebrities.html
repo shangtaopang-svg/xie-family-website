@@ -11,12 +11,11 @@
 .site-header{position:fixed;top:0;left:0;right:0;z-index:100}
 #bg-canvas{display:none}
 /* 先祖画像在圆形头像框中可见 */
-.celebrity-avatar.ancestor-img { width:100px; height:100px; }
-.celebrity-avatar.ancestor-img img { object-fit:cover; object-position:center 18%; }
-.celebrity-avatar.ancestor-img img[alt="谢深甫像"] { object-position:center 40%; }
-.celebrity-avatar.ancestor-img img[alt="攒公像"] { object-position:center 30%; }
+.celebrity-avatar.ancestor-img { width:100px; height:100px; cursor:pointer; }
+.celebrity-avatar.ancestor-img img { object-fit:cover; object-position:center 18%; cursor:pointer; }
 </style>
 <script defer src="../js/i18n.js"></script>
+<script defer src="../js/lightbox-viewer.js?v=af0a9a"></script>
   <link rel="manifest" href="../manifest.json">
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
 </head>
@@ -58,7 +57,7 @@
 <div class="section-title"><h2>古代先贤</h2><div class="divider"></div></div>
 
 <div class="celebrity-card" data-category="ancient">
-<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/xiean.jpg" alt="谢安像" style="width:100%;height:100%;object-fit:cover;" loading="lazy"></div>
+<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/xiean.jpg" alt="谢安像" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onclick="openPhotoLightbox('../images/ancestors/xiean.jpg', '谢安像')"></div>
 <div class="celebrity-info">
 <h3>谢安（320-385）</h3>
 <div class="era">东晋 · 政治家 · 军事家</div>
@@ -67,7 +66,7 @@
 </div>
 
 <div class="celebrity-card" data-category="ancient">
-<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/xielingyun.jpg" alt="谢灵运像" style="width:100%;height:100%;object-fit:cover;" loading="lazy"></div>
+<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/xielingyun.jpg" alt="谢灵运像" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onclick="openPhotoLightbox('../images/ancestors/xielingyun.jpg', '谢灵运像')"></div>
 <div class="celebrity-info">
 <h3>谢灵运（385-433）</h3>
 <div class="era">南朝宋 · 诗人</div>
@@ -76,7 +75,7 @@
 </div>
 
 <div class="celebrity-card" data-category="ancient">
-<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/xiexuan.jpg" alt="谢玄像" style="width:100%;height:100%;object-fit:cover;" loading="lazy"></div>
+<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/xiexuan.jpg" alt="谢玄像" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onclick="openPhotoLightbox('../images/ancestors/xiexuan.jpg', '谢玄像')"></div>
 <div class="celebrity-info">
 <h3>谢玄（343-388）</h3>
 <div class="era">东晋 · 名将</div>
@@ -107,7 +106,7 @@
 <div class="section-title"><h2>下枫槎谢氏先祖</h2><div class="divider"></div>
 
 <div class="celebrity-card" data-category="xianzu">
-<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/shenbo.jpg" alt="申伯像" style="width:100%;height:100%;object-fit:cover;" loading="lazy"></div>
+<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/shenbo.jpg" alt="申伯像" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onclick="openPhotoLightbox('../images/ancestors/shenbo.jpg', '申伯像')"></div>
 <div class="celebrity-info">
 <h3>申伯（西周）</h3>
 <div class="era">谢姓得姓始祖 · 约前827年</div>
@@ -116,7 +115,7 @@
 </div>
 
 <div class="celebrity-card" data-category="xianzu">
-<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/wengaogong.jpg" alt="小四公像" style="width:100%;height:100%;object-fit:cover;" loading="lazy"></div>
+<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/wengaogong.jpg" alt="小四公像" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onclick="openPhotoLightbox('../images/ancestors/wengaogong.jpg', '小四公像')"></div>
 <div class="celebrity-info">
 <h3>小四公（宋）</h3>
 <div class="era">石马始祖 · 宋靖康年间</div>
@@ -125,7 +124,7 @@
 </div>
 
 <div class="celebrity-card" data-category="xianzu">
-<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/xiaosigong.jpg" alt="文杲公像" style="width:100%;height:100%;object-fit:cover;" loading="lazy"></div>
+<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/xiaosigong.jpg" alt="文杲公像" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onclick="openPhotoLightbox('../images/ancestors/xiaosigong.jpg', '文杲公像')"></div>
 <div class="celebrity-info">
 <h3>文杲公（北宋）</h3>
 <div class="era">枫槎始迁祖 · 约1125年</div>
@@ -143,7 +142,7 @@
 </div>
 
 <div class="celebrity-card" data-category="xianzu">
-<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/xiezangong.png" alt="攒公像" style="width:100%;height:100%;object-fit:cover;"></div>
+<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/xiezangong.png" alt="攒公像" style="width:100%;height:100%;object-fit:cover;object-position:center;" onclick="openPhotoLightbox('../images/ancestors/xiezangong.png', '攒公像')"></div>
 <div class="celebrity-info">
 <h3>攒公（北宋）</h3>
 <div class="era">后枫槎始祖 · 枫槎二世</div>
@@ -152,7 +151,7 @@
 </div>
 
 <div class="celebrity-card" data-category="xianzu">
-<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/xieshenfu.png" alt="谢深甫像" style="width:100%;height:100%;object-fit:cover;"></div>
+<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/xieshenfu.png" alt="谢深甫像" style="width:100%;height:100%;object-fit:cover;object-position:center;" onclick="openPhotoLightbox('../images/ancestors/xieshenfu.png', '谢深甫像')"></div>
 <div class="celebrity-info">
 <h3>谢深甫（1139-1204）</h3>
 <div class="era">南宋 · 右丞相 · 申国公</div>
@@ -161,7 +160,7 @@
 </div>
 
 <div class="celebrity-card" data-category="xianzu">
-<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/zangong.jpg" alt="彬公像" style="width:100%;height:100%;object-fit:cover;" loading="lazy"></div>
+<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/zangong.jpg" alt="彬公像" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onclick="openPhotoLightbox('../images/ancestors/zangong.jpg', '彬公像')"></div>
 <div class="celebrity-info">
 <h3>彬公（明）</h3>
 <div class="era">下枫槎开基祖 · 1572年</div>
@@ -170,7 +169,7 @@
 </div>
 
 <div class="celebrity-card" data-category="xianzu">
-<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/qiangong.jpg" alt="乾公像" style="width:100%;height:100%;object-fit:cover;" loading="lazy"></div>
+<div class="celebrity-avatar ancestor-img" style="background:var(--accent-orange-dim);padding:0;overflow:hidden;"><img src="../images/ancestors/qiangong.jpg" alt="乾公像" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onclick="openPhotoLightbox('../images/ancestors/qiangong.jpg', '乾公像')"></div>
 <div class="celebrity-info">
 <h3>乾公（明）</h3>
 <div class="era">下枫槎开基祖 · 1572年</div>
