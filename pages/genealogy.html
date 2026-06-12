@@ -19,7 +19,6 @@
 <script defer src="../js/genealogy-migration.js?v=1"></script>
 <script defer src="../js/genealogy-icicle.js?v=1"></script>
 
-<script defer src="../js/genealogy-overview.js?v=1"></script>
 
 
 <body>
@@ -223,42 +222,7 @@
 
             <!-- 世系表 -->
       <!-- ===== 迁徙路线互动地图 ===== -->
-      <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:1;" id="genealogy-migration-section">
-        <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:6px;font-size:17px;font-weight:500;">🗺️ 谢氏迁徙路线互动地图</h3>
-        <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:14px;">从河南洛阳到宁海下枫槎 · 两千八百年的路 · 点击节点查看详情</p>
-        <div id="genealogy-migration-map" style="width:100%;height:420px;border-radius:12px;overflow:hidden;border:1px solid var(--glass-border);position:relative;background:#1a1a2e;"></div>
-      </div>
-      <style>
-        #genealogy-migration-map .gm-controls{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:999;background:rgba(0,0,0,0.75);padding:8px 14px;border-radius:30px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.15);}
-        #genealogy-migration-map .gm-btn{background:transparent;border:none;color:#fff;font-size:16px;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;}
-        #genealogy-migration-map .gm-btn:hover{background:rgba(255,255,255,0.15);}
-        #genealogy-migration-map .gm-btn.gm-play{background:var(--accent-orange);color:#000;font-weight:700;}
-        #genealogy-migration-map .gm-info-panel{position:absolute;top:16px;right:16px;width:280px;max-width:calc(100% - 32px);max-height:calc(100% - 80px);overflow-y:auto;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);border-radius:12px;border:1px solid rgba(255,255,255,0.12);padding:18px 20px;z-index:999;color:#fff;transform:translateX(calc(100% + 20px));transition:transform 0.35s cubic-bezier(0.22,1,0.36,1);}
-        #genealogy-migration-map .gm-info-panel.show{transform:translateX(0);}
-        #genealogy-migration-map .gm-info-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
-        #genealogy-migration-map .gm-info-era{font-size:11px;font-weight:700;padding:2px 12px;border-radius:4px;letter-spacing:1px;color:#fff;}
-        #genealogy-migration-map .gm-info-year{font-size:12px;color:#aaa;}
-        #genealogy-migration-map .gm-info-close{margin-left:auto;background:none;border:none;color:#888;font-size:18px;cursor:pointer;padding:0 4px;}
-        #genealogy-migration-map .gm-info-close:hover{color:#fff;}
-        #genealogy-migration-map .gm-info-name{font-size:20px;font-weight:700;margin-bottom:4px;}
-        #genealogy-migration-map .gm-info-addr{font-size:12px;color:#aaa;margin-bottom:10px;}
-        #genealogy-migration-map .gm-info-line{height:1px;background:rgba(255,255,255,0.1);margin-bottom:10px;}
-        #genealogy-migration-map .gm-info-desc{font-size:13px;line-height:1.8;color:#ccc;margin-bottom:10px;}
-        #genealogy-migration-map .gm-info-stat{font-size:11px;color:#888;border-top:1px solid rgba(255,255,255,0.08);padding-top:8px;}
-        @media (max-width:600px){#genealogy-migration-map{height:340px !important;}#genealogy-migration-map .gm-info-panel{width:240px;right:8px;top:8px;padding:14px 16px;}}
-      </style>
-
-      <!-- ===== 家族世代全景图 ===== -->
-      <div class="glass-card" style="padding:20px;margin-bottom:30px;opacity:1;">
-        <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:6px;font-size:17px;font-weight:500;">📊 家族世代全景图</h3>
-        <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;">展示全部世系 · 拖拽平移 · 滚轮缩放 · 点击人名看详情</p>
-        <div id="genealogy-overview-container" style="width:100%;min-height:400px;"></div>
-      </div>
-      <style>
-        .gp-node { transition:box-shadow 0.15s; user-select:none; }
-        .gp-node:hover { box-shadow:0 0 16px rgba(251,146,60,0.4) !important; }
-        #genealogy-overview-container { overflow:hidden; }
-      </style>
+      
 
       <!-- ===== 矩形世系图 ===== -->
       <div class="glass-card" style="padding:20px;margin-bottom:30px;opacity:1;">
