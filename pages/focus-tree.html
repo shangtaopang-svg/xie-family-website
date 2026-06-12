@@ -22,26 +22,20 @@ body { font-family:"Noto Serif SC","SimSun",serif; background:#0f0f13; color:#e0
 /* Tree area */
 .tree-area { position:relative; width:100%; max-width:500px; display:flex; flex-direction:column; align-items:center; gap:8px; }
 
-/* Connector lines */
-.line-down { width:2px; height:30px; background:rgba(255,255,255,0.1); }
-.line-up { width:2px; height:20px; background:rgba(255,255,255,0.1); }
-.line-h { height:2px; width:60px; background:rgba(255,255,255,0.08); }
-
+/* Tree branch layout */
+.tree-wrap { display:flex; flex-direction:column; align-items:center; width:100%; }
+.tree-row { display:flex; justify-content:center; gap:20px; width:100%; position:relative; }
+.tree-branch { display:flex; flex-direction:column; align-items:center; position:relative; min-width:50px; }
+.tree-line-down { width:2px; height:24px; background:rgba(255,255,255,0.12); margin:0 auto; }
+.tree-line-fork { position:absolute; top:0; left:50%; width:2px; height:20px; background:rgba(255,255,255,0.1); }
 /* Node card */
-.node { display:flex; flex-direction:column; align-items:center; cursor:pointer; transition:all 0.2s; position:relative; }
-.node-card { padding:8px 20px; border-radius:10px; border:2px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); text-align:center; transition:all 0.2s; min-width:100px; }
+.node { display:inline-flex; flex-direction:column; align-items:center; cursor:pointer; transition:all 0.2s; }
+.node-card { padding:6px 14px; border-radius:8px; border:2px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); text-align:center; transition:all 0.2s; min-width:60px; }
 .node-card:hover { border-color:#fb923c; background:rgba(251,146,60,0.08); transform:translateY(-2px); }
-.node-card.center { border-color:#fb923c; background:rgba(251,146,60,0.12); box-shadow:0 0 20px rgba(251,146,60,0.15); }
-.node-card.father-card { border-color:rgba(99,102,241,0.3); }
-.node-card.child-card { border-color:rgba(34,197,94,0.3); }
-.node-name { font-size:17px; font-weight:600; color:#fff; }
-.node-gen { font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px; }
-.node-stats { font-size:11px; color:rgba(255,255,255,0.3); }
-
-/* Children row */
-.children-row { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-top:4px; }
-.spouse-row { display:flex; gap:12px; align-items:center; justify-content:center; margin:4px 0; }
-.spouse-connector { display:flex; align-items:center; gap:6px; color:rgba(255,255,255,0.2); font-size:11px; }
+.node-card.focus-card { border-color:#fb923c; background:rgba(251,146,60,0.12); box-shadow:0 0 20px rgba(251,146,60,0.15); }
+.node-card.parent-card { border-color:rgba(99,102,241,0.3); }
+.node-name { font-size:15px; font-weight:600; color:#fff; }
+.node-gen { font-size:10px; color:rgba(255,255,255,0.35); margin-top:1px; }
 
 /* Detail panel */
 .detail-panel { width:100%; max-width:500px; margin-top:30px; padding:20px 24px; border-radius:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); }
@@ -186,8 +180,6 @@ function getFullSeedData() {
     var gen = p.generation_num ? '第' + p.generation_num + '世' : '—';
     var genderIcon = p.gender === '女' ? '👩' : '👤';
 
-    var html = '';
-
     // History bar
     var hbar = document.getElementById('history-bar');
     var hhtml = '';
@@ -204,85 +196,80 @@ function getFullSeedData() {
     }
     hbar.innerHTML = hhtml;
 
-    // Tree
-    // Father (above)
+    // === Build Tree ===
+    var t = '<div class="tree-wrap">';
+
+    // -- Parent (above) --
     if (p.father_id != null) {
       var f = getPerson(p.father_id);
       if (f) {
-        html += '<div class="node" onclick="window._ftFocus(' + f.id + ')"><div class="node-card father-card"><div class="node-name">' + esc(f.name) + '</div><div class="node-gen">父</div></div></div>';
-        html += '<div class="line-down"></div>';
+        t += '<div class="tree-row"><div class="tree-branch"><div class="node" onclick="window._ftFocus(' + f.id + ')"><div class="node-card parent-card"><div class="node-name">' + esc(f.name) + '</div><div class="node-gen">' + (f.generation_num ? '第' + f.generation_num + '世' : '') + '</div></div></div></div></div>';
+        t += '<div class="tree-line-down"></div>';
       }
     }
 
-    // Center: current person
-    html += '<div class="node"><div class="node-card center" style="border-color:' + col + ';"><div class="node-name">' + genderIcon + ' ' + esc(p.name) + '</div><div class="node-gen">' + gen + '</div></div></div>';
+    // -- Focused person --
+    t += '<div class="tree-row"><div class="tree-branch"><div class="node"><div class="node-card focus-card" style="border-color:' + col + ';"><div class="node-name">' + genderIcon + ' ' + esc(p.name) + '</div><div class="node-gen">' + gen + '</div></div></div></div></div>';
 
-    // Spouse(s) - beside current
-    var spouses = [];
-    if (p.spouse_ids) {
-      var sids = Array.isArray(p.spouse_ids) ? p.spouse_ids : [p.spouse_ids];
-      sids.forEach(function(sid) {
-        if (typeof sid === 'number') {
-          var sp = getPerson(sid);
-          if (sp) spouses.push(sp);
-        } else if (typeof sid === 'string') {
-          // spouse stored as name string
-          spouses.push({ id: null, name: sid, isNameOnly: true });
-        }
-      });
-    }
-    if (spouses.length > 0) {
-      html += '<div class="spouse-row">';
-      spouses.forEach(function(sp) {
-        html += '<div class="line-h"></div>';
-        if (sp.isNameOnly) {
-          html += '<div class="node-card" style="border-color:rgba(236,72,153,0.3);cursor:default;"><div class="node-name" style="font-size:14px;">💑 ' + esc(sp.name) + '</div><div class="node-gen">配偶</div></div>';
-        } else {
-          html += '<div class="node" onclick="window._ftFocus(' + sp.id + ')"><div class="node-card" style="border-color:rgba(236,72,153,0.3);"><div class="node-name" style="font-size:14px;">💑 ' + esc(sp.name) + '</div><div class="node-gen">配偶</div></div></div>';
-        }
-      });
-      html += '</div>';
-    }
-
-    // Children (below)
+    // -- Children (below, branching out) --
     var children = getChildren(p.id);
     if (children.length > 0) {
-      html += '<div class="line-down"></div>';
-      html += '<div class="children-row">';
+      t += '<div class="tree-line-down"></div>';
+      if (children.length > 1) {
+        t += '<div style="position:relative;width:80%;height:2px;margin:0 auto;"><div style="position:absolute;top:0;left:10%;width:80%;height:2px;background:rgba(255,255,255,0.08);"></div></div>';
+      }
+      t += '<div class="tree-row" style="gap:' + (children.length > 3 ? '8px' : '16px') + ';">';
       children.forEach(function(c) {
         var ccol = '#666';
         if (c.branch && c.branch.indexOf('后枫槎') >= 0) ccol = '#22c55e';
         else if (c.branch && c.branch.indexOf('前枫槎') >= 0) ccol = '#6366f1';
         else if (c.branch && c.branch.indexOf('石马') >= 0) ccol = '#f59e0b';
         var hl = !!(c.highlight || /^(申伯|小四公|文杲公|攒公|撰公|彬公|乾公)$/.test(c.name));
-        html += '<div class="node" onclick="window._ftFocus(' + c.id + ')"><div class="node-card child-card" style="border-color:' + ccol + '40;background:' + (hl ? ccol+'15' : 'transparent') + ';"><div class="node-name" style="font-size:14px;">' + esc(c.name) + '</div><div class="node-gen">' + (c.generation_num ? '第' + c.generation_num + '世' : '') + '</div></div></div>';
-      });
-      html += '</div>';
-    }
 
-    document.getElementById('tree-area').innerHTML = html;
+        t += '<div class="tree-branch">';
+        t += '<div class="tree-line-fork"></div>';
+        t += '<div class="node" onclick="window._ftFocus(' + c.id + ')"><div class="node-card" style="border-color:' + ccol + '40;background:' + (hl ? ccol + '15' : 'transparent') + ';"><div class="node-name" style="font-size:' + (children.length > 4 ? '12px' : '14px') + ';">' + esc(c.name) + '</div><div class="node-gen">' + (c.generation_num ? '第' + c.generation_num + '世' : '') + '</div></div></div>';
+
+        // Grandchildren (one more level)
+        var gkids = getChildren(c.id);
+        if (gkids.length > 0 && children.length <= 4) {
+          t += '<div class="tree-line-down" style="height:14px;"></div>';
+          t += '<div class="tree-row" style="gap:6px;">';
+          gkids.slice(0, 5).forEach(function(gk) {
+            var gcol = '#666';
+            if (gk.branch && gk.branch.indexOf('后枫槎') >= 0) gcol = '#22c55e';
+            else if (gk.branch && gk.branch.indexOf('前枫槎') >= 0) gcol = '#6366f1';
+            t += '<div class="node" onclick="window._ftFocus(' + gk.id + ')"><div class="node-card" style="padding:2px 8px;min-width:40px;"><div class="node-name" style="font-size:11px;">' + esc(gk.name) + '</div></div></div>';
+          });
+          if (gkids.length > 5) {
+            t += '<div class="node"><div class="node-card" style="padding:2px 8px;min-width:30px;cursor:default;"><div class="node-name" style="font-size:10px;color:rgba(255,255,255,0.3);">+' + (gkids.length - 5) + '</div></div></div>';
+          }
+          t += '</div>';
+        }
+        t += '</div>';
+      });
+      t += '</div>';
+    }
+    t += '</div>';
+    document.getElementById('tree-area').innerHTML = t;
 
     // Detail panel
     var dp = document.getElementById('detail-panel');
-    var dhtml = '';
-    dhtml += '<div class="detail-row"><span class="detail-label">姓名</span><span style="font-weight:600;">' + genderIcon + ' ' + esc(p.name) + '</span></div>';
-    dhtml += '<div class="detail-row"><span class="detail-label">世代</span>' + gen + '</div>';
+    var dh = '';
+    dh += '<div class="detail-row"><span class="detail-label">姓名</span><span style="font-weight:600;">' + genderIcon + ' ' + esc(p.name) + '</span></div>';
+    dh += '<div class="detail-row"><span class="detail-label">世代</span>' + gen + '</div>';
     if (p.branch && p.branch !== '—') {
-      dhtml += '<div class="detail-row"><span class="detail-label">分支</span><span class="detail-branch-tag" style="background:' + col + '20;color:' + col + ';border:1px solid ' + col + '40;">' + esc(p.branch) + '</span></div>';
+      dh += '<div class="detail-row"><span class="detail-label">分支</span><span style="display:inline-block;padding:0 8px;border-radius:4px;font-size:11px;background:' + col + '20;color:' + col + ';border:1px solid ' + col + '40;">' + esc(p.branch) + '</span></div>';
     }
     if (p.birth || p.death) {
-      dhtml += '<div class="detail-row"><span class="detail-label">生卒</span>' + esc(p.birth || '?') + ' — ' + esc(p.death || '?') + '</div>';
+      dh += '<div class="detail-row"><span class="detail-label">生卒</span>' + esc(p.birth || '?') + ' — ' + esc(p.death || '?') + '</div>';
     }
-    dhtml += '<div class="detail-row"><span class="detail-label">状态</span>' + (p.is_alive === '是' ? '🟢 在世' : '⚫ 已故') + '</div>';
-    if (p.generation && p.generation !== '—') {
-      dhtml += '<div class="detail-row"><span class="detail-label">字辈</span>' + esc(p.generation) + '</div>';
-    }
+    dh += '<div class="detail-row"><span class="detail-label">状态</span>' + (p.is_alive === '是' ? '🟢 在世' : '⚫ 已故') + '</div>';
     if (p.biography) {
-      dhtml += '<div class="detail-row" style="flex-wrap:wrap;"><span class="detail-label">简介</span><span style="font-size:13px;line-height:1.7;">' + esc(p.biography) + '</span></div>';
+      dh += '<div class="detail-row" style="flex-wrap:wrap;"><span class="detail-label">简介</span><span style="font-size:13px;line-height:1.7;">' + esc(p.biography) + '</span></div>';
     }
-    dp.innerHTML = dhtml;
+    dp.innerHTML = dh;
   }
-
   // Search
   var searchInput = document.getElementById('search-input');
   var searchResults = document.getElementById('search-results');
