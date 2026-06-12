@@ -103,8 +103,11 @@ function buildTree(p){
 
 function show(id){
   curId=id;
-  var p=null;for(var i=0;i<allData.length;i++){if(allData[i].id===id){p=allData[i];break;}}
-  document.getElementById('tree').innerHTML=buildTree(p);
+  var p=null;for(var i=0;i<allData.length;i++){if(Number(allData[i].id)===Number(id)){p=allData[i];break;}}
+  if(!p){document.getElementById('tree').innerHTML='<div style="padding:40px;color:#ef4444;">未找到id='+id+'</div>';return;}
+  var html = '<div style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:8px;">总人数: '+allData.length+' | father_id='+(p.father_id||'无')+'</div>';
+  html += buildTree(p);
+  document.getElementById('tree').innerHTML=html;
 }
 
 function loadData(){
