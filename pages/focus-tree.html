@@ -1,340 +1,55 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>聚焦世系 · 下枫槎谢氏</title>
-<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<html>
+<head><meta charset="utf-8"><title>谢氏世系树</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:"Noto Serif SC","SimSun",serif; background:#0f0f13; color:#e0e0e0; min-height:100vh; }
-.header { display:flex; align-items:center; gap:10px; padding:12px 16px; background:rgba(255,255,255,0.04); border-bottom:1px solid rgba(255,255,255,0.06); position:sticky; top:0; z-index:100; }
-.header h1 { font-size:17px; font-weight:600; flex:1; }
-.header input { flex:1; max-width:300px; padding:7px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.06); color:#fff; font-size:14px; outline:none; }
-.header input:focus { border-color:#fb923c; }
-.header input::placeholder { color:rgba(255,255,255,0.3); }
-.btn-back { padding:6px 14px; border-radius:6px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:rgba(255,255,255,0.6); cursor:pointer; font-size:13px; }
-.btn-back:hover { background:rgba(255,255,255,0.08); }
-
-/* Main content */
-.main { display:flex; flex-direction:column; align-items:center; padding:30px 16px 60px; min-height:calc(100vh - 56px); }
-
-/* Tree area */
-.tree-area { position:relative; width:100%; max-width:500px; display:flex; flex-direction:column; align-items:center; gap:8px; }
-
-/* Tree branch layout */
-.tree-wrap { display:flex; flex-direction:column; align-items:center; width:100%; }
-.tree-row { display:flex; justify-content:center; gap:20px; width:100%; position:relative; }
-.tree-branch { display:flex; flex-direction:column; align-items:center; position:relative; min-width:50px; }
-.tree-line-down { width:2px; height:24px; background:rgba(255,255,255,0.12); margin:0 auto; }
-.tree-line-fork { position:absolute; top:0; left:50%; width:2px; height:20px; background:rgba(255,255,255,0.1); }
-/* Node card */
-.node { display:inline-flex; flex-direction:column; align-items:center; cursor:pointer; transition:all 0.2s; }
-.node-card { padding:6px 14px; border-radius:8px; border:2px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); text-align:center; transition:all 0.2s; min-width:60px; }
-.node-card:hover { border-color:#fb923c; background:rgba(251,146,60,0.08); transform:translateY(-2px); }
-.node-card.focus-card { border-color:#fb923c; background:rgba(251,146,60,0.12); box-shadow:0 0 20px rgba(251,146,60,0.15); }
-.node-card.parent-card { border-color:rgba(99,102,241,0.3); }
-.node-name { font-size:15px; font-weight:600; color:#fff; }
-.node-gen { font-size:10px; color:rgba(255,255,255,0.35); margin-top:1px; }
-
-/* Detail panel */
-.detail-panel { width:100%; max-width:500px; margin-top:30px; padding:20px 24px; border-radius:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); }
-.detail-row { display:flex; gap:8px; padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:14px; color:rgba(255,255,255,0.7); }
-.detail-row:last-child { border-bottom:none; }
-.detail-label { color:rgba(255,255,255,0.35); min-width:55px; font-size:13px; }
-.detail-branch-tag { display:inline-block; padding:0 8px; border-radius:4px; font-size:11px; }
-
-/* Search results */
-.search-results { position:absolute; top:100%; left:0; right:0; background:#1a1a24; border:1px solid rgba(255,255,255,0.1); border-radius:10px; max-height:300px; overflow-y:auto; z-index:200; display:none; }
-.search-item { padding:8px 14px; cursor:pointer; font-size:14px; border-bottom:1px solid rgba(255,255,255,0.04); }
-.search-item:hover { background:rgba(251,146,60,0.1); }
-.search-item .si-gen { color:rgba(255,255,255,0.4); font-size:11px; margin-left:8px; }
-
-/* History nav */
-.history-bar { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-bottom:16px; }
-.history-btn { padding:3px 12px; border-radius:4px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); color:rgba(255,255,255,0.5); font-size:12px; cursor:pointer; }
-.history-btn:hover { background:rgba(255,255,255,0.08); }
-.history-btn.current { color:#fb923c; border-color:#fb923c; }
-.history-btn.clear { border-color:transparent; color:rgba(255,255,255,0.2); }
-
-.help-text { text-align:center; color:rgba(255,255,255,0.2); font-size:12px; margin-top:16px; }
-
-@media (max-width:500px) {
-  .header { flex-wrap:wrap; }
-  .header input { max-width:100%; flex-basis:100%; order:3; }
-  .node-card { padding:6px 14px; min-width:80px; }
-  .node-name { font-size:15px; }
-  .detail-panel { padding:14px 16px; }
-}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0f0f13;color:#e0e0e0;font-family:"Noto Serif SC","SimSun",serif;padding:20px;text-align:center;}
+.s{max-width:400px;margin:0 auto 24px;}
+.s input{width:100%;padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.06);color:#fff;font-size:15px;text-align:center;outline:none;}
+.s input:focus{border-color:#fb923c;}
+.sr{position:absolute;left:50%;transform:translateX(-50%);background:#1a1a24;border:1px solid rgba(255,255,255,0.1);border-radius:8px;max-height:240px;overflow-y:auto;z-index:100;display:none;width:300px;}
+.si{padding:8px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.04);font-size:14px;}
+.si:hover{background:rgba(251,146,60,0.1);}
+.si .sg{color:rgba(255,255,255,0.4);font-size:11px;margin-left:8px;}
+.sr-box{position:relative;max-width:400px;margin:0 auto;}
 </style>
 </head>
 <body>
-
-<div class="header">
-  <a href="../index.html" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:13px;">← 返回首页</a>
-  <input type="text" id="search-input" placeholder="搜索姓名..." autocomplete="off">
-  <div id="search-results" class="search-results"></div>
-</div>
-
-<div class="main">
-  <div class="history-bar" id="history-bar"></div>
-  <div class="tree-area" id="tree-area"></div>
-  <div class="detail-panel" id="detail-panel"></div>
-  <div class="help-text">点击姓名切换聚焦 · 搜索快速定位</div>
-</div>
-
+<div class="s"><input id="s" placeholder="输入姓名搜索..." autocomplete="off"></div>
+<div class="sr-box"><div class="sr" id="sr"></div></div>
+<div id="tree"></div>
 <script>
-function getFullSeedData() {
-    return [
-      {id:1,name:'谢小四',gender:'男',generation:'—',generation_num:0,branch:'石马(下谢)',birth_date:'宋靖康年间',is_alive:'否',highlight:true,biography:'会稽人，宋靖康年间迁居石马，入浙东之近祖。下枫槎谢氏之直系渊源。'},
-      {id:2,name:'文杲公',gender:'男',generation:'—',generation_num:1,branch:'枫槎始祖',father_id:1,birth_date:'北宋宣和(约1125)',is_alive:'否',highlight:true,biography:'字克源，宋登仕郎，越溪司巡检。英敏卓荦，文武兼备，始居岩下，为枫槎谢氏之始迁祖。至今近九百载，传三十六世。'},
-      {id:3,name:'攒公',gender:'男',generation:'—',generation_num:2,branch:'后枫槎派',father_id:2,is_alive:'否',highlight:true,biography:'文杲公长子，分居后枫槎，开一派之先河。'},
-      {id:4,name:'撰公',gender:'男',generation:'—',generation_num:2,branch:'前枫槎派',father_id:2,is_alive:'否',highlight:true,biography:'文杲公次子，分居前枫槎，与前枫槎派并立。'},
-      {id:5,name:'彬公',gender:'男',generation:'—',generation_num:16,branch:'后枫槎东房',birth_date:'明隆庆壬申(1572)',is_alive:'否',highlight:true,biography:'字叔仅，十六世祖。明隆庆六年壬申（1572年），时遭洪水之患，岁季始迁枫槎，为下枫槎开基之祖。'},
-      {id:6,name:'乾公',gender:'男',generation:'—',generation_num:16,branch:'后枫槎东房',birth_date:'明隆庆壬申(1572)',is_alive:'否',highlight:true,biography:'与彬公昆仲，明隆庆六年壬申（1572年），山洪暴发，庐舍为墟。与彬公相度地势，遂迁于双枫古槎之下，因名其地曰下枫槎。'},
-      {id:7,name:'云先公',gender:'男',generation:'之',generation_num:21,branch:'西大房二份',birth_date:'清乾隆间',is_alive:'否',biography:'名大性，西大房二份之祖。乾隆二十七年（1762年）首倡并主持修建下枫槎谢氏宗祠，敦睦堂由此而立。'},
-      {id:8,name:'文对',gender:'男',generation:'—',generation_num:1,branch:'枫槎分支',father_id:2,is_alive:'否',highlight:true,biography:'文杲公之子，枫槎谢氏分支祖。'}
-    ];
-  }
-  function getGenealogyData() {
-  // Simply return localStorage data, no seed merging
-  try {
-    var stored = localStorage.getItem('xie_admin_genealogy');
-    if (stored) {
-      var data = JSON.parse(stored);
-      return data;
-    }
-  } catch(e) {}
-  // Fallback: seed data when nothing in localStorage
-  var seed = getFullSeedData();
-  localStorage.setItem('xie_admin_genealogy', JSON.stringify(seed));
-  return seed;
+var trees = {"1": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #f59e0b;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">谢小四</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\"> · 石马(下谢)</div></div><div style=\"width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;\"></div><div style=\"display:flex;justify-content:center;gap:16px;flex-wrap:wrap;\"><div style=\"display:flex;flex-direction:column;align-items:center;\"><div style=\"width:2px;height:14px;background:rgba(255,255,255,0.1);\"></div><div style=\"cursor:pointer;padding:5px 14px;border-radius:8px;border:2px solid #66640;background:#66615;\"><div style=\"font-size:14px;font-weight:600;color:#fff;\">文杲公</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第1世</div></div></div></div></div>", "2": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:6px 18px;border-radius:8px;border:2px solid #f59e0b40;background:#f59e0b15;\"><div style=\"font-size:15px;font-weight:600;color:#fff;\">谢小四</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\"></div></div><div style=\"width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;\"></div><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #666;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">文杲公</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第1世 · 枫槎始祖</div></div><div style=\"width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;\"></div><div style=\"position:relative;width:80%;height:1px;margin:0 auto;\"><div style=\"position:absolute;top:0;left:10%;width:80%;height:1px;background:rgba(255,255,255,0.08);\"></div></div><div style=\"display:flex;justify-content:center;gap:16px;flex-wrap:wrap;\"><div style=\"display:flex;flex-direction:column;align-items:center;\"><div style=\"width:2px;height:14px;background:rgba(255,255,255,0.1);\"></div><div style=\"cursor:pointer;padding:5px 14px;border-radius:8px;border:2px solid #22c55e40;background:#22c55e15;\"><div style=\"font-size:14px;font-weight:600;color:#fff;\">攒公</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第2世</div></div></div><div style=\"display:flex;flex-direction:column;align-items:center;\"><div style=\"width:2px;height:14px;background:rgba(255,255,255,0.1);\"></div><div style=\"cursor:pointer;padding:5px 14px;border-radius:8px;border:2px solid #6366f140;background:#6366f115;\"><div style=\"font-size:14px;font-weight:600;color:#fff;\">撰公</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第2世</div></div></div><div style=\"display:flex;flex-direction:column;align-items:center;\"><div style=\"width:2px;height:14px;background:rgba(255,255,255,0.1);\"></div><div style=\"cursor:pointer;padding:5px 14px;border-radius:8px;border:2px solid #66640;background:#66615;\"><div style=\"font-size:14px;font-weight:600;color:#fff;\">文对</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第1世</div></div></div></div></div>", "3": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:6px 18px;border-radius:8px;border:2px solid #66640;background:#66615;\"><div style=\"font-size:15px;font-weight:600;color:#fff;\">文杲公</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第1世</div></div><div style=\"width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;\"></div><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #22c55e;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">攒公</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第2世 · 后枫槎派</div></div></div>", "4": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:6px 18px;border-radius:8px;border:2px solid #66640;background:#66615;\"><div style=\"font-size:15px;font-weight:600;color:#fff;\">文杲公</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第1世</div></div><div style=\"width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;\"></div><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #6366f1;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">撰公</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第2世 · 前枫槎派</div></div></div>", "5": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #22c55e;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">彬公</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第16世 · 后枫槎东房</div></div></div>", "6": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #22c55e;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">乾公</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第16世 · 后枫槎东房</div></div></div>", "7": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #666;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">云先公</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第21世 · 西大房二份</div></div></div>", "8": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:6px 18px;border-radius:8px;border:2px solid #66640;background:#66615;\"><div style=\"font-size:15px;font-weight:600;color:#fff;\">文杲公</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第1世</div></div><div style=\"width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;\"></div><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #666;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">文对</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第1世 · 枫槎分支</div></div></div>"};
+var names = {"1": "谢小四", "2": "文杲公", "3": "攒公", "4": "撰公", "5": "彬公", "6": "乾公", "7": "云先公", "8": "文对"};
+var genMap = {"2": "第1世", "3": "第2世", "4": "第2世", "5": "第16世", "6": "第16世", "7": "第21世", "8": "第1世"};
+
+var currentId = 2;
+
+function show(id){
+  currentId = id;
+  var h = trees[id] || '<div style="padding:40px;color:rgba(255,255,255,0.3);">暂无数据</div>';
+  document.getElementById('tree').innerHTML = h;
 }
 
-
-(function() {
-  var allData = [];
-  var currentId = null;
-  var history = [];
-
-  // Load data
-  function loadData() {
-    try {
-      allData = (typeof getGenealogyData === 'function') ? getGenealogyData() : [];
-    } catch(e) {}
-    if (!allData || allData.length === 0) {
-      document.getElementById('tree-area').innerHTML = '<div style="padding:60px;text-align:center;color:rgba(255,255,255,0.3);">暂无族谱数据<br><span style="font-size:13px;">请先在管理后台录入族人信息</span></div>';
-      return;
-    }
-    // Default: 文杲公 (id=2 in seed), or first person with 枫槎/石马 branch
-    var defaultId = null;
-    for (var i = 0; i < allData.length; i++) {
-      var p = allData[i];
-      if (p.name && p.name.indexOf('文杲') >= 0) { defaultId = p.id; break; }
-    }
-    if (!defaultId) {
-      for (var i = 0; i < allData.length; i++) {
-        var p = allData[i];
-        if (p.branch && (p.branch.indexOf('枫槎') >= 0 || p.branch.indexOf('石马') >= 0)) {
-          defaultId = p.id; break;
-        }
-      }
-    }
-    if (!defaultId && allData.length > 0) defaultId = allData[0].id;
-    if (defaultId) focusOn(defaultId);
+var si = document.getElementById('s');
+si.oninput = function(){
+  var q = this.value.trim();
+  var sr = document.getElementById('sr');
+  if(!q){sr.style.display='none';show(currentId);return;}
+  var matches = [];
+  for(var id in names){
+    if(names[id].indexOf(q)>=0) matches.push({id:id, name:names[id]});
   }
+  if(matches.length===0){sr.style.display='none';return;}
+  sr.innerHTML = matches.slice(0,10).map(function(m){
+    return '<div class="si" onclick="show('+m.id+');document.getElementById('s').value='';document.getElementById('sr').style.display='none';">'+m.name+'<span class="sg">'+(genMap[m.id]||'')+'</span></div>';
+  }).join('');
+  sr.style.display='block';
+};
+si.onblur=function(){setTimeout(function(){document.getElementById('sr').style.display='none';},300);};
+si.onfocus=function(){if(this.value.trim())document.getElementById('sr').style.display='block';};
 
-  function getPerson(id) {
-    for (var i = 0; i < allData.length; i++) { if (allData[i].id === id) return allData[i]; }
-    return null;
-  }
-
-  function getChildren(pid) {
-    return allData.filter(function(p) { return p.father_id === pid; });
-  }
-
-  function focusOn(id) {
-    if (id === currentId) return;
-    currentId = id;
-    // Add to history (avoid duplicates)
-    if (history.length === 0 || history[history.length-1] !== id) {
-      history.push(id);
-      if (history.length > 20) history.shift();
-    }
-    render();
-  }
-
-  function goBack() {
-    if (history.length < 2) return;
-    history.pop(); // remove current
-    var prev = history[history.length - 1];
-    currentId = prev;
-    render();
-  }
-
-  function getColor(person) {
-    if (!person || !person.branch) return '#666';
-    if (person.branch.indexOf('后枫槎') >= 0) return '#22c55e';
-    if (person.branch.indexOf('前枫槎') >= 0) return '#6366f1';
-    if (person.branch.indexOf('石马') >= 0) return '#f59e0b';
-    return '#666';
-  }
-
-  // Recursive tree rendering
-  function render() {
-    var p = getPerson(currentId);
-    if (!p) { document.getElementById('tree-area').innerHTML = '<div style="padding:40px;text-align:center;color:rgba(255,255,255,0.3);">未找到此人</div>'; return; }
-
-    // History bar
-    var hbar = document.getElementById('history-bar');
-    var hhtml = '';
-    if (history.length > 0) {
-      history.forEach(function(hid, i) {
-        var hp = getPerson(hid);
-        if (!hp) return;
-        var cls = (hid === currentId) ? 'current' : '';
-        hhtml += '<button class="history-btn ' + cls + '" onclick="window._ftFocus(' + hid + ')">' + esc(hp.name) + '</button>';
-      });
-      if (history.length > 1) {
-        hhtml += '<button class="history-btn clear" onclick="window._ftGoBack()">← 后退</button>';
-      }
-    }
-    hbar.innerHTML = hhtml;
-
-    function gc(p) {
-      if (!p || !p.branch) return '#666';
-      if (p.branch.indexOf('后枫槎') >= 0) return '#22c55e';
-      if (p.branch.indexOf('前枫槎') >= 0) return '#6366f1';
-      if (p.branch.indexOf('石马') >= 0) return '#f59e0b';
-      return '#666';
-    }
-
-    var col = gc(p);
-    var gen = p.generation_num ? '第' + p.generation_num + '世' : '';
-    var gi = p.gender === '女' ? '👩' : '👤';
-    var html = '<div style="text-align:center;width:100%;">';
-
-    // Parent
-    if (p.father_id != null) {
-      var f = getPerson(p.father_id);
-      if (f) {
-        html += '<div onclick="window._ftFocus(' + f.id + ')" style="display:inline-block;padding:6px 18px;border-radius:8px;border:2px solid rgba(99,102,241,0.3);cursor:pointer;margin-bottom:8px;">';
-        html += '<div style="font-size:15px;font-weight:600;color:#fff;">' + esc(f.name) + '</div>';
-        html += '<div style="font-size:10px;color:rgba(255,255,255,0.35);">' + (f.generation_num ? '第' + f.generation_num + '世' : '') + '</div>';
-        html += '</div>';
-        html += '<div style="width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;"></div>';
-      }
-    }
-
-    // Current person
-    html += '<div style="display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid ' + col + ';background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);">';
-    html += '<div style="font-size:18px;font-weight:700;color:#fff;">' + gi + ' ' + esc(p.name) + '</div>';
-    html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">' + gen + '</div>';
-    html += '</div>';
-
-    // Children
-    var children = getChildren(p.id);
-    if (children.length > 0) {
-      html += '<div style="width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;"></div>';
-      if (children.length > 1) {
-        html += '<div style="position:relative;width:80%;height:1px;margin:0 auto;"><div style="position:absolute;top:0;left:10%;width:80%;height:1px;background:rgba(255,255,255,0.08);"></div></div>';
-      }
-      html += '<div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">';
-      children.slice(0, 8).forEach(function(c) {
-        var ccol = gc(c);
-        var hl = !!(c.highlight || /申伯|小四公|文杲公|攒公|撰公|彬公|乾公|谢安|谢玄/.test(c.name));
-        html += '<div style="display:flex;flex-direction:column;align-items:center;">';
-        html += '<div style="width:2px;height:14px;background:rgba(255,255,255,0.1);"></div>';
-        html += '<div onclick="window._ftFocus(' + c.id + ')" style="cursor:pointer;padding:' + (children.length > 5 ? '3px 8px' : '5px 12px') + ';border-radius:8px;border:2px solid ' + ccol + '40;background:' + (hl ? ccol + '15' : 'transparent') + ';">';
-        html += '<div style="font-size:' + (children.length > 5 ? '12px' : '14px') + ';font-weight:600;color:#fff;">' + esc(c.name) + '</div>';
-        html += '</div>';
-
-        // Grandchildren
-        var gkids = getChildren(c.id);
-        if (gkids.length > 0 && children.length <= 6) {
-          html += '<div style="width:2px;height:12px;background:rgba(255,255,255,0.08);"></div>';
-          html += '<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;">';
-          gkids.slice(0, 6).forEach(function(gk) {
-            html += '<div onclick="window._ftFocus(' + gk.id + ')" style="cursor:pointer;padding:2px 6px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);font-size:11px;color:rgba(255,255,255,0.7);">' + esc(gk.name) + '</div>';
-          });
-          if (gkids.length > 6) {
-            html += '<div style="padding:2px 6px;font-size:10px;color:rgba(255,255,255,0.3);">+' + (gkids.length-6) + '</div>';
-          }
-          html += '</div>';
-        }
-        html += '</div>';
-      });
-      if (children.length > 8) {
-        html += '<div style="padding:3px 8px;font-size:11px;color:rgba(255,255,255,0.3);">+其他' + (children.length-8) + '人</div>';
-      }
-      html += '</div>';
-    }
-
-    html += '</div>';
-    document.getElementById('tree-area').innerHTML = html;
-
-    // Detail
-    var dp = document.getElementById('detail-panel');
-    var dh = '';
-    dh += '<div class="detail-row"><span class="detail-label">姓名</span><span style="font-weight:600;">' + esc(p.name) + '</span></div>';
-    dh += '<div class="detail-row"><span class="detail-label">世代</span>' + gen + '</div>';
-    if (p.branch && p.branch !== '—') {
-      dh += '<div class="detail-row"><span class="detail-label">分支</span><span style="display:inline-block;padding:0 8px;border-radius:4px;font-size:11px;background:' + col + '20;color:' + col + ';border:1px solid ' + col + '40;">' + esc(p.branch) + '</span></div>';
-    }
-    if (p.birth || p.death) {
-      dh += '<div class="detail-row"><span class="detail-label">生卒</span>' + esc(p.birth || '?') + ' — ' + esc(p.death || '?') + '</div>';
-    }
-    dh += '<div class="detail-row"><span class="detail-label">状态</span>' + (p.is_alive === '是' ? '🟢 在世' : '⚫ 已故') + '</div>';
-    if (p.biography) {
-      dh += '<div class="detail-row" style="flex-wrap:wrap;"><span class="detail-label">简介</span><span style="font-size:13px;line-height:1.7;">' + esc(p.biography) + '</span></div>';
-    }
-    dp.innerHTML = dh;
-  }
-  // Search
-  var searchInput = document.getElementById('search-input');
-  var searchResults = document.getElementById('search-results');
-  var searchTimer = null;
-
-  searchInput.oninput = function() {
-    clearTimeout(searchTimer);
-    var q = this.value.trim().toLowerCase();
-    if (!q) { searchResults.style.display = 'none'; return; }
-    searchTimer = setTimeout(function() {
-      var results = [];
-      allData.forEach(function(p) {
-        if (p.name && p.name.toLowerCase().indexOf(q) >= 0) {
-          results.push(p);
-        }
-      });
-      if (results.length === 0) {
-        searchResults.innerHTML = '<div style="padding:12px 14px;color:rgba(255,255,255,0.3);font-size:13px;">未找到</div>';
-      } else {
-        var html = '';
-        results.slice(0, 20).forEach(function(r) {
-          var gen = r.generation_num ? '第' + r.generation_num + '世' : '';
-          html += '<div class="search-item" onclick="window._ftFocus(' + r.id + ');document.getElementById(\'search-input\').value=\'\';document.getElementById(\'search-results\').style.display=\'none\';">' + esc(r.name) + '<span class="si-gen">' + gen + '</span></div>';
-        });
-        searchResults.innerHTML = html;
-      }
-      searchResults.style.display = 'block';
-    }, 200);
-  };
-  searchInput.onblur = function() { setTimeout(function() { searchResults.style.display = 'none'; }, 300); };
-  searchInput.onfocus = function() { if (this.value.trim()) searchResults.style.display = 'block'; };
-
-  function esc(t) { if(!t) return ''; var d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
-
-  window._ftFocus = focusOn;
-  window._ftGoBack = goBack;
-
-  // Boot
-  function boot() {
-    if (typeof getGenealogyData === 'function') loadData();
-    else setTimeout(boot, 300);
-  }
-  if (document.readyState === 'complete' || document.readyState === 'interactive') setTimeout(boot, 100);
-  else document.addEventListener('DOMContentLoaded', function() { setTimeout(boot, 100); });
-})();
+show(2);
 </script>
 </body>
 </html>
