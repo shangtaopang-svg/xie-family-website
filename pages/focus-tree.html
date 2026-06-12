@@ -17,7 +17,14 @@ body{background:#0f0f13;color:#e0e0e0;font-family:"Noto Serif SC","SimSun",serif
 <body>
 <div class="s"><input id="s" placeholder="输入姓名搜索..." autocomplete="off"></div>
 <div class="sr-box"><div class="sr" id="sr"></div></div>
-<div id="tree"><div style="padding:40px;text-align:center;color:rgba(255,255,255,0.3);">加载数据中...</div></div>
+<div id="tree-wrap" style="position:relative;overflow:hidden;border:1px solid rgba(255,255,255,0.06);border-radius:8px;min-height:300px;cursor:grab;">
+  <div id="tree" style="transform-origin:0 0;"><div style="padding:60px;text-align:center;color:rgba(255,255,255,0.3);">加载数据中...</div></div>
+  <div style="position:absolute;bottom:10px;right:10px;display:flex;gap:4px;z-index:10;">
+    <button id="zoom-in" style="width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(0,0,0,0.6);color:#fff;font-size:18px;cursor:pointer;">+</button>
+    <button id="zoom-out" style="width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(0,0,0,0.6);color:#fff;font-size:18px;cursor:pointer;">−</button>
+    <button id="zoom-reset" style="width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(0,0,0,0.6);color:#fff;font-size:14px;cursor:pointer;">⟳</button>
+  </div>
+</div>
 <script>
 function getFullSeedData() {
     return [
@@ -160,9 +167,9 @@ function show(id){
   curId=id;
   var p=null;for(var i=0;i<allData.length;i++){if(Number(allData[i].id)===Number(id)){p=allData[i];break;}}
   if(!p){document.getElementById('tree').innerHTML='<div style="padding:40px;color:#ef4444;">未找到id='+id+'</div>';return;}
-  var html = '<div style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:8px;">总人数: '+allData.length+' | father_id='+(p.father_id||'无')+'</div>';
-  html += buildTree(p);
-  document.getElementById('tree').innerHTML=html;
+  document.getElementById('tree').innerHTML = buildTree(p);
+  // Reset zoom
+  zs=1;zx=0;zy=0;applyZoom();
 }
 
 function loadData(){
@@ -217,6 +224,53 @@ si.oninput=function(){
   sr.innerHTML=sshtml;
   sr.querySelectorAll('.si').forEach(function(el){el.onclick=function(){var id=parseInt(this.getAttribute('data-sid'));show(id);si.value='';sr.style.display='none';};});
 };
+
+// === Zoom & Pan ===
+var tw = document.getElementById('tree-wrap');
+var treeEl = document.getElementById('tree');
+var zs = 1, zx = 0, zy = 0;
+var isDrag = false, dzx, dzy, dox, doy;
+
+function applyZoom(){
+  treeEl.style.transform = 'translate('+zx+'px,'+zy+'px) scale('+zs+')';
+}
+
+tw.onwheel = function(e){
+  e.preventDefault();
+  var rect = tw.getBoundingClientRect();
+  var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  var ns = zs * (e.deltaY > 0 ? 0.85 : 1.18);
+  ns = Math.max(0.1, Math.min(10, ns));
+  zx = mx - (mx - zx) * ns / zs;
+  zy = my - (my - zy) * ns / zs;
+  zs = ns;
+  applyZoom();
+};
+
+tw.onmousedown = function(e){
+  if(e.target.tagName==='INPUT')return;
+  isDrag = true; dzx = e.clientX; dzy = e.clientY; dox = zx; doy = zy;
+  tw.style.cursor = 'grabbing';
+};
+window.onmousemove = function(e){
+  if(!isDrag) return;
+  zx = dox + (e.clientX - dzx);
+  zy = doy + (e.clientY - dzy);
+  applyZoom();
+};
+window.onmouseup = function(){isDrag=false;tw.style.cursor='grab';};
+
+document.getElementById('zoom-in').onclick = function(){
+  var rect = tw.getBoundingClientRect();
+  zs = Math.min(10, zs * 1.4);
+  zx = rect.width/2 - (rect.width/2 - zx) * (zs/(zs/1.4));
+  applyZoom();
+};
+document.getElementById('zoom-out').onclick = function(){
+  zs = Math.max(0.1, zs / 1.4);
+  applyZoom();
+};
+document.getElementById('zoom-reset').onclick = function(){zs=1;zx=0;zy=0;applyZoom();};
 
 // Boot
 try{
