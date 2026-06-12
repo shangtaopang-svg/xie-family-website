@@ -108,6 +108,7 @@ function show(id){
 }
 
 function loadData(){
+  try{allData = (typeof getGenealogyData==='function')?getGenealogyData():[];}catch(e){}
   if(!allData||!allData.length){document.getElementById('tree').innerHTML='<div style="padding:60px;text-align:center;color:rgba(255,255,255,0.3);">暂无数据</div>';return;}
   document.getElementById('tree').innerHTML='<div style="padding:40px;text-align:center;color:rgba(255,255,255,0.3);">记录数: '+allData.length+'，尝试加载...</div>';
   if(allData.length<=10){
