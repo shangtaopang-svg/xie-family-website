@@ -54,25 +54,45 @@
   }
 
   function buildTree() {
-    // Find roots: people with no father_id in data
-    var existingIds = {};
-    data.forEach(function (p) { existingIds[p.id] = true; });
-    var roots = data.filter(function (p) { return p.father_id == null || !existingIds[parseInt(p.father_id)]; });
-    if (roots.length === 0 && data.length > 0) roots = [data[0]];
-
-    // Prefer the root with Xie-family branches (枫槎/石马), fallback to the one with most descendants
-    roots.sort(function (a, b) {
-      var aIsXie = (a.branch && a.branch.indexOf('枫槎') >= 0) || (a.branch && a.branch.indexOf('石马') >= 0) || (a.name && a.name.indexOf('杲') >= 0) || (a.name && a.name.indexOf('彬') >= 0) || (a.name && a.name.indexOf('乾') >= 0) ? 1 : 0;
-      var bIsXie = (b.branch && b.branch.indexOf('枫槎') >= 0) || (b.branch && b.branch.indexOf('石马') >= 0) || (b.name && b.name.indexOf('杲') >= 0) || (b.name && b.name.indexOf('彬') >= 0) || (b.name && b.name.indexOf('乾') >= 0) ? 1 : 0;
-      if (aIsXie !== bIsXie) return bIsXie - aIsXie;
-      return (b._descCount || 0) - (a._descCount || 0);
+    // Find Xie-family root: find someone with 枫槎/石马 branch, then trace up to top ancestor
+    var xieRoot = null, xieGen = 999;
+    // First try to find the person whose branch is "枫槎始祖" or has earliest generation with Xie branch
+    data.forEach(function(p) {
+      if (p.branch && (p.branch.indexOf('枫槎') >= 0 || p.branch.indexOf('石马') >= 0)) {
+        var g = parseInt(p.generation_num) || 999;
+        if (g < xieGen) { xieGen = g; xieRoot = p; }
+      }
     });
-    // Keep only top roots (max 2)
-    if (roots.length > 2) roots = roots.slice(0, 2);
+    // Trace up to the true root (follow father_id chain)
+    if (xieRoot) {
+      var visited = {}, current = xieRoot;
+      while (current && current.father_id != null && !visited[current.id]) {
+        visited[current.id] = true;
+        var father = null;
+        for (var i = 0; i < data.length; i++) {
+          if (data[i].id === current.father_id) { father = data[i]; break; }
+        }
+        if (father) current = father;
+        else break;
+      }
+      xieRoot = current;
+    }
 
-    // Sort roots by descendant count
+    // Use the found root, or fall back to traditional root finding
+    var roots;
+    if (xieRoot) {
+      roots = [xieRoot];
+    } else {
+      var existingIds = {};
+      data.forEach(function (p) { existingIds[p.id] = true; });
+      roots = data.filter(function (p) { return p.father_id == null || !existingIds[parseInt(p.father_id)]; });
+      if (roots.length === 0 && data.length > 0) roots = [data[0]];
+    }
+
+    // Sort by descendant count
     roots.forEach(function (r) { r._descCount = countDescendants(r.id); });
     roots.sort(function (a, b) { return b._descCount - a._descCount; });
+    if (roots.length > 2) roots = roots.slice(0, 2);
 
     // Build the displayed tree data
     var maxDepth = 0;
