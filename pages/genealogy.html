@@ -63,22 +63,7 @@
         if (g < xieGen) { xieGen = g; xieRoot = p; }
       }
     });
-    // Trace up to the true root (follow father_id chain)
-    if (xieRoot) {
-      var visited = {}, current = xieRoot;
-      while (current && current.father_id != null && !visited[current.id]) {
-        visited[current.id] = true;
-        var father = null;
-        for (var i = 0; i < data.length; i++) {
-          if (data[i].id === current.father_id) { father = data[i]; break; }
-        }
-        if (father) current = father;
-        else break;
-      }
-      xieRoot = current;
-    }
-
-    // Use the found root, or fall back to traditional root finding
+    // Use the found root directly (don't trace up - start from Xie ancestor)
     var roots;
     if (xieRoot) {
       roots = [xieRoot];
