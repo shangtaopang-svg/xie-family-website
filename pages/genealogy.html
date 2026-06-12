@@ -2613,7 +2613,7 @@ document.addEventListener('keydown', function(e) {
   var gm={},gl=[];
   d.forEach(function(p){var g=parseInt(p.generation_num)||0;if(!gm[g]){gm[g]=[];gl.push(g);}gm[g].push(p);});
   gl.sort(function(a,b){return a-b;});
-  function sd(pid){
+  window.sd=function(pid){
     var p=null;for(var i=0;i<d.length;i++){if(d[i].id===pid){p=d[i];break;}}
     if(!p)return;
     var col='#666';
