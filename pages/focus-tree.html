@@ -126,13 +126,17 @@ function getFullSeedData() {
       document.getElementById('tree-area').innerHTML = '<div style="padding:60px;text-align:center;color:rgba(255,255,255,0.3);">暂无族谱数据<br><span style="font-size:13px;">请先在管理后台录入族人信息</span></div>';
       return;
     }
-    // Default: find the earliest 枫槎 ancestor (文杲公 or similar)
+    // Default: 文杲公 (id=2 in seed), or first person with 枫槎/石马 branch
     var defaultId = null;
     for (var i = 0; i < allData.length; i++) {
       var p = allData[i];
-      if (p.branch && (p.branch.indexOf('枫槎') >= 0 || p.branch.indexOf('石马') >= 0)) {
-        if (!defaultId || (parseInt(p.generation_num)||999) < (parseInt(allData.find(function(x){return x.id===defaultId;})?.generation_num)||999)) {
-          defaultId = p.id;
+      if (p.name && p.name.indexOf('文杲') >= 0) { defaultId = p.id; break; }
+    }
+    if (!defaultId) {
+      for (var i = 0; i < allData.length; i++) {
+        var p = allData[i];
+        if (p.branch && (p.branch.indexOf('枫槎') >= 0 || p.branch.indexOf('石马') >= 0)) {
+          defaultId = p.id; break;
         }
       }
     }
