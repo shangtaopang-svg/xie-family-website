@@ -109,10 +109,32 @@ function show(id){
 
 function loadData(){
   if(!allData||!allData.length){document.getElementById('tree').innerHTML='<div style="padding:60px;text-align:center;color:rgba(255,255,255,0.3);">暂无数据</div>';return;}
-  var did=null;
-  for(var i=0;i<allData.length;i++){if(allData[i].name&&allData[i].name.indexOf('文杲')>=0){did=allData[i].id;break;}}
-  if(!did&&allData.length>0)did=allData[0].id;
-  show(did);
+  // If only 10 or fewer records (seed data), try fetching from Supabase
+  if(allData.length<=10){
+    document.getElementById('tree').innerHTML='<div style="padding:40px;text-align:center;color:rgba(255,255,255,0.3);">正在从服务器加载完整数据...</div>';
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/api/data/genealogy', true);
+    xhr.onload = function(){
+      try{
+        var remoteData = JSON.parse(xhr.responseText);
+        if(remoteData&&remoteData.length>10){
+          allData = remoteData;
+          localStorage.setItem('xie_admin_genealogy', xhr.responseText);
+        }
+      }catch(e){}
+      showFirst();
+    };
+    xhr.onerror = function(){showFirst();};
+    xhr.send();
+  } else {
+    showFirst();
+  }
+  function showFirst(){
+    var did=null;
+    for(var i=0;i<allData.length;i++){if(allData[i].name&&allData[i].name.indexOf('文杲')>=0){did=allData[i].id;break;}}
+    if(!did&&allData.length>0)did=allData[0].id;
+    show(did);
+  }
 }
 
 var si=document.getElementById('s');
