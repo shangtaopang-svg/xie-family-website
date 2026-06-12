@@ -17,7 +17,7 @@ body{background:#0f0f13;color:#e0e0e0;font-family:"Noto Serif SC","SimSun",serif
 <body>
 <div class="s"><input id="s" placeholder="输入姓名搜索..." autocomplete="off"></div>
 <div class="sr-box"><div class="sr" id="sr"></div></div>
-<div id="tree"></div>
+<div id="tree"><div style="padding:40px;text-align:center;color:rgba(255,255,255,0.3);">加载数据中...</div></div>
 <script>
 function getFullSeedData() {
     return [
@@ -48,7 +48,7 @@ function getFullSeedData() {
 
 
 
-function esc(t){if(!t)return'';return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function esc(t){if(!t)return '';return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 function gc(p){
   if(!p||!p.branch)return'#666';
@@ -58,13 +58,15 @@ function gc(p){
   return'#666';
 }
 
+var allData = [];
+var curId = null;
+
 function buildTree(p){
   if(!p)return'<div style="padding:40px;color:rgba(255,255,255,0.3);">未找到</div>';
   var col=gc(p);
   var gen=p.generation_num?'第'+p.generation_num+'世':'';
   var gi=p.gender==='女'?'👩':'👤';
   var h='<div style="text-align:center;width:100%;">';
-  // Parent
   if(p.father_id!=null){
     var f=null;for(var i=0;i<allData.length;i++){if(allData[i].id===p.father_id){f=allData[i];break;}}
     if(f){
@@ -75,11 +77,9 @@ function buildTree(p){
       h+='<div style="width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;"></div>';
     }
   }
-  // Self
   h+='<div style="display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid '+col+';background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);">';
   h+='<div style="font-size:18px;font-weight:700;color:#fff;">'+gi+' '+esc(p.name)+'</div>';
   h+='<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">'+gen+(p.branch&&p.branch!=='—'?' · '+esc(p.branch):'')+'</div></div>';
-  // Children
   var kids=[];
   for(var i=0;i<allData.length;i++){if(allData[i].father_id===p.id)kids.push(allData[i]);}
   if(kids.length>0){
@@ -101,11 +101,8 @@ function buildTree(p){
   return h;
 }
 
-var allData = [];
-var currentId = null;
-
 function show(id){
-  currentId=id;
+  curId=id;
   var p=null;for(var i=0;i<allData.length;i++){if(allData[i].id===id){p=allData[i];break;}}
   document.getElementById('tree').innerHTML=buildTree(p);
 }
@@ -113,22 +110,20 @@ function show(id){
 function loadData(){
   try{allData=(typeof getGenealogyData==='function')?getGenealogyData():[];}catch(e){}
   if(!allData||!allData.length){document.getElementById('tree').innerHTML='<div style="padding:60px;text-align:center;color:rgba(255,255,255,0.3);">暂无数据</div>';return;}
-  var defaultId=null;
-  for(var i=0;i<allData.length;i++){if(allData[i].name&&allData[i].name.indexOf('文杲')>=0){defaultId=allData[i].id;break;}}
-  if(!defaultId&&allData.length>0)defaultId=allData[0].id;
-  show(defaultId);
+  var did=null;
+  for(var i=0;i<allData.length;i++){if(allData[i].name&&allData[i].name.indexOf('文柲')>=0){did=allData[i].id;break;}}
+  if(!did&&allData.length>0)did=allData[0].id;
+  show(did);
 }
 
 var si=document.getElementById('s');
 var sr=document.getElementById('sr');
 si.oninput=function(){
   var q=this.value.trim();
-  if(!q){sr.style.display='none';if(currentId)show(currentId);return;}
+  if(!q){sr.style.display='none';if(curId!=null)show(curId);return;}
   var matches=[];
   for(var i=0;i<allData.length;i++){
-    if(allData[i].name&&allData[i].name.indexOf(q)>=0){
-      matches.push(allData[i]);
-    }
+    if(allData[i].name&&allData[i].name.indexOf(q)>=0)matches.push(allData[i]);
   }
   if(matches.length===0){sr.innerHTML='<div style="padding:10px;color:rgba(255,255,255,0.3);font-size:13px;">未找到</div>';sr.style.display='block';return;}
   sr.innerHTML=matches.slice(0,15).map(function(m){
@@ -141,43 +136,10 @@ si.onblur=function(){setTimeout(function(){sr.style.display='none';},300);};
 si.onfocus=function(){if(this.value.trim())sr.style.display='block';};
 
 // Boot
-function boot(){
+try{
   if(document.getElementById('s')&&typeof getGenealogyData==='function'){loadData();}
-  else setTimeout(boot,200);
-}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);
-else setTimeout(boot,50);
-var trees = {"1": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #f59e0b;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">谢小四</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\"> · 石马(下谢)</div></div><div style=\"width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;\"></div><div style=\"display:flex;justify-content:center;gap:16px;flex-wrap:wrap;\"><div style=\"display:flex;flex-direction:column;align-items:center;\"><div style=\"width:2px;height:14px;background:rgba(255,255,255,0.1);\"></div><div style=\"cursor:pointer;padding:5px 14px;border-radius:8px;border:2px solid #66640;background:#66615;\"><div style=\"font-size:14px;font-weight:600;color:#fff;\">文杲公</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第1世</div></div></div></div></div>", "2": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:6px 18px;border-radius:8px;border:2px solid #f59e0b40;background:#f59e0b15;\"><div style=\"font-size:15px;font-weight:600;color:#fff;\">谢小四</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\"></div></div><div style=\"width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;\"></div><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #666;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">文杲公</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第1世 · 枫槎始祖</div></div><div style=\"width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;\"></div><div style=\"position:relative;width:80%;height:1px;margin:0 auto;\"><div style=\"position:absolute;top:0;left:10%;width:80%;height:1px;background:rgba(255,255,255,0.08);\"></div></div><div style=\"display:flex;justify-content:center;gap:16px;flex-wrap:wrap;\"><div style=\"display:flex;flex-direction:column;align-items:center;\"><div style=\"width:2px;height:14px;background:rgba(255,255,255,0.1);\"></div><div style=\"cursor:pointer;padding:5px 14px;border-radius:8px;border:2px solid #22c55e40;background:#22c55e15;\"><div style=\"font-size:14px;font-weight:600;color:#fff;\">攒公</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第2世</div></div></div><div style=\"display:flex;flex-direction:column;align-items:center;\"><div style=\"width:2px;height:14px;background:rgba(255,255,255,0.1);\"></div><div style=\"cursor:pointer;padding:5px 14px;border-radius:8px;border:2px solid #6366f140;background:#6366f115;\"><div style=\"font-size:14px;font-weight:600;color:#fff;\">撰公</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第2世</div></div></div><div style=\"display:flex;flex-direction:column;align-items:center;\"><div style=\"width:2px;height:14px;background:rgba(255,255,255,0.1);\"></div><div style=\"cursor:pointer;padding:5px 14px;border-radius:8px;border:2px solid #66640;background:#66615;\"><div style=\"font-size:14px;font-weight:600;color:#fff;\">文对</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第1世</div></div></div></div></div>", "3": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:6px 18px;border-radius:8px;border:2px solid #66640;background:#66615;\"><div style=\"font-size:15px;font-weight:600;color:#fff;\">文杲公</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第1世</div></div><div style=\"width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;\"></div><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #22c55e;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">攒公</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第2世 · 后枫槎派</div></div></div>", "4": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:6px 18px;border-radius:8px;border:2px solid #66640;background:#66615;\"><div style=\"font-size:15px;font-weight:600;color:#fff;\">文杲公</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第1世</div></div><div style=\"width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;\"></div><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #6366f1;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">撰公</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第2世 · 前枫槎派</div></div></div>", "5": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #22c55e;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">彬公</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第16世 · 后枫槎东房</div></div></div>", "6": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #22c55e;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">乾公</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第16世 · 后枫槎东房</div></div></div>", "7": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #666;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">云先公</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第21世 · 西大房二份</div></div></div>", "8": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:6px 18px;border-radius:8px;border:2px solid #66640;background:#66615;\"><div style=\"font-size:15px;font-weight:600;color:#fff;\">文杲公</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第1世</div></div><div style=\"width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;\"></div><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #666;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">文对</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第1世 · 枫槎分支</div></div></div>"};
-var names = {"1": "谢小四", "2": "文杲公", "3": "攒公", "4": "撰公", "5": "彬公", "6": "乾公", "7": "云先公", "8": "文对"};
-var genMap = {"2": "第1世", "3": "第2世", "4": "第2世", "5": "第16世", "6": "第16世", "7": "第21世", "8": "第1世"};
-
-var currentId = 2;
-
-function show(id){
-  currentId = id;
-  var h = trees[id] || '<div style="padding:40px;color:rgba(255,255,255,0.3);">暂无数据</div>';
-  document.getElementById('tree').innerHTML = h;
-}
-
-var si = document.getElementById('s');
-si.oninput = function(){
-  var q = this.value.trim();
-  var sr = document.getElementById('sr');
-  if(!q){sr.style.display='none';show(currentId);return;}
-  var matches = [];
-  for(var id in names){
-    if(names[id].indexOf(q)>=0) matches.push({id:id, name:names[id]});
-  }
-  if(matches.length===0){sr.style.display='none';return;}
-  sr.innerHTML = matches.slice(0,10).map(function(m){
-    return '<div class="si" onclick="show('+m.id+');document.getElementById('s').value='';document.getElementById('sr').style.display='none';">'+m.name+'<span class="sg">'+(genMap[m.id]||'')+'</span></div>';
-  }).join('');
-  sr.style.display='block';
-};
-si.onblur=function(){setTimeout(function(){document.getElementById('sr').style.display='none';},300);};
-si.onfocus=function(){if(this.value.trim())document.getElementById('sr').style.display='block';};
-
-show(2);
+  else setTimeout(function(){location.reload();},500);
+}catch(e){document.getElementById('tree').innerHTML='<div style="padding:40px;color:#ef4444;">JS Error: '+e.message+'</div>';}
 </script>
 </body>
 </html>
