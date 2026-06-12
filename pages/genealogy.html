@@ -16,7 +16,8 @@
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
 </head>
   <script defer src="../js/timeline.js?v=2"></script>
-<script defer src="../js/genealogy-migration.js?v=1"></script>
+<script defer src="../js/genealogy-migration.js
+<script defer src="../js/genealogy-icicle.js?v=1"></script>?v=1"></script>
 
 
 
@@ -2356,4 +2357,14 @@ document.addEventListener('keydown', function(e) {
   <audio id="bg-music" loop></audio>
 
 </body>
-</html>
+</html>      <!-- ===== 矩形世系图 ===== -->
+      <div class="glass-card" style="padding:20px;margin-bottom:30px;opacity:1;">
+        <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:6px;font-size:17px;font-weight:500;">📊 矩形世系图</h3>
+        <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;">每代一行 · 块宽=后代人数 · 点击方块聚焦查看 · 分支颜色区分</p>
+        <div id="genealogy-icicle-container" style="width:100%;min-height:200px;"></div>
+      </div>
+      <style>
+        #genealogy-icicle-container div[onclick]:hover { z-index:5; }
+      </style>
+
+
