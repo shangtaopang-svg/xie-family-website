@@ -163,8 +163,18 @@
   };
 
   window._icicleZoomOut = function () {
-    focusId = null;
-    buildTree();
+    try {
+      focusId = null;
+      buildTree();
+    } catch(e) {
+      // Reload from scratch on error
+      if (document.getElementById('genealogy-icicle-container') && typeof getGenealogyData === 'function') {
+        data = getGenealogyData();
+        allPeople = {};
+        data.forEach(function (p) { allPeople[p.id] = p; });
+        buildTree();
+      }
+    }
   };
 
   function esc(t) { if (!t) return ''; var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
