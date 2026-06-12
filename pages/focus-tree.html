@@ -181,52 +181,9 @@ function getFullSeedData() {
   }
 
   // Recursive tree rendering
-  function renderNode(pid, depth, maxDepth) {
-    var person = getPerson(pid);
-    if (!person || depth > maxDepth) return '';
-    var col = getColor(person);
-    var hl = !!(person.highlight || /^(申伯|小四公|文杲公|攒公|撰公|彬公|乾公|谢安|谢玄)$/.test(person.name));
-    var isFocus = (pid === currentId);
-
-    var html = '<div class="tree-branch">';
-
-    // Fork line (vertical up connector)
-    if (depth > 0) {
-      html += '<div class="tree-line-fork"></div>';
-    }
-
-    // Person card
-    var cls = isFocus ? 'focus-card' : '';
-    var bg = isFocus ? '' : (hl ? col + '15' : 'transparent');
-    var border = isFocus ? col : col + '40';
-    var fs = (depth > 2 || maxDepth > 2) ? (depth > 1 ? '12px' : '13px') : '14px';
-    html += '<div class="node" onclick="window._ftFocus(' + pid + ')"><div class="node-card ' + cls + '" style="border-color:' + border + ';background:' + bg + ';padding:' + (depth > 1 ? '3px 10px' : '5px 14px') + ';min-width:' + (depth > 1 ? '40px' : '50px') + ';"><div class="node-name" style="font-size:' + fs + ';">' + esc(person.name) + '</div></div></div>';
-
-    // Children
-    var children = getChildren(pid);
-    if (children.length > 0 && depth < maxDepth) {
-      html += '<div class="tree-line-down" style="height:' + (depth > 0 ? '16px' : '20px') + ';"></div>';
-      if (children.length > 1) {
-        html += '<div style="position:relative;width:80%;height:1px;margin:0 auto;"><div style="position:absolute;top:0;left:10%;width:80%;height:1px;background:rgba(255,255,255,0.08);"></div></div>';
-      }
-      html += '<div class="tree-row" style="gap:' + (children.length > 4 ? '6px' : '10px') + ';">';
-      var shown = children.slice(0, 10);
-      shown.forEach(function(c) {
-        html += renderNode(c.id, depth + 1, maxDepth);
-      });
-      if (children.length > 10) {
-        html += '<div class="tree-branch"><div class="tree-line-fork"></div><div class="node"><div class="node-card" style="padding:3px 8px;min-width:30px;cursor:default;"><div class="node-name" style="font-size:10px;color:rgba(255,255,255,0.3);">+其他' + (children.length-10) + '人</div></div></div></div>';
-      }
-      html += '</div>';
-    }
-
-    html += '</div>';
-    return html;
-  }
-
   function render() {
     var p = getPerson(currentId);
-    if (!p) return;
+    if (!p) { document.getElementById('tree-area').innerHTML = '<div style="padding:40px;text-align:center;color:rgba(255,255,255,0.3);">未找到此人</div>'; return; }
 
     // History bar
     var hbar = document.getElementById('history-bar');
@@ -244,33 +201,82 @@ function getFullSeedData() {
     }
     hbar.innerHTML = hhtml;
 
-    // === Build multi-level tree ===
-    // Show: parent → current → children → grandchildren → great-grandchildren
-    var t = '<div class="tree-wrap">';
+    function gc(p) {
+      if (!p || !p.branch) return '#666';
+      if (p.branch.indexOf('后枫槎') >= 0) return '#22c55e';
+      if (p.branch.indexOf('前枫槎') >= 0) return '#6366f1';
+      if (p.branch.indexOf('石马') >= 0) return '#f59e0b';
+      return '#666';
+    }
 
-    // Show parent above (1 level up)
+    var col = gc(p);
+    var gen = p.generation_num ? '第' + p.generation_num + '世' : '';
+    var gi = p.gender === '女' ? '👩' : '👤';
+    var html = '<div style="text-align:center;width:100%;">';
+
+    // Parent
     if (p.father_id != null) {
       var f = getPerson(p.father_id);
       if (f) {
-        t += '<div class="tree-row">';
-        t += renderNode(f.id, 0, 0); // parent shown as single node
-        t += '</div>';
-        t += '<div class="tree-line-down"></div>';
+        html += '<div onclick="window._ftFocus(' + f.id + ')" style="display:inline-block;padding:6px 18px;border-radius:8px;border:2px solid rgba(99,102,241,0.3);cursor:pointer;margin-bottom:8px;">';
+        html += '<div style="font-size:15px;font-weight:600;color:#fff;">' + esc(f.name) + '</div>';
+        html += '<div style="font-size:10px;color:rgba(255,255,255,0.35);">' + (f.generation_num ? '第' + f.generation_num + '世' : '') + '</div>';
+        html += '</div>';
+        html += '<div style="width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;"></div>';
       }
     }
 
-    // Current person and their descendants (3 levels deep)
-    t += '<div class="tree-row">';
-    t += renderNode(currentId, 0, 3); // show 3 levels below current
-    t += '</div>';
+    // Current person
+    html += '<div style="display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid ' + col + ';background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);">';
+    html += '<div style="font-size:18px;font-weight:700;color:#fff;">' + gi + ' ' + esc(p.name) + '</div>';
+    html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">' + gen + '</div>';
+    html += '</div>';
 
-    t += '</div>';
-    try { document.getElementById('tree-area').innerHTML = t; } catch(e) { document.getElementById('tree-area').innerHTML = '<div style=\"padding:40px;text-align:center;color:#ef4444;\">渲染出错: ' + e.message + '</div>'; }
+    // Children
+    var children = getChildren(p.id);
+    if (children.length > 0) {
+      html += '<div style="width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;"></div>';
+      if (children.length > 1) {
+        html += '<div style="position:relative;width:80%;height:1px;margin:0 auto;"><div style="position:absolute;top:0;left:10%;width:80%;height:1px;background:rgba(255,255,255,0.08);"></div></div>';
+      }
+      html += '<div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">';
+      children.slice(0, 8).forEach(function(c) {
+        var ccol = gc(c);
+        var hl = !!(c.highlight || /申伯|小四公|文杲公|攒公|撰公|彬公|乾公|谢安|谢玄/.test(c.name));
+        html += '<div style="display:flex;flex-direction:column;align-items:center;">';
+        html += '<div style="width:2px;height:14px;background:rgba(255,255,255,0.1);"></div>';
+        html += '<div onclick="window._ftFocus(' + c.id + ')" style="cursor:pointer;padding:' + (children.length > 5 ? '3px 8px' : '5px 12px') + ';border-radius:8px;border:2px solid ' + ccol + '40;background:' + (hl ? ccol + '15' : 'transparent') + ';">';
+        html += '<div style="font-size:' + (children.length > 5 ? '12px' : '14px') + ';font-weight:600;color:#fff;">' + esc(c.name) + '</div>';
+        html += '</div>';
 
-    // Detail panel
+        // Grandchildren
+        var gkids = getChildren(c.id);
+        if (gkids.length > 0 && children.length <= 6) {
+          html += '<div style="width:2px;height:12px;background:rgba(255,255,255,0.08);"></div>';
+          html += '<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;">';
+          gkids.slice(0, 6).forEach(function(gk) {
+            html += '<div onclick="window._ftFocus(' + gk.id + ')" style="cursor:pointer;padding:2px 6px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);font-size:11px;color:rgba(255,255,255,0.7);">' + esc(gk.name) + '</div>';
+          });
+          if (gkids.length > 6) {
+            html += '<div style="padding:2px 6px;font-size:10px;color:rgba(255,255,255,0.3);">+' + (gkids.length-6) + '</div>';
+          }
+          html += '</div>';
+        }
+        html += '</div>';
+      });
+      if (children.length > 8) {
+        html += '<div style="padding:3px 8px;font-size:11px;color:rgba(255,255,255,0.3);">+其他' + (children.length-8) + '人</div>';
+      }
+      html += '</div>';
+    }
+
+    html += '</div>';
+    document.getElementById('tree-area').innerHTML = html;
+
+    // Detail
     var dp = document.getElementById('detail-panel');
     var dh = '';
-    dh += '<div class="detail-row"><span class="detail-label">姓名</span><span style="font-weight:600;">' + genderIcon + ' ' + esc(p.name) + '</span></div>';
+    dh += '<div class="detail-row"><span class="detail-label">姓名</span><span style="font-weight:600;">' + esc(p.name) + '</span></div>';
     dh += '<div class="detail-row"><span class="detail-label">世代</span>' + gen + '</div>';
     if (p.branch && p.branch !== '—') {
       dh += '<div class="detail-row"><span class="detail-label">分支</span><span style="display:inline-block;padding:0 8px;border-radius:4px;font-size:11px;background:' + col + '20;color:' + col + ';border:1px solid ' + col + '40;">' + esc(p.branch) + '</span></div>';
