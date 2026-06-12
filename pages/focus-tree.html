@@ -109,23 +109,22 @@ function show(id){
 
 function loadData(){
   if(!allData||!allData.length){document.getElementById('tree').innerHTML='<div style="padding:60px;text-align:center;color:rgba(255,255,255,0.3);">暂无数据</div>';return;}
-  // If only 10 or fewer records (seed data), try fetching from Supabase
+  document.getElementById('tree').innerHTML='<div style="padding:40px;text-align:center;color:rgba(255,255,255,0.3);">记录数: '+allData.length+'，尝试加载...</div>';
   if(allData.length<=10){
-    document.getElementById('tree').innerHTML='<div style="padding:40px;text-align:center;color:rgba(255,255,255,0.3);">正在从服务器加载完整数据...</div>';
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', '/api/data/genealogy', true);
-    xhr.onload = function(){
-      try{
-        var remoteData = JSON.parse(xhr.responseText);
-        if(remoteData&&remoteData.length>10){
-          allData = remoteData;
-          localStorage.setItem('xie_admin_genealogy', xhr.responseText);
-        }
-      }catch(e){}
-      showFirst();
-    };
-    xhr.onerror = function(){showFirst();};
-    xhr.send();
+    document.getElementById('tree').innerHTML='<div style="padding:40px;text-align:center;color:#fb923c;">正在从服务器加载完整数据('+allData.length+'条)...</div>';
+    fetch('/api/data/genealogy').then(function(r){return r.json();}).then(function(remoteData){
+      if(remoteData&&remoteData.length>10){
+        allData = remoteData;
+        localStorage.setItem('xie_admin_genealogy', JSON.stringify(remoteData));
+        document.getElementById('tree').innerHTML='<div style="padding:40px;text-align:center;color:#22c55e;">已加载'+remoteData.length+'条数据</div>';
+        setTimeout(showFirst,500);
+      } else {
+        document.getElementById('tree').innerHTML='<div style="padding:40px;text-align:center;color:#ef4444;">服务器返回数据为空</div>';
+      }
+    }).catch(function(err){
+      document.getElementById('tree').innerHTML='<div style="padding:40px;text-align:center;color:#ef4444;">加载失败: '+err.message+'</div>';
+      setTimeout(showFirst,1000);
+    });
   } else {
     showFirst();
   }
@@ -133,6 +132,7 @@ function loadData(){
     var did=null;
     for(var i=0;i<allData.length;i++){if(allData[i].name&&allData[i].name.indexOf('文杲')>=0){did=allData[i].id;break;}}
     if(!did&&allData.length>0)did=allData[0].id;
+    document.getElementById('tree').innerHTML='<div style="padding:40px;text-align:center;color:rgba(255,255,255,0.3);">正在显示...</div>';
     show(did);
   }
 }
