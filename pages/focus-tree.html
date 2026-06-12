@@ -281,16 +281,39 @@ var modeBtn = document.getElementById('mode-toggle');
 
 function renderFullTree(){
   var genMap={}, genList=[];
+  // Find 文杲公's generation as the starting point
+  var startGen = 0;
+  for(var i=0;i<allData.length;i++){
+    if(allData[i].name && allData[i].name.indexOf('文杲')>=0){
+      startGen = parseInt(allData[i].generation_num)||0;
+      break;
+    }
+  }
+  if(!startGen) startGen = 0;
+
   allData.forEach(function(p){
     var g = parseInt(p.generation_num)||0;
+    if(g<startGen)return; // Skip ancient ancestors before 文杲公
     if(!genMap[g]){genMap[g]=[];genList.push(g);}
     genMap[g].push(p);
   });
   genList.sort(function(a,b){return a-b;});
   var minG=genList[0], maxG=genList[genList.length-1];
 
+  // Add generation labels on the left
+  genList.forEach(function(g,i){
+    if(!document.getElementById('gen-label-layer')){
+      // labels will be rendered as part of position map
+    }
+  });
+
   // Build position map: for each person, compute x position within their generation
   var posMap={};
+  var genNum = {}; // renumbered generation number
+  genList.forEach(function(g,i){
+    genNum[g] = i+1; // 文杲公 = 第1世
+  });
+
   genList.forEach(function(g){
     var list=genMap[g];
     // Sort: children after their parents, grouped by father_id
@@ -306,10 +329,16 @@ function renderFullTree(){
     });
   });
 
-  var totalW = 200;
+  var totalW = 300;
   for(var k in posMap){if(posMap[k].x+60>totalW)totalW=posMap[k].x+60;}
 
   var h='<div style="position:relative;width:'+totalW+'px;height:'+(genList.length*52+60)+'px;">';
+
+  // Draw generation labels on the left
+  genList.forEach(function(g,i){
+    var y=i*52+30;
+    h+='<div style="position:absolute;left:0;top:'+(y-10)+'px;width:48px;font-size:11px;color:rgba(255,255,255,0.25);font-weight:600;text-align:right;padding-right:8px;">'+(i+1)+'世</div>';
+  });
 
   // Draw connection lines
   allData.forEach(function(p){
@@ -327,7 +356,7 @@ function renderFullTree(){
     if(p.branch.indexOf('后枫槎')>=0)col='#22c55e';
     else if(p.branch.indexOf('前枫槎')>=0)col='#6366f1';
     else if(p.branch.indexOf('石马')>=0)col='#f59e0b';
-    h+='<div onclick="show('+p.id+');toggleMode();" style="position:absolute;left:'+(p.x-26)+'px;top:'+(p.y-8)+'px;padding:2px 6px;border-radius:3px;border:1px solid '+col+'30;background:'+(p.hl?col+'15':'transparent')+';font-size:11px;font-weight:'+(p.hl?'700':'400')+';cursor:pointer;white-space:nowrap;color:#fff;">'+esc(p.name)+'</div>';
+    h+='<div onclick="show('+p.id+');toggleMode();" style="position:absolute;left:'+(p.x-26+55)+'px;top:'+(p.y-8)+'px;padding:2px 6px;border-radius:3px;border:1px solid '+col+'30;background:'+(p.hl?col+'15':'transparent')+';font-size:11px;font-weight:'+(p.hl?'700':'400')+';cursor:pointer;white-space:nowrap;color:#fff;">'+esc(p.name)+'</div>';
   }
 
   h+='</div>';
