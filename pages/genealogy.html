@@ -435,6 +435,35 @@
         #genealogy-migration-map .gm-info-desc{font-size:13px;line-height:1.8;color:#ccc;margin-bottom:10px;}
         #genealogy-migration-map .gm-info-stat{font-size:11px;color:#888;border-top:1px solid rgba(255,255,255,0.08);padding-top:8px;}
         @media (max-width:600px){#genealogy-migration-map{height:340px !important;}#genealogy-migration-map .gm-info-panel{width:240px;right:8px;top:8px;padding:14px 16px;}}
+            <!-- ===== 族人卡片浏览 ===== -->
+      <div class="glass-card" style="padding:20px;margin-bottom:30px;opacity:1;">
+        <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:6px;font-size:17px;font-weight:500;">👥 族人卡片</h3>
+        <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;">按世代浏览 · 点击人名查看关系 · 可导航跳转</p>
+        <div id="genealogy-cards-browser"></div>
+      </div>
+      <style>
+        .gb-gen-row { display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:6px; cursor:pointer; transition:background 0.15s; flex-wrap:wrap; }
+        .gb-gen-row:hover { background:rgba(255,255,255,0.05); }
+        .gb-gen-num { font-size:14px; font-weight:600; color:var(--accent-orange); min-width:50px; }
+        .gb-gen-count { font-size:12px; color:var(--text-tertiary); }
+        .gb-person { display:inline-flex; align-items:center; gap:4px; padding:2px 10px; border-radius:4px; font-size:13px; cursor:pointer; border:1px solid transparent; transition:all 0.15s; }
+        .gb-person:hover { border-color:var(--accent-orange); background:rgba(251,146,60,0.1); }
+        .gb-detail-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px; }
+        .gb-detail-card { background:var(--bg-primary); border:1px solid var(--glass-border); border-radius:14px; max-width:480px; width:100%; max-height:80vh; overflow-y:auto; padding:28px 32px; box-shadow:0 20px 60px rgba(0,0,0,0.4); position:relative; }
+        .gb-detail-name { font-size:24px; font-weight:700; color:var(--text-primary); margin-bottom:4px; }
+        .gb-detail-sub { font-size:13px; color:var(--text-tertiary); margin-bottom:16px; }
+        .gb-detail-row { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--divider); font-size:14px; color:var(--text-secondary); flex-wrap:wrap; }
+        .gb-detail-label { color:var(--text-tertiary); min-width:50px; font-size:13px; }
+        .gb-link { color:var(--accent-orange); cursor:pointer; text-decoration:none; }
+        .gb-link:hover { text-decoration:underline; }
+        .gb-close { position:absolute; top:12px; right:16px; font-size:22px; cursor:pointer; color:var(--text-tertiary); background:none; border:none; }
+        .gb-close:hover { color:var(--text-primary); }
+        @media (max-width:600px) {
+          .gb-detail-card { padding:20px 16px; }
+          .gb-gen-row { padding:4px 6px; }
+        }
+      </style>
+
       <!-- 管理提示 -->
       <div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:20px;text-align:center;" class="fade-in">
         <h4 style="font-family:var(--font-title);color:var(--accent-orange);margin-bottom:8px;font-weight:500;">🔧 管理员操作</h4>
@@ -2570,6 +2599,60 @@ document.addEventListener('keydown', function(e) {
 
       </style>
 
+
+
+<script>
+(function(){
+  var c=document.getElementById('genealogy-cards-browser');
+  if(!c)return;
+  var d=(typeof getGenealogyData==='function')?getGenealogyData():[];
+  if(!d||!d.length){c.innerHTML='<div style="padding:40px;text-align:center;color:var(--text-muted);">暂无数据</div>';return;}
+  function esc(t){if(!t)return '';var e=document.createElement('div');e.textContent=t;return e.innerHTML;}
+  function gn(id){for(var i=0;i<d.length;i++){if(d[i].id===id)return d[i].name;}return null;}
+  function gc(pid){return d.filter(function(p){return p.father_id===pid;});}
+  var gm={},gl=[];
+  d.forEach(function(p){var g=parseInt(p.generation_num)||0;if(!gm[g]){gm[g]=[];gl.push(g);}gm[g].push(p);});
+  gl.sort(function(a,b){return a-b;});
+  function sd(pid){
+    var p=null;for(var i=0;i<d.length;i++){if(d[i].id===pid){p=d[i];break;}}
+    if(!p)return;
+    var col='#666';
+    if(p.branch&&p.branch.indexOf('后枫槎')>=0)col='#22c55e';
+    else if(p.branch&&p.branch.indexOf('前枫槎')>=0)col='#6366f1';
+    else if(p.branch&&p.branch.indexOf('石马')>=0)col='#f59e0b';
+    var gi=p.gender==='女'?'👩':'👤';
+    var gen=p.generation_num?'第'+p.generation_num+'世':'—';
+    var st=p.is_alive==='是'?'<span style="color:#22c55e;">在世</span>':'<span style="color:#888;">已故</span>';
+    var fh='';if(p.father_id!=null){var fn=gn(p.father_id);fh='<div class="gb-detail-row"><span class="gb-detail-label">👨 父</span><span class="gb-link" onclick="document.querySelector(\'.gb-detail-overlay\').remove();sd('+p.father_id+')">'+esc(fn||'')+'</span></div>';}
+    var mh='';if(p.mother_id!=null){var mn=gn(p.mother_id);mh='<div class="gb-detail-row"><span class="gb-detail-label">👩 母</span>'+esc(mn||'')+'</div>';}
+    var sh='';if(p.spouse_ids){var sids=Array.isArray(p.spouse_ids)?p.spouse_ids:[p.spouse_ids];var sn=sids.map(function(s){return gn(s)||s;}).join('、');sh='<div class="gb-detail-row"><span class="gb-detail-label">💑 配</span>'+esc(sn)+'</div>';}
+    var kids=gc(p.id);var kh='';
+    if(kids.length>0){var kt=kids.map(function(k){return '<span class="gb-link" onclick="document.querySelector(\'.gb-detail-overlay\').remove();sd('+k.id+')">'+esc(k.name)+'</span>';}).join('、');kh='<div class="gb-detail-row"><span class="gb-detail-label">👦 子</span>'+kt+'</div>';}
+    var ov=document.createElement('div');
+    ov.className='gb-detail-overlay';
+    ov.onclick=function(e){if(e.target===ov)ov.remove();};
+    ov.innerHTML='<div class="gb-detail-card"><button class="gb-close" onclick="this.closest(\'.gb-detail-overlay\').remove()">✕</button><div class="gb-detail-name" style="border-left:4px solid '+col+';padding-left:12px;">'+gi+' '+esc(p.name)+'</div><div class="gb-detail-sub">'+gen+' · '+esc(p.branch||'')+' · '+st+'</div>'+(p.birth||p.death?'<div class="gb-detail-row"><span class="gb-detail-label">📅 生卒</span>'+esc(p.birth||'?')+' — '+esc(p.death||'?')+'</div>':'')+fh+mh+sh+kh+(p.biography?'<div class="gb-detail-row" style="flex-wrap:wrap;"><span class="gb-detail-label">📖 简介</span><span style="font-size:13px;line-height:1.6;margin-top:2px;">'+esc(p.biography)+'</span></div>':'')+'</div>';
+    document.body.appendChild(ov);
+  }
+  var html='';
+  gl.forEach(function(g){
+    var list=gm[g];
+    list.sort(function(a,b){var ba=a.branch||'',bb=b.branch||'';if(ba.indexOf('后枫槎')>=0&&bb.indexOf('后枫槎')<0)return -1;if(ba.indexOf('后枫槎')<0&&bb.indexOf('后枫槎')>=0)return 1;return (a.name||'').localeCompare(b.name||'');});
+    html+='<div class="gb-gen-row">';
+    html+='<span class="gb-gen-num">'+g+'世</span><span class="gb-gen-count">('+list.length+'人)</span>';
+    list.forEach(function(p){
+      var col='#666';
+      if(p.branch&&p.branch.indexOf('后枫槎')>=0)col='#22c55e';
+      else if(p.branch&&p.branch.indexOf('前枫槎')>=0)col='#6366f1';
+      else if(p.branch&&p.branch.indexOf('石马')>=0)col='#f59e0b';
+      var hl=!!(p.highlight||/^(申伯|小四公|文杲公|攒公|撰公|彬公|乾公|谢安|谢玄|谢灵运|谢尚公|谢枋得|谢深甫)$/.test(p.name));
+      html+='<span class="gb-person" style="border-color:'+col+'40;font-weight:'+(hl?'700':'400')+';background:'+(hl?col+'20':'transparent')+';" onclick="sd('+p.id+')">'+esc(p.name)+'</span>';
+    });
+    html+='</div>';
+  });
+  c.innerHTML=html;
+})();
+</script>
 
 </body>
 </html>
