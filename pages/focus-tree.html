@@ -25,6 +25,9 @@ body{background:#0f0f13;color:#e0e0e0;font-family:"Noto Serif SC","SimSun",serif
     <button id="zoom-reset" style="width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(0,0,0,0.6);color:#fff;font-size:14px;cursor:pointer;">⟳</button>
   </div>
 </div>
+<div style="text-align:center;margin-top:8px;">
+  <button id="mode-toggle" style="padding:5px 16px;border-radius:6px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;">📋 查看全部世系</button>
+</div>
 <script>
 function getFullSeedData() {
     return [
@@ -271,6 +274,57 @@ document.getElementById('zoom-out').onclick = function(){
   applyZoom();
 };
 document.getElementById('zoom-reset').onclick = function(){zs=1;zx=0;zy=0;applyZoom();};
+
+// === Full tree mode ===
+var isFullMode = false;
+var modeBtn = document.getElementById('mode-toggle');
+
+function renderFullTree(){
+  // Group all people by generation
+  var genMap={}, genList=[];
+  allData.forEach(function(p){
+    var g = parseInt(p.generation_num)||0;
+    if(!genMap[g]){genMap[g]=[];genList.push(g);}
+    genMap[g].push(p);
+  });
+  genList.sort(function(a,b){return a-b;});
+
+  var h='<div style="padding:10px;">';
+  genList.forEach(function(g){
+    var list=genMap[g];
+    list.sort(function(a,b){return (a.name||'').localeCompare(b.name||'');});
+    h+='<div style="display:flex;align-items:center;gap:4px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);flex-wrap:wrap;">';
+    h+='<span style="font-size:11px;color:rgba(255,255,255,0.3);min-width:36px;font-weight:600;">'+g+'世</span>';
+    list.forEach(function(p){
+      var col='#666';
+      if(p.branch&&p.branch.indexOf('后枫槎')>=0)col='#22c55e';
+      else if(p.branch&&p.branch.indexOf('前枫槎')>=0)col='#6366f1';
+      else if(p.branch&&p.branch.indexOf('石马')>=0)col='#f59e0b';
+      var hl=!!(p.highlight||/^(申伯|小四公|文杲公|攒公|撰公|彬公|乾公|谢安|谢玄)$/.test(p.name));
+      h+='<span onclick="show('+p.id+');toggleMode();" style="cursor:pointer;font-size:12px;padding:1px 6px;border-radius:3px;border:1px solid '+col+'30;background:'+(hl?col+'15':'transparent')+';font-weight:'+(hl?'700':'400')+';">'+esc(p.name)+'</span>';
+    });
+    if(list.length>30){
+      h+='<span style="font-size:10px;color:rgba(255,255,255,0.2);">('+list.length+'人)</span>';
+    }
+    h+='</div>';
+  });
+  h+='</div>';
+  return h;
+}
+
+function toggleMode(){
+  isFullMode = !isFullMode;
+  if(isFullMode){
+    modeBtn.textContent = '🔍 切换聚焦模式';
+    document.getElementById('tree').innerHTML = renderFullTree();
+  } else {
+    modeBtn.textContent = '📋 查看全部世系';
+    if(curId!=null)show(curId);
+  }
+  zs=1;zx=0;zy=0;applyZoom();
+}
+
+modeBtn.onclick = toggleMode;
 
 // Boot
 try{
