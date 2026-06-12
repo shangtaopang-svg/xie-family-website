@@ -280,7 +280,6 @@ var isFullMode = false;
 var modeBtn = document.getElementById('mode-toggle');
 
 function renderFullTree(){
-  // Group all people by generation
   var genMap={}, genList=[];
   allData.forEach(function(p){
     var g = parseInt(p.generation_num)||0;
@@ -288,26 +287,49 @@ function renderFullTree(){
     genMap[g].push(p);
   });
   genList.sort(function(a,b){return a-b;});
+  var minG=genList[0], maxG=genList[genList.length-1];
 
-  var h='<div style="padding:10px;">';
+  // Build position map: for each person, compute x position within their generation
+  var posMap={};
   genList.forEach(function(g){
     var list=genMap[g];
-    list.sort(function(a,b){return (a.name||'').localeCompare(b.name||'');});
-    h+='<div style="display:flex;align-items:center;gap:4px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);flex-wrap:wrap;">';
-    h+='<span style="font-size:11px;color:rgba(255,255,255,0.3);min-width:36px;font-weight:600;">'+g+'世</span>';
-    list.forEach(function(p){
-      var col='#666';
-      if(p.branch&&p.branch.indexOf('后枫槎')>=0)col='#22c55e';
-      else if(p.branch&&p.branch.indexOf('前枫槎')>=0)col='#6366f1';
-      else if(p.branch&&p.branch.indexOf('石马')>=0)col='#f59e0b';
-      var hl=!!(p.highlight||/^(申伯|小四公|文杲公|攒公|撰公|彬公|乾公|谢安|谢玄)$/.test(p.name));
-      h+='<span onclick="show('+p.id+');toggleMode();" style="cursor:pointer;font-size:12px;padding:1px 6px;border-radius:3px;border:1px solid '+col+'30;background:'+(hl?col+'15':'transparent')+';font-weight:'+(hl?'700':'400')+';">'+esc(p.name)+'</span>';
+    // Sort: children after their parents, grouped by father_id
+    list.sort(function(a,b){
+      var pa=Number(a.father_id)||0, pb=Number(b.father_id)||0;
+      if(pa!==pb)return pa-pb;
+      return (a.name||'').localeCompare(b.name||'');
     });
-    if(list.length>30){
-      h+='<span style="font-size:10px;color:rgba(255,255,255,0.2);">('+list.length+'人)</span>';
-    }
-    h+='</div>';
+    var total=list.length;
+    list.forEach(function(p,i){
+      var x = (total>1 ? i/(total-1) : 0.5) * Math.max(total*56, 600);
+      posMap[p.id] = {x:x, y:(g-minG)*52 + 30, gen:g, name:p.name, branch:p.branch||'', hl:!!(p.highlight||/^(申伯|小四公|文杲公|攒公|撰公|彬公|乾公)$/.test(p.name)), father:p.father_id, id:p.id};
+    });
   });
+
+  var totalW = 200;
+  for(var k in posMap){if(posMap[k].x+60>totalW)totalW=posMap[k].x+60;}
+
+  var h='<div style="position:relative;width:'+totalW+'px;height:'+(genList.length*52+60)+'px;">';
+
+  // Draw connection lines
+  allData.forEach(function(p){
+    if(!p.father_id||p.father_id===''||p.father_id==='0')return;
+    var c=posMap[p.id], f=posMap[Number(p.father_id)];
+    if(!c||!f)return;
+    var y1=f.y+20, y2=c.y-8;
+    h+='<svg style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible;"><path d="M'+f.x+','+y1+' C'+f.x+','+((y1+y2)/2)+' '+c.x+','+((y1+y2)/2)+' '+c.x+','+y2+'" stroke="rgba(255,255,255,0.06)" stroke-width="1" fill="none"/></svg>';
+  });
+
+  // Draw people
+  for(var k in posMap){
+    var p=posMap[k];
+    var col='#666';
+    if(p.branch.indexOf('后枫槎')>=0)col='#22c55e';
+    else if(p.branch.indexOf('前枫槎')>=0)col='#6366f1';
+    else if(p.branch.indexOf('石马')>=0)col='#f59e0b';
+    h+='<div onclick="show('+p.id+');toggleMode();" style="position:absolute;left:'+(p.x-26)+'px;top:'+(p.y-8)+'px;padding:2px 6px;border-radius:3px;border:1px solid '+col+'30;background:'+(p.hl?col+'15':'transparent')+';font-size:11px;font-weight:'+(p.hl?'700':'400')+';cursor:pointer;white-space:nowrap;color:#fff;">'+esc(p.name)+'</div>';
+  }
+
   h+='</div>';
   return h;
 }
