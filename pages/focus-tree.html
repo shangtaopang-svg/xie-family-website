@@ -19,6 +19,134 @@ body{background:#0f0f13;color:#e0e0e0;font-family:"Noto Serif SC","SimSun",serif
 <div class="sr-box"><div class="sr" id="sr"></div></div>
 <div id="tree"></div>
 <script>
+function getFullSeedData() {
+    return [
+      {id:1,name:'谢小四',gender:'男',generation:'—',generation_num:0,branch:'石马(下谢)',birth_date:'宋靖康年间',is_alive:'否',highlight:true,biography:'会稽人，宋靖康年间迁居石马，入浙东之近祖。下枫槎谢氏之直系渊源。'},
+      {id:2,name:'文杲公',gender:'男',generation:'—',generation_num:1,branch:'枫槎始祖',father_id:1,birth_date:'北宋宣和(约1125)',is_alive:'否',highlight:true,biography:'字克源，宋登仕郎，越溪司巡检。英敏卓荦，文武兼备，始居岩下，为枫槎谢氏之始迁祖。至今近九百载，传三十六世。'},
+      {id:3,name:'攒公',gender:'男',generation:'—',generation_num:2,branch:'后枫槎派',father_id:2,is_alive:'否',highlight:true,biography:'文杲公长子，分居后枫槎，开一派之先河。'},
+      {id:4,name:'撰公',gender:'男',generation:'—',generation_num:2,branch:'前枫槎派',father_id:2,is_alive:'否',highlight:true,biography:'文杲公次子，分居前枫槎，与前枫槎派并立。'},
+      {id:5,name:'彬公',gender:'男',generation:'—',generation_num:16,branch:'后枫槎东房',birth_date:'明隆庆壬申(1572)',is_alive:'否',highlight:true,biography:'字叔仅，十六世祖。明隆庆六年壬申（1572年），时遭洪水之患，岁季始迁枫槎，为下枫槎开基之祖。'},
+      {id:6,name:'乾公',gender:'男',generation:'—',generation_num:16,branch:'后枫槎东房',birth_date:'明隆庆壬申(1572)',is_alive:'否',highlight:true,biography:'与彬公昆仲，明隆庆六年壬申（1572年），山洪暴发，庐舍为墟。与彬公相度地势，遂迁于双枫古槎之下，因名其地曰下枫槎。'},
+      {id:7,name:'云先公',gender:'男',generation:'之',generation_num:21,branch:'西大房二份',birth_date:'清乾隆间',is_alive:'否',biography:'名大性，西大房二份之祖。乾隆二十七年（1762年）首倡并主持修建下枫槎谢氏宗祠，敦睦堂由此而立。'},
+      {id:8,name:'文对',gender:'男',generation:'—',generation_num:1,branch:'枫槎分支',father_id:2,is_alive:'否',highlight:true,biography:'文杲公之子，枫槎谢氏分支祖。'}
+    ];
+  }
+  function getGenealogyData() {
+  // Simply return localStorage data, no seed merging
+  try {
+    var stored = localStorage.getItem('xie_admin_genealogy');
+    if (stored) {
+      var data = JSON.parse(stored);
+      return data;
+    }
+  } catch(e) {}
+  // Fallback: seed data when nothing in localStorage
+  var seed = getFullSeedData();
+  localStorage.setItem('xie_admin_genealogy', JSON.stringify(seed));
+  return seed;
+}
+
+
+
+function esc(t){if(!t)return'';return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function gc(p){
+  if(!p||!p.branch)return'#666';
+  if(p.branch.indexOf('后枫槎')>=0)return'#22c55e';
+  if(p.branch.indexOf('前枫槎')>=0)return'#6366f1';
+  if(p.branch.indexOf('石马')>=0)return'#f59e0b';
+  return'#666';
+}
+
+function buildTree(p){
+  if(!p)return'<div style="padding:40px;color:rgba(255,255,255,0.3);">未找到</div>';
+  var col=gc(p);
+  var gen=p.generation_num?'第'+p.generation_num+'世':'';
+  var gi=p.gender==='女'?'👩':'👤';
+  var h='<div style="text-align:center;width:100%;">';
+  // Parent
+  if(p.father_id!=null){
+    var f=null;for(var i=0;i<allData.length;i++){if(allData[i].id===p.father_id){f=allData[i];break;}}
+    if(f){
+      var fcol=gc(f);
+      h+='<div onclick="show('+f.id+')" style="cursor:pointer;display:inline-block;padding:6px 18px;border-radius:8px;border:2px solid '+fcol+'40;background:'+fcol+'15;margin-bottom:8px;">';
+      h+='<div style="font-size:15px;font-weight:600;color:#fff;">'+esc(f.name)+'</div>';
+      h+='<div style="font-size:10px;color:rgba(255,255,255,0.35);">'+(f.generation_num?'第'+f.generation_num+'世':'')+'</div></div>';
+      h+='<div style="width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;"></div>';
+    }
+  }
+  // Self
+  h+='<div style="display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid '+col+';background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);">';
+  h+='<div style="font-size:18px;font-weight:700;color:#fff;">'+gi+' '+esc(p.name)+'</div>';
+  h+='<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">'+gen+(p.branch&&p.branch!=='—'?' · '+esc(p.branch):'')+'</div></div>';
+  // Children
+  var kids=[];
+  for(var i=0;i<allData.length;i++){if(allData[i].father_id===p.id)kids.push(allData[i]);}
+  if(kids.length>0){
+    h+='<div style="width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;"></div>';
+    if(kids.length>1)h+='<div style="position:relative;width:80%;height:1px;margin:0 auto;"><div style="position:absolute;top:0;left:10%;width:80%;height:1px;background:rgba(255,255,255,0.08);"></div></div>';
+    h+='<div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;">';
+    kids.slice(0,10).forEach(function(c){
+      var ccol=gc(c);var hl=!!(c.highlight||/^(申伯|小四公|文杲公|攒公|撰公|彬公|乾公)$/.test(c.name));
+      h+='<div style="display:flex;flex-direction:column;align-items:center;">';
+      h+='<div style="width:2px;height:14px;background:rgba(255,255,255,0.1);"></div>';
+      h+='<div onclick="show('+c.id+')" style="cursor:pointer;padding:5px 14px;border-radius:8px;border:2px solid '+ccol+'40;background:'+(hl?ccol+'15':'transparent')+';">';
+      h+='<div style="font-size:14px;font-weight:600;color:#fff;">'+esc(c.name)+'</div>';
+      h+='<div style="font-size:10px;color:rgba(255,255,255,0.35);">'+(c.generation_num?'第'+c.generation_num+'世':'')+'</div></div></div>';
+    });
+    if(kids.length>10)h+='<div style="padding:6px;font-size:11px;color:rgba(255,255,255,0.3);">+其他'+(kids.length-10)+'人</div>';
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
+}
+
+var allData = [];
+var currentId = null;
+
+function show(id){
+  currentId=id;
+  var p=null;for(var i=0;i<allData.length;i++){if(allData[i].id===id){p=allData[i];break;}}
+  document.getElementById('tree').innerHTML=buildTree(p);
+}
+
+function loadData(){
+  try{allData=(typeof getGenealogyData==='function')?getGenealogyData():[];}catch(e){}
+  if(!allData||!allData.length){document.getElementById('tree').innerHTML='<div style="padding:60px;text-align:center;color:rgba(255,255,255,0.3);">暂无数据</div>';return;}
+  var defaultId=null;
+  for(var i=0;i<allData.length;i++){if(allData[i].name&&allData[i].name.indexOf('文杲')>=0){defaultId=allData[i].id;break;}}
+  if(!defaultId&&allData.length>0)defaultId=allData[0].id;
+  show(defaultId);
+}
+
+var si=document.getElementById('s');
+var sr=document.getElementById('sr');
+si.oninput=function(){
+  var q=this.value.trim();
+  if(!q){sr.style.display='none';if(currentId)show(currentId);return;}
+  var matches=[];
+  for(var i=0;i<allData.length;i++){
+    if(allData[i].name&&allData[i].name.indexOf(q)>=0){
+      matches.push(allData[i]);
+    }
+  }
+  if(matches.length===0){sr.innerHTML='<div style="padding:10px;color:rgba(255,255,255,0.3);font-size:13px;">未找到</div>';sr.style.display='block';return;}
+  sr.innerHTML=matches.slice(0,15).map(function(m){
+    var gen=m.generation_num?'第'+m.generation_num+'世':'';
+    return '<div class="si" onclick="show('+m.id+');si.value='';sr.style.display='none';">'+esc(m.name)+'<span class="sg">'+gen+'</span></div>';
+  }).join('');
+  sr.style.display='block';
+};
+si.onblur=function(){setTimeout(function(){sr.style.display='none';},300);};
+si.onfocus=function(){if(this.value.trim())sr.style.display='block';};
+
+// Boot
+function boot(){
+  if(document.getElementById('s')&&typeof getGenealogyData==='function'){loadData();}
+  else setTimeout(boot,200);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);
+else setTimeout(boot,50);
 var trees = {"1": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #f59e0b;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">谢小四</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\"> · 石马(下谢)</div></div><div style=\"width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;\"></div><div style=\"display:flex;justify-content:center;gap:16px;flex-wrap:wrap;\"><div style=\"display:flex;flex-direction:column;align-items:center;\"><div style=\"width:2px;height:14px;background:rgba(255,255,255,0.1);\"></div><div style=\"cursor:pointer;padding:5px 14px;border-radius:8px;border:2px solid #66640;background:#66615;\"><div style=\"font-size:14px;font-weight:600;color:#fff;\">文杲公</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第1世</div></div></div></div></div>", "2": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:6px 18px;border-radius:8px;border:2px solid #f59e0b40;background:#f59e0b15;\"><div style=\"font-size:15px;font-weight:600;color:#fff;\">谢小四</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\"></div></div><div style=\"width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;\"></div><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #666;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">文杲公</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第1世 · 枫槎始祖</div></div><div style=\"width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;\"></div><div style=\"position:relative;width:80%;height:1px;margin:0 auto;\"><div style=\"position:absolute;top:0;left:10%;width:80%;height:1px;background:rgba(255,255,255,0.08);\"></div></div><div style=\"display:flex;justify-content:center;gap:16px;flex-wrap:wrap;\"><div style=\"display:flex;flex-direction:column;align-items:center;\"><div style=\"width:2px;height:14px;background:rgba(255,255,255,0.1);\"></div><div style=\"cursor:pointer;padding:5px 14px;border-radius:8px;border:2px solid #22c55e40;background:#22c55e15;\"><div style=\"font-size:14px;font-weight:600;color:#fff;\">攒公</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第2世</div></div></div><div style=\"display:flex;flex-direction:column;align-items:center;\"><div style=\"width:2px;height:14px;background:rgba(255,255,255,0.1);\"></div><div style=\"cursor:pointer;padding:5px 14px;border-radius:8px;border:2px solid #6366f140;background:#6366f115;\"><div style=\"font-size:14px;font-weight:600;color:#fff;\">撰公</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第2世</div></div></div><div style=\"display:flex;flex-direction:column;align-items:center;\"><div style=\"width:2px;height:14px;background:rgba(255,255,255,0.1);\"></div><div style=\"cursor:pointer;padding:5px 14px;border-radius:8px;border:2px solid #66640;background:#66615;\"><div style=\"font-size:14px;font-weight:600;color:#fff;\">文对</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第1世</div></div></div></div></div>", "3": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:6px 18px;border-radius:8px;border:2px solid #66640;background:#66615;\"><div style=\"font-size:15px;font-weight:600;color:#fff;\">文杲公</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第1世</div></div><div style=\"width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;\"></div><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #22c55e;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">攒公</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第2世 · 后枫槎派</div></div></div>", "4": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:6px 18px;border-radius:8px;border:2px solid #66640;background:#66615;\"><div style=\"font-size:15px;font-weight:600;color:#fff;\">文杲公</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第1世</div></div><div style=\"width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;\"></div><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #6366f1;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">撰公</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第2世 · 前枫槎派</div></div></div>", "5": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #22c55e;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">彬公</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第16世 · 后枫槎东房</div></div></div>", "6": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #22c55e;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">乾公</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第16世 · 后枫槎东房</div></div></div>", "7": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #666;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">云先公</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第21世 · 西大房二份</div></div></div>", "8": "<div class=\"tree\" style=\"text-align:center;\"><div style=\"display:inline-block;padding:6px 18px;border-radius:8px;border:2px solid #66640;background:#66615;\"><div style=\"font-size:15px;font-weight:600;color:#fff;\">文杲公</div><div style=\"font-size:10px;color:rgba(255,255,255,0.35);\">第1世</div></div><div style=\"width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;\"></div><div style=\"display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid #666;background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);\"><div style=\"font-size:18px;font-weight:700;color:#fff;\">文对</div><div style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;\">第1世 · 枫槎分支</div></div></div>"};
 var names = {"1": "谢小四", "2": "文杲公", "3": "攒公", "4": "撰公", "5": "彬公", "6": "乾公", "7": "云先公", "8": "文对"};
 var genMap = {"2": "第1世", "3": "第2世", "4": "第2世", "5": "第16世", "6": "第16世", "7": "第21世", "8": "第1世"};
