@@ -265,7 +265,7 @@ function getFullSeedData() {
     t += '</div>';
 
     t += '</div>';
-    document.getElementById('tree-area').innerHTML = t;
+    try { document.getElementById('tree-area').innerHTML = t; } catch(e) { document.getElementById('tree-area').innerHTML = '<div style=\"padding:40px;text-align:center;color:#ef4444;\">渲染出错: ' + e.message + '</div>'; }
 
     // Detail panel
     var dp = document.getElementById('detail-panel');
