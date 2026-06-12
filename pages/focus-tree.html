@@ -67,7 +67,7 @@ function buildTree(p){
   var gen=p.generation_num?'第'+p.generation_num+'世':'';
   var gi=p.gender==='女'?'👩':'👤';
   var h='<div style="text-align:center;width:100%;">';
-  if(p.father_id!=null&&p.father_id!==0){
+  if(p.father_id&&p.father_id!==0&&p.father_id!==''&&p.father_id!=='0'){
     var fid=Number(p.father_id);var f=null;for(var i=0;i<allData.length;i++){if(Number(allData[i].id)===fid){f=allData[i];break;}}
     if(f){
       var fcol=gc(f);
@@ -81,7 +81,7 @@ function buildTree(p){
   h+='<div style="font-size:18px;font-weight:700;color:#fff;">'+gi+' '+esc(p.name)+'</div>';
   h+='<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">'+gen+(p.branch&&p.branch!=='—'?' · '+esc(p.branch):'')+'</div></div>';
   var kids=[];
-  for(var i=0;i<allData.length;i++){if(Number(allData[i].father_id)===Number(p.id))kids.push(allData[i]);}
+  for(var i=0;i<allData.length;i++){if(allData[i].father_id&&Number(allData[i].father_id)===Number(p.id))kids.push(allData[i]);}
   if(kids.length>0){
     h+='<div style="width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;"></div>';
     if(kids.length>1)h+='<div style="position:relative;width:80%;height:1px;margin:0 auto;"><div style="position:absolute;top:0;left:10%;width:80%;height:1px;background:rgba(255,255,255,0.08);"></div></div>';
