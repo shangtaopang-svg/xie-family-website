@@ -12,6 +12,7 @@
     container = document.getElementById('genealogy-icicle-container');
     if (!container) return;
     container.style.cssText = 'position:relative;width:100%;overflow:auto;';
+    container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-tertiary);">加载世系数据...</div>';
     loadData();
   }
 
@@ -179,14 +180,23 @@
 
   function esc(t) { if (!t) return ''; var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
-  // Boot
+  // Boot - run immediately
   function boot() {
     try {
-      if (document.getElementById('genealogy-icicle-container') && typeof getGenealogyData === 'function') init();
-      else setTimeout(boot, 300);
-    } catch (e) { setTimeout(boot, 500); }
+      if (document.getElementById('genealogy-icicle-container') && typeof getGenealogyData === 'function') {
+        init();
+      } else {
+        setTimeout(boot, 200);
+      }
+    } catch (e) {
+      var c = document.getElementById('genealogy-icicle-container');
+      if (c) c.innerHTML = '<div style="padding:40px;text-align:center;color:#ef4444;font-size:13px;">加载出错: ' + e.message + '</div>';
+    }
   }
-  if (document.readyState === 'complete' || document.readyState === 'interactive') setTimeout(boot, 100);
-  else document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 100); });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    setTimeout(boot, 50);
+  }
 
 })();
