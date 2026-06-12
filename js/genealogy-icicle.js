@@ -44,6 +44,16 @@
     var roots = data.filter(function (p) { return p.father_id == null || !existingIds[parseInt(p.father_id)]; });
     if (roots.length === 0 && data.length > 0) roots = [data[0]];
 
+    // Prefer the root with Xie-family branches (枫槎/石马), fallback to the one with most descendants
+    roots.sort(function (a, b) {
+      var aIsXie = (a.branch && a.branch.indexOf('枫槎') >= 0) || (a.branch && a.branch.indexOf('石马') >= 0) || (a.name && a.name.indexOf('杲') >= 0) || (a.name && a.name.indexOf('彬') >= 0) || (a.name && a.name.indexOf('乾') >= 0) ? 1 : 0;
+      var bIsXie = (b.branch && b.branch.indexOf('枫槎') >= 0) || (b.branch && b.branch.indexOf('石马') >= 0) || (b.name && b.name.indexOf('杲') >= 0) || (b.name && b.name.indexOf('彬') >= 0) || (b.name && b.name.indexOf('乾') >= 0) ? 1 : 0;
+      if (aIsXie !== bIsXie) return bIsXie - aIsXie;
+      return (b._descCount || 0) - (a._descCount || 0);
+    });
+    // Keep only top roots (max 2)
+    if (roots.length > 2) roots = roots.slice(0, 2);
+
     // Sort roots by descendant count
     roots.forEach(function (r) { r._descCount = countDescendants(r.id); });
     roots.sort(function (a, b) { return b._descCount - a._descCount; });
