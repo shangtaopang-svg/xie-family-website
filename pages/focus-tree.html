@@ -111,7 +111,7 @@ function loadData(){
   try{allData=(typeof getGenealogyData==='function')?getGenealogyData():[];}catch(e){}
   if(!allData||!allData.length){document.getElementById('tree').innerHTML='<div style="padding:60px;text-align:center;color:rgba(255,255,255,0.3);">暂无数据</div>';return;}
   var did=null;
-  for(var i=0;i<allData.length;i++){if(allData[i].name&&allData[i].name.indexOf('文柲')>=0){did=allData[i].id;break;}}
+  for(var i=0;i<allData.length;i++){if(allData[i].name&&allData[i].name.indexOf('文杲')>=0){did=allData[i].id;break;}}
   if(!did&&allData.length>0)did=allData[0].id;
   show(did);
 }
@@ -126,14 +126,14 @@ si.oninput=function(){
     if(allData[i].name&&allData[i].name.indexOf(q)>=0)matches.push(allData[i]);
   }
   if(matches.length===0){sr.innerHTML='<div style="padding:10px;color:rgba(255,255,255,0.3);font-size:13px;">未找到</div>';sr.style.display='block';return;}
-  sr.innerHTML=matches.slice(0,15).map(function(m){
-    var gen=m.generation_num?'第'+m.generation_num+'世':'';
-    return '<div class="si" onclick="show('+m.id+');si.value='';sr.style.display='none';">'+esc(m.name)+'<span class="sg">'+gen+'</span></div>';
-  }).join('');
-  sr.style.display='block';
+  var sshtml='';
+  for(var mi=0;mi<Math.min(matches.length,15);mi++){
+    var m=matches[mi];var gen=m.generation_num?'第'+m.generation_num+'世':'';
+    sshtml+='<div class="si" data-sid="'+m.id+'">'+esc(m.name)+'<span class="sg">'+gen+'</span></div>';
+  }
+  sr.innerHTML=sshtml;
+  sr.querySelectorAll('.si').forEach(function(el){el.onclick=function(){var id=parseInt(this.getAttribute('data-sid'));show(id);si.value='';sr.style.display='none';};});
 };
-si.onblur=function(){setTimeout(function(){sr.style.display='none';},300);};
-si.onfocus=function(){if(this.value.trim())sr.style.display='block';};
 
 // Boot
 try{
