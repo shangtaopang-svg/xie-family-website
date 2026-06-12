@@ -280,18 +280,32 @@ var isFullMode = false;
 var modeBtn = document.getElementById('mode-toggle');
 
 function renderFullTree(){
-  var genMap={}, genList=[];
-  // Find 文杲公's generation as starting point
-  var startGen = 0;
+  // Find 文杲公 and collect only his descendants
+  var wenGao = null, wenGaoId = null;
   for(var i=0;i<allData.length;i++){
     if(allData[i].name && allData[i].name.indexOf('文杲')>=0){
-      startGen = parseInt(allData[i].generation_num)||0;
-      break;
+      wenGao = allData[i]; wenGaoId = allData[i].id; break;
     }
   }
+  // Collect all descendants of 文杲公
+  var xieIds = {};
+  if(wenGaoId){
+    function collectKids(pid){
+      if(xieIds[pid])return;
+      xieIds[pid]=true;
+      for(var i=0;i<allData.length;i++){
+        if(allData[i].father_id && Number(allData[i].father_id)===Number(pid)){
+          collectKids(allData[i].id);
+        }
+      }
+    }
+    collectKids(wenGaoId);
+  }
+
+  var genMap={}, genList=[];
   allData.forEach(function(p){
+    if(!xieIds[p.id])return; // Only 文杲公 lineage
     var g = parseInt(p.generation_num)||0;
-    if(g<startGen)return;
     if(!genMap[g]){genMap[g]=[];genList.push(g);}
     genMap[g].push(p);
   });
