@@ -250,17 +250,21 @@
 .genealogy-tree-scroll { overflow:hidden; border:1px solid var(--glass-border); border-radius:12px; background:var(--bg-card); cursor:grab; min-height:500px; position:relative; width:100%; }
 .tree-connector-layer { position:absolute;top:0;left:0;z-index:0; }
 .tree-cards-layer { position:relative;z-index:1; }
-.tree-html-card { position:absolute;border-radius:8px;background:var(--glass-bg);border:2px solid var(--glass-border);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;transition:border-color 0.15s,box-shadow 0.15s;padding:4px;box-sizing:border-box; }
-.tree-html-card:hover { border-color:var(--accent-orange);box-shadow:0 0 0 2px rgba(251,146,60,0.15);z-index:10; }
-.tree-html-card.highlight { border-color:#ff6b00;background:rgba(255,107,0,0.1);box-shadow:0 0 0 3px rgba(255,107,0,0.2); }
-.tree-html-card .star { position:absolute;top:2px;right:4px;font-size:12px;line-height:1; }
-.tree-html-card .card-name { font-size:13px;font-weight:600;color:var(--text-primary);text-align:center;line-height:1.3;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-.tree-html-card .card-meta { font-size:10px;color:var(--text-tertiary);text-align:center;line-height:1.3;margin-top:1px; }
-.tree-html-card .card-expand { font-size:9px;color:var(--accent-orange);cursor:pointer;margin-top:2px;text-align:center;line-height:1.2; }
+.tree-html-card { position:absolute;border-radius:10px;background:var(--glass-bg);border:2.5px solid var(--glass-border);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;transition:border-color 0.15s,box-shadow 0.15s;padding:6px;box-sizing:border-box; }
+.tree-html-card:hover { border-color:var(--accent-orange);box-shadow:0 0 0 3px rgba(251,146,60,0.2);z-index:10; }
+.tree-html-card.highlight { border-color:#ff6b00;background:rgba(255,107,0,0.12);box-shadow:0 0 0 4px rgba(255,107,0,0.25); }
+.tree-html-card.branch-houfengcha { border-color:#22c55e;background:rgba(34,197,94,0.08); }
+.tree-html-card.branch-qianfengcha { border-color:#6366f1;background:rgba(99,102,241,0.08); }
+.tree-html-card.branch-shima { border-color:#f59e0b;background:rgba(245,158,11,0.08); }
+.tree-html-card .star { position:absolute;top:2px;right:6px;font-size:14px;line-height:1; }
+.tree-html-card .card-name { font-size:15px;font-weight:700;color:var(--text-primary);text-align:center;line-height:1.4;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 4px; }
+.tree-html-card .card-meta { font-size:11px;color:var(--text-tertiary);text-align:center;line-height:1.3;margin-top:2px; }
+.tree-html-card .card-expand { font-size:10px;color:var(--accent-orange);cursor:pointer;margin-top:3px;text-align:center;line-height:1.2;font-weight:600; }
 .tree-html-card .card-expand:hover { text-decoration:underline; }
 .tree-html-card.highlight-name { border-color:#ff5555;background:rgba(255,85,85,0.12);box-shadow:0 0 10px rgba(255,85,85,0.3);z-index:20; }
 .tree-html-card.highlight-name .card-name { color:#ff5555;font-size:16px;font-weight:800; }
-.tree-connector { stroke:var(--accent-orange); stroke-width:1.5; fill:none; opacity:0.25; }
+.tree-connector { stroke:var(--accent-orange); stroke-width:2.5; fill:none; opacity:0.4; }
+.tree-connector-h { stroke:var(--accent-orange); stroke-width:2; fill:none; opacity:0.3; }
 /* Summary card for overview */
 
 .tree-connector { stroke:var(--accent-orange); stroke-width:1.5; fill:none; opacity:0.25; }
@@ -393,7 +397,7 @@ function getPersonNameById(id, data) {
   }
 
   // ===== SVG Tree rendering =====
-var CARD_W = 150, CARD_H = 85, H_GAP = 50, V_GAP = 110;
+var CARD_W = 180, CARD_H = 100, H_GAP = 60, V_GAP = 140;
 var treeScale = 1, treePanX = 0, treePanY = 0;
 var treeLayout = {}; // { personId: {x, y} }
 var allNodes = [];
@@ -780,7 +784,11 @@ function renderTreeSVG(data) {
     var isHidden = collapsedNodes[pid] && getFilteredChildren(person, data).length > 0;
     var style = 'left:' + (p.x - CARD_W/2) + 'px;top:' + (p.y - CARD_H/2) + 'px;width:' + CARD_W + 'px;height:' + CARD_H + 'px;';
     if (isHidden) style += 'display:none;';
-    html += '<div class="tree-html-card' + (isHighlight ? ' highlight' : '') + '" data-id="' + pid + '" onclick="onCardClick(' + pid + ', event)" style="' + style + '">';
+    var branchClass = '';
+	    if (person.branch && person.branch.indexOf('后枫槎') >= 0) branchClass = ' branch-houfengcha';
+	    else if (person.branch && person.branch.indexOf('前枫槎') >= 0) branchClass = ' branch-qianfengcha';
+	    else if (person.branch && person.branch.indexOf('石马') >= 0) branchClass = ' branch-shima';
+	    html += '<div class="tree-html-card' + (isHighlight ? ' highlight' : '') + branchClass + '" data-id="' + pid + '" onclick="onCardClick(' + pid + ', event)" style="' + style + '">';
     if (isHighlight) html += '<span class="star">⭐</span>';
     html += '<div class="card-name">' + escapeHtml(person.name || '未知') + '</div>';
     var meta = [];
