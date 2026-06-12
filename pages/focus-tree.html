@@ -61,42 +61,97 @@ function gc(p){
 var allData = [];
 var curId = null;
 
+function findPerson(id){
+  for(var i=0;i<allData.length;i++){if(Number(allData[i].id)===Number(id))return allData[i];}
+  return null;
+}
+
+function getFather(p){
+  if(!p||!p.father_id||p.father_id===0||p.father_id===''||p.father_id==='0')return null;
+  return findPerson(Number(p.father_id));
+}
+
+function getChildren(pid){
+  var result=[];
+  for(var i=0;i<allData.length;i++){
+    if(allData[i].father_id&&Number(allData[i].father_id)===Number(pid))result.push(allData[i]);
+  }
+  return result;
+}
+
+// Ancestor chain: go up 10 generations
+function buildAncestors(p, maxGen){
+  var chain=[];
+  var cur=p;
+  for(var i=0;i<maxGen;i++){
+    var f=getFather(cur);
+    if(!f)break;
+    chain.unshift(f);
+    cur=f;
+  }
+  return chain;
+}
+
+// Build descendant tree recursively (limited depth and width)
+function buildDescendantTree(pid, depth, maxDepth, maxWidth){
+  if(depth>maxDepth)return'';
+  var kids=getChildren(pid);
+  if(kids.length===0)return'';
+  var h='';
+  h+='<div style="width:2px;height:14px;background:rgba(255,255,255,0.08);margin:0 auto;"></div>';
+  if(kids.length>1){
+    h+='<div style="position:relative;width:80%;height:1px;margin:0 auto;"><div style="position:absolute;top:0;left:10%;width:80%;height:1px;background:rgba(255,255,255,0.08);"></div></div>';
+  }
+  var shown=kids.slice(0,maxWidth);
+  h+='<div style="display:flex;justify-content:center;gap:'+(kids.length>5?'6px':'10px')+';flex-wrap:wrap;">';
+  shown.forEach(function(c){
+    var ccol=gc(c);
+    var hl=!!(c.highlight||/^(申伯|小四公|文杲公|攒公|撰公|彬公|乾公)$/.test(c.name));
+    h+='<div style="display:flex;flex-direction:column;align-items:center;">';
+    h+='<div onclick="show('+c.id+')" style="cursor:pointer;padding:'+(depth>2?'2px 6px':'4px 10px')+';border-radius:6px;border:2px solid '+ccol+'40;background:'+(hl?ccol+'15':'transparent')+';min-width:'+(depth>2?'30px':'40px')+';">';
+    h+='<div style="font-size:'+(depth>2?'10px':'12px')+';font-weight:600;color:#fff;">'+esc(c.name)+'</div>';
+    h+='<div style="font-size:9px;color:rgba(255,255,255,0.3);">'+(c.generation_num?'第'+c.generation_num+'世':'')+'</div></div>';
+    // Recursively show grandchildren
+    if(depth<maxDepth){
+      h+=buildDescendantTree(c.id, depth+1, maxDepth, maxWidth);
+    }
+    h+='</div>';
+  });
+  if(kids.length>maxWidth){
+    h+='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="padding:4px 8px;font-size:10px;color:rgba(255,255,255,0.3);">+其他'+(kids.length-maxWidth)+'人</div></div>';
+  }
+  h+='</div>';
+  return h;
+}
+
 function buildTree(p){
   if(!p)return'<div style="padding:40px;color:rgba(255,255,255,0.3);">未找到</div>';
   var col=gc(p);
   var gen=p.generation_num?'第'+p.generation_num+'世':'';
   var gi=p.gender==='女'?'👩':'👤';
-  var h='<div style="text-align:center;width:100%;">';
-  if(p.father_id&&p.father_id!==0&&p.father_id!==''&&p.father_id!=='0'){
-    var fid=Number(p.father_id);var f=null;for(var i=0;i<allData.length;i++){if(Number(allData[i].id)===fid){f=allData[i];break;}}
-    if(f){
-      var fcol=gc(f);
-      h+='<div onclick="show('+f.id+')" style="cursor:pointer;display:inline-block;padding:6px 18px;border-radius:8px;border:2px solid '+fcol+'40;background:'+fcol+'15;margin-bottom:8px;">';
-      h+='<div style="font-size:15px;font-weight:600;color:#fff;">'+esc(f.name)+'</div>';
-      h+='<div style="font-size:10px;color:rgba(255,255,255,0.35);">'+(f.generation_num?'第'+f.generation_num+'世':'')+'</div></div>';
-      h+='<div style="width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;"></div>';
-    }
-  }
+
+  // Build ancestor chain (10 generations up)
+  var ancestors=buildAncestors(p,10);
+
+  var h='<div style="text-align:center;width:100%;overflow-x:auto;padding:10px 0;">';
+
+  // Show ancestors (oldest first, then down to current person)
+  ancestors.forEach(function(a){
+    var acol=gc(a);
+    h+='<div onclick="show('+a.id+')" style="cursor:pointer;display:inline-block;padding:4px 14px;border-radius:6px;border:1px solid '+acol+'30;background:'+acol+'10;margin-bottom:2px;">';
+    h+='<div style="font-size:13px;font-weight:600;color:#fff;">'+esc(a.name)+'</div>';
+    h+='<div style="font-size:9px;color:rgba(255,255,255,0.3);">'+(a.generation_num?'第'+a.generation_num+'世':'')+'</div></div>';
+    h+='<div style="width:2px;height:12px;background:rgba(255,255,255,0.08);margin:0 auto;"></div>';
+  });
+
+  // Current person
   h+='<div style="display:inline-block;padding:8px 22px;border-radius:10px;border:2px solid '+col+';background:rgba(251,146,60,0.12);box-shadow:0 0 20px rgba(251,146,60,0.15);">';
   h+='<div style="font-size:18px;font-weight:700;color:#fff;">'+gi+' '+esc(p.name)+'</div>';
   h+='<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">'+gen+(p.branch&&p.branch!=='—'?' · '+esc(p.branch):'')+'</div></div>';
-  var kids=[];
-  for(var i=0;i<allData.length;i++){if(allData[i].father_id&&Number(allData[i].father_id)===Number(p.id))kids.push(allData[i]);}
-  if(kids.length>0){
-    h+='<div style="width:2px;height:20px;background:rgba(255,255,255,0.1);margin:0 auto;"></div>';
-    if(kids.length>1)h+='<div style="position:relative;width:80%;height:1px;margin:0 auto;"><div style="position:absolute;top:0;left:10%;width:80%;height:1px;background:rgba(255,255,255,0.08);"></div></div>';
-    h+='<div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;">';
-    kids.slice(0,10).forEach(function(c){
-      var ccol=gc(c);var hl=!!(c.highlight||/^(申伯|小四公|文杲公|攒公|撰公|彬公|乾公)$/.test(c.name));
-      h+='<div style="display:flex;flex-direction:column;align-items:center;">';
-      h+='<div style="width:2px;height:14px;background:rgba(255,255,255,0.1);"></div>';
-      h+='<div onclick="show('+c.id+')" style="cursor:pointer;padding:5px 14px;border-radius:8px;border:2px solid '+ccol+'40;background:'+(hl?ccol+'15':'transparent')+';">';
-      h+='<div style="font-size:14px;font-weight:600;color:#fff;">'+esc(c.name)+'</div>';
-      h+='<div style="font-size:10px;color:rgba(255,255,255,0.35);">'+(c.generation_num?'第'+c.generation_num+'世':'')+'</div></div></div>';
-    });
-    if(kids.length>10)h+='<div style="padding:6px;font-size:11px;color:rgba(255,255,255,0.3);">+其他'+(kids.length-10)+'人</div>';
-    h+='</div>';
-  }
+
+  // Descendants (recursive, 5 generations down, max 6 wide)
+  h+=buildDescendantTree(p.id, 1, 5, 6);
+
   h+='</div>';
   return h;
 }
