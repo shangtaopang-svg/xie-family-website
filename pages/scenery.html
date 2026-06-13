@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>风物古迹 · 下枫槎谢氏</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css?v=3">
+  <script defer src="../js/i18n.js"></script>
+  <style>
+    .zoom-in-title {
+      animation: zoomIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes zoomIn {
+      0%   { opacity: 0; transform: scale(0.3); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    .float-in {
+      animation: floatIn 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes floatIn {
+      0%   { opacity: 0; transform: translateY(40px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+  <link rel="manifest" href="../manifest.json">
+  <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
+</head>
+<body>
+
+<div class="content">
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        <div class="logo-icon">谢</div>
+        <div class="logo-text"><h1>下枫槎谢氏</h1><small>宁海 · 下枫槎村</small></div>
+      </a>
+      <button class="nav-toggle" data-i18n-aria="nav.toggle" aria-label="菜单">☰</button>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="../index.html" data-i18n="nav.home">首页</a></li>
+          <li><a href="history.html" data-i18n="nav.history">家族历史</a></li>
+          <li><a href="genealogy.html">族谱查询</a>
+          <li><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a></li>
+          
+          <li><a href="scenery.html" class="active">风物古迹</a></li>
+          <li><a href="news.html" data-i18n="nav.news">消息发布</a></li>
+          <li><a href="members.html" data-i18n="nav.members">家族成员</a></li>
+          <li><a href="activities.html" data-i18n="nav.activities">家族活动</a></li>
+          <li><a href="today.html" data-i18n="nav.today">今日下枫槎</a></li>
+          <li><a href="reports.html" data-i18n="nav.reports">新闻报道</a></li>
+          <li><a href="contact.html" data-i18n="nav.contact">联系我们</a></li>
+          <li><a href="admin.html" style="color:var(--accent-orange);">🔐 管理后台</a></li>
+        </ul>
+        <div class="sidebar-controls">
+          <div class="sc-row">
+            <button class="weather-btn" data-weather="off" title="关闭特效">✕</button>
+            <button class="weather-btn" data-weather="sunny" title="晴天">☀</button>
+            <button class="weather-btn" data-weather="rain" title="下雨">🌧</button>
+            <button class="weather-btn" data-weather="snow" title="下雪">❄</button>
+            <button class="weather-btn" data-weather="meteor" title="流星">☄</button>
+          </div>
+          <div class="sc-row">
+            <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
+            <button class="nav-action-btn lang-btn" id="lang-toggle" data-i18n-title="nav.lang" title="中英文切换">EN</button>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrap">
+    <div class="page-title">
+      <h2 class="zoom-in-title">风物古迹</h2>
+      <p>七殿庙 · 红岩潭 · 望府楼山 · 枫槎岭 · 古井 · 祠堂</p>
+    </div>
+
+    <!-- ===== 七殿庙 ===== -->
+    <section id="qidianmiao" class="float-in" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>⛩️ 七殿庙</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="glass-card" style="padding:36px;">
+        <div style="max-width:720px;margin:0 auto;font-family:'Noto Serif SC',serif;font-size:15px;line-height:2.2;color:var(--text-secondary);text-align:justify;">
+          <p style="margin-bottom:1.2em;">
+            七殿庙位于下枫槎村北面500米的西山山脚，因原有殿七个，故称<strong style="color:var(--accent-orange);">七殿庙</strong>，主奉玉皇大帝。约建于清代中期，距今200余年历史。
+          </p>
+          <p style="margin-bottom:1.2em;">
+            庙坐东朝西，有正殿三间、厢房二间、庭院100余平方米。正殿正中奉<strong>玉皇大帝与王母娘娘</strong>，东边为土地爷、土地婆，西边为财神菩萨、文昌菩萨，两侧奉四大金刚。文革中遭破坏，1993年10月村民集资重修。
+          </p>
+          <p style="margin-bottom:0;">
+            庙中有<strong style="color:var(--accent-orange);">玉皇大帝抬阁</strong>一尊。每逢村里重大喜庆或演戏，则由四人将玉皇大帝（当地称"正主人爷"）扛出，敲锣打鼓进行游行，一时热闹非凡。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 红岩潭 ===== -->
+    <section id="hongyantan" class="float-in" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>💧 红岩潭</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="glass-card" style="padding:36px;">
+        <div style="max-width:720px;margin:0 auto;font-family:'Noto Serif SC',serif;font-size:15px;line-height:2.2;color:var(--text-secondary);text-align:justify;">
+          <p style="margin-bottom:1.2em;">
+            红岩潭位于望府楼山北面、山顶两峰之间。因村民每逢干旱均来此祈雨，故又名<strong style="color:var(--accent-orange);">龙潭</strong>。据旧志载，此潭径尺许，清且深。
+          </p>
+          <p style="margin-bottom:1.2em;">
+            今潭口有所扩大，但亦仅<strong>1米</strong>。潭水清澈，冬暖夏凉。遇干旱，潭面大不过尺、深仅数寸，但泉水汩汩而流，<strong style="color:var(--text-primary);">长年不涸</strong>。
+          </p>
+          <p style="margin-bottom:1.2em;">
+            据《光绪宁海县志》载，望鼓楼山顶有石棋坪，旁有红岩潭，秋夏之际，<strong style="color:var(--accent-orange);">"潭中云起，风雨立至"</strong>。因而被村民目为龙潭。每逢大旱，一市、水车等地村民均来此求雨——扛龙旗、敲锣打鼓、焚香叩拜，往往十分灵验，遂至名声大振。
+          </p>
+          <div style="padding:12px;background:var(--accent-orange-dim);border-radius:8px;font-size:13px;text-align:center;margin-top:12px;">
+            <p style="font-style:italic;">"琅玗双石认仙踪，何事烂柯不再逢。</p>
+            <p style="font-style:italic;">想是乘槎游海上，残坪千载白云封。"</p>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">—— 明 · 宁海诗人禇传中《石棋坪》</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 望府楼山 ===== -->
+    <section id="wangfuloushan" class="float-in" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>⛰️ 望府楼山</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="glass-card" style="padding:36px;">
+        <div style="max-width:720px;margin:0 auto;font-family:'Noto Serif SC',serif;font-size:15px;line-height:2.2;color:var(--text-secondary);text-align:justify;">
+          <p style="margin-bottom:1.2em;">
+            <strong style="color:var(--accent-orange);">望府楼山</strong>位于下枫槎村庄南面，原名"望鼓楼山"，因山顶二山尖正对县城礁楼而得名，后谐音为望府楼山。主峰海拔<strong>523.3米</strong>，属我县南部干山，南接新岭，东北连枫槎岭。
+          </p>
+          <p style="margin-bottom:1.2em;">
+            山原多松、柴，1965年村民在山麓开发茶叶种植，现茶园2000余亩，成为我县茶叶重要产地，所产<strong style="color:var(--accent-orange);">望府银毫</strong>被农业部评为全国名茶。
+          </p>
+          <p style="margin-bottom:0;">
+            山顶有<strong>石棋坪</strong>（今已废），旁有<strong>红岩潭</strong>。明诗人禇传中有《石棋坪》诗咏之。秋夏之际潭中云起，风雨立至，向为祈雨灵地。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 枫槎岭 ===== -->
+    <section id="fengchaling" class="float-in" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>🛤️ 枫槎岭</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="glass-card" style="padding:36px;">
+        <div style="max-width:720px;margin:0 auto;font-family:'Noto Serif SC',serif;font-size:15px;line-height:2.2;color:var(--text-secondary);text-align:justify;">
+          <p style="margin-bottom:1.2em;">
+            枫槎岭位于下枫槎村东南。据传晋代高僧<strong style="color:var(--accent-orange);">昙猷</strong>为弘扬佛法，乘<strong>枫槎</strong>（枫树独木舟）踏海而来，弃槎上岭，岭遂名<strong style="color:var(--text-primary);">枫槎岭</strong>。这是村庄得名的由来。
+          </p>
+          <p style="margin-bottom:1.2em;">
+            枫槎岭全长近<strong>20里</strong>，高点海拔261米，系县城通向东南七市、一市一带的重要交通要道。至岭顶分路两条，东南向至七市、南向至一市。顶上有路廊与庙，供行人歇息饮水，庙奉赵玄坛（赵公元帅），保佑行路之人平安。
+          </p>
+          <p style="margin-bottom:1.2em;">
+            <strong style="color:var(--accent-orange);">"廿里枫槎岗，好人挖黄胖"</strong>——在七市、一市通公路之前，枫槎岭是县城通东南唯一便捷的通道。山两边的货物、农产品、海鲜都要通过这里运送，全靠步行挑担，十分辛苦。
+          </p>
+          <p style="margin-bottom:0;">
+            直至1977年宁海至一市公路开通，两地民众才彻底告别枫槎岭。2008年枫槎岭隧道通车，联接同三高速，彻底解决了城乡交通瓶颈。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 半边井与三角井 ===== -->
+    <section id="wells" class="float-in" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>💧 古井遗存</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="glass-card" style="padding:36px;">
+        <div style="max-width:720px;margin:0 auto;font-family:'Noto Serif SC',serif;font-size:15px;line-height:2.2;color:var(--text-secondary);text-align:justify;">
+          <h3 style="font-size:16px;color:var(--accent-orange);margin-bottom:8px;">半边井</h3>
+          <p style="margin-bottom:1.4em;">
+            位于村西北路口，因井面仅半幅，故名<strong style="color:var(--accent-orange);">半边井</strong>。现有井面50余平方米，原系泥坎，1998年重修砌石。井水来自高山，<strong style="color:var(--text-primary);">十分清澈，冬暖夏凉</strong>，向为村民洗涤用井，名闻周边，水车一带村民亦多来此洗刷。
+          </p>
+          <h3 style="font-size:16px;color:var(--accent-orange);margin-bottom:8px;">三角井</h3>
+          <p style="margin-bottom:0;">
+            位于村北一百米处，因井形似三角，故名<strong style="color:var(--accent-orange);">三角井</strong>。夏秋之际水量很大，奔腾而入，又名<strong>长虎潭</strong>。井大近30平方米，井水洁白清澈，冬不冻手。村民多在此洗衣淘米，井边建有15米长廊，成为村民夏日纳凉歇息之所。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 谢家祠堂与为国立功匾 ===== -->
+    <section id="citang" class="float-in" style="margin-bottom:50px;">
+      <div class="section-title">
+        <h2>🏛️ 谢家祠堂与"为国立功"匾</h2>
+        <div class="divider"></div>
+      </div>
+      <div class="glass-card" style="padding:36px;">
+        <div style="max-width:720px;margin:0 auto;font-family:'Noto Serif SC',serif;font-size:15px;line-height:2.2;color:var(--text-secondary);text-align:justify;">
+          <p style="margin-bottom:1.2em;">
+            谢家祠堂位于下枫槎村中心。据村民传说，谢氏始祖自明隆庆年间自双溪岩头下迁居此处后，宗族兴旺，遂在清初<strong>康熙年间</strong>建祠堂，以祭祀祖先、教化后人，距今近300年历史。
+          </p>
+          <p style="margin-bottom:1.2em;">
+            今祠堂系<strong>2004年重建</strong>，总占地面积450余平方米，北为4间大厅，南为戏台，左右两侧有6间厢房。堂号<strong style="color:var(--accent-orange);">"敦睦堂"</strong>，寓敦宗睦族之意。
+          </p>
+          <p style="margin-bottom:0;">
+            祠堂藏有<strong style="color:var(--accent-orange);">"为国立功"匾额</strong>，系民国四年（1915）浙江陆军第一师师长<strong>叶颂清</strong>题字颁发，以表彰下枫槎谢氏英烈<strong>谢学良</strong>。谢学良为第一师士兵，在辛亥革命光复杭州、南京的战斗中英勇作战，为国捐躯。今匾额完好。
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-section"><h4>下枫槎谢氏</h4><p>宁海下枫槎村谢氏家族数字宗祠</p></div>
+      <div class="footer-section"><h4>快捷链接</h4><a href="../index.html">首页</a><a href="history.html">家族历史</a><a href="genealogy.html">族谱查询</a></div>
+      <div class="footer-section"><h4>内容</h4><a href="celebrities.html">名人事迹</a><a href="scenery.html">风物古迹</a><a href="news.html">消息发布</a><a href="activities.html">家族活动</a><a href="today.html">今日下枫槎</a><a href="reports.html">新闻报道</a></div>
+      <div class="footer-section"><h4>联系</h4><a href="contact.html">联系我们</a></div>
+    </div>
+    <div class="footer-bottom"><p>&copy; 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p></div>
+  </footer>
+
+  <a href="javascript:history.back()" class="back-page-btn">← 返回</a>
+  <button class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+</div>
+
+<script defer src="../js/main.js?v=9"></script>
+<audio id="bg-music" loop></audio>
+</body>
+</html>

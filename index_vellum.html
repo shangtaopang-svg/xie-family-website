@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>下枫槎谢氏 · 宁海</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500&family=Noto+Serif+SC:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --c-bg: #1e2a4a;
+  --c-bg-alt: #25335a;
+  --c-fg: #E8D85C;
+  --c-fg-2: rgba(232,216,92,0.7);
+  --c-fg-3: rgba(232,216,92,0.3);
+  --c-accent: #3a7878;
+  --c-emphasis: #F5E168;
+  --c-border: rgba(232,216,92,0.15);
+  --f-display: "Cormorant Garamond","Noto Serif SC",Georgia,serif;
+  --f-body: "DM Sans","Noto Sans SC",sans-serif;
+  --f-heading: "Noto Serif SC","Cormorant Garamond",Georgia,serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--c-bg);color:var(--c-fg);font-family:var(--f-body);overflow-x:hidden;}
+a{color:var(--c-fg);text-decoration:none;}
+
+/* Sections */
+section{min-height:100vh;padding:60px 8vw;display:flex;flex-direction:column;justify-content:center;position:relative;}
+section:nth-child(odd){background:var(--c-bg);}
+section:nth-child(even){background:var(--c-bg-alt);}
+
+/* Hero */
+.hero{min-height:100vh;justify-content:center;align-items:center;text-align:center;}
+.hero h1{font-family:var(--f-display);font-size:clamp(3rem,8vw,6rem);font-weight:300;font-style:italic;letter-spacing:0.05em;margin-bottom:0.3em;}
+.hero h1 em{color:var(--c-emphasis);font-style:italic;}
+.hero .subtitle{font-family:var(--f-heading);font-size:clamp(1rem,2vw,1.4rem);color:var(--c-fg-2);letter-spacing:0.3em;margin-bottom:2em;}
+.hero .motto{font-family:var(--f-heading);font-size:clamp(1.2rem,2.5vw,1.8rem);color:var(--c-fg);letter-spacing:0.15em;margin-top:1em;}
+.hero .divider{width:60px;height:2px;background:var(--c-fg-3);margin:2em auto;}
+.hero .scroll-hint{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);color:var(--c-fg-3);font-size:0.8rem;letter-spacing:0.15em;}
+@keyframes pulse{0%,100%{opacity:0.3}50%{opacity:1}}
+.scroll-hint span{animation:pulse 2s ease-in-out infinite;display:inline-block;}
+
+/* Section titles */
+.section-title{font-family:var(--f-heading);font-size:clamp(1.5rem,3vw,2.5rem);font-weight:500;letter-spacing:0.1em;margin-bottom:0.5em;position:relative;display:inline-block;}
+.section-title::after{content:'';display:block;width:40px;height:2px;background:var(--c-fg);margin-top:12px;}
+.section-sub{color:var(--c-fg-2);font-size:clamp(0.85rem,1.1vw,1rem);margin-bottom:2.5em;letter-spacing:0.1em;}
+.lead{font-family:var(--f-heading);font-size:clamp(1rem,1.3vw,1.2rem);line-height:2;color:var(--c-fg-2);margin-bottom:1.5em;}
+.lead strong{color:var(--c-fg);font-weight:500;}
+
+/* Cards grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin:2em 0;}
+.card{background:rgba(255,255,255,0.03);border:1px solid var(--c-border);border-radius:12px;padding:32px 28px;transition:all 0.3s;}
+.card:hover{border-color:var(--c-fg-3);transform:translateY(-4px);}
+.card .icon{font-size:2rem;margin-bottom:12px;}
+.card h3{font-family:var(--f-heading);font-size:1.1rem;font-weight:500;margin-bottom:8px;color:var(--c-emphasis);}
+.card p{font-size:0.9rem;line-height:1.7;color:var(--c-fg-2);}
+
+/* Timeline */
+.timeline{position:relative;padding:2em 0;}
+.timeline::before{content:'';position:absolute;left:20px;top:0;bottom:0;width:1px;background:var(--c-border);}
+.tl-item{position:relative;padding:8px 0 8px 50px;}
+.tl-item::before{content:'';position:absolute;left:14px;top:18px;width:14px;height:14px;border-radius:50%;border:2px solid var(--c-fg);background:var(--c-bg);}
+.tl-item .year{font-family:var(--f-display);font-size:0.85rem;color:var(--c-emphasis);letter-spacing:0.05em;}
+.tl-item .desc{font-size:0.9rem;line-height:1.6;color:var(--c-fg-2);margin-top:2px;}
+
+/* Stats row */
+.stats{display:flex;justify-content:center;gap:60px;flex-wrap:wrap;margin:3em 0;}
+.stat{text-align:center;}
+.stat-num{font-family:var(--f-display);font-size:clamp(2rem,4vw,3.5rem);color:var(--c-emphasis);font-weight:300;}
+.stat-label{font-size:0.85rem;color:var(--c-fg-3);letter-spacing:0.1em;margin-top:4px;}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 8vw;display:flex;justify-content:space-between;align-items:center;background:rgba(30,42,74,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--c-border);}
+nav .logo{font-family:var(--f-display);font-size:1.2rem;letter-spacing:0.1em;font-style:italic;}
+nav .logo span{color:var(--c-emphasis);}
+nav a{color:var(--c-fg-2);margin-left:24px;font-size:0.85rem;letter-spacing:0.05em;transition:color 0.2s;}
+nav a:hover{color:var(--c-fg);}
+
+/* Footer */
+footer{padding:40px 8vw;border-top:1px solid var(--c-border);text-align:center;}
+footer p{font-size:0.8rem;color:var(--c-fg-3);letter-spacing:0.05em;}
+
+/* Responsive */
+@media(max-width:600px){
+  section{padding:40px 6vw;}
+  .grid{grid-template-columns:1fr;}
+  nav .nav-links a{margin-left:12px;font-size:0.75rem;}
+  .stats{gap:30px;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">下枫槎<span>·</span>谢氏</div>
+  <div class="nav-links">
+    <a href="#history">历史</a>
+    <a href="#today">今日</a>
+    <a href="#celebrities">先贤</a>
+    <a href="pages/genealogy.html">族谱</a>
+    <a href="#contact">联系</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <h1>下枫槎<em> · </em>谢氏</h1>
+  <p class="subtitle">浙东宁海 · 乌衣世泽 · 宝树家声</p>
+  <div class="divider"></div>
+  <p class="motto">走多远，根都在这里</p>
+  <div class="scroll-hint"><span>▼</span> 向下探索</div>
+</section>
+
+<!-- Stats -->
+<section>
+  <div class="section-title">家族概览</div>
+  <div class="section-sub">两千八百年血脉 · 三十六代传承</div>
+  <div class="stats">
+    <div class="stat"><div class="stat-num">2800</div><div class="stat-label">年得姓历史</div></div>
+    <div class="stat"><div class="stat-num">900</div><div class="stat-label">年迁居宁海</div></div>
+    <div class="stat"><div class="stat-num">36</div><div class="stat-label">世繁衍至今</div></div>
+    <div class="stat"><div class="stat-num">1248</div><div class="stat-label">位族人录入</div></div>
+  </div>
+  <p class="lead" style="text-align:center;">
+    谢氏出自姬姓，周宣王封申伯于谢邑，至今两千八百余年。<br>
+    北宋宣和年间，文杲公迁居宁海岩下，开枫槎谢氏之基。<br>
+    明隆庆六年，乾公彬公迁双枫古槎之下，定名下枫槎。
+  </p>
+</section>
+
+<!-- History Timeline -->
+<section id="history">
+  <div class="section-title">迁徙历程</div>
+  <div class="section-sub">从洛阳到宁海 · 两千八百年的路</div>
+  <div class="timeline">
+    <div class="tl-item"><div class="year">前806年 · 周代</div><div class="desc">周宣王封元舅申伯于谢邑，谢氏得姓</div></div>
+    <div class="tl-item"><div class="year">东晋 · 六朝</div><div class="desc">谢安、谢玄淝水以八万破百万，王谢世家天下望族</div></div>
+    <div class="tl-item"><div class="year">唐末</div><div class="desc">谢氏一支经临海下渡进入台州腹地</div></div>
+    <div class="tl-item"><div class="year">北宋初</div><div class="desc">小四公迁居石马（下谢），为入浙东近祖</div></div>
+    <div class="tl-item"><div class="year">约1125年 · 北宋</div><div class="desc">文杲公任越溪司巡检，始居岩下，枫槎谢氏始迁祖</div></div>
+    <div class="tl-item"><div class="year">1572年 · 明代</div><div class="desc">乾公彬公因水患迁双枫古槎之下，定名下枫槎</div></div>
+    <div class="tl-item"><div class="year">1762年 · 清乾隆</div><div class="desc">建谢氏宗祠敦睦堂</div></div>
+    <div class="tl-item"><div class="year">2026年 · 当代</div><div class="desc">圆谱大典 · 数字宗祠上线</div></div>
+  </div>
+</section>
+
+<!-- Today -->
+<section id="today">
+  <div class="section-title">今日下枫槎</div>
+  <div class="section-sub">绿水青山 · 望府茶香</div>
+  <div class="grid">
+    <div class="card"><div class="icon">🍵</div><h3>望海茶</h3><p>望府楼山终年云雾缭绕，乌砂土孕育的望海茶色泽翠绿、香气清高，为宁海名茶之上品。</p></div>
+    <div class="card"><div class="icon">🏛️</div><h3>谢氏宗祠</h3><p>清乾隆年间建，三进两厢，敦睦堂。藏"为国立功"匾，辛亥革命英烈谢学良之纪念。</p></div>
+    <div class="card"><div class="icon">🥕</div><h3>枫槎红萝卜</h3><p>七八十年代，村里人打着火燎灯翻二十里枫槎岭去赶集，被称为"枫槎萝卜客"。</p></div>
+    <div class="card"><div class="icon">🌄</div><h3>望府楼山</h3><p>村之背景山，有石棋坪、红岩潭，潭水清澈冬暖夏凉，遇干旱常年不涸。</p></div>
+  </div>
+</section>
+
+<!-- Celebrities -->
+<section id="celebrities">
+  <div class="section-title">先贤人物</div>
+  <div class="section-sub">先贤风范 · 后世楷模</div>
+  <div class="grid">
+    <div class="card"><div class="icon">⚔️</div><h3>谢安（320-385）</h3><p>东晋名相，淝水之战以八万破百万，东山再起典故流传千古。</p></div>
+    <div class="card"><div class="icon">📜</div><h3>谢尚公（308-357）</h3><p>东晋名将，镇西将军，精通音律，永和年间率军北伐收复洛阳。</p></div>
+    <div class="card"><div class="icon">🌿</div><h3>谢琳芳</h3><p>上海知青，率民开荒种茶两百余亩，为"望府银毫"奠基，全国知青楷模。</p></div>
+    <div class="card"><div class="icon">📖</div><h3>陈令昂</h3><p>外姓长者，七十三岁始历时十年为谢氏考证宗源，厘清世系，正本清源。</p></div>
+  </div>
+  <p class="lead" style="text-align:center;margin-top:1em;">
+    <a href="pages/celebrities.html" style="color:var(--c-emphasis);border-bottom:1px solid var(--c-fg-3);padding-bottom:2px;">查看全部先贤 →</a>
+  </p>
+</section>
+
+<!-- Genealogy -->
+<section id="genealogy">
+  <div class="section-title">族谱查询</div>
+  <div class="section-sub">追本溯源 · 知根知底</div>
+  <p class="lead">
+    下枫槎谢氏自文杲公至今近九百年，传三十六世。字辈十六字：<br>
+    <strong style="font-family:var(--f-heading);letter-spacing:0.2em;font-size:1.1em;">一懋之嘉 · 永孝思台 · 邦令序善 · 道开时天</strong>
+  </p>
+  <p class="lead" style="text-align:center;margin-top:1.5em;">
+    <a href="pages/genealogy.html" style="display:inline-block;padding:10px 32px;border:1px solid var(--c-fg);border-radius:6px;font-size:0.95rem;letter-spacing:0.1em;transition:all 0.3s;margin:0 8px;">查阅族谱</a>
+    <a href="pages/focus-tree.html" style="display:inline-block;padding:10px 32px;border:1px solid var(--c-border);border-radius:6px;font-size:0.95rem;letter-spacing:0.1em;transition:all 0.3s;margin:0 8px;">世系树</a>
+  </p>
+</section>
+
+<!-- Closing -->
+<section id="contact" style="text-align:center;">
+  <p style="font-family:var(--f-display);font-size:clamp(1.5rem,3vw,2.5rem);font-style:italic;color:var(--c-fg-2);margin-bottom:1em;">旧时王谢堂前燕</p>
+  <p style="font-family:var(--f-heading);font-size:clamp(1.2rem,2vw,1.8rem);color:var(--c-fg);margin-bottom:0.5em;">飞入寻常百姓家</p>
+  <p style="color:var(--c-fg-3);font-size:0.85rem;letter-spacing:0.1em;margin-top:2em;">—— 唐 · 刘禹锡《乌衣巷》</p>
+  <div style="margin-top:3em;">
+    <p style="font-family:var(--f-heading);font-size:clamp(1.5rem,2.5vw,2.2rem);color:var(--c-emphasis);letter-spacing:0.15em;">乌衣世泽 · 宝树家声</p>
+    <p style="color:var(--c-fg-3);font-size:0.85rem;margin-top:1.5em;">宁海下枫槎村谢氏家族 · 数字宗祠</p>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p>
+</footer>
+
+</body>
+</html>

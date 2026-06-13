@@ -7,7 +7,6 @@
   <title data-i18n="page.genealogy.title">世系图谱 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 
-  
   <link rel="stylesheet" href="../css/style.css?v=3">
   <script defer src="../js/i18n.js"></script>
   <script defer src="../js/file-store.js?v=3"></script>
@@ -17,7 +16,6 @@
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
 </head>
 <body>
-
 
 <div class="content">
 
@@ -34,6 +32,7 @@
           <li><a href="history.html" data-i18n="nav.history">家族历史</a></li>
           <li><a href="genealogy.html">族谱查询</a>
           <li><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a></li>
+          <li><a href="pages/scenery.html">风物古迹</a></li>
           <li><a href="news.html" data-i18n="nav.news">消息发布</a></li>
           <li><a href="members.html" data-i18n="nav.members">家族成员</a></li>
           <li><a href="activities.html" data-i18n="nav.activities">家族活动</a></li>
@@ -81,8 +80,6 @@
         <p>乌衣世泽 · 宝树家声</p>
       </div>
 
-
-      
 <!-- 字辈 -->
       <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-generation-chart">
         <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:12px;font-size:17px;font-weight:500;">字辈排行</h3>
@@ -220,7 +217,6 @@
     </div>
   </footer>
 
-  
   <a href="javascript:history.back()" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
   <script defer src="../js/main.js?v=9"></script>
@@ -968,8 +964,6 @@ function treeAutoLocate(personId) {
   }, 400);
 }
 
-
-
 function locateInTree(personId) {
   var overlay = document.querySelector('.person-overlay');
   if (overlay) overlay.remove();
@@ -986,7 +980,6 @@ function locateInTree(personId) {
   }
   scrollToCardSVG(card);
 }
-
 
 function exportTreePNG() {
   // Show export options menu
@@ -1589,7 +1582,6 @@ html += '<tr style="border-bottom:1px solid var(--divider);background:' + rowBg 
   }
 
   // ===== Locate person in tree =====  // ===== Locate person in tree =====
-
 
 function locateInTree(personId) {
     // Close any open detail popup
@@ -2212,7 +2204,6 @@ function locateInTree(personId) {
 
   }
 
-
   // Wait for page ready
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
     renderGenealogyPageSVG();
@@ -2236,7 +2227,6 @@ function locateInTree(personId) {
 
   <script>
     // bg-canvas removed
-  
 
 // ===== Fullscreen toggle (CSS position:fixed approach) =====
 function toggleTreeFullscreen() {
