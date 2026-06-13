@@ -309,23 +309,102 @@ function speakChapter(index) {
   updateNavButtons();
   buildSubtitles(ch.text);
 
-  utterance = new SpeechSynthesisUtterance(ch.text);
-  utterance.lang = 'zh-CN';
-  utterance.rate = 0.95;
-  utterance.pitch = 1.05;
-
-  // Find Chinese voice
+  // Find best Chinese voice - prefer neural voices
   var voices = synth.getVoices();
-  var zhVoice = voices.find(function(v) { return v.lang.startsWith('zh') && v.lang.includes('CN'); });
-  if (zhVoice) utterance.voice = zhVoice;
-
-  // If voices not loaded yet, wait
-  if (!zhVoice && !voices.length) {
+  if (!voices.length) {
     synth.addEventListener('voiceschanged', function() {
-      var v = synth.getVoices().find(function(v2) { return v2.lang.startsWith('zh') && v2.lang.includes('CN'); });
-      if (v) utterance.voice = v;
+      voices = synth.getVoices();
     }, { once: true });
   }
+
+  var zhVoice = null;
+  // Priority: Microsoft neural > Edge neural > generic zh-CN
+  var preferred = ['Microsoft Xiaoxiao', 'Microsoft Kangkang', 'Microsoft Yunxi', 'Microsoft Yunyang',
+    'Google 中文（普通话）', 'Google 粤语', 'zh-CN', 'zh'];
+  for (var p = 0; p < preferred.length; p++) {
+    zhVoice = voices.find(function(v) {
+      return v.name.indexOf(preferred[p]) >= 0 || v.name === preferred[p];
+    });
+    if (zhVoice) break;
+  }
+  // Fallback to any zh voice
+  if (!zhVoice) zhVoice = voices.find(function(v) { return v.lang.startsWith('zh'); });
+
+  // Split text into natural paragraphs for better pacing
+  var paragraphs = ch.text.split(/\n{2,}|\n(?=[我们他她这那])/);
+  if (paragraphs.length < 2) {
+    // Single block - split by sentence groups instead
+    paragraphs = [ch.text];
+  }
+
+  // Speak with natural rhythm
+  var totalParts = paragraphs.length;
+  var partIndex = 0;
+
+  function speakNextPart() {
+    if (partIndex >= totalParts || !isPlaying) return;
+    var partText = paragraphs[partIndex].trim();
+    if (!partText) { partIndex++; speakNextPart(); return; }
+
+    var u = new SpeechSynthesisUtterance(partText);
+    u.lang = 'zh-CN';
+    u.rate = 0.92;
+    u.pitch = 1.02;
+    if (zhVoice) u.voice = zhVoice;
+
+    u.onstart = function() {
+      if (partIndex === 0) {
+        isPlaying = true;
+        isPaused = false;
+        updatePlayButton();
+        updateStatus('正在播放…');
+        renderChapters();
+        startProgress();
+        startSubtitleAdvance();
+        if (bgOn) startBgMusic();
+      }
+    };
+
+    u.onend = function() {
+      partIndex++;
+      if (partIndex < totalParts) {
+        // Natural pause between paragraphs
+        setTimeout(speakNextPart, 400);
+      } else {
+        // Chapter complete
+        isPlaying = false;
+        isPaused = false;
+        updatePlayButton();
+        updateStatus('播放完成');
+        stopProgress();
+        stopSubtitleAdvance();
+        clearSubtitleHighlight();
+        if (currentChapter < AUDIO_SCRIPT.length - 1) {
+          currentChapter++;
+          renderChapters();
+          updateNowPlaying();
+          updateNavButtons();
+          updateStatus('点击播放下一章');
+        } else {
+          updateStatus('🎉 全部播放完毕');
+        }
+      }
+    };
+
+    u.onerror = function() {
+      isPlaying = false;
+      updatePlayButton();
+      updateStatus('播放出错，请重试');
+      stopProgress();
+      stopSubtitleAdvance();
+    };
+
+    synth.speak(u);
+  }
+
+  utterance = null;
+  speakNextPart();
+  return;
 
   utterance.onstart = function() {
     isPlaying = true;
