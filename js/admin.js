@@ -828,9 +828,11 @@ function renderGenealogy(area) {
     html += '<td>' + (p.generation_num || '—') + '</td>';
     html += '<td>' + (p.branch || '—') + '</td>';
     html += '<td style="font-size:12px;">' + escapeHtml(spouseTxt) + '</td>';
-    html += '<td>';
-    html += '<button class="btn-sm" onclick="showEditForm(\'genealogy\',' + p.id + ')">✏️</button> ';
-    html += '<button class="btn-sm btn-danger" onclick="deleteItem(\'genealogy\',' + p.id + ')">🗑️</button>';
+    html += '<td style="white-space:nowrap;">';
+    html += '<button class="btn-sm" onclick="showEditForm(\'genealogy\',' + p.id + ')" title="编辑">✏️</button> ';
+    html += '<button class="btn-sm btn-danger" onclick="deleteItem(\'genealogy\',' + p.id + ')" title="删除">🗑️</button> ';
+    html += '<button class="btn-sm" onclick="showAddChildForm(' + p.id + ')" title="添加子女" style="font-size:11px;">👶</button> ';
+    html += '<button class="btn-sm" onclick="showAddSiblingForm(' + p.id + ')" title="添加兄弟" style="font-size:11px;">👥</button>';
     html += '</td></tr>';
   }
 
@@ -1141,6 +1143,51 @@ function showEditForm(mod, id) {
   showForm(mod, m, item);
 }
 
+// 快速添加兄弟：预填父亲ID和世代
+function showAddSiblingForm(siblingId) {
+  var data = getData('genealogy');
+  var sibling = null;
+  for (var i = 0; i < data.length; i++) {
+    if (data[i].id === siblingId) { sibling = data[i]; break; }
+  }
+  if (!sibling) return;
+
+  showForm('genealogy', MODULES['genealogy'], null);
+  setTimeout(function() {
+    if (sibling.father_id) {
+      var fatherSelect = document.getElementById('field-father_id');
+      if (fatherSelect) fatherSelect.value = sibling.father_id;
+    }
+    var genInput = document.getElementById('field-generation_num');
+    if (genInput && sibling.generation_num) {
+      genInput.value = sibling.generation_num;
+    }
+    var branchSelect = document.getElementById('field-branch');
+    if (branchSelect && sibling.branch) branchSelect.value = sibling.branch;
+  }, 100);
+}
+
+// 快速添加配偶
+function showAddSpouseForm(personId) {
+  var data = getData('genealogy');
+  var person = null;
+  for (var i = 0; i < data.length; i++) {
+    if (data[i].id === personId) { person = data[i]; break; }
+  }
+  if (!person) return;
+
+  showForm('genealogy', MODULES['genealogy'], null);
+  setTimeout(function() {
+    var genInput = document.getElementById('field-generation_num');
+    if (genInput && person.generation_num) genInput.value = person.generation_num;
+    var genderSelect = document.getElementById('field-gender');
+    if (genderSelect) genderSelect.value = '女';
+    // Fill spouse back-reference
+    var nameInput = document.getElementById('field-name');
+    if (nameInput) nameInput.placeholder = person.name + '之配偶';
+  }, 100);
+}
+
 // ===== Genealogy form helpers (分组表单) =====
 function getFieldDef(moduleDef, key) {
   for (var i = 0; i < moduleDef.fields.length; i++) {
@@ -1336,9 +1383,12 @@ function showForm(mod, m, item) {
     html += '</div>';
 
     html += '</form>';
-    html += '<div style="display:flex;gap:12px;justify-content:flex-end;margin-top:24px;">';
+    html += '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:24px;">';
     html += '<button type="button" class="btn btn-secondary" onclick="this.closest(\'.admin-modal-overlay\').remove()">取消</button>';
     html += '<button type="submit" class="btn btn-accent" onclick="saveForm(\'' + mod + '\',' + (isEdit ? item.id : 'null') + ')">' + (isEdit ? '保存修改' : '添加') + '</button>';
+    if (!isEdit) {
+      html += '<button type="button" class="btn btn-accent" onclick="saveForm(\'' + mod + '\',null,true)" style="background:var(--accent-orange);" title="保存后继续添加同代人">保存并继续 ➕</button>';
+    }
     html += '</div>';
 
     box.innerHTML = html;
@@ -1615,7 +1665,7 @@ function makeModalDraggableResizable(box) {
   });
 }
 
-function saveForm(mod, editId) {
+function saveForm(mod, editId, continueAdding) {
   var m = MODULES[mod];
   if (!m) return;
   var data = getData(mod);
@@ -1716,6 +1766,24 @@ function saveForm(mod, editId) {
         uploadPromises.push(up);
       })(fu.key, file);
     }
+  }
+
+  // If continue adding, keep form open and clear fields
+  if (continueAdding) {
+    // Clear form fields but keep generation and father
+    var form = document.getElementById('admin-form');
+    if (form) {
+      var inputs = form.querySelectorAll('input, textarea, select');
+      var keepFields = ['generation_num', 'father_id', 'branch'];
+      for (var fi = 0; fi < inputs.length; fi++) {
+        var inp = inputs[fi];
+        if (keepFields.indexOf(inp.id ? inp.id.replace('field-', '') : '') >= 0) continue;
+        if (inp.type === 'text' || inp.type === 'textarea') inp.value = '';
+        if (inp.tagName === 'SELECT' && inp.id !== 'field-father_id' && inp.id !== 'field-branch') inp.selectedIndex = 0;
+      }
+    }
+    showToast('✅ 已保存，继续添加');
+    return;
   }
 
   var overlay = document.querySelector('.admin-modal-overlay');
