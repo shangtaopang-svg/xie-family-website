@@ -353,23 +353,6 @@ function checkUnsyncedData() {
 }
 setTimeout(checkUnsyncedData, 3000);
 
-// ===== 给renderModule打补丁，增加备份按钮 =====
-var origRenderModule = renderModule;
-renderModule = function(mod) {
-  origRenderModule(mod);
-  // Add backup button after module title
-  var titleEl = document.querySelector('.apt-module-title');
-  if (titleEl) {
-    var btnHtml = renderBackupButton(mod);
-    var existing = document.getElementById('backup-bar-' + mod);
-    if (!existing) {
-      var div = document.createElement('div');
-      div.id = 'backup-bar-' + mod;
-      div.innerHTML = btnHtml;
-      titleEl.parentNode.insertBefore(div, titleEl.nextSibling);
-    }
-  }
-};
 
 function getNextId(data) {
   var max = 0;
@@ -781,6 +764,13 @@ function renderGenealogy(area) {
   html += '<button class="btn btn-sm" onclick="generateGenealogyBook()">📖 生成谱书</button>';
   html += '<button class="btn btn-sm" onclick="window.open(\'../pages/genealogy.html\', \'_blank\')" style="padding:8px 16px;">🔗 预览世系图</button>';
   html += '</div></div>';
+  html += '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;padding:10px 14px;background:rgba(33,150,243,0.06);border-radius:8px;border:1px solid rgba(33,150,243,0.12);">'
+    + '<span style="font-size:12px;color:rgba(255,255,255,0.5);">💾 数据保护</span>'
+    + '<button class="btn btn-xs" onclick="backupModuleData(\'genealogy\')" style="padding:4px 12px;">📥 手动备份到服务器</button>'
+    + '<button class="btn btn-xs" onclick="downloadModuleData(\'genealogy\')" style="padding:4px 12px;">⬇️ 导出JSON到电脑</button>'
+    + '<span id="sync-status-genealogy" style="font-size:11px;color:rgba(255,255,255,0.3);"></span>'
+    + (localStorage.getItem('xie_unsynced_genealogy') === 'true' ? '<span style="color:#f44336;font-weight:600;"> ⚠️ 有未同步的数据</span>' : '')
+    + '</div>';
 
   // Split layout: left = tree, right = table
   html += '<div class="apt-split">';
