@@ -62,6 +62,11 @@ body{min-height:100vh;background:linear-gradient(160deg,#1a1a2e 0%,#16213e 50%,#
 .chapter .ch-status.pending{color:rgba(255,255,255,0.15)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
+/* subtitle */
+#subtitle-wrap::-webkit-scrollbar{width:4px}
+#subtitle-wrap::-webkit-scrollbar-track{background:transparent}
+#subtitle-wrap::-webkit-scrollbar-thumb{background:rgba(201,168,76,0.2);border-radius:2px}
+
 /* bg music indicator */
 .bg-indicator{display:flex;align-items:center;gap:8px;margin-top:20px;padding:12px 16px;background:rgba(255,255,255,0.03);border-radius:10px;font-size:12px;color:rgba(255,255,255,0.3)}
 .bg-indicator .eq{display:flex;align-items:flex-end;gap:2px;height:14px}
@@ -116,6 +121,11 @@ body{min-height:100vh;background:linear-gradient(160deg,#1a1a2e 0%,#16213e 50%,#
     </div>
   </div>
 
+  <!-- subtitle area -->
+  <div id="subtitle-wrap" style="display:none;margin-bottom:24px;background:rgba(255,255,255,0.04);border-radius:16px;padding:20px 24px;max-height:280px;overflow-y:auto;border:1px solid rgba(255,255,255,0.06);">
+    <div id="subtitle-content" style="font-size:16px;line-height:2.2;color:rgba(255,255,255,0.7);font-family:'Noto Serif SC',serif;"></div>
+  </div>
+
   <!-- chapter list -->
   <div class="section-title-audio">
     <h2>📖 章节列表</h2>
@@ -135,6 +145,7 @@ body{min-height:100vh;background:linear-gradient(160deg,#1a1a2e 0%,#16213e 50%,#
 var currentChapter = 0;
 var isPlaying = false;
 var isPaused = false;
+var subtitleWrap = null;
 var synth = window.speechSynthesis;
 var utterance = null;
 var bgMusic = null;
@@ -201,14 +212,102 @@ function updateStatus(text) {
   document.getElementById('np-status').textContent = text;
 }
 
+// Subtitle
+var subtitleSentences = [];
+var subtitleIndex = 0;
+var subtitleTimers = [];
+
+function buildSubtitles(text) {
+  // Split into sentences by punctuation
+  var raw = text.split(/(?<=[。！？\n])/);
+  var sentences = [];
+  raw.forEach(function(s) {
+    var t = s.trim();
+    if (t) sentences.push(t);
+  });
+  if (!sentences.length) sentences = [text];
+  subtitleSentences = sentences;
+  subtitleIndex = 0;
+
+  // Render all sentences
+  var html = '';
+  sentences.forEach(function(s, i) {
+    var clean = s.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    html += '<span class="sub-sentence" data-idx="' + i + '" style="transition:color .3s,background .3s;border-radius:4px;padding:0 2px;">' + clean + '</span>';
+  });
+  document.getElementById('subtitle-content').innerHTML = html;
+  document.getElementById('subtitle-wrap').style.display = 'block';
+  subtitleWrap.scrollTop = 0;
+}
+
+function clearSubtitleHighlight() {
+  document.querySelectorAll('.sub-sentence').forEach(function(el) {
+    el.style.color = '';
+    el.style.background = '';
+  });
+}
+
+function highlightSentence(idx) {
+  clearSubtitleHighlight();
+  document.querySelectorAll('.sub-sentence').forEach(function(el) {
+    if (parseInt(el.dataset.idx) === idx) {
+      el.style.color = '#f0d68a';
+      el.style.background = 'rgba(201,168,76,0.12)';
+      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  });
+}
+
+function startSubtitleAdvance() {
+  stopSubtitleAdvance();
+  if (!subtitleSentences.length) return;
+  var totalChars = subtitleSentences.reduce(function(a, s) { return a + s.length; }, 0);
+  var totalSec = estimatedTimes[currentChapter];
+  var elapsed = 0;
+
+  subtitleSentences.forEach(function(s, i) {
+    // Each sentence gets proportional time
+    var segLen = Math.max(1, s.length);
+    var segDur = (segLen / totalChars) * totalSec * 1000;
+
+    var timer = setTimeout(function() {
+      subtitleIndex = i;
+      highlightSentence(i);
+    }, elapsed * 1000);
+
+    subtitleTimers.push(timer);
+    elapsed += segDur / 1000;
+  });
+
+  // Clear after last sentence finishes
+  var totalTimer = setTimeout(function() {
+    // Keep last highlighted
+  }, elapsed * 1000 + 500);
+  subtitleTimers.push(totalTimer);
+}
+
+function stopSubtitleAdvance() {
+  subtitleTimers.forEach(clearTimeout);
+  subtitleTimers = [];
+}
+
+function clearSubtitle() {
+  stopSubtitleAdvance();
+  document.getElementById('subtitle-wrap').style.display = 'none';
+  document.getElementById('subtitle-content').innerHTML = '';
+  subtitleSentences = [];
+}
+
 // Core playback
 function speakChapter(index) {
   if (synth.speaking) synth.cancel();
+  clearSubtitle();
   currentChapter = index;
   var ch = AUDIO_SCRIPT[currentChapter];
   updateNowPlaying();
   renderChapters();
   updateNavButtons();
+  buildSubtitles(ch.text);
 
   utterance = new SpeechSynthesisUtterance(ch.text);
   utterance.lang = 'zh-CN';
@@ -235,6 +334,7 @@ function speakChapter(index) {
     updateStatus('正在播放…');
     renderChapters();
     startProgress();
+    startSubtitleAdvance();
     if (bgOn) startBgMusic();
   };
 
@@ -244,6 +344,8 @@ function speakChapter(index) {
     updatePlayButton();
     updateStatus('播放完成');
     stopProgress();
+    stopSubtitleAdvance();
+    clearSubtitleHighlight();
     if (currentChapter < AUDIO_SCRIPT.length - 1) {
       currentChapter++;
       renderChapters();
@@ -260,6 +362,7 @@ function speakChapter(index) {
     updatePlayButton();
     updateStatus('播放出错，请重试');
     stopProgress();
+    stopSubtitleAdvance();
   };
 
   synth.speak(utterance);
@@ -273,6 +376,7 @@ function togglePlay() {
     updatePlayButton();
     updateStatus('已暂停');
     stopProgress();
+    stopSubtitleAdvance();
     pauseBgMusic();
     return;
   }
@@ -283,6 +387,7 @@ function togglePlay() {
     updatePlayButton();
     updateStatus('继续播放…');
     startProgress();
+    startSubtitleAdvance();
     if (bgOn) resumeBgMusic();
     return;
   }
@@ -379,6 +484,7 @@ function toggleBgMusic() {
 }
 
 // Load voices and init
+subtitleWrap = document.getElementById('subtitle-wrap');
 updateNowPlaying();
 updateNavButtons();
 </script>
