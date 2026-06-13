@@ -829,13 +829,64 @@ function renderGenealogy(area) {
   html += '</div>';
   html += '<table style="display:none;width:100%;border-collapse:collapse;font-size:12px;">';
   html += '<thead><tr style="background:rgba(100,60,160,0.1);">';
-  html += '<th style="padding:6px 10px;border:1px solid var(--glass-border);text-align:center;width:50px;">世</th>';
-  html += '<th style="padding:6px 10px;border:1px solid var(--glass-border);text-align:center;">人物</th>';
-  html += '<th style="padding:6px 10px;border:1px solid var(--glass-border);text-align:center;">说明</th>';
+  html += '<th style="padding:6px 8px;border:1px solid var(--glass-border);text-align:center;width:40px;">炎帝世</th>';
+  html += '<th style="padding:6px 8px;border:1px solid var(--glass-border);text-align:center;width:40px;">申伯世</th>';
+  html += '<th style="padding:6px 8px;border:1px solid var(--glass-border);text-align:center;">人物</th>';
+  html += '<th style="padding:6px 8px;border:1px solid var(--glass-border);text-align:center;">说明</th>';
   html += '</tr></thead><tbody>';
   var shenbo_lineage = [
-    [-2, '弘', '申伯之子'],
-    [-1, '猛', '申伯之子'],
+    [65, 1, '申伯', '谢氏鼻祖/申伯系第1世'],
+    [66, 2, '弘', '申伯之子'],
+    [66, 2, '猛', '申伯之子'],
+    [67, 3, '广', '弘之子'],
+    [67, 3, '协', '弘之子'],
+    [68, 4, '列宗', '广之子'],
+    [68, 4, '穆宗', '广之子'],
+    [69, 5, '骘', '列宗之子'],
+    [70, 6, '预', '骘之子'],
+    [71, 7, '昌后', '预之子'],
+    [72, 8, '达', '昌后之子'],
+    [72, 8, '守礼', '昌后之子'],
+    [73, 9, '子民', '达之子'],
+    [74, 10, '秩', '子民之子'],
+    [75, 11, '雍', '秩之子'],
+    [76, 12, '林', '雍之子'],
+    [77, 13, '涣', '林之子'],
+    [78, 14, '旺', '涣之子'],
+    [79, 15, '珽', '旺之子'],
+    [80, 16, '国辉', '珽之子'],
+    [81, 17, '宁', '国辉之子'],
+    [82, 18, '福', '宁之子'],
+    [83, 19, '杨贞', '福之子'],
+    [84, 20, '平利', '杨贞之子'],
+    [84, 20, '平和', '杨贞之子'],
+    [84, 20, '平祖', '杨贞之子'],
+    [85, 21, '翠', '平利之子'],
+    [85, 21, '利', '平利之子'],
+    [85, 21, '文', '平和之子'],
+    [86, 22, '武', '文之子'],
+    [87, 23, '秉槐', '武之子'],
+    [88, 24, '堂', '秉槐之子'],
+    [89, 25, '瑛', '堂之子'],
+    [90, 26, '文轩', '瑛之子'],
+    [90, 26, '文昂', '瑛之子'],
+    [91, 27, '福郎', '文轩之子'],
+    [91, 27, '丙郎', '文轩之子'],
+    [91, 27, '应郎', '文轩之子'],
+    [92, 28, '宜礼', '福郎之子'],
+    [92, 28, '宜乐', '福郎之子'],
+    [93, 29, '逵', '宜礼之子'],
+    [94, 30, '简', '逵之子'],
+    [95, 31, '瑰', '简之子'],
+    [96, 32, '懿', '瑰之子'],
+    [97, 33, '鳅', '懿之子'],
+    [98, 34, '当', '鳅之子'],
+    [99, 35, '景秀', '鳅之子'],
+    [100, 36, '缵', '东山第一世'],
+    [100, 36, '显', '景秀之子'],
+    [100, 36, '顼', '景秀之子'],
+    [101, 37, '衡', '缵之子'],
+  ];
     [0, '广', '弘之子'],
     [1, '协', '弘之子'],
     [2, '列宗', '广之子'],
@@ -879,10 +930,14 @@ function renderGenealogy(area) {
   ];
   for (var si = 0; si < shenbo_lineage.length; si++) {
     var row = shenbo_lineage[si];
+    var yandiGen = row[0], shenboGen = row[1], person = row[2], desc = row[3];
+    var isShenBo = (person === '申伯');
+    var isDongshan = (desc.indexOf('东山') >= 0);
     html += '<tr>';
-    html += '<td style="padding:5px 10px;border:1px solid var(--glass-border);text-align:center;font-weight:600;color:var(--accent-orange);">' + row[0] + '</td>';
-    html += '<td style="padding:5px 10px;border:1px solid var(--glass-border);text-align:center;' + (row[2].startsWith('东山') ? 'font-weight:700;color:#643ca0;' : '') + '">' + row[1] + '</td>';
-    html += '<td style="padding:5px 10px;border:1px solid var(--glass-border);text-align:center;color:var(--text-tertiary);">' + row[2] + '</td>';
+    html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;font-size:11px;color:' + (isShenBo ? 'var(--accent-orange)' : 'var(--text-tertiary)') + ';">' + yandiGen + '</td>';
+    html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;font-weight:600;font-size:11px;color:' + (isShenBo ? 'var(--accent-orange)' : 'var(--text-primary)') + ';">' + shenboGen + '</td>';
+    html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;' + (isDongshan ? 'font-weight:700;color:#643ca0;' : '') + 'font-size:12px;">' + person + '</td>';
+    html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;color:var(--text-tertiary);font-size:11px;">' + desc + '</td>';
     html += '</tr>';
   }
   html += '</tbody></table>';
