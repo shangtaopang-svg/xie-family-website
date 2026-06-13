@@ -948,11 +948,11 @@
           rod.style.right = '0';
           rod.style.opacity = '1';
           void wrap.offsetHeight;
-          // Animate reveal from left to right
-          wrap.style.transition = 'clip-path 2.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+          // Animate reveal from left to right - slow unfold
+          wrap.style.transition = 'clip-path 4.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
           wrap.style.clipPath = 'inset(0 0% 0 0)';
           // Scroll rod follows the reveal edge
-          rod.style.transition = 'right 2.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+          rod.style.transition = 'right 4.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
           rod.style.right = '100%';
           rod.classList.add('open');
           setTimeout(function() {
@@ -962,7 +962,7 @@
             rod.style.right = '';
             rod.style.opacity = '0';
             rod.classList.remove('open');
-          }, 2400);
+          }, 4800);
         }
       }
     }
