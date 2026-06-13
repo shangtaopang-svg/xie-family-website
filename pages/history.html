@@ -93,42 +93,58 @@
         <div class="divider"></div>
         <p>点击展开阅读全文</p>
       </div>
-      <div id="zy-content" class="glass-card" style="padding:36px;border-left:3px solid var(--accent-orange);background:var(--glass-bg);display:none;">
-        <div style="max-width:720px;margin:0 auto;font-family:'Noto Serif SC',serif;font-size:15px;line-height:2.2;color:var(--text-secondary);text-align:justify;">
+      <div id="zy-content" style="display:none;">
+        <style>
+          @keyframes scrollUnfold { 0%{max-height:0;opacity:0} 100%{max-height:3000px;opacity:1} }
+          .scroll-wrap{animation:scrollUnfold 1.5s ease-out;overflow:hidden;background:linear-gradient(135deg,#f5efe6,#efe7da,#e8dcc8);border:2px solid #b8a47e;border-radius:4px;box-shadow:0 8px 40px rgba(0,0,0,0.12),inset 0 0 60px rgba(180,150,110,0.08);position:relative;padding:30px 0 20px;margin:16px auto;max-width:900px}
+          .scroll-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:8px;background:linear-gradient(90deg,#c9a84c,#e0c868,#c9a84c,#e0c868,#c9a84c);opacity:0.2}
+          .scroll-wrap::after{content:'';position:absolute;bottom:0;left:0;right:0;height:8px;background:linear-gradient(90deg,#c9a84c,#e0c868,#c9a84c,#e0c868,#c9a84c);opacity:0.15}
+          .scroll-inner{writing-mode:vertical-rl;text-orientation:upright;max-height:600px;overflow-y:auto;padding:10px 28px 10px 20px;font-family:"STKaiti","KaiTi","Noto Serif SC",serif;font-size:15px;line-height:2.4;color:#3a3028;text-align:left;column-width:auto}
+          .scroll-inner::-webkit-scrollbar{width:6px}
+          .scroll-inner::-webkit-scrollbar-track{background:rgba(180,150,110,0.08)}
+          .scroll-inner::-webkit-scrollbar-thumb{background:rgba(180,150,110,0.3);border-radius:3px}
+          .scroll-inner .col-break{display:block;margin-bottom:1em}
+          .scroll-title{writing-mode:vertical-rl;font-family:"STKaiti","KaiTi",serif;font-size:22px;font-weight:700;color:#5a3a2a;letter-spacing:6px;margin:0 auto 16px;padding:10px 20px;border-bottom:1px solid rgba(180,150,110,0.2)}
+          .scroll-seal{display:inline-block;writing-mode:horizontal-tb;width:50px;height:50px;border-radius:50%;border:2px solid rgba(180,50,50,0.15);text-align:center;line-height:50px;font-size:10px;color:rgba(180,50,50,0.2);transform:rotate(-8deg);margin-left:20px;flex-shrink:0}
+          .scroll-footer{writing-mode:horizontal-tb;text-align:center;padding:16px 20px 8px;font-family:"STKaiti","KaiTi",serif;font-size:13px;color:rgba(90,58,42,0.5);border-top:1px solid rgba(180,150,110,0.12);margin:8px 24px 0}
+          @media(max-width:768px){.scroll-inner{font-size:14px;padding:10px 18px 10px 14px;max-height:450px;line-height:2.2}.scroll-title{font-size:18px}}
+        </style>
+        <div class="scroll-wrap">
+          <div class="scroll-title">下枫槎谢氏宗源记</div>
+          <div class="scroll-inner">
+盖闻木有本而枝叶茂，水有源而流派长。吾谢氏之先，出自姬姓。周宣王封元舅申伯于谢邑，因以国为氏，至今两千八百余载矣。自申伯受封，历代相承，或显于周秦，或盛于汉魏。至东晋时，文靖公谢安、康乐公谢玄叔侄，以八万北府之师破苻坚百万之众于淝水，拯社稷于将倾。一门数公，位极人臣，与琅琊王氏并称"王谢"，为天下望族之冠。此吾族千载之荣光也。
 
-          <p style="margin-bottom:1.6em;">盖闻木有本而枝叶茂，水有源而流派长。吾谢氏之先，出自姬姓。周宣王封元舅申伯于谢邑，因以国为氏，至今两千八百余载矣。自申伯受封，历代相承，或显于周秦，或盛于汉魏。至东晋时，文靖公谢安、康乐公谢玄叔侄，以八万北府之师破苻坚百万之众于淝水，拯社稷于将倾。一门数公，位极人臣，与琅琊王氏并称&ldquo;王谢&rdquo;，为天下望族之冠。此吾族千载之荣光也。</p>
+溯吾枫槎一脉，世系源远流长。自申伯传三十六世至东山会稽，再由会稽南下经临海下渡，至石马（下谢）小四公，乃入浙东之近祖也。由石马传十二世，至文杲公，字克源，北宋宣和年间（约公元一一二五年）任越溪司巡检，始居岩下。公为枫槎谢氏之始迁祖，至今近九百载，传三十六世，瓜瓞绵绵。二世祖攒公、撰公，析居后枫槎与前枫槎，两支并茂，各立门户。
 
-          <p style="margin-bottom:1.6em;">溯吾枫槎一脉，世系源远流长。自申伯传三十六世至东山会稽，再由会稽南下经临海下渡，至石马（下谢）小四公，乃入浙东之近祖也。由石马传十二世，至文杲公，字克源，北宋宣和年间（约公元一一二五年）任越溪司巡检，始居岩下。公为枫槎谢氏之始迁祖，至今近九百载，传三十六世，瓜瓞绵绵。二世祖攒公、撰公，析居后枫槎与前枫槎，两支并茂，各立门户。</p>
+初，吾族世居岩下。迨明隆庆壬申（公元一五七二年），山洪暴发，庐舍为墟。十六世祖乾公、彬公昆仲，相度地势，遂迁于双枫古槎之下，因名其地曰"下枫槎"。斩荆棘，辟草莱，筑室于兹，开基立业。自此一脉繁衍，枝分派衍，或习儒术而登科第，或事商贾而通有无，或精农桑而富仓廪。清乾隆间，合族建宗祠于村北，三进两厢，门楣高悬"谢氏宗祠"匾额，堂号"敦睦堂"，寓敦宗睦族之意。春秋二祭，少长咸集，尊祖敬宗，礼行肃穆。
 
-          <p style="margin-bottom:1.6em;">初，吾族世居岩下。迨明隆庆壬申（公元一五七二年），山洪暴发，庐舍为墟。十六世祖乾公、彬公昆仲，相度地势，遂迁于双枫古槎之下，因名其地曰&ldquo;下枫槎&rdquo;。斩荆棘，辟草莱，筑室于兹，开基立业。自此一脉繁衍，枝分派衍，或习儒术而登科第，或事商贾而通有无，或精农桑而富仓廪。清乾隆间，合族建宗祠于村北，三进两厢，门楣高悬&ldquo;谢氏宗祠&rdquo;匾额，堂号&ldquo;敦睦堂&rdquo;，寓敦宗睦族之意。春秋二祭，少长咸集，尊祖敬宗，礼行肃穆。</p>
+吾族行第字辈，自十九世起，依次为：一、懋、之、嘉、永、孝、思、台、邦、令、序、善、道、开、时、天，凡十六字，周而复始。今已传至"天"字辈，族众蕃衍，蔚为大观。散居四方者，或负笈远游而求学于外，或投身实业而建功于业，或捐资修路以利乡邻，或助学奖教以育英才。然心系故土，情牵宗亲，每逢清明冬至，千里归来，聚首祖祠，其乐融融。
 
-          <p style="margin-bottom:1.6em;">吾族行第字辈，自十九世起，依次为：一、懋、之、嘉、永、孝、思、台、邦、令、序、善、道、开、时、天，凡十六字，周而复始。今已传至&ldquo;天&rdquo;字辈，族众蕃衍，蔚为大观。散居四方者，或负笈远游而求学于外，或投身实业而建功于业，或捐资修路以利乡邻，或助学奖教以育英才。然心系故土，情牵宗亲，每逢清明冬至，千里归来，聚首祖祠，其乐融融。</p>
+惜乎旧牒不存，世系中阙。先是，吾族旧谱毁于火，世次莫考。同治六年（公元一八六七年），族人首议重修，然因旧谱焚毁、文献无稽，不得已暂将枫槎谢氏附于天台榧树同宗之下，权作权宜之计。民国三十六年（公元一九四七年），再度修谱，仍沿旧误，反将石马一脉之世系错编于榧树派下，以致昭穆颠倒，辈分淆乱，贻误非浅。幸而后来三门石马（下谢）续修宗谱，详加考订，厘清源流，正本清源，吾族世系始得归宗于石马正脉。此前人之失，后人之鉴也。
 
-          <p style="margin-bottom:1.6em;">惜乎旧牒不存，世系中阙。先是，吾族旧谱毁于火，世次莫考。同治六年（公元一八六七年），族人首议重修，然因旧谱焚毁、文献无稽，不得已暂将枫槎谢氏附于天台榧树同宗之下，权作权宜之计。民国三十六年（公元一九四七年），再度修谱，仍沿旧误，反将石马一脉之世系错编于榧树派下，以致昭穆颠倒，辈分淆乱，贻误非浅。幸而后来三门石马（下谢）续修宗谱，详加考订，厘清源流，正本清源，吾族世系始得归宗于石马正脉。此前人之失，后人之鉴也。</p>
+其后，宁海桃源街道陈家岙村有贤达陈君令昂者，悯吾族源流之湮，慨然以考正为己任。自丙申岁（公元二〇一六年）始，时年七十有三，不惮寒暑，访碑搜谱，凡临海、宁海、天台诸邑故家遗编，靡不穷究。辛勤十载，至丙午岁（公元二〇二六年），年八十有三，乃豁然贯通，得出确证：下枫槎谢氏与陈君所出之东门陈氏，实同宗同族，俱出自临海石马下谢之祖小四公（讳聪孙）之子丹一公脉下。丹一公生二子：长文杲公，即吾枫槎始迁祖；次文榘公，即桃源街道陈家岙村始祖。源流派衍，一一可考。阖族闻之，莫不感泣。此诚吾族莫大之恩德也。
 
-          <p style="margin-bottom:1.6em;">其后，宁海桃源街道陈家岙村有贤达陈君令昂者，悯吾族源流之湮，慨然以考正为己任。自丙申岁（公元二〇一六年）始，时年七十有三，不惮寒暑，访碑搜谱，凡临海、宁海、天台诸邑故家遗编，靡不穷究。辛勤十载，至丙午岁（公元二〇二六年），年八十有三，乃豁然贯通，得出确证：下枫槎谢氏与陈君所出之东门陈氏，实同宗同族，俱出自临海石马下谢之祖小四公（讳聪孙）之子丹一公脉下。丹一公生二子：长文杲公，即吾枫槎始迁祖；次文榘公，即桃源街道陈家岙村始祖。源流派衍，一一可考。阖族闻之，莫不感泣。此诚吾族莫大之恩德也。</p>
+今值盛世，国运昌隆，族谱重修于丙午之春（公元二〇二六年），敦睦堂珍藏。复建数字宗祠于云端，录世系于网络，使四海宗亲皆可随时查阅，虽隔山海，犹在目前。此番修谱，悉依陈君令昂所考证之正本，以丹一公为承上启下之枢，以文杲公为枫槎始迁之祖，上接石马小四公，下统三十六世子孙，世次分明，昭穆有序。凡吾族中子弟，自此皆知其所自来、其所自出，尊祖敬宗之心，油然而生矣。
 
-          <p style="margin-bottom:1.6em;">今值盛世，国运昌隆，族谱重修于丙午之春（公元二〇二六年），敦睦堂珍藏。复建数字宗祠于云端，录世系于网络，使四海宗亲皆可随时查阅，虽隔山海，犹在目前。此番修谱，悉依陈君令昂所考证之正本，以丹一公为承上启下之枢，以文杲公为枫槎始迁之祖，上接石马小四公，下统三十六世子孙，世次分明，昭穆有序。凡吾族中子弟，自此皆知其所自来、其所自出，尊祖敬宗之心，油然而生矣。</p>
+丙午年四月初吉，天朗气清，惠风和畅，阖族会于下枫槎之祠，恭行圆谱大典焉。是日也，宗祠内外焕然一新，彩幡飘扬，钟鼓齐鸣。四方归省之族人，少长咸集，衣冠济济，共祭先祖。礼成，阖族欣悦，追昔抚今，感念陈君令昂考定宗源之功，莫不肃然起敬。此诚吾族近百年来未有之盛事也。
 
-          <p style="margin-bottom:1.6em;">丙午年四月初吉，天朗气清，惠风和畅，阖族会于下枫槎之祠，恭行圆谱大典焉。是日也，宗祠内外焕然一新，彩幡飘扬，钟鼓齐鸣。四方归省之族人，少长咸集，衣冠济济，共祭先祖。礼成，阖族欣悦，追昔抚今，感念陈君令昂考定宗源之功，莫不肃然起敬。此诚吾族近百年来未有之盛事也。</p>
+吾族代有贤达。有谢琳芳者，上海知青，下放下枫槎。率民开荒种茶，扩茶地至二百余亩，为名茶"望府银毫"奠基。由大队支书累迁共青团宁波地委书记、团省委常委，心系故土，与乡亲同劳。一九七二年，《解放日报》以《三门湾畔向阳花》为题报道，遂成全国知青楷模。
 
-          <p style="margin-bottom:1.6em;">吾族代有贤达。有谢琳芳者，上海知青，下放下枫槎。率民开荒种茶，扩茶地至二百余亩，为名茶&ldquo;望府银毫&rdquo;奠基。由大队支书累迁共青团宁波地委书记、团省委常委，心系故土，与乡亲同劳。一九七二年，《解放日报》以《三门湾畔向阳花》为题报道，遂成全国知青楷模。</p>
+又有幸福君者，中共党员，曾任中国人民银行宁海县支行行长。秉公尽职，为国理财，热心家族公益，助力宗祠修缮与谱事，亦为阖族之荣光。
 
-          <p style="margin-bottom:1.6em;">又有幸福君者，中共党员，曾任中国人民银行宁海县支行行长。秉公尽职，为国理财，热心家族公益，助力宗祠修缮与谱事，亦为阖族之荣光。</p>
+世忠君者，中共党员，白手起家，从商办企，心系桑梓，倾力修建宗祠，资助文化礼堂。本届修谱，担道义，任编修，洵德孝之人也。
 
-          <p style="margin-bottom:1.6em;">世忠君者，中共党员，白手起家，从商办企，心系桑梓，倾力修建宗祠，资助文化礼堂。本届修谱，担道义，任编修，洵德孝之人也。</p>
+行龙君者，中共党员，浙大MBA，宁波市优秀企业家。历任四届村长，建文化礼堂，捐资奉献，敬祖尊宗，功德流芳。
 
-          <p style="margin-bottom:1.6em;">行龙君者，中共党员，浙大MBA，宁波市优秀企业家。历任四届村长，建文化礼堂，捐资奉献，敬祖尊宗，功德流芳。</p>
+海港君者，中共党员，为家族修建宗祠与村文化礼堂建设无私奉献，修谱捐资出资，其心可嘉。
 
-          <p style="margin-bottom:1.6em;">海港君者，中共党员，为家族修建宗祠与村文化礼堂建设无私奉献，修谱捐资出资，其心可嘉。</p>
+此皆吾族现代之佼佼者，后昆之楷模也。
 
-          <p style="margin-bottom:0;">此皆吾族现代之佼佼者，后昆之楷模也。</p>
-
-          <p style="margin-bottom:1.6em;margin-top:1.6em;">乌衣世泽，源远流长；宝树家声，继往开来。凡我族人，当念创业之艰难、守成之不易，尤当铭记陈令昂君之高义。陈君以七十三岁高龄始事，至八十三岁终成，十载辛勤，非我族姓而为我族考定宗源、续绝存亡，使尘封之氏族历史与血脉传承，得以昭告先人及当今枫槎全体家族成员，其德其功，没齿难忘。故于此宗源记中，特为记载，以彰其劳，以劝后世。凡我子孙，世世当传颂其事，永志勿谖。同心同德，以光大门楣、垂裕后昆，则吾谢氏之兴，岂有艾乎？</p>
-
-          <div style="margin-top:24px;text-align:right;font-size:13px;color:var(--text-muted);font-style:italic;border-top:1px solid var(--divider);padding-top:16px;">
-            下枫槎谢氏阖族敬撰<br>
-            丙午年仲夏吉日
+乌衣世泽，源远流长；宝树家声，继往开来。凡我族人，当念创业之艰难、守成之不易，尤当铭记陈令昂君之高义。陈君以七十三岁高龄始事，至八十三岁终成，十载辛勤，非我族姓而为我族考定宗源、续绝存亡，使尘封之氏族历史与血脉传承，得以昭告先人及当今枫槎全体家族成员，其德其功，没齿难忘。故于此宗源记中，特为记载，以彰其劳，以劝后世。凡我子孙，世世当传颂其事，永志勿谖。同心同德，以光大门楣、垂裕后昆，则吾谢氏之兴，岂有艾乎？
+          </div>
+          <div class="scroll-footer">
+            下枫槎谢氏阖族敬撰 · 丙午年仲夏吉日
+            <span style="display:inline-block;margin-left:12px;font-size:10px;color:rgba(180,50,50,0.15);border:1px solid rgba(180,50,50,0.1);border-radius:50%;width:28px;height:28px;line-height:28px;text-align:center;transform:rotate(-8deg);">谢</span>
           </div>
         </div>
       </div>
