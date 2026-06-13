@@ -76,12 +76,12 @@
     <!-- 第一部分：村荣誉                               -->
     <!-- ============================================ -->
     <section id="honors" style="margin-bottom:50px;">
-      <div class="section-title">
-        <h2 data-i18n="nav.honors">村荣誉</h2>
+      <div class="section-title" style="cursor:pointer;" onclick="toggleHonors()">
+        <h2 data-i18n="nav.honors">村荣誉 <span id="honors-toggle" style="font-size:18px;color:var(--accent-orange);">▶</span></h2>
         <div class="divider"></div>
-        <p data-i18n="page.honors">荣耀时刻 · 砥砺前行</p>
+        <p data-i18n="page.honors">点击展开 · 荣耀时刻</p>
       </div>
-      <div id="honors-wrap">
+      <div id="honors-wrap" style="display:none;">
       <style>
         .hw-card { background:#faf8f4; border-radius:20px; padding:28px 22px 22px; position:relative; transition:box-shadow .4s,transform .3s; cursor:default; display:flex; flex-direction:column; min-height:220px; box-shadow:0 4px 20px rgba(80,70,50,0.06); border:1px solid rgba(120,100,80,0.08); }
         .hw-card:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(80,70,50,0.08); }
@@ -743,6 +743,12 @@
     #honors-wrap { border:none; background:transparent; }
   </style>
   <script>
+  function toggleHonors() {
+    var el = document.getElementById('honors-wrap');
+    var icon = document.getElementById('honors-toggle');
+    if (el.style.display === 'none') { el.style.display = 'block'; icon.textContent = '▼'; }
+    else { el.style.display = 'none'; icon.textContent = '▶'; }
+  }
   </script>
 
     <audio id="bg-music" loop></audio>
