@@ -77,43 +77,48 @@
     <!-- ============================================ -->
     <section id="honors" style="margin-bottom:50px;">
       <div class="section-title" style="cursor:pointer;position:relative;" onclick="toggleHonors()">
-        <h2 data-i18n="nav.honors">村荣誉</h2>
+        <h2 data-i18n="nav.honors">村荣誉 <span id="honors-toggle" style="font-size:16px;color:var(--accent-orange);margin-left:6px;">▶</span></h2>
         <div class="divider"></div>
         <p data-i18n="page.honors">点击展开 · 荣耀时刻</p>
-        <span id="honors-toggle" style="position:absolute;right:0;top:50%;transform:translateY(-50%);font-size:20px;color:var(--accent-orange);">▶</span>
       </div>
       <div id="honors-wrap" style="display:none;">
       <style>
-        .hw-card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:12px;padding:20px 16px 16px;position:relative;transition:transform .25s,box-shadow .25s;cursor:default;display:flex;flex-direction:column;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
-        .hw-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.1)}
-        .hw-card .hw-tag{font-size:.7rem;color:var(--text-muted);margin-bottom:4px;letter-spacing:.05em}
-        .hw-card .hw-name{font-size:1.15rem;font-weight:600;color:var(--text-primary);line-height:1.4;margin-bottom:2px}
-        .hw-card .hw-name.sm{font-size:1rem}
-        .hw-card .hw-name.xs{font-size:.85rem}
-        .hw-card .hw-top{font-size:.75rem;color:var(--text-tertiary);margin-bottom:1px}
-        .hw-card .hw-divider{height:1px;background:var(--divider);margin:8px 0 10px;opacity:.5}
-        .hw-card .hw-issuer{font-size:.8rem;color:var(--text-secondary);line-height:1.6;flex:1}
-        .hw-card .hw-year{font-size:.75rem;color:var(--text-muted);margin-top:8px}
-        .hw-card .hw-stars{display:inline-flex;gap:2px;color:var(--accent-orange);font-size:1rem;letter-spacing:2px}
-        .hw-card .hw-party{display:inline-block;font-size:.7rem;margin-right:3px;opacity:.5}
-        .hw-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:20px;width:100%}
+        .doc-card{background:#fff;padding:22px 22px 16px;position:relative;box-shadow:0 1px 4px rgba(0,0,0,0.04);transition:box-shadow .3s,transform .3s;cursor:default;display:flex;flex-direction:column;min-height:180px;border-left:3px solid #c41a1a}
+        .doc-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.06);transform:translateY(-2px)}
+        .doc-card .red-bar{position:absolute;top:0;left:0;right:0;height:2px;background:#c41a1a;opacity:.35}
+        .doc-card .doc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:.58rem;color:#999;border-bottom:1px dashed #ddd;padding-bottom:6px}
+        .doc-card .doc-header .num{color:#666}
+        .doc-card .doc-header .level{border:1px solid #ddd;padding:1px 8px;color:#999;font-size:.48rem}
+        .doc-card .red-title{font-size:.8rem;font-weight:700;color:#c41a1a;letter-spacing:.08em;margin-bottom:2px}
+        .doc-card .award-name{font-size:1.3rem;font-weight:700;color:#1a1a1a;line-height:1.25;letter-spacing:.08em;margin:4px 0}
+        .doc-card .award-name.smaller{font-size:1.05rem}
+        .doc-card .award-name.xsmall{font-size:.9rem}
+        .doc-card .award-name .star-row{display:inline-flex;gap:2px;color:#c41a1a;font-size:.9rem;letter-spacing:2px}
+        .doc-card .body-text{font-size:.7rem;color:#444;line-height:1.7;flex:1;margin:4px 0 6px}
+        .doc-card .body-text .label{color:#888}
+        .doc-card .footer{display:flex;justify-content:space-between;align-items:flex-end;margin-top:auto;padding-top:6px;border-top:1px solid #eee;font-size:.62rem;color:#555}
+        .doc-card .footer .issuer{line-height:1.4}
+        .doc-card .footer .year{white-space:nowrap;color:#888}
+        .doc-card .party-emblem{display:inline-block;font-size:.6rem;margin-right:2px;opacity:.4;vertical-align:middle}
+        .doc-card .chop{position:absolute;right:10px;bottom:12px;width:32px;height:32px;border-radius:50%;border:2px solid rgba(196,26,26,0.12);display:flex;align-items:center;justify-content:center;font-size:.38rem;color:rgba(196,26,26,0.15);transform:rotate(-10deg)}
+        .hw-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:20px;width:100%}
         @media(max-width:1000px){.hw-grid{grid-template-columns:repeat(3,1fr)}}
-        @media(max-width:720px){.hw-grid{grid-template-columns:repeat(2,1fr);gap:14px}}
-        @media(max-width:440px){.hw-grid{grid-template-columns:repeat(2,1fr);gap:10px}.hw-card{padding:14px 12px}.hw-card .hw-name{font-size:.95rem}.hw-card .hw-name.sm{font-size:.85rem}.hw-card .hw-name.xs{font-size:.75rem}.hw-card .hw-issuer{font-size:.68rem}}
+        @media(max-width:720px){.hw-grid{grid-template-columns:repeat(2,1fr);gap:14px}.doc-card{padding:18px 16px 14px;min-height:160px}.doc-card .award-name{font-size:1.05rem}.doc-card .award-name.smaller{font-size:.9rem}.doc-card .award-name.xsmall{font-size:.8rem}.doc-card .body-text{font-size:.62rem}.doc-card .footer{font-size:.55rem}.doc-card .chop{width:24px;height:24px;font-size:.32rem;bottom:8px;right:6px}}
+        @media(max-width:440px){.hw-grid{gap:12px}.doc-card{padding:14px 12px 12px;min-height:140px}.doc-card .award-name{font-size:.9rem}.doc-card .award-name.smaller{font-size:.78rem}.doc-card .award-name.xsmall{font-size:.7rem}.doc-card .body-text{font-size:.55rem}.doc-card .footer{font-size:.48rem;flex-direction:column;align-items:flex-start;gap:3px}.doc-card .red-title{font-size:.65rem}.doc-card .doc-header{font-size:.5rem}.doc-card .chop{display:none}}
       </style>
       <div class="hw-grid">
-        <div class="hw-card"><div class="hw-tag">🏅 01</div><div class="hw-name">文明村</div><div class="hw-divider"></div><div class="hw-issuer">中共宁波市委<br>宁波市人民政府</div></div>
-        <div class="hw-card"><div class="hw-tag">🏅 02</div><div class="hw-name sm">宁波市级生态村</div><div class="hw-divider"></div><div class="hw-issuer">宁波生态市建设工作领导小组办公室</div><div class="hw-year">二〇〇七年二月</div></div>
-        <div class="hw-card"><div class="hw-tag">🏅 03</div><div class="hw-top">宁波市</div><div class="hw-name">卫生村</div><div class="hw-divider"></div><div class="hw-issuer">宁波市爱国卫生运动委员会</div><div class="hw-year">二〇〇七年十二月</div></div>
-        <div class="hw-card"><div class="hw-tag">🏅 04</div><div class="hw-name sm">宁波市书香文化礼堂</div><div class="hw-divider"></div><div class="hw-issuer">中共宁波市委宣传部<br>宁波市农村文化礼堂建设领导小组办公室</div><div class="hw-year">二〇二〇年十二月</div></div>
-        <div class="hw-card"><div class="hw-tag">🏅 05</div><div class="hw-top">宁波市示范型</div><div class="hw-name">儿童之家</div><div class="hw-divider"></div><div class="hw-issuer">宁波市妇女联合会<br>宁波市民政局</div><div class="hw-year">二〇二一年二月</div></div>
-        <div class="hw-card"><div class="hw-tag">🏅 06</div><div class="hw-name sm">宁波市安居示范村</div><div class="hw-divider"></div><div class="hw-issuer">宁波市住房和城乡建设局</div><div class="hw-year">二〇二二年</div></div>
-        <div class="hw-card"><div class="hw-tag">🏅 07</div><div class="hw-name sm">新时代文明实践示范站</div><div class="hw-divider"></div><div class="hw-issuer">宁波市精神文明建设指导委员会办公室</div><div class="hw-year">二〇二三年三月</div></div>
-        <div class="hw-card"><div class="hw-tag">🏅 08</div><div class="hw-name sm"><span class="hw-party">☭</span>五星级基层党组织</div><div class="hw-divider"></div><div class="hw-issuer">中共宁波市委组织部</div><div class="hw-year">二〇二三年三月</div></div>
-        <div class="hw-card"><div class="hw-tag">🏅 09</div><div class="hw-name sm">文化礼堂</div><div class="hw-name" style="margin-top:-2px;"><span class="hw-stars">★★★★★</span></div><div class="hw-divider"></div><div class="hw-issuer">中共浙江省委宣传部<br>浙江省农村文化礼堂建设工作领导小组办公室</div><div class="hw-year">二〇二三年四月</div></div>
-        <div class="hw-card"><div class="hw-tag">🏅 10</div><div class="hw-top">宁波市民族团结进步创建</div><div class="hw-name xs">重点培育单位</div><div class="hw-divider"></div><div class="hw-issuer">宁波市民族宗教事务局</div><div class="hw-year">二〇二三年十月</div></div>
-        <div class="hw-card"><div class="hw-tag">🏅 11</div><div class="hw-top">2023年度返乡入乡合作创业考核</div><div class="hw-name">优秀单位</div><div class="hw-divider"></div><div class="hw-issuer">浙江省人力资源和社会保障厅</div><div class="hw-year">二〇二四年三月</div></div>
-        <div class="hw-card"><div class="hw-tag">🏅 12</div><div class="hw-top">授予：宁海县跃龙街道望府村</div><div class="hw-name xs">宁波市茶文化特色村</div><div class="hw-divider"></div><div class="hw-issuer">宁波市民间文艺家协会</div><div class="hw-year">2024年4月</div></div>
+        <div class="doc-card"><span class="red-bar"></span><div class="doc-header"><span class="num">荣誉〔2026〕第01号</span><span class="level">★永久</span></div><div class="red-title">中共宁波市委 宁波市人民政府</div><div class="award-name">文明村</div><div class="body-text">经考核评定，授予望府村<span class="label">「文明村」</span>荣誉称号。</div><div class="chop">宁波<br>市委</div><div class="footer"><div class="issuer">中共宁波市委<br>宁波市人民政府</div></div></div>
+        <div class="doc-card"><span class="red-bar"></span><div class="doc-header"><span class="num">荣誉〔2007〕第02号</span><span class="level">★永久</span></div><div class="red-title">宁波生态市建设工作领导小组办公室</div><div class="award-name smaller">宁波市级生态村</div><div class="body-text">授予望府村<span class="label">「宁波市级生态村」</span>称号。</div><div class="footer"><div class="issuer">宁波生态市建设工作领导小组办公室</div><div class="year">二〇〇七年二月</div></div></div>
+        <div class="doc-card"><span class="red-bar"></span><div class="doc-header"><span class="num">荣誉〔2007〕第03号</span><span class="level">★永久</span></div><div class="red-title">宁波市爱国卫生运动委员会</div><div class="award-name">卫生村</div><div class="body-text">授予望府村<span class="label">「卫生村」</span>荣誉称号。</div><div class="footer"><div class="issuer">宁波市爱国卫生运动委员会</div><div class="year">二〇〇七年十二月</div></div></div>
+        <div class="doc-card"><span class="red-bar"></span><div class="doc-header"><span class="num">荣誉〔2020〕第04号</span><span class="level">★永久</span></div><div class="red-title">中共宁波市委宣传部 等</div><div class="award-name smaller">宁波市书香文化礼堂</div><div class="body-text">授予望府村<span class="label">「宁波市书香文化礼堂」</span>称号。</div><div class="footer"><div class="issuer">中共宁波市委宣传部<br>宁波市农村文化礼堂建设领导小组办公室</div><div class="year">二〇二〇年十二月</div></div></div>
+        <div class="doc-card"><span class="red-bar"></span><div class="doc-header"><span class="num">荣誉〔2021〕第05号</span><span class="level">★永久</span></div><div class="red-title">宁波市妇女联合会 宁波市民政局</div><div class="award-name">儿童之家</div><div class="body-text">授予望府村<span class="label">「儿童之家」</span>（示范型）称号。</div><div class="footer"><div class="issuer">宁波市妇女联合会<br>宁波市民政局</div><div class="year">二〇二一年二月</div></div></div>
+        <div class="doc-card"><span class="red-bar"></span><div class="doc-header"><span class="num">荣誉〔2022〕第06号</span><span class="level">★永久</span></div><div class="red-title">宁波市住房和城乡建设局</div><div class="award-name smaller">宁波市安居示范村</div><div class="body-text">授予望府村<span class="label">「宁波市安居示范村」</span>称号。</div><div class="footer"><div class="issuer">宁波市住房和城乡建设局</div><div class="year">二〇二二年</div></div></div>
+        <div class="doc-card"><span class="red-bar"></span><div class="doc-header"><span class="num">荣誉〔2023〕第07号</span><span class="level">★永久</span></div><div class="red-title">宁波市精神文明建设指导委员会办公室</div><div class="award-name smaller">新时代文明实践示范站</div><div class="body-text">授予望府村<span class="label">「新时代文明实践示范站」</span>称号。</div><div class="footer"><div class="issuer">宁波市精神文明建设指导委员会办公室</div><div class="year">二〇二三年三月</div></div></div>
+        <div class="doc-card"><span class="red-bar"></span><div class="doc-header"><span class="num">荣誉〔2023〕第08号</span><span class="level">★永久</span></div><div class="red-title">中共宁波市委组织部</div><div class="award-name smaller"><span class="party-emblem">☭</span>五星级基层党组织</div><div class="body-text">授予望府村<span class="label">「五星级基层党组织」</span>称号。</div><div class="chop">宁波<br>市委</div><div class="footer"><div class="issuer">中共宁波市委组织部</div><div class="year">二〇二三年三月</div></div></div>
+        <div class="doc-card"><span class="red-bar"></span><div class="doc-header"><span class="num">荣誉〔2023〕第09号</span><span class="level">★永久</span></div><div class="red-title">中共浙江省委宣传部 等</div><div class="award-name smaller">文化礼堂</div><div class="award-name" style="margin-top:-3px;"><span class="star-row">★★★★★</span></div><div class="body-text">望府村文化礼堂获<span class="label">「五星级」</span>评定。</div><div class="footer"><div class="issuer">中共浙江省委宣传部<br>浙江省农村文化礼堂建设工作领导小组办公室</div><div class="year">二〇二三年四月</div></div></div>
+        <div class="doc-card"><span class="red-bar"></span><div class="doc-header"><span class="num">荣誉〔2023〕第10号</span><span class="level">★永久</span></div><div class="red-title">宁波市民族宗教事务局</div><div class="award-name xsmall">重点培育单位</div><div class="body-text">宁波市民族团结进步创建<span class="label">「重点培育单位」</span>。</div><div class="footer"><div class="issuer">宁波市民族宗教事务局</div><div class="year">二〇二三年十月</div></div></div>
+        <div class="doc-card"><span class="red-bar"></span><div class="doc-header"><span class="num">荣誉〔2024〕第11号</span><span class="level">★永久</span></div><div class="red-title">浙江省人力资源和社会保障厅</div><div class="award-name">优秀单位</div><div class="body-text">2023年度返乡入乡合作创业考核，望府村被评为<span class="label">「优秀单位」</span>。</div><div class="footer"><div class="issuer">浙江省人力资源和社会保障厅</div><div class="year">二〇二四年三月</div></div></div>
+        <div class="doc-card"><span class="red-bar"></span><div class="doc-header"><span class="num">荣誉〔2024〕第12号</span><span class="level">★永久</span></div><div class="red-title">宁波市民间文艺家协会</div><div class="award-name xsmall">宁波市茶文化特色村</div><div class="body-text">授予望府村<span class="label">「宁波市茶文化特色村」</span>称号。</div><div class="footer"><div class="issuer">宁波市民间文艺家协会</div><div class="year">2024年4月</div></div></div>
       </div>
     </section>
 

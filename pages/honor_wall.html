@@ -3,64 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>荣誉墙 — 望府村 · 锦旗织锦风</title>
+<title>荣誉墙 — 望府村 · 红头文件风</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: "Noto Serif SC", "Source Han Serif SC", "STKaiti", "KaiTi", serif;
-    background:
-      radial-gradient(ellipse at 50% 0%, #8b1a1a 0%, #5c0e0e 40%, #3a0505 100%);
+    font-family: "FangSong", "仿宋", "FZFS", "Noto Serif SC", "STSong", serif;
+    background: #e8e4dc;
     min-height: 100vh;
     padding: 50px 20px 80px;
     position: relative;
-    overflow-x: hidden;
   }
 
-  /* 锦缎暗纹 */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
     background:
-      repeating-linear-gradient(
-        90deg, transparent, transparent 40px,
-        rgba(255,200,100,0.02) 40px, rgba(255,200,100,0.02) 41px
-      ),
-      repeating-linear-gradient(
-        0deg, transparent, transparent 40px,
-        rgba(255,200,100,0.015) 40px, rgba(255,200,100,0.015) 41px
-      ),
-      repeating-linear-gradient(
-        45deg, transparent, transparent 80px,
-        rgba(255,200,100,0.008) 80px, rgba(255,200,100,0.008) 81px
-      ),
-      repeating-linear-gradient(
-        -45deg, transparent, transparent 80px,
-        rgba(255,200,100,0.008) 80px, rgba(255,200,100,0.008) 81px
-      );
+      repeating-linear-gradient(0deg, transparent, transparent 30px,
+        rgba(0,0,0,0.01) 30px, rgba(0,0,0,0.01) 31px);
     pointer-events: none;
     z-index: 0;
-  }
-
-  /* 顶部云纹装饰条 */
-  body::after {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 8px;
-    background: linear-gradient(90deg,
-      transparent 2%, #c9a84c 5%, transparent 10%,
-      #c9a84c 15%, transparent 20%, #c9a84c 25%,
-      transparent 30%, #c9a84c 35%, transparent 40%,
-      #c9a84c 45%, transparent 50%, #c9a84c 55%,
-      transparent 60%, #c9a84c 65%, transparent 70%,
-      #c9a84c 75%, transparent 80%, #c9a84c 85%,
-      transparent 90%, #c9a84c 95%, transparent 98%
-    );
-    opacity: 0.15;
-    pointer-events: none;
-    z-index: 1;
   }
 
   /* ===== 顶部 ===== */
@@ -68,70 +31,57 @@
     position: relative;
     z-index: 1;
     text-align: center;
-    margin-bottom: 50px;
-    padding: 20px;
+    margin-bottom: 48px;
+    padding: 30px 20px 20px;
+    background: #fff;
+    max-width: 1040px;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    border-top: 4px solid #c41a1a;
   }
-  .page-header .top-ornament {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 14px;
-    color: #c9a84c;
-    font-size: 0.85rem;
-    opacity: 0.5;
-  }
-  .page-header .top-ornament .bar {
-    width: 50px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, #c9a84c, transparent);
-    opacity: 0.4;
-  }
-  .page-header h1 {
-    font-size: 2.8rem;
+  .page-header .red-head {
+    font-size: 1.4rem;
     font-weight: 700;
-    color: #f0d68a;
-    letter-spacing: 0.3em;
-    text-shadow:
-      0 0 20px rgba(201,168,76,0.2),
-      1px 1px 2px rgba(0,0,0,0.3);
-    font-family: "Noto Serif SC", "STKaiti", serif;
+    color: #c41a1a;
+    letter-spacing: 0.1em;
+    font-family: "SimSun", "Noto Serif SC", "STSong", serif;
+    margin-bottom: 8px;
+  }
+  .page-header .red-head::before { content: '▲ '; font-size: 0.8rem; }
+  .page-header .red-head::after { content: ' ▲'; font-size: 0.8rem; }
+  .page-header h1 {
+    font-size: 2.6rem;
+    font-weight: 700;
+    color: #c41a1a;
+    letter-spacing: 0.4em;
+    font-family: "SimSun", "Noto Serif SC", "STSong", serif;
     position: relative;
     display: inline-block;
   }
-  .page-header h1::before {
-    content: '◆';
-    font-size: 0.6rem;
-    margin-right: 12px;
-    color: #c9a84c;
-    opacity: 0.4;
-    vertical-align: middle;
-  }
   .page-header h1::after {
-    content: '◆';
-    font-size: 0.6rem;
-    margin-left: 12px;
-    color: #c9a84c;
+    content: '';
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: #c41a1a;
+    margin: 6px auto 0;
     opacity: 0.4;
-    vertical-align: middle;
   }
   .page-header .sub {
-    font-size: 0.88rem;
-    color: rgba(240,214,138,0.5);
+    font-size: 0.85rem;
+    color: #666;
     letter-spacing: 0.15em;
     margin-top: 10px;
     font-weight: 400;
+    font-family: "FangSong", "仿宋", serif;
   }
-  .page-header .gold-dragon {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    margin-top: 14px;
-    font-size: 0.6rem;
-    color: #c9a84c;
-    opacity: 0.3;
-    letter-spacing: 0.5em;
+  .page-header .doc-num {
+    font-size: 0.7rem;
+    color: #999;
+    margin-top: 10px;
+    font-family: "SimSun", serif;
+    letter-spacing: 0.05em;
   }
 
   /* ===== 网格 ===== */
@@ -139,665 +89,396 @@
     position: relative;
     z-index: 1;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 36px 30px;
-    max-width: 1040px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    max-width: 860px;
     width: 100%;
     margin: 0 auto;
   }
 
-  /* ===== 锦旗卡片 ===== */
-  .banner {
+  /* ===== 红头卡片 ===== */
+  .doc-card {
+    background: #fff;
+    padding: 24px 24px 18px;
     position: relative;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
     cursor: default;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    transition: transform 0.3s ease;
+    min-height: 200px;
+    border-left: 3px solid #c41a1a;
   }
-  .banner:hover {
-    transform: translateY(-4px);
-  }
-
-  /* 锦旗主体 - 传统竖长形 */
-  .banner .flag-body {
-    position: relative;
-    width: 100%;
-    max-width: 220px;
-    aspect-ratio: 3 / 4;
-    background: linear-gradient(
-      180deg,
-      #cc2233 0%, #b81a2a 15%, #a01020 40%, #8b0a18 60%, #7a0510 80%, #6a0008 100%
-    );
-    border-radius: 6px 6px 0 0;
-    box-shadow:
-      0 6px 30px rgba(0,0,0,0.4),
-      inset 0 1px 0 rgba(255,255,255,0.08);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px 12px 14px;
+  .doc-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    transform: translateY(-2px);
   }
 
-  /* 锦缎纹理叠加 */
-  .banner .flag-body::before {
-    content: '';
+  /* 红头横线 */
+  .doc-card .red-bar {
     position: absolute;
-    inset: 0;
-    background:
-      repeating-linear-gradient(
-        0deg, transparent, transparent 6px,
-        rgba(255,255,255,0.015) 6px, rgba(255,255,255,0.015) 7px
-      ),
-      repeating-linear-gradient(
-        90deg, transparent, transparent 6px,
-        rgba(255,255,255,0.01) 6px, rgba(255,255,255,0.01) 7px
-      ),
-      radial-gradient(ellipse at 50% 30%, rgba(255,200,100,0.04) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  /* 金色流苏边框 */
-  .banner .flag-body::after {
-    content: '';
-    position: absolute;
-    inset: 4px;
-    border: 1.5px solid rgba(201,168,76,0.2);
-    border-radius: 4px;
-    pointer-events: none;
-    z-index: 2;
-  }
-
-  /* 金色盘扣/挂钩 */
-  .banner .hook {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, #f0d68a, #c9a84c 50%, #8a6620);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    margin-bottom: 3px;
-    position: relative;
-    z-index: 3;
-    flex-shrink: 0;
-  }
-  .banner .hook::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: radial-gradient(circle, #fce8b0, #e0c060);
-    transform: translate(-50%, -50%);
-  }
-
-  /* 金色线穗 (底部流苏) */
-  .banner .tassel {
-    width: 100%;
-    max-width: 220px;
-    height: 18px;
-    background: linear-gradient(
-      180deg,
-      #c9a84c 0%, #e0c868 20%, #c9a84c 40%, #b8963a 60%, #c9a84c 80%, #a8862a 100%
-    );
-    border-radius: 0 0 6px 6px;
-    position: relative;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    flex-shrink: 0;
-  }
-  .banner .tassel::before {
-    content: '';
-    position: absolute;
-    bottom: -8px;
+    top: 0;
     left: 0;
-    width: 100%;
-    height: 8px;
-    background: repeating-linear-gradient(
-      90deg,
-      #c9a84c 0px, #e0c868 2px,
-      #c9a84c 4px, #b8963a 6px,
-      #e0c868 8px, #c9a84c 10px
-    );
-    border-radius: 0 0 4px 4px;
-    mask-image: linear-gradient(180deg, rgba(0,0,0,0.4), rgba(0,0,0,0.8));
-    -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,0.4), rgba(0,0,0,0.8));
-  }
-  .banner .tassel::after {
-    content: '▴ ▴ ▴';
-    position: absolute;
-    top: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.3rem;
-    color: rgba(201,168,76,0.3);
-    letter-spacing: 6px;
+    right: 0;
+    height: 2px;
+    background: #c41a1a;
+    opacity: 0.35;
   }
 
-  /* 四角金饰 */
-  .banner .gold-corner {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    z-index: 3;
-    pointer-events: none;
-  }
-  .banner .gold-corner.tl {
-    top: 6px; left: 6px;
-    border-top: 2px solid rgba(201,168,76,0.3);
-    border-left: 2px solid rgba(201,168,76,0.3);
-    border-radius: 2px 0 0 0;
-  }
-  .banner .gold-corner.tr {
-    top: 6px; right: 6px;
-    border-top: 2px solid rgba(201,168,76,0.3);
-    border-right: 2px solid rgba(201,168,76,0.3);
-    border-radius: 0 2px 0 0;
-  }
-  .banner .gold-corner.bl {
-    bottom: 6px; left: 6px;
-    border-bottom: 2px solid rgba(201,168,76,0.3);
-    border-left: 2px solid rgba(201,168,76,0.3);
-    border-radius: 0 0 0 2px;
-  }
-  .banner .gold-corner.br {
-    bottom: 6px; right: 6px;
-    border-bottom: 2px solid rgba(201,168,76,0.3);
-    border-right: 2px solid rgba(201,168,76,0.3);
-    border-radius: 0 0 2px 0;
-  }
-
-  /* ===== 锦旗内文字 ===== */
-  .banner .flag-body .content {
-    position: relative;
-    z-index: 3;
-    flex: 1;
+  /* 文件编号 */
+  .doc-card .doc-header {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    text-align: center;
-    width: 100%;
+    margin-bottom: 10px;
+    font-size: 0.6rem;
+    color: #999;
+    font-family: "SimSun", serif;
+    border-bottom: 1px dashed #ddd;
+    padding-bottom: 6px;
   }
-
-  /* 装饰云纹 */
-  .banner .cloud-motif {
-    position: absolute;
-    font-size: 1.6rem;
-    opacity: 0.04;
-    color: #f0d68a;
-    pointer-events: none;
-    z-index: 0;
-    font-family: sans-serif;
+  .doc-card .doc-header .num {
+    color: #666;
   }
-  .banner .cloud-motif.c1 { top: 10%; left: -5%; transform: rotate(-10deg); }
-  .banner .cloud-motif.c2 { bottom: 15%; right: -5%; transform: rotate(170deg); }
-
-  /* 编号 */
-  .banner .num {
-    font-size: 0.55rem;
-    color: rgba(240,214,138,0.25);
-    font-weight: 400;
-    letter-spacing: 0.15em;
-    margin-bottom: 4px;
-    font-family: "Noto Sans SC", sans-serif;
-  }
-
-  /* 顶部小字 */
-  .banner .top-text {
-    font-size: 0.55rem;
-    color: rgba(240,214,138,0.45);
-    font-weight: 400;
-    letter-spacing: 0.1em;
-    margin-bottom: 2px;
-    font-family: "Noto Sans SC", sans-serif;
-  }
-
-  /* 奖项名称 */
-  .banner .award-name {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #f0d68a;
-    line-height: 1.3;
-    letter-spacing: 0.08em;
-    text-shadow:
-      0 1px 3px rgba(0,0,0,0.3),
-      0 0 20px rgba(201,168,76,0.08);
-  }
-  .banner .award-name.smaller { font-size: 0.88rem; }
-  .banner .award-name.xsmall { font-size: 0.78rem; }
-  .banner .award-name .star-row {
-    display: inline-flex;
-    gap: 2px;
-    color: #f0d68a;
-    font-size: 0.9rem;
-    letter-spacing: 3px;
-    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.2));
-  }
-
-  /* 如意分隔 */
-  .banner .divider {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin: 5px 0 7px;
-    width: 70%;
-  }
-  .banner .divider .d-line {
-    flex: 1;
-    height: 0;
-    border-top: 1px solid rgba(201,168,76,0.2);
-  }
-  .banner .divider .d-ornament {
-    color: rgba(201,168,76,0.25);
+  .doc-card .doc-header .level {
+    border: 1px solid #ddd;
+    padding: 1px 8px;
+    color: #999;
     font-size: 0.5rem;
   }
 
-  /* 颁发单位 */
-  .banner .issuer {
-    font-size: 0.58rem;
-    color: rgba(240,214,138,0.6);
-    line-height: 1.45;
-    font-weight: 400;
-    font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  /* 红头标题 */
+  .doc-card .red-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #c41a1a;
+    font-family: "SimSun", "Noto Serif SC", serif;
+    letter-spacing: 0.1em;
+    margin-bottom: 2px;
   }
 
-  /* 年份 - 金色小字 */
-  .banner .year {
+  /* 顶头大字 */
+  .doc-card .award-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.25;
+    letter-spacing: 0.12em;
+    font-family: "SimSun", "Noto Serif SC", serif;
+    margin: 4px 0;
+  }
+  .doc-card .award-name.smaller { font-size: 1.15rem; }
+  .doc-card .award-name.xsmall { font-size: 1rem; }
+  .doc-card .award-name .star-row {
+    display: inline-flex;
+    gap: 2px;
+    color: #c41a1a;
+    font-size: 1rem;
+    letter-spacing: 2px;
+  }
+
+  /* 正文 */
+  .doc-card .body-text {
+    font-size: 0.72rem;
+    color: #444;
+    line-height: 1.7;
+    font-family: "FangSong", "仿宋", serif;
+    flex: 1;
+    margin: 4px 0 6px;
+  }
+  .doc-card .body-text .label {
+    color: #888;
+    font-family: "SimSun", serif;
+  }
+
+  /* 落款区 */
+  .doc-card .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
     font-size: 0.65rem;
-    color: rgba(240,214,138,0.35);
-    margin-top: 6px;
-    letter-spacing: 0.08em;
-    font-weight: 400;
-    font-family: "Noto Sans SC", sans-serif;
-    flex-shrink: 0;
+    color: #555;
+    font-family: "FangSong", "仿宋", serif;
+  }
+  .doc-card .footer .issuer {
+    line-height: 1.4;
+  }
+  .doc-card .footer .year {
+    white-space: nowrap;
+    color: #888;
+    font-family: "SimSun", serif;
   }
 
   /* 党徽 */
-  .banner .party-emblem {
+  .doc-card .party-emblem {
     display: inline-block;
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     margin-right: 3px;
-    opacity: 0.3;
+    opacity: 0.4;
     vertical-align: middle;
   }
 
-  /* 金色菱形饰 */
-  .banner .diamond-mark {
-    display: inline-block;
-    margin: 0 4px;
-    color: rgba(201,168,76,0.15);
-    font-size: 0.35rem;
-  }
-
-  /* ===== 底部穗带 ===== */
-  .banner .footer-band {
-    width: 100%;
-    max-width: 220px;
+  /* 骑缝章 */
+  .doc-card .chop {
+    position: absolute;
+    right: 12px;
+    bottom: 16px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid rgba(196,26,26,0.12);
     display: flex;
+    align-items: center;
     justify-content: center;
-    gap: 0;
-    margin-top: -1px;
-  }
-  .banner .footer-band .band-piece {
-    flex: 1;
-    height: 6px;
-    background: linear-gradient(135deg, #c9a84c, #e0c868, #c9a84c);
-    clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
-  }
-
-  /* ===== 标签 ===== */
-  .banner .label {
-    margin-top: 10px;
-    font-size: 0.55rem;
-    color: rgba(240,214,138,0.2);
-    font-family: "Noto Sans SC", sans-serif;
-    letter-spacing: 0.1em;
+    font-size: 0.4rem;
+    color: rgba(196,26,26,0.15);
+    transform: rotate(-10deg);
+    font-family: "SimSun", serif;
+    pointer-events: none;
+    letter-spacing: 1px;
   }
 
   /* ===== 响应式 ===== */
-  @media (max-width: 1000px) {
-    .grid { grid-template-columns: repeat(3, 1fr); gap: 30px 24px; }
-  }
   @media (max-width: 720px) {
     body { padding: 36px 14px 50px; }
-    .grid { grid-template-columns: repeat(2, 1fr); gap: 28px 18px; }
-    .page-header h1 { font-size: 2rem; }
-    .page-header h1::before, .page-header h1::after { content: none; }
-    .banner .flag-body { max-width: 180px; padding: 16px 10px 10px; }
-    .banner .award-name { font-size: 0.88rem; }
-    .banner .award-name.smaller { font-size: 0.75rem; }
-    .banner .award-name.xsmall { font-size: 0.68rem; }
-    .banner .issuer { font-size: 0.5rem; }
-    .banner .year { font-size: 0.55rem; }
-    .banner .num { font-size: 0.45rem; }
-    .banner .tassel { max-width: 180px; height: 14px; }
-    .banner .tassel::before { height: 6px; bottom: -6px; }
-    .banner .tassel::after { font-size: 0.25rem; top: -6px; }
-    .banner .label { font-size: 0.45rem; }
+    .grid { grid-template-columns: 1fr; gap: 18px; max-width: 500px; }
+    .page-header { padding: 20px 16px 16px; }
+    .page-header h1 { font-size: 1.8rem; letter-spacing: 0.25em; }
+    .page-header .red-head { font-size: 1.1rem; }
+    .doc-card { padding: 18px 18px 14px; min-height: 175px; }
+    .doc-card .award-name { font-size: 1.15rem; }
+    .doc-card .award-name.smaller { font-size: 1rem; }
+    .doc-card .award-name.xsmall { font-size: 0.85rem; }
+    .doc-card .body-text { font-size: 0.65rem; }
+    .doc-card .footer { font-size: 0.58rem; }
+    .doc-card .chop { width: 28px; height: 28px; font-size: 0.35rem; bottom: 10px; right: 8px; }
   }
   @media (max-width: 440px) {
     body { padding: 24px 10px 40px; }
-    .grid { gap: 20px 12px; }
-    .page-header h1 { font-size: 1.4rem; }
+    .page-header h1 { font-size: 1.3rem; }
+    .page-header .red-head { font-size: 0.85rem; }
     .page-header .sub { font-size: 0.65rem; }
-    .banner .flag-body { max-width: 145px; padding: 12px 8px 8px; }
-    .banner .award-name { font-size: 0.72rem; }
-    .banner .award-name.smaller { font-size: 0.62rem; }
-    .banner .award-name.xsmall { font-size: 0.55rem; }
-    .banner .issuer { font-size: 0.42rem; }
-    .banner .top-text { font-size: 0.42rem; }
-    .banner .year { font-size: 0.48rem; }
-    .banner .tassel { max-width: 145px; height: 10px; }
-    .banner .tassel::before { height: 4px; bottom: -4px; }
-    .banner .tassel::after { display: none; }
-    .banner .gold-corner { width: 12px; height: 12px; }
-    .banner .label { display: none; }
-    .banner .cloud-motif { display: none; }
-    .banner .divider { margin: 3px 0 5px; }
+    .page-header .doc-num { font-size: 0.55rem; }
+    .doc-card { padding: 14px 14px 12px; min-height: 160px; }
+    .doc-card .award-name { font-size: 1rem; }
+    .doc-card .award-name.smaller { font-size: 0.85rem; }
+    .doc-card .award-name.xsmall { font-size: 0.75rem; }
+    .doc-card .body-text { font-size: 0.58rem; }
+    .doc-card .footer { font-size: 0.5rem; flex-direction: column; align-items: flex-start; gap: 4px; }
+    .doc-card .red-title { font-size: 0.68rem; }
+    .doc-card .doc-header { font-size: 0.5rem; }
+    .doc-card .chop { display: none; }
   }
 </style>
 </head>
 <body>
 
 <div class="page-header">
-  <div class="top-ornament">
-    <span class="bar"></span>
-    <span>◈  ◈  ◈</span>
-    <span class="bar"></span>
-  </div>
-  <h1>荣誉墙</h1>
+  <h1>荣 誉 墙</h1>
   <div class="sub">宁海县跃龙街道望府村 · 历年荣誉汇集</div>
-  <div class="gold-dragon">— 龍 · 锦 · 呈 · 祥 —</div>
 </div>
 
 <div class="grid">
 
-  <!-- ============ 1. 文明村 ============ -->
-  <div class="banner">
-    <div class="hook"></div>
-    <div class="flag-body">
-      <span class="gold-corner tl"></span><span class="gold-corner tr"></span>
-      <span class="gold-corner bl"></span><span class="gold-corner br"></span>
-      <span class="cloud-motif c1">☁</span><span class="cloud-motif c2">☁</span>
-      <span class="num">— 壹 —</span>
-      <div class="content">
-        <div class="award-name">文明村</div>
-        <div class="divider">
-          <span class="d-line"></span>
-          <span class="d-ornament">◈</span>
-          <span class="d-line"></span>
-        </div>
-        <div class="issuer">中共宁波市委<br>宁波市人民政府</div>
-      </div>
+  <!-- 1 -->
+  <div class="doc-card">
+    <span class="red-bar"></span>
+    <div class="doc-header">
+      <span class="num">荣誉〔2026〕第 01 号</span>
+      <span class="level">★ 永久</span>
     </div>
-    <div class="tassel"></div>
-    <div class="label">— 第 壹 面 —</div>
+    <div class="red-title">中共宁波市委 宁波市人民政府</div>
+    <div class="award-name">文明村</div>
+    <div class="body-text">经考核评定，授予宁海县跃龙街道望府村<span class="label">「文明村」</span>荣誉称号。</div>
+    <div class="chop">宁波<br>市委</div>
+    <div class="footer">
+      <div class="issuer">中共宁波市委<br>宁波市人民政府</div>
+    </div>
   </div>
 
-  <!-- ============ 2. 宁波市级生态村 ============ -->
-  <div class="banner">
-    <div class="hook"></div>
-    <div class="flag-body">
-      <span class="gold-corner tl"></span><span class="gold-corner tr"></span>
-      <span class="gold-corner bl"></span><span class="gold-corner br"></span>
-      <span class="cloud-motif c1">☁</span><span class="cloud-motif c2">☁</span>
-      <span class="num">— 贰 —</span>
-      <div class="content">
-        <div class="award-name smaller">宁波市级生态村</div>
-        <div class="divider">
-          <span class="d-line"></span>
-          <span class="d-ornament">◈</span>
-          <span class="d-line"></span>
-        </div>
-        <div class="issuer">宁波生态市建设工作领导小组办公室</div>
-        <div class="year">二〇〇七年二月</div>
-      </div>
+  <!-- 2 -->
+  <div class="doc-card">
+    <span class="red-bar"></span>
+    <div class="doc-header">
+      <span class="num">荣誉〔2007〕第 02 号</span>
+      <span class="level">★ 永久</span>
     </div>
-    <div class="tassel"></div>
-    <div class="label">— 第 贰 面 —</div>
+    <div class="red-title">宁波生态市建设工作领导小组办公室</div>
+    <div class="award-name smaller">宁波市级生态村</div>
+    <div class="body-text">经考核评定，授予宁海县跃龙街道望府村<span class="label">「宁波市级生态村」</span>荣誉称号。</div>
+    <div class="footer">
+      <div class="issuer">宁波生态市建设工作领导小组办公室</div>
+      <div class="year">二〇〇七年二月</div>
+    </div>
   </div>
 
-  <!-- ============ 3. 卫生村 ============ -->
-  <div class="banner">
-    <div class="hook"></div>
-    <div class="flag-body">
-      <span class="gold-corner tl"></span><span class="gold-corner tr"></span>
-      <span class="gold-corner bl"></span><span class="gold-corner br"></span>
-      <span class="cloud-motif c1">☁</span><span class="cloud-motif c2">☁</span>
-      <span class="num">— 叁 —</span>
-      <div class="content">
-        <div class="top-text">宁波市</div>
-        <div class="award-name">卫生村</div>
-        <div class="divider">
-          <span class="d-line"></span>
-          <span class="d-ornament">◈</span>
-          <span class="d-line"></span>
-        </div>
-        <div class="issuer">宁波市爱国卫生运动委员会</div>
-        <div class="year">二〇〇七年十二月</div>
-      </div>
+  <!-- 3 -->
+  <div class="doc-card">
+    <span class="red-bar"></span>
+    <div class="doc-header">
+      <span class="num">荣誉〔2007〕第 03 号</span>
+      <span class="level">★ 永久</span>
     </div>
-    <div class="tassel"></div>
-    <div class="label">— 第 叁 面 —</div>
+    <div class="red-title">宁波市爱国卫生运动委员会</div>
+    <div class="award-name">卫生村</div>
+    <div class="body-text">经考核评定，授予宁波市望府村<span class="label">「卫生村」</span>荣誉称号。</div>
+    <div class="footer">
+      <div class="issuer">宁波市爱国卫生运动委员会</div>
+      <div class="year">二〇〇七年十二月</div>
+    </div>
   </div>
 
-  <!-- ============ 4. 宁波市书香文化礼堂 ============ -->
-  <div class="banner">
-    <div class="hook"></div>
-    <div class="flag-body">
-      <span class="gold-corner tl"></span><span class="gold-corner tr"></span>
-      <span class="gold-corner bl"></span><span class="gold-corner br"></span>
-      <span class="cloud-motif c1">☁</span><span class="cloud-motif c2">☁</span>
-      <span class="num">— 肆 —</span>
-      <div class="content">
-        <div class="award-name smaller">宁波市书香文化礼堂</div>
-        <div class="divider">
-          <span class="d-line"></span>
-          <span class="d-ornament">◈</span>
-          <span class="d-line"></span>
-        </div>
-        <div class="issuer">中共宁波市委宣传部<br>宁波市农村文化礼堂建设领导小组办公室</div>
-        <div class="year">二〇二〇年十二月</div>
-      </div>
+  <!-- 4 -->
+  <div class="doc-card">
+    <span class="red-bar"></span>
+    <div class="doc-header">
+      <span class="num">荣誉〔2020〕第 04 号</span>
+      <span class="level">★ 永久</span>
     </div>
-    <div class="tassel"></div>
-    <div class="label">— 第 肆 面 —</div>
+    <div class="red-title">中共宁波市委宣传部 等</div>
+    <div class="award-name smaller">宁波市书香文化礼堂</div>
+    <div class="body-text">经考核评定，授予宁海县跃龙街道望府村<span class="label">「宁波市书香文化礼堂」</span>荣誉称号。</div>
+    <div class="footer">
+      <div class="issuer">中共宁波市委宣传部<br>宁波市农村文化礼堂建设领导小组办公室</div>
+      <div class="year">二〇二〇年十二月</div>
+    </div>
   </div>
 
-  <!-- ============ 5. 儿童之家 ============ -->
-  <div class="banner">
-    <div class="hook"></div>
-    <div class="flag-body">
-      <span class="gold-corner tl"></span><span class="gold-corner tr"></span>
-      <span class="gold-corner bl"></span><span class="gold-corner br"></span>
-      <span class="cloud-motif c1">☁</span><span class="cloud-motif c2">☁</span>
-      <span class="num">— 伍 —</span>
-      <div class="content">
-        <div class="top-text">宁波市示范型</div>
-        <div class="award-name">儿童之家</div>
-        <div class="divider">
-          <span class="d-line"></span>
-          <span class="d-ornament">◈</span>
-          <span class="d-line"></span>
-        </div>
-        <div class="issuer">宁波市妇女联合会<br>宁波市民政局</div>
-        <div class="year">二〇二一年二月</div>
-      </div>
+  <!-- 5 -->
+  <div class="doc-card">
+    <span class="red-bar"></span>
+    <div class="doc-header">
+      <span class="num">荣誉〔2021〕第 05 号</span>
+      <span class="level">★ 永久</span>
     </div>
-    <div class="tassel"></div>
-    <div class="label">— 第 伍 面 —</div>
+    <div class="red-title">宁波市妇女联合会 宁波市民政局</div>
+    <div class="award-name">儿童之家</div>
+    <div class="body-text">经考核评定，授予宁波市望府村<span class="label">「儿童之家」</span>（示范型）荣誉称号。</div>
+    <div class="footer">
+      <div class="issuer">宁波市妇女联合会<br>宁波市民政局</div>
+      <div class="year">二〇二一年二月</div>
+    </div>
   </div>
 
-  <!-- ============ 6. 宁波市安居示范村 ============ -->
-  <div class="banner">
-    <div class="hook"></div>
-    <div class="flag-body">
-      <span class="gold-corner tl"></span><span class="gold-corner tr"></span>
-      <span class="gold-corner bl"></span><span class="gold-corner br"></span>
-      <span class="cloud-motif c1">☁</span><span class="cloud-motif c2">☁</span>
-      <span class="num">— 陆 —</span>
-      <div class="content">
-        <div class="award-name smaller">宁波市安居示范村</div>
-        <div class="divider">
-          <span class="d-line"></span>
-          <span class="d-ornament">◈</span>
-          <span class="d-line"></span>
-        </div>
-        <div class="issuer">宁波市住房和城乡建设局</div>
-        <div class="year">二〇二二年</div>
-      </div>
+  <!-- 6 -->
+  <div class="doc-card">
+    <span class="red-bar"></span>
+    <div class="doc-header">
+      <span class="num">荣誉〔2022〕第 06 号</span>
+      <span class="level">★ 永久</span>
     </div>
-    <div class="tassel"></div>
-    <div class="label">— 第 陆 面 —</div>
+    <div class="red-title">宁波市住房和城乡建设局</div>
+    <div class="award-name smaller">宁波市安居示范村</div>
+    <div class="body-text">经考核评定，授予宁海县跃龙街道望府村<span class="label">「宁波市安居示范村」</span>荣誉称号。</div>
+    <div class="footer">
+      <div class="issuer">宁波市住房和城乡建设局</div>
+      <div class="year">二〇二二年</div>
+    </div>
   </div>
 
-  <!-- ============ 7. 新时代文明实践示范站 ============ -->
-  <div class="banner">
-    <div class="hook"></div>
-    <div class="flag-body">
-      <span class="gold-corner tl"></span><span class="gold-corner tr"></span>
-      <span class="gold-corner bl"></span><span class="gold-corner br"></span>
-      <span class="cloud-motif c1">☁</span><span class="cloud-motif c2">☁</span>
-      <span class="num">— 柒 —</span>
-      <div class="content">
-        <div class="award-name smaller">新时代文明实践示范站</div>
-        <div class="divider">
-          <span class="d-line"></span>
-          <span class="d-ornament">◈</span>
-          <span class="d-line"></span>
-        </div>
-        <div class="issuer">宁波市精神文明建设指导委员会办公室</div>
-        <div class="year">二〇二三年三月</div>
-      </div>
+  <!-- 7 -->
+  <div class="doc-card">
+    <span class="red-bar"></span>
+    <div class="doc-header">
+      <span class="num">荣誉〔2023〕第 07 号</span>
+      <span class="level">★ 永久</span>
     </div>
-    <div class="tassel"></div>
-    <div class="label">— 第 柒 面 —</div>
+    <div class="red-title">宁波市精神文明建设指导委员会办公室</div>
+    <div class="award-name smaller">新时代文明实践示范站</div>
+    <div class="body-text">经考核评定，授予宁波市望府村<span class="label">「新时代文明实践示范站」</span>荣誉称号。</div>
+    <div class="footer">
+      <div class="issuer">宁波市精神文明建设指导委员会办公室</div>
+      <div class="year">二〇二三年三月</div>
+    </div>
   </div>
 
-  <!-- ============ 8. 五星级基层党组织 ============ -->
-  <div class="banner">
-    <div class="hook"></div>
-    <div class="flag-body">
-      <span class="gold-corner tl"></span><span class="gold-corner tr"></span>
-      <span class="gold-corner bl"></span><span class="gold-corner br"></span>
-      <span class="cloud-motif c1">☁</span><span class="cloud-motif c2">☁</span>
-      <span class="num">— 捌 —</span>
-      <div class="content">
-        <div class="award-name smaller">
-          <span class="party-emblem">☭</span>五星级基层党组织
-        </div>
-        <div class="divider">
-          <span class="d-line"></span>
-          <span class="d-ornament">◈</span>
-          <span class="d-line"></span>
-        </div>
-        <div class="issuer">中共宁波市委组织部</div>
-        <div class="year">二〇二三年三月</div>
-      </div>
+  <!-- 8 -->
+  <div class="doc-card">
+    <span class="red-bar"></span>
+    <div class="doc-header">
+      <span class="num">荣誉〔2023〕第 08 号</span>
+      <span class="level">★ 永久</span>
     </div>
-    <div class="tassel"></div>
-    <div class="label">— 第 捌 面 —</div>
+    <div class="red-title">中共宁波市委组织部</div>
+    <div class="award-name smaller">
+      <span class="party-emblem">☭</span>五星级基层党组织
+    </div>
+    <div class="body-text">经考核评定，授予宁海县跃龙街道望府村<span class="label">「五星级基层党组织」</span>荣誉称号。</div>
+    <div class="chop">宁波<br>市委</div>
+    <div class="footer">
+      <div class="issuer">中共宁波市委组织部</div>
+      <div class="year">二〇二三年三月</div>
+    </div>
   </div>
 
-  <!-- ============ 9. 文化礼堂 ★★★★★ ============ -->
-  <div class="banner">
-    <div class="hook"></div>
-    <div class="flag-body">
-      <span class="gold-corner tl"></span><span class="gold-corner tr"></span>
-      <span class="gold-corner bl"></span><span class="gold-corner br"></span>
-      <span class="cloud-motif c1">☁</span><span class="cloud-motif c2">☁</span>
-      <span class="num">— 玖 —</span>
-      <div class="content">
-        <div class="award-name smaller">文化礼堂</div>
-        <div class="award-name" style="margin-top:-2px;">
-          <span class="star-row">★★★★★</span>
-        </div>
-        <div class="divider">
-          <span class="d-line"></span>
-          <span class="d-ornament">◈</span>
-          <span class="d-line"></span>
-        </div>
-        <div class="issuer">中共浙江省委宣传部<br>浙江省农村文化礼堂建设工作领导小组办公室</div>
-        <div class="year">二〇二三年四月</div>
-      </div>
+  <!-- 9 -->
+  <div class="doc-card">
+    <span class="red-bar"></span>
+    <div class="doc-header">
+      <span class="num">荣誉〔2023〕第 09 号</span>
+      <span class="level">★ 永久</span>
     </div>
-    <div class="tassel"></div>
-    <div class="label">— 第 玖 面 —</div>
+    <div class="red-title">中共浙江省委宣传部 等</div>
+    <div class="award-name smaller">文化礼堂</div>
+    <div class="award-name" style="margin-top:-4px;margin-bottom:2px;font-size:1.1rem;">
+      <span class="star-row">★★★★★</span>
+    </div>
+    <div class="body-text">经考核评定，宁海县跃龙街道望府村文化礼堂荣获<span class="label">「五星级」</span>评定。</div>
+    <div class="footer">
+      <div class="issuer">中共浙江省委宣传部<br>浙江省农村文化礼堂建设工作领导小组办公室</div>
+      <div class="year">二〇二三年四月</div>
+    </div>
   </div>
 
-  <!-- ============ 10. 民族团结进步创建重点培育单位 ============ -->
-  <div class="banner">
-    <div class="hook"></div>
-    <div class="flag-body">
-      <span class="gold-corner tl"></span><span class="gold-corner tr"></span>
-      <span class="gold-corner bl"></span><span class="gold-corner br"></span>
-      <span class="cloud-motif c1">☁</span><span class="cloud-motif c2">☁</span>
-      <span class="num">— 拾 —</span>
-      <div class="content">
-        <div class="top-text">宁波市民族团结进步创建</div>
-        <div class="award-name xsmall">重点培育单位</div>
-        <div class="divider">
-          <span class="d-line"></span>
-          <span class="d-ornament">◈</span>
-          <span class="d-line"></span>
-        </div>
-        <div class="issuer">宁波市民族宗教事务局</div>
-        <div class="year">二〇二三年十月</div>
-      </div>
+  <!-- 10 -->
+  <div class="doc-card">
+    <span class="red-bar"></span>
+    <div class="doc-header">
+      <span class="num">荣誉〔2023〕第 10 号</span>
+      <span class="level">★ 永久</span>
     </div>
-    <div class="tassel"></div>
-    <div class="label">— 第 拾 面 —</div>
+    <div class="red-title">宁波市民族宗教事务局</div>
+    <div class="award-name xsmall">重点培育单位</div>
+    <div class="body-text">经考核评定，宁波市民族团结进步创建<span class="label">「重点培育单位」</span>——望府村。</div>
+    <div class="footer">
+      <div class="issuer">宁波市民族宗教事务局</div>
+      <div class="year">二〇二三年十月</div>
+    </div>
   </div>
 
-  <!-- ============ 11. 优秀单位 ============ -->
-  <div class="banner">
-    <div class="hook"></div>
-    <div class="flag-body">
-      <span class="gold-corner tl"></span><span class="gold-corner tr"></span>
-      <span class="gold-corner bl"></span><span class="gold-corner br"></span>
-      <span class="cloud-motif c1">☁</span><span class="cloud-motif c2">☁</span>
-      <span class="num">— 拾壹 —</span>
-      <div class="content">
-        <div class="top-text">2023年度返乡入乡合作创业考核</div>
-        <div class="award-name">优秀单位</div>
-        <div class="divider">
-          <span class="d-line"></span>
-          <span class="d-ornament">◈</span>
-          <span class="d-line"></span>
-        </div>
-        <div class="issuer">浙江省人力资源和社会保障厅</div>
-        <div class="year">二〇二四年三月</div>
-      </div>
+  <!-- 11 -->
+  <div class="doc-card">
+    <span class="red-bar"></span>
+    <div class="doc-header">
+      <span class="num">荣誉〔2024〕第 11 号</span>
+      <span class="level">★ 永久</span>
     </div>
-    <div class="tassel"></div>
-    <div class="label">— 第 拾壹 面 —</div>
+    <div class="red-title">浙江省人力资源和社会保障厅</div>
+    <div class="award-name">优秀单位</div>
+    <div class="body-text">2023年度返乡入乡合作创业考核，宁海县跃龙街道望府村被评为<span class="label">「优秀单位」</span>。</div>
+    <div class="footer">
+      <div class="issuer">浙江省人力资源和社会保障厅</div>
+      <div class="year">二〇二四年三月</div>
+    </div>
   </div>
 
-  <!-- ============ 12. 宁波市茶文化特色村 ============ -->
-  <div class="banner">
-    <div class="hook"></div>
-    <div class="flag-body">
-      <span class="gold-corner tl"></span><span class="gold-corner tr"></span>
-      <span class="gold-corner bl"></span><span class="gold-corner br"></span>
-      <span class="cloud-motif c1">☁</span><span class="cloud-motif c2">☁</span>
-      <span class="num">— 拾贰 —</span>
-      <div class="content">
-        <div class="top-text">授予：宁海县跃龙街道望府村</div>
-        <div class="award-name xsmall">宁波市茶文化特色村</div>
-        <div class="divider">
-          <span class="d-line"></span>
-          <span class="d-ornament">◈</span>
-          <span class="d-line"></span>
-        </div>
-        <div class="issuer">宁波市民间文艺家协会</div>
-        <div class="year">2024年4月</div>
-      </div>
+  <!-- 12 -->
+  <div class="doc-card">
+    <span class="red-bar"></span>
+    <div class="doc-header">
+      <span class="num">荣誉〔2024〕第 12 号</span>
+      <span class="level">★ 永久</span>
     </div>
-    <div class="tassel"></div>
-    <div class="label">— 第 拾贰 面 —</div>
+    <div class="red-title">宁波市民间文艺家协会</div>
+    <div class="award-name xsmall">宁波市茶文化特色村</div>
+    <div class="body-text">授予宁海县跃龙街道望府村<span class="label">「宁波市茶文化特色村」</span>荣誉称号。</div>
+    <div class="footer">
+      <div class="issuer">宁波市民间文艺家协会</div>
+      <div class="year">2024年4月</div>
+    </div>
   </div>
 
 </div>
