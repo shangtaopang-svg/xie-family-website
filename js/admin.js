@@ -218,8 +218,13 @@ function getData(module) {
   var key = 'xie_admin_' + module;
   var raw = localStorage.getItem(key);
 
-  // For genealogy, ALWAYS load from the authoritative JSON file
+  // For genealogy: prefer localStorage if recently modified by user
   if (module === 'genealogy') {
+    var useLocal = localStorage.getItem('_genealogy_use_local') === 'true';
+    if (useLocal) {
+      if (raw) { try { return JSON.parse(raw); } catch(e) {} }
+    }
+    // Otherwise load from JSON file
     try {
       var xhr = new XMLHttpRequest();
       xhr.open('GET', '../data/genealogy_full.json', false);
@@ -229,12 +234,12 @@ function getData(module) {
         var full = JSON.parse(xhr.responseText);
         if (full && full.length > 100) {
           localStorage.setItem(key, JSON.stringify(full));
+          localStorage.removeItem('_genealogy_use_local');
           return full;
         }
       }
     } catch(e) {}
 
-    // Fallback: use whatever is in localStorage
     if (raw) { try { return JSON.parse(raw); } catch(e) { return []; } }
     var def = (MODULES[module] && MODULES[module].defaultData) || [];
     localStorage.setItem(key, JSON.stringify(def));
@@ -596,7 +601,7 @@ function buildAdminTreeHtml(data) {
     var cClass = 'apt-card ' + (person.gender === '男' ? 'apt-male' : 'apt-female');
     if (isRuzhui) cClass += ' apt-ruzhui';
     if (ruzhuiPartner) cClass += ' apt-ruzhui-partner';
-    html += '<div class="' + cClass + '" onclick="showEditForm(\'genealogy\',' + person.id + ')" title="点击编辑">';
+    html += '<div class="' + cClass + '" data-pid="' + person.id + '" draggable="true" onmouseup="if(!this.dataset.dragged){showEditForm(\'genealogy\',' + person.id + ')};this.dataset.dragged=\'\'" title="点击编辑 | 拖拽到其他人建立关系" ondragstart="onCardDragStart(event, ' + person.id + ');this.dataset.dragged=\'1\'" ondrop="onCardDrop(event)" ondragover="event.preventDefault()" ondragenter="this.style.outline=\'2px solid var(--accent-orange)\'" ondragleave="this.style.outline=\'\'">';
     html += '<div class="apt-card-inner">';
     html += '<div class="apt-card-actions" onclick="event.stopPropagation();">';
     html += '<button class="apt-btn-add" onclick="showAddChildForm(' + person.id + ')" title="添加子女">+</button>';
@@ -768,6 +773,129 @@ function renderGenealogy(area) {
     + '<span id="sync-status-genealogy" style="font-size:11px;color:rgba(255,255,255,0.3);"></span>'
     + (localStorage.getItem('xie_unsynced_genealogy') === 'true' ? '<span style="color:#f44336;font-weight:600;"> ⚠️ 有未同步的数据</span>' : '')
     + '</div>';
+
+  // Ancient lineage table (炎帝→申伯)
+  html += '<div style="margin:16px 0;padding:14px 18px;background:rgba(201,168,76,0.06);border-radius:10px;border:1px solid rgba(201,168,76,0.12);">';
+  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;" onclick="var n=this.nextElementSibling;n.style.display=n.style.display==\'none\'?\'table\':\'none\'">';
+  html += '<span style="font-size:14px;">🏛️</span>';
+  html += '<span style="font-size:13px;font-weight:600;color:var(--text-primary);">远古世系（炎帝→申伯）</span>';
+  html += '<span style="font-size:11px;color:var(--text-muted);">点击展开/收起</span>';
+  html += '</div>';
+  html += '<table style="display:none;width:100%;border-collapse:collapse;font-size:12px;">';
+  html += '<thead><tr style="background:rgba(201,168,76,0.1);">';
+  html += '<th style="padding:6px 10px;border:1px solid var(--glass-border);text-align:center;width:50px;">世</th>';
+  html += '<th style="padding:6px 10px;border:1px solid var(--glass-border);text-align:center;">人物</th>';
+  html += '<th style="padding:6px 10px;border:1px solid var(--glass-border);text-align:center;">说明</th>';
+  html += '</tr></thead><tbody>';
+  var ancient_list = [
+    [1, '🔥 炎帝神农氏', '姜姓始祖'],
+    [2, '临魁', '继位'],
+    [10, '榆罔', ''],
+    [11, '帝柱', ''],
+    [15, '祝融', ''],
+    [54, '吕尚（号飞熊）', '封于申'],
+    [55, '佐', ''],
+    [65, '申伯', '谢氏鼻祖'],
+    [65, '申甫', '仍姓姜'],
+  ];
+  for (var ai = 0; ai < ancient_list.length; ai++) {
+    var row = ancient_list[ai];
+    html += '<tr>';
+    html += '<td style="padding:5px 10px;border:1px solid var(--glass-border);text-align:center;font-weight:600;color:var(--accent-orange);">' + row[0] + '</td>';
+    html += '<td style="padding:5px 10px;border:1px solid var(--glass-border);text-align:center;' + (row[2] === '谢氏鼻祖' ? 'font-weight:700;color:var(--accent-orange);' : '') + '">' + row[1] + '</td>';
+    html += '<td style="padding:5px 10px;border:1px solid var(--glass-border);text-align:center;color:var(--text-tertiary);">' + row[2] + '</td>';
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  // 树状图
+  html += '<div style="margin-top:10px;padding:10px;overflow-x:auto;white-space:nowrap;text-align:center;font-size:12px;">';
+  html += '<div style="display:inline-flex;align-items:center;gap:2px;">';
+  var ancient_nodes = ['炎帝','临魁','榆罔','帝柱','祝融','吕尚','佐','申伯','申甫'];
+  for (var ai2 = 0; ai2 < ancient_nodes.length; ai2++) {
+    if (ai2 > 0) html += '<span style="color:var(--text-muted);opacity:0.3;font-size:10px;"> ─ </span>';
+    html += '<span style="display:inline-block;padding:3px 8px;border-radius:4px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.12);color:var(--text-primary);font-size:11px;">' + ancient_nodes[ai2] + '</span>';
+    if (ai2 === 1 || ai2 === 3 || ai2 === 5) {
+      html += '<span style="font-size:9px;color:var(--text-muted);opacity:0.3;">⋯</span>';
+    }
+  }
+  html += '</div></div></div>';
+
+  // 申伯世系折叠表
+  html += '<div style="margin:16px 0;padding:14px 18px;background:rgba(100,60,160,0.06);border-radius:10px;border:1px solid rgba(100,60,160,0.12);">';
+  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;" onclick="var n=this.nextElementSibling;n.style.display=n.style.display==\'none\'?\'table\':\'none\'">';
+  html += '<span style="font-size:14px;">🏛️</span>';
+  html += '<span style="font-size:13px;font-weight:600;color:var(--text-primary);">申伯世系（申伯→缵→衡）</span>';
+  html += '<span style="font-size:11px;color:var(--text-muted);">点击展开/收起</span>';
+  html += '</div>';
+  html += '<table style="display:none;width:100%;border-collapse:collapse;font-size:12px;">';
+  html += '<thead><tr style="background:rgba(100,60,160,0.1);">';
+  html += '<th style="padding:6px 10px;border:1px solid var(--glass-border);text-align:center;width:50px;">世</th>';
+  html += '<th style="padding:6px 10px;border:1px solid var(--glass-border);text-align:center;">人物</th>';
+  html += '<th style="padding:6px 10px;border:1px solid var(--glass-border);text-align:center;">说明</th>';
+  html += '</tr></thead><tbody>';
+  var shenbo_lineage = [
+    [-2, '弘', '申伯之子'],
+    [-1, '猛', '申伯之子'],
+    [0, '广', '弘之子'],
+    [1, '协', '弘之子'],
+    [2, '列宗', '广之子'],
+    [3, '穆宗', '广之子'],
+    [4, '骘', '列宗之子'],
+    [5, '预', '骘之子'],
+    [6, '昌后', '预之子'],
+    [7, '达', '昌后之子'],
+    [8, '守礼', '昌后之子'],
+    [9, '子民', '达之子'],
+    [10, '秩', '子民之子'],
+    [11, '雍', '秩之子'],
+    [12, '林', '雍之子'],
+    [13, '涣', '林之子'],
+    [14, '旺', '涣之子'],
+    [15, '珽', '旺之子'],
+    [16, '国辉', '珽之子'],
+    [17, '宁', '国辉之子'],
+    [18, '福', '宁之子'],
+    [19, '杨贞', '福之子'],
+    [20, '平利', '杨贞之子'],
+    [21, '平和', '杨贞之子'],
+    [22, '翠', '平利之子'],
+    [23, '文', '平和之子'],
+    [24, '武', '文之子'],
+    [25, '秉槐', '武之子'],
+    [26, '堂', '秉槐之子'],
+    [27, '瑛', '堂之子'],
+    [28, '文轩', '瑛之子'],
+    [29, '福郎', '文轩之子'],
+    [30, '宜礼', '福郎之子'],
+    [31, '逵', '宜礼之子'],
+    [32, '简', '逵之子'],
+    [33, '瑰', '简之子'],
+    [34, '懿', '瑰之子'],
+    [35, '鳅', '懿之子'],
+    [36, '当', '鳅之子'],
+    [37, '景秀', '鳅之子'],
+    [38, '缵', '东山第一世'],
+    [39, '衡', '缵之子'],
+  ];
+  for (var si = 0; si < shenbo_lineage.length; si++) {
+    var row = shenbo_lineage[si];
+    html += '<tr>';
+    html += '<td style="padding:5px 10px;border:1px solid var(--glass-border);text-align:center;font-weight:600;color:var(--accent-orange);">' + row[0] + '</td>';
+    html += '<td style="padding:5px 10px;border:1px solid var(--glass-border);text-align:center;' + (row[2].startsWith('东山') ? 'font-weight:700;color:#643ca0;' : '') + '">' + row[1] + '</td>';
+    html += '<td style="padding:5px 10px;border:1px solid var(--glass-border);text-align:center;color:var(--text-tertiary);">' + row[2] + '</td>';
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  // 树状图
+  html += '<div style="margin-top:10px;padding:10px;overflow-x:auto;white-space:nowrap;text-align:center;font-size:12px;">';
+  html += '<div style="display:inline-flex;align-items:center;gap:2px;">';
+  var shenbo_nodes = ['申伯','弘','广','列宗','骘','预','昌后','达','子民','秩','雍','林','涣','旺','珽','国辉','宁','福','杨贞','平利','翠','文','武','秉槐','堂','瑛','文轩','福郎','宜礼','逵','简','瑰','懿','鳅','当','景秀','缵','衡'];
+  for (var si2 = 0; si2 < shenbo_nodes.length; si2++) {
+    if (si2 > 0) html += '<span style="color:var(--text-muted);opacity:0.3;font-size:8px;">-</span>';
+    var isHighlight = (shenbo_nodes[si2] === '缵' || shenbo_nodes[si2] === '衡');
+    html += '<span style="display:inline-block;padding:2px 6px;border-radius:3px;font-size:10px;background:' + (isHighlight ? 'rgba(100,60,160,0.15)' : 'rgba(100,60,160,0.05)') + ';border:1px solid rgba(100,60,160,0.12);color:var(--text-primary);">' + shenbo_nodes[si2] + '</span>';
+  }
+  html += '</div></div></div>';
 
   // Split layout: left = tree, right = table
   html += '<div class="apt-split">';
@@ -2885,3 +3013,99 @@ document.addEventListener('click', function(e) {
     localStorage.setItem('xie_last_backup_date', new Date().toISOString().slice(0, 10));
   }
 });
+
+// Tree card click handler (supports both normal edit and link mode)
+function handleTreeCardClick(event, personId) {
+  if (linkMode) {
+    // Handled by the document click listener
+    return;
+  }
+  showEditForm('genealogy', personId);
+}
+
+// ===== 连接模式：手动建立世系关系 =====
+var linkMode = false;
+var linkSource = null; // 第一个选中的person
+
+function toggleLinkMode() {
+  linkMode = !linkMode;
+  linkSource = null;
+  var btn = document.getElementById('link-mode-btn');
+  var status = document.getElementById('link-status');
+  if (!btn || !status) return;
+  if (linkMode) {
+    btn.style.color = '#2196f3';
+    btn.style.background = 'rgba(33,150,243,0.15)';
+    status.style.display = 'block';
+    status.textContent = '🔗 连接模式: 点击树中第一个人（来源）';
+  } else {
+    btn.style.color = '';
+    btn.style.background = '';
+    status.style.display = 'none';
+  }
+}
+
+// Hook into tree card clicks for connection mode
+var origTreeClick = window._treeCardClick;
+window._treeCardClick = function(personId, e) {
+  if (origTreeClick) origTreeClick(personId, e);
+};
+
+// ===== 拖拽建立世系关系 =====
+var dragPersonId = null;
+
+function onCardDragStart(event, personId) {
+  dragPersonId = personId;
+  event.dataTransfer.setData('text/plain', personId);
+  event.dataTransfer.effectAllowed = 'move';
+}
+
+function onCardDrop(event) {
+  event.preventDefault();
+  // Reset outline
+  var cards = document.querySelectorAll('.apt-card');
+  for (var ci = 0; ci < cards.length; ci++) cards[ci].style.outline = '';
+
+  var sourceId = dragPersonId;
+  var targetCard = event.target.closest('.apt-card');
+  if (!targetCard) return;
+  var targetId = parseInt(targetCard.getAttribute('data-pid'));
+  if (!targetId || sourceId === targetId) return;
+
+  var data = getData('genealogy');
+  var source = null, target = null;
+  for (var di = 0; di < data.length; di++) {
+    if (data[di].id === sourceId) source = data[di];
+    if (data[di].id === targetId) target = data[di];
+  }
+  if (!source || !target) return;
+
+  // Ask what relationship to create
+  var choice = prompt(
+    '将 ' + source.name + ' 拖到 ' + target.name + '\n\n'
+    + '1. ' + source.name + ' 做 ' + target.name + ' 的儿子\n'
+    + '2. ' + source.name + ' 做 ' + target.name + ' 的父亲\n'
+    + '3. ' + source.name + ' 和 ' + target.name + ' 做兄弟\n\n'
+    + '请输入 1/2/3 (回车取消)',
+    '1'
+  );
+
+  if (!choice) return;
+  var saved = false;
+  if (choice === '1') { source.father_id = target.id; saved = true; }
+  else if (choice === '2') { target.father_id = source.id; saved = true; }
+  else if (choice === '3') {
+    if (target.father_id) { source.father_id = target.father_id; saved = true; }
+    else { alert(target.name + ' 没有父亲，无法建立兄弟关系'); }
+  }
+
+  if (saved) {
+    localStorage.setItem('_genealogy_use_local', 'true');
+    syncToServer('genealogy', data);  // save to API (async)
+    alert('✅ 关系已建立');
+    // 直接用更新后的数据渲染
+    var area = document.getElementById('admin-content-area');
+    if (area) renderGenealogy(area);
+  }
+  dragPersonId = null;
+}
