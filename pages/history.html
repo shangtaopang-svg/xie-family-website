@@ -93,10 +93,9 @@
         <div class="divider"></div>
         <p>点击展开阅读全文</p>
       </div>
-      <div id="zy-content" style="display:none;">
+      <div id="zy-content" style="display:none;overflow:hidden;max-height:0;opacity:0;">
         <style>
-          @keyframes scrollUnfold { 0%{max-height:0;opacity:0;padding:0} 100%{max-height:3500px;opacity:1} }
-          .scroll-wrap{animation:scrollUnfold 1.8s ease-out;overflow:hidden;background:#f5efe6;border:1px solid #c8b898;box-shadow:0 4px 30px rgba(0,0,0,0.08);position:relative;margin:16px auto;max-width:860px}
+          .scroll-wrap{overflow:hidden;background:#f5efe6;border:1px solid #c8b898;box-shadow:0 4px 30px rgba(0,0,0,0.08);position:relative;margin:16px auto;max-width:860px}
           /* aged paper texture */
           .scroll-wrap::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(160,130,80,0.03) 60px,rgba(160,130,80,0.03) 61px);pointer-events:none;z-index:1}
           /* top binding line */
@@ -927,8 +926,24 @@
     function toggleZongyuan() {
       var el = document.getElementById('zy-content');
       var icon = document.getElementById('zy-toggle-icon');
-      if (el.style.display === 'none') { el.style.display = 'block'; icon.textContent = '▼'; }
-      else { el.style.display = 'none'; icon.textContent = '▶'; }
+      if (el.style.display === 'none') {
+        el.style.display = 'block';
+        icon.textContent = '▼';
+        // Force reflow then add animation class
+        el.style.opacity = '0';
+        el.style.maxHeight = '0';
+        void el.offsetHeight;
+        el.style.transition = 'max-height 1.5s ease-out, opacity 0.8s ease-out';
+        el.style.maxHeight = '3500px';
+        el.style.opacity = '1';
+        // Clean up after animation
+        setTimeout(function() { el.style.transition = ''; }, 1600);
+      } else {
+        el.style.transition = 'max-height 0.3s ease-in, opacity 0.2s';
+        el.style.maxHeight = '0';
+        el.style.opacity = '0';
+        setTimeout(function() { el.style.display = 'none'; icon.textContent = '▶'; el.style.transition = ''; }, 350);
+      }
     }
     function toggleLineage() {
       var el = document.getElementById('lt-content');
