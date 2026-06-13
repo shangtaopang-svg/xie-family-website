@@ -93,7 +93,7 @@
         <div class="divider"></div>
         <p>点击展开阅读全文</p>
       </div>
-      <div id="zy-content" style="display:none;overflow:hidden;max-height:0;opacity:0;">
+      <div id="zy-content" style="display:none;">
         <style>
           .scroll-wrap{overflow:hidden;background:#f5efe6;border:1px solid #c8b898;box-shadow:0 4px 30px rgba(0,0,0,0.08);position:relative;margin:16px auto;max-width:860px}
           /* aged paper texture */
@@ -926,23 +926,38 @@
     function toggleZongyuan() {
       var el = document.getElementById('zy-content');
       var icon = document.getElementById('zy-toggle-icon');
-      if (el.style.display === 'none') {
-        el.style.display = 'block';
-        icon.textContent = '▼';
-        // Force reflow then add animation class
-        el.style.opacity = '0';
-        el.style.maxHeight = '0';
+      var isOpen = el._isOpen;
+      if (isOpen) {
+        // Close - animate height to 0 then hide
+        el.style.height = el.scrollHeight + 'px';
+        el.style.overflow = 'hidden';
+        el.style.transition = 'height 0.3s ease-in';
         void el.offsetHeight;
-        el.style.transition = 'max-height 1.5s ease-out, opacity 0.8s ease-out';
-        el.style.maxHeight = '3500px';
-        el.style.opacity = '1';
-        // Clean up after animation
-        setTimeout(function() { el.style.transition = ''; }, 1600);
+        el.style.height = '0';
+        el._isOpen = false;
+        icon.textContent = '▶';
+        setTimeout(function() {
+          el.style.display = 'none';
+          el.style.transition = '';
+          el.style.height = '';
+          el.style.overflow = '';
+        }, 350);
       } else {
-        el.style.transition = 'max-height 0.3s ease-in, opacity 0.2s';
-        el.style.maxHeight = '0';
-        el.style.opacity = '0';
-        setTimeout(function() { el.style.display = 'none'; icon.textContent = '▶'; el.style.transition = ''; }, 350);
+        // Open - animate from 0 to full height
+        el.style.display = 'block';
+        el.style.height = '0';
+        el.style.overflow = 'hidden';
+        el.style.transition = 'height 1.2s ease-out';
+        void el.offsetHeight;
+        var fullH = el.scrollHeight;
+        el.style.height = fullH + 'px';
+        el._isOpen = true;
+        icon.textContent = '▼';
+        setTimeout(function() {
+          el.style.height = 'auto';
+          el.style.overflow = '';
+          el.style.transition = '';
+        }, 1300);
       }
     }
     function toggleLineage() {
