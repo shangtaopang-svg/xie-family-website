@@ -569,20 +569,26 @@
     return seed;
   }
 
-  // Load full 1080 records from JSON
+  // Load full 1080 records from JSON - OVERRIDE everything
   fetch('../data/genealogy_full.json').then(function(r){return r.json()}).then(function(d){
     if (d && d.length > 100) {
       _genealogyData = d;
-      try { localStorage.setItem('xie_admin_genealogy', JSON.stringify(d)); } catch(e){}
-      if (typeof renderGenealogyPageSVG === 'function') renderGenealogyPageSVG();
-      setTimeout(function() {
-        if (window.renderTimeline) {
-          document.getElementById('genealogy-timeline').style.opacity = '1';
-          renderTimeline();
-        }
-      }, 200);
+      // Force into localStorage, overriding API/Supabase data
+      localStorage.setItem('xie_admin_genealogy', JSON.stringify(d));
+      // Re-render everything
+      if (typeof renderGenealogyPageSVG === 'function') {
+        renderGenealogyPageSVG();
+        // Also force re-render tree SVG
+        setTimeout(function() {
+          if (typeof renderTreeSVG === 'function') {
+            var treeData = getGenealogyData();
+            if (treeData && treeData.length > 100) renderTreeSVG(treeData);
+          }
+          if (window.renderTimeline) { renderTimeline(); }
+        }, 300);
+      }
     }
-  }).catch(function(){});
+  }).catch(function(e){ console.log('genealogy JSON load failed:', e); });
 
 function getPersonNameById(id, data) {
     if (!id && id !== 0) return null;

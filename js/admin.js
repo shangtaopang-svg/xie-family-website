@@ -2177,6 +2177,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (currentModule === 'genealogy') { renderModule('genealogy'); updateStats(); }
       }
     }).catch(function(){});
+    // Also override API-loaded data: delay to run after loadFromSupabase
+    setTimeout(function() {
+      fetch('../data/genealogy_full.json').then(function(r){return r.json()}).then(function(full){
+        if (full && full.length > 100) {
+          localStorage.setItem('xie_admin_genealogy', JSON.stringify(full));
+          if (currentModule === 'genealogy') { renderModule('genealogy'); updateStats(); }
+        }
+      }).catch(function(){});
+    }, 2000);
   }
 
   // Override main.js logout to re-render
