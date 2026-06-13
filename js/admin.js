@@ -2852,3 +2852,39 @@ function generateGenealogyBook() {
   w.document.write('</div></body></html>');
   w.document.close();
 }
+
+// ===== 数据备份提醒 =====
+// 启动时提醒一次
+setTimeout(function() {
+  var lastBackup = localStorage.getItem('xie_last_backup_date');
+  var today = new Date().toISOString().slice(0, 10);
+  if (lastBackup !== today) {
+    var msg = '💾 数据备份提醒\n\n请记得备份族谱数据，防止丢失。\n\n点击族谱管理顶部的「⬇️导出JSON」下载到电脑。\n或点击「📥手动备份」同步到服务器。';
+    var notified = localStorage.getItem('xie_backup_notified_' + today);
+    if (!notified) {
+      localStorage.setItem('xie_backup_notified_' + today, '1');
+      setTimeout(function() {
+        showToast(msg);
+      }, 5000);
+    }
+  }
+}, 3000);
+
+// 每7天自动提醒一次
+setInterval(function() {
+  var lastExport = localStorage.getItem('xie_last_export_date');
+  if (lastExport) {
+    var days = Math.floor((Date.now() - new Date(lastExport).getTime()) / 86400000);
+    if (days >= 7) {
+      showToast('⏰ 已7天未导出数据，请点「⬇️导出JSON」备份');
+    }
+  }
+}, 86400000); // 每天检查一次
+
+// 记录导出日期
+document.addEventListener('click', function(e) {
+  if (e.target.textContent && e.target.textContent.includes('导出JSON')) {
+    localStorage.setItem('xie_last_export_date', new Date().toISOString().slice(0, 10));
+    localStorage.setItem('xie_last_backup_date', new Date().toISOString().slice(0, 10));
+  }
+});
