@@ -307,9 +307,11 @@ function loadChapter(index, autoplay) {
   });
 }
 function togglePlay() {
+  // Start bg music on first play
+  if (!bgMusic) { ensureBgMusic(); startBgMusic(); }
   if (!audioEl) { loadChapter(currentChapter, true); return; }
   if (audioEl.paused) { audioEl.play().catch(function() {}); }
-  else { audioEl.pause(); pauseBgMusic(); }
+  else { audioEl.pause(); if (bgMusic) bgMusic.pause(); }
 }
 function prevChapter() { if (currentChapter > 0) loadChapter(currentChapter - 1, true); }
 function nextChapter() { if (currentChapter < AUDIO_SCRIPT.length - 1) loadChapter(currentChapter + 1, true); }
@@ -321,9 +323,9 @@ function seekProgress(e) {
   audioEl.currentTime = ((e.clientX - rect.left) / rect.width) * audioEl.duration;
 }
 function startBgMusic() {
-  if (!bgMusic || bgMusic.paused) {
-    if (!bgMusic) { bgMusic = new Audio('../music/background.mp3'); bgMusic.loop = true; bgMusic.volume = 0.08; }
-    bgMusic.play().catch(function() {});
+  ensureBgMusic();
+  if (bgMusic.paused) {
+    bgMusic.play().catch(function(e) { console.log('bg music:', e); });
   }
   document.getElementById('eq-bars').style.opacity = '1';
   document.getElementById('bg-title').textContent = '🎵 望府楼山间 · 氛围音乐';
@@ -356,29 +358,16 @@ updateNowPlaying();
 updateNavButtons();
 updateStatus('点击 ▶ 开始收听');
 
-// Preload background music and start on first user click
-function initBgMusic() {
-  if (bgMusic) return;
-  bgMusic = new Audio('../music/background.mp3');
-  bgMusic.loop = true;
-  bgMusic.volume = 0.08;
-  // Try to play (requires user gesture)
-  bgMusic.play().then(function() {
-    document.getElementById('eq-bars').style.opacity = '1';
-    document.getElementById('bg-title').textContent = '🎵 望府楼山间 · 氛围音乐';
-    document.getElementById('bg-desc').textContent = '正在播放 · 点击关闭';
-    document.getElementById('bg-toggle-icon').textContent = '🔊';
-  }).catch(function() {
-    // Autoplay blocked, will start when user clicks play
-    document.getElementById('eq-bars').style.opacity = '0.15';
-    document.getElementById('bg-title').textContent = '🎵 望府楼山间 · 氛围音乐';
-    document.getElementById('bg-desc').textContent = '点击播放 · 伴你聆听';
-    document.getElementById('bg-toggle-icon').textContent = '🎵';
-  });
+// Background music - always ready to play
+var bgMusicReady = false;
+function ensureBgMusic() {
+  if (!bgMusic) {
+    bgMusic = new Audio('../music/background.mp3');
+    bgMusic.loop = true;
+    bgMusic.volume = 0.15;
+  }
+  return bgMusic;
 }
-// Attach to first user interaction
-document.addEventListener('click', initBgMusic, { once: true });
-document.addEventListener('touchstart', initBgMusic, { once: true });
 </script>
 </body>
 </html>
