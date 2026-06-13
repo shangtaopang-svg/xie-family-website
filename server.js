@@ -9,6 +9,41 @@ const PORT = parseInt(process.env.PORT, 10) || 3001;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin2025';
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 const DATA_DIR = path.join(__dirname, 'data');
+const BACKUP_DIR = path.join(__dirname, 'data', 'backups');
+if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
+
+// Periodic auto-backup every 30 minutes
+setInterval(() => {
+  const modules = ['genealogy', 'members', 'news', 'activities', 'honors', 'reports', 'photos', 'videos'];
+  modules.forEach(mod => {
+    const src = path.join(DATA_DIR, mod + '.json');
+    if (fs.existsSync(src)) {
+      const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      const dst = path.join(BACKUP_DIR, `${mod}_${ts}.json`);
+      try {
+        fs.copyFileSync(src, dst);
+        // Keep only last 20 backups per module
+        const files = fs.readdirSync(BACKUP_DIR)
+          .filter(f => f.startsWith(mod + '_'))
+          .sort()
+          .reverse();
+        files.slice(20).forEach(f => {
+          try { fs.unlinkSync(path.join(BACKUP_DIR, f)); } catch(e) {}
+        });
+      } catch(e) {}
+    }
+  });
+}, 30 * 60 * 1000);
+
+// Also backup on startup
+setTimeout(() => {
+  const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const src = path.join(DATA_DIR, 'genealogy.json');
+  if (fs.existsSync(src)) {
+    const dst = path.join(BACKUP_DIR, `genealogy_startup_${ts}.json`);
+    try { fs.copyFileSync(src, dst); } catch(e) {}
+  }
+}, 5000);
 
 // In-memory admin tokens (expire on server restart — acceptable for this scale)
 const adminTokens = new Set();

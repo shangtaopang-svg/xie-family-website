@@ -254,19 +254,122 @@ function getData(module) {
 
 function saveData(module, data) {
   localStorage.setItem('xie_admin_' + module, JSON.stringify(data));
-  // Sync to server (fire-and-forget, don't block UI)
-  if (window.serverSaveAll) {
-    window.serverSaveAll(module, data).catch(function(e) {
-      console.warn('Server sync failed for ' + module + ': ' + e.message);
-      // Fallback: try dbSyncModule
-      if (window.dbSyncModule) {
-        dbSyncModule(module, data).catch(function(e2) {});
+  // Sync to server with retry
+  syncToServer(module, data);
+}
+
+// ===== 数据安全三保险 =====
+
+// 保险1: 保存到服务器API（自动重试3次）
+function syncToServer(module, data, attempt) {
+  if (attempt === undefined) attempt = 1;
+  if (!data || !data.length) return;
+
+  // Show sync status
+  showSyncStatus(module, '同步中…');
+
+  // Batch save for large datasets
+  var batchSize = 500;
+  var totalBatches = Math.ceil(data.length / batchSize);
+  var completed = 0;
+
+  function sendBatch(start) {
+    if (start >= data.length) {
+      showSyncStatus(module, '✅ 已同步');
+      return;
+    }
+    var batch = data.slice(start, start + batchSize);
+    fetch('/api/data/' + module, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(batch)
+    }).then(function(r) { return r.json(); }).then(function() {
+      completed++;
+      showSyncStatus(module, '同步中… ' + completed + '/' + totalBatches);
+      sendBatch(start + batchSize);
+    }).catch(function(e) {
+      if (attempt < 3) {
+        setTimeout(function() { syncToServer(module, data, attempt + 1); }, 2000);
+      } else {
+        showSyncStatus(module, '⚠️ 同步失败，数据在本地安全');
+        // Save a localStorage backup marker
+        localStorage.setItem('xie_unsynced_' + module, 'true');
       }
     });
-  } else if (window.dbSyncModule) {
-    dbSyncModule(module, data).catch(function(e) {});
   }
+  sendBatch(0);
 }
+
+// 显示同步状态
+function showSyncStatus(module, msg) {
+  var el = document.getElementById('sync-status-' + module);
+  if (el) el.textContent = msg;
+}
+
+// 保险2: 手动备份按钮渲染（每个模块顶部）
+function renderBackupButton(module) {
+  var hasUnsynced = localStorage.getItem('xie_unsynced_' + module) === 'true';
+  var warning = hasUnsynced ? '<span style="color:#f44336;font-weight:600;"> ⚠️ 有未同步的数据</span>' : '';
+  return '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;padding:10px 14px;background:rgba(33,150,243,0.06);border-radius:8px;border:1px solid rgba(33,150,243,0.12);">'
+    + '<span style="font-size:12px;color:rgba(255,255,255,0.5);">💾 数据保护</span>'
+    + '<button class="btn btn-xs" onclick="backupModuleData(\'' + module + '\')" style="padding:4px 12px;">📥 手动备份</button>'
+    + '<button class="btn btn-xs" onclick="downloadModuleData(\'' + module + '\')" style="padding:4px 12px;">⬇️ 导出JSON</button>'
+    + '<span id="sync-status-' + module + '" style="font-size:11px;color:rgba(255,255,255,0.3);"></span>'
+    + warning
+    + '</div>';
+}
+
+// 保险3: 手动备份到服务器
+function backupModuleData(module) {
+  var data = getData(module);
+  if (!data || !data.length) { showToast('暂无数据'); return; }
+  showSyncStatus(module, '正在备份 ' + data.length + ' 条…');
+  syncToServer(module, data);
+}
+
+// 保险4: 导出JSON文件到本地
+function downloadModuleData(module) {
+  var data = getData(module);
+  if (!data || !data.length) { showToast('暂无数据'); return; }
+  var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = module + '_backup_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  showToast('✅ 已导出 ' + data.length + ' 条');
+}
+
+// 保险5: 启动时检查未同步数据
+function checkUnsyncedData() {
+  var modules = ['genealogy', 'members', 'news', 'activities', 'honors', 'reports'];
+  modules.forEach(function(mod) {
+    if (localStorage.getItem('xie_unsynced_' + mod) === 'true') {
+      var data = getData(mod);
+      if (data && data.length > 0) {
+        syncToServer(mod, data);
+      }
+    }
+  });
+}
+setTimeout(checkUnsyncedData, 3000);
+
+// ===== 给renderModule打补丁，增加备份按钮 =====
+var origRenderModule = renderModule;
+renderModule = function(mod) {
+  origRenderModule(mod);
+  // Add backup button after module title
+  var titleEl = document.querySelector('.apt-module-title');
+  if (titleEl) {
+    var btnHtml = renderBackupButton(mod);
+    var existing = document.getElementById('backup-bar-' + mod);
+    if (!existing) {
+      var div = document.createElement('div');
+      div.id = 'backup-bar-' + mod;
+      div.innerHTML = btnHtml;
+      titleEl.parentNode.insertBefore(div, titleEl.nextSibling);
+    }
+  }
+};
 
 function getNextId(data) {
   var max = 0;
