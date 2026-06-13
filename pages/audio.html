@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>听 · 下枫槎</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../css/style.css?v=3">
+<script src="../js/audio-script.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{min-height:100vh;background:linear-gradient(160deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);font-family:"Noto Serif SC","Source Han Serif SC",serif;color:#fff;overflow-x:hidden}
+.audio-page{max-width:800px;margin:0 auto;padding:40px 24px 60px}
+
+/* header */
+.audio-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:40px}
+.audio-header .back{color:rgba(255,255,255,0.5);text-decoration:none;font-size:14px;transition:color .2s}
+.audio-header .back:hover{color:#fff}
+.audio-header h1{font-size:22px;font-weight:600;letter-spacing:4px;color:rgba(255,255,255,0.9)}
+.audio-header .spacer{width:60px}
+
+/* player card */
+.player-card{background:rgba(255,255,255,0.06);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:20px;padding:36px 32px 32px;border:1px solid rgba(255,255,255,0.08);margin-bottom:32px}
+.now-playing{text-align:center;margin-bottom:24px}
+.now-playing .np-emoji{font-size:42px;margin-bottom:8px}
+.now-playing .np-title{font-size:20px;font-weight:600;color:#fff;margin-bottom:4px}
+.now-playing .np-sub{font-size:13px;color:rgba(255,255,255,0.4);letter-spacing:2px}
+.now-playing .np-status{font-size:12px;color:rgba(255,255,255,0.3);margin-top:4px}
+
+/* progress */
+.progress-wrap{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.progress-time{font-size:12px;color:rgba(255,255,255,0.4);white-space:nowrap;min-width:36px}
+.progress-bar{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,0.1);cursor:pointer;position:relative;overflow:hidden}
+.progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#c9a84c,#f0d68a);width:0%;transition:width .1s}
+
+/* controls */
+.controls{display:flex;align-items:center;justify-content:center;gap:20px}
+.ctrl-btn{width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;transition:all .2s;background:rgba(255,255,255,0.08);color:#fff}
+.ctrl-btn:hover{background:rgba(255,255,255,0.15);transform:scale(1.05)}
+.ctrl-btn.primary{width:60px;height:60px;background:linear-gradient(135deg,#c9a84c,#f0d68a);color:#1a1a2e;font-size:24px;box-shadow:0 4px 20px rgba(201,168,76,0.3)}
+.ctrl-btn.primary:hover{transform:scale(1.08);box-shadow:0 6px 30px rgba(201,168,76,0.4)}
+.ctrl-btn:disabled{opacity:.3;cursor:default;transform:none!important}
+
+/* chapter list */
+.section-title-audio{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title-audio h2{font-size:16px;font-weight:600;color:rgba(255,255,255,0.6);letter-spacing:2px}
+.section-title-audio .bg-toggle{font-size:12px;color:rgba(255,255,255,0.3);cursor:pointer;transition:color .2s;background:none;border:none;font-family:inherit}
+.section-title-audio .bg-toggle:hover{color:#fff}
+
+.chapter-list{display:flex;flex-direction:column;gap:10px}
+.chapter{display:flex;align-items:center;gap:16px;padding:16px 20px;border-radius:14px;cursor:pointer;transition:all .3s;background:rgba(255,255,255,0.03);border:1px solid transparent}
+.chapter:hover{background:rgba(255,255,255,0.06)}
+.chapter.active{background:rgba(201,168,76,0.1);border-color:rgba(201,168,76,0.2)}
+.chapter.done{opacity:.6}
+.chapter .ch-emoji{font-size:24px;flex-shrink:0;width:32px;text-align:center}
+.chapter .ch-info{flex:1}
+.chapter .ch-title{font-size:15px;font-weight:500;color:rgba(255,255,255,0.8)}
+.chapter .ch-duration{font-size:12px;color:rgba(255,255,255,0.3);margin-top:2px}
+.chapter .ch-status{font-size:16px;flex-shrink:0;width:24px;text-align:center}
+.chapter .ch-status.done{color:#4caf50}
+.chapter .ch-status.playing{color:#c9a84c;animation:pulse 1.2s infinite}
+.chapter .ch-status.pending{color:rgba(255,255,255,0.15)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* bg music indicator */
+.bg-indicator{display:flex;align-items:center;gap:8px;margin-top:20px;padding:12px 16px;background:rgba(255,255,255,0.03);border-radius:10px;font-size:12px;color:rgba(255,255,255,0.3)}
+.bg-indicator .eq{display:flex;align-items:flex-end;gap:2px;height:14px}
+.bg-indicator .eq span{width:3px;background:#c9a84c;border-radius:2px;animation:eq 1s ease-in-out infinite alternate}
+.bg-indicator .eq span:nth-child(1){height:6px;animation-delay:0s}
+.bg-indicator .eq span:nth-child(2){height:10px;animation-delay:.2s}
+.bg-indicator .eq span:nth-child(3){height:8px;animation-delay:.4s}
+.bg-indicator .eq span:nth-child(4){height:12px;animation-delay:.1s}
+.bg-indicator .eq span:nth-child(5){height:7px;animation-delay:.3s}
+@keyframes eq{0%{opacity:.3}100%{opacity:1}}
+
+@media(max-width:560px){
+  .audio-page{padding:24px 16px 40px}
+  .audio-header h1{font-size:18px}
+  .player-card{padding:24px 20px}
+  .now-playing .np-emoji{font-size:32px}
+  .now-playing .np-title{font-size:17px}
+  .chapter{padding:14px 16px}
+}
+</style>
+</head>
+<body>
+
+<div class="audio-page">
+  <div class="audio-header">
+    <a href="../index.html" class="back">← 返回首页</a>
+    <h1>🎧 听·下枫槎</h1>
+    <span class="spacer"></span>
+  </div>
+
+  <!-- player -->
+  <div class="player-card">
+    <div class="now-playing">
+      <div class="np-emoji" id="np-emoji">🏘️</div>
+      <div class="np-title" id="np-title">序章 · 村庄印象</div>
+      <div class="np-sub" id="np-sub">下枫槎村 · 家族故事 · 声音记录</div>
+      <div class="np-status" id="np-status">点击播放开始收听</div>
+    </div>
+
+    <div class="progress-wrap">
+      <span class="progress-time" id="prog-current">0:00</span>
+      <div class="progress-bar" id="progress-bar" onclick="seekProgress(event)">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <span class="progress-time" id="prog-total">0:00</span>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl-btn" id="btn-prev" onclick="prevChapter()" disabled>⏮</button>
+      <button class="ctrl-btn primary" id="btn-play" onclick="togglePlay()">▶</button>
+      <button class="ctrl-btn" id="btn-next" onclick="nextChapter()">⏭</button>
+    </div>
+  </div>
+
+  <!-- chapter list -->
+  <div class="section-title-audio">
+    <h2>📖 章节列表</h2>
+    <button class="bg-toggle" id="bg-toggle" onclick="toggleBgMusic()">🎵 背景音乐 · 开</button>
+  </div>
+
+  <div class="chapter-list" id="chapter-list"></div>
+
+  <div class="bg-indicator" id="bg-indicator">
+    <div class="eq" id="eq-bars"><span></span><span></span><span></span><span></span><span></span></div>
+    <span id="bg-status">背景音乐播放中 · 望府楼山间</span>
+  </div>
+</div>
+
+<script>
+// State
+var currentChapter = 0;
+var isPlaying = false;
+var isPaused = false;
+var synth = window.speechSynthesis;
+var utterance = null;
+var bgMusic = null;
+var bgOn = true;
+var chapterTimers = [];
+var estimatedTimes = [];
+
+// Estimate reading time for each chapter
+function estimateTimes() {
+  var total = 0;
+  AUDIO_SCRIPT.forEach(function(ch, i) {
+    // Chinese speech ~3.5 chars/sec
+    var secs = Math.max(Math.ceil(ch.text.length / 3.5), 15);
+    estimatedTimes[i] = secs;
+    total += secs;
+  });
+  return total;
+}
+var totalTime = estimateTimes();
+
+function formatTime(s) {
+  var m = Math.floor(s / 60);
+  var sec = Math.floor(s % 60);
+  return m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+
+// Render chapter list
+function renderChapters() {
+  var html = '';
+  AUDIO_SCRIPT.forEach(function(ch, i) {
+    var active = i === currentChapter ? 'active' : '';
+    var status = '';
+    if (i < currentChapter) status = '<span class="ch-status done">✓</span>';
+    else if (i === currentChapter && isPlaying) status = '<span class="ch-status playing">▶</span>';
+    else if (i === currentChapter) status = '<span class="ch-status playing" style="opacity:0.5;">○</span>';
+    else status = '<span class="ch-status pending">' + (i + 1) + '</span>';
+    html += '<div class="chapter ' + active + '" onclick="goToChapter(' + i + ')">'
+      + '<span class="ch-emoji">' + ch.emoji + '</span>'
+      + '<div class="ch-info"><div class="ch-title">' + ch.title + '</div><div class="ch-duration">约' + formatTime(estimatedTimes[i]) + '</div></div>'
+      + '<div class="ch-status-wrap">' + status + '</div></div>';
+  });
+  document.getElementById('chapter-list').innerHTML = html;
+}
+renderChapters();
+
+function updateNowPlaying() {
+  var ch = AUDIO_SCRIPT[currentChapter];
+  document.getElementById('np-emoji').textContent = ch.emoji;
+  document.getElementById('np-title').textContent = ch.title;
+  document.getElementById('prog-total').textContent = formatTime(estimatedTimes[currentChapter]);
+}
+
+function updatePlayButton() {
+  var btn = document.getElementById('btn-play');
+  btn.textContent = isPlaying ? '⏸' : '▶';
+}
+
+function updateNavButtons() {
+  document.getElementById('btn-prev').disabled = currentChapter <= 0;
+  document.getElementById('btn-next').disabled = currentChapter >= AUDIO_SCRIPT.length - 1;
+}
+
+function updateStatus(text) {
+  document.getElementById('np-status').textContent = text;
+}
+
+// Core playback
+function speakChapter(index) {
+  if (synth.speaking) synth.cancel();
+  currentChapter = index;
+  var ch = AUDIO_SCRIPT[currentChapter];
+  updateNowPlaying();
+  renderChapters();
+  updateNavButtons();
+
+  utterance = new SpeechSynthesisUtterance(ch.text);
+  utterance.lang = 'zh-CN';
+  utterance.rate = 0.95;
+  utterance.pitch = 1.05;
+
+  // Find Chinese voice
+  var voices = synth.getVoices();
+  var zhVoice = voices.find(function(v) { return v.lang.startsWith('zh') && v.lang.includes('CN'); });
+  if (zhVoice) utterance.voice = zhVoice;
+
+  // If voices not loaded yet, wait
+  if (!zhVoice && !voices.length) {
+    synth.addEventListener('voiceschanged', function() {
+      var v = synth.getVoices().find(function(v2) { return v2.lang.startsWith('zh') && v2.lang.includes('CN'); });
+      if (v) utterance.voice = v;
+    }, { once: true });
+  }
+
+  utterance.onstart = function() {
+    isPlaying = true;
+    isPaused = false;
+    updatePlayButton();
+    updateStatus('正在播放…');
+    renderChapters();
+    startProgress();
+    if (bgOn) startBgMusic();
+  };
+
+  utterance.onend = function() {
+    isPlaying = false;
+    isPaused = false;
+    updatePlayButton();
+    updateStatus('播放完成');
+    stopProgress();
+    if (currentChapter < AUDIO_SCRIPT.length - 1) {
+      currentChapter++;
+      renderChapters();
+      updateNowPlaying();
+      updateNavButtons();
+      updateStatus('点击播放下一章');
+    } else {
+      updateStatus('🎉 全部播放完毕');
+    }
+  };
+
+  utterance.onerror = function(e) {
+    isPlaying = false;
+    updatePlayButton();
+    updateStatus('播放出错，请重试');
+    stopProgress();
+  };
+
+  synth.speak(utterance);
+}
+
+function togglePlay() {
+  if (synth.speaking && !synth.paused) {
+    synth.pause();
+    isPlaying = false;
+    isPaused = true;
+    updatePlayButton();
+    updateStatus('已暂停');
+    stopProgress();
+    pauseBgMusic();
+    return;
+  }
+  if (synth.paused) {
+    synth.resume();
+    isPlaying = true;
+    isPaused = false;
+    updatePlayButton();
+    updateStatus('继续播放…');
+    startProgress();
+    if (bgOn) resumeBgMusic();
+    return;
+  }
+  // Start fresh
+  speakChapter(currentChapter);
+}
+
+function prevChapter() {
+  if (currentChapter > 0) {
+    speakChapter(currentChapter - 1);
+  }
+}
+
+function nextChapter() {
+  if (currentChapter < AUDIO_SCRIPT.length - 1) {
+    speakChapter(currentChapter + 1);
+  }
+}
+
+function goToChapter(index) {
+  if (index === currentChapter && isPlaying) return;
+  speakChapter(index);
+}
+
+// Progress simulation
+var progressInterval = null;
+var progressStart = 0;
+
+function startProgress() {
+  progressStart = Date.now();
+  if (progressInterval) clearInterval(progressInterval);
+  progressInterval = setInterval(function() {
+    var elapsed = (Date.now() - progressStart) / 1000;
+    var total = estimatedTimes[currentChapter];
+    var pct = Math.min(elapsed / total * 100, 99);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('prog-current').textContent = formatTime(elapsed);
+  }, 100);
+}
+
+function stopProgress() {
+  if (progressInterval) { clearInterval(progressInterval); progressInterval = null; }
+}
+
+function seekProgress(e) {
+  if (!isPlaying && !isPaused) return;
+  var bar = document.getElementById('progress-bar');
+  var rect = bar.getBoundingClientRect();
+  var pct = (e.clientX - rect.left) / rect.width;
+  var total = estimatedTimes[currentChapter];
+  var seekTo = pct * total;
+  // Restart at seek position - simple approach: restart speaking
+  // Web Speech API doesn't support seeking, so we approximate
+  document.getElementById('progress-fill').style.width = (pct * 100) + '%';
+  document.getElementById('prog-current').textContent = formatTime(seekTo);
+}
+
+// Background music
+function startBgMusic() {
+  if (!bgMusic) {
+    bgMusic = new Audio('../music/background.mp3');
+    bgMusic.loop = true;
+    bgMusic.volume = 0.08;
+  }
+  bgMusic.play().catch(function() {});
+  document.getElementById('eq-bars').style.display = 'flex';
+}
+
+function pauseBgMusic() {
+  if (bgMusic) bgMusic.pause();
+  document.getElementById('eq-bars').style.display = 'none';
+}
+
+function resumeBgMusic() {
+  if (bgMusic && bgOn) {
+    bgMusic.play().catch(function() {});
+    document.getElementById('eq-bars').style.display = 'flex';
+  }
+}
+
+function toggleBgMusic() {
+  bgOn = !bgOn;
+  var btn = document.getElementById('bg-toggle');
+  var status = document.getElementById('bg-status');
+  if (bgOn) {
+    if (isPlaying) startBgMusic();
+    btn.textContent = '🎵 背景音乐 · 开';
+    status.textContent = '背景音乐播放中 · 望府楼山间';
+  } else {
+    pauseBgMusic();
+    btn.textContent = '🎵 背景音乐 · 关';
+    status.textContent = '背景音乐已关闭';
+  }
+}
+
+// Load voices and init
+updateNowPlaying();
+updateNavButtons();
+</script>
+
+</body>
+</html>
