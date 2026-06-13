@@ -83,10 +83,43 @@
       </div>
       <div id="honors-wrap">
         <div id="honors-list"></div>
-      <div style="margin-top:24px;text-align:center;">
-        <a href="honor_wall.html" style="display:inline-flex;align-items:center;gap:10px;padding:14px 32px;background:linear-gradient(135deg,#c9a84c,#f0d68a);color:#1a1a2e;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;transition:transform .2s,box-shadow .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(201,168,76,0.4)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          🏆 查看完整荣誉墙 →
-        </a>
+      <style>
+        .hw-scroll-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-top:20px; max-width:1340px; width:100%; }
+        .hw-scroll { background:linear-gradient(160deg,#fcf8ef,#f5edd6,#ede3c8); border-radius:12px; position:relative; box-shadow:0 4px 20px rgba(0,0,0,0.12),inset 0 1px 0 rgba(255,255,255,0.7); transition:transform .3s,box-shadow .3s; overflow:hidden; cursor:default; display:flex; flex-direction:column; min-height:240px; }
+        .hw-scroll:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.7); }
+        .hw-scroll .body { padding:24px 20px 20px; flex:1; display:flex; flex-direction:column; position:relative; z-index:1; }
+        .hw-scroll .ornament { text-align:center; font-size:.6rem; color:#b8a47e; letter-spacing:.8em; margin:0 0 6px; opacity:.5; }
+        .hw-scroll .num { position:absolute; top:18px; right:18px; font-family:"Noto Serif SC",serif; font-size:2.2rem; font-weight:700; color:rgba(139,115,85,0.12); line-height:1; pointer-events:none; }
+        .hw-scroll .top-text { font-size:.65rem; color:#7a6a50; margin-bottom:2px; line-height:1.3; min-height:1.3em; }
+        .hw-scroll .award-name { font-size:1.2rem; font-weight:700; color:#6b3a2a; line-height:1.35; margin-bottom:6px; }
+        .hw-scroll .award-name.smaller { font-size:1rem; }
+        .hw-scroll .award-name.xsmall { font-size:.85rem; }
+        .hw-scroll .divider-wrap { display:flex; align-items:center; gap:6px; margin:6px 0 10px; }
+        .hw-scroll .divider-wrap .line { flex:1; height:1px; background:linear-gradient(90deg,transparent,rgba(107,58,42,0.25),transparent); }
+        .hw-scroll .divider-wrap .diamond { color:#b8a47e; font-size:.5rem; }
+        .hw-scroll .issuer { font-size:.68rem; color:#6b5a42; line-height:1.5; flex:1; }
+        .hw-scroll .year-line { margin-top:10px; }
+        .hw-scroll .year { font-size:.7rem; font-weight:700; color:#8a7a62; letter-spacing:.05em; }
+        .hw-scroll .star-row { display:inline-flex; gap:3px; color:#c9a84c; font-size:1.3rem; letter-spacing:2px; }
+        .hw-scroll .party-emblem { display:inline-block; font-size:1rem; margin-right:3px; opacity:.7; }
+        .hw-scroll .wax-seal { position:absolute; bottom:16px; right:16px; width:32px; height:32px; border-radius:50%; background:rgba(180,50,50,0.12); display:flex; align-items:center; justify-content:center; font-size:.7rem; color:rgba(180,50,50,0.3); border:1.5px solid rgba(180,50,50,0.15); }
+        @media(max-width:1100px){.hw-scroll-grid{grid-template-columns:repeat(3,1fr);}}
+        @media(max-width:768px){.hw-scroll-grid{grid-template-columns:repeat(2,1fr);gap:14px;}}
+        @media(max-width:480px){.hw-scroll-grid{grid-template-columns:repeat(2,1fr);gap:10px;}.hw-scroll{min-height:180px;}.hw-scroll .award-name{font-size:1rem;}.hw-scroll .body{padding:16px 14px 14px;}}
+      </style>
+      <div class="hw-scroll-grid">
+        <div class="hw-scroll"><div class="body"><span class="num">壹</span><div class="ornament">— ◇ —</div><div class="award-name">文明村</div><div class="divider-wrap"><span class="line"></span><span class="diamond">◇</span><span class="line"></span></div><div class="issuer">中共宁波市委<br>宁波市人民政府</div><div class="wax-seal">敕</div></div></div>
+        <div class="hw-scroll"><div class="body"><span class="num">贰</span><div class="ornament">— ◇ —</div><div class="award-name smaller">宁波市级生态村</div><div class="divider-wrap"><span class="line"></span><span class="diamond">◇</span><span class="line"></span></div><div class="issuer">宁波市农村建设工作领导小组办公室</div><div class="year-line"><span class="year">二〇〇七年二月</span></div></div></div>
+        <div class="hw-scroll"><div class="body"><span class="num">叁</span><div class="ornament">— ◇ —</div><div class="top-text">宁波市</div><div class="award-name">卫生村</div><div class="divider-wrap"><span class="line"></span><span class="diamond">◇</span><span class="line"></span></div><div class="issuer">宁波市爱国卫生运动委员会</div><div class="year-line"><span class="year">二〇〇七年十二月</span></div></div></div>
+        <div class="hw-scroll"><div class="body"><span class="num">肆</span><div class="ornament">— ◇ —</div><div class="award-name smaller">宁波市书香文化礼堂</div><div class="divider-wrap"><span class="line"></span><span class="diamond">◇</span><span class="line"></span></div><div class="issuer">中共宁波市委宣传部<br>宁波市农村文化礼堂建设领导小组办公室</div><div class="year-line"><span class="year">二〇二〇年十二月</span></div></div></div>
+        <div class="hw-scroll"><div class="body"><span class="num">伍</span><div class="ornament">— ◇ —</div><div class="top-text">宁波市示范型</div><div class="award-name">儿童之家</div><div class="divider-wrap"><span class="line"></span><span class="diamond">◇</span><span class="line"></span></div><div class="issuer">宁波市妇女联合会<br>宁波市妇女儿童工作委员会办公室</div><div class="year-line"><span class="year">二〇二一年二月</span></div></div></div>
+        <div class="hw-scroll"><div class="body"><span class="num">陆</span><div class="ornament">— ◇ —</div><div class="award-name smaller">宁波市安居示范村</div><div class="divider-wrap"><span class="line"></span><span class="diamond">◇</span><span class="line"></span></div><div class="issuer">宁波市住房和城乡建设局</div><div class="year-line"><span class="year">二〇二二年</span></div></div></div>
+        <div class="hw-scroll"><div class="body"><span class="num">柒</span><div class="ornament">— ◇ —</div><div class="top-text">宁波市</div><div class="award-name smaller">新时代文明实践示范站</div><div class="divider-wrap"><span class="line"></span><span class="diamond">◇</span><span class="line"></span></div><div class="issuer">中共宁波市委宣传部<br>宁波市文明办</div><div class="year-line"><span class="year">二〇二三年一月</span></div></div></div>
+        <div class="hw-scroll"><div class="body"><span class="num">捌</span><div class="ornament">— ◇ —</div><div class="award-name smaller"><span class="party-emblem">☭</span>五星级基层党组织</div><div class="divider-wrap"><span class="line"></span><span class="diamond">◇</span><span class="line"></span></div><div class="issuer">中共宁波市委组织部</div><div class="year-line"><span class="year">二〇二三年五月</span></div></div></div>
+        <div class="hw-scroll"><div class="body"><span class="num">玖</span><div class="ornament">— ◇ —</div><div class="award-name"><span class="star-row">★★★★★</span></div><div class="divider-wrap"><span class="line"></span><span class="diamond">◇</span><span class="line"></span></div><div class="issuer">中共浙江省委宣传部<br>浙江省农村文化礼堂建设工作领导小组办公室</div><div class="year-line"><span class="year">二〇二三年四月</span></div></div></div>
+        <div class="hw-scroll"><div class="body"><span class="num">拾</span><div class="ornament">— ◇ —</div><div class="top-text">宁波市民族团结进步创建</div><div class="award-name xsmall">重点培育单位</div><div class="divider-wrap"><span class="line"></span><span class="diamond">◇</span><span class="line"></span></div><div class="issuer">宁波市民族宗教事务局</div><div class="year-line"><span class="year">二〇二三年十月</span></div></div></div>
+        <div class="hw-scroll"><div class="body"><span class="num">拾壹</span><div class="ornament">— ◇ —</div><div class="top-text">2023年度返乡入乡合作创业考核</div><div class="award-name">优秀单位</div><div class="divider-wrap"><span class="line"></span><span class="diamond">◇</span><span class="line"></span></div><div class="issuer">浙江省人力资源和社会保障厅</div><div class="year-line"><span class="year">二〇二四年三月</span></div></div></div>
+        <div class="hw-scroll"><div class="body"><span class="num">拾贰</span><div class="ornament">— ◇ —</div><div class="top-text">授予：宁海县跃龙街道望府村</div><div class="award-name xsmall">宁波市茶文化特色村</div><div class="divider-wrap"><span class="line"></span><span class="diamond">◇</span><span class="line"></span></div><div class="issuer">宁波市民间文艺家协会</div><div class="year-line"><span class="year">2024年4月</span></div></div></div>
       </div>
     </section>
 
