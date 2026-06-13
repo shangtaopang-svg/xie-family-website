@@ -539,6 +539,47 @@ function getPersonName(id, data) {
   return null;
 }
 
+// Mini tree for ancient/shenbo lineages
+function buildMiniTreeHtml(allData, nameList, cardBg) {
+  var html = '<div style="margin-top:8px;padding:8px;overflow-x:auto;white-space:nowrap;">';
+  html += '<div style="display:inline-flex;align-items:center;gap:4px;padding:4px 0;">';
+  // Build name->generation lookup
+  var nameToGen = {};
+  for (var bti = 0; bti < allData.length; bti++) {
+    nameToGen[allData[bti].name] = allData[bti].generation_num;
+  }
+  for (var bti = 0; bti < nameList.length; bti++) {
+    var nm = nameList[bti];
+    if (bti > 0) {
+      // Check if there's a gap in generation numbers
+      var prevGen = nameToGen[nameList[bti-1]];
+      var curGen = nameToGen[nm];
+      if (prevGen !== undefined && curGen !== undefined && Math.abs(curGen - prevGen) > 2) {
+        html += '<div style="display:flex;flex-direction:column;align-items:center;margin:0 2px;">';
+        html += '<div style="width:1px;height:16px;background:var(--text-muted);opacity:0.15;"></div>';
+        html += '<span style="font-size:8px;color:var(--text-muted);opacity:0.2;">⋯</span>';
+        html += '<div style="width:1px;height:16px;background:var(--text-muted);opacity:0.15;"></div>';
+        html += '</div>';
+      } else {
+        html += '<div style="display:flex;flex-direction:column;align-items:center;margin:0 2px;">';
+        html += '<div style="width:1px;height:20px;background:var(--text-muted);opacity:0.15;"></div>';
+        html += '<span style="font-size:7px;color:var(--text-muted);opacity:0.15;">│</span>';
+        html += '</div>';
+      }
+    }
+    var isShenbo = nm === '申伯';
+    var isDongshan = nm === '缵' || nm === '衡';
+    html += '<div style="display:inline-flex;flex-direction:column;align-items:center;margin:0 2px;min-width:40px;">';
+    html += '<div style="padding:4px 10px;border-radius:8px;font-size:11px;font-weight:' + (isShenbo||isDongshan?'600':'400') + ';background:' + (cardBg || 'rgba(255,255,255,0.05)') + ';border:1px solid ' + (isShenbo?'rgba(201,168,76,0.3)':isDongshan?'rgba(100,60,160,0.25)':'rgba(255,255,255,0.08)') + ';color:var(--text-primary);cursor:default;text-align:center;">' + nm + '</div>';
+    if (nameToGen[nm] !== undefined) {
+      html += '<span style="font-size:9px;color:var(--text-muted);opacity:0.4;margin-top:2px;">' + nameToGen[nm] + '世</span>';
+    }
+    html += '</div>';
+  }
+  html += '</div></div>';
+  return html;
+}
+
 function buildAdminTreeHtml(data) {
   if (!data || data.length === 0) return '<div style="padding:20px;text-align:center;color:var(--text-tertiary);font-size:13px;">暂无数据</div>';
 
@@ -807,18 +848,9 @@ function renderGenealogy(area) {
     html += '</tr>';
   }
   html += '</tbody></table>';
-  // 树状图
-  html += '<div style="margin-top:10px;padding:10px;overflow-x:auto;white-space:nowrap;text-align:center;font-size:12px;">';
-  html += '<div style="display:inline-flex;align-items:center;gap:2px;">';
-  var ancient_nodes = ['炎帝','临魁','榆罔','帝柱','祝融','吕尚','佐','申伯','申甫'];
-  for (var ai2 = 0; ai2 < ancient_nodes.length; ai2++) {
-    if (ai2 > 0) html += '<span style="color:var(--text-muted);opacity:0.3;font-size:10px;"> ─ </span>';
-    html += '<span style="display:inline-block;padding:3px 8px;border-radius:4px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.12);color:var(--text-primary);font-size:11px;">' + ancient_nodes[ai2] + '</span>';
-    if (ai2 === 1 || ai2 === 3 || ai2 === 5) {
-      html += '<span style="font-size:9px;color:var(--text-muted);opacity:0.3;">⋯</span>';
-    }
-  }
-  html += '</div></div></div>';
+  // 树状图（使用主树样式）
+  html += buildMiniTreeHtml(data, ['炎帝神农氏','临魁','榆罔','帝柱','祝融','吕尚','佐','申伯','申甫'], 'rgba(201,168,76,0.08)');
+  html += '</div>';
 
   // 申伯世系折叠表
   html += '<div style="margin:16px 0;padding:14px 18px;background:rgba(100,60,160,0.06);border-radius:10px;border:1px solid rgba(100,60,160,0.12);">';
@@ -944,7 +976,9 @@ function renderGenealogy(area) {
   // 树状图
   html += '<div style="margin-top:10px;padding:10px;overflow-x:auto;white-space:nowrap;text-align:center;font-size:12px;">';
   html += '<div style="display:inline-flex;align-items:center;gap:2px;">';
-  var shenbo_nodes = ['申伯','弘','广','列宗','骘','预','昌后','达','子民','秩','雍','林','涣','旺','珽','国辉','宁','福','杨贞','平利','翠','文','武','秉槐','堂','瑛','文轩','福郎','宜礼','逵','简','瑰','懿','鳅','当','景秀','缵','衡'];
+  // 树状图
+  html += buildMiniTreeHtml(data, ['申伯','弘','广','列宗','骘','预','昌后','达','子民','秩','雍','林','涣','旺','珽','国辉','宁','福','杨贞','平利','翠','文','武','秉槐','堂','瑛','文轩','福郎','宜礼','逵','简','瑰','懿','鳅','当','景秀','缵','衡'], 'rgba(100,60,160,0.08)');
+  html += '</div>';
   for (var si2 = 0; si2 < shenbo_nodes.length; si2++) {
     if (si2 > 0) html += '<span style="color:var(--text-muted);opacity:0.3;font-size:8px;">-</span>';
     var isHighlight = (shenbo_nodes[si2] === '缵' || shenbo_nodes[si2] === '衡');
