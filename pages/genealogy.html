@@ -553,20 +553,36 @@
       {id:8,name:'文对',gender:'男',generation:'—',generation_num:1,branch:'枫槎分支',father_id:2,is_alive:'否',highlight:true,biography:'文杲公之子，枫槎谢氏分支祖。'}
     ];
   }
+  var _genealogyData = null;
+
   function getGenealogyData() {
-  // Simply return localStorage data, no seed merging
-  try {
-    var stored = localStorage.getItem('xie_admin_genealogy');
-    if (stored) {
-      var data = JSON.parse(stored);
-      return data;
+    if (_genealogyData && _genealogyData.length > 10) return _genealogyData;
+    try {
+      var stored = localStorage.getItem('xie_admin_genealogy');
+      if (stored && stored.length > 100) {
+        var data = JSON.parse(stored);
+        if (data && data.length > 10) { _genealogyData = data; return data; }
+      }
+    } catch(e) {}
+    var seed = getFullSeedData();
+    _genealogyData = seed;
+    return seed;
+  }
+
+  // Load full 1080 records from JSON
+  fetch('../data/genealogy_full.json').then(function(r){return r.json()}).then(function(d){
+    if (d && d.length > 100) {
+      _genealogyData = d;
+      try { localStorage.setItem('xie_admin_genealogy', JSON.stringify(d)); } catch(e){}
+      if (typeof renderGenealogyPageSVG === 'function') renderGenealogyPageSVG();
+      setTimeout(function() {
+        if (window.renderTimeline) {
+          document.getElementById('genealogy-timeline').style.opacity = '1';
+          renderTimeline();
+        }
+      }, 200);
     }
-  } catch(e) {}
-  // Fallback: seed data when nothing in localStorage
-  var seed = getFullSeedData();
-  localStorage.setItem('xie_admin_genealogy', JSON.stringify(seed));
-  return seed;
-}
+  }).catch(function(){});
 
 function getPersonNameById(id, data) {
     if (!id && id !== 0) return null;
