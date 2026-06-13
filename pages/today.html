@@ -76,10 +76,11 @@
     <!-- 第一部分：村荣誉                               -->
     <!-- ============================================ -->
     <section id="honors" style="margin-bottom:50px;">
-      <div class="section-title" style="cursor:pointer;" onclick="toggleHonors()">
-        <h2 data-i18n="nav.honors">村荣誉 <span id="honors-toggle" style="font-size:18px;color:var(--accent-orange);">▶</span></h2>
+      <div class="section-title" style="cursor:pointer;position:relative;" onclick="toggleHonors()">
+        <h2 data-i18n="nav.honors">村荣誉</h2>
         <div class="divider"></div>
         <p data-i18n="page.honors">点击展开 · 荣耀时刻</p>
+        <span id="honors-toggle" style="position:absolute;right:0;top:50%;transform:translateY(-50%);font-size:20px;color:var(--accent-orange);">▶</span>
       </div>
       <div id="honors-wrap" style="display:none;">
       <style>
