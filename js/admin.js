@@ -2169,6 +2169,14 @@ document.addEventListener('DOMContentLoaded', function() {
     updateStats();
     // 登录后从 Supabase 加载数据
     loadFromSupabase();
+
+    // 从 JSON 文件加载完整族谱数据（1080条）
+    fetch('../data/genealogy_full.json').then(function(r){return r.json()}).then(function(full){
+      if (full && full.length > 100) {
+        localStorage.setItem('xie_admin_genealogy', JSON.stringify(full));
+        if (currentModule === 'genealogy') { renderModule('genealogy'); updateStats(); }
+      }
+    }).catch(function(){});
   }
 
   // Override main.js logout to re-render

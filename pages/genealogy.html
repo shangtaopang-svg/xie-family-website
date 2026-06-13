@@ -2495,7 +2495,9 @@ function locateInTree(personId) {
   // Try loading from Supabase for up-to-date genealogy data across devices
   if (window.dbGetAll) {
     dbGetAll('genealogy', { order: 'id.asc' }).then(function(supabaseData) {
-      if (supabaseData && supabaseData.length > 0) {
+      // Only use Supabase data if it has REAL names (not placeholders)
+      var hasRealData = supabaseData && supabaseData.length > 5 && supabaseData.some(function(p) { return /^(小四|文杲|彬|乾|攒|撰|伯|祖|宗|道|体|开|裕|静|元|宏|孟|公|书|叔|文对)/.test(p.name); });
+      if (hasRealData) {
         localStorage.setItem('xie_admin_genealogy', JSON.stringify(supabaseData));
         // Re-render with Supabase data
         setTimeout(renderGenealogyPageSVG, 10);
