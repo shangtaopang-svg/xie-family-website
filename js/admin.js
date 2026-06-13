@@ -1,3 +1,10 @@
+window.onerror = function(m, u, l, c, e) {
+  var el = document.getElementById('admin-content-area');
+  if (el) el.innerHTML = '<div style="padding:40px;text-align:center;"><h3 style="color:#f44336;">⚠️ 出错</h3><p style="font-size:13px;">' + m + '</p><p style="font-size:11px;color:var(--text-tertiary);">' + u + ':' + l + '</p></div>';
+  console.error(m, u, l, c, e);
+  return true;
+};
+
 /* ============================================
    宁海下枫槎村 · 谢氏家族网站
    管理后台 CRUD v1
@@ -218,30 +225,15 @@ function getData(module) {
   var key = 'xie_admin_' + module;
   var raw = localStorage.getItem(key);
 
-  // For genealogy: prefer localStorage if recently modified by user
+  // For genealogy: use localStorage only (synced from API on page load)
   if (module === 'genealogy') {
-    var useLocal = localStorage.getItem('_genealogy_use_local') === 'true';
-    if (useLocal) {
-      if (raw) { try { return JSON.parse(raw); } catch(e) {} }
+    if (raw) {
+      try {
+        var parsed = JSON.parse(raw);
+        if (parsed && parsed.length > 0) return parsed;
+      } catch(e) {}
     }
-    // Otherwise load from JSON file
-    try {
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', '../data/genealogy_full.json', false);
-      xhr.overrideMimeType('application/json');
-      xhr.send();
-      if (xhr.status === 200) {
-        var full = JSON.parse(xhr.responseText);
-        if (full && full.length > 100) {
-          localStorage.setItem(key, JSON.stringify(full));
-          localStorage.removeItem('_genealogy_use_local');
-          return full;
-        }
-      }
-    } catch(e) {}
-
-    if (raw) { try { return JSON.parse(raw); } catch(e) { return []; } }
-    var def = (MODULES[module] && MODULES[module].defaultData) || [];
+    var def = [];
     localStorage.setItem(key, JSON.stringify(def));
     return def;
   }
@@ -918,47 +910,6 @@ function renderGenealogy(area) {
     [100, 36, '显', '景秀之子'],
     [100, 36, '顼', '景秀之子'],
     [101, 37, '衡', '缵之子'],
-  ];
-    [0, '广', '弘之子'],
-    [1, '协', '弘之子'],
-    [2, '列宗', '广之子'],
-    [3, '穆宗', '广之子'],
-    [4, '骘', '列宗之子'],
-    [5, '预', '骘之子'],
-    [6, '昌后', '预之子'],
-    [7, '达', '昌后之子'],
-    [8, '守礼', '昌后之子'],
-    [9, '子民', '达之子'],
-    [10, '秩', '子民之子'],
-    [11, '雍', '秩之子'],
-    [12, '林', '雍之子'],
-    [13, '涣', '林之子'],
-    [14, '旺', '涣之子'],
-    [15, '珽', '旺之子'],
-    [16, '国辉', '珽之子'],
-    [17, '宁', '国辉之子'],
-    [18, '福', '宁之子'],
-    [19, '杨贞', '福之子'],
-    [20, '平利', '杨贞之子'],
-    [21, '平和', '杨贞之子'],
-    [22, '翠', '平利之子'],
-    [23, '文', '平和之子'],
-    [24, '武', '文之子'],
-    [25, '秉槐', '武之子'],
-    [26, '堂', '秉槐之子'],
-    [27, '瑛', '堂之子'],
-    [28, '文轩', '瑛之子'],
-    [29, '福郎', '文轩之子'],
-    [30, '宜礼', '福郎之子'],
-    [31, '逵', '宜礼之子'],
-    [32, '简', '逵之子'],
-    [33, '瑰', '简之子'],
-    [34, '懿', '瑰之子'],
-    [35, '鳅', '懿之子'],
-    [36, '当', '鳅之子'],
-    [37, '景秀', '鳅之子'],
-    [38, '缵', '东山第一世'],
-    [39, '衡', '缵之子'],
   ];
   for (var si = 0; si < shenbo_lineage.length; si++) {
     var row = shenbo_lineage[si];
