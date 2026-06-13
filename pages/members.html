@@ -94,7 +94,8 @@
 
     <!-- 入赘说明 -->
     <section style="margin-bottom:24px;">
-      <div class="section-title"><h2>💒 入赘婚配</h2><div class="divider"></div><p>以下为家族中入赘（女婿入赘）的夫妻关系</p></div>
+      <div class="section-title" style="cursor:pointer;" onclick="toggleMarriage()"><h2>💒 入赘婚配 <span id="marriage-toggle" style="font-size:18px;color:var(--accent-orange);">▶</span></h2><div class="divider"></div><p>点击展开查看</p></div>
+      <div id="marriage-content" style="display:none;">
       <div class="glass-card" style="padding:20px;overflow-x:auto;border:2px solid #ef4444;background:rgba(239,68,68,0.04);">
       <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:550px;">
         <thead>
@@ -117,6 +118,7 @@
         </tbody>
       </table>
       </div>
+    </div>
     </section>
 
     <!-- 数据可视化 -->
@@ -761,6 +763,13 @@ function renderMemberCharts() {
 
 // Wait for data and render
 setTimeout(renderMemberCharts, 500);
+
+function toggleMarriage() {
+  var el = document.getElementById('marriage-content');
+  var icon = document.getElementById('marriage-toggle');
+  if (el.style.display === 'none') { el.style.display = 'block'; icon.textContent = '▼'; }
+  else { el.style.display = 'none'; icon.textContent = '▶'; }
+}
 </script>
 </body>
 </html>
