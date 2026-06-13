@@ -83,10 +83,60 @@
       </div>
       <div id="honors-wrap">
         <div id="honors-list"></div>
-      <div style="margin-top:20px;text-align:center;">
-        <div style="display:inline-block;padding:12px;background:var(--glass-bg);border-radius:12px;border:1px solid var(--glass-border);box-shadow:0 4px 20px rgba(0,0,0,0.1);max-width:100%;">
-          <img src="../images/honor-wall.png" alt="下枫槎村荣誉墙" style="width:100%;max-width:860px;height:auto;border-radius:6px;display:block;cursor:pointer;" onclick="window.open('../images/honor-wall.png','_blank')">
-          <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">🖼️ 点击查看大图 · 下枫槎村荣誉墙</p>
+      <div style="margin-top:24px;">
+        <div class="section-title" style="cursor:pointer;margin-bottom:16px;" onclick="toggleHonorWall()">
+          <h2>🏆 荣誉墙 <span id="hw-toggle" style="font-size:18px;color:var(--accent-orange);">▶</span></h2>
+          <div class="divider"></div>
+          <p>点击展开 · 宁海县跃龙街道望府村历年荣誉</p>
+        </div>
+        <div id="hw-content" style="display:none;">
+          <style>
+            .hw-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:16px; max-width:1340px; width:100%; }
+            .hw-medal { background:linear-gradient(145deg,#fbf6e8 0%,#f5edd6 40%,#ede3c8 100%); border-radius:14px; position:relative; box-shadow:0 4px 20px rgba(0,0,0,0.15),inset 0 1px 0 rgba(255,255,255,0.6); transition:transform .3s,box-shadow .3s; overflow:hidden; cursor:default; display:flex; flex-direction:column; min-height:220px; }
+            .hw-medal:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,0,0,0.25),inset 0 1px 0 rgba(255,255,255,0.6); }
+            .hw-ribbon { height:8px; width:100%; flex-shrink:0; }
+            .hw-ribbon.gold { background:linear-gradient(90deg,#c9a84c,#f0d68a,#c9a84c); }
+            .hw-ribbon.red { background:linear-gradient(90deg,#b22222,#dc3545,#b22222); }
+            .hw-ribbon.blue { background:linear-gradient(90deg,#1e5b9e,#4a90d9,#1e5b9e); }
+            .hw-ribbon.green { background:linear-gradient(90deg,#2d7d46,#4caf50,#2d7d46); }
+            .hw-ribbon.darkred { background:linear-gradient(90deg,#8b0000,#c62828,#8b0000); }
+            .hw-ribbon.teal { background:linear-gradient(90deg,#00695c,#00897b,#00695c); }
+            .hw-ribbon.purple { background:linear-gradient(90deg,#4a148c,#7b1fa2,#4a148c); }
+            .hw-ribbon.orange { background:linear-gradient(90deg,#e65100,#ff8f00,#e65100); }
+            .hw-ribbon.navy { background:linear-gradient(90deg,#0d3b66,#1a5276,#0d3b66); }
+            .hw-ribbon.maroon { background:linear-gradient(90deg,#7b1e1e,#a83232,#7b1e1e); }
+            .hw-ribbon.brown { background:linear-gradient(90deg,#5d4037,#8d6e63,#5d4037); }
+            .hw-ribbon.crimson { background:linear-gradient(90deg,#641e16,#922b21,#641e16); }
+            .hw-num { position:absolute; top:14px; left:12px; width:26px; height:26px; border-radius:50%; background:rgba(0,0,0,0.08); display:flex; align-items:center; justify-content:center; font-size:.7rem; font-weight:700; color:rgba(0,0,0,0.35); }
+            .hw-body { padding:18px 14px 16px; flex:1; display:flex; flex-direction:column; }
+            .hw-top { font-size:.65rem; color:rgba(0,0,0,0.45); margin-bottom:3px; line-height:1.3; min-height:1.3em; }
+            .hw-name { font-size:1.15rem; font-weight:700; color:#8b1a1a; line-height:1.35; margin-bottom:6px; }
+            .hw-name.sm { font-size:1rem; }
+            .hw-name.sub { font-size:.85rem; font-weight:600; color:#555; margin-top:-3px; margin-bottom:5px; }
+            .hw-name .stars { display:inline-flex; gap:3px; color:#e6a817; font-size:1.2rem; letter-spacing:2px; }
+            .hw-divider { width:50%; height:1px; background:linear-gradient(90deg,transparent,rgba(139,26,26,0.3),transparent); margin:5px 0 7px; flex-shrink:0; }
+            .hw-issuer { font-size:.68rem; color:rgba(0,0,0,0.6); line-height:1.45; flex:1; }
+            .hw-year { font-size:.72rem; font-weight:700; color:rgba(0,0,0,0.5); margin-top:6px; flex-shrink:0; }
+            .hw-party { display:inline-block; font-size:1rem; margin-right:3px; opacity:.7; }
+            .hw-seal { position:absolute; top:12px; right:10px; font-size:.5rem; color:rgba(180,50,50,0.3); writing-mode:vertical-rl; letter-spacing:2px; border:1.5px solid rgba(180,50,50,0.2); padding:3px 2px; border-radius:3px; }
+            @media(max-width:1200px){.hw-grid{grid-template-columns:repeat(4,1fr);}}
+            @media(max-width:860px){.hw-grid{grid-template-columns:repeat(3,1fr);gap:12px;}.hw-name{font-size:1rem;}.hw-name.sm{font-size:.9rem;}}
+            @media(max-width:560px){.hw-grid{grid-template-columns:repeat(2,1fr);gap:10px;}.hw-medal{min-height:180px;}.hw-name{font-size:.85rem;}}
+          </style>
+          <div class="hw-grid">
+            <div class="hw-medal"><div class="hw-ribbon gold"></div><div class="hw-body"><span class="hw-num">1</span><div class="hw-name">文明村</div><div class="hw-divider"></div><div class="hw-issuer">中共宁波市委<br>宁波市人民政府</div></div></div>
+            <div class="hw-medal"><div class="hw-ribbon green"></div><div class="hw-body"><span class="hw-num">2</span><div class="hw-name sm">宁波市级生态村</div><div class="hw-divider"></div><div class="hw-issuer">宁波市农村建设工作领导小组办公室</div><div class="hw-year">二〇〇七年二月</div></div></div>
+            <div class="hw-medal"><div class="hw-ribbon blue"></div><div class="hw-body"><span class="hw-num">3</span><div class="hw-top">宁波市</div><div class="hw-name">卫生村</div><div class="hw-divider"></div><div class="hw-issuer">宁波市爱国卫生运动委员会</div><div class="hw-year">二〇〇七年十二月</div></div></div>
+            <div class="hw-medal"><div class="hw-ribbon purple"></div><div class="hw-body"><span class="hw-num">4</span><div class="hw-seal">神久文化</div><div class="hw-name sm">宁波市书香文化礼堂</div><div class="hw-divider"></div><div class="hw-issuer">中共宁波市委宣传部<br>宁波市农村文化礼堂建设领导小组办公室</div><div class="hw-year">二〇二〇年十二月</div></div></div>
+            <div class="hw-medal"><div class="hw-ribbon orange"></div><div class="hw-body"><span class="hw-num">5</span><div class="hw-top">宁波市示范型</div><div class="hw-name">儿童之家</div><div class="hw-divider"></div><div class="hw-issuer">宁波市妇女联合会<br>宁波市妇女儿童工作委员会办公室</div><div class="hw-year">二〇二一年二月</div></div></div>
+            <div class="hw-medal"><div class="hw-ribbon teal"></div><div class="hw-body"><span class="hw-num">6</span><div class="hw-name sm">宁波市安居示范村</div><div class="hw-divider"></div><div class="hw-issuer">宁波市住房和城乡建设局</div><div class="hw-year">二〇二二年</div></div></div>
+            <div class="hw-medal"><div class="hw-ribbon red"></div><div class="hw-body"><span class="hw-num">7</span><div class="hw-top">宁波市</div><div class="hw-name sm">新时代文明实践示范站</div><div class="hw-divider"></div><div class="hw-issuer">中共宁波市委宣传部<br>宁波市文明办</div><div class="hw-year">二〇二三年一月</div></div></div>
+            <div class="hw-medal"><div class="hw-ribbon darkred"></div><div class="hw-body"><span class="hw-num">8</span><div class="hw-name" style="display:flex;align-items:center;gap:5px;"><span class="hw-party">☭</span>五星级基层党组织</div><div class="hw-divider"></div><div class="hw-issuer">中共宁波市委组织部</div><div class="hw-year">二〇二三年五月</div></div></div>
+            <div class="hw-medal"><div class="hw-ribbon maroon"></div><div class="hw-body"><span class="hw-num">9</span><div class="hw-seal">神久文化</div><div class="hw-name"><span class="stars">★★★★★</span></div><div class="hw-divider"></div><div class="hw-issuer">中共浙江省委宣传部<br>浙江省农村文化礼堂建设工作领导小组办公室</div><div class="hw-year">二〇二三年四月</div></div></div>
+            <div class="hw-medal"><div class="hw-ribbon navy"></div><div class="hw-body"><span class="hw-num">10</span><div class="hw-top">宁波市民族团结进步创建</div><div class="hw-name sm">重点培育单位</div><div class="hw-divider"></div><div class="hw-issuer">宁波市民族宗教事务局</div><div class="hw-year">二〇二三年十月</div></div></div>
+            <div class="hw-medal"><div class="hw-ribbon brown"></div><div class="hw-body"><span class="hw-num">11</span><div class="hw-top">2023年度返乡入乡合作创业考核</div><div class="hw-name">优秀单位</div><div class="hw-divider"></div><div class="hw-issuer">浙江省人力资源和社会保障厅</div><div class="hw-year">二〇二四年三月</div></div></div>
+            <div class="hw-medal"><div class="hw-ribbon crimson"></div><div class="hw-body"><span class="hw-num">12</span><div class="hw-top">授予：宁海县跃龙街道望府村</div><div class="hw-name sm">宁波市茶文化特色村</div><div class="hw-divider"></div><div class="hw-issuer">宁波市民间文艺家协会</div><div class="hw-year">2024年4月</div></div></div>
+          </div>
         </div>
       </div>
     </section>
@@ -835,6 +885,16 @@
       }).catch(function() {});
     }
   </script>
+
+  <script>
+  function toggleHonorWall() {
+    var el = document.getElementById('hw-content');
+    var icon = document.getElementById('hw-toggle');
+    if (el.style.display === 'none') { el.style.display = 'block'; icon.textContent = '▼'; }
+    else { el.style.display = 'none'; icon.textContent = '▶'; }
+  }
+  </script>
+
     <audio id="bg-music" loop></audio>
 
 </body>
