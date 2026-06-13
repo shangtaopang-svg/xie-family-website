@@ -217,6 +217,33 @@ const MODULES = {
 function getData(module) {
   var key = 'xie_admin_' + module;
   var raw = localStorage.getItem(key);
+
+  // For genealogy, if localStorage data is small (<100), try loading from JSON file
+  if (module === 'genealogy') {
+    var cached = raw ? (function(){ try{return JSON.parse(raw);}catch(e){return null} })() : null;
+    if (cached && cached.length >= 100) return cached;
+
+    // Try synchronous XHR to load full data
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', '../data/genealogy_full.json', false);
+      xhr.overrideMimeType('application/json');
+      xhr.send();
+      if (xhr.status === 200) {
+        var full = JSON.parse(xhr.responseText);
+        if (full && full.length > 100) {
+          localStorage.setItem(key, JSON.stringify(full));
+          return full;
+        }
+      }
+    } catch(e) {}
+
+    if (cached) return cached;
+    var def = (MODULES[module] && MODULES[module].defaultData) || [];
+    localStorage.setItem(key, JSON.stringify(def));
+    return def;
+  }
+
   if (raw) {
     try { return JSON.parse(raw); } catch(e) { return []; }
   }
