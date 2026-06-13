@@ -121,7 +121,121 @@
       </div>
     </section>
 
-    <!-- ============================================ -->
+  <!-- ===== 下枫槎村大事记 · 折叠时间轴 ===== -->
+  <section style="margin-bottom:50px;max-width:860px;margin-left:auto;margin-right:auto;">
+    <div class="section-title" style="cursor:pointer;" onclick="toggleTimeline()">
+      <h2>📜 下枫槎村大事记 <span id="tl-toggle" style="font-size:18px;color:var(--accent-orange);margin-left:6px;">▶</span></h2>
+      <div class="divider"></div>
+      <p>跨越1600年 · 点击展开历代大事</p>
+    </div>
+    <div id="tl-content" style="display:none;">
+      <style>
+        .tl-era { margin-bottom:16px; border-radius:10px; overflow:hidden; border:1px solid var(--glass-border); background:var(--glass-bg); }
+        .tl-era-header { padding:12px 18px; font-weight:600; font-size:15px; cursor:pointer; display:flex; align-items:center; gap:10px; user-select:none; }
+        .tl-era-header .tl-arrow { font-size:12px; transition:transform .2s; color:var(--text-muted); }
+        .tl-era-header.open .tl-arrow { transform:rotate(90deg); }
+        .tl-era-body { display:none; padding:4px 0 8px; }
+        .tl-item { display:flex; gap:16px; padding:10px 18px; border-bottom:1px solid var(--divider); }
+        .tl-item:last-child { border-bottom:none; }
+        .tl-year { flex-shrink:0; width:70px; font-weight:700; font-size:14px; color:var(--accent-orange); text-align:right; padding-top:1px; }
+        .tl-dot { flex-shrink:0; width:10px; height:10px; border-radius:50%; margin-top:5px; position:relative; }
+        .tl-dot::after { content:''; position:absolute; top:10px; left:4px; width:2px; height:60px; background:var(--divider); }
+        .tl-item:last-child .tl-dot::after { display:none; }
+        .tl-desc { flex:1; font-size:13px; color:var(--text-secondary); line-height:1.7; padding-bottom:4px; }
+        .tl-era-tag { font-size:11px; padding:2px 10px; border-radius:4px; font-weight:500; }
+      </style>
+      <div class="tl-era">
+        <div class="tl-era-header" onclick="tlToggle(this)" style="background:linear-gradient(135deg,rgba(180,130,70,0.12),rgba(180,130,70,0.04));">
+          <span class="tl-arrow">▶</span><span>古代 · 晋至明</span>
+          <span class="tl-era-tag" style="background:rgba(180,130,70,0.15);color:#b0823e;">405-1572</span>
+          <span style="font-size:12px;color:var(--text-muted);font-weight:400;">3件</span>
+        </div>
+        <div class="tl-era-body">
+          <div class="tl-item"><div class="tl-year">405年</div><div class="tl-dot" style="background:#b0823e;"></div><div class="tl-desc">晋义熙元年，高僧昙猷自海上乘<strong>枫槎</strong>至一市，弃槎登岸，此岭遂名<strong>枫槎岭</strong>。</div></div>
+          <div class="tl-item"><div class="tl-year">1368-1398</div><div class="tl-dot" style="background:#b0823e;"></div><div class="tl-desc">明洪武年间，<strong>王氏</strong>族人迁居下枫槎，为村中最早居民。</div></div>
+          <div class="tl-item"><div class="tl-year">1572年</div><div class="tl-dot" style="background:#b0823e;"></div><div class="tl-desc">明隆庆六年，谢氏第十六代裔孙<strong>谢彬、谢乾</strong>自岩头下迁居下枫槎开基，谢氏遂成第一大姓。</div></div>
+        </div>
+      </div>
+      <div class="tl-era">
+        <div class="tl-era-header" onclick="tlToggle(this)" style="background:linear-gradient(135deg,rgba(60,100,160,0.12),rgba(60,100,160,0.04));">
+          <span class="tl-arrow">▶</span><span>清代</span>
+          <span class="tl-era-tag" style="background:rgba(60,100,160,0.15);color:#3c64a0;">1662-1911</span>
+          <span style="font-size:12px;color:var(--text-muted);font-weight:400;">3件</span>
+        </div>
+        <div class="tl-era-body">
+          <div class="tl-item"><div class="tl-year">1662-1722</div><div class="tl-dot" style="background:#3c64a0;"></div><div class="tl-desc">清康熙年间，谢氏族人建<strong>谢家宗祠</strong>，堂号"敦睦堂"。</div></div>
+          <div class="tl-item"><div class="tl-year">1728年</div><div class="tl-dot" style="background:#3c64a0;"></div><div class="tl-desc">清雍正六年，下枫槎属<strong>南乡石舌庄</strong>。</div></div>
+          <div class="tl-item"><div class="tl-year">1736-1820</div><div class="tl-dot" style="background:#3c64a0;"></div><div class="tl-desc">清中叶，村民集资建<strong>七殿庙</strong>，主奉玉皇大帝。</div></div>
+        </div>
+      </div>
+      <div class="tl-era">
+        <div class="tl-era-header" onclick="tlToggle(this)" style="background:linear-gradient(135deg,rgba(160,60,60,0.12),rgba(160,60,60,0.04));">
+          <span class="tl-arrow">▶</span><span>民国至解放</span>
+          <span class="tl-era-tag" style="background:rgba(160,60,60,0.15);color:#a03c3c;">1915-1949</span>
+          <span style="font-size:12px;color:var(--text-muted);font-weight:400;">5件</span>
+        </div>
+        <div class="tl-era-body">
+          <div class="tl-item"><div class="tl-year">1915年</div><div class="tl-dot" style="background:#a03c3c;"></div><div class="tl-desc">民国四年，为表彰谢氏英烈<strong>谢学良</strong>在辛亥革命中为国捐躯，颁发<strong>"为国立功"</strong>匾额。</div></div>
+          <div class="tl-item"><div class="tl-year">1932年</div><div class="tl-dot" style="background:#a03c3c;"></div><div class="tl-desc">民国21年，废庄设乡镇，下枫槎属<strong>石兆乡</strong>。</div></div>
+          <div class="tl-item"><div class="tl-year">1945年</div><div class="tl-dot" style="background:#a03c3c;"></div><div class="tl-desc">民国34年6月29日，日寇占领宁海县城，四处劫掠。</div></div>
+          <div class="tl-item"><div class="tl-year">1949年</div><div class="tl-dot" style="background:#a03c3c;"></div><div class="tl-desc">7月5日，解放军攻占宁海，宁海宣告解放。下枫槎属<strong>城关区水车乡</strong>。</div></div>
+        </div>
+      </div>
+      <div class="tl-era">
+        <div class="tl-era-header" onclick="tlToggle(this)" style="background:linear-gradient(135deg,rgba(200,120,50,0.12),rgba(200,120,50,0.04));">
+          <span class="tl-arrow">▶</span><span>建国初期</span>
+          <span class="tl-era-tag" style="background:rgba(200,120,50,0.15);color:#c87832;">1950-1979</span>
+          <span style="font-size:12px;color:var(--text-muted);font-weight:400;">16件</span>
+        </div>
+        <div class="tl-era-body">
+          <div class="tl-item"><div class="tl-year">1950年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">6月成立枫槎村农民协会；8月实施土地改革。</div></div>
+          <div class="tl-item"><div class="tl-year">1951年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">9月建立互助合作组，下枫槎共建两个互助组。</div></div>
+          <div class="tl-item"><div class="tl-year">1956年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">8月建立<strong>下枫槎高级合作社</strong>，社长谢绍艮。</div></div>
+          <div class="tl-item"><div class="tl-year">1958年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">10月撤乡镇建公社，属宁海公社水车管理区。大办食堂吃大锅饭。</div></div>
+          <div class="tl-item"><div class="tl-year">1960年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">以谢行青等为主自发成立<strong>乱弹剧团</strong>，30多位村民参加。</div></div>
+          <div class="tl-item"><div class="tl-year">1965年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">响应农业学大寨，100多劳动力向望府楼荒山进军，建成<strong>标准梯田75亩</strong>。</div></div>
+          <div class="tl-item"><div class="tl-year">1972年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">将旱地约70亩改为水田，实现"山下粮仓"的初步设想。</div></div>
+          <div class="tl-item"><div class="tl-year">1973年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">全村通电，告别洋油灯照明时代。</div></div>
+          <div class="tl-item"><div class="tl-year">1974年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">新建朝阳排水站和外坑头机灌站，解决农田水利灌溉。</div></div>
+          <div class="tl-item"><div class="tl-year">1977年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">集体出资统建<strong>大寨屋</strong>。同年宁海至一市公路开通。</div></div>
+          <div class="tl-item"><div class="tl-year">1979年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">重新调整分配自留地，标准每人0.17斗。</div></div>
+        </div>
+      </div>
+      <div class="tl-era">
+        <div class="tl-era-header" onclick="tlToggle(this)" style="background:linear-gradient(135deg,rgba(60,140,80,0.12),rgba(60,140,80,0.04));">
+          <span class="tl-arrow">▶</span><span>改革开放后</span>
+          <span class="tl-era-tag" style="background:rgba(60,140,80,0.15);color:#3c8c50;">1980-1999</span>
+          <span style="font-size:12px;color:var(--text-muted);font-weight:400;">8件</span>
+        </div>
+        <div class="tl-era-body">
+          <div class="tl-item"><div class="tl-year">1982年</div><div class="tl-dot" style="background:#3c8c50;"></div><div class="tl-desc">将枫槎溪村庄段改坑，坑道外拓30米、总长200米，实现防洪。</div></div>
+          <div class="tl-item"><div class="tl-year">1983年</div><div class="tl-dot" style="background:#3c8c50;"></div><div class="tl-desc">落实<strong>家庭联产承包责任制</strong>，分田到户、分山到户。</div></div>
+          <div class="tl-item"><div class="tl-year">1986年</div><div class="tl-dot" style="background:#3c8c50;"></div><div class="tl-desc">建立村经济合作社，承包责任制调整后15年不变。</div></div>
+          <div class="tl-item"><div class="tl-year">1988年</div><div class="tl-dot" style="background:#3c8c50;"></div><div class="tl-desc"><strong>"7·30"百年不遇特大洪灾</strong>，每户进水5米以上，1人死亡。</div></div>
+          <div class="tl-item"><div class="tl-year">1994年</div><div class="tl-dot" style="background:#3c8c50;"></div><div class="tl-desc">接通自流水，挖沟铺管建造蓄水池，延用至2011年通大水网终止。</div></div>
+          <div class="tl-item"><div class="tl-year">1999年</div><div class="tl-dot" style="background:#3c8c50;"></div><div class="tl-desc">10月完善承包责任制，30年不变。同年所有道路装上<strong>路灯</strong>。</div></div>
+        </div>
+      </div>
+      <div class="tl-era">
+        <div class="tl-era-header" onclick="tlToggle(this)" style="background:linear-gradient(135deg,rgba(100,60,160,0.12),rgba(100,60,160,0.04));">
+          <span class="tl-arrow">▶</span><span>新世纪</span>
+          <span class="tl-era-tag" style="background:rgba(100,60,160,0.15);color:#643ca0;">2000-2019</span>
+          <span style="font-size:12px;color:var(--text-muted);font-weight:400;">12件</span>
+        </div>
+        <div class="tl-era-body">
+          <div class="tl-item"><div class="tl-year">2006年</div><div class="tl-dot" style="background:#643ca0;"></div><div class="tl-desc">村庄内道路全部硬化，路平灯明。</div></div>
+          <div class="tl-item"><div class="tl-year">2007年</div><div class="tl-dot" style="background:#643ca0;"></div><div class="tl-desc">全面绿化，打碎露天粪缸55只、新建公厕5只，环境极大改善。</div></div>
+          <div class="tl-item"><div class="tl-year">2008年</div><div class="tl-dot" style="background:#643ca0;"></div><div class="tl-desc"><strong>枫槎岭隧道</strong>正式通车，联接同三高速，彻底解决交通瓶颈。</div></div>
+          <div class="tl-item"><div class="tl-year">2009年</div><div class="tl-dot" style="background:#643ca0;"></div><div class="tl-desc">全面开展<strong>旧村改造</strong>，拆除危旧房100多间，30户住上联排别墅。</div></div>
+          <div class="tl-item"><div class="tl-year">2010年</div><div class="tl-dot" style="background:#643ca0;"></div><div class="tl-desc">在杉树山投资80万元新建<strong>生态公墓</strong>一处。</div></div>
+          <div class="tl-item"><div class="tl-year">2011年</div><div class="tl-dot" style="background:#643ca0;"></div><div class="tl-desc">投资300万新建标准厂房<strong>3500平方米</strong>，年增收租金50万元。</div></div>
+          <div class="tl-item"><div class="tl-year">2013年</div><div class="tl-dot" style="background:#643ca0;"></div><div class="tl-desc">投资500万元在村后建造<strong>综合楼</strong>一座，成为村中标志性建筑。</div></div>
+          <div class="tl-item"><div class="tl-year">2017年</div><div class="tl-dot" style="background:#643ca0;"></div><div class="tl-desc">接受<strong>联合国资助项目</strong>，全面改造排污管道系统，雨污分离。</div></div>
+          <div class="tl-item"><div class="tl-year">2019年</div><div class="tl-dot" style="background:#643ca0;"></div><div class="tl-desc">投资220万元装修综合楼，创建<strong>文化礼堂</strong>，成为村民精神家园。</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
     <!-- 第二部分：村组织架构                           -->
     <!-- ============================================ -->
@@ -437,133 +551,6 @@
   </div>
 
 </div>
-
-  <!-- ===== 下枫槎村大事记 · 折叠时间轴 ===== -->
-  <section style="margin-bottom:50px;max-width:860px;margin-left:auto;margin-right:auto;">
-    <div class="section-title" style="cursor:pointer;" onclick="toggleTimeline()">
-      <h2>📜 下枫槎村大事记 <span id="tl-toggle" style="font-size:18px;color:var(--accent-orange);margin-left:6px;">▶</span></h2>
-      <div class="divider"></div>
-      <p>跨越1600年 · 点击展开历代大事</p>
-    </div>
-    <div id="tl-content" style="display:none;">
-      <style>
-        .tl-era { margin-bottom:16px; border-radius:10px; overflow:hidden; border:1px solid var(--glass-border); background:var(--glass-bg); }
-        .tl-era-header { padding:12px 18px; font-weight:600; font-size:15px; cursor:pointer; display:flex; align-items:center; gap:10px; user-select:none; }
-        .tl-era-header .tl-arrow { font-size:12px; transition:transform .2s; color:var(--text-muted); }
-        .tl-era-header.open .tl-arrow { transform:rotate(90deg); }
-        .tl-era-body { display:none; padding:4px 0 8px; }
-        .tl-item { display:flex; gap:16px; padding:10px 18px; border-bottom:1px solid var(--divider); }
-        .tl-item:last-child { border-bottom:none; }
-        .tl-year { flex-shrink:0; width:70px; font-weight:700; font-size:14px; color:var(--accent-orange); text-align:right; padding-top:1px; }
-        .tl-dot { flex-shrink:0; width:10px; height:10px; border-radius:50%; margin-top:5px; position:relative; }
-        .tl-dot::after { content:''; position:absolute; top:10px; left:4px; width:2px; height:60px; background:var(--divider); }
-        .tl-item:last-child .tl-dot::after { display:none; }
-        .tl-desc { flex:1; font-size:13px; color:var(--text-secondary); line-height:1.7; padding-bottom:4px; }
-        .tl-era-tag { font-size:11px; padding:2px 10px; border-radius:4px; font-weight:500; }
-      </style>
-      <div class="tl-era">
-        <div class="tl-era-header" onclick="tlToggle(this)" style="background:linear-gradient(135deg,rgba(180,130,70,0.12),rgba(180,130,70,0.04));">
-          <span class="tl-arrow">▶</span>
-          <span>古代 · 晋至明</span>
-          <span class="tl-era-tag" style="background:rgba(180,130,70,0.15);color:#b0823e;">405-1572</span>
-          <span style="font-size:12px;color:var(--text-muted);font-weight:400;">3件</span>
-        </div>
-        <div class="tl-era-body">
-          <div class="tl-item"><div class="tl-year">405年</div><div class="tl-dot" style="background:#b0823e;"></div><div class="tl-desc">晋义熙元年，高僧昙猷自海上乘<strong>枫槎</strong>（枫树独木舟）至一市，弃槎登岸，此岭遂名<strong>枫槎岭</strong>。村名由此而来。</div></div>
-          <div class="tl-item"><div class="tl-year">1368-1398</div><div class="tl-dot" style="background:#b0823e;"></div><div class="tl-desc">明洪武年间，<strong>王氏</strong>族人迁居下枫槎，为村中最早居民。</div></div>
-          <div class="tl-item"><div class="tl-year">1572年</div><div class="tl-dot" style="background:#b0823e;"></div><div class="tl-desc">明隆庆六年，特大洪水。谢氏第十六代裔孙<strong>谢彬、谢乾</strong>自双溪岩头下迁居下枫槎开基筑庐，谢氏遂成村中第一大姓。</div></div>
-        </div>
-      </div>
-
-      <div class="tl-era">
-        <div class="tl-era-header" onclick="tlToggle(this)" style="background:linear-gradient(135deg,rgba(60,100,160,0.12),rgba(60,100,160,0.04));">
-          <span class="tl-arrow">▶</span>
-          <span>清代</span>
-          <span class="tl-era-tag" style="background:rgba(60,100,160,0.15);color:#3c64a0;">1662-1911</span>
-          <span style="font-size:12px;color:var(--text-muted);font-weight:400;">3件</span>
-        </div>
-        <div class="tl-era-body">
-          <div class="tl-item"><div class="tl-year">1662-1722</div><div class="tl-dot" style="background:#3c64a0;"></div><div class="tl-desc">清康熙年间，谢氏族人建<strong>谢家宗祠</strong>，堂号"敦睦堂"。</div></div>
-          <div class="tl-item"><div class="tl-year">1728年</div><div class="tl-dot" style="background:#3c64a0;"></div><div class="tl-desc">清雍正六年，清政府置乡庄，下枫槎属<strong>南乡石舌庄</strong>。</div></div>
-          <div class="tl-item"><div class="tl-year">1736-1820</div><div class="tl-dot" style="background:#3c64a0;"></div><div class="tl-desc">清中叶，村民集资建<strong>七殿庙</strong>，主奉玉皇大帝。</div></div>
-        </div>
-      </div>
-
-      <div class="tl-era">
-        <div class="tl-era-header" onclick="tlToggle(this)" style="background:linear-gradient(135deg,rgba(160,60,60,0.12),rgba(160,60,60,0.04));">
-          <span class="tl-arrow">▶</span>
-          <span>民国至解放</span>
-          <span class="tl-era-tag" style="background:rgba(160,60,60,0.15);color:#a03c3c;">1915-1949</span>
-          <span style="font-size:12px;color:var(--text-muted);font-weight:400;">5件</span>
-        </div>
-        <div class="tl-era-body">
-          <div class="tl-item"><div class="tl-year">1915年</div><div class="tl-dot" style="background:#a03c3c;"></div><div class="tl-desc">民国四年，为表彰谢氏英烈<strong>谢学良</strong>在辛亥革命中为国捐躯，叶颂清题字颁发<strong>"为国立功"</strong>匾额。</div></div>
-          <div class="tl-item"><div class="tl-year">1932年</div><div class="tl-dot" style="background:#a03c3c;"></div><div class="tl-desc">民国21年，废庄设乡镇，下枫槎属<strong>石兆乡</strong>。</div></div>
-          <div class="tl-item"><div class="tl-year">1945年</div><div class="tl-dot" style="background:#a03c3c;"></div><div class="tl-desc">民国34年6月29日，日寇占领宁海县城，四处劫掠，村民风声鹤唳。</div></div>
-          <div class="tl-item"><div class="tl-year">1949年</div><div class="tl-dot" style="background:#a03c3c;"></div><div class="tl-desc">7月5日，中国人民解放军21军61师攻占宁海，宁海宣告解放。下枫槎属<strong>城关区水车乡</strong>。</div></div>
-        </div>
-      </div>
-
-      <div class="tl-era">
-        <div class="tl-era-header" onclick="tlToggle(this)" style="background:linear-gradient(135deg,rgba(200,120,50,0.12),rgba(200,120,50,0.04));">
-          <span class="tl-arrow">▶</span>
-          <span>建国初期</span>
-          <span class="tl-era-tag" style="background:rgba(200,120,50,0.15);color:#c87832;">1950-1979</span>
-          <span style="font-size:12px;color:var(--text-muted);font-weight:400;">16件</span>
-        </div>
-        <div class="tl-era-body">
-          <div class="tl-item"><div class="tl-year">1950年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">6月成立枫槎村农民协会；8月实施土地改革，没收大户土地分配给无地少地农民。</div></div>
-          <div class="tl-item"><div class="tl-year">1951年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">9月建立互助合作组，下枫槎共建两个互助组。</div></div>
-          <div class="tl-item"><div class="tl-year">1956年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">8月，两个互助组合并，建立<strong>下枫槎高级合作社</strong>，社长谢绍艮。</div></div>
-          <div class="tl-item"><div class="tl-year">1958年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">10月撤乡镇建公社，属宁海公社水车管理区。大办食堂吃大锅饭，全村只有一处大灶头。</div></div>
-          <div class="tl-item"><div class="tl-year">1960年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">以谢行青等为主自发成立<strong>乱弹剧团</strong>，30多位村民参加，演出《征东传》等高腔乱弹剧目。</div></div>
-          <div class="tl-item"><div class="tl-year">1965年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">响应农业学大寨，100多劳动力向望府楼鸡头岩荒山进军，建成<strong>标准水平梯田75亩</strong>。</div></div>
-          <div class="tl-item"><div class="tl-year">1972年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">将旱地约70亩改为水田，实现"山下粮仓"的初步设想。</div></div>
-          <div class="tl-item"><div class="tl-year">1973年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">全村通电，告别洋油灯照明时代。</div></div>
-          <div class="tl-item"><div class="tl-year">1974年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">新建朝阳排水站和外坑头机灌站，解决农田水利灌溉。</div></div>
-          <div class="tl-item"><div class="tl-year">1977年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">集体出资统建<strong>大寨屋</strong>，解决住房困难。同年宁海至一市公路开通，枫槎岭作用遂减。</div></div>
-          <div class="tl-item"><div class="tl-year">1979年</div><div class="tl-dot" style="background:#c87832;"></div><div class="tl-desc">重新调整分配自留地，标准每人0.17斗。</div></div>
-        </div>
-      </div>
-
-      <div class="tl-era">
-        <div class="tl-era-header" onclick="tlToggle(this)" style="background:linear-gradient(135deg,rgba(60,140,80,0.12),rgba(60,140,80,0.04));">
-          <span class="tl-arrow">▶</span>
-          <span>改革开放后</span>
-          <span class="tl-era-tag" style="background:rgba(60,140,80,0.15);color:#3c8c50;">1980-1999</span>
-          <span style="font-size:12px;color:var(--text-muted);font-weight:400;">8件</span>
-        </div>
-        <div class="tl-era-body">
-          <div class="tl-item"><div class="tl-year">1982年</div><div class="tl-dot" style="background:#3c8c50;"></div><div class="tl-desc">将枫槎溪村庄段改坑，坑道向外拓展30米、总长200米，实现防洪抗洪。</div></div>
-          <div class="tl-item"><div class="tl-year">1983年</div><div class="tl-dot" style="background:#3c8c50;"></div><div class="tl-desc">落实<strong>家庭联产承包责任制</strong>，分田到户、分山到户。自留山每人0.3分，长期不变。</div></div>
-          <div class="tl-item"><div class="tl-year">1986年</div><div class="tl-dot" style="background:#3c8c50;"></div><div class="tl-desc">建立村经济合作社，第二次联产承包责任制调整，15年不变。</div></div>
-          <div class="tl-item"><div class="tl-year">1988年</div><div class="tl-dot" style="background:#3c8c50;"></div><div class="tl-desc"><strong>"7·30"百年不遇特大洪灾</strong>，每户进水5米以上，1人死亡，农田全部被淹。</div></div>
-          <div class="tl-item"><div class="tl-year">1994年</div><div class="tl-dot" style="background:#3c8c50;"></div><div class="tl-desc">接通自流水，村民自找山泉、挖沟铺管、建造蓄水池。延用至2011年通大水网终止。</div></div>
-          <div class="tl-item"><div class="tl-year">1999年</div><div class="tl-dot" style="background:#3c8c50;"></div><div class="tl-desc">10月再次完善联产承包责任制，30年不变。同年所有道路装上<strong>路灯</strong>。</div></div>
-        </div>
-      </div>
-
-      <div class="tl-era">
-        <div class="tl-era-header" onclick="tlToggle(this)" style="background:linear-gradient(135deg,rgba(100,60,160,0.12),rgba(100,60,160,0.04));">
-          <span class="tl-arrow">▶</span>
-          <span>新世纪</span>
-          <span class="tl-era-tag" style="background:rgba(100,60,160,0.15);color:#643ca0;">2000-2019</span>
-          <span style="font-size:12px;color:var(--text-muted);font-weight:400;">12件</span>
-        </div>
-        <div class="tl-era-body">
-          <div class="tl-item"><div class="tl-year">2006年</div><div class="tl-dot" style="background:#643ca0;"></div><div class="tl-desc">村庄内道路全部硬化，路平灯明。</div></div>
-          <div class="tl-item"><div class="tl-year">2007年</div><div class="tl-dot" style="background:#643ca0;"></div><div class="tl-desc">全面绿化，打碎平整露天粪缸55只、新建公厕5只，环境极大改善。</div></div>
-          <div class="tl-item"><div class="tl-year">2008年</div><div class="tl-dot" style="background:#643ca0;"></div><div class="tl-desc"><strong>枫槎岭隧道</strong>正式通车，联接同三高速，彻底解决城乡交通瓶颈。</div></div>
-          <div class="tl-item"><div class="tl-year">2009年</div><div class="tl-dot" style="background:#643ca0;"></div><div class="tl-desc">全面开展<strong>旧村改造</strong>，拆除危旧房屋100多间，30户住上联排别墅。完成灯光球场和村内公园。</div></div>
-          <div class="tl-item"><div class="tl-year">2010年</div><div class="tl-dot" style="background:#643ca0;"></div><div class="tl-desc">在杉树山投资80万元新建<strong>生态公墓</strong>一处。</div></div>
-          <div class="tl-item"><div class="tl-year">2011年</div><div class="tl-dot" style="background:#643ca0;"></div><div class="tl-desc">投资300万新建标准厂房<strong>3500平方米</strong>，出租后年增收租金50万元。</div></div>
-          <div class="tl-item"><div class="tl-year">2013年</div><div class="tl-dot" style="background:#643ca0;"></div><div class="tl-desc">投资500万元在村后建造<strong>综合楼</strong>一座，成为村中标志性建筑。</div></div>
-          <div class="tl-item"><div class="tl-year">2017年</div><div class="tl-dot" style="background:#643ca0;"></div><div class="tl-desc">接受<strong>联合国资助项目</strong>，全面改造排污管道系统，实现雨污分离，新建排污站终端。</div></div>
-          <div class="tl-item"><div class="tl-year">2019年</div><div class="tl-dot" style="background:#643ca0;"></div><div class="tl-desc">投资220万元装修综合楼内部，同时创建<strong>文化礼堂</strong>，使之成为村民精神家园。</div></div>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <footer class="site-footer">
     <div class="footer-inner">
