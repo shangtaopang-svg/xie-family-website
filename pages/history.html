@@ -89,11 +89,12 @@
 
     <!-- 下枫槎谢氏宗源记 -->
     <section id="zongyuan" class="float-in" style="margin-bottom:50px;">
-      <div class="section-title">
-        <h2>下枫槎谢氏宗源记</h2>
+      <div class="section-title" style="cursor:pointer;" onclick="toggleZongyuan()">
+        <h2>下枫槎谢氏宗源记 <span id="zy-toggle-icon" style="font-size:18px;color:var(--accent-orange);">▶</span></h2>
         <div class="divider"></div>
+        <p>点击展开阅读全文</p>
       </div>
-      <div class="glass-card" style="padding:36px;border-left:3px solid var(--accent-orange);background:var(--glass-bg);">
+      <div id="zy-content" class="glass-card" style="padding:36px;border-left:3px solid var(--accent-orange);background:var(--glass-bg);display:none;">
         <div style="max-width:720px;margin:0 auto;font-family:'Noto Serif SC',serif;font-size:15px;line-height:2.2;color:var(--text-secondary);text-align:justify;">
 
           <p style="margin-bottom:1.6em;">盖闻木有本而枝叶茂，水有源而流派长。吾谢氏之先，出自姬姓。周宣王封元舅申伯于谢邑，因以国为氏，至今两千八百余载矣。自申伯受封，历代相承，或显于周秦，或盛于汉魏。至东晋时，文靖公谢安、康乐公谢玄叔侄，以八万北府之师破苻坚百万之众于淝水，拯社稷于将倾。一门数公，位极人臣，与琅琊王氏并称&ldquo;王谢&rdquo;，为天下望族之冠。此吾族千载之荣光也。</p>
@@ -888,6 +889,12 @@
   <script defer src="../js/main.js?v=9"></script>
   <script>
     // bg-canvas removed
+    function toggleZongyuan() {
+      var el = document.getElementById('zy-content');
+      var icon = document.getElementById('zy-toggle-icon');
+      if (el.style.display === 'none') { el.style.display = 'block'; icon.textContent = '▼'; }
+      else { el.style.display = 'none'; icon.textContent = '▶'; }
+    }
   </script>
   <audio id="bg-music" loop></audio>
 
