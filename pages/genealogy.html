@@ -273,7 +273,10 @@
       </div>
 
 <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-generation-chart">
-  <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:12px;font-size:17px;font-weight:500;">石马枫槎世系行第对照表</h3>
+  <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:12px;font-size:17px;font-weight:500;cursor:pointer;" onclick="toggleGenChart()">
+    石马枫槎世系行第对照表 <span id="gen-chart-toggle" style="font-size:16px;color:var(--accent-orange);">▶</span>
+  </h3>
+  <div id="gen-chart-content" style="display:none;">
   <div style="overflow-x:auto;">
   <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:450px;">
     <thead>
@@ -2551,6 +2554,13 @@ function exitTreeFullscreen() {
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') exitTreeFullscreen();
 });
+
+function toggleGenChart() {
+  var el = document.getElementById('gen-chart-content');
+  var icon = document.getElementById('gen-chart-toggle');
+  if (el.style.display === 'none') { el.style.display = 'block'; icon.textContent = '▼'; }
+  else { el.style.display = 'none'; icon.textContent = '▶'; }
+}
 </script>
   <audio id="bg-music" loop></audio>
 
