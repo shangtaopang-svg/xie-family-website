@@ -739,10 +739,11 @@
       // ===== Section 3: 始宁东山世系（完整树状，含所有旁支兄弟） =====
       function renderDongshanTree()  {
         if (!DATA) { document.getElementById('tree-dongshan').innerHTML = '<div style="padding:20px;color:var(--text-tertiary);">暂无数据</div>'; return; }
-        var gYD = [99,100,101,101,101,102,102,102,102,102,102,102,103,103,104,104,104,105,106,107,107,107,107,107,108,109,109,110,110,110,111,111,112,112,113,113,114,115,115,115,116,117,117,118,119,120,121,121,122];
-        var gSB = [1,2,3,3,3,4,4,4,4,4,4,4,5,5,6,6,6,7,8,9,9,9,9,9,10,11,11,12,12,12,13,13,14,14,15,15,16,17,17,17,18,19,19,20,21,22,23,23,24];
-        var nms = ['缵','衡','鲲','裒','广','奕','据','安','万','淮','石','铁','瑶','琰','肇','峻','混','密','庄','飏','胜','灏','丛','沦','览','琢','侨','琂','琬','琉','峤','植','钝','缪','修','豹','恺','骢','驼','绰','式','革','造','直','是温','翳','静','观','闓'];
-        var nts = ['东山第一世','会稽东山始祖','衡之子','衡之子，谢安之父','衡之子','裒之子','裒之子','湍水之战名相','裒之子','裒之子','裒之子','裒之子','安之子','安之子','琰之子','琰之子','琰之子','混之子','密之子','庄之子','庄之子','庄之子','庄之子','庄之子','飏之子','览之子','览之子','琢之子','琢之子','琢之子','琂之子','琂之子','植之子','植之子','钝之子','钝之子','修之子','恺之子','恺之子','恺之子','绰之子','式之子','式之子','造之子','直之子','是温之子','翳之子','翳之子','观之子/临海下渡第一世'];
+        var gYD = [99,100,100,100,100,101,101,101,101,101,101,101,102,102,103,103,103,104,105,106,106,106,106,106,107,108,108,109,109,109,110,110,111,111,112,112,113,114,114,114,115,116,116,117,118,119,120,120,121];
+        var gSB = [35,36,37,37,37,38,38,38,38,38,38,38,39,39,40,40,40,41,42,43,43,43,43,43,44,45,45,46,46,46,47,47,48,48,49,49,50,51,51,51,52,53,53,54,55,56,57,57,58];
+        var gDS = [1,2,3,3,3,4,4,4,4,4,4,4,5,5,6,6,6,7,8,9,9,9,9,9,10,11,11,12,12,12,13,13,14,14,15,15,16,17,17,17,18,19,19,20,21,22,23,23,24];
+                var nms = ['缵','衡','鲲','裒','广','奕','据','安','万','淮','石','铁','瑶','琰','肇','峻','混','密','庄','飏','胜','灏','丛','沦','览','琢','侨','琂','琬','琉','峤','植','钝','缪','修','豹','恺','骢','驼','绰','式','革','造','直','是温','翳','静','观','闓'];
+        var nts = ['东山第一世','会稽东山始祖','衡之子','衡之子，谢安之父','衡之子','裒之子','裒之子','淝水之战名相','裒之子','裒之子','裒之子','裒之子','安之子','安之子','琰之子','琰之子','琰之子','混之子','密之子','庄之子','庄之子','庄之子','庄之子','庄之子','飏之子','览之子','览之子','琢之子','琢之子','琢之子','琂之子','琂之子','植之子','植之子','钝之子','钝之子','修之子','恺之子','恺之子','恺之子','绰之子','式之子','式之子','造之子','直之子','是温之子','翳之子','翳之子','观之子/临海下渡第一世'];
         var html = renderChainTable(gYD, gSB, nms, nts);
         document.getElementById('tree-dongshan').innerHTML = html;
       }
@@ -762,6 +763,7 @@
             html += '<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--accent-orange);background:rgba(251,146,60,0.1);cursor:pointer;">';
             html += '<div style="display:flex;flex-direction:column;align-items:center;gap:1px;min-width:36px;">';
             html += '<span style="font-size:10px;font-weight:600;color:var(--accent-orange);">炎' + gYD[i] + '世</span>';
+            if (gDS) html += '<span style="font-size:9px;color:var(--text-tertiary);">东' + gDS[i] + '世</span>';
             html += '<span style="font-size:10px;color:var(--text-tertiary);">申' + gSB[i] + '世</span>';
             html += '</div>';
             html += '<div style="flex:1;"><div style="font-weight:700;font-size:14px;color:var(--text-primary);">' + esc(nms[i]) + '</div>';
@@ -771,6 +773,7 @@
             html += '<div style="display:flex;align-items:flex-start;gap:8px;padding:4px 12px;border-radius:6px;border:1.5px solid var(--accent-orange);background:rgba(251,146,60,0.06);cursor:pointer;margin-top:2px;">';
             html += '<div style="display:flex;flex-direction:column;align-items:center;gap:1px;min-width:36px;">';
             html += '<span style="font-size:10px;font-weight:600;color:var(--accent-orange);">炎' + gYD[i] + '世</span>';
+            if (gDS) html += '<span style="font-size:9px;color:var(--text-tertiary);">东' + gDS[i] + '世</span>';
             html += '<span style="font-size:10px;color:var(--text-tertiary);">申' + gSB[i] + '世</span>';
             html += '</div>';
             html += '<div style="flex:1;"><div style="font-weight:600;font-size:13px;color:var(--text-primary);">' + esc(nms[i]) + ' <span style="font-size:9px;color:var(--accent-orange);font-weight:400;">&#9650;直系</span></div>';
