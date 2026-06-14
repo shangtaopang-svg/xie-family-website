@@ -903,10 +903,9 @@ function renderGenealogy(area) {
   data = data.filter(function(p) {
     if (p.name === '文杲' || p.name === '文杲公') return true;
     if (ancientNames[p.name]) return false;
-    // Also filter storage names with suffix like "小四(石马)"
-    for (var an in ancientNames) {
-      if (p.name.indexOf(an) >= 0) return false;
-    }
+    // Remove suffix variants like "小四(石马)" where base name matches
+    var base = p.name.replace(/\(.*\)$/, '');
+    if (base !== p.name && ancientNames[base]) return false;
     return true;
   });
   var allData = data.concat(ancient);
@@ -3216,7 +3215,8 @@ function renderGenealogyTree() {
   data2 = data2.filter(function(p) {
     if (p.name === '文杲' || p.name === '文杲公') return true;
     if (an2[p.name]) return false;
-    for (var an in an2) { if (p.name.indexOf(an) >= 0) return false; }
+    var base = p.name.replace(/\(.*\)$/, '');
+    if (base !== p.name && an2[base]) return false;
     return true;
   });
   var allData = data2.concat(ancient2);
