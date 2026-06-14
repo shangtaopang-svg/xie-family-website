@@ -1226,7 +1226,11 @@ function renderGenealogy(area) {
   html += '<p style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;line-height:1.6;">小四公：炎帝第129世／申伯第66世／东山第32世／临海下渡第9世／石马（下谢）第1世。自小四公开派，衍生丹一、丹二、丹三三房，其后文杲公迁居宁海岩下为枫槎始迁祖，文榘公一派为东门桃源陈氏之祖。</p>';
   html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
   html += '<thead><tr style="background:rgba(240,180,80,0.1);">';
-  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;width:40px;">世</th>';
+  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;width:35px;">炎帝世</th>';
+  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;width:35px;">申伯世</th>';
+  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;width:35px;">东山世</th>';
+  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;width:35px;">临海世</th>';
+  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;width:35px;">石马世</th>';
   html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;">人物</th>';
   html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;">说明</th>';
   html += '</tr></thead><tbody>';
@@ -1249,8 +1253,13 @@ function renderGenealogy(area) {
     var srow = shima_list[si];
     var isRoot = (si === 0);
     var isWenGao = (srow[1] === '文杲');
+    var yd = 129 + srow[0] - 1, sb = 66 + srow[0] - 1, ds = 32 + srow[0] - 1, lx = 9 + srow[0] - 1;
     html += '<tr>';
-    html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;font-size:10px;color:var(--text-tertiary);' + (isRoot?'font-weight:700;color:#d4a037;':'') + '">' + srow[0] + '</td>';
+    html += '<td style="padding:3px 5px;border:1px solid var(--glass-border);text-align:center;font-size:10px;color:var(--text-tertiary);' + (isRoot?'font-weight:700;color:#d4a037;':'') + '">' + yd + '</td>';
+    html += '<td style="padding:3px 5px;border:1px solid var(--glass-border);text-align:center;font-size:10px;color:var(--text-tertiary);">' + sb + '</td>';
+    html += '<td style="padding:3px 5px;border:1px solid var(--glass-border);text-align:center;font-size:10px;color:var(--text-tertiary);">' + ds + '</td>';
+    html += '<td style="padding:3px 5px;border:1px solid var(--glass-border);text-align:center;font-size:10px;color:var(--text-tertiary);">' + lx + '</td>';
+    html += '<td style="padding:3px 5px;border:1px solid var(--glass-border);text-align:center;font-weight:600;font-size:10px;color:#d4a037;">' + srow[0] + '</td>';
     html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;font-size:11px;' + (isWenGao?'font-weight:700;color:var(--accent-orange);':'') + '">' + srow[1] + '</td>';
     html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;color:var(--text-tertiary);font-size:10px;">' + srow[2] + '</td>';
     html += '</tr>';
