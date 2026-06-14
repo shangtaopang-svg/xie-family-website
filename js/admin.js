@@ -3606,7 +3606,7 @@ function getShimaData() { return _rawToData(_SHIMA_RAW, 40000, '石马分房'); 
 function _ancientRawToData(raw) {
   // raw format: [gen, name, note, parentName] → convert to proper objects
   var nameToId = {}, data = [];
-  for (var i = 0; i < raw.length; i++) nameToId[raw[i][1]] = 50000 + i;
+  for (var i = 0; i < raw.length; i++) { if (!nameToId[raw[i][1]]) nameToId[raw[i][1]] = 50000 + i; }
   for (var i = 0; i < raw.length; i++) {
     var r = raw[i], pid = 50000 + i;
     data.push({
