@@ -570,7 +570,7 @@
 
       <!-- ===== Section 1: 远古世系 ===== -->
       <div class="lineage-section">
-        <div class="lineage-header" onclick="toggleLineage(this,'body-ancient')">
+        <div class="lineage-header" onclick="toggleLineageSection(this,'body-ancient')">
           <span class="icon">🏛️</span>
           <h3>远古世系 <small style="font-weight:400;font-size:13px;color:var(--text-tertiary);">炎帝 → 申伯</small></h3>
           <span class="toggle-icon">▼</span>
@@ -587,7 +587,7 @@
 
       <!-- ===== Section 2: 申伯世系 ===== -->
       <div class="lineage-section">
-        <div class="lineage-header" onclick="toggleLineage(this,'body-shenbo')">
+        <div class="lineage-header" onclick="toggleLineageSection(this,'body-shenbo')">
           <span class="icon">🏛️</span>
           <h3>申伯世系 <small style="font-weight:400;font-size:13px;color:var(--text-tertiary);">申伯 → 缵 → 衡</small></h3>
           <span class="toggle-icon">▼</span>
@@ -604,7 +604,7 @@
 
       <!-- ===== Section 3: 始宁东山世系 ===== -->
       <div class="lineage-section">
-        <div class="lineage-header" onclick="toggleLineage(this,'body-dongshan')">
+        <div class="lineage-header" onclick="toggleLineageSection(this,'body-dongshan')">
           <span class="icon">🏛️</span>
           <h3>始宁东山世系 <small style="font-weight:400;font-size:13px;color:var(--text-tertiary);">缵 → 闓 → 临海下渡</small></h3>
           <span class="toggle-icon">▼</span>
@@ -889,7 +889,7 @@ function renderChain(ids) {
     })();
 
     // ===== Toggle section =====
-    function toggleLineage(header, bodyId) {
+    function toggleLineageSection(header, bodyId) {
       var body = document.getElementById(bodyId);
       if (!body) return;
       header.classList.toggle('open');
