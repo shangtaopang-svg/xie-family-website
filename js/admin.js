@@ -1279,13 +1279,21 @@ function renderGenealogy(area) {
   html += '</div></div>';
   html += '</div></div>';
 
+  // ===== 全部世代总览 =====
+  html += '<div style="margin-top:30px;padding:16px 18px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:10px;">';
+  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">';
+  html += '<span style="font-size:16px;">📋</span>';
+  html += '<span style="font-size:14px;font-weight:600;color:var(--text-primary);">全部世代总览</span>';
+  html += '<span style="font-size:11px;color:var(--text-tertiary);">— 完整族谱树 · 编辑管理</span>';
+  html += '</div>';
+
   // Split layout: left = tree, right = table
   html += '<div class="apt-split">';
 
   // ===== LEFT: Tree =====
   html += '<div class="apt-left">';
   html += '<div class="apt-tree-filters">';
-  html += '<select id="tree-filter-gen" onchange="renderGenealogyTree()"><option value="">全部世代</option>';
+  html += '<select id="tree-filter-gen" onchange="renderGenealogyTree()"><option value="">世代筛选（全部）</option>';
   for (var g = 1; g <= 150; g++) {
     if (gens[g]) html += '<option value="' + g + '">' + g + '世 (' + gens[g] + '人)</option>';
   }
@@ -1346,6 +1354,7 @@ function renderGenealogy(area) {
   html += '</tbody></table></div>'; // close table, table-wrap
   html += '</div>'; // close apt-right
   html += '</div>'; // close apt-split
+  html += '</div>'; // close 全部世代总览 container
   html += '</div>'; // close admin-module
 
   // CSS for admin tree
