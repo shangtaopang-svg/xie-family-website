@@ -1387,8 +1387,8 @@ function renderGenealogy(area) {
     '.apt-spouse{font-size:10px;color:var(--text-tertiary);margin-top:2px;opacity:0.7;}' +
     '.apt-mother{font-size:10px;color:#8b5cf6;margin-top:2px;opacity:0.6;}' +
     '.apt-connector{width:2px;height:18px;background:var(--accent-orange);opacity:0.2;margin:0 auto;}' +
-    '.apt-children{display:flex;gap:24px;position:relative;justify-content:center;}' +
-    '.apt-hline{position:absolute;top:0;left:20px;right:20px;height:2px;background:var(--accent-orange);opacity:0.15;}' +
+    '.apt-children{display:flex;gap:6px;position:relative;justify-content:center;}' +
+    '.apt-hline{position:absolute;top:0;left:6px;right:6px;height:2px;background:var(--accent-orange);opacity:0.15;}' +
     '.apt-child{display:flex;flex-direction:column;align-items:center;position:relative;}' +
     '.apt-vline{width:2px;height:12px;background:var(--accent-orange);opacity:0.15;}' +
     '.apt-children-wrap{display:block;}' +
