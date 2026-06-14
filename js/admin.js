@@ -3411,10 +3411,12 @@ function initShenboTreePanZoom() {
   var vp = document.getElementById('shenbo-tree-viewport');
   if (!vp || vp.dataset.sbInit) return;
   vp.dataset.sbInit = '1';
-  var tree = vp.querySelector('.apt-tree');
-  if (!tree) return;
+
+  function getTree() { return vp.querySelector('.apt-tree'); }
 
   function apply() {
+    var tree = getTree();
+    if (!tree) return;
     tree.style.transform = 'translate(' + _sbPanX + 'px, ' + _sbPanY + 'px) scale(' + _sbZoom + ')';
     var el = document.getElementById('sb-zoom-level');
     if (el) el.textContent = Math.round(_sbZoom * 100) + '%';
@@ -3459,8 +3461,10 @@ function initShenboTreePanZoom() {
     }
   });
 
-  // Fit to viewport initially
-  setTimeout(function() {
+  // Fit to viewport once tree is visible
+  function fitWhenReady() {
+    var tree = getTree();
+    if (!tree) { setTimeout(fitWhenReady, 200); return; }
     var vpr = vp.getBoundingClientRect();
     var tr = tree.getBoundingClientRect();
     var scaleX = vpr.width / (tr.width || 1);
@@ -3470,7 +3474,8 @@ function initShenboTreePanZoom() {
     _sbPanX = Math.max(0, (vpr.width - tr.width * _sbZoom) / 2);
     _sbPanY = 10;
     apply();
-  }, 100);
+  }
+  setTimeout(fitWhenReady, 300);
 }
 
 window.zoomShenboTree = function(factor) {
