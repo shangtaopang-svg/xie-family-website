@@ -885,18 +885,8 @@ function renderGenealogy(area) {
   var data = getData('genealogy');
   data.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0); });
 
-  // Merge complete ancient lineage data (炎帝→秀驹) with stored genealogy data
-  var ancient = getAllAncientData();
-  // Remove stored versions of ancient persons to avoid duplicates
-  var ancientNames = {};
-  for (var ai = 0; ai < ancient.length; ai++) ancientNames[ancient[ai].name] = true;
-  data = data.filter(function(p) {
-    if (ancientNames[p.name]) return false;
-    var base = p.name.replace(/\(.*\)$/, '');
-    if (base !== p.name && ancientNames[base]) return false;
-    return true;
-  });
-  var allData = data.concat(ancient);
+  // 全部世代总览使用5个正确世系区块的数据（炎帝→秀驹），不混合存储数据
+  var allData = getAllAncientData();
   allData.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0); });
 
   var gens = {};
@@ -3187,17 +3177,7 @@ function toggleTreeNode(btn) {
 function renderGenealogyTree() {
   var treeEl = document.getElementById('admin-genealogy-tree');
   if (!treeEl) return;
-  var data2 = getData('genealogy');
-  var ancient2 = getAllAncientData();
-  var an2 = {};
-  for (var a2 = 0; a2 < ancient2.length; a2++) an2[ancient2[a2].name] = true;
-  data2 = data2.filter(function(p) {
-    if (an2[p.name]) return false;
-    var base = p.name.replace(/\(.*\)$/, '');
-    if (base !== p.name && an2[base]) return false;
-    return true;
-  });
-  var allData = data2.concat(ancient2);
+  var allData = getAllAncientData();
   var genFilter = document.getElementById('tree-filter-gen');
   var filtered = allData;
   if (genFilter && genFilter.value) {
