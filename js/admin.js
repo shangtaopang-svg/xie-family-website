@@ -1140,18 +1140,26 @@ function renderGenealogy(area) {
   html += '</div>';
   html += '<div class="dongshan-tree-viewport" id="dongshan-tree-viewport" style="overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-secondary);min-height:280px;">';
   html += buildAdminDongshanTree();
-  html += '</div></div>';
-  // 临海下渡世系子表
-  html += '<div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(33,150,243,0.2);">';
-  html += '<div style="font-size:12px;font-weight:600;color:#643ca0;margin-bottom:8px;">📍 临海下渡世系</div>';
+  html += '</div></div>';  // close Dongshan tree viewport + controls
+  html += '</div></div>';  // close Dongshan collapsible body + container
+
+  // 临海下渡世系折叠表
+  html += '<div style="margin:16px 0;padding:14px 18px;background:rgba(100,60,160,0.06);border-radius:10px;border:1px solid rgba(100,60,160,0.12);">';
+  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;" onclick="var n=this.nextElementSibling;n.style.display=n.style.display==\'none\'?\'block\':\'none\'">';
+  html += '<span style="font-size:14px;">🏛️</span>';
+  html += '<span style="font-size:13px;font-weight:600;color:var(--text-primary);">临海下渡世系（闓→小四）</span>';
+  html += '<span style="font-size:11px;color:var(--text-muted);">点击展开/收起</span>';
+  html += '</div>';
+  html += '<div style="display:none;">';
+  html += '<p style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;line-height:1.6;">自闓公（临海下渡第一世）传至小四公（石马始祖），石马（下谢）小四公乃文杲公（枫槎始迁祖）之直系渊源。</p>';
   html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
-  html += '<thead><tr style="background:rgba(100,60,160,0.08);">';
-  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;width:40px;">炎帝世</th>';
-  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;width:40px;">申伯世</th>';
-  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;width:40px;">东山世</th>';
-  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;width:40px;">临海世</th>';
-  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;">人物</th>';
-  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;">说明</th>';
+  html += '<thead><tr style="background:rgba(100,60,160,0.1);">';
+  html += '<th style="padding:6px 8px;border:1px solid var(--glass-border);text-align:center;width:40px;">炎帝世</th>';
+  html += '<th style="padding:6px 8px;border:1px solid var(--glass-border);text-align:center;width:40px;">申伯世</th>';
+  html += '<th style="padding:6px 8px;border:1px solid var(--glass-border);text-align:center;width:40px;">东山世</th>';
+  html += '<th style="padding:6px 8px;border:1px solid var(--glass-border);text-align:center;width:40px;">临海世</th>';
+  html += '<th style="padding:6px 8px;border:1px solid var(--glass-border);text-align:center;">人物</th>';
+  html += '<th style="padding:6px 8px;border:1px solid var(--glass-border);text-align:center;">说明</th>';
   html += '</tr></thead><tbody>';
   var linhai_list = [
     [121,58,24,1,'闓','观之子/临海下渡第一世'],
@@ -1191,7 +1199,7 @@ function renderGenealogy(area) {
     html += '</tr>';
   }
   html += '</tbody></table>';
-  // 临海下渡·树状图
+  // 树状图
   html += '<div style="margin-top:8px;border:1px solid rgba(100,60,160,0.08);border-radius:8px;padding:6px;">';
   html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">';
   html += '<span style="font-size:10px;color:var(--text-tertiary);">🖱️ 拖拽平移 · 滚轮缩放</span><span style="flex:1;"></span>';
@@ -1204,7 +1212,7 @@ function renderGenealogy(area) {
   html += buildAdminLinhaiTree();
   html += '</div></div>';
   html += '<div style="margin-top:6px;font-size:10px;color:var(--text-tertiary);text-align:right;">石马（下谢）始祖小四公 → 文杲公（枫槎谢氏始迁祖）</div>';
-  html += '</div></div></div>';
+  html += '</div></div>';
 
   // Split layout: left = tree, right = table
   html += '<div class="apt-split">';
