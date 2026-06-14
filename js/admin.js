@@ -892,7 +892,7 @@ function renderGenealogy(area) {
   for (var ai = 0; ai < ancient.length; ai++) { if (ancient[ai].name === '小四') { xiaosi = ancient[ai]; break; } }
   if (xiaosi) {
     for (var di = 0; di < data.length; di++) {
-      if ((data[di].name === '文杲' || data[di].name === '文杲公') && (!data[di].father_id || data[di].father_id === xiaosi.id)) {
+      if (data[di].name === '文杲' || data[di].name === '文杲公') {
         data[di].father_id = xiaosi.id;
       }
     }
@@ -3198,7 +3198,7 @@ function renderGenealogyTree() {
   for (var a2 = 0; a2 < ancient2.length; a2++) { if (ancient2[a2].name === '小四') { xs2 = ancient2[a2]; break; } }
   if (xs2) {
     for (var d2 = 0; d2 < data2.length; d2++) {
-      if ((data2[d2].name === '文杲' || data2[d2].name === '文杲公') && (!data2[d2].father_id || data2[d2].father_id === xs2.id)) {
+      if (data2[d2].name === '文杲' || data2[d2].name === '文杲公') {
         data2[d2].father_id = xs2.id;
       }
     }
