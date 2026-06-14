@@ -900,7 +900,15 @@ function renderGenealogy(area) {
   // Remove stored versions of ancient persons to avoid duplicates
   var ancientNames = {};
   for (var ai = 0; ai < ancient.length; ai++) ancientNames[ancient[ai].name] = true;
-  data = data.filter(function(p) { return !ancientNames[p.name] || p.name === '文杲' || p.name === '文杲公'; });
+  data = data.filter(function(p) {
+    if (p.name === '文杲' || p.name === '文杲公') return true;
+    if (ancientNames[p.name]) return false;
+    // Also filter storage names with suffix like "小四(石马)"
+    for (var an in ancientNames) {
+      if (p.name.indexOf(an) >= 0) return false;
+    }
+    return true;
+  });
   var allData = data.concat(ancient);
   allData.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0); });
 
@@ -3205,7 +3213,12 @@ function renderGenealogyTree() {
   }
   var an2 = {};
   for (var a2 = 0; a2 < ancient2.length; a2++) an2[ancient2[a2].name] = true;
-  data2 = data2.filter(function(p) { return !an2[p.name] || p.name === '文杲' || p.name === '文杲公'; });
+  data2 = data2.filter(function(p) {
+    if (p.name === '文杲' || p.name === '文杲公') return true;
+    if (an2[p.name]) return false;
+    for (var an in an2) { if (p.name.indexOf(an) >= 0) return false; }
+    return true;
+  });
   var allData = data2.concat(ancient2);
   var genFilter = document.getElementById('tree-filter-gen');
   var filtered = allData;
