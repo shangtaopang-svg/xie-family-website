@@ -1031,10 +1031,20 @@ function renderGenealogy(area) {
   }
   html += '</tbody></table>';
   // 树状图 - 完整的申伯世系树（卡片式连接，含所有旁支）
-  html += '<div style="margin-top:8px;overflow-x:auto;max-height:400px;padding:8px;border:1px solid rgba(100,60,160,0.08);border-radius:8px;">';
-  html += '<div style="text-align:right;font-size:10px;color:var(--text-muted);margin-bottom:4px;">🔍 滚轮缩放 · 🖱️ 点击卡片编辑</div>';
+  html += '<div style="margin-top:8px;border:1px solid rgba(100,60,160,0.08);border-radius:8px;padding:6px;">';
+  html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">';
+  html += '<span style="font-size:10px;color:var(--text-tertiary);">🖱️ 拖拽平移 · 滚轮缩放</span>';
+  html += '<span style="flex:1;"></span>';
+  html += '<button class="apt-zoom-btn" onclick="zoomShenboTree(1.3)" style="width:26px;height:26px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:14px;line-height:1;">+</button>';
+  html += '<button class="apt-zoom-btn" onclick="zoomShenboTree(0.77)" style="width:26px;height:26px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:14px;line-height:1;">−</button>';
+  html += '<button class="apt-zoom-btn" onclick="zoomShenboTree(1)" style="width:26px;height:26px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:12px;line-height:1;">⟳</button>';
+  html += '<span id="sb-zoom-level" style="font-size:10px;color:var(--text-tertiary);min-width:32px;text-align:center;">100%</span>';
+  html += '</div>';
+  html += '<div class="shenbo-tree-viewport" id="shenbo-tree-viewport" style="overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-secondary);min-height:280px;">';
   html += buildAdminShenboTree();
   html += '</div></div></div>';
+  // init pan/zoom after DOM insertion
+  html += '<script>setTimeout(function(){initShenboTreePanZoom();},50);<\/script>';
 
   // 始宁东山世系折叠表
   html += '<div style="margin:16px 0;padding:14px 18px;background:rgba(33,150,243,0.06);border-radius:10px;border:1px solid rgba(33,150,243,0.12);">';
@@ -1242,6 +1252,9 @@ function renderGenealogy(area) {
     '.apt-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-secondary);min-height:400px;}' +
     '.apt-tree-viewport:active{cursor:grabbing;}' +
     '.apt-tree-viewport .apt-tree{transform-origin:0 0;transition:transform 0.05s;}' +
+    '.shenbo-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-secondary);min-height:280px;}' +
+    '.shenbo-tree-viewport:active{cursor:grabbing;}' +
+    '.shenbo-tree-viewport .apt-tree{transform-origin:0 0;transition:transform 0.05s;}' +
     '.apt-tree-fullscreen .apt-right{display:none;}' +
     '.apt-tree-fullscreen .apt-left{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;padding:56px 12px 12px 12px;border-radius:0;overflow:hidden;}' +
     '.apt-tree-fullscreen .apt-tree-viewport{height:calc(100vh - 100px);min-height:0;}' +
@@ -3390,3 +3403,91 @@ function buildAdminShenboTree() {
   }
   return buildAdminTreeHtml(treeData, {hideGen: true});
 }
+
+// ===== 申伯树平移缩放 =====
+var _sbZoom = 1, _sbPanX = 0, _sbPanY = 0, _sbDragging = false;
+var _sbDragX = 0, _sbDragY = 0, _sbStartX = 0, _sbStartY = 0;
+
+function initShenboTreePanZoom() {
+  var vp = document.getElementById('shenbo-tree-viewport');
+  if (!vp || vp.dataset.sbInit) return;
+  vp.dataset.sbInit = '1';
+  var tree = vp.querySelector('.apt-tree');
+  if (!tree) return;
+
+  function apply() {
+    tree.style.transform = 'translate(' + _sbPanX + 'px, ' + _sbPanY + 'px) scale(' + _sbZoom + ')';
+    var el = document.getElementById('sb-zoom-level');
+    if (el) el.textContent = Math.round(_sbZoom * 100) + '%';
+  }
+
+  vp.onwheel = function(e) {
+    e.preventDefault();
+    var rect = vp.getBoundingClientRect();
+    var mx = e.clientX - rect.left;
+    var my = e.clientY - rect.top;
+    var factor = e.deltaY < 0 ? 1.1 : 0.9;
+    var newZ = Math.max(0.1, Math.min(5, _sbZoom * factor));
+    _sbPanX = mx - (mx - _sbPanX) * (newZ / _sbZoom);
+    _sbPanY = my - (my - _sbPanY) * (newZ / _sbZoom);
+    _sbZoom = newZ;
+    apply();
+  };
+
+  vp.onmousedown = function(e) {
+    if (e.target.closest('.apt-zoom-btn, .apt-btn-expand, .apt-card, .apt-btn-add, .apt-btn-del, button')) return;
+    _sbDragging = true;
+    _sbDragX = e.clientX;
+    _sbDragY = e.clientY;
+    _sbStartX = _sbPanX;
+    _sbStartY = _sbPanY;
+    vp.style.cursor = 'grabbing';
+    e.preventDefault();
+  };
+
+  window.addEventListener('mousemove', _sbOnMouseMove = function(e) {
+    if (!_sbDragging) return;
+    _sbPanX = _sbStartX + (e.clientX - _sbDragX);
+    _sbPanY = _sbStartY + (e.clientY - _sbDragY);
+    apply();
+  });
+
+  window.addEventListener('mouseup', _sbOnMouseUp = function() {
+    if (_sbDragging) {
+      _sbDragging = false;
+      var vp2 = document.getElementById('shenbo-tree-viewport');
+      if (vp2) vp2.style.cursor = 'grab';
+    }
+  });
+
+  // Fit to viewport initially
+  setTimeout(function() {
+    var vpr = vp.getBoundingClientRect();
+    var tr = tree.getBoundingClientRect();
+    var scaleX = vpr.width / (tr.width || 1);
+    var scaleY = vpr.height / (tr.height || 1);
+    var s = Math.min(1, Math.min(scaleX, scaleY) * 0.9);
+    _sbZoom = Math.max(0.1, Math.min(1, s));
+    _sbPanX = Math.max(0, (vpr.width - tr.width * _sbZoom) / 2);
+    _sbPanY = 10;
+    apply();
+  }, 100);
+}
+
+window.zoomShenboTree = function(factor) {
+  var vp = document.getElementById('shenbo-tree-viewport');
+  var tree = vp ? vp.querySelector('.apt-tree') : null;
+  if (!tree) return;
+  if (factor === 1) { _sbZoom = 1; _sbPanX = 0; _sbPanY = 0; }
+  else {
+    var rect = vp.getBoundingClientRect();
+    var mx = rect.width / 2, my = rect.height / 2;
+    var newZ = Math.max(0.1, Math.min(5, _sbZoom * factor));
+    _sbPanX = mx - (mx - _sbPanX) * (newZ / _sbZoom);
+    _sbPanY = my - (my - _sbPanY) * (newZ / _sbZoom);
+    _sbZoom = newZ;
+  }
+  tree.style.transform = 'translate(' + _sbPanX + 'px, ' + _sbPanY + 'px) scale(' + _sbZoom + ')';
+  var el = document.getElementById('sb-zoom-level');
+  if (el) el.textContent = Math.round(_sbZoom * 100) + '%';
+};
