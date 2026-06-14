@@ -1131,6 +1131,81 @@ function renderGenealogy(area) {
   html += '<div style="margin-top:8px;overflow-x:auto;max-height:300px;padding:4px;border:1px solid rgba(33,150,243,0.08);border-radius:8px;">';
   html += '<div style="text-align:right;font-size:10px;color:var(--text-muted);margin-bottom:4px;">🔍 滚轮缩放</div>';
   html += buildAdminTreeHtml(data.filter(function(p) { return ['缵','衡','鲲','裒','安','琰','混','密','庄','飏','览','琢','琂','植','钝','修','恺','绰','式','造','直','是温','翳','观','闓'].indexOf(p.name) >= 0; }), {hideGen:true});
+  html += '</div>';
+  // 临海下渡世系子表
+  html += '<div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(33,150,243,0.2);">';
+  html += '<div style="font-size:12px;font-weight:600;color:#643ca0;margin-bottom:8px;">📍 临海下渡世系</div>';
+  html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  html += '<thead><tr style="background:rgba(100,60,160,0.08);">';
+  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;width:40px;">炎帝世</th>';
+  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;width:40px;">申伯世</th>';
+  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;width:40px;">东山世</th>';
+  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;width:40px;">临海世</th>';
+  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;">人物</th>';
+  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;">说明</th>';
+  html += '</tr></thead><tbody>';
+  var linhai_list = [
+    [121,58,24,1,'闓','观之子/临海下渡第一世'],
+    [122,59,25,2,'俨','闓之子'],
+    [123,60,26,3,'诜','俨之子'],
+    [124,61,27,4,'景之','诜之子'],
+    [124,61,27,4,'考之','诜之子'],
+    [125,62,28,5,'润甫','景之之后'],
+    [125,62,28,5,'深甫','景之之后'],
+    [126,63,29,6,'采伯','深甫之后'],
+    [126,63,29,6,'渠伯','深甫之后'],
+    [126,63,29,6,'棐伯','深甫之后'],
+    [126,63,29,6,'彚伯','深甫之后'],
+    [127,64,30,7,'奕修','采伯之后'],
+    [127,64,30,7,'奕懋','采伯之后'],
+    [127,64,30,7,'奕恭','采伯之后'],
+    [127,64,30,7,'奕容','采伯之后'],
+    [127,64,30,7,'奕信','采伯之后'],
+    [128,65,31,8,'在鉴','奕信之后'],
+    [128,65,31,8,'在勋','奕信之后'],
+    [128,65,31,8,'在纲','奕信之后'],
+    [128,65,31,8,'在机','奕信之后'],
+    [129,66,32,9,'大四','在纲之后'],
+    [129,66,32,9,'小四','在纲之后'],
+  ];
+  for (var li = 0; li < linhai_list.length; li++) {
+    var row = linhai_list[li];
+    var isFirst = (li === 0);
+    var isXiaosi = (row[4] === '小四');
+    html += '<tr>';
+    html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;font-size:10px;color:var(--text-tertiary);' + (isFirst?'font-weight:700;color:#643ca0;':'') + '">' + row[0] + '</td>';
+    html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;font-size:10px;color:var(--text-tertiary);">' + row[1] + '</td>';
+    html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;font-size:10px;color:var(--text-tertiary);">' + row[2] + '</td>';
+    html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;font-weight:600;font-size:10px;color:#643ca0;">' + row[3] + '</td>';
+    html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;font-size:11px;' + (isXiaosi?'font-weight:700;color:var(--accent-orange);':'') + '">' + row[4] + '</td>';
+    html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;color:var(--text-tertiary);font-size:10px;">' + row[5] + '</td>';
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  // 临海下渡·紧凑世系图（文字链）
+  html += '<div style="margin-top:8px;padding:10px;background:rgba(100,60,160,0.04);border-radius:6px;font-size:12px;line-height:1.8;white-space:normal;">';
+  html += '<div style="font-weight:600;color:#643ca0;margin-bottom:4px;">📜 世系链：</div>';
+  html += '<span style="color:var(--accent-orange);font-weight:600;">闓</span>';
+  html += '<span style="color:var(--text-muted);margin:0 2px;">→</span>';
+  html += '俨';
+  html += '<span style="color:var(--text-muted);margin:0 2px;">→</span>';
+  html += '诜';
+  html += '<span style="color:var(--text-muted);margin:0 2px;">→</span>';
+  html += '<span style="font-weight:600;">景之</span><span style="color:var(--text-tertiary);font-size:10px;">/考之</span>';
+  html += '<span style="color:var(--text-muted);margin:0 2px;">→</span>';
+  html += '<span style="font-weight:600;">润甫</span><span style="color:var(--text-tertiary);font-size:10px;">/深甫</span>';
+  html += '<span style="color:var(--text-muted);margin:0 2px;">→</span>';
+  html += '<span style="font-weight:600;">采伯</span><span style="color:var(--text-tertiary);font-size:10px;">/渠伯/棐伯/彚伯</span>';
+  html += '<span style="color:var(--text-muted);margin:0 2px;">→</span>';
+  html += '<span style="font-weight:600;">奕修</span><span style="color:var(--text-tertiary);font-size:10px;">/奕懋/奕恭/奕容/奕信</span>';
+  html += '<span style="color:var(--text-muted);margin:0 2px;">→</span>';
+  html += '<span style="font-weight:600;">在鉴</span><span style="color:var(--text-tertiary);font-size:10px;">/在勋/在纲/在机</span>';
+  html += '<span style="color:var(--text-muted);margin:0 2px;">→</span>';
+  html += '<span style="color:var(--accent-orange);font-weight:700;">大四</span>';
+  html += '<span style="color:var(--text-muted);margin:0 2px;">/</span>';
+  html += '<span style="color:var(--accent-orange);font-weight:700;">小四</span>';
+  html += '<div style="margin-top:6px;font-size:10px;color:var(--text-tertiary);">石马（下谢）始祖小四公 → 文杲公（枫槎谢氏始迁祖）</div>';
+  html += '</div>';
   html += '</div></div></div>';
 
   // Split layout: left = tree, right = table
