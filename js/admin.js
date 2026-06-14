@@ -1223,7 +1223,7 @@ function renderGenealogy(area) {
   html += '<span style="font-size:11px;color:var(--text-muted);">点击展开/收起</span>';
   html += '</div>';
   html += '<div style="display:none;">';
-  html += '<p style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;line-height:1.6;">自小四公（石马第一世）开派，衍生丹一、丹二、丹三三房，其后文杲公迁居宁海岩下为枫槎始迁祖，文榘公一派为东门桃源陈氏之祖。</p>';
+  html += '<p style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;line-height:1.6;">小四公：炎帝第129世／申伯第66世／东山第32世／临海下渡第9世／石马（下谢）第1世。自小四公开派，衍生丹一、丹二、丹三三房，其后文杲公迁居宁海岩下为枫槎始迁祖，文榘公一派为东门桃源陈氏之祖。</p>';
   html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
   html += '<thead><tr style="background:rgba(240,180,80,0.1);">';
   html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;width:40px;">世</th>';
@@ -3712,7 +3712,7 @@ function buildAdminShimaTree() {
   var raw = [
     [1,'小四','石马第一世',null],
     [2,'丹一','小四之子','小四'],[2,'丹二','小四之子','小四'],[2,'丹三','小四之子','小四'],
-    [3,'文杲','丹一之后/司检迁宁海岩下','丹一'],[3,'文榘','丹一之后','丹一'],
+    [3,'文杲','丹一之后，枫槎谢氏始迁祖','丹一'],[3,'文榘','丹一之后，东门桃源陈氏之祖','丹一'],
     [3,'丹九','丹三之后','丹三'],
     [4,'廿植一','丹九之后','丹九'],[4,'廿二','丹九之后','丹九'],[4,'廿四','丹九之后','丹九'],
     [4,'十三','文榘之后','文榘'],[4,'十七','文榘之后','文榘'],[4,'二一','文榘之后','文榘'],
