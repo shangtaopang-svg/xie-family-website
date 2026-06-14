@@ -1043,8 +1043,6 @@ function renderGenealogy(area) {
   html += '<div class="shenbo-tree-viewport" id="shenbo-tree-viewport" style="overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-secondary);min-height:280px;">';
   html += buildAdminShenboTree();
   html += '</div></div></div>';
-  // init pan/zoom after DOM insertion
-  html += '<script>setTimeout(function(){initShenboTreePanZoom();},50);<\/script>';
 
   // 始宁东山世系折叠表
   html += '<div style="margin:16px 0;padding:14px 18px;background:rgba(33,150,243,0.06);border-radius:10px;border:1px solid rgba(33,150,243,0.12);">';
@@ -1262,6 +1260,8 @@ function renderGenealogy(area) {
   '</style>';
 
   area.innerHTML = html;
+  // Init Shenbo tree pan/zoom (after DOM insertion)
+  setTimeout(function(){ initShenboTreePanZoom(); }, 100);
 }
 
 function filterGenealogyTable() {
