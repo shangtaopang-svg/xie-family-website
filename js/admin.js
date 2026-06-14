@@ -438,6 +438,7 @@ function renderModule(mod) {
     renderGenealogy(area);
     setTimeout(function() {
       initTreePanZoom();
+      initShenboTreePanZoom();
       treeZoom = savedZoom;
       treePanX = savedX;
       treePanY = savedY;
@@ -1260,8 +1261,6 @@ function renderGenealogy(area) {
   '</style>';
 
   area.innerHTML = html;
-  // Init Shenbo tree pan/zoom (after DOM insertion)
-  setTimeout(function(){ initShenboTreePanZoom(); }, 100);
 }
 
 function filterGenealogyTable() {
