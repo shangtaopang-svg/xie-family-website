@@ -532,7 +532,7 @@ function getPersonName(id, data) {
 }
 
 // Mini tree for ancient/shenbo lineages
-function buildMiniTreeHtml(allData, nameList, cardBg) {
+function buildMiniTreeHtml(allData, nameList, cardBg, displayGenMap) {
   var html = '<div style="margin-top:8px;padding:8px;overflow-x:auto;white-space:nowrap;">';
   html += '<div style="display:inline-flex;align-items:center;gap:4px;padding:4px 0;">';
   // Build name->generation lookup
@@ -540,12 +540,15 @@ function buildMiniTreeHtml(allData, nameList, cardBg) {
   for (var bti = 0; bti < allData.length; bti++) {
     nameToGen[allData[bti].name] = allData[bti].generation_num;
   }
+  function getDisp(n) {
+    if (displayGenMap && displayGenMap[n] !== undefined) return displayGenMap[n];
+    return nameToGen[n];
+  }
   for (var bti = 0; bti < nameList.length; bti++) {
     var nm = nameList[bti];
     if (bti > 0) {
-      // Check if there's a gap in generation numbers
-      var prevGen = nameToGen[nameList[bti-1]];
-      var curGen = nameToGen[nm];
+      var prevGen = getDisp(nameList[bti-1]);
+      var curGen = getDisp(nm);
       if (prevGen !== undefined && curGen !== undefined && Math.abs(curGen - prevGen) > 2) {
         html += '<div style="display:flex;flex-direction:column;align-items:center;margin:0 2px;">';
         html += '<div style="width:1px;height:16px;background:var(--text-muted);opacity:0.15;"></div>';
@@ -563,8 +566,9 @@ function buildMiniTreeHtml(allData, nameList, cardBg) {
     var isDongshan = nm === '缵' || nm === '衡';
     html += '<div style="display:inline-flex;flex-direction:column;align-items:center;margin:0 2px;min-width:40px;">';
     html += '<div style="padding:4px 10px;border-radius:8px;font-size:11px;font-weight:' + (isShenbo||isDongshan?'600':'400') + ';background:' + (cardBg || 'rgba(255,255,255,0.05)') + ';border:1px solid ' + (isShenbo?'rgba(201,168,76,0.3)':isDongshan?'rgba(100,60,160,0.25)':'rgba(255,255,255,0.08)') + ';color:var(--text-primary);cursor:default;text-align:center;">' + nm + '</div>';
-    if (nameToGen[nm] !== undefined) {
-      html += '<span style="font-size:9px;color:var(--text-muted);opacity:0.4;margin-top:2px;">' + nameToGen[nm] + '世</span>';
+    var dispGen = getDisp(nm);
+    if (dispGen !== undefined) {
+      html += '<span style="font-size:9px;color:var(--text-muted);opacity:0.4;margin-top:2px;">' + dispGen + '世</span>';
     }
     html += '</div>';
   }
@@ -572,8 +576,104 @@ function buildMiniTreeHtml(allData, nameList, cardBg) {
   return html;
 }
 
-function buildAdminTreeHtml(data) {
+// Mini genealogy tree: generations grouped, siblings side by side
+function renderMiniGenealogyTree(allData, nameList, accentColor) {
+  // Filter to only the people in nameList
+  var data = allData.filter(function(p) { return nameList.indexOf(p.name) >= 0; });
+  if (!data || data.length === 0) return '';
+
+  // Build name->person map
+  var nameMap = {};
+  for (var mi = 0; mi < data.length; mi++) nameMap[data[mi].name] = data[mi];
+
+  // Group by generation
+  var genGroups = {};
+  for (var mi2 = 0; mi2 < data.length; mi2++) {
+    var g = data[mi2].generation_num;
+    if (!genGroups[g]) genGroups[g] = [];
+    genGroups[g].push(data[mi2]);
+  }
+  var sortedGens = Object.keys(genGroups).sort(function(a,b){return a-b});
+
+  var html = '<div style="text-align:center;overflow-x:auto;white-space:nowrap;">';
+  var maxWidthPerGen = 0;
+
+  for (var gi = 0; gi < sortedGens.length; gi++) {
+    var gen = sortedGens[gi];
+    var persons = genGroups[gen];
+    var genLabel = '';
+
+    // Calculate generation display number from nameList position
+    for (var ni = 0; ni < nameList.length; ni++) {
+      for (var pi = 0; pi < persons.length; pi++) {
+        if (persons[pi].name === nameList[ni]) {
+          genLabel = nameList.indexOf(persons[pi].name) + 1;
+          if (persons[pi].name === '申伯') genLabel = '65世/1世';
+          break;
+        }
+      }
+    }
+
+    // Draw vertical connector line from previous generation
+    if (gi > 0) {
+      html += '<div style="display:flex;justify-content:center;gap:0;">';
+      var prevCount = genGroups[sortedGens[gi-1]].length;
+      var curCount = persons.length;
+      var cellW = Math.max(80, 320 / Math.max(curCount, prevCount));
+      var totalPrev = prevCount * cellW;
+      var totalCur = curCount * cellW;
+      var offset = Math.max(0, (totalPrev - totalCur) / 2);
+
+      // Draw connecting lines
+      for (var ci = 0; ci < curCount; ci++) {
+        html += '<div style="width:' + cellW + 'px;display:flex;flex-direction:column;align-items:center;">';
+        if (prevCount === 1 && curCount > 1) {
+          // One parent, multiple children: draw T-shape
+          var childIdx = ci;
+          html += '<svg width="' + cellW + '" height="24" style="display:block;">';
+          // Vertical line from parent
+          html += '<line x1="' + (cellW/2) + '" y1="0" x2="' + (cellW/2) + '" y2="12" stroke="' + accentColor + '" stroke-width="1.5" opacity="0.3"/>';
+          // Horizontal bar
+          html += '<line x1="0" y1="12" x2="' + cellW + '" y2="12" stroke="' + accentColor + '" stroke-width="1.5" opacity="0.3"/>';
+          // Vertical line to this child
+          html += '<line x1="' + (cellW/2) + '" y1="12" x2="' + (cellW/2) + '" y2="24" stroke="' + accentColor + '" stroke-width="1.5" opacity="0.3"/>';
+          html += '</svg>';
+        } else {
+          html += '<svg width="' + cellW + '" height="16" style="display:block;">';
+          html += '<line x1="' + (cellW/2) + '" y1="0" x2="' + (cellW/2) + '" y2="16" stroke="' + accentColor + '" stroke-width="1.5" opacity="0.3"/>';
+          html += '</svg>';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+
+    // Render people boxes
+    html += '<div style="display:flex;justify-content:center;gap:6px;padding:2px 0;">';
+    for (var pi2 = 0; pi2 < persons.length; pi2++) {
+      var p = persons[pi2];
+      var isHighlight = (p.highlight || p.name === '申伯' || p.name === '缵' || p.name === '安');
+      var label = '';
+      if (nameList.indexOf(p.name) >= 0) label = nameList.indexOf(p.name) + 1;
+      if (p.name === '申伯') label = '65';
+
+      html += '<div style="display:inline-flex;flex-direction:column;align-items:center;min-width:70px;">';
+      html += '<div style="padding:6px 14px;border-radius:8px;font-size:12px;font-weight:' + (isHighlight ? '600' : '400') + ';background:' + accentColor + '15;border:1px solid ' + accentColor + '30;color:var(--text-primary);">' + p.name + '</div>';
+      if (label) {
+        html += '<span style="font-size:9px;color:var(--text-muted);margin-top:2px;opacity:0.5;">' + label + '世</span>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function buildAdminTreeHtml(data, opts) {
   if (!data || data.length === 0) return '<div style="padding:20px;text-align:center;color:var(--text-tertiary);font-size:13px;">暂无数据</div>';
+  opts = opts || {};
 
   var existingIds = {};
   data.forEach(function(p) { existingIds[p.id] = true; });
@@ -649,7 +749,9 @@ function buildAdminTreeHtml(data) {
       else html += '<span class="apt-adopted-badge" title="' + escapeHtml(person.adopted) + '">嗣</span>';
     }
     html += escapeHtml(person.name) + '</div>';
-    html += '<div class="apt-meta">' + (person.generation_num || '?') + '世' + (person.generation && person.generation !== '—' ? ' · ' + escapeHtml(person.generation) : '') + '</div>';
+    if (!opts.hideGen) {
+      html += '<div class="apt-meta">' + (person.generation_num || '?') + '世' + (person.generation && person.generation !== '—' ? ' · ' + escapeHtml(person.generation) : '') + '</div>';
+    }
     if (person.branch && person.branch !== '—') {
       html += '<div class="apt-branch">' + escapeHtml(person.branch) + '</div>';
     }
@@ -809,12 +911,13 @@ function renderGenealogy(area) {
 
   // Ancient lineage table (炎帝→申伯)
   html += '<div style="margin:16px 0;padding:14px 18px;background:rgba(201,168,76,0.06);border-radius:10px;border:1px solid rgba(201,168,76,0.12);">';
-  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;" onclick="var n=this.nextElementSibling;n.style.display=n.style.display==\'none\'?\'table\':\'none\'">';
+  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;" onclick="var n=this.nextElementSibling;n.style.display=n.style.display==\'none\'?\'block\':\'none\'">';
   html += '<span style="font-size:14px;">🏛️</span>';
   html += '<span style="font-size:13px;font-weight:600;color:var(--text-primary);">远古世系（炎帝→申伯）</span>';
   html += '<span style="font-size:11px;color:var(--text-muted);">点击展开/收起</span>';
   html += '</div>';
-  html += '<table style="display:none;width:100%;border-collapse:collapse;font-size:12px;">';
+  html += '<div style="display:none;">';
+  html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
   html += '<thead><tr style="background:rgba(201,168,76,0.1);">';
   html += '<th style="padding:6px 10px;border:1px solid var(--glass-border);text-align:center;width:50px;">世</th>';
   html += '<th style="padding:6px 10px;border:1px solid var(--glass-border);text-align:center;">人物</th>';
@@ -840,18 +943,20 @@ function renderGenealogy(area) {
     html += '</tr>';
   }
   html += '</tbody></table>';
-  // 树状图（使用主树样式）
-  html += buildMiniTreeHtml(data, ['炎帝神农氏','临魁','榆罔','帝柱','祝融','吕尚','佐','申伯','申甫'], 'rgba(201,168,76,0.08)');
-  html += '</div>';
+  // 简易树状图：同辈并列，父子连线
+  html += '<div style="margin-top:8px;overflow-x:auto;padding:4px;">';
+  html += renderMiniGenealogyTree(data, ['炎帝神农氏','临魁','榆罔','帝柱','祝融','吕尚','佐','申伯','申甫'], '#c9a84c');
+  html += '</div></div></div>';
 
   // 申伯世系折叠表
   html += '<div style="margin:16px 0;padding:14px 18px;background:rgba(100,60,160,0.06);border-radius:10px;border:1px solid rgba(100,60,160,0.12);">';
-  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;" onclick="var n=this.nextElementSibling;n.style.display=n.style.display==\'none\'?\'table\':\'none\'">';
+  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;" onclick="var n=this.nextElementSibling;n.style.display=n.style.display==\'none\'?\'block\':\'none\'">';
   html += '<span style="font-size:14px;">🏛️</span>';
   html += '<span style="font-size:13px;font-weight:600;color:var(--text-primary);">申伯世系（申伯→缵→衡）</span>';
   html += '<span style="font-size:11px;color:var(--text-muted);">点击展开/收起</span>';
   html += '</div>';
-  html += '<table style="display:none;width:100%;border-collapse:collapse;font-size:12px;">';
+  html += '<div style="display:none;">';
+  html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
   html += '<thead><tr style="background:rgba(100,60,160,0.1);">';
   html += '<th style="padding:6px 8px;border:1px solid var(--glass-border);text-align:center;width:40px;">炎帝世</th>';
   html += '<th style="padding:6px 8px;border:1px solid var(--glass-border);text-align:center;width:40px;">申伯世</th>';
@@ -904,13 +1009,14 @@ function renderGenealogy(area) {
     [95, 31, '瑰', '简之子'],
     [96, 32, '懿', '瑰之子'],
     [97, 33, '鳅', '懿之子'],
-    [98, 34, '当', '鳅之子'],
-    [99, 35, '景秀', '鳅之子'],
-    [100, 36, '缵', '东山第一世'],
-    [100, 36, '显', '景秀之子'],
-    [100, 36, '顼', '景秀之子'],
-    [101, 37, '衡', '缵之子'],
+    [98, 34, '当', '鳅之后'],
+    [98, 34, '景秀', '鳅之后'],
+    [99, 35, '缵', '景秀之后/东山第一世'],
+    [99, 35, '显', '景秀之后'],
+    [99, 35, '顼', '景秀之后'],
   ];
+  // Remove 衡 from shenbo_lineage
+  shenbo_lineage = shenbo_lineage.filter(function(r) { return r[2] !== '衡'; });
   for (var si = 0; si < shenbo_lineage.length; si++) {
     var row = shenbo_lineage[si];
     var yandiGen = row[0], shenboGen = row[1], person = row[2], desc = row[3];
@@ -925,16 +1031,97 @@ function renderGenealogy(area) {
   }
   html += '</tbody></table>';
   // 树状图
-  html += '<div style="margin-top:10px;padding:10px;overflow-x:auto;white-space:nowrap;text-align:center;font-size:12px;">';
-  html += '<div style="display:inline-flex;align-items:center;gap:2px;">';
-  // 树状图
-  html += buildMiniTreeHtml(data, ['申伯','弘','广','列宗','骘','预','昌后','达','子民','秩','雍','林','涣','旺','珽','国辉','宁','福','杨贞','平利','翠','文','武','秉槐','堂','瑛','文轩','福郎','宜礼','逵','简','瑰','懿','鳅','当','景秀','缵','衡'], 'rgba(100,60,160,0.08)');
+  html += '<div style="margin-top:8px;overflow-x:auto;max-height:300px;padding:4px;border:1px solid rgba(100,60,160,0.08);border-radius:8px;">';
+  html += '<div style="text-align:right;font-size:10px;color:var(--text-muted);margin-bottom:4px;">🔍 滚轮缩放</div>';
+  html += buildAdminTreeHtml(data.filter(function(p) { return ['申伯','弘','广','列宗','骘','预','昌后','达','子民','秩','雍','林','涣','旺','珽','国辉','宁','福','杨贞','平利','翠','文','武','秉槐','堂','瑛','文轩','福郎','宜礼','逵','简','瑰','懿','鳅','当','景秀','缵'].indexOf(p.name) >= 0; }), {hideGen:true});
+  html += '</div></div></div>';
+
+  // 始宁东山世系折叠表
+  html += '<div style="margin:16px 0;padding:14px 18px;background:rgba(33,150,243,0.06);border-radius:10px;border:1px solid rgba(33,150,243,0.12);">';
+  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;" onclick="var n=this.nextElementSibling;n.style.display=n.style.display==\'none\'?\'block\':\'none\'">';
+  html += '<span style="font-size:14px;">🏛️</span>';
+  html += '<span style="font-size:13px;font-weight:600;color:var(--text-primary);">始宁东山世系（缵→闓→临海下渡）</span>';
+  html += '<span style="font-size:11px;color:var(--text-muted);">点击展开/收起</span>';
   html += '</div>';
-  for (var si2 = 0; si2 < shenbo_nodes.length; si2++) {
-    if (si2 > 0) html += '<span style="color:var(--text-muted);opacity:0.3;font-size:8px;">-</span>';
-    var isHighlight = (shenbo_nodes[si2] === '缵' || shenbo_nodes[si2] === '衡');
-    html += '<span style="display:inline-block;padding:2px 6px;border-radius:3px;font-size:10px;background:' + (isHighlight ? 'rgba(100,60,160,0.15)' : 'rgba(100,60,160,0.05)') + ';border:1px solid rgba(100,60,160,0.12);color:var(--text-primary);">' + shenbo_nodes[si2] + '</span>';
+  html += '<div style="display:none;">';
+  html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  html += '<thead><tr style="background:rgba(33,150,243,0.1);">';
+  html += '<th style="padding:6px 8px;border:1px solid var(--glass-border);text-align:center;width:35px;">炎帝世</th>';
+  html += '<th style="padding:6px 8px;border:1px solid var(--glass-border);text-align:center;width:35px;">申伯世</th>';
+  html += '<th style="padding:6px 8px;border:1px solid var(--glass-border);text-align:center;width:35px;">东山世</th>';
+  html += '<th style="padding:6px 8px;border:1px solid var(--glass-border);text-align:center;">人物</th>';
+  html += '<th style="padding:6px 8px;border:1px solid var(--glass-border);text-align:center;">说明</th>';
+  html += '</tr></thead><tbody>';
+  var dongshan_list = [
+    [99, 35, 1, '缵', '东山第一世'],
+    [100, 36, 2, '衡', '会稽东山始祖'],
+    [100, 37, 3, '鲲', '衡之子'],
+    [100, 37, 3, '裒', '衡之子，谢安之父'],
+    [100, 37, 3, '广', '衡之子'],
+    [101, 38, 4, '奕', '裒之子'],
+    [101, 38, 4, '据', '裒之子'],
+    [101, 38, 4, '安', '字安石，东晋名相'],
+    [101, 38, 4, '万', '裒之子'],
+    [101, 38, 4, '淮', '裒之子'],
+    [101, 38, 4, '石', '裒之子'],
+    [101, 38, 4, '铁', '裒之子'],
+    [102, 39, 5, '瑶', '安之子'],
+    [102, 39, 5, '琰', '安之子'],
+    [103, 40, 6, '肇', '琰之子'],
+    [103, 40, 6, '峻', '琰之子'],
+    [103, 40, 6, '混', '琰之子'],
+    [104, 41, 7, '密', '混之子'],
+    [105, 42, 8, '庄', '密之子'],
+    [106, 43, 9, '飏', '庄之子'],
+    [106, 43, 9, '胜', '庄之子'],
+    [106, 43, 9, '灏', '庄之子'],
+    [106, 43, 9, '丛', '庄之子'],
+    [106, 43, 9, '沦', '庄之子'],
+    [107, 44, 10, '览', '飏之子'],
+    [108, 45, 11, '琢', '览之子'],
+    [108, 45, 11, '侨', '览之子'],
+    [109, 46, 12, '琂', '琢之子'],
+    [109, 46, 12, '琬', '琢之子'],
+    [109, 46, 12, '琉', '琢之子'],
+    [110, 47, 13, '峤', '琂之子'],
+    [110, 47, 13, '植', '琂之子'],
+    [111, 48, 14, '钝', '植之子'],
+    [111, 48, 14, '缪', '植之子'],
+    [112, 49, 15, '修', '钝之子'],
+    [112, 49, 15, '豹', '钝之子'],
+    [113, 50, 16, '恺', '修之子'],
+    [114, 51, 17, '骢', '恺之子'],
+    [114, 51, 17, '驼', '恺之子'],
+    [114, 51, 17, '绰', '恺之子'],
+    [115, 52, 18, '式', '绰之子'],
+    [116, 53, 19, '革', '式之子'],
+    [116, 53, 19, '造', '式之子'],
+    [117, 54, 20, '直', '造之子'],
+    [118, 55, 21, '是温', '直之子'],
+    [119, 56, 22, '翳', '是温之子'],
+    [120, 57, 23, '静', '翳之子'],
+    [120, 57, 23, '观', '翳之子'],
+    [121, 58, 24, '闓', '观之子/临海下渡第一世'],
+  ];
+  for (var di = 0; di < dongshan_list.length; di++) {
+    var row = dongshan_list[di];
+    var yandiGen = row[0], shenboGen = row[1], dongshanGen = row[2], dPerson = row[3], dDesc = row[4];
+    var isRoot = (dPerson === '缵');
+    var isXieAn = (dPerson === '安');
+    var isLinhai = (dPerson === '闓');
+    html += '<tr>';
+    html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;font-size:11px;color:var(--text-tertiary);">' + yandiGen + '</td>';
+    html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;font-size:11px;color:var(--text-tertiary);">' + shenboGen + '</td>';
+    html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;font-weight:600;font-size:11px;color:' + (isRoot?'#2196f3':'var(--text-primary)') + ';">' + dongshanGen + '</td>';
+    html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;font-weight:' + (isXieAn||isRoot||isLinhai?'700':'400') + ';color:' + (isXieAn?'#d4793a':isRoot?'#2196f3':isLinhai?'#643ca0':'') + ';font-size:12px;">' + dPerson + '</td>';
+    html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;color:var(--text-tertiary);font-size:11px;">' + dDesc + '</td>';
+    html += '</tr>';
   }
+  html += '</tbody></table>';
+  // 树状图
+  html += '<div style="margin-top:8px;overflow-x:auto;max-height:300px;padding:4px;border:1px solid rgba(33,150,243,0.08);border-radius:8px;">';
+  html += '<div style="text-align:right;font-size:10px;color:var(--text-muted);margin-bottom:4px;">🔍 滚轮缩放</div>';
+  html += buildAdminTreeHtml(data.filter(function(p) { return ['缵','衡','鲲','裒','安','琰','混','密','庄','飏','览','琢','琂','植','钝','修','恺','绰','式','造','直','是温','翳','观','闓'].indexOf(p.name) >= 0; }), {hideGen:true});
   html += '</div></div></div>';
 
   // Split layout: left = tree, right = table
