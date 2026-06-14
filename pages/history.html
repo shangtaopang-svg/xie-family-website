@@ -793,46 +793,24 @@
 
       // ===== Section 5: 石马（下谢）分房派示意简图 =====
       function renderShimaTree() {
-        var html = renderSimpleChain([1,2,2,2,3,3,3,4,4,4,4,4,4,5,5,5,5,6,6,6,6,6,6,7,7,7,8,8,9,9,9,9,9,9,10,10,10,11,11,12,12,12],
-          ['小四','丹一','丹二','丹三','文杲','文榘','丹九','廿植一','廿二','廿四','十三','十七','二一','廿七','廿九','三十一','四十','百十','庆三','千九','千十','千十一','千十三','敬乙','一廷','隆','琰','琇','位','倍','侍','体','旦','俱生','礼','管','罗','泰鹏','泰颚','秀廉','秀洁','秀驹'],
-          ['石马第一世','小四之子','小四之子','小四之子','丹一之后，枫槎谢氏始迁祖','丹一之后，东门桃源陈氏之祖','丹三之后','丹九之后','丹九之后','丹九之后','文榘之后','文榘之后','文榘之后','十三之后','十三之后','十三之后','廿二之后','廿七之后','廿七之后','四十之后','四十之后','四十之后','四十之后','庆三之后','千十一之后','千十一之后','隆之后','隆之后','琰之后','琰之后','琰之后','琰之后','琰之后','琇之后','位之后','位之后','位之后','管之后','管之后','泰颚之后','泰颚之后','泰颚之后']);
+        var gens = [1,2,2,2,3,3,3,4,4,4,4,4,4,5,5,5,5,6,6,6,6,6,6,7,7,7,8,8,9,9,9,9,9,9,10,10,10,11,11,12,12,12];
+        var nms = ['小四','丹一','丹二','丹三','文杲','文榘','丹九','廿植一','廿二','廿四','十三','十七','二一','廿七','廿九','三十一','四十','百十','庆三','千九','千十','千十一','千十三','敬乙','一廷','隆','琰','琇','位','倍','侍','体','旦','俱生','礼','管','罗','泰鹏','泰颚','秀廉','秀洁','秀驹'];
+        var nts = ['石马第一世','小四之子','小四之子','小四之子','丹一之后，枫槎谢氏始迁祖','丹一之后，东门桃源陈氏之祖','丹三之后','丹九之后','丹九之后','丹九之后','文榘之后','文榘之后','文榘之后','十三之后','十三之后','十三之后','廿二之后','廿七之后','廿七之后','四十之后','四十之后','四十之后','四十之后','庆三之后','千十一之后','千十一之后','隆之后','隆之后','琰之后','琰之后','琰之后','琰之后','琰之后','琇之后','位之后','位之后','位之后','管之后','管之后','泰颚之后','泰颚之后','泰颚之后'];
+        // Compute full generation numbers based on 石马世
+        var baseYD = 129, baseSB = 66, baseDS = 32, baseLX = 9;
+        var gYD = gens.map(function(g) { return baseYD + g - 1; });
+        var gSB = gens.map(function(g) { return baseSB + g - 1; });
+        var gDS = gens.map(function(g) { return baseDS + g - 1; });
+        var gLX = gens.map(function(g) { return baseLX + g - 1; });
+        var gSM = gens;
+        var html = renderChainTable(gYD, gSB, nms, nts, gDS, gLX, gSM);
         document.getElementById('tree-shima').innerHTML = html;
-      }
-
-      function renderSimpleChain(gens, nms, nts) {
-        var html = '<div style="padding:8px 0;">';
-        var prevGen = -1;
-        for (var i = 0; i < nms.length; i++) {
-          var isNew = (gens[i] !== prevGen);
-          if (isNew && i > 0) html += '<div style="padding-left:20px;"><div style="width:2px;height:10px;background:var(--accent-orange);opacity:0.15;margin:0 auto;"></div></div>';
-          if (i === 0) {
-            html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--accent-orange);background:rgba(251,146,60,0.1);">';
-            html += '<span style="font-size:10px;font-weight:600;color:var(--accent-orange);min-width:24px;">' + gens[i] + '</span>';
-            html += '<span style="font-weight:700;font-size:14px;color:var(--text-primary);">' + esc(nms[i]) + '</span>';
-            if (nts[i]) html += '<span style="font-size:11px;color:var(--text-muted);margin-left:4px;">' + esc(nts[i]) + '</span>';
-            html += '</div>';
-          } else if (isNew) {
-            html += '<div style="display:flex;align-items:center;gap:8px;padding:5px 12px;border-radius:6px;border:1.5px solid var(--accent-orange);background:rgba(251,146,60,0.06);margin-top:2px;">';
-            html += '<span style="font-size:10px;font-weight:600;color:var(--accent-orange);min-width:24px;">' + gens[i] + '</span>';
-            html += '<span style="font-weight:600;font-size:13px;color:var(--text-primary);">' + esc(nms[i]) + ' <span style="font-size:9px;color:var(--accent-orange);font-weight:400;">&#9650;直系</span></span>';
-            if (nts[i]) html += '<span style="font-size:10px;color:var(--text-muted);margin-left:4px;">' + esc(nts[i]) + '</span>';
-            html += '</div>';
-          } else {
-            html += '<div style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border);background:var(--bg-card);margin-left:28px;margin-top:1px;">';
-            html += '<span style="font-weight:500;font-size:13px;color:var(--text-secondary);">' + esc(nms[i]) + '</span>';
-            if (nts[i]) html += '<span style="font-size:10px;color:var(--text-muted);margin-left:4px;">' + esc(nts[i]) + '</span>';
-            html += '</div>';
-          }
-          prevGen = gens[i];
-        }
-        html += '</div>';
-        return html;
       }
 
 
 
       // ===== 表格链渲染器 =====
-      function renderChainTable(gYD, gSB, nms, nts, gDS, gLX) {
+      function renderChainTable(gYD, gSB, nms, nts, gDS, gLX, gSM) {
         var html = '<div style="padding:8px 0;">';
         var prevYD = -1;
         for (var i=0; i<nms.length; i++) {
@@ -846,6 +824,7 @@
             html += '<span style="font-size:10px;font-weight:600;color:var(--accent-orange);">炎' + gYD[i] + '世</span>';
             if (typeof gDS !== 'undefined') html += '<span style="font-size:9px;color:var(--text-tertiary);">东' + gDS[i] + '世</span>';
             if (typeof gLX !== 'undefined') html += '<span style="font-size:9px;color:var(--text-tertiary);">临' + gLX[i] + '世</span>';
+            if (typeof gSM !== 'undefined') html += '<span style="font-size:9px;color:var(--text-tertiary);">石' + gSM[i] + '世</span>';
             html += '<span style="font-size:10px;color:var(--text-tertiary);">申' + gSB[i] + '世</span>';
             html += '<div style="flex:1;"><div style="font-weight:700;font-size:14px;color:var(--text-primary);">' + esc(nms[i]) + '</div>';
             if (nts[i]) html += '<div style="font-size:11px;color:var(--text-muted);margin-top:1px;">' + esc(nts[i]) + '</div>';
@@ -856,6 +835,7 @@
             html += '<span style="font-size:10px;font-weight:600;color:var(--accent-orange);">炎' + gYD[i] + '世</span>';
             if (typeof gDS !== 'undefined') html += '<span style="font-size:9px;color:var(--text-tertiary);">东' + gDS[i] + '世</span>';
             if (typeof gLX !== 'undefined') html += '<span style="font-size:9px;color:var(--text-tertiary);">临' + gLX[i] + '世</span>';
+            if (typeof gSM !== 'undefined') html += '<span style="font-size:9px;color:var(--text-tertiary);">石' + gSM[i] + '世</span>';
             html += '<span style="font-size:10px;color:var(--text-tertiary);">申' + gSB[i] + '世</span>';
             html += '<div style="flex:1;"><div style="font-weight:600;font-size:13px;color:var(--text-primary);">' + esc(nms[i]) + ' <span style="font-size:9px;color:var(--accent-orange);font-weight:400;">&#9650;直系</span></div>';
             if (nts[i]) html += '<div style="font-size:10px;color:var(--text-muted);">' + esc(nts[i]) + '</div>';
