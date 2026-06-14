@@ -1030,10 +1030,10 @@ function renderGenealogy(area) {
     html += '</tr>';
   }
   html += '</tbody></table>';
-  // 树状图
-  html += '<div style="margin-top:8px;overflow-x:auto;max-height:300px;padding:4px;border:1px solid rgba(100,60,160,0.08);border-radius:8px;">';
-  html += '<div style="text-align:right;font-size:10px;color:var(--text-muted);margin-bottom:4px;">🔍 滚轮缩放</div>';
-  html += buildAdminTreeHtml(data.filter(function(p) { return ['申伯','弘','广','列宗','骘','预','昌后','达','子民','秩','雍','林','涣','旺','珽','国辉','宁','福','杨贞','平利','翠','文','武','秉槐','堂','瑛','文轩','福郎','宜礼','逵','简','瑰','懿','鳅','当','景秀','缵'].indexOf(p.name) >= 0; }), {hideGen:true});
+  // 树状图 - 完整的申伯世系树（卡片式连接，含所有旁支）
+  html += '<div style="margin-top:8px;overflow-x:auto;max-height:400px;padding:8px;border:1px solid rgba(100,60,160,0.08);border-radius:8px;">';
+  html += '<div style="text-align:right;font-size:10px;color:var(--text-muted);margin-bottom:4px;">🔍 滚轮缩放 · 🖱️ 点击卡片编辑</div>';
+  html += buildAdminShenboTree();
   html += '</div></div></div>';
 
   // 始宁东山世系折叠表
@@ -3335,4 +3335,58 @@ function onCardDrop(event) {
     if (area) renderGenealogy(area);
   }
   dragPersonId = null;
+}
+
+// ===== 申伯世系完整树状图（管理后台使用） =====
+function buildAdminShenboTree() {
+  var raw = [
+    [65,1,'申伯','谢氏鼻祖',null],[66,2,'弘','申伯之子','申伯'],[66,2,'猛','申伯之子','申伯'],
+    [67,3,'广','弘之子','弘'],[67,3,'协','弘之子','弘'],
+    [68,4,'列宗','广之子','广'],[68,4,'穆宗','广之子','广'],
+    [69,5,'骘','列宗之子','列宗'],[70,6,'预','骘之子','骘'],[71,7,'昌后','预之子','预'],
+    [72,8,'达','昌后之子','昌后'],[72,8,'守礼','昌后之子','昌后'],
+    [73,9,'子民','达之子','达'],[74,10,'秩','子民之子','子民'],
+    [75,11,'雍','秩之子','秩'],[76,12,'林','雍之子','雍'],
+    [77,13,'涣','林之子','林'],[78,14,'旺','涣之子','涣'],
+    [79,15,'珽','旺之子','旺'],[80,16,'国辉','珽之子','珽'],
+    [81,17,'宁','国辉之子','国辉'],[82,18,'福','宁之子','宁'],
+    [83,19,'杨贞','福之子','福'],
+    [84,20,'平利','杨贞之子','杨贞'],[84,20,'平和','杨贞之子','杨贞'],[84,20,'平祖','杨贞之子','杨贞'],
+    [85,21,'翠','平利之子','平利'],[85,21,'利','平利之子','平利'],[85,21,'文','平和之子','平和'],
+    [86,22,'武','文之子','文'],[87,23,'秉槐','武之子','武'],[88,24,'堂','秉槐之子','秉槐'],
+    [89,25,'瑛','堂之子','堂'],[90,26,'文轩','瑛之子','瑛'],[90,26,'文昂','瑛之子','瑛'],
+    [91,27,'福郎','文轩之子','文轩'],[91,27,'丙郎','文轩之子','文轩'],[91,27,'应郎','文轩之子','文轩'],
+    [92,28,'宜礼','福郎之子','福郎'],[92,28,'宜乐','福郎之子','福郎'],
+    [93,29,'逵','宜礼之子','宜礼'],[94,30,'简','逵之子','逵'],[95,31,'瑰','简之子','简'],
+    [96,32,'懿','瑰之子','瑰'],[97,33,'鳅','懿之子','懿'],
+    [98,34,'当','鳅之后','鳅'],[98,34,'景秀','鳅之后','鳅'],
+    [99,35,'缵','景秀之后/东山第一世','景秀'],[99,35,'显','景秀之后','景秀'],[99,35,'顼','景秀之后','景秀']
+  ];
+  // Build name → id map
+  var nameToId = {};
+  for (var i = 0; i < raw.length; i++) {
+    var pid = 10000 + i;
+    nameToId[raw[i][2]] = pid;
+  }
+  // Build data array for buildAdminTreeHtml
+  var treeData = [];
+  for (var i = 0; i < raw.length; i++) {
+    var r = raw[i];
+    var pid = 10000 + i;
+    var fatherId = r[4] ? (nameToId[r[4]] || null) : null;
+    treeData.push({
+      id: pid,
+      name: r[2],
+      gender: '男',
+      generation_num: r[0],
+      generation: r[0].toString(),
+      branch: '申伯世系',
+      father_id: fatherId,
+      spouse_ids: '',
+      is_alive: '否',
+      biography: r[3],
+      highlight: i === 0
+    });
+  }
+  return buildAdminTreeHtml(treeData, {hideGen: true});
 }
