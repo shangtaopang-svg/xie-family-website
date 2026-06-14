@@ -441,6 +441,7 @@ function renderModule(mod) {
       initShenboTreePanZoom();
       initTreeViewportPanZoom('dongshan-tree-viewport', 'ds-zoom-level', {z:_dsZoom,px:_dsPanX,py:_dsPanY,drag:false,dx:0,dy:0,sx:0,sy:0});
       initTreeViewportPanZoom('linhai-tree-viewport', 'lh-zoom-level', {z:_lhZoom,px:_lhPanX,py:_lhPanY,drag:false,dx:0,dy:0,sx:0,sy:0});
+      initTreeViewportPanZoom('shima-tree-viewport', 'sm-zoom-level', {z:_smZoom,px:_smPanX,py:_smPanY,drag:false,dx:0,dy:0,sx:0,sy:0});
       treeZoom = savedZoom;
       treePanX = savedX;
       treePanY = savedY;
@@ -1214,6 +1215,61 @@ function renderGenealogy(area) {
   html += '<div style="margin-top:6px;font-size:10px;color:var(--text-tertiary);text-align:right;">石马（下谢）始祖小四公 → 文杲公（枫槎谢氏始迁祖）</div>';
   html += '</div></div>';
 
+  // 石马（下谢）分房派折叠表
+  html += '<div style="margin:16px 0;padding:14px 18px;background:rgba(240,180,80,0.06);border-radius:10px;border:1px solid rgba(240,180,80,0.12);">';
+  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;" onclick="var n=this.nextElementSibling;n.style.display=n.style.display==\'none\'?\'block\':\'none\'">';
+  html += '<span style="font-size:14px;">🏛️</span>';
+  html += '<span style="font-size:13px;font-weight:600;color:var(--text-primary);">石马（下谢）分房派示意简图</span>';
+  html += '<span style="font-size:11px;color:var(--text-muted);">点击展开/收起</span>';
+  html += '</div>';
+  html += '<div style="display:none;">';
+  html += '<p style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;line-height:1.6;">自小四公（石马第一世）开派，衍生丹一、丹二、丹三三房，其后文杲公迁居宁海岩下为枫槎始迁祖，文榘公一派为东门桃源陈氏之祖。</p>';
+  html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  html += '<thead><tr style="background:rgba(240,180,80,0.1);">';
+  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;width:40px;">世</th>';
+  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;">人物</th>';
+  html += '<th style="padding:4px 6px;border:1px solid var(--glass-border);text-align:center;">说明</th>';
+  html += '</tr></thead><tbody>';
+  var shima_list = [
+    [1,'小四','石马第一世'],
+    [2,'丹一','小四之子'],[2,'丹二','小四之子'],[2,'丹三','小四之子'],
+    [3,'文杲','丹一之后，枫槎谢氏始迁祖'],[3,'文榘','丹一之后，东门桃源陈氏之祖'],[3,'丹九','丹三之后'],
+    [4,'廿植一','丹九之后'],[4,'廿二','丹九之后'],[4,'廿四','丹九之后'],
+    [4,'十三','文榘之后'],[4,'十七','文榘之后'],[4,'二一','文榘之后'],
+    [5,'廿七','十三之后'],[5,'廿九','十三之后'],[5,'三十一','十三之后'],[5,'四十','廿二之后'],
+    [6,'百十','廿七之后'],[6,'庆三','廿七之后'],[6,'千九','四十之后'],[6,'千十','四十之后'],[6,'千十一','四十之后'],[6,'千十三','四十之后'],
+    [7,'敬乙','庆三之后'],[7,'一廷','千十一之后'],[7,'隆','千十一之后'],
+    [8,'琰','隆之后'],[8,'琇','隆之后'],
+    [9,'位','琰之后'],[9,'倍','琰之后'],[9,'侍','琰之后'],[9,'体','琰之后'],[9,'旦','琰之后'],[9,'俱生','琇之后'],
+    [10,'礼','位之后'],[10,'管','位之后'],[10,'罗','位之后'],
+    [11,'泰鹏','管之后'],[11,'泰颚','管之后'],
+    [12,'秀廉','泰颚之后'],[12,'秀洁','泰颚之后'],[12,'秀驹','泰颚之后'],
+  ];
+  for (var si = 0; si < shima_list.length; si++) {
+    var srow = shima_list[si];
+    var isRoot = (si === 0);
+    var isWenGao = (srow[1] === '文杲');
+    html += '<tr>';
+    html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;font-size:10px;color:var(--text-tertiary);' + (isRoot?'font-weight:700;color:#d4a037;':'') + '">' + srow[0] + '</td>';
+    html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;font-size:11px;' + (isWenGao?'font-weight:700;color:var(--accent-orange);':'') + '">' + srow[1] + '</td>';
+    html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;color:var(--text-tertiary);font-size:10px;">' + srow[2] + '</td>';
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  // 树状图
+  html += '<div style="margin-top:8px;border:1px solid rgba(240,180,80,0.08);border-radius:8px;padding:6px;">';
+  html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">';
+  html += '<span style="font-size:10px;color:var(--text-tertiary);">🖱️ 拖拽平移 · 滚轮缩放</span><span style="flex:1;"></span>';
+  html += '<button class="apt-zoom-btn" onclick="zoomShimaTree(1.3)" style="width:26px;height:26px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:14px;line-height:1;">+</button>';
+  html += '<button class="apt-zoom-btn" onclick="zoomShimaTree(0.77)" style="width:26px;height:26px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:14px;line-height:1;">−</button>';
+  html += '<button class="apt-zoom-btn" onclick="zoomShimaTree(1)" style="width:26px;height:26px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:12px;line-height:1;">⟳</button>';
+  html += '<span id="sm-zoom-level" style="font-size:10px;color:var(--text-tertiary);min-width:32px;text-align:center;">100%</span>';
+  html += '</div>';
+  html += '<div class="shima-tree-viewport" id="shima-tree-viewport" style="overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-secondary);min-height:280px;">';
+  html += buildAdminShimaTree();
+  html += '</div></div>';
+  html += '</div></div>';
+
   // Split layout: left = tree, right = table
   html += '<div class="apt-split">';
 
@@ -1337,7 +1393,9 @@ function renderGenealogy(area) {
     '.shenbo-tree-viewport .apt-tree{transform-origin:0 0;transition:transform 0.05s;}' +
     '.dongshan-tree-viewport,.linhai-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-secondary);}' +
     '.dongshan-tree-viewport:active,.linhai-tree-viewport:active{cursor:grabbing;}' +
-    '.dongshan-tree-viewport .apt-tree,.linhai-tree-viewport .apt-tree{transform-origin:0 0;transition:transform 0.05s;}' +
+    '.dongshan-tree-viewport .apt-tree,.linhai-tree-viewport .apt-tree,.shima-tree-viewport .apt-tree{transform-origin:0 0;transition:transform 0.05s;}' +
+    '.shima-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-secondary);}' +
+    '.shima-tree-viewport:active{cursor:grabbing;}' +
     '.apt-tree-fullscreen .apt-right{display:none;}' +
     '.apt-tree-fullscreen .apt-left{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;padding:56px 12px 12px 12px;border-radius:0;overflow:hidden;}' +
     '.apt-tree-fullscreen .apt-tree-viewport{height:calc(100vh - 100px);min-height:0;}' +
@@ -3649,9 +3707,46 @@ function buildAdminLinhaiTree() {
   return buildAdminTreeHtml(treeData, {hideGen: true});
 }
 
-// ===== 东山/临海树平移缩放 =====
+// ===== 石马（下谢）分房派树状图 =====
+function buildAdminShimaTree() {
+  var raw = [
+    [1,'小四','石马第一世',null],
+    [2,'丹一','小四之子','小四'],[2,'丹二','小四之子','小四'],[2,'丹三','小四之子','小四'],
+    [3,'文杲','丹一之后/司检迁宁海岩下','丹一'],[3,'文榘','丹一之后','丹一'],
+    [3,'丹九','丹三之后','丹三'],
+    [4,'廿植一','丹九之后','丹九'],[4,'廿二','丹九之后','丹九'],[4,'廿四','丹九之后','丹九'],
+    [4,'十三','文榘之后','文榘'],[4,'十七','文榘之后','文榘'],[4,'二一','文榘之后','文榘'],
+    [5,'廿七','十三之后','十三'],[5,'廿九','十三之后','十三'],[5,'三十一','十三之后','十三'],
+    [5,'四十','廿二之后','廿二'],
+    [6,'百十','廿七之后','廿七'],[6,'庆三','廿七之后','廿七'],
+    [6,'千九','四十之后','四十'],[6,'千十','四十之后','四十'],[6,'千十一','四十之后','四十'],[6,'千十三','四十之后','四十'],
+    [7,'敬乙','庆三之后','庆三'],
+    [7,'一廷','千十一之后','千十一'],[7,'隆','千十一之后','千十一'],
+    [8,'琰','隆之后','隆'],[8,'琇','隆之后','隆'],
+    [9,'位','琰之后','琰'],[9,'倍','琰之后','琰'],[9,'侍','琰之后','琰'],[9,'体','琰之后','琰'],[9,'旦','琰之后','琰'],
+    [9,'俱生','琇之后','琇'],
+    [10,'礼','位之后','位'],[10,'管','位之后','位'],[10,'罗','位之后','位'],
+    [11,'泰鹏','管之后','管'],[11,'泰颚','管之后','管'],
+    [12,'秀廉','泰颚之后','泰颚'],[12,'秀洁','泰颚之后','泰颚'],[12,'秀驹','泰颚之后','泰颚'],
+  ];
+  var nameToId = {};
+  for (var i = 0; i < raw.length; i++) { nameToId[raw[i][1]] = 40000 + i; }
+  var treeData = [];
+  for (var i = 0; i < raw.length; i++) {
+    var r = raw[i], pid = 40000 + i;
+    treeData.push({
+      id: pid, name: r[1], gender: '男', generation_num: r[0], generation: r[0].toString(),
+      branch: '石马分房', father_id: r[3] ? (nameToId[r[3]] || null) : null,
+      spouse_ids: '', is_alive: '否', biography: r[2], highlight: i === 0
+    });
+  }
+  return buildAdminTreeHtml(treeData, {hideGen: true});
+}
+
+// ===== 东山/临海/石马树平移缩放 =====
 var _dsZoom = 1, _dsPanX = 0, _dsPanY = 0, _dsDragging = false;
 var _lhZoom = 1, _lhPanX = 0, _lhPanY = 0, _lhDragging = false;
+var _smZoom = 1, _smPanX = 0, _smPanY = 0, _smDragging = false;
 
 function initTreeViewportPanZoom(id, zoomId, state) {
   var vp = document.getElementById(id);
@@ -3736,4 +3831,22 @@ window.zoomLinhaiTree = function(factor) {
   tree.style.transform = 'translate(' + _lhPanX + 'px, ' + _lhPanY + 'px) scale(' + _lhZoom + ')';
   var el = document.getElementById('lh-zoom-level');
   if (el) el.textContent = Math.round(_lhZoom * 100) + '%';
+};
+
+window.zoomShimaTree = function(factor) {
+  var vp = document.getElementById('shima-tree-viewport');
+  var tree = vp ? vp.querySelector('.apt-tree') : null;
+  if (!tree) return;
+  if (factor === 1) { _smZoom = 1; _smPanX = 0; _smPanY = 0; }
+  else {
+    var rect = vp.getBoundingClientRect();
+    var mx = rect.width / 2, my = rect.height / 2;
+    var newZ = Math.max(0.1, Math.min(5, _smZoom * factor));
+    _smPanX = mx - (mx - _smPanX) * (newZ / _smZoom);
+    _smPanY = my - (my - _smPanY) * (newZ / _smZoom);
+    _smZoom = newZ;
+  }
+  tree.style.transform = 'translate(' + _smPanX + 'px, ' + _smPanY + 'px) scale(' + _smZoom + ')';
+  var el = document.getElementById('sm-zoom-level');
+  if (el) el.textContent = Math.round(_smZoom * 100) + '%';
 };
