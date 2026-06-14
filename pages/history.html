@@ -627,17 +627,21 @@
       var EXPANDED = {};
 
       function loadData() {
-        // Try localStorage first, then fetch
-        try {
-          var stored = localStorage.getItem('xie_admin_genealogy');
-          if (stored) { DATA = JSON.parse(stored); renderAll(); return; }
-        } catch(e) {}
-        // Fallback fetch
+        // Always fetch fresh data from server (skip potentially stale localStorage)
         fetch('../data/genealogy.json')
           .then(function(r){ return r.json(); })
-          .then(function(d){ DATA = d; renderAll(); })
+          .then(function(d){
+            DATA = d;
+            // Update localStorage with fresh data
+            try { localStorage.setItem('xie_admin_genealogy', JSON.stringify(d)); } catch(e) {}
+            renderAll();
+          })
           .catch(function(err){
-            // Final fallback: inline seed data for ancient lineage
+            // Fallback: try localStorage, then seed data
+            try {
+              var stored = localStorage.getItem('xie_admin_genealogy');
+              if (stored) { DATA = JSON.parse(stored); renderAll(); return; }
+            } catch(e) {}
             DATA = getSeedData();
             renderAll();
           });
@@ -717,239 +721,98 @@
         if (container) container.innerHTML = html;
       }
 
-      // ===== Section 2: 申伯世系 =====
+      // ===== Section 2: 申伯世系（线性链样式，同远古世系） =====
       function renderShenboTree() {
-        var html = '';
-        // Start with 申伯
-        var shenbo = findPerson(6) || getSeedData().find(function(p){return p.id===6;});
-        if (!shenbo) { document.getElementById('tree-shenbo').innerHTML = '<div style="padding:20px;color:var(--text-tertiary);">暂无数据</div>'; return; }
-
-        // Build generation-based tree
-        var genGroups = {};
-        var allEntries = [];
-
-        if (DATA) {
-          // Include 申伯(6), all 申伯世系 entries, and 缵(1126), 衡(1130)
-          var relevant = DATA.filter(function(p){
-            return p.id === 6 || p.branch === '申伯世系' || p.id === 1126 || p.id === 1130;
-          });
-          relevant.forEach(function(p){
-            var gn = (p.generation_num !== undefined && p.generation_num !== null) ? p.generation_num : 0;
-            if (!genGroups[gn]) genGroups[gn] = [];
-            genGroups[gn].push(p);
-          });
-        } else {
-          var seed = getSeedData();
-          seed.forEach(function(p){
-            if (p.id === 6 || p.id === 1126 || p.id === 1130) {
-              var gn = p.generation_num || 0;
-              if (!genGroups[gn]) genGroups[gn] = [];
-              genGroups[gn].push(p);
-            }
-          });
-        }
-
-        var gens = Object.keys(genGroups).map(Number).sort(function(a,b){return a-b;});
-        var displayed = 0;
-        gens.forEach(function(gn){
-          var list = genGroups[gn];
-          if (!list || list.length === 0) return;
-          var cn = ['一','二','三','四','五','六','七','八','九','十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五'];
-          var genLabel = '';
-          if (gn >= 1 && gn <= 42) {
-            genLabel = '第' + (cn[gn-1]||gn) + '世';
-          } else if (gn === -3) {
-            genLabel = '第65世（得姓始祖）';
-          } else if (gn === 35) {
-            genLabel = '第35世';
-          } else if (gn === 36) {
-            genLabel = '第36世（东山始祖）';
-          }
-
-          // Sort by id
-          list.sort(function(a,b){return a.id - b.id;});
-          html += '<div class="lgen-header">' + genLabel + '</div>';
-          list.forEach(function(p){
-            var col = branchColor(p.branch);
-            var hl = p.highlight ? ' highlight-card' : '';
-            // 缵 and 衡 special highlight
-            var isSpecial = (p.id === 1126 || p.id === 1130);
-            var extraStyle = isSpecial ? 'border-color:'+col+';background:rgba(34,197,94,0.08);' : '';
-            html += '<div class="ltree-node">';
-            html += '<div class="ltree-card' + hl + '" onclick="lineageDetail('+p.id+')" style="' + extraStyle + '">';
-            html += '<span class="lname' + (hl?' lhighlight':'') + '">' + esc(p.name) + '</span>';
-            if (p.branch && p.branch!=='—') html += '<span class="lbranch">' + esc(p.branch) + '</span>';
-            html += '</div></div>';
-          });
-          displayed++;
-        });
-        if (displayed === 0) {
-          html = '<div style="padding:20px;text-align:center;color:var(--text-tertiary);font-size:13px;">暂无世系数据</div>';
-        }
-        document.getElementById('tree-shenbo').innerHTML = html;
+        if (!DATA) { document.getElementById('tree-shenbo').innerHTML = '<div style="padding:20px;color:var(--text-tertiary);">暂无数据</div>'; return; }
+        // 直系链：申伯 → 历代申伯世系先祖 → 缵 → 衡
+        var chainIds = [
+          6,    // 申伯（得姓始祖）
+          11,   // 协（1世）
+          14,   // 列宗（2世）
+          20,   // 骘（4世）
+          41,   // 雍（11世）
+          58,   // 珽（15世）
+          62,   // 国辉（16世）
+          67,   // 宁（17世）
+          823,  // 文轩（30世）
+          933,  // 文昂（31世）
+          1025, // 福郎（32世）
+          1123, // 应郎（34世）
+          1124, // 景秀（34世）
+          1125, // 宜礼（35世）
+          1135, // 简（38世）
+          1126, // 缵（东山第一世）
+          1127, // 显
+          1130  // 衡（始宁东山始祖）
+        ];
+        var html = renderChain(chainIds);
+        document.getElementById('tree-shenbo').innerHTML = html || '<div style="padding:20px;color:var(--text-tertiary);">暂无数据</div>';
       }
 
-      // ===== Section 3: 始宁东山世系 =====
-      function renderDongshanTree() {
+      // ===== 通用线性链渲染器（同远古世系风格） =====
+      function renderChain(ids) {
         var html = '';
-
-        if (!DATA) {
-          document.getElementById('tree-dongshan').innerHTML = '<div style="padding:20px;color:var(--text-tertiary);">暂无数据</div>';
-          return;
-        }
-
-        var allDongshan = DATA.filter(function(p){
-          return p.branch === '始宁东山' || p.id === 1126;
-        });
-        if (!allDongshan.length) {
-          document.getElementById('tree-dongshan').innerHTML = '<div style="padding:20px;color:var(--text-tertiary);">暂无数据</div>';
-          return;
-        }
-
-        // Build parent-child map from biographies: "XX之子" pattern
-        // This is the most reliable data source
-        var parentChild = {};
-        allDongshan.forEach(function(p){
-          var bio = (p.biography || '');
-          var m = bio.match(/(.+)之子/);
-          if (m) {
-            var parentName = m[1].replace(/^氏$/, '');
-            if (!parentChild[parentName]) parentChild[parentName] = [];
-            parentChild[parentName].push(p);
-          }
-        });
-
-        // 安(1138) is father of 瑶(1144), 琰(1145)
-        var anKids = DATA.filter(function(p){ return p.id === 1144 || p.id === 1145; });
-
-        // 琰(1145) father of 肇(1147), 峻(1148), 混(1149)
-        var yanKids = DATA.filter(function(p){ return p.id === 1147 || p.id === 1148 || p.id === 1149; });
-
-        // 混(1149) father of 密(1151)
-        var hunKid = DATA.filter(function(p){ return p.id === 1151; });
-
-        // 衡(1130) is father of 鲲(1132), 裒(1133), 广(1134)
-        var hengKids = DATA.filter(function(p){ return p.id === 1132 || p.id === 1133 || p.id === 1134; });
-
-        // 裒(1133) is father of 奕(1136), 据(1137), 安(1138), 万(1139), 淮(1140), 石(1141), 铁(1142)
-        var pouKids = DATA.filter(function(p){ return p.id === 1136 || p.id === 1137 || p.id === 1138 || p.id === 1139 || p.id === 1140 || p.id === 1141 || p.id === 1142; });
-
-        // Merge hardcoded children into existing parentChild entries (don't skip if already exists)
-        function mergeKids(parentName, kids) {
-          if (!kids.length) return;
-          if (!parentChild[parentName]) {
-            parentChild[parentName] = kids;
-          } else {
-            // Merge, avoiding duplicates
-            var existingIds = {};
-            parentChild[parentName].forEach(function(k){ existingIds[k.id] = true; });
-            kids.forEach(function(k){
-              if (!existingIds[k.id]) {
-                parentChild[parentName].push(k);
-                existingIds[k.id] = true;
-              }
-            });
-          }
-        }
-        // 衡(1130) is father of 鲲(1132), 裒(1133), 广(1134)
-        mergeKids('衡', hengKids);
-        // 裒(1133) is father of 奕(1136), 据(1137), 安(1138), 万(1139), 淮(1140), 石(1141), 铁(1142)
-        mergeKids('裒', pouKids);
-        // Ensure 安 has his children
-        mergeKids('安', anKids);
-        // Ensure 琰 has his children
-        mergeKids('琰', yanKids);
-        // Ensure 混 has his child
-        mergeKids('混', hunKid);
-
-        // Render a person and descendants
-        function renderPerson(p, depth, maxDepth) {
-          if (!p || depth > maxDepth) return '';
-          var kids = parentChild[p.name] || [];
-          var hasKids = kids && kids.length > 0;
-          var isOpen = EXPANDED['d_'+p.id] !== false;
-
+        for (var i=0;i<ids.length;i++) {
+          var p = findPerson(ids[i]);
+          if (!p) continue;
           var col = branchColor(p.branch);
-          var hl = (p.highlight || p.name === '安' || p.name === '衡' || p.name === '缵' || p.name === '闓') ? ' highlight-card' : '';
-          var extraStyle = (p.name === '安' || p.name === '衡') ? 'border-color:#ff6b00;background:rgba(255,107,0,0.1);' : '';
-
-          var r = '';
-          r += '<div class="ltree-node' + (depth===0?' root-node':'') + '">';
-          r += '<div class="ltree-card' + hl + '" onclick="lineageDetail('+p.id+')" style="' + extraStyle + '">';
-          if (hasKids) {
-            r += '<span class="ltree-toggle" onclick="event.stopPropagation();toggleDongshanBranch('+p.id+')">' + (isOpen ? '−' : '+') + '</span>';
-          }
-          r += '<span class="lname' + (hl?' lhighlight':'') + '">' + esc(p.name) + '</span>';
-          var genLabel = p.generation ? '第' + p.generation + '世' : '';
-          if (genLabel) r += '<span class="lgen">' + genLabel + '</span>';
-          if (p.name === '安') r += '<span style="font-size:9px;padding:1px 6px;border-radius:4px;background:rgba(255,107,0,0.15);color:#ff6b00;">⭐淝水之战</span>';
-          r += '</div>';
-          if (hasKids) {
-            r += '<div class="ltree-children' + (isOpen?' open':'') + '" id="dc_'+p.id+'">';
-            kids.sort(function(a,b){ return (a.id||0) - (b.id||0); });
-            kids.forEach(function(k){ r += renderPerson(k, depth+1, maxDepth); });
-            r += '</div>';
-          }
-          r += '</div>';
-          return r;
-        }
-
-        // Build full parent-child chain for deeper generations
-        // These are hardcoded based on the correct genealogy data
-        function addParentChild(parentName, childIds) {
-          if (!parentChild[parentName]) {
-            var kids = DATA.filter(function(p){ return childIds.indexOf(p.id) >= 0; });
-            if (kids.length) parentChild[parentName] = kids;
+          // Highlight key figures
+          var isHighlight = p.highlight || p.id === 6 || p.id === 1126 || p.id === 1130;
+          var hl = isHighlight ? ' highlight-card' : '';
+          // Special end highlight
+          var isEnd = (i === ids.length - 1);
+          var extraStyle = isEnd ? 'border-color:#ff6b00;background:rgba(255,107,0,0.08);' : '';
+          // Special mid-highlight for 缵 (东山第一世)
+          if (p.id === 1126) extraStyle = 'border-color:#22c55e;background:rgba(34,197,94,0.08);';
+          var genText = p.generation ? '第' + p.generation + '世' : '';
+          html += '<div class="ltree-node' + (i===0?' root-node':'') + '">';
+          html += '<div class="ltree-card' + hl + '" onclick="lineageDetail('+p.id+')" style="' + extraStyle + '">';
+          html += '<span class="lname' + (hl?' lhighlight':'') + '">' + esc(p.name) + '</span>';
+          if (genText) html += '<span class="lgen">' + genText + '</span>';
+          if (p.branch && p.branch!=='—') html += '<span class="lbranch">' + esc(p.branch) + '</span>';
+          html += '</div></div>';
+          if (i < ids.length - 1) {
+            html += '<div style="padding-left:12px;"><div style="width:2px;height:10px;background:var(--accent-orange);opacity:0.15;margin:0 auto;"></div></div>';
           }
         }
-        addParentChild('密', [1153]);        // 密 → 庄
-        addParentChild('庄', [1154,1155,1156,1157,1158]); // 庄 → 飏,胜,灏,丛,沦
-        addParentChild('飏', [1159]);         // 飏 → 览
-        addParentChild('览', [1160,1161]);    // 览 → 琢,侨
-        addParentChild('琢', [1162,1163,1164]); // 琢 → 琂,琬,琉 (note: biography says 琢之子 but 琢's father is 览)
-        addParentChild('琂', [1165,1166]);    // 琂 → 峤,植
-        addParentChild('植', [1167,1168]);    // 植 → 钝,缪
-        addParentChild('钝', [1169,1170]);    // 钝 → 修,豹
-        addParentChild('修', [1171]);         // 修 → 恺
-        addParentChild('恺', [1172,1173,1174]); // 恺 → 骢,驼,绰
-        addParentChild('绰', [1175]);         // 绰 → 式
-        addParentChild('式', [1176,1177]);    // 式 → 革,造
-        addParentChild('造', [1178]);         // 造 → 直
-        addParentChild('直', [1179]);         // 直 → 是温
-        addParentChild('是温', [1180]);       // 是温 → 翳
-        addParentChild('翳', [1181,1182]);    // 翳 → 静,观
-        addParentChild('观', [1183]);         // 观 → 闓
-
-        // Show 缵 first (东山第一世)
-        var zuan = findPerson(1126);
-        if (zuan) {
-          html += '<div class="lgen-header">东山第一世</div>';
-          html += renderPerson(zuan, 0, 1);
-        }
-
-        // Show 衡 (始宁东山始祖) and his full lineage
-        var heng = findPerson(1130);
-        if (heng) {
-          html += '<div class="lgen-header" style="margin-top:10px;">始宁东山 · 衡公世系</div>';
-          html += renderPerson(heng, 0, 30);
-        }
-
-        document.getElementById('tree-dongshan').innerHTML = html || '<div style="padding:20px;color:var(--text-tertiary);">暂无数据</div>';
+        return html;
       }
 
-      // Toggle for dongshan branch
-      window.toggleDongshanBranch = function(id) {
-        var el = document.getElementById('dc_'+id);
-        if (!el) return;
-        if (EXPANDED['d_'+id] === false) {
-          EXPANDED['d_'+id] = true;
-          el.classList.add('open');
-        } else {
-          EXPANDED['d_'+id] = false;
-          el.classList.remove('open');
-        }
-      };
+	      // ===== Section 3: 始宁东山世系（线性链样式，同远古世系） =====
+	      function renderDongshanTree() {
+	        if (!DATA) { document.getElementById('tree-dongshan').innerHTML = '<div style="padding:20px;color:var(--text-tertiary);">暂无数据</div>'; return; }
+	        // 直系链：缵(东山第一世) → 衡 → 历代先祖 → 闓(临海下渡第一世)
+	        var chainIds = [
+	          1126, // 缵（东山第一世）
+	          1130, // 衡（会稽东山始祖）
+	          1133, // 裒（衡之子，谢安之父）
+	          1138, // 安（谢安，东晋名相）
+	          1145, // 琰（安之子）
+	          1149, // 混（琰之子）
+	          1151, // 密（混之子）
+	          1153, // 庄（密之子）
+	          1154, // 飏（庄之子）
+	          1159, // 览（飏之子）
+	          1160, // 琢（览之子）
+	          1163, // 琂（琢之子）
+	          1166, // 植（琂之子）
+	          1167, // 钝（植之子）
+	          1169, // 修（钝之子）
+	          1171, // 恺（修之子）
+	          1174, // 绰（恺之子）
+	          1175, // 式（绰之子）
+	          1177, // 造（式之子）
+	          1178, // 直（造之子）
+	          1179, // 是温（直之子）
+	          1180, // 翳（是温之子）
+	          1182, // 观（翳之子）
+	          1183  // 闓（临海下渡第一世）
+	        ];
+	        var html = renderChain(chainIds);
+	        document.getElementById('tree-dongshan').innerHTML = html || '<div style="padding:20px;color:var(--text-tertiary);">暂无数据</div>';
+	      }
 
+	      // Re-export render functions
       // Re-export render functions for section toggle
       window.renderAllLineageTrees = renderAll;
 
