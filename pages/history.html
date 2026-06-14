@@ -722,127 +722,45 @@
       }
 
             // ===== Section 2: 申伯世系（完整树状，含所有旁支） =====
+      
+      // ===== Section 2: 申伯世系（直系链，同远古世系风格） =====
       function renderShenboTree() {
         if (!DATA) { document.getElementById('tree-shenbo').innerHTML = '<div style="padding:20px;color:var(--text-tertiary);">暂无数据</div>'; return; }
-        var treeDef = [
-          ['申伯', ['弘','猛'], '弘'],
-          ['弘', ['广','协'], '协'],
-          ['协', ['列宗','穆宗'], '列宗'],
-          ['列宗', ['骘'], '骘'],
-          ['骘', ['预'], '预'],
-          ['预', ['昌后'], '昌后'],
-          ['昌后', ['达','守礼'], '达'],
-          ['达', ['子民'], '子民'],
-          ['子民', ['秩'], '秩'],
-          ['秩', ['雍'], '雍'],
-          ['雍', ['林'], '林'],
-          ['林', ['涣'], '涣'],
-          ['涣', ['旺'], '旺'],
-          ['旺', ['珽'], '珽'],
-          ['珽', ['国辉'], '国辉'],
-          ['国辉', ['宁'], '宁'],
-          ['宁', ['福'], '福'],
-          ['福', ['杨贞'], '杨贞'],
-          ['杨贞', ['平利','平和','平祖'], '平和'],
-          ['平和', ['翠','利','文'], '文'],
-          ['文', ['武'], '武'],
-          ['武', ['秉槐'], '秉槐'],
-          ['秉槐', ['堂'], '堂'],
-          ['堂', ['瑛'], '瑛'],
-          ['瑛', ['文轩','文昂'], '文昂'],
-          ['文昂', ['福郎','丙郎','应郎'], '福郎'],
-          ['福郎', ['宜礼','宜乐'], '宜乐'],
-          ['宜乐', ['逵'], '逵'],
-          ['逵', ['简'], '简'],
-          ['简', ['瑰'], '瑰'],
-          ['瑰', ['懿'], '懿'],
-          ['懿', ['鳅'], '鳅'],
-          ['鳅', ['当','景秀'], '景秀'],
-          ['景秀', ['缵','显','顼'], '缵']
-        ];
-        var html = renderTreeFromDef(treeDef, '申伯世系');
+        // 直系单传链：申伯 → 历代先祖 → 缵(东山第一世)
+        var ids = [6,8,11,14,20,23,26,29,35,38,41,45,48,54,58,62,67,73,80,103,305,384,477,582,698,933,1025,1129,1131,1135,1143,1146,1150,1124,1126];
+        var html = renderChain(ids);
         document.getElementById('tree-shenbo').innerHTML = html || '<div style="padding:20px;color:var(--text-tertiary);">暂无数据</div>';
       }
 
-      // ===== 通用树状渲染器（世代分组，兄弟并排，主脉高亮） =====
-      function renderTreeFromDef(treeDef, branchName) {
-        var nameMap = {};
-        if (DATA) DATA.forEach(function(p){ if (p.name) nameMap[p.name] = p; });
-        var seed = getSeedData();
-        seed.forEach(function(p){ if (p.name && !nameMap[p.name]) nameMap[p.name] = p; });
-        var html = '';
-        for (var g=0; g<treeDef.length; g++) {
-          var step = treeDef[g];
-          var parentName = step[0];
-          var siblings = step[1];
-          var mainName = step[2];
-          var parent = nameMap[parentName] || {name:parentName, generation_num:0, branch:branchName};
-          if (g === 0) {
-            var genText = parent.generation ? '第' + parent.generation + '世' : '';
-            html += '<div class="ltree-node root-node">';
-            html += '<div class="ltree-card highlight-card" onclick="lineageDetail('+(parent.id||0)+')">';
-            html += '<span class="lname lhighlight">' + esc(parentName) + '</span>';
-            if (genText) html += '<span class="lgen">' + genText + '</span>';
-            if (parent.branch && parent.branch!=='—') html += '<span class="lbranch">' + esc(parent.branch) + '</span>';
-            html += '</div></div>';
-          }
-          if (siblings && siblings.length > 0) {
-            html += '<div style="padding-left:12px;"><div style="width:2px;height:10px;background:var(--accent-orange);opacity:0.15;margin:0 auto;"></div></div>';
-            html += '<div style="display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 2px 12px;">';
-            for (var s=0; s<siblings.length; s++) {
-              var sibName = siblings[s];
-              var sib = nameMap[sibName] || {name:sibName, generation_num:0, branch:branchName};
-              var isMain = (sibName === mainName);
-              var genText2 = sib.generation ? '第' + sib.generation + '世' : '';
-              var col = isMain ? 'border-color:var(--accent-orange);background:rgba(251,146,60,0.08);' : '';
-              html += '<div class="ltree-card' + (isMain?' highlight-card':'') + '" onclick="lineageDetail('+(sib.id||0)+')" style="' + col + '">';
-              html += '<span class="lname' + (isMain?' lhighlight':'') + '">' + esc(sibName) + '</span>';
-              if (genText2) html += '<span class="lgen">' + genText2 + '</span>';
-              if (isMain) html += '<span style="font-size:9px;color:var(--accent-orange);padding:0 4px;">⬇</span>';
-              html += '</div>';
-            }
-            html += '</div>';
-          }
-          if (g < treeDef.length - 1 && mainName) {
-            html += '<div style="padding-left:12px;"><div style="width:2px;height:10px;background:var(--accent-orange);opacity:0.15;margin:0 auto;"></div></div>';
-          }
-        }
-        var lastStep = treeDef[treeDef.length-1];
-        if (lastStep) {
-          html += '<div style="padding-left:12px;margin-top:4px;font-size:11px;color:var(--accent-orange);font-weight:500;">';
-          if (branchName === '申伯世系') {
-            html += '↑ 缵公为东山第一世，开启东山谢氏';
-          } else if (branchName === '始宁东山') {
-            html += '↑ 闓公为临海下渡第一世，浙东谢氏由此始';
-          }
-          html += '</div>';
-        }
-        return html;
+      // ===== Section 3: 始宁东山世系（直系链，同远古世系风格） =====
+      function renderDongshanTree() {
+        if (!DATA) { document.getElementById('tree-dongshan').innerHTML = '<div style="padding:20px;color:var(--text-tertiary);">暂无数据</div>'; return; }
+        // 直系单传链：缵(东山1世) → 衡 → 历代先祖 → 闓(临海下渡1世)
+        var ids = [1126,1130,1133,1138,1145,1149,1151,1153,1154,1159,1160,1162,1166,1167,1169,1171,1174,1175,1177,1178,1179,1180,1182,1183];
+        var html = renderChain(ids);
+        document.getElementById('tree-dongshan').innerHTML = html || '<div style="padding:20px;color:var(--text-tertiary);">暂无数据</div>';
       }
-
-      // ===== 通用线性链渲染器（保留，远古世系使用） =====
-      function renderChain(ids) {
-// ===== 通用线性链渲染器（同远古世系风格） =====
+// Re-export render functions
+      // Re-export render functions for section toggle
+      
+      // ===== 通用线性链渲染器（同远古世系风格） =====
       function renderChain(ids) {
         var html = '';
         for (var i=0;i<ids.length;i++) {
           var p = findPerson(ids[i]);
           if (!p) continue;
           var col = branchColor(p.branch);
-          // Highlight key figures
           var isHighlight = p.highlight || p.id === 6 || p.id === 1126 || p.id === 1130;
           var hl = isHighlight ? ' highlight-card' : '';
-          // Special end highlight
           var isEnd = (i === ids.length - 1);
           var extraStyle = isEnd ? 'border-color:#ff6b00;background:rgba(255,107,0,0.08);' : '';
-          // Special mid-highlight for 缵 (东山第一世)
           if (p.id === 1126) extraStyle = 'border-color:#22c55e;background:rgba(34,197,94,0.08);';
           var genText = p.generation ? '第' + p.generation + '世' : '';
           html += '<div class="ltree-node' + (i===0?' root-node':'') + '">';
           html += '<div class="ltree-card' + hl + '" onclick="lineageDetail('+p.id+')" style="' + extraStyle + '">';
           html += '<span class="lname' + (hl?' lhighlight':'') + '">' + esc(p.name) + '</span>';
           if (genText) html += '<span class="lgen">' + genText + '</span>';
-          if (p.branch && p.branch!=='—') html += '<span class="lbranch">' + esc(p.branch) + '</span>';
+          if (p.branch && p.branch!=='--') html += '<span class="lbranch">' + esc(p.branch) + '</span>';
           html += '</div></div>';
           if (i < ids.length - 1) {
             html += '<div style="padding-left:12px;"><div style="width:2px;height:10px;background:var(--accent-orange);opacity:0.15;margin:0 auto;"></div></div>';
@@ -851,73 +769,6 @@
         return html;
       }
 
-	            // ===== Section 3: 始宁东山世系（完整树状，含所有旁支） =====
-      function renderDongshanTree() {
-        if (!DATA) { document.getElementById('tree-dongshan').innerHTML = '<div style="padding:20px;color:var(--text-tertiary);">暂无数据</div>'; return; }
-        var treeDef = [
-          ['缵', ['衡'], '衡'],
-          ['衡', ['鲲','裒','广'], '裒'],
-          ['裒', ['奕','据','安','万','淮','石','铁'], '安'],
-          ['安', ['瑶','琰'], '琰'],
-          ['琰', ['肇','峻','混'], '混'],
-          ['混', ['密'], '密'],
-          ['密', ['庄'], '庄'],
-          ['庄', ['飏','胜','灏','丛','沦'], '飏'],
-          ['飏', ['览'], '览'],
-          ['览', ['琢','侨'], '琢'],
-          ['琢', ['琂','琬','琉'], '琂'],
-          ['琂', ['峤','植'], '植'],
-          ['植', ['钝','缪'], '钝'],
-          ['钝', ['修','豹'], '修'],
-          ['修', ['恺'], '恺'],
-          ['恺', ['骢','驼','绰'], '绰'],
-          ['绰', ['式'], '式'],
-          ['式', ['革','造'], '造'],
-          ['造', ['直'], '直'],
-          ['直', ['是温'], '是温'],
-          ['是温', ['翳'], '翳'],
-          ['翳', ['静','观'], '观'],
-          ['观', ['闓'], '闓']
-        ];
-        var html = renderTreeFromDef(treeDef, '始宁东山');
-        document.getElementById('tree-dongshan').innerHTML = html || '<div style="padding:20px;color:var(--text-tertiary);">暂无数据</div>';
-      }
-
-function renderDongshanTree() {
-	        if (!DATA) { document.getElementById('tree-dongshan').innerHTML = '<div style="padding:20px;color:var(--text-tertiary);">暂无数据</div>'; return; }
-	        // 直系链：缵(东山第一世) → 衡 → 历代先祖 → 闓(临海下渡第一世)
-	        var chainIds = [
-	          1126, // 缵（东山第一世）
-	          1130, // 衡（会稽东山始祖）
-	          1133, // 裒（衡之子，谢安之父）
-	          1138, // 安（谢安，东晋名相）
-	          1145, // 琰（安之子）
-	          1149, // 混（琰之子）
-	          1151, // 密（混之子）
-	          1153, // 庄（密之子）
-	          1154, // 飏（庄之子）
-	          1159, // 览（飏之子）
-	          1160, // 琢（览之子）
-	          1163, // 琂（琢之子）
-	          1166, // 植（琂之子）
-	          1167, // 钝（植之子）
-	          1169, // 修（钝之子）
-	          1171, // 恺（修之子）
-	          1174, // 绰（恺之子）
-	          1175, // 式（绰之子）
-	          1177, // 造（式之子）
-	          1178, // 直（造之子）
-	          1179, // 是温（直之子）
-	          1180, // 翳（是温之子）
-	          1182, // 观（翳之子）
-	          1183  // 闓（临海下渡第一世）
-	        ];
-	        var html = renderChain(chainIds);
-	        document.getElementById('tree-dongshan').innerHTML = html || '<div style="padding:20px;color:var(--text-tertiary);">暂无数据</div>';
-	      }
-
-	      // Re-export render functions
-      // Re-export render functions for section toggle
       window.renderAllLineageTrees = renderAll;
 
       // Init
