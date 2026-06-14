@@ -439,6 +439,8 @@ function renderModule(mod) {
     setTimeout(function() {
       initTreePanZoom();
       initShenboTreePanZoom();
+      initTreeViewportPanZoom('dongshan-tree-viewport', 'ds-zoom-level', {z:_dsZoom,px:_dsPanX,py:_dsPanY,drag:false,dx:0,dy:0,sx:0,sy:0});
+      initTreeViewportPanZoom('linhai-tree-viewport', 'lh-zoom-level', {z:_lhZoom,px:_lhPanX,py:_lhPanY,drag:false,dx:0,dy:0,sx:0,sy:0});
       treeZoom = savedZoom;
       treePanX = savedX;
       treePanY = savedY;
@@ -1128,10 +1130,17 @@ function renderGenealogy(area) {
   }
   html += '</tbody></table>';
   // 树状图
-  html += '<div style="margin-top:8px;overflow-x:auto;max-height:300px;padding:4px;border:1px solid rgba(33,150,243,0.08);border-radius:8px;">';
-  html += '<div style="text-align:right;font-size:10px;color:var(--text-muted);margin-bottom:4px;">🔍 滚轮缩放</div>';
-  html += buildAdminTreeHtml(data.filter(function(p) { return ['缵','衡','鲲','裒','安','琰','混','密','庄','飏','览','琢','琂','植','钝','修','恺','绰','式','造','直','是温','翳','观','闓'].indexOf(p.name) >= 0; }), {hideGen:true});
+  html += '<div style="margin-top:8px;border:1px solid rgba(33,150,243,0.08);border-radius:8px;padding:6px;">';
+  html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">';
+  html += '<span style="font-size:10px;color:var(--text-tertiary);">🖱️ 拖拽平移 · 滚轮缩放</span><span style="flex:1;"></span>';
+  html += '<button class="apt-zoom-btn" onclick="zoomDongshanTree(1.3)" style="width:26px;height:26px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:14px;line-height:1;">+</button>';
+  html += '<button class="apt-zoom-btn" onclick="zoomDongshanTree(0.77)" style="width:26px;height:26px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:14px;line-height:1;">−</button>';
+  html += '<button class="apt-zoom-btn" onclick="zoomDongshanTree(1)" style="width:26px;height:26px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:12px;line-height:1;">⟳</button>';
+  html += '<span id="ds-zoom-level" style="font-size:10px;color:var(--text-tertiary);min-width:32px;text-align:center;">100%</span>';
   html += '</div>';
+  html += '<div class="dongshan-tree-viewport" id="dongshan-tree-viewport" style="overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-secondary);min-height:280px;">';
+  html += buildAdminDongshanTree();
+  html += '</div></div>';
   // 临海下渡世系子表
   html += '<div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(33,150,243,0.2);">';
   html += '<div style="font-size:12px;font-weight:600;color:#643ca0;margin-bottom:8px;">📍 临海下渡世系</div>';
@@ -1182,30 +1191,19 @@ function renderGenealogy(area) {
     html += '</tr>';
   }
   html += '</tbody></table>';
-  // 临海下渡·紧凑世系图（文字链）
-  html += '<div style="margin-top:8px;padding:10px;background:rgba(100,60,160,0.04);border-radius:6px;font-size:12px;line-height:1.8;white-space:normal;">';
-  html += '<div style="font-weight:600;color:#643ca0;margin-bottom:4px;">📜 世系链：</div>';
-  html += '<span style="color:var(--accent-orange);font-weight:600;">闓</span>';
-  html += '<span style="color:var(--text-muted);margin:0 2px;">→</span>';
-  html += '俨';
-  html += '<span style="color:var(--text-muted);margin:0 2px;">→</span>';
-  html += '诜';
-  html += '<span style="color:var(--text-muted);margin:0 2px;">→</span>';
-  html += '<span style="font-weight:600;">景之</span><span style="color:var(--text-tertiary);font-size:10px;">/考之</span>';
-  html += '<span style="color:var(--text-muted);margin:0 2px;">→</span>';
-  html += '<span style="font-weight:600;">润甫</span><span style="color:var(--text-tertiary);font-size:10px;">/深甫</span>';
-  html += '<span style="color:var(--text-muted);margin:0 2px;">→</span>';
-  html += '<span style="font-weight:600;">采伯</span><span style="color:var(--text-tertiary);font-size:10px;">/渠伯/棐伯/彚伯</span>';
-  html += '<span style="color:var(--text-muted);margin:0 2px;">→</span>';
-  html += '<span style="font-weight:600;">奕修</span><span style="color:var(--text-tertiary);font-size:10px;">/奕懋/奕恭/奕容/奕信</span>';
-  html += '<span style="color:var(--text-muted);margin:0 2px;">→</span>';
-  html += '<span style="font-weight:600;">在鉴</span><span style="color:var(--text-tertiary);font-size:10px;">/在勋/在纲/在机</span>';
-  html += '<span style="color:var(--text-muted);margin:0 2px;">→</span>';
-  html += '<span style="color:var(--accent-orange);font-weight:700;">大四</span>';
-  html += '<span style="color:var(--text-muted);margin:0 2px;">/</span>';
-  html += '<span style="color:var(--accent-orange);font-weight:700;">小四</span>';
-  html += '<div style="margin-top:6px;font-size:10px;color:var(--text-tertiary);">石马（下谢）始祖小四公 → 文杲公（枫槎谢氏始迁祖）</div>';
+  // 临海下渡·树状图
+  html += '<div style="margin-top:8px;border:1px solid rgba(100,60,160,0.08);border-radius:8px;padding:6px;">';
+  html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">';
+  html += '<span style="font-size:10px;color:var(--text-tertiary);">🖱️ 拖拽平移 · 滚轮缩放</span><span style="flex:1;"></span>';
+  html += '<button class="apt-zoom-btn" onclick="zoomLinhaiTree(1.3)" style="width:26px;height:26px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:14px;line-height:1;">+</button>';
+  html += '<button class="apt-zoom-btn" onclick="zoomLinhaiTree(0.77)" style="width:26px;height:26px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:14px;line-height:1;">−</button>';
+  html += '<button class="apt-zoom-btn" onclick="zoomLinhaiTree(1)" style="width:26px;height:26px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:12px;line-height:1;">⟳</button>';
+  html += '<span id="lh-zoom-level" style="font-size:10px;color:var(--text-tertiary);min-width:32px;text-align:center;">100%</span>';
   html += '</div>';
+  html += '<div class="linhai-tree-viewport" id="linhai-tree-viewport" style="overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-secondary);min-height:220px;">';
+  html += buildAdminLinhaiTree();
+  html += '</div></div>';
+  html += '<div style="margin-top:6px;font-size:10px;color:var(--text-tertiary);text-align:right;">石马（下谢）始祖小四公 → 文杲公（枫槎谢氏始迁祖）</div>';
   html += '</div></div></div>';
 
   // Split layout: left = tree, right = table
@@ -1329,6 +1327,9 @@ function renderGenealogy(area) {
     '.shenbo-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-secondary);min-height:280px;}' +
     '.shenbo-tree-viewport:active{cursor:grabbing;}' +
     '.shenbo-tree-viewport .apt-tree{transform-origin:0 0;transition:transform 0.05s;}' +
+    '.dongshan-tree-viewport,.linhai-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-secondary);}' +
+    '.dongshan-tree-viewport:active,.linhai-tree-viewport:active{cursor:grabbing;}' +
+    '.dongshan-tree-viewport .apt-tree,.linhai-tree-viewport .apt-tree{transform-origin:0 0;transition:transform 0.05s;}' +
     '.apt-tree-fullscreen .apt-right{display:none;}' +
     '.apt-tree-fullscreen .apt-left{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;padding:56px 12px 12px 12px;border-radius:0;overflow:hidden;}' +
     '.apt-tree-fullscreen .apt-tree-viewport{height:calc(100vh - 100px);min-height:0;}' +
@@ -3569,4 +3570,162 @@ window.zoomShenboTree = function(factor) {
   tree.style.transform = 'translate(' + _sbPanX + 'px, ' + _sbPanY + 'px) scale(' + _sbZoom + ')';
   var el = document.getElementById('sb-zoom-level');
   if (el) el.textContent = Math.round(_sbZoom * 100) + '%';
+};
+
+// ===== 始宁东山世系树状图 =====
+function buildAdminDongshanTree() {
+  var raw = [
+    [99,35,'缵','东山第一世',null],
+    [100,36,'衡','会稽东山始祖','缵'],
+    [100,37,'鲲','衡之子','衡'],[100,37,'裒','衡之子，谢安之父','衡'],[100,37,'广','衡之子','衡'],
+    [101,38,'奕','裒之子','裒'],[101,38,'据','裒之子','裒'],[101,38,'安','字安石，东晋名相','裒'],
+    [101,38,'万','裒之子','裒'],[101,38,'淮','裒之子','裒'],[101,38,'石','裒之子','裒'],[101,38,'铁','裒之子','裒'],
+    [102,39,'瑶','安之子','安'],[102,39,'琰','安之子','安'],
+    [103,40,'肇','琰之子','琰'],[103,40,'峻','琰之子','琰'],[103,40,'混','琰之子','琰'],
+    [104,41,'密','混之子','混'],
+    [105,42,'庄','密之子','密'],
+    [106,43,'飏','庄之子','庄'],[106,43,'胜','庄之子','庄'],[106,43,'灏','庄之子','庄'],[106,43,'丛','庄之子','庄'],[106,43,'沦','庄之子','庄'],
+    [107,44,'览','飏之子','飏'],
+    [108,45,'琢','览之子','览'],[108,45,'侨','览之子','览'],
+    [109,46,'琂','琢之子','琢'],[109,46,'琬','琢之子','琢'],
+    [110,47,'峤','琂之子','琂'],[110,47,'植','琂之子','琂'],
+    [111,48,'钝','植之子','植'],[111,48,'缪','植之子','植'],
+    [112,49,'修','钝之子','钝'],[112,49,'豹','钝之子','钝'],
+    [113,50,'恺','修之子','修'],
+    [114,51,'骢','恺之子','恺'],[114,51,'驼','恺之子','恺'],[114,51,'绰','恺之子','恺'],
+    [115,52,'式','绰之子','绰'],
+    [116,53,'革','式之子','式'],[116,53,'造','式之子','式'],
+    [117,54,'直','造之子','造'],
+    [118,55,'是温','直之子','直'],
+    [119,56,'翳','是温之子','是温'],
+    [120,57,'静','翳之子','翳'],[120,57,'观','翳之子','翳'],
+    [121,58,'闓','观之子/临海下渡第一世','观']
+  ];
+  var nameToId = {};
+  for (var i = 0; i < raw.length; i++) { nameToId[raw[i][2]] = 20000 + i; }
+  var treeData = [];
+  for (var i = 0; i < raw.length; i++) {
+    var r = raw[i], pid = 20000 + i;
+    treeData.push({
+      id: pid, name: r[2], gender: '男', generation_num: r[0], generation: r[0].toString(),
+      branch: '东山世系', father_id: r[4] ? (nameToId[r[4]] || null) : null,
+      spouse_ids: '', is_alive: '否', biography: r[3], highlight: i === 0
+    });
+  }
+  return buildAdminTreeHtml(treeData, {hideGen: true});
+}
+
+// ===== 临海下渡世系树状图 =====
+function buildAdminLinhaiTree() {
+  var raw = [
+    [121,58,'闓','观之子/临海下渡第一世',null],
+    [122,59,'俨','闓之子','闓'],[123,60,'诜','俨之子','俨'],
+    [124,61,'景之','诜之子','诜'],[124,61,'考之','诜之子','诜'],
+    [125,62,'润甫','景之之后','景之'],[125,62,'深甫','景之之后','景之'],
+    [126,63,'采伯','深甫之后','深甫'],[126,63,'渠伯','深甫之后','深甫'],[126,63,'棐伯','深甫之后','深甫'],[126,63,'彚伯','深甫之后','深甫'],
+    [127,64,'奕修','采伯之后','采伯'],[127,64,'奕懋','采伯之后','采伯'],[127,64,'奕恭','采伯之后','采伯'],[127,64,'奕容','采伯之后','采伯'],[127,64,'奕信','采伯之后','采伯'],
+    [128,65,'在鉴','奕信之后','奕信'],[128,65,'在勋','奕信之后','奕信'],[128,65,'在纲','奕信之后','奕信'],[128,65,'在机','奕信之后','奕信'],
+    [129,66,'大四','在纲之后','在纲'],[129,66,'小四','在纲之后','在纲']
+  ];
+  var nameToId = {};
+  for (var i = 0; i < raw.length; i++) { nameToId[raw[i][2]] = 30000 + i; }
+  var treeData = [];
+  for (var i = 0; i < raw.length; i++) {
+    var r = raw[i], pid = 30000 + i;
+    treeData.push({
+      id: pid, name: r[2], gender: '男', generation_num: r[0], generation: r[0].toString(),
+      branch: '临海下渡', father_id: r[4] ? (nameToId[r[4]] || null) : null,
+      spouse_ids: '', is_alive: '否', biography: r[3], highlight: i === 0
+    });
+  }
+  return buildAdminTreeHtml(treeData, {hideGen: true});
+}
+
+// ===== 东山/临海树平移缩放 =====
+var _dsZoom = 1, _dsPanX = 0, _dsPanY = 0, _dsDragging = false;
+var _lhZoom = 1, _lhPanX = 0, _lhPanY = 0, _lhDragging = false;
+
+function initTreeViewportPanZoom(id, zoomId, state) {
+  var vp = document.getElementById(id);
+  if (!vp || vp.dataset.init) return;
+  vp.dataset.init = '1';
+  function getTree() { return vp.querySelector('.apt-tree'); }
+  function apply() {
+    var tree = getTree();
+    if (!tree) return;
+    tree.style.transform = 'translate(' + state.px + 'px, ' + state.py + 'px) scale(' + state.z + ')';
+    var el = document.getElementById(zoomId);
+    if (el) el.textContent = Math.round(state.z * 100) + '%';
+  }
+  vp.onwheel = function(e) {
+    e.preventDefault();
+    var rect = vp.getBoundingClientRect();
+    var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    var factor = e.deltaY < 0 ? 1.1 : 0.9;
+    var newZ = Math.max(0.1, Math.min(5, state.z * factor));
+    state.px = mx - (mx - state.px) * (newZ / state.z);
+    state.py = my - (my - state.py) * (newZ / state.z);
+    state.z = newZ; apply();
+  };
+  vp.onmousedown = function(e) {
+    if (e.target.closest('.apt-zoom-btn, .apt-btn-expand, .apt-card, .apt-btn-add, .apt-btn-del, button')) return;
+    state.drag = true; state.dx = e.clientX; state.dy = e.clientY;
+    state.sx = state.px; state.sy = state.py;
+    vp.style.cursor = 'grabbing'; e.preventDefault();
+  };
+  function onMove(e) {
+    if (!state.drag) return;
+    state.px = state.sx + (e.clientX - state.dx);
+    state.py = state.sy + (e.clientY - state.dy); apply();
+  }
+  function onUp() {
+    if (state.drag) { state.drag = false; var v2 = document.getElementById(id); if(v2) v2.style.cursor = 'grab'; }
+  }
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+  setTimeout(function fit() {
+    var tree = getTree();
+    if (!tree) { setTimeout(fit, 200); return; }
+    var vpr = vp.getBoundingClientRect(), tr = tree.getBoundingClientRect();
+    var s = Math.min(1, Math.min(vpr.width/(tr.width||1), vpr.height/(tr.height||1)) * 0.9);
+    state.z = Math.max(0.1, Math.min(1, s));
+    state.px = Math.max(0, (vpr.width - tr.width * state.z) / 2);
+    state.py = 10; apply();
+  }, 300);
+}
+
+window.zoomDongshanTree = function(factor) {
+  var vp = document.getElementById('dongshan-tree-viewport');
+  var tree = vp ? vp.querySelector('.apt-tree') : null;
+  if (!tree) return;
+  if (factor === 1) { _dsZoom = 1; _dsPanX = 0; _dsPanY = 0; }
+  else {
+    var rect = vp.getBoundingClientRect();
+    var mx = rect.width / 2, my = rect.height / 2;
+    var newZ = Math.max(0.1, Math.min(5, _dsZoom * factor));
+    _dsPanX = mx - (mx - _dsPanX) * (newZ / _dsZoom);
+    _dsPanY = my - (my - _dsPanY) * (newZ / _dsZoom);
+    _dsZoom = newZ;
+  }
+  tree.style.transform = 'translate(' + _dsPanX + 'px, ' + _dsPanY + 'px) scale(' + _dsZoom + ')';
+  var el = document.getElementById('ds-zoom-level');
+  if (el) el.textContent = Math.round(_dsZoom * 100) + '%';
+};
+
+window.zoomLinhaiTree = function(factor) {
+  var vp = document.getElementById('linhai-tree-viewport');
+  var tree = vp ? vp.querySelector('.apt-tree') : null;
+  if (!tree) return;
+  if (factor === 1) { _lhZoom = 1; _lhPanX = 0; _lhPanY = 0; }
+  else {
+    var rect = vp.getBoundingClientRect();
+    var mx = rect.width / 2, my = rect.height / 2;
+    var newZ = Math.max(0.1, Math.min(5, _lhZoom * factor));
+    _lhPanX = mx - (mx - _lhPanX) * (newZ / _lhZoom);
+    _lhPanY = my - (my - _lhPanY) * (newZ / _lhZoom);
+    _lhZoom = newZ;
+  }
+  tree.style.transform = 'translate(' + _lhPanX + 'px, ' + _lhPanY + 'px) scale(' + _lhZoom + ')';
+  var el = document.getElementById('lh-zoom-level');
+  if (el) el.textContent = Math.round(_lhZoom * 100) + '%';
 };
