@@ -345,7 +345,7 @@ function toggleBgMusic() {
     if (isPlaying) startBgMusic();
     else {
       // Preload bg music
-      if (!bgMusic) { bgMusic = new Audio('../music/background.mp3'); bgMusic.loop = true; bgMusic.volume = 0.1; }
+      if (!bgMusic) { bgMusic = new Audio('/uploads/background_music_1781405764749.mp3'); bgMusic.loop = true; bgMusic.volume = 0.1; }
       document.getElementById('eq-bars').style.opacity = '0.15';
       document.getElementById('bg-title').textContent = '🎵 望府楼山间 · 氛围音乐';
       document.getElementById('bg-desc').textContent = '播放语音时自动响起';
@@ -362,7 +362,7 @@ updateStatus('点击 ▶ 开始收听');
 var bgMusicReady = false;
 function ensureBgMusic() {
   if (!bgMusic) {
-    bgMusic = new Audio('../music/background.mp3');
+    bgMusic = new Audio('/uploads/background_music_1781405764749.mp3');
     bgMusic.loop = true;
     bgMusic.volume = 0.15;
   }
