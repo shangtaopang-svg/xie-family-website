@@ -885,8 +885,23 @@ function renderGenealogy(area) {
   var data = getData('genealogy');
   data.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0); });
 
-  // Merge hardcoded ancient lineage data (unified — no overlap) so allData tree shows everyone connected
-  var allData = data.concat(getAllAncientData());
+  // Merge hardcoded ancient lineage data
+  var ancient = getAllAncientData();
+  // Connect stored 文杲/文杲公 to ancient 小四
+  var xiaosi = null;
+  for (var ai = 0; ai < ancient.length; ai++) { if (ancient[ai].name === '小四') { xiaosi = ancient[ai]; break; } }
+  if (xiaosi) {
+    for (var di = 0; di < data.length; di++) {
+      if ((data[di].name === '文杲' || data[di].name === '文杲公') && (!data[di].father_id || data[di].father_id === xiaosi.id)) {
+        data[di].father_id = xiaosi.id;
+      }
+    }
+  }
+  // Remove stored versions of ancient persons to avoid duplicates
+  var ancientNames = {};
+  for (var ai = 0; ai < ancient.length; ai++) ancientNames[ancient[ai].name] = true;
+  data = data.filter(function(p) { return !ancientNames[p.name] || p.name === '文杲' || p.name === '文杲公'; });
+  var allData = data.concat(ancient);
   allData.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0); });
 
   var gens = {};
@@ -3177,7 +3192,21 @@ function toggleTreeNode(btn) {
 function renderGenealogyTree() {
   var treeEl = document.getElementById('admin-genealogy-tree');
   if (!treeEl) return;
-  var allData = getData('genealogy').concat(getAllAncientData());
+  var data2 = getData('genealogy');
+  var ancient2 = getAllAncientData();
+  var xs2 = null;
+  for (var a2 = 0; a2 < ancient2.length; a2++) { if (ancient2[a2].name === '小四') { xs2 = ancient2[a2]; break; } }
+  if (xs2) {
+    for (var d2 = 0; d2 < data2.length; d2++) {
+      if ((data2[d2].name === '文杲' || data2[d2].name === '文杲公') && (!data2[d2].father_id || data2[d2].father_id === xs2.id)) {
+        data2[d2].father_id = xs2.id;
+      }
+    }
+  }
+  var an2 = {};
+  for (var a2 = 0; a2 < ancient2.length; a2++) an2[ancient2[a2].name] = true;
+  data2 = data2.filter(function(p) { return !an2[p.name] || p.name === '文杲' || p.name === '文杲公'; });
+  var allData = data2.concat(ancient2);
   var genFilter = document.getElementById('tree-filter-gen');
   var filtered = allData;
   if (genFilter && genFilter.value) {
@@ -3663,20 +3692,7 @@ function getAllAncientData() {
     [126,'采伯','深甫之后','深甫'],[126,'渠伯','深甫之后','深甫'],[126,'棐伯','深甫之后','深甫'],[126,'彚伯','深甫之后','深甫'],
     [127,'奕修','采伯之后','采伯'],[127,'奕懋','采伯之后','采伯'],[127,'奕恭','采伯之后','采伯'],[127,'奕容','采伯之后','采伯'],[127,'奕信','采伯之后','采伯'],
     [128,'在鉴','奕信之后','奕信'],[128,'在勋','奕信之后','奕信'],[128,'在纲','奕信之后','奕信'],[128,'在机','奕信之后','奕信'],
-    [129,'大四','在纲之后','在纲'],[129,'小四','在纲之后','在纲'],
-    [130,'丹一','小四之子','小四'],[130,'丹二','小四之子','小四'],[130,'丹三','小四之子','小四'],
-    [131,'文杲','丹一之后，枫槎谢氏始迁祖','丹一'],[131,'文榘','丹一之后，东门桃源陈氏之祖','丹一'],[131,'丹九','丹三之后','丹三'],
-    [132,'廿植一','丹九之后','丹九'],[132,'廿二','丹九之后','丹九'],[132,'廿四','丹九之后','丹九'],
-    [132,'十三','文榘之后','文榘'],[132,'十七','文榘之后','文榘'],[132,'二一','文榘之后','文榘'],
-    [133,'廿七','十三之后','十三'],[133,'廿九','十三之后','十三'],[133,'三十一','十三之后','十三'],[133,'四十','廿二之后','廿二'],
-    [134,'百十','廿七之后','廿七'],[134,'庆三','廿七之后','廿七'],
-    [134,'千九','四十之后','四十'],[134,'千十','四十之后','四十'],[134,'千十一','四十之后','四十'],[134,'千十三','四十之后','四十'],
-    [135,'敬乙','庆三之后','庆三'],[135,'一廷','千十一之后','千十一'],[135,'隆','千十一之后','千十一'],
-    [136,'琰','隆之后','隆'],[136,'琇','隆之后','隆'],
-    [137,'位','琰之后','琰'],[137,'倍','琰之后','琰'],[137,'侍','琰之后','琰'],[137,'体','琰之后','琰'],[137,'旦','琰之后','琰'],[137,'俱生','琇之后','琇'],
-    [138,'礼','位之后','位'],[138,'管','位之后','位'],[138,'罗','位之后','位'],
-    [139,'泰鹏','管之后','管'],[139,'泰颚','管之后','管'],
-    [140,'秀廉','泰颚之后','泰颚'],[140,'秀洁','泰颚之后','泰颚'],[140,'秀驹','泰颚之后','泰颚']
+    [129,'大四','在纲之后','在纲'],[129,'小四','在纲之后','在纲']
   ]);
 }
 
