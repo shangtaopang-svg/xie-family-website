@@ -309,18 +309,16 @@ var meritData = [];
 var respKey = 'mw_respected_';
 
 function loadMerit() {
-  var stored = localStorage.getItem('xie_merit_data');
-  if (stored) {
-    meritData = JSON.parse(stored);
-    renderMerit();
-    return;
-  }
-  // Fallback: fetch from JSON
-  fetch('../data/merit.json').then(function(r){return r.json()}).then(function(d){
+  // Always fetch fresh data from server, use localStorage as cache fallback
+  fetch('../data/merit.json?' + Date.now()).then(function(r){return r.json()}).then(function(d){
     meritData = d;
     localStorage.setItem('xie_merit_data', JSON.stringify(d));
     renderMerit();
   }).catch(function(){
+    var stored = localStorage.getItem('xie_merit_data');
+    if (stored) {
+      try { meritData = JSON.parse(stored); renderMerit(); return; } catch(e) {}
+    }
     meritData = [];
     renderMerit();
   });
