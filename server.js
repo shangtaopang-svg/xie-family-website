@@ -14,7 +14,7 @@ if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
 
 // Periodic auto-backup every 30 minutes
 setInterval(() => {
-  const modules = ['genealogy', 'members', 'news', 'activities', 'honors', 'reports', 'photos', 'videos'];
+  const modules = ['genealogy', 'members', 'news', 'activities', 'honors', 'reports', 'photos', 'videos', 'merit', 'merit-fundraising', 'merit-external', 'merit-social'];
   modules.forEach(mod => {
     const src = path.join(DATA_DIR, mod + '.json');
     if (fs.existsSync(src)) {
