@@ -179,18 +179,7 @@
     function calcDepth(pid, d) { if (d > maxDepth) maxDepth = d; getChildren(pid).forEach(function (c) { calcDepth(c.id, d + 1); }); }
     calcDepth(id, 0);
     render(fakeRoots, maxDepth + 1);
-  };
-
-    try {
-      focusId = null;
-    } catch(e) {
-      // Reload from scratch on error
-        data = getGenealogyData();
-        allPeople = {};
-        data.forEach(function (p) { allPeople[p.id] = p; });
-      }
-    }
-  };
+  }
 
   function esc(t) { if (!t) return ''; var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
@@ -2697,13 +2686,15 @@ function toggleGenChart() {
 </style>
 <script>
 var _gzZoom=1,_gzPanX=0,_gzPanY=0,_gzDrag=false,_gzDx=0,_gzDy=0,_gzSx=0,_gzSy=0;
-function initGenealogyTreePanZoom(){var vp=document.getElementById("gz-tree-viewport");if(!vp||vp.dataset.gzInit)return;vp.dataset.gzInit="1";
-function ga(){var t=vp.querySelector(".apt-tree");if(!t)return;t.style.transform="translate("+_gzPanX+"px,"+_gzPanY+"px) scale("+_gzZoom+")";var e=document.getElementById("gz-zoom-level");if(e)e.textContent=Math.round(_gzZoom*100)+"%";}
+function initGenealogyTreePanZoom(){
+var vp=document.getElementById("gz-tree-viewport");if(!vp||vp.dataset.gzInit)return;vp.dataset.gzInit="1";
+var ga=function(){var t=vp.querySelector(".apt-tree");if(!t)return;t.style.transform="translate("+_gzPanX+"px,"+_gzPanY+"px) scale("+_gzZoom+")";var e=document.getElementById("gz-zoom-level");if(e)e.textContent=Math.round(_gzZoom*100)+"%";};
 vp.onwheel=function(e){e.preventDefault();var r=vp.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top,f=e.deltaY<0?1.1:0.9,nz=Math.max(0.05,Math.min(10,_gzZoom*f));_gzPanX=mx-(mx-_gzPanX)*(nz/_gzZoom);_gzPanY=my-(my-_gzPanY)*(nz/_gzZoom);_gzZoom=nz;ga();};
 vp.onmousedown=function(e){if(e.target.closest(".apt-zoom-btn,.apt-btn-expand,.apt-card,button"))return;_gzDrag=true;_gzDx=e.clientX;_gzDy=e.clientY;_gzSx=_gzPanX;_gzSy=_gzPanY;e.preventDefault();};
 window.addEventListener("mousemove",function(e){if(!_gzDrag)return;_gzPanX=_gzSx+(e.clientX-_gzDx);_gzPanY=_gzSy+(e.clientY-_gzDy);ga();});
 window.addEventListener("mouseup",function(){if(_gzDrag){_gzDrag=false;var v=document.getElementById("gz-tree-viewport");if(v)v.style.cursor="grab";}});
-setTimeout(function(){var t=vp.querySelector(".apt-tree");if(!t)return;var vpr=vp.getBoundingClientRect(),tr=t.getBoundingClientRect();var s=Math.min(1,Math.min(vpr.width/(tr.width||1),vpr.height/(tr.height||1))*0.8);_gzZoom=Math.max(0.05,Math.min(1,s));_gzPanX=Math.max(0,(vpr.width-tr.width*_gzZoom)/2);_gzPanY=10;ga();},500);}
+setTimeout(function(){var t=vp.querySelector(".apt-tree");if(!t)return;var vpr=vp.getBoundingClientRect(),tr=t.getBoundingClientRect();var s=Math.min(1,Math.min(vpr.width/(tr.width||1),vpr.height/(tr.height||1))*0.8);_gzZoom=Math.max(0.05,Math.min(1,s));_gzPanX=Math.max(0,(vpr.width-tr.width*_gzZoom)/2);_gzPanY=10;ga();},500);
+}
 window.zoomGenealogyTree=function(factor){var vp=document.getElementById("gz-tree-viewport");if(!vp)return;var el=vp.querySelector(".apt-tree");if(!el)return;if(factor===1){_gzZoom=1;_gzPanX=0;_gzPanY=0;}else{var r=vp.getBoundingClientRect();var mx=r.width/2,my=r.height/2,nz=Math.max(0.05,Math.min(10,_gzZoom*factor));_gzPanX=mx-(mx-_gzPanX)*(nz/_gzZoom);_gzPanY=my-(my-_gzPanY)*(nz/_gzZoom);_gzZoom=nz;}el.style.transform="translate("+_gzPanX+"px,"+_gzPanY+"px) scale("+_gzZoom+")";var zl=document.getElementById("gz-zoom-level");if(zl)zl.textContent=Math.round(_gzZoom*100)+"%";};
 </script>
 
