@@ -573,10 +573,10 @@
     for (var i = 0; i < raw.length; i++) {
       var r = raw[i], pid = 50000 + i;
       var gen = r[0], br = '古世系';
-      if (gen <= 65) br = "远古世系";
-      else if (gen <= 99) br = '申伯世系';
-      else if (gen <= 121) br = '始宁东山世系';
-      else if (gen <= 129) br = '临海下渡世系';
+      if (gen < 65) br = '远古世系';
+      else if (gen <= 98) br = '申伯世系';
+      else if (gen <= 120) br = '始宁东山世系';
+      else if (gen <= 128) br = '临海下渡世系';
       else br = '石马下谢分房';
       result.push({ id: pid, name: r[1], gender: '男', generation: gen.toString(), generation_num: gen, branch: br, father_id: r[3] ? (nameToId[r[3]] || null) : null, birth_date: '', is_alive: '否', highlight: i === 0, biography: r[2] });
     }
