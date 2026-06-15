@@ -827,11 +827,23 @@ function buildConnectorPath(parentId, childIds, layout) {
   return paths;
 }
 
-// Branch filter: return only matching people
+// Branch filter: return only matching people (plus transition person from previous branch)
 function getBranchData(data, rootNamePattern) {
   var isBranchFilter = ['远古世系','申伯世系','始宁东山世系','临海下渡世系','石马下谢分房'].indexOf(rootNamePattern) >= 0;
   if (isBranchFilter) {
-    return data.filter(function(p) { return p.branch === rootNamePattern; });
+    var result = data.filter(function(p) { return p.branch === rootNamePattern; });
+    // Include the starting person of this branch (from previous branch)
+    var transitionNames = {'申伯世系':'申伯'};
+    var tName = transitionNames[rootNamePattern];
+    if (tName) {
+      for (var ti = 0; ti < data.length; ti++) {
+        if (data[ti].name === tName && result.indexOf(data[ti]) < 0) {
+          result.push(data[ti]);
+          break;
+        }
+      }
+    }
+    return result;
   }
   // For name-based filters (后枫槎, 前枫槎), use original descendant collection
   var candidates = [];
