@@ -833,8 +833,8 @@ function getBranchData(data, rootNamePattern) {
   if (isBranchFilter) {
     var result = data.filter(function(p) { return p.branch === rootNamePattern; });
     // Include the starting person of this branch (from previous branch)
-    var transitionNames = {'申伯世系':'申伯','始宁东山世系':'缵','临海下渡世系':'闓','临海下渡世系':'闓'};
-  var endTransitionNames = {始宁东山世系:闓};
+    var transitionNames = {'申伯世系':'申伯','始宁东山世系':'缵','临海下渡世系':'闓'};
+
     var tName = transitionNames[rootNamePattern];
 
     if (tName) {
@@ -845,18 +845,7 @@ function getBranchData(data, rootNamePattern) {
         }
       }
     }
-    // Also include end transition person from next branch
-    var etName = endTransitionNames[rootNamePattern];
-    if (etName) {
-      for (var ti = 0; ti < data.length; ti++) {
-        if (data[ti].name === etName && result.indexOf(data[ti]) < 0) {
-          result.push(data[ti]);
-          break;
-        }
-      }
-    }
-
-    return result;
+        return result;
   }
   // For name-based filters (后枫槎, 前枫槎), use original descendant collection
   var candidates = [];
