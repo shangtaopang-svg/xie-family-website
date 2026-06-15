@@ -405,12 +405,12 @@
       </div>
     </div>
 
-    <!-- Scroll 3: 社会各界助款名单 -->
+    <!-- Scroll 3: 外来宗亲助款名单 -->
     <div class="scroll-card" data-scroll="social">
       <div class="scroll-card-header" onclick="toggleScroll('social')">
         <div class="info">
           <h3>三 · 外来宗亲助款名单</h3>
-          <span class="empty-badge">暂无数据</span>
+          <span class="count-badge" id="badge-social">143人</span>
         </div>
         <button class="toggle-btn" id="btn-social">展开 ▾</button>
       </div>
@@ -418,13 +418,7 @@
         <div class="scroll-paper">
           <div class="scroll-edge-left"></div>
           <div class="scroll-edge-right"></div>
-          <div class="scroll-content">
-            <div class="empty-state">
-              <div class="icon">📋</div>
-              <p>数据待上传</p>
-              <p style="font-size:0.7rem;margin-top:6px;">请提供外来宗亲助款名单</p>
-            </div>
-          </div>
+          <div class="scroll-content" id="content-social"></div>
         </div>
       </div>
     </div>
@@ -502,7 +496,7 @@ var currentOpen = null;
 var scrolls = {
   clan:   { file: '../data/merit.json',  btn: 'btn-clan',  wrap: 'wrap-clan',  content: 'content-clan' },
   external: { file: '../data/merit-fundraising.json', btn: 'btn-external', wrap: 'wrap-external', content: 'content-external' },
-  social: { file: null, btn: 'btn-social', wrap: 'wrap-social' },
+  social: { file: '../data/merit-external.json', btn: 'btn-social', wrap: 'wrap-social', content: 'content-social' },
   extra1: { file: null, btn: 'btn-extra1', wrap: 'wrap-extra1' },
   temple: { file: null, btn: 'btn-temple', wrap: 'wrap-temple' }
 };
@@ -511,6 +505,7 @@ var scrolls = {
 function loadAll() {
   loadScrollData('clan');
   loadScrollData('external');
+  loadScrollData('social');
 }
 
 function loadScrollData(key) {
