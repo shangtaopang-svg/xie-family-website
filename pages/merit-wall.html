@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>功德堂 · 下枫槎谢氏</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css?v=3">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #1a1614;
+      background-image:
+        repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(60,50,40,0.12) 60px, rgba(60,50,40,0.12) 61px),
+        repeating-linear-gradient(0deg, transparent, transparent 30px, rgba(60,50,40,0.08) 30px, rgba(60,50,40,0.08) 31px);
+      color: #e8e0d0;
+      font-family: 'Noto Serif SC', 'STSong', serif;
+      min-height: 100vh;
+    }
+    .mw-wrap { max-width: 1200px; margin: 0 auto; padding: 0 20px 60px; }
+
+    /* ===== Banner ===== */
+    .mw-banner {
+      text-align: center; padding: 80px 20px 50px;
+      position: relative;
+      background: linear-gradient(180deg, #2a221c 0%, #1a1614 100%);
+      border-bottom: 2px solid rgba(201,168,76,0.2);
+    }
+    .mw-banner::before {
+      content: ''; position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30Z' fill='none' stroke='rgba(201,168,76,0.05)' stroke-width='0.5'/%3E%3C/svg%3E");
+      opacity: 0.3;
+    }
+    .mw-banner h1 {
+      font-family: 'Ma Shan Zheng', cursive;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      color: #c9a84c; letter-spacing: 0.15em;
+      text-shadow: 0 0 40px rgba(201,168,76,0.15), 0 4px 8px rgba(0,0,0,0.5);
+      position: relative; margin-bottom: 12px;
+    }
+    .mw-banner .sub {
+      font-size: clamp(0.85rem, 2vw, 1.05rem);
+      color: rgba(232,224,208,0.7); letter-spacing: 0.3em;
+      position: relative;
+    }
+    .mw-banner .sub::before, .mw-banner .sub::after {
+      content: '◆'; color: #c9a84c; margin: 0 12px; font-size: 0.6em; opacity: 0.4;
+    }
+
+    /* ===== Toolbar ===== */
+    .mw-toolbar {
+      display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+      margin: 30px 0 24px; padding: 14px 18px;
+      background: rgba(255,255,255,0.04); border-radius: 12px;
+      border: 1px solid rgba(201,168,76,0.12);
+    }
+    .mw-toolbar input {
+      flex: 1; min-width: 160px; padding: 8px 14px; border-radius: 8px;
+      border: 1px solid rgba(201,168,76,0.2); background: rgba(0,0,0,0.3);
+      color: #e8e0d0; font-size: 13px; font-family: inherit; outline: none;
+    }
+    .mw-toolbar input:focus { border-color: #c9a84c; }
+    .mw-toolbar input::placeholder { color: rgba(232,224,208,0.35); }
+    .mw-toolbar select {
+      padding: 8px 12px; border-radius: 8px;
+      border: 1px solid rgba(201,168,76,0.2); background: rgba(0,0,0,0.3);
+      color: #e8e0d0; font-size: 12px; font-family: inherit; cursor: pointer; outline: none;
+    }
+    .mw-toolbar .stat {
+      font-size: 12px; color: rgba(232,224,208,0.5); margin-left: auto;
+    }
+
+    /* ===== Brick Grid ===== */
+    .mw-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px; margin-bottom: 50px;
+    }
+
+    /* ===== Single Brick ===== */
+    .mw-brick {
+      position: relative; padding: 24px 18px 18px;
+      background: linear-gradient(135deg, rgba(40,35,30,0.95), rgba(30,26,22,0.98));
+      border: 1px solid rgba(201,168,76,0.15);
+      border-radius: 6px; cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+      opacity: 0; transform: translateY(30px);
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      overflow: hidden;
+    }
+    .mw-brick.visible { opacity: 1; transform: translateY(0); }
+    .mw-brick:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(201,168,76,0.2);
+      border-color: rgba(201,168,76,0.3);
+    }
+    /* Highlight (large donor) */
+    .mw-brick.highlight {
+      border-color: #c9a84c; border-width: 2px;
+      background: linear-gradient(135deg, rgba(50,42,32,0.95), rgba(35,30,24,0.98));
+    }
+    .mw-brick.highlight::before {
+      content: '◆ 大功德'; position: absolute; top: 6px; right: 10px;
+      font-size: 10px; color: #c9a84c; letter-spacing: 1px; opacity: 0.7;
+    }
+    .mw-brick.highlight .brick-name { color: #d4b86a; }
+    /* Corners */
+    .mw-brick::after {
+      content: ''; position: absolute; inset: 4px;
+      border: 1px solid rgba(201,168,76,0.06);
+      border-radius: 3px; pointer-events: none;
+    }
+    /* Elements */
+    .brick-name {
+      font-size: 1.35rem; font-weight: 700; color: #e8e0d0;
+      letter-spacing: 0.05em; margin-bottom: 4px;
+    }
+    .brick-gen {
+      font-size: 0.8rem; color: rgba(201,168,76,0.6);
+      margin-bottom: 8px;
+    }
+    .brick-amount {
+      font-size: 0.9rem; color: #c9a84c;
+      padding: 3px 14px; border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 20px; background: rgba(201,168,76,0.06);
+      margin-bottom: 6px;
+    }
+    .brick-category {
+      font-size: 0.72rem; color: rgba(232,224,208,0.35);
+      margin-bottom: 6px;
+    }
+    .brick-branch {
+      font-size: 0.75rem; color: rgba(232,224,208,0.3);
+      margin-bottom: 10px;
+    }
+    /* Respect */
+    .brick-respect {
+      display: flex; align-items: center; gap: 6px; margin-top: auto;
+    }
+    .respect-btn {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1px solid rgba(201,168,76,0.25);
+      background: rgba(201,168,76,0.08);
+      color: #c9a84c; font-size: 12px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; font-family: 'Ma Shan Zheng', cursive;
+    }
+    .respect-btn:hover { background: rgba(201,168,76,0.2); transform: scale(1.15); }
+    .respect-btn.done { opacity: 0.4; cursor: default; transform: none; }
+    .respect-count {
+      font-size: 12px; color: rgba(232,224,208,0.4); min-width: 20px;
+    }
+
+    /* ===== Empty state ===== */
+    .mw-empty {
+      grid-column: 1 / -1; text-align: center; padding: 80px 20px;
+      color: rgba(232,224,208,0.2); font-size: 14px;
+    }
+
+    /* ===== Modal ===== */
+    .mw-modal {
+      display: none; position: fixed; inset: 0; z-index: 99999;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .mw-modal.open { display: flex; }
+    .mw-modal-box {
+      max-width: 480px; width: 100%; padding: 30px;
+      background: linear-gradient(135deg, #2a221c, #1a1614);
+      border: 1px solid rgba(201,168,76,0.2); border-radius: 12px;
+      position: relative; max-height: 80vh; overflow-y: auto;
+    }
+    .mw-modal-close {
+      position: absolute; top: 12px; right: 16px;
+      background: none; border: none; color: rgba(232,224,208,0.3);
+      font-size: 22px; cursor: pointer; line-height: 1;
+    }
+    .mw-modal-close:hover { color: #c9a84c; }
+    .mw-modal-name {
+      font-size: 1.5rem; font-weight: 700; color: #d4b86a;
+      margin-bottom: 4px; font-family: 'Ma Shan Zheng', cursive;
+    }
+    .mw-modal-gen { font-size: 0.85rem; color: rgba(201,168,76,0.5); margin-bottom: 12px; }
+    .mw-modal-amount {
+      font-size: 1rem; color: #c9a84c;
+      padding: 4px 16px; border: 1px solid rgba(201,168,76,0.2); border-radius: 20px;
+      display: inline-block; margin-bottom: 14px;
+    }
+    .mw-modal-bio {
+      font-size: 0.9rem; line-height: 1.9; color: rgba(232,224,208,0.7);
+      margin-bottom: 12px; padding: 12px 0; border-top: 1px solid rgba(201,168,76,0.1);
+    }
+    .mw-modal-tribute {
+      font-size: 0.85rem; line-height: 1.7; color: #c9a84c;
+      font-style: italic; padding: 10px 14px;
+      background: rgba(201,168,76,0.06); border-radius: 8px;
+      border-left: 2px solid rgba(201,168,76,0.2);
+    }
+    .mw-modal-tribute::before { content: '「'; }
+    .mw-modal-tribute::after { content: '」'; }
+
+    /* ===== Inscription ===== */
+    .mw-inscription {
+      text-align: center; padding: 40px 30px;
+      border-top: 1px solid rgba(201,168,76,0.1);
+      position: relative;
+    }
+    .mw-inscription h3 {
+      font-family: 'Ma Shan Zheng', cursive;
+      font-size: 1.3rem; color: #c9a84c; margin-bottom: 16px; letter-spacing: 0.1em;
+    }
+    .mw-inscription p {
+      font-size: 0.95rem; line-height: 2.2; color: rgba(232,224,208,0.6);
+      max-width: 700px; margin: 0 auto;
+    }
+
+    /* ===== Print ===== */
+    @media print {
+      body { background: #fff !important; color: #222 !important; }
+      .mw-banner { background: #fff !important; border-bottom: 2px solid #c9a84c; padding: 30px 20px; }
+      .mw-banner h1 { color: #c9a84c !important; }
+      .mw-banner .sub { color: #666 !important; }
+      .mw-toolbar { display: none !important; }
+      .mw-brick { opacity: 1 !important; transform: none !important; break-inside: avoid; background: #fff !important; border: 1px solid #c9a84c !important; }
+      .brick-name { color: #222 !important; }
+      .brick-gen, .brick-branch, .brick-category { color: #666 !important; }
+      .brick-amount { color: #8a7030 !important; border-color: #c9a84c !important; }
+      .mw-brick.highlight { border-width: 2px !important; }
+      .mw-brick.highlight::before { color: #8a7030 !important; }
+      .respect-btn, .respect-count { display: none !important; }
+      .mw-inscription p { color: #444 !important; }
+      .mw-inscription { border-top-color: #c9a84c !important; }
+      .mw-modal { display: none !important; }
+      .mw-brick:hover { transform: none !important; box-shadow: none !important; }
+      .mw-brick::after { border-color: rgba(201,168,76,0.2) !important; }
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 640px) {
+      .mw-banner { padding: 50px 16px 30px; }
+      .mw-toolbar select { flex: 1; }
+      .mw-grid { gap: 10px; }
+      .mw-brick { padding: 18px 14px 14px; }
+      .mw-modal-box { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="mw-wrap">
+  <!-- Banner -->
+  <div class="mw-banner">
+    <h1>下枫槎功德堂</h1>
+    <div class="sub">凡捐资修谱建祠者 · 勒名于墙 · 永志不忘</div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="mw-toolbar" id="mw-toolbar">
+    <input type="text" id="mw-search" placeholder="🔍 搜索姓名..." oninput="filterMerit()">
+    <select id="mw-category" onchange="filterMerit()">
+      <option value="">全部功德</option>
+      <option value="修谱功德">修谱功德</option>
+      <option value="建祠功德">建祠功德</option>
+      <option value="双项功德">双项功德</option>
+    </select>
+    <select id="mw-sort" onchange="renderMerit()">
+      <option value="generation">按辈分</option>
+      <option value="date">按时间</option>
+      <option value="respects">按致敬</option>
+    </select>
+    <span class="stat" id="mw-stat"></span>
+  </div>
+
+  <!-- Grid -->
+  <div class="mw-grid" id="mw-grid"></div>
+
+  <!-- Modal -->
+  <div class="mw-modal" id="mw-modal" onclick="if(event.target===this)closeModal()">
+    <div class="mw-modal-box" id="mw-modal-box"></div>
+  </div>
+
+  <!-- Inscription -->
+  <div class="mw-inscription">
+    <h3>碑 记</h3>
+    <p>
+      盖闻木有本而枝叶茂，水有源而流派长。下枫槎谢氏，自明隆庆壬申迁居以来，
+      耕读传家，瓜瓞绵绵。今有合族贤达，或捐资修谱以存世系，或慷慨建祠以奉先祖，
+      或奔走联络以睦族谊。诸公共襄盛举，功在宗族，德被后昆。
+      谨勒名于墙，以彰其善，以励来者。
+    </p>
+    <p style="margin-top:12px;font-size:0.85rem;color:rgba(232,224,208,0.35);">
+      公元二〇二六年丙午春  ·  下枫槎谢氏阖族敬立
+    </p>
+  </div>
+</div>
+
+<script>
+// ===== Data =====
+var meritData = [];
+var respKey = 'mw_respected_';
+
+function loadMerit() {
+  var stored = localStorage.getItem('xie_merit_data');
+  if (stored) {
+    meritData = JSON.parse(stored);
+    renderMerit();
+    return;
+  }
+  // Fallback: fetch from JSON
+  fetch('../data/merit.json').then(function(r){return r.json()}).then(function(d){
+    meritData = d;
+    localStorage.setItem('xie_merit_data', JSON.stringify(d));
+    renderMerit();
+  }).catch(function(){
+    meritData = [];
+    renderMerit();
+  });
+}
+
+// ===== Render =====
+function renderMerit() {
+  var data = meritData.slice();
+  var sort = document.getElementById('mw-sort').value;
+  if (sort === 'generation') data.sort(function(a,b){return a.generation-b.generation || a.id-b.id;});
+  else if (sort === 'date') data.sort(function(a,b){return (a.date||'0').localeCompare(b.date||'0') || a.id-b.id;});
+  else if (sort === 'respects') data.sort(function(a,b){return (b.respects||0)-(a.respects||0) || a.id-b.id;});
+
+  var grid = document.getElementById('mw-grid');
+  var html = '';
+  data.forEach(function(p, i){
+    var hl = p.highlight ? ' highlight' : '';
+    var respected = localStorage.getItem(respKey + p.id) === '1';
+    html += '<div class="mw-brick' + hl + '" data-id="' + p.id + '" onclick="openModal(' + p.id + ')" style="transition-delay:' + (i * 0.04) + 's">';
+    html += '<div class="brick-name">' + esc(p.name) + '</div>';
+    html += '<div class="brick-gen">第' + p.generation + '世孙</div>';
+    html += '<div class="brick-amount">' + esc(p.amount) + '</div>';
+    html += '<div class="brick-category">' + esc(p.category) + '</div>';
+    html += '<div class="brick-branch">' + esc(p.branch) + '</div>';
+    html += '<div class="brick-respect">';
+    html += '<span class="respect-btn' + (respected?' done':'') + '" onclick="event.stopPropagation();doRespect(' + p.id + ')" title="致敬">敬</span>';
+    html += '<span class="respect-count" id="rc-' + p.id + '">' + (p.respects||0) + '</span>';
+    html += '</div></div>';
+  });
+  if (data.length === 0) {
+    html = '<div class="mw-empty">暂无功德记录</div>';
+  }
+  grid.innerHTML = html;
+  document.getElementById('mw-stat').textContent = data.length + ' 人';
+
+  // Scroll-in animation
+  var observer = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('visible'); } });
+  }, {threshold:0.1});
+  grid.querySelectorAll('.mw-brick').forEach(function(b){ observer.observe(b); });
+
+  applyFilter(); // re-apply any active filter
+}
+
+// ===== Filter =====
+function filterMerit() {
+  var q = document.getElementById('mw-search').value.trim().toLowerCase();
+  var cat = document.getElementById('mw-category').value;
+  document.querySelectorAll('.mw-brick').forEach(function(b){
+    var name = b.querySelector('.brick-name').textContent.toLowerCase();
+    var catEl = b.querySelector('.brick-category').textContent;
+    var show = (!q || name.indexOf(q) >= 0) && (!cat || catEl === cat);
+    b.style.display = show ? '' : 'none';
+  });
+  var visible = document.querySelectorAll('.mw-brick[style*="display: none"]');
+  var total = document.querySelectorAll('.mw-brick').length;
+  document.getElementById('mw-stat').textContent = (total - visible.length) + ' / ' + total + ' 人';
+}
+
+function applyFilter() { filterMerit(); }
+
+// ===== Modal =====
+function openModal(id) {
+  var p = null;
+  for (var i = 0; i < meritData.length; i++) { if (meritData[i].id === id) { p = meritData[i]; break; } }
+  if (!p) return;
+  var box = document.getElementById('mw-modal-box');
+  box.innerHTML =
+    '<button class="mw-modal-close" onclick="closeModal()">✕</button>' +
+    '<div class="mw-modal-name">' + esc(p.name) + '</div>' +
+    '<div class="mw-modal-gen">第' + p.generation + '世孙 · ' + esc(p.branch) + '</div>' +
+    '<div class="mw-modal-amount">' + esc(p.amount) + ' · ' + esc(p.category) + '</div>' +
+    (p.biography ? '<div class="mw-modal-bio">' + esc(p.biography) + '</div>' : '') +
+    (p.tribute ? '<div class="mw-modal-tribute">' + esc(p.tribute) + '</div>' : '');
+  document.getElementById('mw-modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('mw-modal').classList.remove('open');
+}
+
+// ===== Respect =====
+function doRespect(id) {
+  if (localStorage.getItem(respKey + id) === '1') return;
+  localStorage.setItem(respKey + id, '1');
+  for (var i = 0; i < meritData.length; i++) {
+    if (meritData[i].id === id) {
+      meritData[i].respects = (meritData[i].respects || 0) + 1;
+      break;
+    }
+  }
+  localStorage.setItem('xie_merit_data', JSON.stringify(meritData));
+  var el = document.getElementById('rc-' + id);
+  if (el) el.textContent = parseInt(el.textContent) + 1;
+  var btn = el ? el.previousElementSibling : null;
+  if (btn) btn.classList.add('done');
+}
+
+// ===== Util =====
+function esc(t) { if (!t) return ''; return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ===== Init =====
+loadMerit();
+
+// Keyboard: ESC close modal
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>

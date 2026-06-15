@@ -212,6 +212,22 @@ const MODULES = {
     defaultData: [],
     readOnly: true
   },
+  merit: {
+    label: '功德管理',
+    icon: '🏛️',
+    fields: [
+      { key: 'name', label: '姓名', type: 'text', required: true },
+      { key: 'generation', label: '世代', type: 'number', required: true },
+      { key: 'branch', label: '房支', type: 'text', placeholder: '如：后枫槎东房' },
+      { key: 'category', label: '类别', type: 'select', options: ['修谱功德', '建祠功德', '双项功德'], required: true },
+      { key: 'amount', label: '捐资金额', type: 'text', placeholder: '如：捐资XX金' },
+      { key: 'date', label: '时间', type: 'text', placeholder: '年份或具体时间' },
+      { key: 'highlight', label: '大功德', type: 'select', options: ['否', '是'] },
+      { key: 'biography', label: '生平简介', type: 'textarea' },
+      { key: 'tribute', label: '后人感言', type: 'textarea', placeholder: '对该位先贤的致敬之词' }
+    ],
+    defaultData: []
+  },
   settings: {
     label: '系统设置',
     icon: '⚙️',
@@ -248,6 +264,10 @@ function getData(module) {
 
 function saveData(module, data) {
   localStorage.setItem('xie_admin_' + module, JSON.stringify(data));
+  // Sync merit data to public-facing key
+  if (module === 'merit') {
+    localStorage.setItem('xie_merit_data', JSON.stringify(data));
+  }
   // Sync to server with retry
   syncToServer(module, data);
 }
