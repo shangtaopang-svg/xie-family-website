@@ -2,7 +2,6 @@
    宁海下枫槎村 · 谢氏家族网站
    参考风格：童寂 (light gradient + glassmorphism)
    ============================================ */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 
 /* ===== VARIABLES & THEME ===== */
@@ -27,8 +26,8 @@
   --radius: 16px;
   --radius-sm: 12px;
   --radius-xl: 24px;
-  --font-title: 'Inter', 'Noto Serif SC', 'STSong', 'SimSun', 'Songti SC', serif;
-  --font-body: 'Inter', 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  --font-title: 'Noto Serif SC', 'STSong', 'SimSun', 'Songti SC', serif;
+  --font-body: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;
 }
 
 /* ===== Dark Mode ===== */
