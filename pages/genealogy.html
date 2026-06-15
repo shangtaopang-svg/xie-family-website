@@ -16,6 +16,7 @@
 </head>
   <script defer src="../js/timeline.js?v=2"></script>
 <script defer src="../js/genealogy-migration.js?v=1"></script>
+<script defer src="../js/admin.js?v=45"></script>
 <script>(function () {
   'use strict';
 
@@ -440,6 +441,30 @@
         #genealogy-migration-map .gm-info-desc{font-size:13px;line-height:1.8;color:#ccc;margin-bottom:10px;}
         #genealogy-migration-map .gm-info-stat{font-size:11px;color:#888;border-top:1px solid rgba(255,255,255,0.08);padding-top:8px;}
         @media (max-width:600px){#genealogy-migration-map{height:340px !important;}#genealogy-migration-map .gm-info-panel{width:240px;right:8px;top:8px;padding:14px 16px;}}
+        /* Admin-style tree for 世系图谱 */
+        .apt-tree{position:relative;padding:20px;display:flex;flex-direction:column;align-items:flex-start;}
+        .apt-person{display:flex;flex-direction:column;align-items:center;}
+        .apt-card{display:flex;flex-direction:column;align-items:flex-start;padding:8px 14px;border-radius:8px;border:2px solid var(--glass-border);background:var(--bg-card);cursor:pointer;transition:all 0.15s;position:relative;min-width:120px;}
+        .apt-card-inner{width:100%;}
+        .apt-card-actions{display:flex;gap:2px;margin-bottom:4px;opacity:0.5;}
+        .apt-card-actions:hover{opacity:1;}
+        .apt-btn-add,.apt-btn-del{width:20px;height:20px;border:none;border-radius:50%;font-size:12px;line-height:1;cursor:pointer;font-weight:700;padding:0;transition:transform 0.1s;}
+        .apt-btn-add{background:#4a9eff;color:#fff;}
+        .apt-btn-del{background:#e74c3c;color:#fff;}
+        .apt-card:hover{border-color:var(--accent-orange);box-shadow:0 2px 8px rgba(251,146,60,0.12);transform:translateY(-1px);}
+        .apt-male{border-left:3px solid #4a9eff;}
+        .apt-name{font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;}
+        .apt-meta{font-size:10px;color:var(--text-tertiary);margin-top:2px;}
+        .apt-branch{font-size:9px;padding:1px 6px;border-radius:3px;background:var(--accent-orange-dim);color:var(--accent-orange);margin-top:2px;display:inline-block;}
+        .apt-children-count{font-size:8px;color:var(--text-tertiary);margin-top:2px;opacity:0.5;}
+        .apt-children{display:flex;gap:6px;position:relative;justify-content:center;}
+        .apt-child{display:flex;flex-direction:column;align-items:center;position:relative;}
+        .apt-connector{width:2px;height:18px;background:var(--accent-orange);opacity:0.2;margin:0 auto;}
+        .apt-vline{width:2px;height:12px;background:var(--accent-orange);opacity:0.15;}
+        .apt-children-wrap{display:block;}
+        .apt-hline{position:absolute;top:0;left:6px;right:6px;height:2px;background:var(--accent-orange);opacity:0.15;}
+        .apt-btn-expand{width:18px;height:18px;border:none;border-radius:50%;font-size:10px;line-height:1;cursor:pointer;background:var(--accent-orange);color:#fff;transition:transform 0.1s;}
+        .apt-btn-expand:hover{transform:scale(1.2);}
             </style>
 <!-- 管理提示 -->
       <div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:20px;text-align:center;" class="fade-in">
@@ -941,6 +966,22 @@ function renderSimpleTree(data) {
 function renderTreeSVG(data) {
   var container = document.getElementById('tree-container');
   if (!container) return;
+  // Use admin-style card tree if available
+  if (typeof buildAdminTreeHtml === 'function' && data && data.length > 0) {
+    var root = null;
+    for (var ri = 0; ri < data.length; ri++) { if (data[ri].name === '炎帝神农氏') { root = data[ri]; break; } }
+    var rootData = root ? [root] : [data[0]];
+    // Get all descendants of the root
+    var ids = {}, collectIds = [];
+    function coll(pid) {
+      if (ids[pid]) return; ids[pid] = true; collectIds.push(pid);
+      for (var ci = 0; ci < data.length; ci++) { if (parseInt(data[ci].father_id) === pid || parseInt(data[ci].mother_id) === pid) coll(data[ci].id); }
+    }
+    coll(rootData[0].id);
+    var treeData = data.filter(function(p) { return ids[p.id]; });
+    container.innerHTML = buildAdminTreeHtml(treeData, {hideGen: true});
+    return;
+  }
   // Check cache for current branch filter (instant re-render)
   var _treeCache = window._treeCache || {};
   window._treeCache = _treeCache;
