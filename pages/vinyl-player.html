@@ -170,7 +170,7 @@
       height: 220px;
       z-index: 10;
       transform-origin: 28px 28px;
-      transition: transform 0.7s cubic-bezier(0.34, 1.2, 0.64, 1);
+      transition: transform 0.9s cubic-bezier(0.34, 1.2, 0.64, 1);
       pointer-events: none;
     }
     /* Pivot base */
@@ -231,11 +231,11 @@
 
     /* Default = PARKED (off the record, arm to the right) */
     .tonearm {
-      transform: rotate(-45deg);
+      transform: translateY(-18px) rotate(-45deg);
     }
-    /* Playing = ON the record (arm swings onto vinyl) */
+    /* Playing = lowered onto record */
     .tonearm.playing {
-      transform: rotate(15deg);
+      transform: translateY(0) rotate(15deg);
     }/* ===== Now Playing Info ===== */
     .now-playing {
       text-align: center;
