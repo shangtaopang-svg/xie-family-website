@@ -14,13 +14,26 @@
       background-image:
         repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(139,26,26,0.03) 80px, rgba(139,26,26,0.03) 81px),
         repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(139,26,26,0.02) 40px, rgba(139,26,26,0.02) 41px);
+      background-attachment: fixed;
       min-height: 100vh;
       font-family: 'Noto Serif SC', serif;
       overflow-x: hidden;
       display: flex;
       flex-direction: column;
       align-items: center;
+      position: relative;
     }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='g' width='12' height='12' patternUnits='userSpaceOnUse'%3E%3Cpath d='M6 0v12M0 6h12' stroke='%238a7030' stroke-width='0.5' fill='none'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='120' height='120' fill='url(%23g)'/%3E%3Ccircle cx='60' cy='60' r='28' fill='none' stroke='%238a7030' stroke-width='0.5'/%3E%3Cpath d='M38 38l44 44M82 38l-44 44' stroke='%238a7030' stroke-width='0.3'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+    .page-wrap { position: relative; z-index: 1; }
 
     .page-wrap {
       width: 100%;
@@ -32,11 +45,22 @@
     /* ===== Page Header ===== */
     .page-title {
       font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
-      font-size: clamp(1.6rem, 4vw, 2.4rem);
-      color: #1a1a1a;
+      font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+      color: #2c1810;
       letter-spacing: 0.4em;
       text-align: center;
-      margin: 15px 0 4px;
+      margin: 20px 0 4px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.06);
+      font-weight: 700;
+      position: relative;
+    }
+    .page-title::after {
+      content: '';
+      display: block;
+      width: 60px;
+      height: 2px;
+      margin: 10px auto 0;
+      background: linear-gradient(90deg, transparent, #c41e3a, transparent);
     }
     .page-subtitle {
       font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
@@ -49,8 +73,19 @@
 
     /* ===== Section ===== */
     .section {
-      margin-bottom: 30px;
+      margin-bottom: 36px;
+      position: relative;
     }
+    .section::after {
+      content: '';
+      display: block;
+      height: 4px;
+      margin: 32px auto 0;
+      width: 40%;
+      background: linear-gradient(90deg, transparent, rgba(139,105,20,0.12), rgba(139,105,20,0.08) 50%, transparent);
+      border-radius: 2px;
+    }
+    .section:last-child::after { display: none; }
     .section-header {
       text-align: center;
       padding: 14px 20px;
@@ -60,11 +95,27 @@
       margin-bottom: 12px;
       position: relative;
     }
+    .section-header {
+      background: linear-gradient(135deg, #fcf8f2, #f5ede0);
+      border: 1px solid #d4c8b8;
+      border-radius: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+    .section-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 10%; right: 10%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(196,30,58,0.2), transparent);
+    }
     .section-header h2 {
       font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
       font-size: clamp(1rem, 2.2vw, 1.3rem);
-      color: #1a1a1a;
-      letter-spacing: 0.15em;
+      color: #2c1810;
+      letter-spacing: 0.25em;
+      text-shadow: 0 1px 2px rgba(196,30,58,0.08);
+      font-weight: 700;
     }
     .section-header h2 small {
       font-family: 'Noto Serif SC', serif;
@@ -76,11 +127,53 @@
 
     /* ===== Scroll Card ===== */
     .scroll-card {
-      margin-bottom: 14px;
-      border-radius: 6px;
-      overflow: hidden;
-      border: 1px solid #e0d5c5;
-      background: #fffcf5;
+      margin-bottom: 16px;
+      border-radius: 4px;
+      overflow: visible;
+      border: none;
+      background: transparent;
+      position: relative;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    }
+    .scroll-card::before {
+      content: '';
+      position: absolute;
+      top: -2px; left: -2px;
+      width: 20px; height: 20px;
+      border-top: 3px solid #8a7030;
+      border-left: 3px solid #8a7030;
+      border-radius: 2px 0 0 0;
+      z-index: 6;
+    }
+    .scroll-card::after {
+      content: '';
+      position: absolute;
+      top: -2px; right: -2px;
+      width: 20px; height: 20px;
+      border-top: 3px solid #8a7030;
+      border-right: 3px solid #8a7030;
+      border-radius: 0 2px 0 0;
+      z-index: 6;
+    }
+    .scroll-card .corner-bl {
+      position: absolute;
+      bottom: -2px; left: -2px;
+      width: 20px; height: 20px;
+      border-bottom: 3px solid #8a7030;
+      border-left: 3px solid #8a7030;
+      border-radius: 0 0 0 2px;
+      z-index: 6;
+      pointer-events: none;
+    }
+    .scroll-card .corner-br {
+      position: absolute;
+      bottom: -2px; right: -2px;
+      width: 20px; height: 20px;
+      border-bottom: 3px solid #8a7030;
+      border-right: 3px solid #8a7030;
+      border-radius: 0 0 2px 0;
+      z-index: 6;
+      pointer-events: none;
     }
 
     /* Card Header (clickable toggle) */
@@ -88,14 +181,22 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 18px;
-      background: linear-gradient(135deg, #faf5ee, #f5ede0);
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #fcf8f2, #f5ede0);
       cursor: pointer;
       user-select: none;
       transition: background 0.2s;
+      position: relative;
     }
     .scroll-card-header:hover {
-      background: linear-gradient(135deg, #f5ede0, #efe5d5);
+      background: linear-gradient(135deg, #f5ede0, #efe0d0);
+    }
+    .scroll-card-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 5%; right: 5%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(139,105,20,0.15), transparent);
     }
     .scroll-card-header .info {
       display: flex;
@@ -129,36 +230,78 @@
     }
 
     /* Toggle button */
-    .toggle-btn {
-      width: 64px;
-      height: 26px;
-      border-radius: 13px;
-      border: 1px solid #d0c0a8;
-      background: #ffffff;
-      color: #8a7030;
-      font-size: 0.7rem;
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
       cursor: pointer;
-      transition: all 0.2s;
-      font-family: 'Noto Serif SC', serif;
+      padding: 4px 0;
+    }
+    .toggle-knob {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #d4af5a, #c9a84c 40%, #b8943a 60%, #a88530);
+      border: 1px solid #8a7030;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,215,140,0.4);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 3px;
+      transition: all 0.3s;
       flex-shrink: 0;
     }
-    .toggle-btn:hover {
-      background: #f5ede0;
+    .toggle-knob::after {
+      content: '';
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 35%, #f5d77b, #a88530);
+      border: 1px solid rgba(139,105,20,0.3);
+    }
+    .toggle-tassel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+    }
+    .toggle-tassel .cord {
+      width: 2px; height: 12px;
+      background: linear-gradient(180deg, #c9a84c, #8a7030);
+      border-radius: 1px;
+    }
+    .toggle-tassel .fringe {
+      width: 10px; height: 14px;
+      background: linear-gradient(180deg, #c9a84c, #a88530 50%, #8a7030);
+      border-radius: 0 0 4px 4px;
+      clip-path: polygon(0 0, 100% 0, 85% 100%, 15% 100%);
+      opacity: 0.8;
+      transition: all 0.3s;
+    }
+    .toggle-tassel .label {
+      font-size: 0.55rem;
+      color: #8a7030;
+      letter-spacing: 0.05em;
+      transition: color 0.3s;
+      white-space: nowrap;
+    }
+    .toggle-wrap:hover .toggle-knob {
+      box-shadow: 0 2px 8px rgba(196,30,58,0.2), inset 0 1px 0 rgba(255,215,140,0.4);
       border-color: #c41e3a;
-      color: #c41e3a;
     }
-    .toggle-btn.open {
-      background: #c41e3a;
-      border-color: #c41e3a;
-      color: #fff;
+    .toggle-wrap:hover .label { color: #c41e3a; }
+    .toggle-wrap:hover .fringe { opacity: 1; }
+    .toggle-wrap.open .toggle-knob {
+      background: linear-gradient(135deg, #c41e3a, #a81830);
+      border-color: #8a2020;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,100,100,0.3);
     }
-    .toggle-btn.open:hover {
-      background: #a81830;
+    .toggle-wrap.open .toggle-knob::after {
+      background: radial-gradient(circle at 40% 35%, #e87070, #8a2020);
+      border-color: rgba(100,20,20,0.3);
     }
+    .toggle-wrap.open .cord { background: linear-gradient(180deg, #c41e3a, #8a2020); }
+    .toggle-wrap.open .fringe { background: linear-gradient(180deg, #c41e3a, #a81830 50%, #8a2020); }
+    .toggle-wrap.open .label { color: #c41e3a; }
 
     /* ===== Scroll Paper (collapsible) ===== */
     .scroll-paper-wrap {
@@ -371,12 +514,13 @@
 
     <!-- Scroll 1: 族人捐款名单 -->
     <div class="scroll-card" data-scroll="clan">
+      <div class="corner-bl"></div><div class="corner-br"></div>
       <div class="scroll-card-header" onclick="toggleScroll('clan')">
         <div class="info">
           <h3>一 · 族人捐款名单</h3>
           <span class="count-badge" id="badge-clan">65人 · 59.17万</span>
         </div>
-        <button class="toggle-btn" id="btn-clan">展开 ▾</button>
+        <div class="toggle-wrap" id="btn-clan" onclick="event.stopPropagation();toggleScroll('clan')"><div class="toggle-tassel"><div class="cord"></div><div class="fringe"></div><div class="label">展开</div></div><div class="toggle-knob"></div></div>
       </div>
       <div class="scroll-paper-wrap" id="wrap-clan">
         <div class="scroll-paper">
@@ -389,12 +533,13 @@
 
     <!-- Scroll 2: 族人筹款名单 -->
     <div class="scroll-card" data-scroll="external">
+      <div class="corner-bl"></div><div class="corner-br"></div>
       <div class="scroll-card-header" onclick="toggleScroll('external')">
         <div class="info">
           <h3>二 · 族人筹款名单</h3>
           <span class="count-badge" id="badge-external">142人 · 25.7万</span>
         </div>
-        <button class="toggle-btn" id="btn-external">展开 ▾</button>
+        <div class="toggle-wrap" id="btn-external" onclick="event.stopPropagation();toggleScroll('external')"><div class="toggle-tassel"><div class="cord"></div><div class="fringe"></div><div class="label">展开</div></div><div class="toggle-knob"></div></div>
       </div>
       <div class="scroll-paper-wrap" id="wrap-external">
         <div class="scroll-paper">
@@ -407,12 +552,13 @@
 
     <!-- Scroll 3: 外来宗亲助款名单 -->
     <div class="scroll-card" data-scroll="social">
+      <div class="corner-bl"></div><div class="corner-br"></div>
       <div class="scroll-card-header" onclick="toggleScroll('social')">
         <div class="info">
           <h3>三 · 外来宗亲助款名单</h3>
           <span class="count-badge" id="badge-social">143人 · 18.25万</span>
         </div>
-        <button class="toggle-btn" id="btn-social">展开 ▾</button>
+        <div class="toggle-wrap" id="btn-social" onclick="event.stopPropagation();toggleScroll('social')"><div class="toggle-tassel"><div class="cord"></div><div class="fringe"></div><div class="label">展开</div></div><div class="toggle-knob"></div></div>
       </div>
       <div class="scroll-paper-wrap" id="wrap-social">
         <div class="scroll-paper">
@@ -425,12 +571,13 @@
 
     <!-- Scroll 4: 社会各界助款名单 -->
     <div class="scroll-card" data-scroll="extra1">
+      <div class="corner-bl"></div><div class="corner-br"></div>
       <div class="scroll-card-header" onclick="toggleScroll('extra1')">
         <div class="info">
           <h3>四 · 社会各界（宗族）助款名单</h3>
           <span class="count-badge" id="badge-extra1">16个单位 · 18.9万</span>
         </div>
-        <button class="toggle-btn" id="btn-extra1">展开 ▾</button>
+        <div class="toggle-wrap" id="btn-extra1" onclick="event.stopPropagation();toggleScroll('extra1')"><div class="toggle-tassel"><div class="cord"></div><div class="fringe"></div><div class="label">展开</div></div><div class="toggle-knob"></div></div>
       </div>
       <div class="scroll-paper-wrap" id="wrap-extra1">
         <div class="scroll-paper">
@@ -449,12 +596,13 @@
     </div>
 
     <div class="scroll-card" data-scroll="temple">
+      <div class="corner-bl"></div><div class="corner-br"></div>
       <div class="scroll-card-header" onclick="toggleScroll('temple')">
         <div class="info">
           <h3>宗祠修缮捐款名单</h3>
           <span class="empty-badge">待上传</span>
         </div>
-        <button class="toggle-btn" id="btn-temple">展开 ▾</button>
+        <div class="toggle-wrap" id="btn-temple" onclick="event.stopPropagation();toggleScroll('temple')"><div class="toggle-tassel"><div class="cord"></div><div class="fringe"></div><div class="label">展开</div></div><div class="toggle-knob"></div></div>
       </div>
       <div class="scroll-paper-wrap" id="wrap-temple">
         <div class="scroll-paper">
