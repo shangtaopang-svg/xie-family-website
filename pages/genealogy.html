@@ -603,9 +603,26 @@
   // Load full 1080 records from JSON - OVERRIDE everything
   fetch('../data/genealogy_full.json').then(function(r){return r.json()}).then(function(d){
     if (d && d.length > 100) {
-      _genealogyData = d;
+      // Merge ancient lineage into full JSON data
+      var ancient = getAncientGenealogyData();
+      var ancientNames = {};
+      for (var ai = 0; ai < ancient.length; ai++) ancientNames[ancient[ai].name] = true;
+      d = d.filter(function(p) {
+        if (ancientNames[p.name]) return false;
+        var base = p.name.replace(/\(.*\)$/, '');
+        if (base !== p.name && ancientNames[base]) return false;
+        return true;
+      });
+      for (var ci = 0; ci < d.length; ci++) {
+        if (d[ci].name === '文杲公' || d[ci].name === '文杲') {
+          for (var ai = 0; ai < ancient.length; ai++) {
+            if (ancient[ai].name === '小四') { d[ci].father_id = ancient[ai].id; break; }
+          }
+        }
+      }
+      _genealogyData = d.concat(ancient);
       // Force into localStorage, overriding API/Supabase data
-      localStorage.setItem('xie_admin_genealogy', JSON.stringify(d));
+      localStorage.setItem('xie_admin_genealogy', JSON.stringify(_genealogyData));
       // Re-render everything
       if (typeof renderGenealogyPageSVG === 'function') {
         renderGenealogyPageSVG();
