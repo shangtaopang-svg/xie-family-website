@@ -50,15 +50,21 @@
     return count;
   }
 
-    // Find Xie-family root: find someone with 枫槎/石马 branch, then trace up to top ancestor
-    var xieRoot = null, xieGen = 999;
-    // First try to find the person whose branch is "枫槎始祖" or has earliest generation with Xie branch
-    data.forEach(function(p) {
-      if (p.branch && (p.branch.indexOf('枫槎') >= 0 || p.branch.indexOf('石马') >= 0)) {
-        var g = parseInt(p.generation_num) || 999;
-        if (g < xieGen) { xieGen = g; xieRoot = p; }
-      }
-    });
+    	    // Find root: prefer 炎帝神农氏 when ancient data exists
+	    var roots;
+	    var yandi = null;
+	    for (var di = 0; di < data.length; di++) {
+	      if (data[di].name === '炎帝神农氏') { yandi = data[di]; break; }
+	    }
+	    if (yandi) {
+	      roots = [yandi];
+	    } else {
+	      var existingIds = {};
+	      data.forEach(function (p) { existingIds[p.id] = true; });
+	      roots = data.filter(function (p) { return p.father_id == null || !existingIds[parseInt(p.father_id)]; });
+	      if (roots.length === 0 && data.length > 0) roots = [data[0]];
+	    }
+);
     // Use the found root directly (don't trace up - start from Xie ancestor)
     var roots;
     if (xieRoot) {
