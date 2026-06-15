@@ -3,517 +3,430 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>功德卷轴 · 下枫槎谢氏</title>
+  <title>功德堂 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=ZCOOL+XiaoWei&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=ZCOOL+XiaoWei&family=ZCOOL+QingKe+HuangYou&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css?v=3">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: #1a1510;
+      background: #ffffff;
       background-image:
-        radial-gradient(ellipse at 50% 0%, #2a2018 0%, #0d0a08 100%);
+        repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(139,26,26,0.035) 80px, rgba(139,26,26,0.035) 81px),
+        repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(139,26,26,0.025) 40px, rgba(139,26,26,0.025) 41px);
+      color: #1a1a1a;
+      font-family: 'Noto Serif SC', 'STKaiti', 'KaiTi', serif;
       min-height: 100vh;
-      font-family: 'Noto Serif SC', serif;
-      overflow-x: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
     }
+    .mw-wrap { max-width: 1200px; margin: 0 auto; padding: 0 20px 60px; }
 
-    /* ===== Scroll Container ===== */
-    .scroll-wrap {
-      width: 100%;
-      max-width: 780px;
-      margin: 0 auto;
-      padding: 10px 20px 20px;
+    /* ===== Banner ===== */
+    .mw-banner {
+      text-align: center; padding: 70px 20px 45px;
       position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      background: #ffffff;
+      border-bottom: 2px solid #c41e3a;
     }
-
-    /* ===== Title ===== */
-    .scroll-title {
-      font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
-      font-size: clamp(1.6rem, 4vw, 2.4rem);
-      color: #d4af5a;
-      letter-spacing: 0.4em;
-      text-shadow: 0 0 30px rgba(212,175,90,0.3);
-      margin: 15px 0 8px;
-      text-align: center;
-      opacity: 0;
-      animation: fadeInTitle 2s ease 0.5s forwards;
+    .mw-banner::before {
+      content: ''; position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='80' height='80' fill='none' stroke='rgba(139,26,26,0.04)' stroke-width='0.5'/%3E%3C/svg%3E");
+      opacity: 0.3;
     }
-    .scroll-subtitle {
+    .mw-banner h1 {
+      font-family: 'ZCOOL QingKe HuangYou', 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+      font-size: clamp(3rem, 7vw, 5rem);
+      color: #1a1a1a; letter-spacing: 0.25em;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      position: relative; margin-bottom: 10px;
+    }
+    .mw-banner .sub {
       font-family: 'Zhi Mang Xing', 'Noto Serif SC', serif;
-      font-size: clamp(0.85rem, 2vw, 1.05rem);
-      color: rgba(212,175,90,0.5);
-      letter-spacing: 0.2em;
-      text-align: center;
-      margin-bottom: 20px;
-      opacity: 0;
-      animation: fadeInTitle 2s ease 1s forwards;
+      font-size: clamp(1.0rem, 2.5vw, 1.3rem);
+      color: #c41e3a; letter-spacing: 0.3em;
+      position: relative;
     }
-    @keyframes fadeInTitle {
-      to { opacity: 1; }
+    .mw-banner .sub::before, .mw-banner .sub::after {
+      content: '◇'; color: #c41e3a; margin: 0 14px; font-size: 0.6em; opacity: 0.4;
     }
 
-    /* ===== The Scroll ===== */
-    .scroll {
-      width: 100%;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    /* ===== Toolbar ===== */
+    .mw-toolbar {
+      display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+      margin: 24px 0 20px; padding: 14px 18px;
+      background: #f8f6f3; border-radius: 10px;
+      border: 1px solid #e8ddd0;
+    }
+    .mw-toolbar input {
+      flex: 1; min-width: 160px; padding: 8px 14px; border-radius: 8px;
+      border: 1px solid #d4c8b8; background: #ffffff;
+      color: #1a1a1a; font-size: 13px; font-family: inherit; outline: none;
+    }
+    .mw-toolbar input:focus { border-color: #c41e3a; box-shadow: 0 0 0 2px rgba(196,30,58,0.08); }
+    .mw-toolbar input::placeholder { color: #b0a090; }
+    .mw-toolbar select {
+      padding: 8px 12px; border-radius: 8px;
+      border: 1px solid #d4c8b8; background: #ffffff;
+      color: #1a1a1a; font-size: 12px; font-family: inherit; cursor: pointer; outline: none;
+    }
+    .mw-toolbar .stat {
+      font-size: 12px; color: #b0a090; margin-left: auto;
     }
 
-    /* Top & Bottom Rollers */
-    .roller-top, .roller-bottom {
-      width: 100%;
-      height: 28px;
-      background: linear-gradient(180deg, #5a3e1a, #8b6914 30%, #a8882a 50%, #7a5a12 70%, #4a3210);
-      border-radius: 4px;
-      position: relative;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,215,140,0.2);
-      flex-shrink: 0;
-      z-index: 2;
-    }
-    .roller-top::after, .roller-bottom::after {
-      content: '';
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%,-50%);
-      width: 80%;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(255,215,140,0.3), transparent);
-    }
-    .roller-top::before, .roller-bottom::before {
-      content: '';
-      position: absolute;
-      left: -6px;
-      top: -4px;
-      width: 12px;
-      height: 36px;
-      background: linear-gradient(180deg, #3a2810, #6b4f12 50%, #3a2810);
-      border-radius: 4px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-    }
-    .roller-end-right {
-      position: absolute;
-      right: -6px;
-      top: -4px;
-      width: 12px;
-      height: 36px;
-      background: linear-gradient(180deg, #3a2810, #6b4f12 50%, #3a2810);
-      border-radius: 4px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    /* ===== Brick Grid ===== */
+    .mw-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px; margin-bottom: 50px;
     }
 
-    /* Paper */
-    .scroll-paper {
-      width: 100%;
-      background: linear-gradient(135deg, #f5e6c8 0%, #efe0c0 30%, #f0e2c5 60%, #eadbbb 100%);
-      position: relative;
+    /* ===== Single Brick ===== */
+    .mw-brick {
+      position: relative; padding: 24px 18px 18px;
+      background: #ffffff;
+      border: 1px solid #e8ddd0;
+      border-radius: 8px; cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+      opacity: 0; transform: translateY(30px);
+      display: flex; flex-direction: column; align-items: center; text-align: center;
       overflow: hidden;
-      transform-origin: center top;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
-    /* Aged edges top/bottom */
-    .scroll-paper::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 60px;
-      background: linear-gradient(180deg, rgba(245,230,200,0.95) 0%, rgba(245,230,200,0.3) 40%, transparent 100%);
-      pointer-events: none;
-      z-index: 2;
+    .mw-brick.visible { opacity: 1; transform: translateY(0); }
+    .mw-brick:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      border-color: #c41e3a;
     }
-    .scroll-paper::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 60px;
-      background: linear-gradient(0deg, rgba(245,230,200,0.95) 0%, rgba(245,230,200,0.3) 40%, transparent 100%);
-      pointer-events: none;
-      z-index: 2;
+    .mw-brick.highlight {
+      border-color: #c41e3a; border-width: 1.5px;
+      background: linear-gradient(135deg, #fffcf5, #fff8f0);
     }
-    /* Worn side edges */
-    .scroll-edge-left, .scroll-edge-right {
-      position: absolute;
-      top: 0; bottom: 0;
-      width: 18px;
-      z-index: 3;
-      pointer-events: none;
+    .mw-brick.highlight::before {
+      content: '● 大功德'; position: absolute; top: 6px; right: 10px;
+      font-size: 10px; color: #c41e3a; letter-spacing: 1px;
     }
-    .scroll-edge-left {
-      left: 0;
-      background: linear-gradient(90deg, rgba(180,150,100,0.4) 0%, transparent 60%);
-      box-shadow: inset 3px 0 8px rgba(120,90,50,0.15);
+    .mw-brick.highlight .brick-name { color: #c41e3a; }
+    .mw-brick::after {
+      content: ''; position: absolute; inset: 4px;
+      border: 1px solid rgba(196,30,58,0.06);
+      border-radius: 5px; pointer-events: none;
     }
-    .scroll-edge-right {
-      right: 0;
-      background: linear-gradient(270deg, rgba(180,150,100,0.4) 0%, transparent 60%);
-      box-shadow: inset -3px 0 8px rgba(120,90,50,0.15);
+    .brick-name {
+      font-size: 1.4rem; font-weight: 700; color: #1a1a1a;
+      letter-spacing: 0.05em; margin-bottom: 4px;
     }
-    /* Paper texture */
-    .scroll-texture {
-      position: absolute;
-      inset: 0;
-      opacity: 0.06;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      background-size: 200px 200px;
-      pointer-events: none;
-      z-index: 1;
+    .brick-gen {
+      font-size: 0.8rem; color: #b0a090;
+      margin-bottom: 8px;
     }
-
-    /* ===== Content ===== */
-    .scroll-content {
-      position: relative;
-      z-index: 5;
-      padding: 50px 30px 50px 30px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px 16px;
-      min-height: 200px;
+    .brick-amount {
+      font-size: 0.85rem; color: #c41e3a; font-weight: 600;
+      padding: 3px 16px; border: 1px solid #e8ddd0;
+      border-radius: 20px; background: #fef6f3;
+      margin-bottom: 6px;
     }
-
-    /* ===== Name Column (vertical) ===== */
-    .name-col {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      cursor: pointer;
-      padding: 8px 4px;
-      border-radius: 4px;
-      transition: all 0.3s ease;
-      position: relative;
-      min-width: 48px;
+    .brick-category {
+      font-size: 0.72rem; color: #b0a090;
+      margin-bottom: 6px;
     }
-    .name-col:hover {
-      background: rgba(139,105,20,0.08);
+    .brick-branch {
+      font-size: 0.75rem; color: #c0b0a0;
+      margin-bottom: 10px;
     }
-    .name-col .char {
-      font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
-      font-size: clamp(0.9rem, 1.6vw, 1.15rem);
-      line-height: 1.5;
-      color: #2c1810;
-      writing-mode: vertical-rl;
-      text-orientation: upright;
-      letter-spacing: 0.05em;
-      transition: all 0.3s ease;
+    /* Respect */
+    .brick-respect {
+      display: flex; align-items: center; gap: 6px; margin-top: auto;
     }
-    .name-col .amount-tag {
-      font-size: 0.6rem;
-      color: #8a7030;
-      margin-top: 6px;
-      font-weight: 600;
-      white-space: nowrap;
-      letter-spacing: 0.05em;
+    .respect-btn {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1px solid #e8ddd0;
+      background: #ffffff;
+      color: #c41e3a; font-size: 13px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; font-family: "ZCOOL XiaoWei", "Noto Serif SC", serif;
+    }
+    .respect-btn:hover { background: #fef6f3; transform: scale(1.15); border-color: #c41e3a; }
+    .respect-btn.done { opacity: 0.3; cursor: default; transform: none; }
+    .respect-count {
+      font-size: 12px; color: #b0a090; min-width: 20px;
     }
 
-    /* Gold (≥1万) */
-    .name-col.gold .char {
-      font-weight: 900;
-      background: linear-gradient(180deg, #c9a84c, #f5d77b, #c9a84c);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: none;
-      filter: drop-shadow(0 0 4px rgba(212,175,90,0.3));
-    }
-    .name-col.gold:hover .char {
-      filter: drop-shadow(0 0 8px rgba(212,175,90,0.5)) drop-shadow(0 0 16px rgba(212,175,90,0.2));
-    }
-    .name-col.gold .amount-tag { color: #c9a84c; }
-
-    /* Silver (≥2000) */
-    .name-col.silver .char {
-      font-weight: 700;
-      color: #4a4030;
-    }
-
-    /* ===== Unroll Animation ===== */
-    .scroll-paper.rolled {
-      max-height: 0;
-      padding-top: 0;
-      padding-bottom: 0;
-      overflow: hidden;
-      transition: max-height 2.5s cubic-bezier(0.25, 0.1, 0.15, 1);
-    }
-    .scroll-paper.rolled .scroll-content {
-      opacity: 0;
-      transition: opacity 0.5s ease;
-    }
-    .scroll-paper.unrolling {
-      max-height: 8000px;
-    }
-    .scroll-paper.unrolling .scroll-content {
-      opacity: 1;
-      transition: opacity 1.5s ease 1.2s;
-    }
-
-    /* ===== Drag hint ===== */
-    .drag-hint {
-      text-align: center;
-      padding: 4px 0 0;
-      font-size: 0.7rem;
-      color: rgba(212,175,90,0.3);
-      letter-spacing: 0.15em;
-      opacity: 0;
-      animation: fadeInTitle 2s ease 2.5s forwards;
-    }
-    .drag-hint span {
-      display: inline-block;
-      animation: bounceDown 2s ease-in-out infinite;
-    }
-    @keyframes bounceDown {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(4px); }
+    /* ===== Empty state ===== */
+    .mw-empty {
+      grid-column: 1 / -1; text-align: center; padding: 80px 20px;
+      color: #d0c8b8; font-size: 14px;
     }
 
     /* ===== Modal ===== */
     .mw-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 99999;
-      background: rgba(10,8,5,0.8);
-      backdrop-filter: blur(4px);
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      display: none; position: fixed; inset: 0; z-index: 99999;
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; padding: 20px;
     }
     .mw-modal.open { display: flex; }
     .mw-modal-box {
-      max-width: 400px;
-      width: 100%;
-      padding: 30px 28px;
-      background: linear-gradient(135deg, #f5e6c8, #efe0c0);
-      border: 1px solid rgba(139,105,20,0.3);
-      border-radius: 4px;
-      position: relative;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-      max-height: 80vh;
-      overflow-y: auto;
+      max-width: 480px; width: 100%; padding: 30px;
+      background: #ffffff;
+      border: 1px solid #e8ddd0; border-radius: 10px;
+      position: relative; max-height: 80vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.12);
     }
     .mw-modal-close {
-      position: absolute;
-      top: 10px; right: 14px;
-      background: none; border: none;
-      color: #8a7030; font-size: 20px;
-      cursor: pointer; line-height: 1;
-      font-family: 'Noto Serif SC', serif;
+      position: absolute; top: 12px; right: 16px;
+      background: none; border: none; color: #d0c8b8;
+      font-size: 22px; cursor: pointer; line-height: 1;
     }
-    .mw-modal-close:hover { color: #2c1810; }
+    .mw-modal-close:hover { color: #1a1a1a; }
     .mw-modal-name {
-      font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
-      font-size: 1.5rem; color: #2c1810;
-      margin-bottom: 4px;
+      font-size: 1.6rem; font-weight: 700; color: #1a1a1a;
+      margin-bottom: 4px; font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
     }
-    .mw-modal-gen {
-      font-size: 0.8rem; color: #8a7030; margin-bottom: 10px;
-    }
+    .mw-modal-gen { font-size: 0.85rem; color: #b0a090; margin-bottom: 12px; }
     .mw-modal-amount {
-      font-size: 0.85rem; color: #8a7030;
-      font-weight: 600; margin-bottom: 14px;
+      font-size: 0.9rem; color: #c41e3a; font-weight: 600;
+      padding: 4px 16px; border: 1px solid #e8ddd0; border-radius: 20px;
+      display: inline-block; margin-bottom: 14px; background: #fef6f3;
     }
     .mw-modal-bio {
-      font-size: 0.85rem; line-height: 1.8; color: #4a3a28;
-      padding-top: 12px;
-      border-top: 1px solid rgba(139,105,20,0.2);
-      min-height: 30px;
+      font-size: 0.9rem; line-height: 1.9; color: #4a4a4a;
+      margin-bottom: 12px; padding: 12px 0; border-top: 1px solid #f0e8e0;
     }
     .mw-modal-tribute {
-      font-size: 0.85rem; line-height: 1.7; color: #6a5a40;
-      font-style: italic; padding: 10px 14px; margin-top: 12px;
-      background: rgba(139,105,20,0.06);
-      border-radius: 4px; border-left: 2px solid #c9a84c;
+      font-size: 0.85rem; line-height: 1.7; color: #666666;
+      font-style: italic; padding: 10px 14px;
+      background: #f8f6f3; border-radius: 8px;
+      border-left: 3px solid #c41e3a;
     }
     .mw-modal-tribute::before { content: '「'; }
     .mw-modal-tribute::after { content: '」'; }
 
     /* ===== Inscription ===== */
-    .scroll-inscription {
-      text-align: center;
-      padding: 20px 20px 0;
-      opacity: 0;
-      animation: fadeInTitle 2s ease 3s forwards;
+    .mw-inscription {
+      text-align: center; padding: 40px 30px;
+      border-top: 1px solid #f0e8e0;
+      position: relative;
     }
-    .scroll-inscription p {
-      font-family: 'Noto Serif SC', 'STKaiti', serif;
-      font-size: clamp(0.85rem, 1.5vw, 1rem);
-      line-height: 2.2;
-      color: rgba(212,175,90,0.55);
-      font-weight: 400;
-      max-width: 600px;
-      margin: 0 auto;
+    .mw-inscription::before {
+      content: '— ◇ —'; position: absolute; top: -8px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px; color: #c41e3a; letter-spacing: 8px; opacity: 0.5;
+      background: #ffffff; padding: 0 16px;
+    }
+    .mw-inscription h3 {
+      font-family: 'ZCOOL QingKe HuangYou', 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+      font-size: 1.4rem; color: #c41e3a; margin-bottom: 16px; letter-spacing: 0.2em;
+    }
+    .mw-inscription p {
+      font-family: 'Zhi Mang Xing', 'Noto Serif SC', serif;
+      font-size: 1.1rem; line-height: 2.3; color: #4a4a4a;
+      max-width: 700px; margin: 0 auto;
+    }
+
+    /* ===== Print ===== */
+    @media print {
+      body { background: #fff !important; color: #222 !important; }
+      .mw-banner { background: #fff !important; border-bottom: 2px solid #c41e3a; padding: 30px 20px; }
+      .mw-banner h1 { color: #222 !important; }
+      .mw-banner .sub { color: #c41e3a !important; }
+      .mw-toolbar { display: none !important; }
+      .mw-brick { opacity: 1 !important; transform: none !important; break-inside: avoid; background: #fff !important; border: 1px solid #c41e3a !important; }
+      .brick-name { color: #222 !important; }
+      .brick-gen, .brick-branch, .brick-category { color: #666 !important; }
+      .brick-amount { color: #c41e3a !important; border-color: #c41e3a !important; }
+      .mw-brick.highlight { border-width: 2px !important; }
+      .mw-brick.highlight::before { color: #c41e3a !important; }
+      .respect-btn, .respect-count { display: none !important; }
+      .mw-inscription p { color: #444 !important; }
+      .mw-inscription { border-top-color: #c41e3a !important; }
+      .mw-modal { display: none !important; }
+      .mw-brick:hover { transform: none !important; box-shadow: none !important; }
+      .mw-brick::after { border-color: rgba(196,30,58,0.2) !important; }
     }
 
     /* ===== Responsive ===== */
     @media (max-width: 640px) {
-      .scroll-wrap { padding: 5px 8px 15px; }
-      .scroll-content { padding: 30px 12px; gap: 4px 10px; }
-      .name-col .char { font-size: 0.82rem; }
-      .roller-top, .roller-bottom { height: 20px; }
-      .roller-top::before, .roller-bottom::before,
-      .roller-end-right { height: 28px; width: 10px; top: -4px; }
-      .roller-end-right { right: -5px; }
+      .mw-banner { padding: 50px 16px 30px; }
+      .mw-toolbar select { flex: 1; }
+      .mw-grid { gap: 10px; }
+      .mw-brick { padding: 18px 14px 14px; }
       .mw-modal-box { padding: 20px; }
     }
-    @media (min-width: 1200px) {
-      .scroll-content { gap: 10px 20px; }
-      .name-col .char { font-size: 1.25rem; }
-    }
-
-    /* Scrollbar */
-    .scroll-paper::-webkit-scrollbar { width: 4px; }
-    .scroll-paper::-webkit-scrollbar-track { background: transparent; }
-    .scroll-paper::-webkit-scrollbar-thumb { background: rgba(139,105,20,0.3); border-radius: 2px; }
   </style>
 </head>
 <body>
 
-<div class="scroll-wrap">
-  <div class="scroll-title">下枫槎功德卷</div>
-  <div class="scroll-subtitle">凡捐资修谱建祠者 · 勒名于斯 · 永志不忘</div>
-
-  <div class="scroll">
-    <div class="roller-top"><div class="roller-end-right"></div></div>
-    <div class="scroll-paper rolled" id="scrollPaper">
-      <div class="scroll-edge-left"></div>
-      <div class="scroll-edge-right"></div>
-      <div class="scroll-texture"></div>
-      <div class="scroll-content" id="scrollContent"></div>
-    </div>
-    <div class="roller-bottom"><div class="roller-end-right"></div></div>
+<div class="mw-wrap">
+  <!-- Banner -->
+  <div class="mw-banner">
+    <h1>下枫槎功德堂</h1>
+    <div class="sub">凡捐资修谱建祠者 · 勒名于墙 · 永志不忘</div>
   </div>
 
-  <div class="drag-hint"><span>↕ 上下拖拽浏览 · 点击姓名查看详情</span></div>
-
-  <div class="scroll-inscription">
-    <p>公元二〇二六年丙午春 · 下枫槎谢氏阖族敬立</p>
+  <!-- Toolbar -->
+  <div class="mw-toolbar" id="mw-toolbar">
+    <input type="text" id="mw-search" placeholder="🔍 搜索姓名..." oninput="filterMerit()">
+    <select id="mw-category" onchange="filterMerit()">
+      <option value="">全部功德</option>
+      <option value="修谱功德">修谱功德</option>
+      <option value="建祠功德">建祠功德</option>
+      <option value="双项功德">双项功德</option>
+    </select>
+    <select id="mw-sort" onchange="renderMerit()">
+      <option value="generation">按辈分</option>
+      <option value="date">按时间</option>
+      <option value="respects">按致敬</option>
+    </select>
+    <span class="stat" id="mw-stat"></span>
   </div>
-</div>
 
-<div class="mw-modal" id="mwModal" onclick="if(event.target===this)closeModal()">
-  <div class="mw-modal-box" id="mwModalBox"></div>
+  <!-- Grid -->
+  <div class="mw-grid" id="mw-grid"></div>
+
+  <!-- Modal -->
+  <div class="mw-modal" id="mw-modal" onclick="if(event.target===this)closeModal()">
+    <div class="mw-modal-box" id="mw-modal-box"></div>
+  </div>
+
+  <!-- Inscription -->
+  <div class="mw-inscription">
+    <h3>碑 记</h3>
+    <p>
+      盖闻木有本而枝叶茂，水有源而流派长。吾谢氏之先，出自姬姓。周宣王封元舅申伯于谢邑，
+      因以国为氏，至今两千八百余载。明隆庆壬申，彬公、乾公昆仲迁居双枫古槎之下，开基立业，
+      耕读传家，迄今四百五十余年。今有合族诸君，或捐资修谱以存世系，或慷慨建祠以奉先祖，
+      或奔走联络以睦族谊。诸公共襄盛举，功在宗族，德被后昆。谨勒名于墙，彰善励来，
+      俾后人知我族之昌盛，实赖先德之流泽也。
+    </p>
+    <p style="margin-top:12px;font-size:0.85rem;color:#b0a090;">
+      公元二〇二六年丙午春  ·  下枫槎谢氏阖族敬立
+    </p>
+  </div>
 </div>
 
 <script>
+// ===== Data =====
 var meritData = [];
+var respKey = 'mw_respected_';
 
 function loadMerit() {
   var stored = localStorage.getItem('xie_merit_data');
   if (stored) {
-    try { meritData = JSON.parse(stored); renderMerit(); return; } catch(e) {}
+    meritData = JSON.parse(stored);
+    renderMerit();
+    return;
   }
-  fetch('../data/merit.json?' + Date.now()).then(function(r){return r.json()}).then(function(d){
+  // Fallback: fetch from JSON
+  fetch('../data/merit.json').then(function(r){return r.json()}).then(function(d){
     meritData = d;
     localStorage.setItem('xie_merit_data', JSON.stringify(d));
     renderMerit();
-  }).catch(function(){ renderMerit(); });
+  }).catch(function(){
+    meritData = [];
+    renderMerit();
+  });
 }
 
+// ===== Render =====
 function renderMerit() {
   var data = meritData.slice();
-  data.sort(function(a,b){
-    return (b.amountValue||0) - (a.amountValue||0) || a.id - b.id;
-  });
+  var sort = document.getElementById('mw-sort').value;
+  if (sort === 'generation') data.sort(function(a,b){return a.generation-b.generation || a.id-b.id;});
+  else if (sort === 'date') data.sort(function(a,b){return (a.date||'0').localeCompare(b.date||'0') || a.id-b.id;});
+  else if (sort === 'respects') data.sort(function(a,b){return (b.respects||0)-(a.respects||0) || a.id-b.id;});
 
-  var container = document.getElementById('scrollContent');
+  var grid = document.getElementById('mw-grid');
   var html = '';
-
-  data.forEach(function(p){
-    var isGold = (p.amountValue||0) >= 10000;
-    var isSilver = !isGold && (p.amountValue||0) >= 2000;
-    var cls = 'name-col';
-    if (isGold) cls += ' gold';
-    else if (isSilver) cls += ' silver';
-
-    html += '<div class="' + cls + '" data-id="' + p.id + '" onclick="openModal(' + p.id + ')">';
-    p.name.split('').forEach(function(ch){
-      html += '<span class="char">' + esc(ch) + '</span>';
-    });
-    var amtText = p.amountValue >= 10000
-      ? (p.amountValue/10000).toFixed(p.amountValue%10000===0?0:1) + '万'
-      : p.amountValue + '元';
-    html += '<div class="amount-tag">' + amtText + '</div>';
-    html += '</div>';
+  data.forEach(function(p, i){
+    var hl = p.highlight ? ' highlight' : '';
+    var respected = localStorage.getItem(respKey + p.id) === '1';
+    html += '<div class="mw-brick' + hl + '" data-id="' + p.id + '" onclick="openModal(' + p.id + ')" style="transition-delay:' + (i * 0.04) + 's">';
+    html += '<div class="brick-name">' + esc(p.name) + '</div>';
+    html += '<div class="brick-gen">第' + p.generation + '世孙</div>';
+    html += '<div class="brick-amount">' + esc(p.amount) + '</div>';
+    html += '<div class="brick-category">' + esc(p.category) + '</div>';
+    html += '<div class="brick-branch">' + esc(p.branch) + '</div>';
+    html += '<div class="brick-respect">';
+    html += '<span class="respect-btn' + (respected?' done':'') + '" onclick="event.stopPropagation();doRespect(' + p.id + ')" title="致敬">敬</span>';
+    html += '<span class="respect-count" id="rc-' + p.id + '">' + (p.respects||0) + '</span>';
+    html += '</div></div>';
   });
+  if (data.length === 0) {
+    html = '<div class="mw-empty">暂无功德记录</div>';
+  }
+  grid.innerHTML = html;
+  document.getElementById('mw-stat').textContent = data.length + ' 人';
 
-  container.innerHTML = html;
-  startUnroll();
+  // Scroll-in animation
+  var observer = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('visible'); } });
+  }, {threshold:0.1});
+  grid.querySelectorAll('.mw-brick').forEach(function(b){ observer.observe(b); });
+
+  applyFilter(); // re-apply any active filter
 }
 
-var soundPlayed = false;
-
-function startUnroll() {
-  var paper = document.getElementById('scrollPaper');
-  paper.offsetHeight;
-  paper.classList.remove('rolled');
-  paper.classList.add('unrolling');
-  if (!soundPlayed) { soundPlayed = true; playScrollSound(); }
+// ===== Filter =====
+function filterMerit() {
+  var q = document.getElementById('mw-search').value.trim().toLowerCase();
+  var cat = document.getElementById('mw-category').value;
+  document.querySelectorAll('.mw-brick').forEach(function(b){
+    var name = b.querySelector('.brick-name').textContent.toLowerCase();
+    var catEl = b.querySelector('.brick-category').textContent;
+    var show = (!q || name.indexOf(q) >= 0) && (!cat || catEl === cat);
+    b.style.display = show ? '' : 'none';
+  });
+  var visible = document.querySelectorAll('.mw-brick[style*="display: none"]');
+  var total = document.querySelectorAll('.mw-brick').length;
+  document.getElementById('mw-stat').textContent = (total - visible.length) + ' / ' + total + ' 人';
 }
 
-function playScrollSound() {
-  try {
-    var ctx = new (window.AudioContext||window.webkitAudioContext)();
-    var len = ctx.sampleRate * 2.2;
-    var buf = ctx.createBuffer(1, len, ctx.sampleRate);
-    var d = buf.getChannelData(0);
-    for (var i = 0; i < len; i++) {
-      var t = i / ctx.sampleRate;
-      var env = Math.max(0, 1 - t / 2.2);
-      var noise = (Math.random() * 2 - 1) * 0.15;
-      var rumble = Math.sin(i*0.05)*0.3 + Math.sin(i*0.12)*0.2 + Math.sin(i*0.03)*0.4;
-      d[i] = (noise + rumble) * env * 0.25;
-    }
-    var src = ctx.createBufferSource();
-    src.buffer = buf;
-    var flt = ctx.createBiquadFilter();
-    flt.type = 'lowpass'; flt.frequency.value = 350;
-    var gn = ctx.createGain();
-    gn.gain.setValueAtTime(0.12, 0);
-    gn.gain.exponentialRampToValueAtTime(0.005, 2.2);
-    src.connect(flt); flt.connect(gn); gn.connect(ctx.destination);
-    src.start();
-  } catch(e) {}
-}
+function applyFilter() { filterMerit(); }
 
+// ===== Modal =====
 function openModal(id) {
   var p = null;
-  for (var i = 0; i < meritData.length; i++) {
-    if (meritData[i].id === id) { p = meritData[i]; break; }
-  }
+  for (var i = 0; i < meritData.length; i++) { if (meritData[i].id === id) { p = meritData[i]; break; } }
   if (!p) return;
-  var box = document.getElementById('mwModalBox');
-  var genHtml = p.generation ? '<div class="mw-modal-gen">第' + p.generation + '世孙</div>' : '';
-  var bioHtml = p.biography
-    ? '<div class="mw-modal-bio">' + esc(p.biography) + '</div>'
-    : '<div class="mw-modal-bio" style="color:#b0a090;font-style:italic;">暂无生平记载</div>';
-  var tributeHtml = p.tribute ? '<div class="mw-modal-tribute">' + esc(p.tribute) + '</div>' : '';
+  var box = document.getElementById('mw-modal-box');
   box.innerHTML =
     '<button class="mw-modal-close" onclick="closeModal()">✕</button>' +
     '<div class="mw-modal-name">' + esc(p.name) + '</div>' +
-    genHtml +
+    '<div class="mw-modal-gen">第' + p.generation + '世孙 · ' + esc(p.branch) + '</div>' +
     '<div class="mw-modal-amount">' + esc(p.amount) + ' · ' + esc(p.category) + '</div>' +
-    bioHtml + tributeHtml;
-  document.getElementById('mwModal').classList.add('open');
+    (p.biography ? '<div class="mw-modal-bio">' + esc(p.biography) + '</div>' : '') +
+    (p.tribute ? '<div class="mw-modal-tribute">' + esc(p.tribute) + '</div>' : '');
+  document.getElementById('mw-modal').classList.add('open');
 }
 
 function closeModal() {
-  document.getElementById('mwModal').classList.remove('open');
+  document.getElementById('mw-modal').classList.remove('open');
 }
 
-function esc(t) {
-  if (!t) return '';
-  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+// ===== Respect =====
+function doRespect(id) {
+  if (localStorage.getItem(respKey + id) === '1') return;
+  localStorage.setItem(respKey + id, '1');
+  for (var i = 0; i < meritData.length; i++) {
+    if (meritData[i].id === id) {
+      meritData[i].respects = (meritData[i].respects || 0) + 1;
+      break;
+    }
+  }
+  localStorage.setItem('xie_merit_data', JSON.stringify(meritData));
+  var el = document.getElementById('rc-' + id);
+  if (el) el.textContent = parseInt(el.textContent) + 1;
+  var btn = el ? el.previousElementSibling : null;
+  if (btn) btn.classList.add('done');
 }
 
+// ===== Util =====
+function esc(t) { if (!t) return ''; return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ===== Init =====
 loadMerit();
-document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
+
+// Keyboard: ESC close modal
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeModal(); });
 </script>
 </body>
 </html>

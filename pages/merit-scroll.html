@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>功德卷轴 · 下枫槎谢氏</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=ZCOOL+XiaoWei&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #1a1510;
+      background-image:
+        radial-gradient(ellipse at 50% 0%, #2a2018 0%, #0d0a08 100%);
+      min-height: 100vh;
+      font-family: 'Noto Serif SC', serif;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ===== Scroll Container ===== */
+    .scroll-wrap {
+      width: 100%;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 10px 20px 20px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ===== Title ===== */
+    .scroll-title {
+      font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      color: #d4af5a;
+      letter-spacing: 0.4em;
+      text-shadow: 0 0 30px rgba(212,175,90,0.3);
+      margin: 15px 0 8px;
+      text-align: center;
+      opacity: 0;
+      animation: fadeInTitle 2s ease 0.5s forwards;
+    }
+    .scroll-subtitle {
+      font-family: 'Zhi Mang Xing', 'Noto Serif SC', serif;
+      font-size: clamp(0.85rem, 2vw, 1.05rem);
+      color: rgba(212,175,90,0.5);
+      letter-spacing: 0.2em;
+      text-align: center;
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeInTitle 2s ease 1s forwards;
+    }
+    @keyframes fadeInTitle {
+      to { opacity: 1; }
+    }
+
+    /* ===== The Scroll ===== */
+    .scroll {
+      width: 100%;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Top & Bottom Rollers */
+    .roller-top, .roller-bottom {
+      width: 100%;
+      height: 28px;
+      background: linear-gradient(180deg, #5a3e1a, #8b6914 30%, #a8882a 50%, #7a5a12 70%, #4a3210);
+      border-radius: 4px;
+      position: relative;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,215,140,0.2);
+      flex-shrink: 0;
+      z-index: 2;
+    }
+    .roller-top::after, .roller-bottom::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+      width: 80%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,215,140,0.3), transparent);
+    }
+    .roller-top::before, .roller-bottom::before {
+      content: '';
+      position: absolute;
+      left: -6px;
+      top: -4px;
+      width: 12px;
+      height: 36px;
+      background: linear-gradient(180deg, #3a2810, #6b4f12 50%, #3a2810);
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+    .roller-end-right {
+      position: absolute;
+      right: -6px;
+      top: -4px;
+      width: 12px;
+      height: 36px;
+      background: linear-gradient(180deg, #3a2810, #6b4f12 50%, #3a2810);
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    /* Paper */
+    .scroll-paper {
+      width: 100%;
+      background: linear-gradient(135deg, #f5e6c8 0%, #efe0c0 30%, #f0e2c5 60%, #eadbbb 100%);
+      position: relative;
+      overflow: hidden;
+      transform-origin: center top;
+    }
+    /* Aged edges top/bottom */
+    .scroll-paper::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: linear-gradient(180deg, rgba(245,230,200,0.95) 0%, rgba(245,230,200,0.3) 40%, transparent 100%);
+      pointer-events: none;
+      z-index: 2;
+    }
+    .scroll-paper::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 60px;
+      background: linear-gradient(0deg, rgba(245,230,200,0.95) 0%, rgba(245,230,200,0.3) 40%, transparent 100%);
+      pointer-events: none;
+      z-index: 2;
+    }
+    /* Worn side edges */
+    .scroll-edge-left, .scroll-edge-right {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 18px;
+      z-index: 3;
+      pointer-events: none;
+    }
+    .scroll-edge-left {
+      left: 0;
+      background: linear-gradient(90deg, rgba(180,150,100,0.4) 0%, transparent 60%);
+      box-shadow: inset 3px 0 8px rgba(120,90,50,0.15);
+    }
+    .scroll-edge-right {
+      right: 0;
+      background: linear-gradient(270deg, rgba(180,150,100,0.4) 0%, transparent 60%);
+      box-shadow: inset -3px 0 8px rgba(120,90,50,0.15);
+    }
+    /* Paper texture */
+    .scroll-texture {
+      position: absolute;
+      inset: 0;
+      opacity: 0.06;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ===== Content ===== */
+    .scroll-content {
+      position: relative;
+      z-index: 5;
+      padding: 50px 30px 50px 30px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px 16px;
+      min-height: 200px;
+    }
+
+    /* ===== Name Column (vertical) ===== */
+    .name-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      padding: 8px 4px;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      position: relative;
+      min-width: 48px;
+    }
+    .name-col:hover {
+      background: rgba(139,105,20,0.08);
+    }
+    .name-col .char {
+      font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+      font-size: clamp(0.9rem, 1.6vw, 1.15rem);
+      line-height: 1.5;
+      color: #2c1810;
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      letter-spacing: 0.05em;
+      transition: all 0.3s ease;
+    }
+    .name-col .amount-tag {
+      font-size: 0.6rem;
+      color: #8a7030;
+      margin-top: 6px;
+      font-weight: 600;
+      white-space: nowrap;
+      letter-spacing: 0.05em;
+    }
+
+    /* Gold (≥1万) */
+    .name-col.gold .char {
+      font-weight: 900;
+      background: linear-gradient(180deg, #c9a84c, #f5d77b, #c9a84c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      filter: drop-shadow(0 0 4px rgba(212,175,90,0.3));
+    }
+    .name-col.gold:hover .char {
+      filter: drop-shadow(0 0 8px rgba(212,175,90,0.5)) drop-shadow(0 0 16px rgba(212,175,90,0.2));
+    }
+    .name-col.gold .amount-tag { color: #c9a84c; }
+
+    /* Silver (≥2000) */
+    .name-col.silver .char {
+      font-weight: 700;
+      color: #4a4030;
+    }
+
+    /* ===== Unroll Animation ===== */
+    .scroll-paper.rolled {
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      overflow: hidden;
+      transition: max-height 2.5s cubic-bezier(0.25, 0.1, 0.15, 1);
+    }
+    .scroll-paper.rolled .scroll-content {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .scroll-paper.unrolling {
+      max-height: 8000px;
+    }
+    .scroll-paper.unrolling .scroll-content {
+      opacity: 1;
+      transition: opacity 1.5s ease 1.2s;
+    }
+
+    /* ===== Drag hint ===== */
+    .drag-hint {
+      text-align: center;
+      padding: 4px 0 0;
+      font-size: 0.7rem;
+      color: rgba(212,175,90,0.3);
+      letter-spacing: 0.15em;
+      opacity: 0;
+      animation: fadeInTitle 2s ease 2.5s forwards;
+    }
+    .drag-hint span {
+      display: inline-block;
+      animation: bounceDown 2s ease-in-out infinite;
+    }
+    @keyframes bounceDown {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(4px); }
+    }
+
+    /* ===== Modal ===== */
+    .mw-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: rgba(10,8,5,0.8);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .mw-modal.open { display: flex; }
+    .mw-modal-box {
+      max-width: 400px;
+      width: 100%;
+      padding: 30px 28px;
+      background: linear-gradient(135deg, #f5e6c8, #efe0c0);
+      border: 1px solid rgba(139,105,20,0.3);
+      border-radius: 4px;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .mw-modal-close {
+      position: absolute;
+      top: 10px; right: 14px;
+      background: none; border: none;
+      color: #8a7030; font-size: 20px;
+      cursor: pointer; line-height: 1;
+      font-family: 'Noto Serif SC', serif;
+    }
+    .mw-modal-close:hover { color: #2c1810; }
+    .mw-modal-name {
+      font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+      font-size: 1.5rem; color: #2c1810;
+      margin-bottom: 4px;
+    }
+    .mw-modal-gen {
+      font-size: 0.8rem; color: #8a7030; margin-bottom: 10px;
+    }
+    .mw-modal-amount {
+      font-size: 0.85rem; color: #8a7030;
+      font-weight: 600; margin-bottom: 14px;
+    }
+    .mw-modal-bio {
+      font-size: 0.85rem; line-height: 1.8; color: #4a3a28;
+      padding-top: 12px;
+      border-top: 1px solid rgba(139,105,20,0.2);
+      min-height: 30px;
+    }
+    .mw-modal-tribute {
+      font-size: 0.85rem; line-height: 1.7; color: #6a5a40;
+      font-style: italic; padding: 10px 14px; margin-top: 12px;
+      background: rgba(139,105,20,0.06);
+      border-radius: 4px; border-left: 2px solid #c9a84c;
+    }
+    .mw-modal-tribute::before { content: '「'; }
+    .mw-modal-tribute::after { content: '」'; }
+
+    /* ===== Inscription ===== */
+    .scroll-inscription {
+      text-align: center;
+      padding: 20px 20px 0;
+      opacity: 0;
+      animation: fadeInTitle 2s ease 3s forwards;
+    }
+    .scroll-inscription p {
+      font-family: 'Zhi Mang Xing', 'Noto Serif SC', serif;
+      font-size: clamp(0.8rem, 1.5vw, 0.95rem);
+      line-height: 2;
+      color: rgba(212,175,90,0.4);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 640px) {
+      .scroll-wrap { padding: 5px 8px 15px; }
+      .scroll-content { padding: 30px 12px; gap: 4px 10px; }
+      .name-col .char { font-size: 0.82rem; }
+      .roller-top, .roller-bottom { height: 20px; }
+      .roller-top::before, .roller-bottom::before,
+      .roller-end-right { height: 28px; width: 10px; top: -4px; }
+      .roller-end-right { right: -5px; }
+      .mw-modal-box { padding: 20px; }
+    }
+    @media (min-width: 1200px) {
+      .scroll-content { gap: 10px 20px; }
+      .name-col .char { font-size: 1.25rem; }
+    }
+
+    /* Scrollbar */
+    .scroll-paper::-webkit-scrollbar { width: 4px; }
+    .scroll-paper::-webkit-scrollbar-track { background: transparent; }
+    .scroll-paper::-webkit-scrollbar-thumb { background: rgba(139,105,20,0.3); border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+<div class="scroll-wrap">
+  <div class="scroll-title">下枫槎功德卷</div>
+  <div class="scroll-subtitle">凡捐资修谱建祠者 · 勒名于斯 · 永志不忘</div>
+
+  <div class="scroll">
+    <div class="roller-top"><div class="roller-end-right"></div></div>
+    <div class="scroll-paper rolled" id="scrollPaper">
+      <div class="scroll-edge-left"></div>
+      <div class="scroll-edge-right"></div>
+      <div class="scroll-texture"></div>
+      <div class="scroll-content" id="scrollContent"></div>
+    </div>
+    <div class="roller-bottom"><div class="roller-end-right"></div></div>
+  </div>
+
+  <div class="drag-hint"><span>↕ 上下拖拽浏览 · 点击姓名查看详情</span></div>
+
+  <div class="scroll-inscription">
+    <p>公元二〇二六年丙午春 · 下枫槎谢氏阖族敬立</p>
+  </div>
+</div>
+
+<div class="mw-modal" id="mwModal" onclick="if(event.target===this)closeModal()">
+  <div class="mw-modal-box" id="mwModalBox"></div>
+</div>
+
+<script>
+var meritData = [];
+
+function loadMerit() {
+  var stored = localStorage.getItem('xie_merit_data');
+  if (stored) {
+    try { meritData = JSON.parse(stored); renderMerit(); return; } catch(e) {}
+  }
+  fetch('../data/merit.json?' + Date.now()).then(function(r){return r.json()}).then(function(d){
+    meritData = d;
+    localStorage.setItem('xie_merit_data', JSON.stringify(d));
+    renderMerit();
+  }).catch(function(){ renderMerit(); });
+}
+
+function renderMerit() {
+  var data = meritData.slice();
+  data.sort(function(a,b){
+    return (b.amountValue||0) - (a.amountValue||0) || a.id - b.id;
+  });
+
+  var container = document.getElementById('scrollContent');
+  var html = '';
+
+  data.forEach(function(p){
+    var isGold = (p.amountValue||0) >= 10000;
+    var isSilver = !isGold && (p.amountValue||0) >= 2000;
+    var cls = 'name-col';
+    if (isGold) cls += ' gold';
+    else if (isSilver) cls += ' silver';
+
+    html += '<div class="' + cls + '" data-id="' + p.id + '" onclick="openModal(' + p.id + ')">';
+    p.name.split('').forEach(function(ch){
+      html += '<span class="char">' + esc(ch) + '</span>';
+    });
+    var amtText = p.amountValue >= 10000
+      ? (p.amountValue/10000).toFixed(p.amountValue%10000===0?0:1) + '万'
+      : p.amountValue + '元';
+    html += '<div class="amount-tag">' + amtText + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+  startUnroll();
+}
+
+var soundPlayed = false;
+
+function startUnroll() {
+  var paper = document.getElementById('scrollPaper');
+  paper.offsetHeight;
+  paper.classList.remove('rolled');
+  paper.classList.add('unrolling');
+  if (!soundPlayed) { soundPlayed = true; playScrollSound(); }
+}
+
+function playScrollSound() {
+  try {
+    var ctx = new (window.AudioContext||window.webkitAudioContext)();
+    var len = ctx.sampleRate * 2.2;
+    var buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    var d = buf.getChannelData(0);
+    for (var i = 0; i < len; i++) {
+      var t = i / ctx.sampleRate;
+      var env = Math.max(0, 1 - t / 2.2);
+      var noise = (Math.random() * 2 - 1) * 0.15;
+      var rumble = Math.sin(i*0.05)*0.3 + Math.sin(i*0.12)*0.2 + Math.sin(i*0.03)*0.4;
+      d[i] = (noise + rumble) * env * 0.25;
+    }
+    var src = ctx.createBufferSource();
+    src.buffer = buf;
+    var flt = ctx.createBiquadFilter();
+    flt.type = 'lowpass'; flt.frequency.value = 350;
+    var gn = ctx.createGain();
+    gn.gain.setValueAtTime(0.12, 0);
+    gn.gain.exponentialRampToValueAtTime(0.005, 2.2);
+    src.connect(flt); flt.connect(gn); gn.connect(ctx.destination);
+    src.start();
+  } catch(e) {}
+}
+
+function openModal(id) {
+  var p = null;
+  for (var i = 0; i < meritData.length; i++) {
+    if (meritData[i].id === id) { p = meritData[i]; break; }
+  }
+  if (!p) return;
+  var box = document.getElementById('mwModalBox');
+  var genHtml = p.generation ? '<div class="mw-modal-gen">第' + p.generation + '世孙</div>' : '';
+  var bioHtml = p.biography
+    ? '<div class="mw-modal-bio">' + esc(p.biography) + '</div>'
+    : '<div class="mw-modal-bio" style="color:#b0a090;font-style:italic;">暂无生平记载</div>';
+  var tributeHtml = p.tribute ? '<div class="mw-modal-tribute">' + esc(p.tribute) + '</div>' : '';
+  box.innerHTML =
+    '<button class="mw-modal-close" onclick="closeModal()">✕</button>' +
+    '<div class="mw-modal-name">' + esc(p.name) + '</div>' +
+    genHtml +
+    '<div class="mw-modal-amount">' + esc(p.amount) + ' · ' + esc(p.category) + '</div>' +
+    bioHtml + tributeHtml;
+  document.getElementById('mwModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('mwModal').classList.remove('open');
+}
+
+function esc(t) {
+  if (!t) return '';
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+loadMerit();
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
+</script>
+</body>
+</html>
