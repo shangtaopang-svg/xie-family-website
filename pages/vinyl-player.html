@@ -165,26 +165,26 @@
     /* Tonearm */
     .tonearm {
       position: absolute;
-      top: -30px;
-      right: -20px;
-      width: 180px;
-      height: 220px;
+      top: -40px;
+      right: -10px;
+      width: 200px;
+      height: 100%;
       z-index: 10;
-      transform-origin: 100% 0%;
-      transform: rotate(15deg);
+      transform-origin: 90% 8%;
+      transform: rotate(18deg);
       transition: transform 0.8s cubic-bezier(0.34, 1.2, 0.64, 1);
       pointer-events: none;
     }
     .tonearm.playing {
-      transform: rotate(40deg);
+      transform: rotate(32deg);
     }
     /* Arm base */
     .tonearm-base {
       position: absolute;
-      top: 0; right: 0;
-      width: 28px; height: 28px;
+      top: 5px; right: 5px;
+      width: 32px; height: 32px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #666, #333);
+      background: linear-gradient(135deg, #777, #444);
       box-shadow: 0 2px 8px rgba(0,0,0,0.5);
       border: 1px solid rgba(255,255,255,0.1);
     }
@@ -200,11 +200,11 @@
     /* Arm rod */
     .tonearm-rod {
       position: absolute;
-      top: 14px; right: 14px;
-      width: 90px; height: 3px;
-      background: linear-gradient(90deg, #555, #333);
+      top: 10px; right: 8px;
+      width: 120px; height: 3px;
+      background: linear-gradient(90deg, #666, #444);
       transform-origin: 100% 50%;
-      transform: rotate(-30deg);
+      transform: rotate(-20deg);
       border-radius: 2px;
     }
     .tonearm-rod::after {
@@ -218,20 +218,20 @@
     /* Headshell */
     .tonearm-head {
       position: absolute;
-      top: -8px; left: -12px;
-      width: 20px; height: 40px;
-      background: linear-gradient(180deg, #444, #222);
-      border-radius: 3px;
-      transform: rotate(-30deg);
+      top: -12px; left: -18px;
+      width: 18px; height: 50px;
+      background: linear-gradient(180deg, #555, #333);
+      border-radius: 3px 3px 2px 2px;
+      transform: rotate(-20deg);
       box-shadow: 0 1px 3px rgba(0,0,0,0.3);
     }
     .tonearm-head::after {
       content: '';
       position: absolute;
-      bottom: -8px; left: 50%;
+      bottom: -10px; left: 50%;
       transform: translateX(-50%);
-      width: 2px; height: 10px;
-      background: #888;
+      width: 2px; height: 14px;
+      background: #999;
       border-radius: 1px;
     }
 
@@ -445,8 +445,8 @@
     /* ===== Responsive ===== */
     @media (max-width: 640px) {
       .turntable { width: 82vw; height: 82vw; }
-      .tonearm { width: 120px; height: 150px; top: -10px; right: -20px; }
-      .tonearm-rod { width: 70px; }
+      .tonearm { width: 140px; top: -20px; right: -5px; }
+      .tonearm-rod { width: 80px; }
       .controls { gap: 14px; }
       .ctrl-btn { width: 34px; height: 34px; font-size: 0.85rem; }
       .ctrl-btn.play-btn { width: 42px; height: 42px; }
