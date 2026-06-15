@@ -39,7 +39,7 @@
       margin: 15px 0 4px;
     }
     .page-subtitle {
-      font-family: 'Zhi Mang Xing', 'Noto Serif SC', serif;
+      font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
       font-size: clamp(0.85rem, 2vw, 1.05rem);
       color: #c41e3a;
       letter-spacing: 0.2em;
@@ -391,12 +391,36 @@
     <div class="scroll-card" data-scroll="external">
       <div class="scroll-card-header" onclick="toggleScroll('external')">
         <div class="info">
-          <h3>二 · 外来宗亲助款名单</h3>
+          <h3>二 · 族人筹款名单</h3>
           <span class="empty-badge">暂无数据</span>
         </div>
         <button class="toggle-btn" id="btn-external">展开 ▾</button>
       </div>
       <div class="scroll-paper-wrap" id="wrap-external">
+        <div class="scroll-paper">
+          <div class="scroll-edge-left"></div>
+          <div class="scroll-edge-right"></div>
+          <div class="scroll-content">
+            <div class="empty-state">
+              <div class="icon">📋</div>
+              <p>数据待上传</p>
+              <p style="font-size:0.7rem;margin-top:6px;">请提供族人筹款名单</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll 3: 社会各界助款名单 -->
+    <div class="scroll-card" data-scroll="social">
+      <div class="scroll-card-header" onclick="toggleScroll('social')">
+        <div class="info">
+          <h3>三 · 外来宗亲助款名单</h3>
+          <span class="empty-badge">暂无数据</span>
+        </div>
+        <button class="toggle-btn" id="btn-social">展开 ▾</button>
+      </div>
+      <div class="scroll-paper-wrap" id="wrap-social">
         <div class="scroll-paper">
           <div class="scroll-edge-left"></div>
           <div class="scroll-edge-right"></div>
@@ -411,35 +435,11 @@
       </div>
     </div>
 
-    <!-- Scroll 3: 社会各界助款名单 -->
-    <div class="scroll-card" data-scroll="social">
-      <div class="scroll-card-header" onclick="toggleScroll('social')">
-        <div class="info">
-          <h3>三 · 社会各界助款名单</h3>
-          <span class="empty-badge">暂无数据</span>
-        </div>
-        <button class="toggle-btn" id="btn-social">展开 ▾</button>
-      </div>
-      <div class="scroll-paper-wrap" id="wrap-social">
-        <div class="scroll-paper">
-          <div class="scroll-edge-left"></div>
-          <div class="scroll-edge-right"></div>
-          <div class="scroll-content">
-            <div class="empty-state">
-              <div class="icon">📋</div>
-              <p>数据待上传</p>
-              <p style="font-size:0.7rem;margin-top:6px;">请提供社会各界助款名单</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Scroll 4: 预留 -->
     <div class="scroll-card" data-scroll="extra1">
       <div class="scroll-card-header" onclick="toggleScroll('extra1')">
         <div class="info">
-          <h3>四 · <span style="color:#c0b0a0;">待定</span></h3>
+          <h3>四 · 社会各界助款名单</h3>
           <span class="empty-badge">待上传</span>
         </div>
         <button class="toggle-btn" id="btn-extra1">展开 ▾</button>
