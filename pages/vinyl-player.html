@@ -165,18 +165,18 @@
     /* Tonearm */
     .tonearm {
       position: absolute;
-      top: -20px;
-      right: -30px;
-      width: 160px;
-      height: 200px;
+      top: -30px;
+      right: -20px;
+      width: 180px;
+      height: 220px;
       z-index: 10;
       transform-origin: 100% 0%;
-      transform: rotate(20deg);
-      transition: transform 0.6s cubic-bezier(0.34, 1.2, 0.64, 1);
+      transform: rotate(15deg);
+      transition: transform 0.8s cubic-bezier(0.34, 1.2, 0.64, 1);
       pointer-events: none;
     }
     .tonearm.playing {
-      transform: rotate(45deg);
+      transform: rotate(40deg);
     }
     /* Arm base */
     .tonearm-base {
@@ -564,13 +564,13 @@ function initLibrary() {
 
   // --- 已注册歌曲 ---
   library.push({
-    file: 'music/liangzhu.mp3',
+    file: '/music/liangzhu.mp3',
     name: '梁祝 (钢琴版)',
     artist: 'Wyatt Anderson / 中国民乐',
     duration: '?'
   });
   library.push({
-    file: 'music/huijia.mp3',
+    file: '/music/huijia.mp3',
     name: '回家 (萨克斯)',
     artist: '萨克斯曲',
     duration: '?'
