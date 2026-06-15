@@ -827,14 +827,16 @@ function buildConnectorPath(parentId, childIds, layout) {
   return paths;
 }
 
-// Branch filter: collect all descendants of a root person
+// Branch filter: return only matching people
 function getBranchData(data, rootNamePattern) {
-  // Find ALL matching people and pick the best one (with most descendants)
   var isBranchFilter = ['远古世系','申伯世系','始宁东山世系','临海下渡世系','石马下谢分房'].indexOf(rootNamePattern) >= 0;
+  if (isBranchFilter) {
+    return data.filter(function(p) { return p.branch === rootNamePattern; });
+  }
+  // For name-based filters (后枫槎, 前枫槎), use original descendant collection
   var candidates = [];
   for (var i = 0; i < data.length; i++) {
-    if (isBranchFilter ? (data[i].branch === rootNamePattern) : (data[i].name.indexOf(rootNamePattern) >= 0)) {
-      // Count descendants for this candidate
+    if (data[i].name.indexOf(rootNamePattern) >= 0) {
       var cIds = [data[i].id];
       function cCollect(pid) {
         for (var j = 0; j < data.length; j++) {
@@ -849,13 +851,11 @@ function getBranchData(data, rootNamePattern) {
     }
   }
   if (candidates.length === 0) return data;
-  // Sort by descendant count desc, then by generation_num desc (prefer more recent)
   candidates.sort(function(a, b) {
     if (b.descendantCount !== a.descendantCount) return b.descendantCount - a.descendantCount;
     return (parseInt(b.person.generation_num)||0) - (parseInt(a.person.generation_num)||0);
   });
   var root = candidates[0].person;
-  // Collect all descendants through father_id/mother_id
   var ids = [root.id];
   function collect(pid) {
     for (var i = 0; i < data.length; i++) {
