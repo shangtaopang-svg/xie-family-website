@@ -944,6 +944,15 @@ function renderSimpleTree(data) {
 function renderTreeSVG(data) {
   var container = document.getElementById('tree-container');
   if (!container) return;
+  // Apply branch filter FIRST
+  var oldMsg = document.getElementById('branch-empty-msg');
+  if (oldMsg) oldMsg.remove();
+  var oldStats = document.getElementById('branch-stats-overlay');
+  if (oldStats) oldStats.remove();
+  if (_currentBranch && _currentBranch !== 'all') {
+    var filteredData = getBranchData(data, _currentBranch);
+    if (filteredData && filteredData.length > 0) data = filteredData;
+  }
   // Use admin-style card tree if available
   if (typeof buildAdminTreeHtml === 'function' && data && data.length > 0) {
     container.innerHTML = '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">' +
