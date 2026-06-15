@@ -539,9 +539,13 @@ function renderScroll(key, data) {
     p.name.split('').forEach(function(ch){
       html += '<span class="char">' + esc(ch) + '</span>';
     });
-    var amtText = amt >= 10000
-      ? (amt/10000).toFixed(amt%10000===0?0:1) + '万'
-      : amt + '元';
+    var amtText = p.amount;
+    if (/^\d+元$/.test(p.amount)) {
+      var amt = p.amountValue || 0;
+      amtText = amt >= 10000
+        ? (amt/10000).toFixed(amt%10000===0?0:1) + '万'
+        : amt + '元';
+    }
     html += '<div class="amount-tag">' + amtText + '</div>';
     html += '</div>';
   });
