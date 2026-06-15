@@ -165,62 +165,78 @@
     /* Tonearm */
     .tonearm {
       position: absolute;
-      top: 0; right: 0;
-      width: 160px;
-      height: 160px;
+      top: -20px; right: -10px;
+      width: 200px;
+      height: 220px;
       z-index: 10;
-      transform-origin: 100% 0%;
-      transform: rotate(5deg);
-      transition: transform 0.8s cubic-bezier(0.34, 1.2, 0.64, 1);
+      transform-origin: 28px 28px;
+      transition: transform 0.7s cubic-bezier(0.34, 1.2, 0.64, 1);
       pointer-events: none;
     }
-    .tonearm.playing {
-      transform: rotate(60deg);
-    }
-    .tonearm-pivot {
+    /* Pivot base */
+    .tonearm .pivot {
       position: absolute;
-      top: 0; right: 0;
+      top: 10px; right: 10px;
       width: 36px; height: 36px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #888, #555);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
-      border: 1px solid rgba(255,255,255,0.1);
+      background: linear-gradient(135deg, #999, #666);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+      z-index: 2;
     }
-    .tonearm-pivot::after {
+    .tonearm .pivot::after {
       content: '';
       position: absolute;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       width: 14px; height: 14px;
       border-radius: 50%;
-      background: radial-gradient(circle at 40% 35%, #aaa, #444);
+      background: radial-gradient(circle at 40% 35%, #bbb, #555);
     }
-    .tonearm-body {
+    /* Arm tube - single line from pivot toward record */
+    .tonearm .arm-tube {
       position: absolute;
-      top: 14px; right: 14px;
-      width: 110px; height: 4px;
-      background: linear-gradient(90deg, #777, #555);
+      top: 24px; right: 20px;
+      width: 140px; height: 5px;
+      background: linear-gradient(90deg, #888, #555 60%, #444);
       transform-origin: 100% 50%;
-      transform: rotate(-25deg);
-      border-radius: 2px;
+      transform: rotate(-15deg);
+      border-radius: 3px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }
-    .tonearm-body .headshell {
-      position: absolute;
-      left: -8px; top: -14px;
-      width: 14px; height: 32px;
-      background: linear-gradient(180deg, #666, #444);
-      border-radius: 2px 2px 1px 1px;
-    }
-    .tonearm-body .headshell::after {
+    .tonearm .arm-tube::after {
       content: '';
       position: absolute;
-      bottom: -12px; left: 50%;
-      transform: translateX(-50%);
-      width: 2px; height: 14px;
-      background: #aaa;
-      border-radius: 1px;
+      left: -6px; top: -10px;
+      width: 12px; height: 24px;
+      background: linear-gradient(180deg, #777, #555);
+      border-radius: 3px 3px 1px 1px;
     }
-/* ===== Now Playing Info ===== */
+    /* Needle */
+    .tonearm .needle {
+      position: absolute;
+      left: -8px; top: 8px;
+      width: 2px; height: 16px;
+      background: linear-gradient(180deg, #aaa, #ccc);
+      border-radius: 1px;
+      transform: rotate(5deg);
+    }
+    .tonearm .needle::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: -1px;
+      width: 4px; height: 4px;
+      background: #ddd;
+      border-radius: 50%;
+    }
+
+    /* Default = PARKED (off the record, arm to the right) */
+    .tonearm {
+      transform: rotate(-45deg);
+    }
+    /* Playing = ON the record (arm swings onto vinyl) */
+    .tonearm.playing {
+      transform: rotate(15deg);
+    }/* ===== Now Playing Info ===== */
     .now-playing {
       text-align: center;
       margin: 16px 0 8px;
@@ -430,7 +446,8 @@
     /* ===== Responsive ===== */
     @media (max-width: 640px) {
       .turntable { width: 82vw; height: 82vw; }
-      .tonearm { width: 120px; height: 120px; }
+      .tonearm { width: 140px; height: 160px; top: -10px; }
+      .tonearm .arm-tube { width: 100px; }
       .controls { gap: 14px; }
       .ctrl-btn { width: 34px; height: 34px; font-size: 0.85rem; }
       .ctrl-btn.play-btn { width: 42px; height: 42px; }
@@ -464,9 +481,9 @@
         <div class="vinyl-spindle"></div>
       </div>
       <div class="tonearm" id="tonearm">
-        <div class="tonearm-pivot"></div>
-        <div class="tonearm-body">
-          <div class="headshell"></div>
+        <div class="pivot"></div>
+        <div class="arm-tube">
+          <div class="needle"></div>
         </div>
       </div>
     </div>
