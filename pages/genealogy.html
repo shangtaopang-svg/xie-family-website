@@ -73,7 +73,7 @@
     // Sort by descendant count
     roots.forEach(function (r) { r._descCount = countDescendants(r.id); });
     roots.sort(function (a, b) { return b._descCount - a._descCount; });
-    if (roots.length > 2) roots = roots.slice(0, 2);
+    if (roots.length > 10) roots = roots.slice(0, 10);
 
     // Build the displayed tree data
     var maxDepth = 0;
