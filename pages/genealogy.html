@@ -596,7 +596,7 @@
     });
     // Connect stored 文杲公 to ancient 小四
     for (var ci = 0; ci < data.length; ci++) {
-      if (data[ci].name === '文杲公' || data[ci].name === '文杲') {
+      if (data[ci].name === '文杲公' || data[ci].name === '文杲' || data[ci].name === '谢小四') {
         for (var ai = 0; ai < ancient.length; ai++) {
           if (ancient[ai].name === '小四') { data[ci].father_id = ancient[ai].id; break; }
         }
@@ -620,7 +620,7 @@
         return true;
       });
       for (var ci = 0; ci < d.length; ci++) {
-        if (d[ci].name === '文杲公' || d[ci].name === '文杲') {
+        if (d[ci].name === '文杲公' || d[ci].name === '文杲' || d[ci].name === '谢小四') {
           for (var ai = 0; ai < ancient.length; ai++) {
             if (ancient[ai].name === '小四') { d[ci].father_id = ancient[ai].id; break; }
           }
