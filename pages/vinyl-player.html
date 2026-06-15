@@ -229,13 +229,9 @@
       border-radius: 50%;
     }
 
-    /* Default = PARKED (off the record, arm to the right) */
-    .tonearm {
-      transform: translateY(-18px) rotate(-45deg);
-    }
-    /* Playing = lowered onto record */
+    /* Transform controlled by JS for sequenced lift/swing animation */
     .tonearm.playing {
-      transform: translateY(0) rotate(15deg);
+      /* placeholder */
     }/* ===== Now Playing Info ===== */
     .now-playing {
       text-align: center;
@@ -686,10 +682,28 @@ function updateUI() {
     vinyl.classList.remove('paused');
     tonearm.classList.add('playing');
     playBtn.textContent = '⏸';
+    // Step 1: Swing onto record (lifted)
+    tonearm.style.transition = 'transform 0.5s ease';
+    tonearm.style.transform = 'translateY(-18px) rotate(15deg)';
+    // Step 2: Lower down
+    clearTimeout(window._armTimer);
+    window._armTimer = setTimeout(function(){
+      tonearm.style.transition = 'transform 0.35s ease';
+      tonearm.style.transform = 'translateY(0) rotate(15deg)';
+    }, 550);
   } else {
     vinyl.classList.add('paused');
     tonearm.classList.remove('playing');
     playBtn.textContent = '▶';
+    // Step 1: Lift up from record
+    tonearm.style.transition = 'transform 0.3s ease';
+    tonearm.style.transform = 'translateY(-18px) rotate(15deg)';
+    // Step 2: Swing to rest
+    clearTimeout(window._armTimer);
+    window._armTimer = setTimeout(function(){
+      tonearm.style.transition = 'transform 0.5s ease';
+      tonearm.style.transform = 'translateY(-18px) rotate(-45deg)';
+    }, 350);
   }
 
   if (currentIndex >= 0 && library[currentIndex]) {
@@ -701,7 +715,6 @@ function updateUI() {
 
   renderPlaylist();
 }
-
 // ===== Audio Events =====
 audio.addEventListener('timeupdate', function(){
   var fill = document.getElementById('progressFill');
@@ -752,7 +765,15 @@ setInterval(updateClock, 1000);
 updateClock();
 
 // ===== Init =====
-initLibrary();
+// Set initial arm position (parked + lifted)
+  var ta = document.getElementById('tonearm');
+  ta.style.transition = 'none';
+  ta.style.transform = 'translateY(-18px) rotate(-45deg)';
+  // Force reflow then enable transitions
+  ta.offsetHeight;
+  ta.style.transition = 'transform 0.9s cubic-bezier(0.34, 1.2, 0.64, 1)';
+
+  initLibrary();
 </script>
 </body>
 </html>
