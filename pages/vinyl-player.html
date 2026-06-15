@@ -550,21 +550,31 @@ var isPlaying = false;
 
 function initLibrary() {
   // ==========================================
-  // 用户下载音乐后，在此处添加歌曲条目
-  // 格式示例：
+  // 添加歌曲：在此 push 新条目
+  // 格式：
   // library.push({
-  //   file: 'music/歌曲名.mp3',
+  //   file: 'music/文件名.mp3',
   //   name: '歌曲名',
-  //   artist: '演唱者/备注',
-  //   cover: null,  // 或 'images/cover.jpg'
-  //   duration: '?'
+  //   artist: '演唱者',
+  //   duration: '?'  // 可不填，自动获取
   // });
   // ==========================================
 
-  // 示例占位（无实际音频文件，仅展示界面）
-  library = [
-    { file: null, name: '等待添加歌曲...', artist: '请将MP3文件放入 music/ 目录', cover: null, duration: '0:00' }
-  ];
+  library = [];
+
+  // --- 已注册歌曲 ---
+  library.push({
+    file: 'music/梁祝 (钢琴版)-Wyatt Anderson&中国民乐.mp3',
+    name: '梁祝 (钢琴版)',
+    artist: 'Wyatt Anderson / 中国民乐',
+    duration: '?'
+  });
+  library.push({
+    file: 'music/回家萨克斯.mp3',
+    name: '回家 (萨克斯)',
+    artist: '萨克斯曲',
+    duration: '?'
+  });
 
   renderPlaylist();
 }
