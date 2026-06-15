@@ -574,7 +574,7 @@
       var r = raw[i], pid = 50000 + i;
       var gen = r[0], br = '古世系';
       if (gen <= 65) br = '远古世系';
-      else if (gen <= 98 && gen > 65) br = '申伯世系';
+      else if (gen <= 99) br = '申伯世系';
       else if (gen <= 120) br = '始宁东山世系';
       else if (gen <= 128) br = '临海下渡世系';
       else br = '石马下谢分房';
@@ -833,7 +833,7 @@ function getBranchData(data, rootNamePattern) {
   if (isBranchFilter) {
     var result = data.filter(function(p) { return p.branch === rootNamePattern; });
     // Include the starting person of this branch (from previous branch)
-    var transitionNames = {'申伯世系':'申伯'};
+    var transitionNames = {'申伯世系':'申伯','始宁东山世系':'缵'};
     var tName = transitionNames[rootNamePattern];
     if (tName) {
       for (var ti = 0; ti < data.length; ti++) {
