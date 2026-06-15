@@ -573,7 +573,7 @@
     for (var i = 0; i < raw.length; i++) {
       var r = raw[i], pid = 50000 + i;
       var gen = r[0], br = '古世系';
-      if (gen < 65) br = '远古世系';
+      if (gen <= 65) br = "远古世系";
       else if (gen <= 99) br = '申伯世系';
       else if (gen <= 121) br = '始宁东山世系';
       else if (gen <= 129) br = '临海下渡世系';
