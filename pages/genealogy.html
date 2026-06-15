@@ -161,7 +161,6 @@
     // Legend
     html += '<div style="position:absolute;bottom:0;left:55px;font-size:11px;color:var(--text-tertiary);display:flex;gap:16px;">';
     html += '<span><span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#22c55e;vertical-align:middle;margin-right:4px;"></span>后枫槎</span>';
-    html += '<span><span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#6366f1;vertical-align:middle;margin-right:4px;"></span>前枫槎</span>';
     html += '<span><span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#f59e0b;vertical-align:middle;margin-right:4px;"></span>石马</span>';
     html += '<span style="color:var(--text-muted);">块宽度=后代人数</span>';
     html += '</div>';
@@ -170,28 +169,19 @@
     container.innerHTML = html;
   }
 
-  // Click handler - zoom into a person
-    if (!allPeople[id]) return;
-    focusId = id;
-    // Rebuild tree from this person as root
-    var fakeRoots = [allPeople[id]];
-    var maxDepth = 0;
-    function calcDepth(pid, d) { if (d > maxDepth) maxDepth = d; getChildren(pid).forEach(function (c) { calcDepth(c.id, d + 1); }); }
-    calcDepth(id, 0);
-    render(fakeRoots, maxDepth + 1);
-  }
-
   function esc(t) { if (!t) return ''; var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
   // Boot - run immediately
   function boot() {
     try {
-        init();
-      } else {
-        setTimeout(boot, 200);
-      }
-    } catch (e) {
+      init();
+    } catch(e) {
       if (c) c.innerHTML = '<div style="padding:40px;text-align:center;color:#ef4444;font-size:13px;">加载出错: ' + e.message + '</div>';
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', boot);
+    } else {
+      setTimeout(boot, 200);
     }
   }
   if (document.readyState === 'loading') {
