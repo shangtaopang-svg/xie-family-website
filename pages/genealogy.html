@@ -401,9 +401,12 @@
         <!-- 视图切换标签 -->
         <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center;padding:6px 0;">
           <span style="font-size:12px;color:var(--text-tertiary);font-weight:500;">分支：</span>
-          <button class="btn btn-xs" id="filter-all" onclick="filterBranch('all')" style="background:var(--accent-orange);color:#fff;border:none;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;">全部</button>
-          <button class="btn btn-xs" id="filter-houfengcha" onclick="filterBranch('后枫槎')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">后枫槎世系</button>
-          <button class="btn btn-xs" id="filter-qianfengcha" onclick="filterBranch('前枫槎')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">前枫槎世系</button>
+          <button class="btn btn-xs" id="filter-all" onclick="filterBranch('all')" style="background:var(--accent-orange);color:#fff;border:none;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;">全部世系</button>
+          <button class="btn btn-xs" id="filter-yuangud" onclick="filterBranch('远古世系')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">远古世系</button>
+          <button class="btn btn-xs" id="filter-shenbo" onclick="filterBranch('申伯世系')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">申伯世系</button>
+          <button class="btn btn-xs" id="filter-dongshan" onclick="filterBranch('始宁东山世系')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">始宁东山世系</button>
+          <button class="btn btn-xs" id="filter-linhai" onclick="filterBranch('临海下渡世系')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">临海下渡世系</button>
+          <button class="btn btn-xs" id="filter-shima" onclick="filterBranch('石马下谢分房')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">石马（下谢）分房派</button>
         </div>
         <!-- 树容器 -->
         <div class="genealogy-tree-scroll" id="tree-scroll-container">
@@ -566,7 +569,13 @@
     for (var i = 0; i < raw.length; i++) { if (!nameToId[raw[i][1]]) nameToId[raw[i][1]] = 50000 + i; }
     for (var i = 0; i < raw.length; i++) {
       var r = raw[i], pid = 50000 + i;
-      result.push({ id: pid, name: r[1], gender: '男', generation: r[0].toString(), generation_num: r[0], branch: '古世系', father_id: r[3] ? (nameToId[r[3]] || null) : null, birth_date: '', is_alive: '否', highlight: i === 0, biography: r[2] });
+      var gen = r[0], br = '古世系';
+      if (gen < 65) br = '远古世系';
+      else if (gen <= 99) br = '申伯世系';
+      else if (gen <= 121) br = '始宁东山世系';
+      else if (gen <= 129) br = '临海下渡世系';
+      else br = '石马下谢分房';
+      result.push({ id: pid, name: r[1], gender: '男', generation: gen.toString(), generation_num: gen, branch: br, father_id: r[3] ? (nameToId[r[3]] || null) : null, birth_date: '', is_alive: '否', highlight: i === 0, biography: r[2] });
     }
     return result;
   }
@@ -818,9 +827,10 @@ function buildConnectorPath(parentId, childIds, layout) {
 // Branch filter: collect all descendants of a root person
 function getBranchData(data, rootNamePattern) {
   // Find ALL matching people and pick the best one (with most descendants)
+  var isBranchFilter = ['远古世系','申伯世系','始宁东山世系','临海下渡世系','石马下谢分房'].indexOf(rootNamePattern) >= 0;
   var candidates = [];
   for (var i = 0; i < data.length; i++) {
-    if (data[i].name.indexOf(rootNamePattern) >= 0) {
+    if (isBranchFilter ? (data[i].branch === rootNamePattern) : (data[i].name.indexOf(rootNamePattern) >= 0)) {
       // Count descendants for this candidate
       var cIds = [data[i].id];
       function cCollect(pid) {
@@ -862,7 +872,8 @@ var _currentBranch = 'all';
 
 function filterBranch(branch) {
   _currentBranch = branch;
-  var btnId = 'filter-all';
+  var btnMap = {'all':'filter-all','远古世系':'filter-yuangud','申伯世系':'filter-shenbo','始宁东山世系':'filter-dongshan','临海下渡世系':'filter-linhai','石马下谢分房':'filter-shima'};
+  var btnId = btnMap[branch] || 'filter-all';
   if (branch.indexOf('后枫槎') >= 0) btnId = 'filter-houfengcha';
   else if (branch.indexOf('前枫槎') >= 0) btnId = 'filter-qianfengcha';
   document.querySelectorAll('[id^="filter-"]').forEach(function(b) { b.style.background = ''; b.style.color = ''; b.style.border = '1px solid var(--glass-border)'; });
