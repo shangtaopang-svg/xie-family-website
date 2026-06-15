@@ -10,9 +10,10 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      background: #1a1510;
+      background: #f5f0eb;
       background-image:
-        radial-gradient(ellipse at 50% 0%, #2a2018 0%, #0d0a08 100%);
+        repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(139,26,26,0.03) 80px, rgba(139,26,26,0.03) 81px),
+        repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(139,26,26,0.02) 40px, rgba(139,26,26,0.02) 41px);
       min-height: 100vh;
       font-family: 'Noto Serif SC', serif;
       overflow-x: hidden;
@@ -21,7 +22,6 @@
       align-items: center;
     }
 
-    /* ===== Scroll Container ===== */
     .scroll-wrap {
       width: 100%;
       max-width: 780px;
@@ -35,11 +35,10 @@
 
     /* ===== Title ===== */
     .scroll-title {
-      font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+      font-family: 'ZCOOL QingKe HuangYou', 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
       font-size: clamp(1.6rem, 4vw, 2.4rem);
-      color: #d4af5a;
+      color: #1a1a1a;
       letter-spacing: 0.4em;
-      text-shadow: 0 0 30px rgba(212,175,90,0.3);
       margin: 15px 0 8px;
       text-align: center;
       opacity: 0;
@@ -48,7 +47,7 @@
     .scroll-subtitle {
       font-family: 'Zhi Mang Xing', 'Noto Serif SC', serif;
       font-size: clamp(0.85rem, 2vw, 1.05rem);
-      color: rgba(212,175,90,0.5);
+      color: #c41e3a;
       letter-spacing: 0.2em;
       text-align: center;
       margin-bottom: 20px;
@@ -75,7 +74,7 @@
       background: linear-gradient(180deg, #5a3e1a, #8b6914 30%, #a8882a 50%, #7a5a12 70%, #4a3210);
       border-radius: 4px;
       position: relative;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,215,140,0.2);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,215,140,0.2);
       flex-shrink: 0;
       z-index: 2;
     }
@@ -114,18 +113,17 @@
     /* Paper */
     .scroll-paper {
       width: 100%;
-      background: linear-gradient(135deg, #f5e6c8 0%, #efe0c0 30%, #f0e2c5 60%, #eadbbb 100%);
+      background: linear-gradient(135deg, #fdf8f0 0%, #f8f0e0 30%, #faf3e5 60%, #f5edd8 100%);
       position: relative;
       overflow: hidden;
-      transform-origin: center top;
     }
-    /* Aged edges top/bottom */
+    /* Aged edges */
     .scroll-paper::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
-      height: 60px;
-      background: linear-gradient(180deg, rgba(245,230,200,0.95) 0%, rgba(245,230,200,0.3) 40%, transparent 100%);
+      height: 50px;
+      background: linear-gradient(180deg, rgba(253,248,240,0.95) 0%, rgba(253,248,240,0.3) 40%, transparent 100%);
       pointer-events: none;
       z-index: 2;
     }
@@ -133,12 +131,11 @@
       content: '';
       position: absolute;
       bottom: 0; left: 0; right: 0;
-      height: 60px;
-      background: linear-gradient(0deg, rgba(245,230,200,0.95) 0%, rgba(245,230,200,0.3) 40%, transparent 100%);
+      height: 50px;
+      background: linear-gradient(0deg, rgba(253,248,240,0.95) 0%, rgba(253,248,240,0.3) 40%, transparent 100%);
       pointer-events: none;
       z-index: 2;
     }
-    /* Worn side edges */
     .scroll-edge-left, .scroll-edge-right {
       position: absolute;
       top: 0; bottom: 0;
@@ -148,19 +145,18 @@
     }
     .scroll-edge-left {
       left: 0;
-      background: linear-gradient(90deg, rgba(180,150,100,0.4) 0%, transparent 60%);
-      box-shadow: inset 3px 0 8px rgba(120,90,50,0.15);
+      background: linear-gradient(90deg, rgba(180,150,100,0.25) 0%, transparent 60%);
+      box-shadow: inset 3px 0 6px rgba(120,90,50,0.1);
     }
     .scroll-edge-right {
       right: 0;
-      background: linear-gradient(270deg, rgba(180,150,100,0.4) 0%, transparent 60%);
-      box-shadow: inset -3px 0 8px rgba(120,90,50,0.15);
+      background: linear-gradient(270deg, rgba(180,150,100,0.25) 0%, transparent 60%);
+      box-shadow: inset -3px 0 6px rgba(120,90,50,0.1);
     }
-    /* Paper texture */
     .scroll-texture {
       position: absolute;
       inset: 0;
-      opacity: 0.06;
+      opacity: 0.05;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
       background-size: 200px 200px;
       pointer-events: none;
@@ -179,7 +175,7 @@
       min-height: 200px;
     }
 
-    /* ===== Name Column (vertical) ===== */
+    /* ===== Name Column ===== */
     .name-col {
       display: flex;
       flex-direction: column;
@@ -192,7 +188,7 @@
       min-width: 48px;
     }
     .name-col:hover {
-      background: rgba(139,105,20,0.08);
+      background: rgba(196,30,58,0.05);
     }
     .name-col .char {
       font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
@@ -206,60 +202,59 @@
     }
     .name-col .amount-tag {
       font-size: 0.6rem;
-      color: #8a7030;
+      color: #b0a090;
       margin-top: 6px;
       font-weight: 600;
       white-space: nowrap;
       letter-spacing: 0.05em;
     }
 
-    /* Gold (≥1万) */
-    .name-col.gold .char {
+    /* Red/Gold for top donors (>=1万) */
+    .name-col.top .char {
       font-weight: 900;
-      background: linear-gradient(180deg, #c9a84c, #f5d77b, #c9a84c);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: none;
-      filter: drop-shadow(0 0 4px rgba(212,175,90,0.3));
+      color: #c41e3a;
+      text-shadow: 0 0 6px rgba(196,30,58,0.15);
     }
-    .name-col.gold:hover .char {
-      filter: drop-shadow(0 0 8px rgba(212,175,90,0.5)) drop-shadow(0 0 16px rgba(212,175,90,0.2));
+    .name-col.top:hover .char {
+      text-shadow: 0 0 12px rgba(196,30,58,0.3), 0 0 24px rgba(196,30,58,0.1);
     }
-    .name-col.gold .amount-tag { color: #c9a84c; }
+    .name-col.top .amount-tag {
+      color: #c41e3a;
+      font-weight: 700;
+    }
 
-    /* Silver (≥2000) */
-    .name-col.silver .char {
+    /* Medium donors (>=2000) */
+    .name-col.medium .char {
       font-weight: 700;
       color: #4a4030;
+    }
+    .name-col.medium .amount-tag {
+      color: #8a7030;
     }
 
     /* ===== Unroll Animation ===== */
     .scroll-paper.rolled {
       max-height: 0;
-      padding-top: 0;
-      padding-bottom: 0;
       overflow: hidden;
-      transition: max-height 2.5s cubic-bezier(0.25, 0.1, 0.15, 1);
+      transition: max-height 2.8s cubic-bezier(0.22, 0.1, 0.15, 1);
     }
     .scroll-paper.rolled .scroll-content {
       opacity: 0;
-      transition: opacity 0.5s ease;
     }
     .scroll-paper.unrolling {
-      max-height: 8000px;
+      max-height: 5000px;
     }
     .scroll-paper.unrolling .scroll-content {
       opacity: 1;
-      transition: opacity 1.5s ease 1.2s;
+      transition: opacity 1.2s ease 0.8s;
     }
 
     /* ===== Drag hint ===== */
     .drag-hint {
       text-align: center;
-      padding: 4px 0 0;
+      padding: 6px 0 0;
       font-size: 0.7rem;
-      color: rgba(212,175,90,0.3);
+      color: #b0a090;
       letter-spacing: 0.15em;
       opacity: 0;
       animation: fadeInTitle 2s ease 2.5s forwards;
@@ -279,7 +274,7 @@
       position: fixed;
       inset: 0;
       z-index: 99999;
-      background: rgba(10,8,5,0.8);
+      background: rgba(0,0,0,0.5);
       backdrop-filter: blur(4px);
       align-items: center;
       justify-content: center;
@@ -290,11 +285,11 @@
       max-width: 400px;
       width: 100%;
       padding: 30px 28px;
-      background: linear-gradient(135deg, #f5e6c8, #efe0c0);
-      border: 1px solid rgba(139,105,20,0.3);
-      border-radius: 4px;
+      background: #ffffff;
+      border: 1px solid #e8ddd0;
+      border-radius: 8px;
       position: relative;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
       max-height: 80vh;
       overflow-y: auto;
     }
@@ -302,34 +297,34 @@
       position: absolute;
       top: 10px; right: 14px;
       background: none; border: none;
-      color: #8a7030; font-size: 20px;
+      color: #b0a090; font-size: 20px;
       cursor: pointer; line-height: 1;
       font-family: 'Noto Serif SC', serif;
     }
-    .mw-modal-close:hover { color: #2c1810; }
+    .mw-modal-close:hover { color: #1a1a1a; }
     .mw-modal-name {
       font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
-      font-size: 1.5rem; color: #2c1810;
+      font-size: 1.5rem; color: #1a1a1a;
       margin-bottom: 4px;
     }
     .mw-modal-gen {
-      font-size: 0.8rem; color: #8a7030; margin-bottom: 10px;
+      font-size: 0.8rem; color: #b0a090; margin-bottom: 10px;
     }
     .mw-modal-amount {
-      font-size: 0.85rem; color: #8a7030;
+      font-size: 0.85rem; color: #c41e3a;
       font-weight: 600; margin-bottom: 14px;
     }
     .mw-modal-bio {
-      font-size: 0.85rem; line-height: 1.8; color: #4a3a28;
+      font-size: 0.85rem; line-height: 1.8; color: #4a4a4a;
       padding-top: 12px;
-      border-top: 1px solid rgba(139,105,20,0.2);
+      border-top: 1px solid #f0e8e0;
       min-height: 30px;
     }
     .mw-modal-tribute {
-      font-size: 0.85rem; line-height: 1.7; color: #6a5a40;
+      font-size: 0.85rem; line-height: 1.7; color: #666;
       font-style: italic; padding: 10px 14px; margin-top: 12px;
-      background: rgba(139,105,20,0.06);
-      border-radius: 4px; border-left: 2px solid #c9a84c;
+      background: #f8f6f3;
+      border-radius: 6px; border-left: 3px solid #c41e3a;
     }
     .mw-modal-tribute::before { content: '「'; }
     .mw-modal-tribute::after { content: '」'; }
@@ -342,10 +337,10 @@
       animation: fadeInTitle 2s ease 3s forwards;
     }
     .scroll-inscription p {
-      font-family: 'Zhi Mang Xing', 'Noto Serif SC', serif;
-      font-size: clamp(0.8rem, 1.5vw, 0.95rem);
+      font-family: 'Noto Serif SC', 'STKaiti', serif;
+      font-size: clamp(0.8rem, 1.5vw, 0.9rem);
       line-height: 2;
-      color: rgba(212,175,90,0.4);
+      color: #b0a090;
       max-width: 600px;
       margin: 0 auto;
     }
@@ -366,10 +361,9 @@
       .name-col .char { font-size: 1.25rem; }
     }
 
-    /* Scrollbar */
     .scroll-paper::-webkit-scrollbar { width: 4px; }
     .scroll-paper::-webkit-scrollbar-track { background: transparent; }
-    .scroll-paper::-webkit-scrollbar-thumb { background: rgba(139,105,20,0.3); border-radius: 2px; }
+    .scroll-paper::-webkit-scrollbar-thumb { background: rgba(196,30,58,0.2); border-radius: 2px; }
   </style>
 </head>
 <body>
@@ -404,15 +398,18 @@
 var meritData = [];
 
 function loadMerit() {
-  var stored = localStorage.getItem('xie_merit_data');
-  if (stored) {
-    try { meritData = JSON.parse(stored); renderMerit(); return; } catch(e) {}
-  }
   fetch('../data/merit.json?' + Date.now()).then(function(r){return r.json()}).then(function(d){
     meritData = d;
     localStorage.setItem('xie_merit_data', JSON.stringify(d));
     renderMerit();
-  }).catch(function(){ renderMerit(); });
+  }).catch(function(){
+    var stored = localStorage.getItem('xie_merit_data');
+    if (stored) {
+      try { meritData = JSON.parse(stored); renderMerit(); return; } catch(e) {}
+    }
+    meritData = [];
+    renderMerit();
+  });
 }
 
 function renderMerit() {
@@ -425,19 +422,18 @@ function renderMerit() {
   var html = '';
 
   data.forEach(function(p){
-    var isGold = (p.amountValue||0) >= 10000;
-    var isSilver = !isGold && (p.amountValue||0) >= 2000;
+    var amt = p.amountValue || 0;
     var cls = 'name-col';
-    if (isGold) cls += ' gold';
-    else if (isSilver) cls += ' silver';
+    if (amt >= 10000) cls += ' top';
+    else if (amt >= 2000) cls += ' medium';
 
     html += '<div class="' + cls + '" data-id="' + p.id + '" onclick="openModal(' + p.id + ')">';
     p.name.split('').forEach(function(ch){
       html += '<span class="char">' + esc(ch) + '</span>';
     });
-    var amtText = p.amountValue >= 10000
-      ? (p.amountValue/10000).toFixed(p.amountValue%10000===0?0:1) + '万'
-      : p.amountValue + '元';
+    var amtText = amt >= 10000
+      ? (amt/10000).toFixed(amt%10000===0?0:1) + '万'
+      : amt + '元';
     html += '<div class="amount-tag">' + amtText + '</div>';
     html += '</div>';
   });
@@ -447,35 +443,54 @@ function renderMerit() {
 }
 
 var soundPlayed = false;
+var unrollTimer = null;
 
 function startUnroll() {
   var paper = document.getElementById('scrollPaper');
+  var content = document.getElementById('scrollContent');
+
+  // Calculate exact content height
+  var targetH = content.scrollHeight + 100; // content + padding
+  targetH = Math.max(targetH, 300);
+
+  // Force reflow then animate
   paper.offsetHeight;
+
+  // Use exact height for smooth animation
+  paper.style.transition = 'max-height 2.8s cubic-bezier(0.22, 0.1, 0.15, 1)';
+  paper.style.maxHeight = targetH + 'px';
   paper.classList.remove('rolled');
   paper.classList.add('unrolling');
+
+  // Fade in content after roll starts
+  setTimeout(function(){
+    content.style.opacity = '1';
+  }, 600);
+
+  // Play sound
   if (!soundPlayed) { soundPlayed = true; playScrollSound(); }
 }
 
 function playScrollSound() {
   try {
     var ctx = new (window.AudioContext||window.webkitAudioContext)();
-    var len = ctx.sampleRate * 2.2;
+    var len = ctx.sampleRate * 2.0;
     var buf = ctx.createBuffer(1, len, ctx.sampleRate);
     var d = buf.getChannelData(0);
     for (var i = 0; i < len; i++) {
       var t = i / ctx.sampleRate;
-      var env = Math.max(0, 1 - t / 2.2);
-      var noise = (Math.random() * 2 - 1) * 0.15;
-      var rumble = Math.sin(i*0.05)*0.3 + Math.sin(i*0.12)*0.2 + Math.sin(i*0.03)*0.4;
-      d[i] = (noise + rumble) * env * 0.25;
+      var env = Math.max(0, 1 - t / 2.0);
+      var noise = (Math.random() * 2 - 1) * 0.12;
+      var rumble = Math.sin(i*0.06)*0.25 + Math.sin(i*0.1)*0.15 + Math.sin(i*0.03)*0.3;
+      d[i] = (noise + rumble) * env * 0.2;
     }
     var src = ctx.createBufferSource();
     src.buffer = buf;
     var flt = ctx.createBiquadFilter();
-    flt.type = 'lowpass'; flt.frequency.value = 350;
+    flt.type = 'lowpass'; flt.frequency.value = 300;
     var gn = ctx.createGain();
-    gn.gain.setValueAtTime(0.12, 0);
-    gn.gain.exponentialRampToValueAtTime(0.005, 2.2);
+    gn.gain.setValueAtTime(0.1, 0);
+    gn.gain.exponentialRampToValueAtTime(0.003, 2.0);
     src.connect(flt); flt.connect(gn); gn.connect(ctx.destination);
     src.start();
   } catch(e) {}
