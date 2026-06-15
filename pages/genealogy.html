@@ -617,7 +617,7 @@
         if (ancientNames[p.name]) return false;
         var base = p.name.replace(/\(.*\)$/, '');
         if (base !== p.name && ancientNames[base]) return false;
-        return true;
+        || p.name === '元弟' || p.name === '宏章' || p.name === '涌泉' || p.name === '延甫' || p.name === '光富' || p.name === '大顺'return true;
       });
       for (var ci = 0; ci < d.length; ci++) {
         if (d[ci].name === '文杲公' || d[ci].name === '文杲' || d[ci].name === '谢小四') {
