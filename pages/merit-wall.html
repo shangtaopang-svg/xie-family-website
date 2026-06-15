@@ -272,7 +272,6 @@
       <option value="双项功德">双项功德</option>
     </select>
     <select id="mw-sort" onchange="renderMerit()">
-      <option value="amount" selected>按金额</option>
       <option value="generation">按辈分</option>
       <option value="date">按时间</option>
       <option value="respects">按致敬</option>
@@ -331,8 +330,7 @@ function loadMerit() {
 function renderMerit() {
   var data = meritData.slice();
   var sort = document.getElementById('mw-sort').value;
-  if (sort === 'amount') data.sort(function(a,b){return (b.amountValue||0)-(a.amountValue||0) || a.id-b.id;});
-  else if (sort === 'generation') data.sort(function(a,b){return a.generation-b.generation || a.id-b.id;});
+  if (sort === 'generation') data.sort(function(a,b){return a.generation-b.generation || a.id-b.id;});
   else if (sort === 'date') data.sort(function(a,b){return (a.date||'0').localeCompare(b.date||'0') || a.id-b.id;});
   else if (sort === 'respects') data.sort(function(a,b){return (b.respects||0)-(a.respects||0) || a.id-b.id;});
 
