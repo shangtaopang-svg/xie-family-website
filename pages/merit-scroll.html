@@ -475,18 +475,53 @@
       min-height: 30px;
     }
 
-    /* ===== Inscription ===== */
+    /* ===== Inscription / 功德序 ===== */
     .page-inscription {
       text-align: center;
-      padding: 16px 20px 0;
+      padding: 24px 20px 0;
+    }
+    .preface-title {
+      font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+      font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+      color: #2c1810;
+      letter-spacing: 0.4em;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .preface-title::after {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 2px;
+      margin: 10px auto 0;
+      background: linear-gradient(90deg, transparent, #c41e3a, transparent);
     }
     .page-inscription p {
       font-family: 'Noto Serif SC', 'STKaiti', serif;
-      font-size: clamp(0.75rem, 1.3vw, 0.85rem);
-      line-height: 2;
-      color: #c0b0a0;
-      max-width: 600px;
-      margin: 0 auto;
+      font-size: clamp(0.78rem, 1.3vw, 0.88rem);
+      line-height: 2.4;
+      color: #5a4a3a;
+      max-width: 640px;
+      margin: 0 auto 14px;
+      text-align: justify;
+      text-indent: 2em;
+    }
+    .preface-body p:last-child {
+      text-indent: 0;
+      margin-top: 10px;
+    }
+    .preface-sign {
+      text-align: right;
+      color: #c41e3a;
+      letter-spacing: 0.1em;
+    }
+    .preface-date {
+      font-family: 'Noto Serif SC', 'STKaiti', serif;
+      font-size: clamp(0.7rem, 1.2vw, 0.8rem);
+      color: #c0b0a0 !important;
+      margin-top: 8px !important;
+      text-indent: 0 !important;
+      text-align: center !important;
     }
 
     /* ===== Responsive ===== */
@@ -621,7 +656,14 @@
   </div>
 
   <div class="page-inscription">
-    <p>公元二〇二六年丙午春 · 下枫槎谢氏阖族敬立</p>
+    <div class="preface-title">功 德 序</div>
+    <div class="preface-body">
+      <p>盖闻积善之家，必有余庆；崇德之门，长留芳馨。吾下枫槎谢氏，自明隆庆间彬公、乾公昆仲迁居以来，耕读传家，四百五十余载，支分派衍，瓜瓞绵绵。</p>
+      <p>今值圆谱庆典，合族诸君，或慷慨解囊以襄盛举，或奔走联络以睦族谊；更有外来宗亲、社会各界，共襄义举，同沐荣光。壬寅以降，族人捐资修谱、建祠、助款者凡三百五十余人，外来宗亲助款者百四十余人，社会各界贺仪者十有六家，合计捐（筹）款壹佰贰拾贰万余圆。诸公共襄盛举，功在宗族，德被后昆。</p>
+      <p>夫修谱以存世系，建祠以奉先祖，其功一也；捐资以助其成，勒名以彰其德，其义一也。今谨按捐资多寡，分列卷轴，各标芳名，庶使后人知我族之昌盛，实赖诸君之襄助也。</p>
+      <p class="preface-sign">是为序。</p>
+    </div>
+    <p class="preface-date">公元二〇二六年岁次丙午夏月 · 下枫槎谢氏阖族敬立</p>
   </div>
 </div>
 
