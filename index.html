@@ -11,6 +11,11 @@
 
   <link rel="stylesheet" href="css/style.css?v=4">
   <style>
+    /* Carousel mobile fix - ensure slides have height */
+    .carousel-container { aspect-ratio: 21/9; overflow: hidden; }
+    .carousel-slide { height: 100%; }
+  </style>
+  <style>
     .logo-text small { display: none; }
     .stat-card { user-select:none; }
     .stat-card:hover { box-shadow:0 0 18px rgba(240,194,122,0.25); }
