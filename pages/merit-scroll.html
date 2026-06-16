@@ -916,24 +916,36 @@ function esc(t) {
 // ===== Init =====
 loadAll();
 document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
-// ===== Major Donors Spotlight =====
-function renderMajors(data) {
-  var grid = document.getElementById('majorsGrid');
-  if (!grid || !data.length) return;
-  var copy = data.slice().sort(function(a,b){
-    return (b.amountValue||0) - (a.amountValue||0);
+// ===== Major Donors Spotlight (Top 5 by total) =====
+var _allTotals = {};
+
+function accumulateDonors(key, data) {
+  data.forEach(function(p){
+    var name = p.name;
+    if (!_allTotals[name]) _allTotals[name] = 0;
+    _allTotals[name] += (p.amountValue || 0);
   });
-  var top = copy.filter(function(p){ return (p.amountValue||0) >= 10000; });
+}
+
+function renderMajors() {
+  var grid = document.getElementById('majorsGrid');
+  if (!grid) return;
+
+  var sorted = Object.keys(_allTotals).map(function(name){
+    return { name: name, total: _allTotals[name] };
+  }).sort(function(a,b){ return b.total - a.total; });
+
+  var top = sorted.slice(0, 5);
   if (!top.length) { grid.innerHTML = ''; return; }
-  
-  var medals = ['🥇', '🥈', '🥉', '🏅', '🏅', '🏅', '🏅', '🏅'];
+
+  var medals = ['🥇', '🥈', '🥉', '🏅', '🏅'];
   var html = '';
-  top.slice(0, 8).forEach(function(p, i){
-    var amtText = p.amountValue >= 10000
-      ? (p.amountValue/10000).toFixed(p.amountValue%10000===0?0:1) + '万'
-      : p.amountValue + '元';
+  top.forEach(function(p, i){
+    var amtText = p.total >= 10000
+      ? (p.total/10000).toFixed(p.total%10000===0?0:1) + '万'
+      : p.total + '元';
     html += '<div class="major-item">';
-    html += '<div class="medal">' + (medals[i] || '🏅') + '</div>';
+    html += '<div class="medal">' + medals[i] + '</div>';
     html += '<div class="name">' + esc(p.name) + '</div>';
     html += '<div class="amount">' + amtText + '</div>';
     html += '</div>';
@@ -941,11 +953,14 @@ function renderMajors(data) {
   grid.innerHTML = html;
 }
 
-// Extend renderScroll to also render majors
+// Extend renderScroll to accumulate totals and render majors
 var origRender = renderScroll;
 renderScroll = function(key, data) {
   origRender(key, data);
-  if (key === 'clan') { renderMajors(data); }
+  if (key === 'clan' || key === 'temple') {
+    accumulateDonors(key, data);
+    if (key === 'temple') { renderMajors(); }
+  }
 };
 
 </script>
