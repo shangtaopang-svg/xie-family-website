@@ -1,4 +1,4 @@
-const CACHE = 'xie-clan-v2';
+const CACHE = "xie-clan-v3";
 const STATIC = [
   '/css/style.css',
   '/js/i18n.js',
