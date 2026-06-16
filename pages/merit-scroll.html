@@ -133,6 +133,10 @@
       margin-bottom: 2px;
     }
     @media (max-width: 640px) {
+      .preface-scroll .content { min-width: 400px; padding: 12px 8px; }
+      .preface-scroll .col { font-size: 0.58rem; padding: 0 4px; line-height: 1.8; }
+      .preface-scroll .roller { width: 32px; }
+      .preface-scroll .roller .label { font-size: 0.65rem; }
       .majors-section { padding: 14px 10px; }
       .majors-grid { gap: 6px 12px; }
       .major-item { min-width: 50px; }
@@ -550,57 +554,97 @@
       min-height: 30px;
     }
 
-    /* ===== Inscription / 功德序 ===== */
-    .page-inscription {
-      text-align: center;
-      padding: 24px 20px 0;
+        /* ===== 功德序 · 古画卷轴 ===== */
+    .preface-scroll {
+      margin: 20px 0 16px;
+      position: relative;
+      display: flex;
+      flex-direction: row-reverse;
+      align-items: stretch;
+      overflow: hidden;
+      border-radius: 4px;
+      min-height: 60px;
+      cursor: pointer;
+      user-select: none;
     }
-    .preface-title {
-      font-family: 'Noto Serif SC', 'STSong', 'SimSun', serif;
-      font-size: clamp(1.2rem, 2.5vw, 1.6rem);
-      color: #2c1810;
-      letter-spacing: 0.4em;
-      margin-bottom: 20px;
+    .preface-scroll .roller {
+      width: 42px; flex-shrink: 0;
+      background: linear-gradient(180deg, #5a3e1a, #8b6914 30%, #a8882a 50%, #7a5a12 70%, #4a3210);
+      border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 2;
+      box-shadow: -2px 0 8px rgba(0,0,0,0.15);
+    }
+    .preface-scroll .roller .label {
+      writing-mode: vertical-rl; text-orientation: upright;
+      font-family: 'Noto Serif SC', 'STSong', serif;
+      font-size: 0.85rem; color: #d4af5a;
+      letter-spacing: 0.15em; font-weight: 700;
+      text-shadow: 0 0 8px rgba(212,175,90,0.2);
+    }
+    .preface-scroll .roller::before, .preface-scroll .roller::after {
+      content: ''; position: absolute; left: -4px;
+      width: 8px; height: 12px;
+      background: linear-gradient(90deg, #3a2810, #6b4f12);
+      border-radius: 2px;
+    }
+    .preface-scroll .roller::before { top: 6px; }
+    .preface-scroll .roller::after { bottom: 6px; }
+    .preface-scroll .paper {
+      flex: 1;
+      background: linear-gradient(135deg, #fdf8f0, #f8f0e0);
+      border: 1px solid #d4c8b8; border-right: none;
+      overflow: hidden;
+      max-width: 0;
+      transition: max-width 2.5s cubic-bezier(0.22, 0.1, 0.15, 1);
       position: relative;
     }
-    .preface-title::after {
-      content: '';
-      display: block;
-      width: 40px;
-      height: 2px;
-      margin: 10px auto 0;
-      background: linear-gradient(90deg, transparent, #c41e3a, transparent);
+    .preface-scroll.open .paper { max-width: 1200px; }
+    .preface-scroll .paper::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 10%, rgba(180,150,100,0.04) 50%, transparent 90%);
+      pointer-events: none; z-index: 1;
     }
-    .page-inscription p {
+    .preface-scroll .content {
+      display: flex; flex-direction: row-reverse;
+      gap: 0; padding: 18px 14px 18px 8px;
+      min-width: 700px;
+      opacity: 0; transition: opacity 1s ease;
+      position: relative; z-index: 2;
+    }
+    .preface-scroll.open .content {
+      opacity: 1;
+      transition-delay: 1.8s;
+    }
+    .preface-scroll .col {
+      writing-mode: vertical-rl; text-orientation: mixed;
       font-family: 'Noto Serif SC', 'STKaiti', serif;
-      font-size: clamp(0.78rem, 1.3vw, 0.88rem);
-      line-height: 2.4;
-      color: #5a4a3a;
-      max-width: 640px;
-      margin: 0 auto 14px;
-      text-align: justify;
-      text-indent: 2em;
+      font-size: clamp(0.68rem, 1.1vw, 0.78rem);
+      line-height: 2.2; color: #3a2a1a;
+      letter-spacing: 0.06em;
+      padding: 0 8px;
+      border-right: 1px solid rgba(139,105,20,0.08);
     }
-    .preface-body p:last-child {
-      text-indent: 0;
-      margin-top: 10px;
+    .preface-scroll .col:last-child { border-right: none; }
+    .preface-scroll .col .hl { color: #8a1528; font-weight: 700; }
+    .preface-scroll .col .gold { color: #c9a84c; }
+    .preface-scroll .col .sig { margin-top: 20px; color: #8a7030; }
+    .preface-scroll .hint {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 0.7rem; color: #c0b0a0;
+      letter-spacing: 0.1em; white-space: nowrap;
+      opacity: 0; transition: opacity 0.5s;
+      pointer-events: none; z-index: 3;
     }
-    .preface-sign {
-      text-align: right;
-      color: #c41e3a;
-      letter-spacing: 0.1em;
-    }
-    .preface-date {
-      font-family: 'Noto Serif SC', 'STKaiti', serif;
-      font-size: clamp(0.7rem, 1.2vw, 0.8rem);
-      color: #c0b0a0 !important;
-      margin-top: 8px !important;
-      text-indent: 0 !important;
-      text-align: center !important;
-    }
-
-    /* ===== Responsive ===== */
+    .preface-scroll:not(.open) .hint { opacity: 1; }
+    .preface-scroll:not(.open):hover .hint { color: #c41e3a; }/* ===== Responsive ===== */
     @media (max-width: 640px) {
+      .preface-scroll .content { min-width: 400px; padding: 12px 8px; }
+      .preface-scroll .col { font-size: 0.58rem; padding: 0 4px; line-height: 1.8; }
+      .preface-scroll .roller { width: 32px; }
+      .preface-scroll .roller .label { font-size: 0.65rem; }
       .page-wrap { padding: 5px 10px 30px; }
       .scroll-card-header { padding: 10px 12px; }
       .scroll-content { padding: 30px 10px; gap: 4px 8px; }
@@ -730,23 +774,33 @@
     </div>
   </div>
 
-  <div class="page-inscription">
-    <div class="preface-title">功 德 序</div>
-    <div class="preface-body">
-      <p>盖闻水有源而流派长，木有本而枝叶茂。族之有谱，犹国之有史。国无史不立，族无谱不传。谱者，所以纪世系、序昭穆、联族谊、垂后昆，立族之大典也。昔苏老泉作族谱引，有感于一人之身分而至于途人，良可慨也。是以君子务本，本立而道生，尊祖故敬宗，敬宗故收族，此修谱之义也。</p>
-      <p>溯吾谢氏之先，出自炎帝，为姜姓。周宣王封元舅申伯于谢邑，子孙以国为氏，此受姓之始也。自申伯肇基，历汉至晋，代有贤达。晋文靖公安石公，淝水一战以八万破百万，功盖寰宇；幼度公武略安邦，灵运公文采耀世，并垂青史。乌衣世泽，宝树家声，于斯为盛。唐有偃公。至宋，翱公、翔公昆仲位列台阁；洎乎南宋，深甫公位至右丞相，封鲁国公，为一代名臣。簪缨不绝，世称望族。</p>
-      <p>明隆庆壬申岁，彬公、乾公昆仲遭洪水之患，相度地势，自石马迁居双枫古槎之下，披荆斩棘，开基立业，耕读传家，垂今四百五十余载。历十六世而传至今日，支分派衍，瓜瓞绵绵，实为南乡之望族。</p>
-      <p>本届修谱，族长昌苗公总其事，主修世忠、行龙二公董理全局，监修伟中、行勇二公协理庶务，秉修令昂公考订世系，诸君各竭其力，历数载而谱牒告成，诚继往开来之功也。</p>
-      <p>宗祠者，一族之根本，万派之归宗也。奉先思孝，睦族敦伦，无祠则昭穆无序，亲疏难联，故建祠与修谱并重，不可偏废。</p>
-      <p>岁次乙巳（二〇二五年）三月，宗祠修缮肇兴，至七月告成。族人踊跃捐资，共襄义举。世忠君捐伍萬圓，伟中君捐贰萬伍仟圓，行龙君捐贰萬圓，海港君捐壹萬贰仟圓，皆竭诚尽心，其功不可没。统计修缮捐资者凡□人，总金额□圓。</p>
-      <p>越明年丙午（二〇二六年）农历四月初一，圆谱大典隆重举行，颁谱祭祖，盛况空前。族人捐资者凡三百五十余人，外来宗亲助款者百四十余人，社会各界贺仪者十有六家，总其数凡壹佰贰拾萬餘圓。</p>
-      <p>尤有进者，圆谱大典之际，世忠、行龙二君慨捐拾萬圓，首倡义举，其功甚伟；伟中君捐伍萬圓，云国君捐叁萬捌仟圓，皆族中翘楚，足为楷模。外来宗亲茶芬君捐贰萬零伍佰圓，三门下谢六十人共贺仪伍萬捌仟圓，桃源钱岙贺仪叁萬捌仟捌佰圓，盛情厚谊，令人感佩。其余诸君，或捐万金，或助数千，各尽其力，虽多寡有别，而尊祖敬宗之心，其致一也。</p>
-      <p>夫修谱以存世系，建祠以奉先祖，捐资以助其成，勒名以彰其德，其事虽殊，其义则一。今谨按捐资多寡，分列卷轴，各标芳名，彰善励后，俾后人知我族之昌盛，实赖诸君之襄助。庶几继往开来，永世其昌，则幸甚矣。</p>
-      <p class="preface-sign">是为序。</p>
+    <div class="preface-scroll" id="prefaceScroll" onclick="togglePreface()">
+    <div class="roller"><span class="label">功德序</span></div>
+    <div class="paper" id="prefacePaper">
+      <div class="hint">▶ 点击展开古卷</div>
+      <div class="content" id="prefaceContent">
+        <div class="col">
+          盖闻水有源而流派长，木有本而枝叶茂。族之有谱，犹国之有史。国无史不立，族无谱不传。谱者，所以纪世系、序昭穆、联族谊、垂后昆，立族之大典也。昔苏老泉作族谱引，有感于一人之身分而至于途人，良可慨也。是以君子务本，本立而道生，尊祖故敬宗，敬宗故收族，此修谱之义也。<br><br>
+          溯吾谢氏之先，出自炎帝，为姜姓。周宣王封元舅申伯于谢邑，子孙以国为氏，此受姓之始也。自申伯肇基，历汉至晋，代有贤达。<span class="hl">晋文靖公安石公</span>，淝水一战以八万破百万，功盖寰宇；幼度公武略安邦，灵运公文采耀世，并垂青史。乌衣世泽，宝树家声，于斯为盛。唐有偃公。至宋，翱公、翔公昆仲位列台阁；洎乎南宋，<span class="hl">深甫公</span>位至右丞相，封鲁国公，为一代名臣。簪缨不绝，世称望族。
+        </div>
+        <div class="col">
+          明隆庆壬申岁，<span class="hl">彬公、乾公</span>昆仲遭洪水之患，相度地势，自石马迁居双枫古槎之下，披荆斩棘，开基立业，耕读传家，垂今四百五十余载。历十六世而传至今日，支分派衍，瓜瓞绵绵，实为南乡之望族。<br><br>
+          本届修谱，族长<span class="hl">昌苗公</span>总其事，主修<span class="hl">世忠、行龙</span>二公董理全局，监修<span class="hl">伟中、行勇</span>二公协理庶务，秉修<span class="hl">令昂公</span>考订世系，诸君各竭其力，历数载而谱牒告成，诚继往开来之功也。<br><br>
+          宗祠者，一族之根本，万派之归宗也。奉先思孝，睦族敦伦，无祠则昭穆无序，亲疏难联，故建祠与修谱并重，不可偏废。
+        </div>
+        <div class="col">
+          岁次乙巳（二〇二五年）三月，宗祠修缮肇兴，至七月告成。族人踊跃捐资，共襄义举。<span class="hl">世忠君捐伍萬圓</span>，<span class="hl">伟中君捐贰萬伍仟圓</span>，行龙君捐贰萬圓，海港君捐壹萬贰仟圓，皆竭诚尽心，其功不可没。统计修缮捐资者凡□人，总金额□圓。<br><br>
+          越明年丙午（二〇二六年）农历四月初一，圆谱大典隆重举行，颁谱祭祖，盛况空前。族人捐资者凡三百五十余人，外来宗亲助款者百四十余人，社会各界贺仪者十有六家，总其数凡<span class="gold">壹佰贰拾萬餘圓</span>。
+        </div>
+        <div class="col">
+          尤有进者，圆谱大典之际，<span class="hl">世忠、行龙二君慨捐拾萬圓</span>，首倡义举，其功甚伟；<span class="hl">伟中君捐伍萬圓</span>，云国君捐叁萬捌仟圓，皆族中翘楚，足为楷模。外来宗亲茶芬君捐贰萬零伍佰圓，三门下谢六十人共贺仪伍萬捌仟圓，桃源钱岙贺仪叁萬捌仟捌佰圓，盛情厚谊，令人感佩。<br><br>
+          其余诸君，或捐万金，或助数千，各尽其力，虽多寡有别，而尊祖敬宗之心，其致一也。夫修谱以存世系，建祠以奉先祖，捐资以助其成，勒名以彰其德，其事虽殊，其义则一。今谨按捐资多寡，分列卷轴，各标芳名，彰善励后，俾后人知我族之昌盛，实赖诸君之襄助。庶几继往开来，永世其昌，则幸甚矣。<br><br>
+          <span class="sig">是为序。</span><br>
+          <span style="font-size:0.6rem;color:#b0a090;">公元二〇二六年岁次丙午夏月 · 下枫槎谢氏阖族敬立</span>
+        </div>
+      </div>
     </div>
-    <p class="preface-date">公元二〇二六年岁次丙午夏月 · 下枫槎谢氏阖族敬立</p>
-  </div>
-</div>
+  </div></div>
 
 <!-- Modal -->
 <div class="mw-modal" id="mwModal" onclick="if(event.target===this)closeModal()">
@@ -915,6 +969,38 @@ function esc(t) {
 
 // ===== Init =====
 loadAll();
+
+// ===== Preface Scroll Toggle =====
+function togglePreface() {
+  var ps = document.getElementById('prefaceScroll');
+  if (!ps || ps.classList.contains('open')) return;
+  ps.classList.add('open');
+  if (!window._psound) {
+    window._psound = true;
+    try {
+      var ctx = new (window.AudioContext||window.webkitAudioContext)();
+      var len = ctx.sampleRate * 1.5;
+      var buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      var d = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) {
+        var t = i / ctx.sampleRate;
+        var env = Math.max(0, 1 - t / 1.5);
+        var noise = (Math.random() * 2 - 1) * 0.08;
+        var rumble = Math.sin(i*0.04)*0.2 + Math.sin(i*0.08)*0.1 + Math.sin(i*0.02)*0.25;
+        d[i] = (noise + rumble) * env * 0.15;
+      }
+      var src = ctx.createBufferSource();
+      src.buffer = buf;
+      var flt = ctx.createBiquadFilter();
+      flt.type = 'lowpass'; flt.frequency.value = 250;
+      var gn = ctx.createGain();
+      gn.gain.setValueAtTime(0.08, 0);
+      src.connect(flt); flt.connect(gn); gn.connect(ctx.destination);
+      src.start();
+    } catch(e) {}
+  }
+}
+
 document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
 // ===== Major Donors Spotlight (Top 5 by total) =====
 var _allTotals = {};
