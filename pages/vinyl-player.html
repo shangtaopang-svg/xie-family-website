@@ -10,15 +10,17 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      background: #1a1510;
-      background-image: radial-gradient(ellipse at 50% 0%, #2a2018 0%, #0d0a08 100%);
+      background: #f5f0eb;
+      background-image:
+        repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(139,26,26,0.03) 80px, rgba(139,26,26,0.03) 81px),
+        repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(139,26,26,0.02) 40px, rgba(139,26,26,0.02) 41px);
       min-height: 100vh;
       font-family: 'Noto Serif SC', 'STKaiti', serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       overflow-x: hidden;
-      color: #e8ddd0;
+      color: #2c1810;
     }
 
     .player-wrap {
@@ -41,13 +43,12 @@
     .top-bar h1 {
       font-family: 'Noto Serif SC', 'STSong', 'SimSun', serif;
       font-size: clamp(1.2rem, 3vw, 1.6rem);
-      color: #d4af5a;
+      color: #1a1a1a;
       letter-spacing: 0.2em;
-      text-shadow: 0 0 20px rgba(212,175,90,0.15);
     }
     .top-bar .time {
       font-size: 0.75rem;
-      color: rgba(180,150,100,0.4);
+      color: #b0a090;
       letter-spacing: 0.1em;
     }
 
@@ -64,9 +65,9 @@
       position: absolute;
       inset: 0;
       border-radius: 50%;
-      background: linear-gradient(135deg, #2a2218, #1a1410 50%, #0d0a08);
-      box-shadow: 0 10px 40px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,215,140,0.05);
-      border: 1px solid rgba(180,150,100,0.1);
+      background: linear-gradient(135deg, #fcf8f2, #f5ede0 50%, #efe5d5);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+      border: 1px solid #d4c8b8;
     }
 
     /* Vinyl record */
@@ -179,8 +180,8 @@
       top: 10px; right: 10px;
       width: 36px; height: 36px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #999, #666);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+      background: linear-gradient(135deg, #bbb, #888);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2);
       z-index: 2;
     }
     .tonearm .pivot::after {
@@ -241,12 +242,12 @@
     .now-playing .title {
       font-family: 'Noto Serif SC', 'STSong', 'SimSun', serif;
       font-size: clamp(1rem, 2.5vw, 1.3rem);
-      color: #d4af5a;
+      color: #1a1a1a;
       letter-spacing: 0.1em;
     }
     .now-playing .artist {
       font-size: 0.75rem;
-      color: rgba(180,150,100,0.4);
+      color: #b0a090;
       margin-top: 2px;
       letter-spacing: 0.1em;
     }
@@ -262,7 +263,7 @@
     }
     .progress-area .time-label {
       font-size: 0.6rem;
-      color: rgba(180,150,100,0.3);
+      color: #b0a090;
       min-width: 32px;
       text-align: center;
       font-variant-numeric: tabular-nums;
@@ -270,7 +271,7 @@
     .progress-bar-wrap {
       flex: 1;
       height: 4px;
-      background: rgba(180,150,100,0.1);
+      background: rgba(196,30,58,0.08);
       border-radius: 2px;
       cursor: pointer;
       position: relative;
@@ -278,7 +279,7 @@
     .progress-bar-fill {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, #c41e3a, #d4af5a);
+      background: linear-gradient(90deg, #c41e3a, #c41e3a);
       border-radius: 2px;
       transition: width 0.1s linear;
     }
@@ -295,9 +296,9 @@
     .ctrl-btn {
       width: 38px; height: 38px;
       border-radius: 50%;
-      border: 1px solid rgba(180,150,100,0.2);
-      background: rgba(255,255,255,0.03);
-      color: #c0a870;
+      border: 1px solid #d4c8b8;
+      background: #ffffff;
+      color: #8a7030;
       font-size: 1rem;
       cursor: pointer;
       transition: all 0.2s;
@@ -307,9 +308,9 @@
       font-family: 'Noto Serif SC', serif;
     }
     .ctrl-btn:hover {
-      background: rgba(212,175,90,0.1);
-      border-color: rgba(212,175,90,0.4);
-      color: #d4af5a;
+      background: #f5ede0;
+      border-color: #c41e3a;
+      color: #c41e3a;
     }
     .ctrl-btn.play-btn {
       width: 48px; height: 48px;
@@ -336,14 +337,14 @@
     }
     .volume-area .vol-icon {
       font-size: 0.8rem;
-      color: rgba(180,150,100,0.3);
+      color: #b0a090;
     }
     .volume-area input[type=range] {
       width: 80px;
       height: 3px;
       -webkit-appearance: none;
       appearance: none;
-      background: rgba(180,150,100,0.15);
+      background: rgba(196,30,58,0.1);
       border-radius: 2px;
       outline: none;
     }
@@ -352,7 +353,7 @@
       appearance: none;
       width: 10px; height: 10px;
       border-radius: 50%;
-      background: #d4af5a;
+      background: #c41e3a;
       cursor: pointer;
     }
 
@@ -364,7 +365,7 @@
     }
     .playlist-title {
       font-size: 0.7rem;
-      color: rgba(180,150,100,0.3);
+      color: #b0a090;
       letter-spacing: 0.15em;
       padding: 0 4px 8px;
       border-bottom: 1px solid rgba(180,150,100,0.06);
@@ -382,7 +383,7 @@
     }
     .playlist-items::-webkit-scrollbar { width: 3px; }
     .playlist-items::-webkit-scrollbar-track { background: transparent; }
-    .playlist-items::-webkit-scrollbar-thumb { background: rgba(180,150,100,0.2); border-radius: 2px; }
+    .playlist-items::-webkit-scrollbar-thumb { background: rgba(196,30,58,0.15); border-radius: 2px; }
 
     .pl-item {
       display: flex;
@@ -393,14 +394,14 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-    .pl-item:hover { background: rgba(255,255,255,0.03); }
+    .pl-item:hover { background: rgba(0,0,0,0.02); }
     .pl-item.active {
-      background: rgba(212,175,90,0.08);
+      background: rgba(196,30,58,0.06);
       border-left: 2px solid #c41e3a;
     }
     .pl-item .pl-num {
       font-size: 0.6rem;
-      color: rgba(180,150,100,0.2);
+      color: #d0c8b8;
       min-width: 20px;
       text-align: right;
     }
@@ -410,30 +411,30 @@
     }
     .pl-item .pl-name {
       font-size: 0.78rem;
-      color: #c0b0a0;
+      color: #4a3a28;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .pl-item.active .pl-name { color: #d4af5a; }
+    .pl-item.active .pl-name { color: #c41e3a; }
     .pl-item .pl-desc {
       font-size: 0.6rem;
-      color: rgba(180,150,100,0.25);
+      color: #b0a090;
       margin-top: 1px;
     }
     .pl-item .pl-dur {
       font-size: 0.6rem;
-      color: rgba(180,150,100,0.2);
+      color: #d0c8b8;
       min-width: 36px;
       text-align: right;
     }
-    .pl-item.active .pl-dur { color: rgba(212,175,90,0.4); }
+    .pl-item.active .pl-dur { color: #c41e3a; }
 
     /* ===== Empty state ===== */
     .empty-msg {
       text-align: center;
       padding: 30px 20px;
-      color: rgba(180,150,100,0.2);
+      color: #d0c8b8;
       font-size: 0.8rem;
       letter-spacing: 0.1em;
     }

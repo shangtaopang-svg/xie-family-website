@@ -8,7 +8,10 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #1a1510;
+      background: #f5f0eb;
+      background-image:
+        repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(139,26,26,0.03) 80px, rgba(139,26,26,0.03) 81px),
+        repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(139,26,26,0.02) 40px, rgba(139,26,26,0.02) 41px);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -20,41 +23,39 @@
     .stele-wrap {
       max-width: 820px;
       width: 100%;
-      background: linear-gradient(135deg, #2a2218 0%, #1e1810 50%, #2a2218 100%);
-      border: 2px solid #4a3a28;
-      border-radius: 4px;
+      background: linear-gradient(135deg, #fdf8f0, #f8f0e0);
+      border: 1px solid #d4c8b8;
+      border-radius: 6px;
       padding: 50px 40px 50px 50px;
       position: relative;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 0 60px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
     }
-    /* Stone texture overlay */
+    /* Paper texture overlay */
     .stele-wrap::before {
       content: '';
       position: absolute;
       inset: 0;
-      opacity: 0.05;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='5'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      pointer-events: none;
-    }
-    /* Worn edges */
-    .stele-wrap::after {
-      content: '';
-      position: absolute;
-      inset: 6px;
-      border: 1px solid rgba(180,150,100,0.1);
-      border-radius: 2px;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
       pointer-events: none;
     }
 
     .stele-title {
       text-align: center;
-      font-family: 'Noto Serif SC', 'STSong', 'SimSun', serif;
+      font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', 'STSong', serif;
       font-size: clamp(2rem, 4.5vw, 3rem);
-      color: #d4af5a;
+      color: #1a1a1a;
       letter-spacing: 0.3em;
       margin-bottom: 40px;
-      text-shadow: 0 0 20px rgba(212,175,90,0.15);
       position: relative;
+    }
+    .stele-title::after {
+      content: '';
+      display: block;
+      width: 60px;
+      height: 2px;
+      margin: 12px auto 0;
+      background: linear-gradient(90deg, transparent, #c41e3a, transparent);
     }
 
     .stele-content {
@@ -71,22 +72,21 @@
       writing-mode: vertical-rl;
       text-orientation: upright;
       font-size: clamp(0.85rem, 1.4vw, 1rem);
-      color: #e8ddd0;
+      color: #2c1810;
       line-height: 2;
       letter-spacing: 0.1em;
       min-height: 100px;
       padding: 0 4px;
       font-weight: 400;
-      text-shadow: 0 0 4px rgba(0,0,0,0.5);
     }
     .text-col .hl {
-      color: #d4af5a;
+      color: #c41e3a;
       font-weight: 700;
-      text-shadow: 0 0 8px rgba(212,175,90,0.2);
     }
     .text-col .amt {
-      color: #c0a870;
+      color: #c41e3a;
       font-size: 0.8em;
+      font-weight: 600;
     }
 
     /* Title row at top */
@@ -104,7 +104,7 @@
       text-align: center;
       margin-top: 40px;
       font-size: clamp(0.7rem, 1.2vw, 0.85rem);
-      color: rgba(180,150,100,0.4);
+      color: #b0a090;
       letter-spacing: 0.15em;
       position: relative;
     }
@@ -114,7 +114,8 @@
       width: 60%;
       margin: 0 auto 20px;
       height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(180,150,100,0.3), transparent);
+      background: linear-gradient(90deg, transparent, #c41e3a, transparent);
+      opacity: 0.3;
     }
 
     /* Empty state */
