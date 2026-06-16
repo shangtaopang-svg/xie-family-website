@@ -62,6 +62,81 @@
       margin: 10px auto 0;
       background: linear-gradient(90deg, transparent, #c41e3a, transparent);
     }
+    /* ===== Major Donors Spotlight ===== */
+    .majors-section {
+      margin: 24px 0 10px;
+      padding: 20px 18px;
+      background: linear-gradient(135deg, #fcf8f2, #f8f0e0);
+      border: 1px solid #d4af5a;
+      border-radius: 6px;
+      position: relative;
+    }
+    .majors-section::before {
+      content: '';
+      position: absolute;
+      inset: 3px;
+      border: 1px solid rgba(212,175,90,0.25);
+      border-radius: 4px;
+      pointer-events: none;
+    }
+    .majors-title {
+      text-align: center;
+      font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+      font-size: clamp(1.1rem, 2.2vw, 1.4rem);
+      color: #8a1528;
+      letter-spacing: 0.25em;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .majors-title::after {
+      content: '';
+      display: block;
+      width: 50px;
+      height: 2px;
+      margin: 8px auto 0;
+      background: linear-gradient(90deg, transparent, #c41e3a, transparent);
+    }
+    .majors-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px 20px;
+    }
+    .major-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      min-width: 64px;
+    }
+    .major-item .rank {
+      font-size: 0.55rem;
+      color: #d4af5a;
+      letter-spacing: 0.1em;
+      margin-bottom: 2px;
+    }
+    .major-item .name {
+      font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+      font-size: clamp(0.85rem, 1.5vw, 1rem);
+      color: #8a1528;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    .major-item .amount {
+      font-size: 0.6rem;
+      color: #c9a84c;
+      margin-top: 1px;
+      font-weight: 600;
+    }
+    .major-item .medal {
+      font-size: 1.2rem;
+      margin-bottom: 2px;
+    }
+    @media (max-width: 640px) {
+      .majors-section { padding: 14px 10px; }
+      .majors-grid { gap: 6px 12px; }
+      .major-item { min-width: 50px; }
+    }
     .page-subtitle {
       font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
       font-size: clamp(0.85rem, 2vw, 1.05rem);
@@ -541,6 +616,12 @@
   <div class="page-title">下枫槎功德卷</div>
   <div class="page-subtitle">凡捐资修谱建祠者 · 勒名于斯 · 永志不忘</div>
 
+  <!-- ===== Major Donors Spotlight ===== -->
+  <div class="majors-section">
+    <div class="majors-title">★ 大功德主 ★</div>
+    <div class="majors-grid" id="majorsGrid"></div>
+  </div>
+
   <!-- ===== Section 1: 圆谱庆典 ===== -->
   <div class="section">
     <div class="section-header">
@@ -834,6 +915,38 @@ function esc(t) {
 // ===== Init =====
 loadAll();
 document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
+// ===== Major Donors Spotlight =====
+function renderMajors(data) {
+  var grid = document.getElementById('majorsGrid');
+  if (!grid || !data.length) return;
+  var copy = data.slice().sort(function(a,b){
+    return (b.amountValue||0) - (a.amountValue||0);
+  });
+  var top = copy.filter(function(p){ return (p.amountValue||0) >= 10000; });
+  if (!top.length) { grid.innerHTML = ''; return; }
+  
+  var medals = ['🥇', '🥈', '🥉', '🏅', '🏅', '🏅', '🏅', '🏅'];
+  var html = '';
+  top.slice(0, 8).forEach(function(p, i){
+    var amtText = p.amountValue >= 10000
+      ? (p.amountValue/10000).toFixed(p.amountValue%10000===0?0:1) + '万'
+      : p.amountValue + '元';
+    html += '<div class="major-item">';
+    html += '<div class="medal">' + (medals[i] || '🏅') + '</div>';
+    html += '<div class="name">' + esc(p.name) + '</div>';
+    html += '<div class="amount">' + amtText + '</div>';
+    html += '</div>';
+  });
+  grid.innerHTML = html;
+}
+
+// Extend renderScroll to also render majors
+var origRender = renderScroll;
+renderScroll = function(key, data) {
+  origRender(key, data);
+  if (key === 'clan') { renderMajors(data); }
+};
+
 </script>
 </body>
 </html>
