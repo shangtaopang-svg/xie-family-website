@@ -1175,6 +1175,7 @@ body {
 .media-frame /* ===== CAROUSEL ===== */
 .carousel-container {
   max-width: 100%;
+  aspect-ratio: 21/9;
 }
 
 /* Override video-section background */
