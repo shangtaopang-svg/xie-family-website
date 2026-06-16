@@ -824,16 +824,23 @@ function loadAll() {
 function loadScrollData(key) {
   var cfg = scrolls[key];
   if (!cfg.file) return;
-  fetch(cfg.file + '?' + Date.now()).then(function(r){return r.json()}).then(function(d){
-    meritData = d;
-    localStorage.setItem('xie_merit_data', JSON.stringify(d));
+  var storeKey = 'xie_data_' + key;
+
+  // Step 1: Load from localStorage instantly (0ms)
+  var stored = localStorage.getItem(storeKey);
+  if (stored) {
+    try { var cached = JSON.parse(stored); renderScroll(key, cached); } catch(e) {}
+  }
+
+  // Step 2: Silently fetch from server, update cache & re-render if changed
+  fetch(cfg.file + '?v=' + (localStorage.getItem(storeKey + '_v') || '0')).then(function(r){
+    var ver = r.headers.get('Last-Modified') || r.headers.get('ETag') || Date.now();
+    localStorage.setItem(storeKey + '_v', ver);
+    return r.json();
+  }).then(function(d){
+    localStorage.setItem(storeKey, JSON.stringify(d));
     renderScroll(key, d);
-  }).catch(function(){
-    var stored = localStorage.getItem('xie_merit_data');
-    if (stored) {
-      try { var d = JSON.parse(stored); renderScroll(key, d); } catch(e) {}
-    }
-  });
+  }).catch(function(){});
 }
 
 function renderScroll(key, data) {
