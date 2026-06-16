@@ -135,7 +135,7 @@
         if (hasUrl) {
           listHtml += '<a href="' + escapeAttr(item.url) + '" target="_blank" class="read-more-link">查看全文 →</a>';
         } else {
-          listHtml += '<a href="javascript:void(0)" class="read-more-link" onclick="showFullArticle(this)">阅读全文 →</a>';
+          listHtml += '<a href="#" class="read-more-link" onclick="showFullArticle(this);return false;">阅读全文 →</a>';
         }
         listHtml += '</div>';
       });
