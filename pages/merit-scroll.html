@@ -629,46 +629,7 @@
     .preface-scroll .col .hl { color: #8a1528; font-weight: 700; }
     .preface-scroll .col .gold { color: #c9a84c; }
     .preface-scroll .col .sig { margin-top: 20px; color: #8a7030; }
-    .preface-scroll .cover {
-      position: absolute; inset: 0;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      background: linear-gradient(135deg, #fdf8f0, #f5edd8);
-      z-index: 4; opacity: 1;
-      transition: opacity 0.6s ease;
-    }
-    .preface-scroll.open .cover {
-      opacity: 0; pointer-events: none;
-    }
-    .preface-scroll .cover .cover-title {
-      font-family: 'Noto Serif SC', 'STSong', serif;
-      font-size: clamp(1rem, 2vw, 1.4rem);
-      color: #2c1810;
-      letter-spacing: 0.5em;
-      font-weight: 700;
-    }
-    .preface-scroll .cover .cover-line {
-      width: 40px; height: 2px;
-      margin: 10px auto;
-      background: linear-gradient(90deg, transparent, #c41e3a, transparent);
-    }
-    .preface-scroll .cover .cover-sub {
-      font-size: 0.65rem; color: #b0a090;
-      letter-spacing: 0.15em;
-    }
-    .preface-scroll .cover .cover-icon {
-      font-size: 1.2rem; margin-top: 6px; opacity: 0.4;
-    }
-    .preface-scroll .hint {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 0.7rem; color: #c0b0a0;
-      letter-spacing: 0.1em; white-space: nowrap;
-      opacity: 0; transition: opacity 0.5s;
-      pointer-events: none; z-index: 3;
-    }
-    .preface-scroll:not(.open) .hint { opacity: 1; }
+
     .preface-scroll:not(.open):hover .hint { color: #c41e3a; }/* ===== Responsive ===== */
     @media (max-width: 640px) {
       .preface-scroll .content { min-width: 400px; padding: 12px 8px; }
@@ -804,15 +765,10 @@
     </div>
   </div>
 
-    <div class="preface-scroll" id="prefaceScroll" onclick="togglePreface()">
+    <div class="preface-scroll" id="prefaceScroll" >
     <div class="roller"><span class="label">功德序</span></div>
     <div class="paper" id="prefacePaper">
-      <div class="cover" id="prefaceCover">
-        <div class="cover-title">功 德 序</div>
-        <div class="cover-line"></div>
-        <div class="cover-sub">点击展开 · 古卷珍藏</div>
-        <div class="cover-icon">📜</div>
-      </div>
+
       <div class="content" id="prefaceContent">
         <div class="col">
           盖闻水有源而流派长，木有本而枝叶茂。族之有谱，犹国之有史。国无史不立，族无谱不传。谱者，所以纪世系、序昭穆、联族谊、垂后昆，立族之大典也。昔苏老泉作族谱引，有感于一人之身分而至于途人，良可慨也。是以君子务本，本立而道生，尊祖故敬宗，敬宗故收族，此修谱之义也。<br><br>
@@ -1005,35 +961,39 @@ function esc(t) {
 // ===== Init =====
 loadAll();
 
-// ===== Preface Scroll Toggle =====
-function togglePreface() {
+// ===== Preface Auto-unroll on page load =====
+function autoUnrollPreface() {
   var ps = document.getElementById('prefaceScroll');
-  if (!ps || ps.classList.contains('open')) return;
-  ps.classList.add('open');
-  if (!window._psound) {
-    window._psound = true;
-    try {
-      var ctx = new (window.AudioContext||window.webkitAudioContext)();
-      var len = ctx.sampleRate * 1.5;
-      var buf = ctx.createBuffer(1, len, ctx.sampleRate);
-      var d = buf.getChannelData(0);
-      for (var i = 0; i < len; i++) {
-        var t = i / ctx.sampleRate;
-        var env = Math.max(0, 1 - t / 1.5);
-        var noise = (Math.random() * 2 - 1) * 0.08;
-        var rumble = Math.sin(i*0.04)*0.2 + Math.sin(i*0.08)*0.1 + Math.sin(i*0.02)*0.25;
-        d[i] = (noise + rumble) * env * 0.15;
-      }
-      var src = ctx.createBufferSource();
-      src.buffer = buf;
-      var flt = ctx.createBiquadFilter();
-      flt.type = 'lowpass'; flt.frequency.value = 250;
-      var gn = ctx.createGain();
-      gn.gain.setValueAtTime(0.08, 0);
-      src.connect(flt); flt.connect(gn); gn.connect(ctx.destination);
-      src.start();
-    } catch(e) {}
-  }
+  if (!ps) return;
+  // Delay to let page render first
+  window._prefaceTimer = setTimeout(function(){
+    ps.classList.add('open');
+    // Play sound
+    if (!window._psound) {
+      window._psound = true;
+      try {
+        var ctx = new (window.AudioContext||window.webkitAudioContext)();
+        var len = ctx.sampleRate * 1.5;
+        var buf = ctx.createBuffer(1, len, ctx.sampleRate);
+        var d = buf.getChannelData(0);
+        for (var i = 0; i < len; i++) {
+          var t = i / ctx.sampleRate;
+          var env = Math.max(0, 1 - t / 1.5);
+          var noise = (Math.random() * 2 - 1) * 0.08;
+          var rumble = Math.sin(i*0.04)*0.2 + Math.sin(i*0.08)*0.1 + Math.sin(i*0.02)*0.25;
+          d[i] = (noise + rumble) * env * 0.15;
+        }
+        var src = ctx.createBufferSource();
+        src.buffer = buf;
+        var flt = ctx.createBiquadFilter();
+        flt.type = 'lowpass'; flt.frequency.value = 250;
+        var gn = ctx.createGain();
+        gn.gain.setValueAtTime(0.08, 0);
+        src.connect(flt); flt.connect(gn); gn.connect(ctx.destination);
+        src.start();
+      } catch(e) {}
+    }
+  }, 600);
 }
 
 document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
