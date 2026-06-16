@@ -1277,7 +1277,7 @@ function renderGenealogy(area) {
     var srow = shima_list[si];
     var isRoot = (si === 0);
     var isWenGao = (srow[1] === '文杲');
-    var yd = 129 + srow[0] - 1, sb = 66 + srow[0] - 1, ds = 32 + srow[0] - 1, lx = 9 + srow[0] - 1;
+    var yd = 130 + srow[0] - 1, sb = 66 + srow[0] - 1, ds = 32 + srow[0] - 1, lx = 9 + srow[0] - 1;
     html += '<tr>';
     html += '<td style="padding:3px 5px;border:1px solid var(--glass-border);text-align:center;font-size:10px;color:var(--text-tertiary);' + (isRoot?'font-weight:700;color:#d4a037;':'') + '">' + yd + '</td>';
     html += '<td style="padding:3px 5px;border:1px solid var(--glass-border);text-align:center;font-size:10px;color:var(--text-tertiary);">' + sb + '</td>';
