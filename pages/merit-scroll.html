@@ -716,7 +716,7 @@
       <div class="scroll-card-header" onclick="toggleScroll('temple')">
         <div class="info">
           <h3>宗祠修缮捐款名单</h3>
-          <span class="empty-badge">待上传</span>
+          <span class="count-badge" id="badge-temple">4人 · 10.7万</span>
         </div>
         <div class="toggle-wrap" id="btn-temple" onclick="event.stopPropagation();toggleScroll('temple')"><div class="toggle-tassel"><div class="cord"></div><div class="fringe"></div><div class="label">展开</div></div><div class="toggle-knob"></div></div>
       </div>
@@ -724,13 +724,7 @@
         <div class="scroll-paper">
           <div class="scroll-edge-left"></div>
           <div class="scroll-edge-right"></div>
-          <div class="scroll-content">
-            <div class="empty-state">
-              <div class="icon">🏛️</div>
-              <p>数据待上传</p>
-              <p style="font-size:0.7rem;margin-top:6px;">请提供宗祠修缮捐款名单</p>
-            </div>
-          </div>
+          <div class="scroll-content" id="content-temple"></div>
         </div>
       </div>
     </div>
@@ -741,7 +735,7 @@
     <div class="preface-body">
       <p>盖闻立族之本，端在修谱。谱者，家族之大典也，所以纪世系、序昭穆、联族谊、垂后昆。族之有谱，犹国之有史；国无史不立，族无谱而不传。吾谢氏之先，出自炎帝，至周宣王封元舅申伯于谢邑，因以国为氏，迄今两千八百余载。自晋以降，若文靖公安石，雅道相传；若康乐公灵运，藻绘奇绝；若太傅公幼度，淝水著勋。代有名贤，世称望族，所谓"乌衣世泽、宝树家声"者，良有以也。</p>
       <p>明隆庆壬申岁，彬公、乾公昆仲遭洪水之患，相度地势，自石马迁居双枫古槎之下，开基立业，耕读传家，迄今四百五十余年。历十六世而至今日，支分派衍，蕃昌簪缨，实为南乡之望族。本届修谱，族长昌苗总管其事，主修世忠、行龙董理全局，监修伟中、行勇协理庶务，秉修令昂考订世系，诸君各竭其力，历数载而谱牒告成，诚可谓继往开来之功也。</p>
-      <p>岁次乙巳（二〇二五年）三月，宗祠修缮肇兴，至七月告成。合族踊跃捐资，共襄义举，以安先祖之灵。越明年丙午（二〇二六年）农历四月初一，圆谱大典隆重举行，颁谱祭祖，盛况空前。计族人捐资修谱建祠者凡三百五十余人，外来宗亲助款者百四十余人，社会各界贺仪者十有六家，总其数凡壹佰贰拾贰万余圆。诸公共襄盛举，功在宗族，德被后昆。</p>
+      <p>岁次乙巳（二〇二五年）三月，宗祠修缮肇兴，至七月告成。族人踊跃捐资，共襄义举，以安先祖之灵。世忠君捐伍萬圆，会忠君捐贰万伍仟圆，行龙君捐贰萬圆，海港君捐壹万贰仟圆，皆竭力尽心，功德无量。统计修缮捐资者凡X人，总金额Y元。越明年丙午（二〇二六年）农历四月初一，圆谱大典隆重举行，颁谱祭祖，盛况空前。计族人捐资修谱建祠者凡三百五十余人，外来宗亲助款者百四十余人，社会各界贺仪者十有六家，总其数凡壹佰贰拾贰万余圆。诸公共襄盛举，功在宗族，德被后昆。</p>
       <p>尤有进者，世忠、行龙二君，慨捐拾萬圆，首倡义举，其功甚伟；伟中君捐伍萬圆，云国君捐叁万捌仟圆，皆族中翘楚，足为楷模。外来宗亲茶芬君捐贰万零伍佰圆，三门下谢贺仪伍万捌仟圆，桃源钱岙贺仪三万捌仟捌佰圆，盛情厚谊，令人感佩。其余诸君，或捐万金，或助数千，各尽其力，皆可敬也。虽捐资多寡有别，而其尊祖敬宗之心，一也。</p>
       <p>夫修谱以存世系，建祠以奉先祖，捐资以助其成，勒名以彰其德，其义一也。今谨按捐资多寡，分列卷轴，各标芳名，俾后人知我族之昌盛，实赖诸君之襄助。庶几继往开来，永世其昌。</p>
       <p class="preface-sign">是为序。</p>
@@ -766,7 +760,7 @@ var scrolls = {
   external: { file: '../data/merit-fundraising.json', btn: 'btn-external', wrap: 'wrap-external', content: 'content-external' },
   social: { file: '../data/merit-external.json', btn: 'btn-social', wrap: 'wrap-social', content: 'content-social' },
   extra1: { file: '../data/merit-social.json', btn: 'btn-extra1', wrap: 'wrap-extra1', content: 'content-extra1' },
-  temple: { file: null, btn: 'btn-temple', wrap: 'wrap-temple' }
+  temple: { file: '../data/merit-temple.json', btn: 'btn-temple', wrap: 'wrap-temple', content: 'content-temple' }
 };
 
 // Load data for all scrolls that have files
@@ -775,6 +769,7 @@ function loadAll() {
   loadScrollData('external');
   loadScrollData('social');
   loadScrollData('extra1');
+  loadScrollData('temple');
 }
 
 function loadScrollData(key) {
