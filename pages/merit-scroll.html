@@ -629,6 +629,36 @@
     .preface-scroll .col .hl { color: #8a1528; font-weight: 700; }
     .preface-scroll .col .gold { color: #c9a84c; }
     .preface-scroll .col .sig { margin-top: 20px; color: #8a7030; }
+    .preface-scroll .cover {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #fdf8f0, #f5edd8);
+      z-index: 4; opacity: 1;
+      transition: opacity 0.6s ease;
+    }
+    .preface-scroll.open .cover {
+      opacity: 0; pointer-events: none;
+    }
+    .preface-scroll .cover .cover-title {
+      font-family: 'Noto Serif SC', 'STSong', serif;
+      font-size: clamp(1rem, 2vw, 1.4rem);
+      color: #2c1810;
+      letter-spacing: 0.5em;
+      font-weight: 700;
+    }
+    .preface-scroll .cover .cover-line {
+      width: 40px; height: 2px;
+      margin: 10px auto;
+      background: linear-gradient(90deg, transparent, #c41e3a, transparent);
+    }
+    .preface-scroll .cover .cover-sub {
+      font-size: 0.65rem; color: #b0a090;
+      letter-spacing: 0.15em;
+    }
+    .preface-scroll .cover .cover-icon {
+      font-size: 1.2rem; margin-top: 6px; opacity: 0.4;
+    }
     .preface-scroll .hint {
       position: absolute;
       top: 50%; left: 50%;
@@ -777,7 +807,12 @@
     <div class="preface-scroll" id="prefaceScroll" onclick="togglePreface()">
     <div class="roller"><span class="label">功德序</span></div>
     <div class="paper" id="prefacePaper">
-      <div class="hint">▶ 点击展开古卷</div>
+      <div class="cover" id="prefaceCover">
+        <div class="cover-title">功 德 序</div>
+        <div class="cover-line"></div>
+        <div class="cover-sub">点击展开 · 古卷珍藏</div>
+        <div class="cover-icon">📜</div>
+      </div>
       <div class="content" id="prefaceContent">
         <div class="col">
           盖闻水有源而流派长，木有本而枝叶茂。族之有谱，犹国之有史。国无史不立，族无谱不传。谱者，所以纪世系、序昭穆、联族谊、垂后昆，立族之大典也。昔苏老泉作族谱引，有感于一人之身分而至于途人，良可慨也。是以君子务本，本立而道生，尊祖故敬宗，敬宗故收族，此修谱之义也。<br><br>
