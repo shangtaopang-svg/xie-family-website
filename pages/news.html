@@ -112,6 +112,8 @@
         catCount[item.category] = (catCount[item.category] || 0) + 1;
       });
 
+      // Store global reference
+      window._newsData = data;
       // Sort by date ascending
       data.sort(function(a, b) { return (a.date || '').localeCompare(b.date || ''); });
 
@@ -124,7 +126,7 @@
         var fullContent = item.content || '';
         var excerpt = fullContent.length > 120 ? fullContent.substring(0, 120) + '…' : fullContent;
 
-        listHtml += '<div class="article-card fade-in">';
+        listHtml += '<div class="article-card fade-in" data-fullcontent="' + encodeURIComponent(fullContent) + '" data-title="' + escapeAttr(item.title) + '" data-author="' + escapeAttr(item.author || '') + '" data-date="' + (item.date || '') + '">';
         listHtml += '<span class="category">' + escapeHtml(item.category) + '</span>';
         listHtml += '<h3>' + escapeHtml(item.title) + '</h3>';
         listHtml += '<div class="meta">' + (item.date || '') + ' · 发布人：' + escapeHtml(item.author || '') + '</div>';
@@ -133,7 +135,7 @@
         if (hasUrl) {
           listHtml += '<a href="' + escapeAttr(item.url) + '" target="_blank" class="read-more-link">查看全文 →</a>';
         } else {
-          listHtml += '<a href="javascript:void(0)" class="read-more-link" onclick="showFullArticle(this, \'' + escapeAttr(item.title) + '\', \'' + escapeAttr(item.author || '') + '\', \'' + escapeAttr(item.date || '') + '\', \'' + escapeAttr(fullContent.replace(/'/g, "\\'").replace(/"/g, '&quot;')) + '\')">阅读全文 →</a>';
+          listHtml += '<a href="javascript:void(0)" class="read-more-link" onclick="showFullArticle(this)">阅读全文 →</a>';
         }
         listHtml += '</div>';
       });
@@ -174,7 +176,12 @@
     }
 
     // ===== 阅读全文弹窗 =====
-    function showFullArticle(link, title, author, date, content) {
+    function showFullArticle(link) {
+      var card = link.closest('.article-card');
+      var content = card ? decodeURIComponent(card.getAttribute('data-fullcontent') || '') : '';
+      var title = card ? card.getAttribute('data-title') : '';
+      var author = card ? card.getAttribute('data-author') : '';
+      var date = card ? card.getAttribute('data-date') : '';
       var overlay = document.createElement('div');
       overlay.className = 'article-modal-overlay';
       overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
