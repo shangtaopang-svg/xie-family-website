@@ -47,7 +47,7 @@ function getFullSeedData() {
     for (var i = 0; i < raw.length; i++) { if (!nameToId[raw[i][1]]) nameToId[raw[i][1]] = 50000 + i; }
     for (var i = 0; i < raw.length; i++) {
       var r = raw[i], pid = 50000 + i;
-      result.push({ id: pid, name: r[1], gender: '男', generation: r[0].toString(), generation_num: r[0], branch: '古世系', father_id: r[3] ? (nameToId[r[3]] || null) : null, birth_date: '', is_alive: '否', highlight: i === 0, biography: r[2] });
+            var br = '古世系'; var gen = r[0]; if (gen <= 65) br = '远古世系'; else if (gen <= 99) br = '申伯世系'; else if (gen <= 121) br = '始宁东山世系'; else if (gen <= 130) br = '临海下渡世系'; else br = '石马下谢分房'; result.push({ id: pid, name: r[1], gender: '男', generation: r[0].toString(), generation_num: gen, branch: br, father_id: r[3] ? (nameToId[r[3]] || null) : null, birth_date: '', is_alive: '否', highlight: i === 0, biography: r[2] });
     }
     return result;
   }
@@ -182,7 +182,7 @@ function buildTree(p){
   h+='<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">'+gen+(p.branch&&p.branch!=='—'?' · '+esc(p.branch):'')+'</div></div>';
 
   // Descendants (recursive, 5 generations down, max 6 wide)
-  h+=buildDescendantTree(p.id, 1, 5, 6);
+  h+=buildDescendantTree(p.id, 1, 10, 6);
 
   h+='</div>';
   return h;
