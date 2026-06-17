@@ -1306,7 +1306,7 @@ function renderGenealogy(area) {
   // ===== 本宗世系图（后枫槎）=====
   html += '<div style="margin:16px 0;padding:14px 18px;background:rgba(34,197,94,0.06);border-radius:10px;border:1px solid rgba(34,197,94,0.12);">';
   html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;" onclick="var n=this.nextElementSibling;n.style.display=n.style.display==\'none\'?\'block\':\'none\'">';
-  html += '<span style="font-size:14px;">\🌳</span>';
+  html += '<span style="font-size:14px;">🌳</span>';
   html += '<span style="font-size:13px;font-weight:600;color:var(--text-primary);">本宗世系图（后枫槎）</span>';
   html += '<span style="font-size:11px;color:var(--text-muted);">点击展开/收起</span>';
   html += '</div>';
