@@ -3606,13 +3606,18 @@ var _SHIMA_RAW = [
 // ===== 世系数据提取函数（用于合并到全部世代总览） =====
 function _rawToData(raw, baseId, branch) {
   var nameToId = {}, data = [];
-  for (var i = 0; i < raw.length; i++) nameToId[raw[i][2]] = baseId + i;
+  // Detect format
+  var isShima = (raw.length > 0 && raw[0].length === 4);
+  var ni = isShima ? 1 : 2;
+  var di = isShima ? 2 : 3;
+  var fi = isShima ? 3 : 4;
+  for (var i = 0; i < raw.length; i++) nameToId[raw[i][ni]] = baseId + i;
   for (var i = 0; i < raw.length; i++) {
     var r = raw[i], pid = baseId + i;
     data.push({
-      id: pid, name: r[2], gender: '男', generation_num: r[0], generation: r[0].toString(),
-      branch: branch, father_id: r[4] ? (nameToId[r[4]] || null) : null,
-      spouse_ids: '', is_alive: '否', biography: r[3], highlight: i === 0
+      id: pid, name: r[ni], gender: '男', generation_num: r[0], generation: r[0].toString(),
+      branch: branch, father_id: r[fi] ? (nameToId[r[fi]] || null) : null,
+      spouse_ids: '', is_alive: '否', biography: r[di], highlight: i === 0
     });
   }
   return data;
@@ -3892,7 +3897,7 @@ function buildAdminDongshanTree() {
     var r = raw[i], pid = 20000 + i;
     treeData.push({
       id: pid, name: r[2], gender: '男', generation_num: r[0], generation: r[0].toString(),
-      branch: '东山世系', father_id: r[4] ? (nameToId[r[4]] || null) : null,
+      branch: '东山世系', father_id: (r[4] || r[3]) ? (nameToId[r[4] || r[3]] || null) : null,
       spouse_ids: '', is_alive: '否', biography: r[3], highlight: i === 0
     });
   }
@@ -3918,7 +3923,7 @@ function buildAdminLinhaiTree() {
     var r = raw[i], pid = 30000 + i;
     treeData.push({
       id: pid, name: r[2], gender: '男', generation_num: r[0], generation: r[0].toString(),
-      branch: '临海下渡', father_id: r[4] ? (nameToId[r[4]] || null) : null,
+      branch: '临海下渡', father_id: (r[4] || r[3]) ? (nameToId[r[4] || r[3]] || null) : null,
       spouse_ids: '', is_alive: '否', biography: r[3], highlight: i === 0
     });
   }
