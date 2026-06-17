@@ -1303,6 +1303,7 @@ function renderGenealogy(area) {
   html += '</div></div>';
   html += '</div></div>';
 
+  console.log('RENDERING 后枫槎 SECTION');
   // ===== 本宗世系图（后枫槎）=====
   html += '<div style="margin:16px 0;padding:14px 18px;background:rgba(34,197,94,0.06);border-radius:10px;border:1px solid rgba(34,197,94,0.12);">';
   html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;" onclick="var n=this.nextElementSibling;n.style.display=n.style.display==\'none\'?\'block\':\'none\'">';
@@ -1316,6 +1317,7 @@ function renderGenealogy(area) {
   html += buildAdminHoufengchaTree();
   html += '</div>';
   html += '<div style="margin-top:6px;font-size:10px;color:var(--text-tertiary);text-align:right;">下枫槎谢氏 · 后枫槎攒公派世系</div>';
+  console.log('AFTER 后枫槎 SECTION');
   html += '</div></div>';
 
   // ===== 全部世代总览 =====
