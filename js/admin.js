@@ -461,7 +461,8 @@ function renderModule(mod) {
       initShenboTreePanZoom();
       initTreeViewportPanZoom('dongshan-tree-viewport', 'ds-zoom-level', {z:_dsZoom,px:_dsPanX,py:_dsPanY,drag:false,dx:0,dy:0,sx:0,sy:0});
       initTreeViewportPanZoom('linhai-tree-viewport', 'lh-zoom-level', {z:_lhZoom,px:_lhPanX,py:_lhPanY,drag:false,dx:0,dy:0,sx:0,sy:0});
-      initTreeViewportPanZoom('shima-tree-viewport', 'sm-zoom-level', {z:_smZoom,px:_smPanX,py:_smPanY,drag:false,dx:0,dy:0,sx:0,sy:0});
+      initTreeViewportPanZoom('hfc-tree-viewport', 'hfc-zoom-level', {z:1,px:0,py:0,drag:false,dx:0,dy:0,sx:0,sy:0});
+	      initTreeViewportPanZoom('shima-tree-viewport', 'sm-zoom-level', {z:_smZoom,px:_smPanX,py:_smPanY,drag:false,dx:0,dy:0,sx:0,sy:0});
       treeZoom = savedZoom;
       treePanX = savedX;
       treePanY = savedY;
@@ -1303,7 +1304,6 @@ function renderGenealogy(area) {
   html += '</div></div>';
   html += '</div></div>';
 
-  console.log('RENDERING 后枫槎 SECTION');
   // ===== 本宗世系图（后枫槎）=====
   html += '<div style="margin:16px 0;padding:14px 18px;background:rgba(34,197,94,0.06);border-radius:10px;border:1px solid rgba(34,197,94,0.12);">';
   html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;" onclick="var n=this.nextElementSibling;n.style.display=n.style.display==\'none\'?\'block\':\'none\'">';
@@ -1311,13 +1311,12 @@ function renderGenealogy(area) {
   html += '<span style="font-size:13px;font-weight:600;color:var(--text-primary);">本宗世系图（后枫槎）</span>';
   html += '<span style="font-size:11px;color:var(--text-muted);">点击展开/收起</span>';
   html += '</div>';
-  html += '<div style="display:none;">';
+  html += '<div style="display:block;">';
   html += '<p style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;line-height:1.6;">小四→丹一→文杲→攒（后枫槎）/撰（前枫槎）</p>';
-  html += '<div style="overflow:hidden;position:relative;cursor:grab;border:1px solid rgba(34,197,94,0.15);border-radius:6px;background:var(--bg-secondary);min-height:280px;">';
+  html += '<div class="hfc-tree-viewport" id="hfc-tree-viewport" style="overflow:hidden;position:relative;cursor:grab;border:1px solid rgba(34,197,94,0.15);border-radius:6px;background:var(--bg-secondary);min-height:280px;">';
   html += buildAdminHoufengchaTree();
   html += '</div>';
   html += '<div style="margin-top:6px;font-size:10px;color:var(--text-tertiary);text-align:right;">下枫槎谢氏 · 后枫槎攒公派世系</div>';
-  console.log('AFTER 后枫槎 SECTION');
   html += '</div></div>';
 
   // ===== 全部世代总览 =====
