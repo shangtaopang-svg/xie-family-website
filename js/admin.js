@@ -1303,6 +1303,21 @@ function renderGenealogy(area) {
   html += '</div></div>';
   html += '</div></div>';
 
+  // ===== 本宗世系图（后枫槎）=====
+  html += '<div style="margin:16px 0;padding:14px 18px;background:rgba(34,197,94,0.06);border-radius:10px;border:1px solid rgba(34,197,94,0.12);">';
+  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;" onclick="var n=this.nextElementSibling;n.style.display=n.style.display==\'none\'?\'block\':\'none\'">';
+  html += '<span style="font-size:14px;">\U0001f333</span>';
+  html += '<span style="font-size:13px;font-weight:600;color:var(--text-primary);">本宗世系图（后枫槎）</span>';
+  html += '<span style="font-size:11px;color:var(--text-muted);">点击展开/收起</span>';
+  html += '</div>';
+  html += '<div style="display:none;">';
+  html += '<p style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;line-height:1.6;">小四→丹一→文杲→攒（后枫槎）/撰（前枫槎）</p>';
+  html += '<div style="overflow:hidden;position:relative;cursor:grab;border:1px solid rgba(34,197,94,0.15);border-radius:6px;background:var(--bg-secondary);min-height:280px;">';
+  html += buildAdminHoufengchaTree();
+  html += '</div>';
+  html += '<div style="margin-top:6px;font-size:10px;color:var(--text-tertiary);text-align:right;">下枫槎谢氏 · 后枫槎攒公派世系</div>';
+  html += '</div></div>';
+
   // ===== 全部世代总览 =====
   html += '<div style="margin-top:30px;padding:16px 18px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:10px;">';
   html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">';
