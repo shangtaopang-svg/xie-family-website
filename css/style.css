@@ -4695,3 +4695,40 @@ body {
   .tree-tabs { gap: 4px; }
   .tree-tab { font-size: 12px; padding: 5px 10px; }
 }
+
+/* ===== 手机端底部导航 ===== */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(0,0,0,0.08);
+  padding: 6px 0 env(safe-area-inset-bottom, 6px);
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+}
+.mb-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px;
+  text-decoration: none;
+  color: #666;
+  transition: color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.mb-nav-item:active { color: #d4af5a; }
+.mb-icon { font-size: 20px; line-height: 1; }
+.mb-label { font-size: 10px; font-weight: 600; white-space: nowrap; }
+@media (max-width: 768px) {
+  .mobile-bottom-nav { display: flex; }
+  .content { padding-bottom: 70px; }
+  .footer-bottom { padding-bottom: 70px; }
+}
