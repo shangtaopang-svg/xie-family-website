@@ -27,8 +27,8 @@
       .mobile-bottom-nav {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
-        gap: 2px;
-        padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+        gap: 1px;
+        padding: 4px 6px calc(4px + env(safe-area-inset-bottom, 0px));
         background: rgba(255,255,255,0.95);
         backdrop-filter: blur(16px);
         border-top: 1px solid rgba(0,0,0,0.06);
@@ -41,28 +41,21 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 2px;
-        padding: 4px 2px;
+        gap: 1px;
+        padding: 3px 1px;
         text-decoration: none;
         color: #888;
         font-family: var(--font-body);
-        font-size: 9px;
+        font-size: 8px;
         font-weight: 500;
-        border-radius: 6px;
+        border-radius: 4px;
         transition: all 0.15s;
         -webkit-tap-highlight-color: transparent;
       }
       .mb-item span { line-height: 1.1; }
       .mb-item:active { background: rgba(0,0,0,0.05); color: #d4af5a; }
       .mb-item.active { color: #d4af5a; }
-      .nav-toggle { display: none !important; }
-      .main-nav, ul.main-nav, nav.main-nav,
-      .site-header .header-inner .main-nav { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }
-      .content { padding-bottom: 90px; }
-      /* 手机端隐藏与底部导航重复的页脚栏目 */
-      .footer-section:nth-child(2),
-      .footer-section:nth-child(3),
-      .footer-section:nth-child(4) { display: none !important; }
+      .content { padding-bottom: 80px; }
       [data-theme="dark"] .mobile-bottom-nav { background: rgba(20,20,30,0.95); }
       [data-theme="dark"] .mb-item { color: #999; }
       [data-theme="dark"] .mb-item:active { background: rgba(255,255,255,0.06); color: #d4af5a; }
@@ -90,45 +83,6 @@
         </div>
       </a>
       <a href="index.html" class="mobile-home-btn" title="返回首页">🏠</a>
-      <nav class="main-nav">
-        <ul>
-          <li><a href="index.html" class="active" data-i18n="nav.home">首页</a></li>
-          <li><a href="pages/history.html" data-i18n="nav.history">家族历史</a></li>
-          <li><a href="pages/genealogy.html" data-i18n="nav.genealogy">族谱查询</a></li>
-          <li><a href="pages/celebrities.html" data-i18n="nav.celebrities">名人事迹</a></li>
-          <li><a href="pages/merit-scroll.html" style="color:#c41e3a;">📜 功德卷轴</a></li>
-          <li><a href="pages/news.html" data-i18n="nav.news">消息发布</a></li>
-          <li><a href="pages/members.html" data-i18n="nav.members">家族成员</a></li>
-          <li><a href="pages/activities.html" data-i18n="nav.activities">家族活动</a></li>
-          <li><a href="pages/today.html" data-i18n="nav.today">今日下枫槎</a></li>
-          <li><a href="pages/reports.html" data-i18n="nav.reports">新闻报道</a></li>
-          <li><a href="pages/contact.html" data-i18n="nav.contact">联系我们</a></li>
-          <li><a href="pages/audio.html">🎧 听下枫槎</a></li>
-          <li><a href="pages/vinyl-player.html">🎵 枫槎留声机</a></li>
-          <li><a href="pages/admin.html" style="color:var(--accent-orange);" data-i18n="nav.admin">🔐 管理后台</a></li>
-        </ul>
-        <!-- ===== 底部控制面板 ===== -->
-        <div class="sidebar-controls">
-          <div class="sc-row">
-            <button class="weather-btn" data-weather="off" title="关闭特效">✕</button>
-            <button class="weather-btn" data-weather="sunny" title="晴天">☀</button>
-            <button class="weather-btn" data-weather="rain" title="下雨">🌧</button>
-            <button class="weather-btn" data-weather="snow" title="下雪">❄</button>
-            <button class="weather-btn" data-weather="meteor" title="流星">☄</button>
-          </div>
-          <div class="sc-row">
-            <button class="map-z-in sc-btn" title="放大">+</button>
-            <button class="map-z-out sc-btn" title="缩小">−</button>
-            <button class="music-btn" id="music-prev" title="上一首">⏮</button>
-            <button class="music-btn" id="music-toggle" title="播放/暂停">🔈</button>
-            <button class="music-btn" id="music-next" title="下一首">⏭</button>
-          </div>
-          <div class="sc-row">
-            <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
-            <button class="nav-action-btn lang-btn" id="lang-toggle" data-i18n-title="nav.lang" title="中英文切换">EN</button>
-          </div>
-        </div>
-      </nav>
     </div>
   </header>
 
@@ -403,26 +357,6 @@
         <h4 data-i18n="footer.section1.title">下枫槎谢氏</h4>
         <p data-i18n="footer.desc">宁海下枫槎村谢氏家族数字宗祠，致力于家族文化传承与宗亲联络。网站内容版权归谢氏家族所有。</p>
         <p style="margin-top:12px;"><span id="visit-stat"><span data-i18n="visit.label">访问人数</span>: <span id="visit-count">0</span></span></p>
-      </div>
-      <div class="footer-section">
-        <h4 data-i18n="footer.section2.title">快捷链接</h4>
-        <a href="pages/history.html" data-i18n="nav.history">家族历史</a>
-        <a href="pages/genealogy.html" data-i18n="footer.link.genealogy">族谱查询</a>
-        <a href="pages/celebrities.html" data-i18n="nav.celebrities">名人事迹</a>
-        <a href="pages/merit-scroll.html">📜 功德卷轴</a>
-        <a href="pages/news.html" data-i18n="nav.news">消息发布</a>
-      </div>
-      <div class="footer-section">
-        <h4 data-i18n="footer.section3.title">家族活动</h4>
-        <a href="pages/activities.html" data-i18n="footer.link.review">活动回顾</a>
-        <a href="pages/activities.html#upcoming" data-i18n="footer.link.upcoming">活动预告</a>
-        <a href="pages/today.html" data-i18n="nav.today">今日下枫槎</a>
-        <a href="pages/reports.html" data-i18n="footer.link.reports">新闻报道</a>
-      </div>
-      <div class="footer-section">
-        <h4 data-i18n="footer.section4.title">后台管理</h4>
-        <a href="pages/admin.html" data-i18n="footer.link.admin">🔐 管理后台</a>
-        <a href="pages/genealogy.html" data-i18n="footer.link.genealogy.mgmt">族谱管理</a>
       </div>
     </div>
     <div class="footer-bottom">
