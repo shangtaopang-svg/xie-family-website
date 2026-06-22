@@ -26,32 +26,28 @@
     @media (max-width: 900px) {
       .mobile-bottom-nav {
         display: flex;
-        flex-wrap: wrap;
-        padding: 2px 0 calc(2px + env(safe-area-inset-bottom,0px));
         background: rgba(255,255,255,0.95);
         backdrop-filter: blur(16px);
         border-top: 1px solid rgba(0,0,0,0.06);
         position: fixed;
         bottom: 0; left: 0; right: 0;
         z-index: 9999;
-        box-shadow: 0 -2px 12px rgba(0,0,0,0.05);
       }
       .mb-item {
-        width: 25%;
+        flex: 1;
         text-align: center;
-        padding: 3px 0;
+        padding: 8px 0 calc(8px + env(safe-area-inset-bottom,0px));
         text-decoration: none;
-        color: #888;
+        color: #666;
         font-family: var(--font-body);
         font-size: 11px;
         font-weight: 500;
-        transition: all 0.15s;
+        line-height: 1.3;
         -webkit-tap-highlight-color: transparent;
-        line-height: 1.4;
       }
-      .mb-item:active { background: rgba(0,0,0,0.05); color: #d4af5a; }
+      .mb-item:active { background: rgba(0,0,0,0.04); color: #d4af5a; }
       .mb-item.active { color: #d4af5a; }
-      .content { padding-bottom: 85px; }
+      .content { padding-bottom: 50px; }
       [data-theme="dark"] .mobile-bottom-nav { background: rgba(20,20,30,0.95); }
       [data-theme="dark"] .mb-item { color: #999; }
       [data-theme="dark"] .mb-item:active { background: rgba(255,255,255,0.06); color: #d4af5a; }
@@ -376,22 +372,12 @@
   <script defer src="js/dynamic-content.js?v=4a"></script>
 
   <script defer src="js/weather-particle.js?v=b977c9"></script>
-  <!-- ===== 手机底部导航两行 ===== -->
+  <!-- ===== 手机底部导航一排四个 ===== -->
   <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
     <a href="index.html" class="mb-item active">🏠<span>首页</span></a>
-    <a href="pages/history.html" class="mb-item">📜<span>家族历史</span></a>
-    <a href="pages/genealogy.html" class="mb-item">🌳<span>族谱查询</span></a>
-    <a href="pages/celebrities.html" class="mb-item">🏆<span>名人事迹</span></a>
-    <a href="pages/merit-scroll.html" class="mb-item">📜<span>功德卷轴</span></a>
-    <a href="pages/news.html" class="mb-item">📰<span>消息发布</span></a>
-    <a href="pages/members.html" class="mb-item">👥<span>家族成员</span></a>
-    <a href="pages/activities.html" class="mb-item">🎪<span>家族活动</span></a>
-    <a href="pages/today.html" class="mb-item">📸<span>今日下枫槎</span></a>
-    <a href="pages/reports.html" class="mb-item">📋<span>新闻报道</span></a>
     <a href="pages/contact.html" class="mb-item">✉️<span>联系我们</span></a>
     <a href="pages/audio.html" class="mb-item">🎧<span>听下枫槎</span></a>
     <a href="pages/vinyl-player.html" class="mb-item">🎵<span>枫槎留声机</span></a>
-    <a href="pages/admin.html" class="mb-item">🔐<span>管理后台</span></a>
   </nav>
   <script>(function(){var nav=document.getElementById('mobile-bottom-nav');if(!nav)return;var seen={};Array.from(nav.children).forEach(function(el){var h=el.getAttribute('href');if(seen[h])el.remove();else seen[h]=true;});})();</script>
 </body>
