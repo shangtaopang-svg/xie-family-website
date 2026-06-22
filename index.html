@@ -43,7 +43,7 @@
         </div>
       </a>
       <a href="index.html" class="mobile-home-btn" title="返回首页">🏠</a>
-      <button class="nav-toggle" data-i18n-aria="nav.toggle" aria-label="菜单">☰</button>
+      <button class="nav-toggle" data-i18n-aria="nav.toggle" aria-label="菜单" onclick="document.querySelector('.main-nav').classList.toggle('open');this.innerHTML=document.querySelector('.main-nav').classList.contains('open')?'✕':'☰'">☰</button>
       <nav class="main-nav">
         <ul>
           <li><a href="index.html" class="active" data-i18n="nav.home">首页</a></li>
