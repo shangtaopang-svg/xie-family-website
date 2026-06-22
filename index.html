@@ -23,8 +23,9 @@
     .stat-pop { animation:statPop 0.35s ease; }
     /* 手机导航：纯CSS切换（不依赖JS） */
     @media (max-width: 900px) {
-      .nav-trigger:checked ~ .main-nav { display: block !important; }
-      .nav-toggle { cursor: pointer; user-select: none; }
+      #nav-trigger:checked ~ .main-nav { display: block !important; }
+      .nav-toggle { cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+      .nav-toggle:active { opacity: 0.6; }
     }
   </style>
   <script defer src="js/i18n.js?v=9"></script>
@@ -48,7 +49,7 @@
         </div>
       </a>
       <a href="index.html" class="mobile-home-btn" title="返回首页">🏠</a>
-      <input type="checkbox" id="nav-trigger" class="nav-trigger" hidden>
+      <input type="checkbox" id="nav-trigger" class="nav-trigger" style="display:none">
       <label for="nav-trigger" class="nav-toggle" data-i18n-aria="nav.toggle" aria-label="菜单">☰</label>
       <nav class="main-nav">
         <ul>
@@ -406,4 +407,6 @@
   <script defer src="js/dynamic-content.js?v=4a"></script>
 
   <script defer src="js/weather-particle.js?v=b977c9"></script>
+  <!-- 导航后备JS -->
+  <script>(function(){var cb=document.getElementById('nav-trigger');var nav=document.querySelector('.main-nav');if(cb&&nav){cb.addEventListener('change',function(){nav.style.display=this.checked?'block':'none';});}})();</script>
 </body>
