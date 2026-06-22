@@ -9,7 +9,7 @@
   <title data-i18n="site.title">宁海下枫槎村 · 谢氏家族</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="css/style.css?v=6">
+  <link rel="stylesheet" href="css/style.css?v=7">
   <style>
     /* Carousel mobile fix - ensure slides have height */
     .carousel-container { aspect-ratio: 21/9; overflow: hidden; }
@@ -56,8 +56,8 @@
       .mb-item:active { background: rgba(0,0,0,0.05); color: #d4af5a; }
       .mb-item.active { color: #d4af5a; }
       .nav-toggle { display: none !important; }
-      .main-nav { display: none !important; }
-      .site-header .header-inner .main-nav { display: none !important; }
+      .main-nav, ul.main-nav, nav.main-nav,
+      .site-header .header-inner .main-nav { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }
       .content { padding-bottom: 90px; }
       /* 手机端隐藏与底部导航重复的页脚栏目 */
       .footer-section:nth-child(2),
