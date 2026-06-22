@@ -1,8 +1,8 @@
-const CACHE = 'xie-clan-v4';
+const CACHE = 'xie-clan-v5';
 const STATIC = [
-  '/css/style.css',
-  '/js/i18n.js',
-  '/js/main.js',
+  '/css/style.css?v=5',
+  '/js/i18n.js?v=9',
+  '/js/main.js?v=10',
   '/favicon.svg',
   '/favicon.ico'
 ];
