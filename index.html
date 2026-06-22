@@ -59,6 +59,10 @@
       .main-nav { display: none !important; }
       .site-header .header-inner .main-nav { display: none !important; }
       .content { padding-bottom: 90px; }
+      /* 手机端隐藏与底部导航重复的页脚栏目 */
+      .footer-section:nth-child(2),
+      .footer-section:nth-child(3),
+      .footer-section:nth-child(4) { display: none !important; }
       [data-theme="dark"] .mobile-bottom-nav { background: rgba(20,20,30,0.95); }
       [data-theme="dark"] .mb-item { color: #999; }
       [data-theme="dark"] .mb-item:active { background: rgba(255,255,255,0.06); color: #d4af5a; }
