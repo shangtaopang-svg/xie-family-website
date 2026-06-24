@@ -4691,6 +4691,15 @@ body {
 }
 
 /* 选项卡/标签换行 */
+/* Bottom Nav & Dropdown Dark Mode */
+[data-theme="dark"] .mobile-bottom-nav { background:rgba(20,20,30,0.95); border-top-color:rgba(255,255,255,0.06); }
+[data-theme="dark"] .mobile-bottom-nav .mb-item { color:var(--text-tertiary); }
+[data-theme="dark"] .mobile-bottom-nav .mb-item:active { color:var(--accent-cyan); }
+[data-theme="dark"] .menu-dropdown { background:#1a1a2e; box-shadow:0 8px 30px rgba(0,0,0,0.3); }
+[data-theme="dark"] .menu-dropdown a { color:var(--text-primary); border-bottom-color:rgba(255,255,255,0.04); }
+[data-theme="dark"] .menu-dropdown a:active { background:rgba(255,255,255,0.05); color:var(--accent-cyan); }
+[data-theme="dark"] .menu-dropdown .group-label { color:var(--accent-cyan); }
+
 @media (max-width: 600px) {
   .tree-tabs { gap: 4px; }
   .tree-tab { font-size: 12px; padding: 5px 10px; }

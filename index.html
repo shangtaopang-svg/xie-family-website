@@ -54,6 +54,7 @@
     }
     .menu-dropdown a:last-child { border-bottom: none; }
     .menu-dropdown a:active { background: #f5f0e8; color: #c4a050; }
+    .menu-dropdown .group-label { padding: 6px 20px 2px; font-size:11px; font-weight:700; color:#c4a050; letter-spacing:1px; text-transform:uppercase; }
     /* 手机底部导航 */
     .mobile-bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; z-index:99999; background:#fff; border-top:1px solid #f0ede8; padding:4px 0; justify-content:space-around; box-shadow:0 -2px 12px rgba(0,0,0,0.06); }
     .mobile-bottom-nav .mb-item { display:flex; flex-direction:column; align-items:center; gap:1px; text-decoration:none; font-size:10px; color:#999; padding:4px 0; flex:1; transition:color 0.2s; -webkit-tap-highlight-color:transparent; }
@@ -105,7 +106,7 @@
           <small data-i18n="logo.subtitle">宁海 · 下枫槎村</small>
         </div>
       </a>
-      <button class="menu-btn" id="menuBtn" onclick="document.getElementById('menuDropdown').style.display='block'">☰</button>
+      <button class="menu-btn" id="menuBtn">☰</button>
       <nav class="main-nav">
         <ul>
           <li><a href="index.html" class="active" data-i18n="nav.home">首页</a></li>
@@ -436,21 +437,39 @@
   <script defer src="js/weather-particle.js?v=b977c9"></script>
   <!-- 下拉菜单放body最末尾，避免层级问题 -->
   <div class="menu-dropdown" id="menuDropdown">
+    <div class="group-label">📋 主要栏目</div>
     <a href="index.html">🏠 首页</a>
     <a href="pages/history.html">📜 家族历史</a>
     <a href="pages/genealogy.html">🌳 族谱查询</a>
     <a href="pages/celebrities.html">🏆 名人事迹</a>
-    <a href="pages/merit-scroll.html">📜 功德卷轴</a>
-    <a href="pages/news.html">📰 消息发布</a>
-    <a href="pages/members.html">👥 家族成员</a>
     <a href="pages/activities.html">🎪 家族活动</a>
+    <a href="pages/news.html">📰 消息发布</a>
+    <div class="group-label">📖 家族文化</div>
+    <a href="pages/merit-scroll.html">📜 功德卷轴</a>
+    <a href="pages/members.html">👥 家族成员</a>
     <a href="pages/today.html">📸 今日下枫槎</a>
     <a href="pages/reports.html">📋 新闻报道</a>
-    <a href="pages/contact.html">✉️ 联系我们</a>
+    <div class="group-label">🎵 多媒体</div>
     <a href="pages/audio.html">🎧 听下枫槎</a>
     <a href="pages/vinyl-player.html">🎵 枫槎留声机</a>
     <a href="pages/xie-collection.html" style="color:#c9a84c;">📚 谢氏集萃</a>
+    <div class="group-label">⚙️ 其他</div>
+    <a href="pages/contact.html">✉️ 联系我们</a>
     <a href="pages/admin.html">🔐 管理后台</a>
   </div>
-  <script>document.addEventListener('click',function(e){if(!e.target.closest('#menuBtn')&&!e.target.closest('#menuDropdown'))document.getElementById('menuDropdown').style.display='none';});</script>
+  <div id="menuOverlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.3);" onclick="document.getElementById('menuDropdown').style.display='none';document.getElementById('menuOverlay').style.display='none'"></div>
+  <script>
+  document.getElementById('menuBtn').addEventListener('click',function(){
+    var d=document.getElementById('menuDropdown');
+    var o=document.getElementById('menuOverlay');
+    if(d.style.display==='block'){d.style.display='none';o.style.display='none';}
+    else{d.style.display='block';o.style.display='block';}
+  });
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('#menuBtn')&&!e.target.closest('#menuDropdown')){
+      document.getElementById('menuDropdown').style.display='none';
+      document.getElementById('menuOverlay').style.display='none';
+    }
+  });
+  </script>
 </body>
