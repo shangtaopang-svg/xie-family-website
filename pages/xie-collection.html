@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>谢氏集萃 · 下枫槎谢氏</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../css/style.css?v=5">
+<script defer src="../js/i18n.js"></script>
+<style>
+/* ===== 页面基础 ===== */
+.page-wrap { max-width: 1100px; margin: 0 auto; padding: 100px 24px 60px; }
+.page-header { text-align: center; margin-bottom: 36px; }
+.page-header h1 { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: 4px; }
+.page-header .sub { font-size: 14px; color: var(--text-light); margin-top: 6px; letter-spacing: 2px; }
+.back-link { display: inline-block; margin-bottom: 16px; color: var(--text-light); text-decoration: none; font-size: 13px; font-weight: 600; }
+.back-link:hover { color: var(--primary); }
+
+/* ===== 分类标签 ===== */
+.cat-tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap; }
+.cat-tab { padding: 8px 22px; border-radius: 20px; border: 2px solid var(--border); background: var(--card); cursor: pointer; font-size: 14px; font-weight: 600; color: var(--text-light); font-family: var(--font); transition: all 0.25s; }
+.cat-tab:hover { border-color: var(--primary); color: var(--primary); }
+.cat-tab.active { background: var(--primary-dark); color: #fff; border-color: var(--primary-dark); }
+.cat-tab .badge { display: inline-block; background: rgba(255,255,255,0.2); color: #fff; font-size: 11px; padding: 0 7px; border-radius: 10px; margin-left: 4px; }
+
+/* ===== 卡片网格 ===== */
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+.card-grid .empty-state { grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-light); }
+.card-grid .empty-state .icon { font-size: 48px; display: block; margin-bottom: 12px; }
+.card-grid .empty-state .text { font-size: 15px; }
+.card-grid .empty-state .hint { font-size: 12px; margin-top: 6px; opacity: 0.6; }
+
+.collect-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
+.collect-card:hover { transform: translateY(-3px); box-shadow: 0 6px 24px rgba(0,0,0,0.1); }
+.collect-card .thumb { width: 100%; aspect-ratio: 16/9; background: #f0ede8; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #ccc; position: relative; overflow: hidden; }
+.collect-card .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.collect-card .thumb .play-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; }
+.collect-card:hover .thumb .play-overlay { opacity: 1; }
+.collect-card .thumb .play-overlay .play-btn { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.9); border: none; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.collect-card .info { padding: 14px 16px; }
+.collect-card .info .title { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.collect-card .info .desc { font-size: 12px; color: var(--text-light); margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.6; }
+.collect-card .info .meta { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.collect-card .info .meta .source { font-size: 11px; padding: 2px 8px; border-radius: 3px; font-weight: 600; }
+.collect-card .info .meta .source.bilibili { background: #e8f0fe; color: #1e90ff; }
+.collect-card .info .meta .source.video { background: #fef2f2; color: #e53e3e; }
+.collect-card .info .meta .source.wechat { background: #f0faf4; color: #27ae60; }
+.collect-card .info .meta .source.other { background: #f5f0e8; color: #8a7a6a; }
+.collect-card .info .meta .cat-label { font-size: 11px; padding: 2px 8px; border-radius: 3px; background: #f0ede8; color: var(--text-light); }
+.collect-card .info .meta .date { font-size: 11px; color: var(--text-light); margin-left: auto; }
+
+/* ===== 音频关联区 ===== */
+.audio-section { margin-top: 40px; padding: 24px 28px; background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 14px; border: 1px solid rgba(201,168,76,0.15); }
+.audio-section h3 { font-size: 16px; color: #f0d68a; letter-spacing: 2px; margin-bottom: 4px; }
+.audio-section .sub { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 14px; }
+.audio-section .audio-placeholder { padding: 20px; text-align: center; background: rgba(255,255,255,0.04); border-radius: 10px; border: 1px dashed rgba(201,168,76,0.2); }
+.audio-section .audio-placeholder .icon { font-size: 32px; display: block; margin-bottom: 6px; }
+.audio-section .audio-placeholder .text { font-size: 13px; color: rgba(255,255,255,0.4); }
+
+/* ===== 暗色模式适配 ===== */
+[data-theme="dark"] .collect-card { background: var(--card); }
+[data-theme="dark"] .collect-card .thumb { background: #1a1a3e; }
+[data-theme="dark"] .cat-tab { background: var(--card); }
+[data-theme="dark"] .cat-tab.active { background: var(--primary); border-color: var(--primary); }
+
+/* ===== 响应式 ===== */
+@media (max-width: 600px) {
+  .page-wrap { padding: 80px 14px 40px; }
+  .page-header h1 { font-size: 22px; }
+  .card-grid { grid-template-columns: 1fr; gap: 14px; }
+  .cat-tabs { gap: 6px; }
+  .cat-tab { padding: 6px 14px; font-size: 13px; }
+}
+</style>
+</head>
+<body>
+<!-- 顶部导航（复用主站） -->
+<header class="top-bar">
+  <div class="top-inner">
+    <a href="../index.html" class="logo" style="text-decoration:none;display:flex;align-items:center;gap:8px">
+      <span style="font-size:18px">🏘️</span>
+      <div>
+        <h1 style="font-size:15px;font-weight:700;color:var(--text)">下枫槎谢氏</h1>
+        <small style="font-size:11px;opacity:0.6">宁海 · 下枫槎村</small>
+      </div>
+    </a>
+    <div class="top-info">
+      <a href="../index.html" class="top-link">🏠 首页</a>
+      <a href="audio.html" class="top-link">🎧 听下枫槎</a>
+    </div>
+  </div>
+</header>
+
+<div class="page-wrap">
+  <!-- 顶部 -->
+  <a href="../index.html" class="back-link">← 返回首页</a>
+  <div class="page-header">
+    <h1>📚 谢氏集萃</h1>
+    <p class="sub">汇集谢氏起源 · 历史名人 · 宗族文化</p>
+  </div>
+
+  <!-- 分类标签 -->
+  <div class="cat-tabs">
+    <button class="cat-tab active" data-cat="all">全部 <span class="badge" id="count-all">0</span></button>
+    <button class="cat-tab" data-cat="origin">🏛 家族起源 <span class="badge" id="count-origin">0</span></button>
+    <button class="cat-tab" data-cat="celebrity">👤 历史名人 <span class="badge" id="count-celebrity">0</span></button>
+    <button class="cat-tab" data-cat="genealogy">📜 宗谱文化 <span class="badge" id="count-genealogy">0</span></button>
+  </div>
+
+  <!-- 卡片列表 -->
+  <div class="card-grid" id="cardGrid">
+    <div class="empty-state">
+      <span class="icon">📭</span>
+      <span class="text">还没有收录内容</span>
+      <span class="hint">点击下方按钮添加第一条</span>
+    </div>
+  </div>
+
+  <!-- 添加入口 -->
+  <div style="text-align:center;margin-top:24px" id="addArea">
+    <button onclick="showAddForm()" style="padding:10px 28px;border:2px dashed var(--border);border-radius:8px;background:var(--card);cursor:pointer;font-size:14px;font-weight:600;color:var(--text-light);font-family:var(--font);transition:all 0.2s">
+      ＋ 收录新内容
+    </button>
+    <p style="font-size:11px;color:var(--text-light);margin-top:8px;opacity:0.6">填入链接 · 分类 · 标题即可</p>
+  </div>
+
+  <!-- 添加弹窗 -->
+  <div class="modal-overlay" id="addOverlay" onclick="hideAddForm()" style="display:none"></div>
+  <div class="modal" id="addModal" style="display:none;max-width:480px">
+    <div class="modal-header">
+      <h3>📥 收录新内容</h3>
+      <button class="modal-close" onclick="hideAddForm()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>标题 *</label>
+        <input id="f-title" placeholder="如：谢氏得姓始祖考">
+      </div>
+      <div class="form-group">
+        <label>链接地址 *</label>
+        <input id="f-url" placeholder="https://www.bilibili.com/video/...">
+      </div>
+      <div class="form-group">
+        <label>来源平台</label>
+        <select id="f-source">
+          <option value="bilibili">B 站</option>
+          <option value="video号">视频号</option>
+          <option value="公众号">微信公众号</option>
+          <option value="other">其他</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>分类 *</label>
+        <select id="f-cat">
+          <option value="origin">🏛 家族起源</option>
+          <option value="celebrity">👤 历史名人</option>
+          <option value="genealogy">📜 宗谱文化</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>简短描述</label>
+        <textarea id="f-desc" rows="2" placeholder="视频/文章的主要内容简介"></textarea>
+      </div>
+      <div class="form-group">
+        <label>封面图片链接（可选）</label>
+        <input id="f-thumb" placeholder="https://...">
+      </div>
+      <div class="form-actions">
+        <button class="btn-submit" onclick="saveItem()">💾 保存</button>
+        <button class="btn-cancel" onclick="hideAddForm()">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 音频关联区（预留） -->
+  <div class="audio-section">
+    <h3>🎙️ 谢氏口播</h3>
+    <p class="sub">从视频提取的口播内容 · 转成音频收听</p>
+    <div class="audio-placeholder">
+      <span class="icon">🎧</span>
+      <span class="text">提取口播文字后，这里将显示音频播放器</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== 数据 =====
+var collectionData = [];
+
+// ===== 渲染 =====
+function render(cat) {
+  cat = cat || 'all';
+  var grid = document.getElementById('cardGrid');
+  var filtered = cat === 'all' ? collectionData : collectionData.filter(function(i){ return i.cat === cat; });
+
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="empty-state"><span class="icon">📭</span><span class="text">' +
+      (cat === 'all' ? '还没有收录内容' : '该分类暂无内容') +
+      '</span><span class="hint">点击下方按钮添加第一条</span></div>';
+  } else {
+    grid.innerHTML = filtered.map(function(item){
+      var srcLabels = { bilibili: 'B站', 'video号': '视频号', '公众号': '微信', other: '来源' };
+      var srcClass = { bilibili: 'bilibili', 'video号': 'video', '公众号': 'wechat', other: 'other' };
+      var catLabels = { origin: '家族起源', celebrity: '历史名人', genealogy: '宗谱文化' };
+      var thumbHtml = item.thumb
+        ? '<img src="' + item.thumb + '" alt="' + item.title + '" loading="lazy">'
+        : '🎬';
+      return '<a href="' + item.url + '" target="_blank" rel="noopener" class="collect-card" style="text-decoration:none">' +
+        '<div class="thumb">' + thumbHtml +
+          '<div class="play-overlay"><span class="play-btn">▶</span></div>' +
+        '</div>' +
+        '<div class="info">' +
+          '<div class="title">' + item.title + '</div>' +
+          (item.desc ? '<div class="desc">' + item.desc + '</div>' : '') +
+          '<div class="meta">' +
+            '<span class="source ' + (srcClass[item.source] || 'other') + '">' + (srcLabels[item.source] || '来源') + '</span>' +
+            '<span class="cat-label">' + (catLabels[item.cat] || '') + '</span>' +
+            '<span class="date">' + (item.date || '') + '</span>' +
+          '</div>' +
+        '</div></a>';
+    }).join('');
+  }
+
+  // 更新计数
+  ['all','origin','celebrity','genealogy'].forEach(function(c){
+    var el = document.getElementById('count-' + c);
+    if (el) el.textContent = c === 'all' ? collectionData.length : collectionData.filter(function(i){return i.cat===c;}).length;
+  });
+
+  // 高亮当前标签
+  document.querySelectorAll('.cat-tab').forEach(function(b){
+    b.classList.toggle('active', b.dataset.cat === cat);
+  });
+}
+
+// ===== 分类切换 =====
+document.querySelectorAll('.cat-tab').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    render(this.dataset.cat);
+  });
+});
+
+// ===== 弹窗 =====
+function showAddForm() {
+  document.getElementById('addOverlay').style.display = 'block';
+  document.getElementById('addModal').style.display = 'block';
+}
+function hideAddForm() {
+  document.getElementById('addOverlay').style.display = 'none';
+  document.getElementById('addModal').style.display = 'none';
+}
+
+// ===== 保存 =====
+function saveItem() {
+  var title = document.getElementById('f-title').value.trim();
+  var url = document.getElementById('f-url').value.trim();
+  if (!title || !url) { alert('标题和链接不能为空'); return; }
+
+  collectionData.push({
+    id: Date.now(),
+    title: title,
+    url: url,
+    source: document.getElementById('f-source').value,
+    cat: document.getElementById('f-cat').value,
+    desc: document.getElementById('f-desc').value.trim(),
+    thumb: document.getElementById('f-thumb').value.trim(),
+    date: new Date().toLocaleDateString('zh-CN')
+  });
+
+  // 存 localStorage
+  try { localStorage.setItem('xie_collection', JSON.stringify(collectionData)); } catch(e){}
+
+  // 清空表单
+  ['f-title','f-url','f-desc','f-thumb'].forEach(function(id){ document.getElementById(id).value = ''; });
+  hideAddForm();
+  render(document.querySelector('.cat-tab.active')?.dataset?.cat || 'all');
+}
+
+// ===== 初始化 =====
+try {
+  var saved = localStorage.getItem('xie_collection');
+  if (saved) { collectionData = JSON.parse(saved); }
+} catch(e){}
+render('all');
+</script>
+</body>
+</html>
