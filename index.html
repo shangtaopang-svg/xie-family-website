@@ -31,9 +31,10 @@
       display: none;
       position: fixed;
       top: 58px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 999999;
+      right: 10px;
+      left: auto;
+      transform: none;
+      z-index: 1000001;
       background: #fff;
       border-radius: 12px;
       box-shadow: 0 8px 30px rgba(0,0,0,0.15);
@@ -457,7 +458,7 @@
     <a href="pages/contact.html">✉️ 联系我们</a>
     <a href="pages/admin.html">🔐 管理后台</a>
   </div>
-  <div id="menuOverlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.3);" onclick="document.getElementById('menuDropdown').style.display='none';document.getElementById('menuOverlay').style.display='none'"></div>
+  <div id="menuOverlay" style="display:none;position:fixed;inset:0;z-index:1000000;background:rgba(0,0,0,0.3);" onclick="document.getElementById('menuDropdown').style.display='none';document.getElementById('menuOverlay').style.display='none'"></div>
   <script>
   document.getElementById('menuBtn').addEventListener('click',function(){
     var d=document.getElementById('menuDropdown');
