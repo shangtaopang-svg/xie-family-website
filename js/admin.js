@@ -198,7 +198,7 @@ const MODULES = {
       { key: 'source', label: '来源', type: 'select', options: ['B站', '视频号', '公众号', '其他'] },
       { key: 'cat', label: '分类', type: 'select', options: ['家族起源', '历史名人', '宗谱文化'], required: true },
       { key: 'embed', label: '嵌入代码', type: 'textarea', placeholder: '粘贴 iframe 嵌入代码（可选）' },
-      { key: 'poster', label: '封面图', type: 'file', accept: 'image/*' },
+      { key: 'poster', label: '封面图链接', type: 'text', placeholder: '粘贴封面图片网址（B站视频封面等）' },
       { key: 'desc', label: '简介', type: 'textarea' }
     ],
     defaultData: [
