@@ -79,7 +79,7 @@
           <small data-i18n="logo.subtitle">宁海 · 下枫槎村</small>
         </div>
       </a>
-      <button class="menu-btn" id="menuBtn">☰</button>
+      <button class="menu-btn" id="menuBtn" onclick="document.querySelector('.main-nav').classList.toggle('open');var o=document.getElementById('navOverlay');if(o)o.style.display=document.querySelector('.main-nav').classList.contains('open')?'block':'none'">☰</button>
       <nav class="main-nav">
         <ul>
           <li><a href="index.html" class="active" data-i18n="nav.home">首页</a></li>
@@ -408,21 +408,5 @@
   <script defer src="js/dynamic-content.js?v=4a"></script>
 
   <script defer src="js/weather-particle.js?v=b977c9"></script>
-  <div id="navOverlay" style="display:none;position:fixed;inset:0;z-index:998;background:rgba(0,0,0,0.3);" onclick="document.querySelector('.main-nav').classList.remove('open');this.style.display='none'"></div>
-  <script>
-  document.getElementById('menuBtn').addEventListener('click',function(){
-    var nav = document.querySelector('.main-nav');
-    var overlay = document.getElementById('navOverlay');
-    nav.classList.toggle('open');
-    overlay.style.display = nav.classList.contains('open') ? 'block' : 'none';
-  });
-  document.addEventListener('click',function(e){
-    if(e.target.closest('.main-nav')&&!e.target.closest('a')) return;
-    var nav = document.querySelector('.main-nav');
-    if(!e.target.closest('#menuBtn')&&!e.target.closest('.main-nav')){
-      nav.classList.remove('open');
-      document.getElementById('navOverlay').style.display = 'none';
-    }
-  });
-  </script>
+  <div id="navOverlay" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.3);" onclick="document.querySelector('.main-nav').classList.remove('open');this.style.display='none'"></div>
 </body>
