@@ -304,6 +304,37 @@ const server = http.createServer(async (req, res) => {
     return sendJson(req, res, 200, { ok: true, message: 'Deploy started' });
   }
 
+  // === B站封面代理 ===
+  if (url === '/api/bilibili-cover' && req.method === 'GET') {
+    const bvid = (req.url.match(/[?&]bvid=([^&]+)/) || [])[1];
+    if (!bvid) return sendJson(req, res, 400, { error: 'Missing bvid' });
+    try {
+      const https = require('https');
+      const apiUrl = 'https://api.bilibili.com/x/web-interface/view?bvid=' + bvid;
+      https.get(apiUrl, function(apiRes) {
+        let data = '';
+        apiRes.on('data', function(chunk) { data += chunk; });
+        apiRes.on('end', function() {
+          try {
+            const json = JSON.parse(data);
+            if (json.code === 0 && json.data && json.data.pic) {
+              sendJson(req, res, 200, { cover: json.data.pic });
+            } else {
+              sendJson(req, res, 404, { error: 'Video not found' });
+            }
+          } catch(e) {
+            sendJson(req, res, 500, { error: 'Parse failed' });
+          }
+        });
+      }).on('error', function(e) {
+        sendJson(req, res, 500, { error: e.message });
+      });
+    } catch(e) {
+      sendJson(req, res, 500, { error: e.message });
+    }
+    return;
+  }
+
   // === Static file serving ===
   if (url === '/') url = '/index.html';
 

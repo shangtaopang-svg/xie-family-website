@@ -2308,6 +2308,30 @@ function saveForm(mod, editId, continueAdding) {
 
   saveData(mod, data);
 
+  // B站封面自动获取（谢氏集萃）
+  if (mod === 'xieCollection' && item.url && !item.poster) {
+    var bvid = (item.url.match(/bilibili\.com\/video\/(BV[a-zA-Z0-9]+)/i) || [])[1];
+    if (!bvid) { bvid = (item.url.match(/b23\.tv\/([a-zA-Z0-9]+)/i) || [])[1]; }
+    if (bvid) {
+      (function(b, id, d) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/api/bilibili-cover?bvid=' + b, true);
+        xhr.onload = function() {
+          try {
+            var r = JSON.parse(xhr.responseText);
+            if (r.cover) {
+              for (var i = 0; i < d.length; i++) {
+                if (d[i].id === id) { d[i].poster = r.cover; break; }
+              }
+              saveData(mod, d);
+            }
+          } catch(e) {}
+        };
+        xhr.send();
+      })(bvid, idToSave, data);
+    }
+  }
+
   // Auto-record version for content updates
   var moduleLabels = { genealogy:'族谱', members:'成员', activities:'活动', news:'消息', honors:'村荣誉', reports:'报道', photos:'照片', videos:'视频', music:'背景音乐', messages:'留言', templeCarousel:'宗祠轮播', xieCollection:'谢氏集萃' };
   var label = moduleLabels[mod] || mod;
