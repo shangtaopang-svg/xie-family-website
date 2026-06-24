@@ -54,8 +54,15 @@
     }
     .menu-dropdown a:last-child { border-bottom: none; }
     .menu-dropdown a:active { background: #f5f0e8; color: #c4a050; }
+    /* 手机底部导航 */
+    .mobile-bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; z-index:99999; background:#fff; border-top:1px solid #f0ede8; padding:4px 0; justify-content:space-around; box-shadow:0 -2px 12px rgba(0,0,0,0.06); }
+    .mobile-bottom-nav .mb-item { display:flex; flex-direction:column; align-items:center; gap:1px; text-decoration:none; font-size:10px; color:#999; padding:4px 0; flex:1; transition:color 0.2s; -webkit-tap-highlight-color:transparent; }
+    .mobile-bottom-nav .mb-item:active { color:#c4a050; background:#fefcf5; border-radius:6px; }
+    .mobile-bottom-nav .mb-item span { font-size:9px; font-weight:500; }
     @media (max-width: 900px) {
       .menu-btn { display: inline-block; }
+    .mobile-bottom-nav { display:flex; }
+    body { padding-bottom: 64px; }
       .hero-stats { gap: 8px !important; bottom: 35px !important; flex-wrap: wrap; padding: 0 10px; }
       .hero-stat-num { font-size: 16px !important; }
       .hero-stat-label { font-size: 9px !important; }
@@ -401,6 +408,18 @@
 
   <a href="javascript:history.back()" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
+
+  <!-- ===== 手机底部导航 ===== -->
+  <nav class="mobile-bottom-nav">
+    <a href="index.html" class="mb-item active">🏠<span>首页</span></a>
+    <a href="pages/history.html" class="mb-item">📜<span>历史</span></a>
+    <a href="pages/genealogy.html" class="mb-item">🌳<span>族谱</span></a>
+    <a href="pages/celebrities.html" class="mb-item">🏆<span>名人</span></a>
+    <a href="pages/activities.html" class="mb-item">🎪<span>活动</span></a>
+    <a href="pages/audio.html" class="mb-item">🎧<span>听下枫槎</span></a>
+    <a href="pages/xie-collection.html" class="mb-item">📚<span>集萃</span></a>
+    <a href="pages/contact.html" class="mb-item">✉️<span>联系</span></a>
+  </nav>
 
   <audio id="bg-music" loop></audio>
 
