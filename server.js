@@ -304,26 +304,28 @@ const server = http.createServer(async (req, res) => {
     return sendJson(req, res, 200, { ok: true, message: 'Deploy started' });
   }
 
-  // === B站封面代理 ===
+  // === B站封面代理（从页面HTML提取og:image） ===
   if (url === '/api/bilibili-cover' && req.method === 'GET') {
     const bvid = (req.url.match(/[?&]bvid=([^&]+)/) || [])[1];
     if (!bvid) return sendJson(req, res, 400, { error: 'Missing bvid' });
+    const pageUrl = 'https://www.bilibili.com/video/' + bvid;
     try {
       const https = require('https');
-      const apiUrl = 'https://api.bilibili.com/x/web-interface/view?bvid=' + bvid;
-      https.get(apiUrl, function(apiRes) {
-        let data = '';
-        apiRes.on('data', function(chunk) { data += chunk; });
+      https.get(pageUrl, { headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'text/html' } }, function(apiRes) {
+        let html = '';
+        apiRes.on('data', function(c) { html += c; });
         apiRes.on('end', function() {
-          try {
-            const json = JSON.parse(data);
-            if (json.code === 0 && json.data && json.data.pic) {
-              sendJson(req, res, 200, { cover: json.data.pic });
+          var match = html.match(/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/i);
+          if (match && match[1]) {
+            sendJson(req, res, 200, { cover: match[1] });
+          } else {
+            // fallback: try og:image with different quote style
+            match = html.match(/<meta[^>]+property='og:image'[^>]+content='([^']+)'/i);
+            if (match && match[1]) {
+              sendJson(req, res, 200, { cover: match[1] });
             } else {
-              sendJson(req, res, 404, { error: 'Video not found' });
+              sendJson(req, res, 404, { error: 'No og:image found' });
             }
-          } catch(e) {
-            sendJson(req, res, 500, { error: 'Parse failed' });
           }
         });
       }).on('error', function(e) {
