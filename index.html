@@ -16,25 +16,12 @@
     .carousel-slide { height: 100%; }
   </style>
   <style>
-    .menu-btn {
-      display: none;
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      padding: 4px 8px;
-      color: #555;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .menu-btn:active { opacity: 0.6; }
-    .menu-btn { display: none; }
     /* 手机底部导航 */
     .mobile-bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; z-index:99999; background:#fff; border-top:1px solid #f0ede8; padding:4px 0; justify-content:space-around; box-shadow:0 -2px 12px rgba(0,0,0,0.06); }
     .mobile-bottom-nav .mb-item { display:flex; flex-direction:column; align-items:center; gap:1px; text-decoration:none; font-size:10px; color:#999; padding:4px 0; flex:1; transition:color 0.2s; -webkit-tap-highlight-color:transparent; }
     .mobile-bottom-nav .mb-item:active { color:#c4a050; background:#fefcf5; border-radius:6px; }
     .mobile-bottom-nav .mb-item span { font-size:9px; font-weight:500; }
     @media (max-width: 900px) {
-      .menu-btn { display: inline-block; }
     .mobile-bottom-nav { display:flex; }
     body { padding-bottom: 64px; }
       .hero-stats { gap: 8px !important; bottom: 35px !important; flex-wrap: wrap; padding: 0 10px; }
@@ -79,7 +66,7 @@
           <small data-i18n="logo.subtitle">宁海 · 下枫槎村</small>
         </div>
       </a>
-      <button class="menu-btn" id="menuBtn" onclick="document.querySelector('.main-nav').classList.toggle('open');var o=document.getElementById('navOverlay');if(o)o.style.display=document.querySelector('.main-nav').classList.contains('open')?'block':'none'">☰</button>
+      <button class="nav-toggle" id="menuBtn" aria-label="菜单">☰</button>
       <nav class="main-nav">
         <ul>
           <li><a href="index.html" class="active" data-i18n="nav.home">首页</a></li>
@@ -408,5 +395,4 @@
   <script defer src="js/dynamic-content.js?v=4a"></script>
 
   <script defer src="js/weather-particle.js?v=b977c9"></script>
-  <div id="navOverlay" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.3);" onclick="document.querySelector('.main-nav').classList.remove('open');this.style.display='none'"></div>
 </body>
