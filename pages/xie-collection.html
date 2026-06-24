@@ -71,16 +71,33 @@
 </div>
 
 <script>
-// ===== 从 localStorage 加载数据（后台管理写入）=====
-function loadData() {
-  var key = 'xie_admin_xieCollection';
-  var raw;
-  try { raw = localStorage.getItem(key); } catch(e) {}
-  if (raw) { try { return JSON.parse(raw); } catch(e) {} }
-  return [];
-}
+// ===== 从服务器加载数据 =====
+var collectionData = [];
 
-var collectionData = loadData();
+function loadData(callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/api/xie-collection', true);
+  xhr.onload = function() {
+    try {
+      var d = JSON.parse(xhr.responseText);
+      if (d && d.length) { collectionData = d; if(callback) callback(); return; }
+    } catch(e) {}
+    // fallback: localStorage
+    try {
+      var raw = localStorage.getItem('xie_admin_xieCollection');
+      if (raw) { collectionData = JSON.parse(raw); if(callback) callback(); return; }
+    } catch(e2) {}
+    if (callback) callback();
+  };
+  xhr.onerror = function() {
+    try {
+      var raw = localStorage.getItem('xie_admin_xieCollection');
+      if (raw) { collectionData = JSON.parse(raw); }
+    } catch(e) {}
+    if (callback) callback();
+  };
+  xhr.send();
+}
 var TABS = [
   { id: 'all', label: '全部', icon: '📋' },
   { id: 'origin', label: '家族起源', icon: '🏛' },
@@ -174,14 +191,17 @@ function render(cat) {
   }, 500);
 }
 
-render('all');
+loadData(function(){
+  render('all');
+});
 
 // 监听 localStorage 变化（后台修改后自动更新）
 window.addEventListener('storage', function(e) {
   if (e.key === 'xie_admin_xieCollection') {
-    collectionData = loadData();
-    var activeTab = document.querySelector('.cat-tab.active');
-    render(activeTab ? activeTab.dataset.cat : 'all');
+    loadData(function(){
+      var activeTab = document.querySelector('.cat-tab.active');
+      render(activeTab ? activeTab.dataset.cat : 'all');
+    });
   }
 });
 </script>

@@ -304,6 +304,17 @@ const server = http.createServer(async (req, res) => {
     return sendJson(req, res, 200, { ok: true, message: 'Deploy started' });
   }
 
+  // === 谢氏集萃数据接口 ===
+  if (url === '/api/xie-collection' && req.method === 'GET') {
+    const fp = path.join(DATA_DIR, 'xieCollection.json');
+    fs.readFile(fp, 'utf-8', function(err, content) {
+      if (err) return sendJson(req, res, 200, []);
+      try { sendJson(req, res, 200, JSON.parse(content)); }
+      catch(e) { sendJson(req, res, 200, []); }
+    });
+    return;
+  }
+
   // === B站封面代理 ===
   if (url === '/api/bilibili-cover' && req.method === 'GET') {
     const bvid = (req.url.match(/[?&]bvid=([^&]+)/) || [])[1];
