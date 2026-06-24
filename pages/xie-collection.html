@@ -89,6 +89,12 @@
 .collect-card .info .title { font-size:14px; font-weight:700; color:#1a1a1a; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 .collect-card .info .title:hover { color:#c4a050; }
 
+/* ===== Floating Back Button ===== */
+.floating-back { position:fixed; bottom:80px; right:16px; z-index:999; width:44px; height:44px; border-radius:50%; background:#fff; border:1px solid #e8e5e0; box-shadow:0 2px 12px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center; font-size:18px; cursor:pointer; text-decoration:none; color:#333; transition:all 0.2s; }
+.floating-back:hover { transform:scale(1.08); box-shadow:0 4px 20px rgba(0,0,0,0.15); }
+.floating-back:active { transform:scale(0.95); }
+[data-theme="dark"] .floating-back { background:#1e2a4a; border-color:rgba(255,255,255,0.08); color:#ccc; }
+
 /* ===== No Data ===== */
 .no-data-hint { text-align:center; margin-top:60px; padding:40px; }
 .no-data-hint .icon { font-size:48px; display:block; margin-bottom:10px; }
@@ -135,6 +141,8 @@
     <p>暂未收录内容</p>
     <a href="admin.html" class="link">管理后台</a>
   </div>
+  <!-- 浮动返回按钮 -->
+  <a href="../index.html" class="floating-back" title="返回首页">🏠</a>
 </div>
 
 <script>
