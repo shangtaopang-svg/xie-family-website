@@ -189,6 +189,22 @@ const MODULES = {
       { id: 3, title: '下枫槎谢氏圆谱庆典', url: '', embed: '', poster: '', desc: '宁海下枫槎村谢氏圆谱庆典现场壮观景象', hasFile: true, file_url: '/uploads/videos/xie_yuanpu_01.mp4' }
     ]
   },
+  xieCollection: {
+    label: '谢氏集萃',
+    icon: '📚',
+    fields: [
+      { key: 'title', label: '标题', type: 'text', required: true },
+      { key: 'url', label: '链接地址', type: 'text', placeholder: 'B站/视频号/网页链接', required: true },
+      { key: 'source', label: '来源', type: 'select', options: ['B站', '视频号', '公众号', '其他'] },
+      { key: 'cat', label: '分类', type: 'select', options: ['家族起源', '历史名人', '宗谱文化'], required: true },
+      { key: 'embed', label: '嵌入代码', type: 'textarea', placeholder: '粘贴 iframe 嵌入代码（可选）' },
+      { key: 'poster', label: '封面图', type: 'file', accept: 'image/*' },
+      { key: 'desc', label: '简介', type: 'textarea' }
+    ],
+    defaultData: [
+      { id: 1, title: '示例：谢氏起源介绍', url: 'https://www.bilibili.com/video/example', source: 'B站', cat: '家族起源', embed: '', poster: '', desc: '点击"编辑"替换为真实链接' }
+    ]
+  },
   music: {
     label: '背景音乐',
     icon: '🎵',
@@ -2293,7 +2309,7 @@ function saveForm(mod, editId, continueAdding) {
   saveData(mod, data);
 
   // Auto-record version for content updates
-  var moduleLabels = { genealogy:'族谱', members:'成员', activities:'活动', news:'消息', honors:'村荣誉', reports:'报道', photos:'照片', videos:'视频', music:'背景音乐', messages:'留言', templeCarousel:'宗祠轮播' };
+  var moduleLabels = { genealogy:'族谱', members:'成员', activities:'活动', news:'消息', honors:'村荣誉', reports:'报道', photos:'照片', videos:'视频', music:'背景音乐', messages:'留言', templeCarousel:'宗祠轮播', xieCollection:'谢氏集萃' };
   var label = moduleLabels[mod] || mod;
   var action = editId ? '更新' : '新增';
   autoRecordVersion(action + label + '内容');
@@ -2372,7 +2388,7 @@ function deleteItem(mod, id) {
   }
   saveData(mod, filtered);
   // Auto-record delete version
-  var moduleLabels = { genealogy:'族谱', members:'成员', activities:'活动', news:'消息', honors:'村荣誉', reports:'报道', photos:'照片', videos:'视频', music:'背景音乐', messages:'留言', templeCarousel:'宗祠轮播' };
+  var moduleLabels = { genealogy:'族谱', members:'成员', activities:'活动', news:'消息', honors:'村荣誉', reports:'报道', photos:'照片', videos:'视频', music:'背景音乐', messages:'留言', templeCarousel:'宗祠轮播', xieCollection:'谢氏集萃' };
   autoRecordVersion('删除' + (moduleLabels[mod] || mod) + '内容');
   // Delete file from server if has file_url
   if (deletedItem && deletedItem.file_url) {
