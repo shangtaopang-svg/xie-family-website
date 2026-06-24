@@ -73,20 +73,11 @@
 <script>
 // ===== 从 localStorage 加载数据（后台管理写入）=====
 function loadData() {
+  var key = 'xie_admin_xieCollection';
   var raw;
-  try { raw = localStorage.getItem('xie_collection'); } catch(e) {}
-
-  // 也尝试从 supabase 存储的数据加载
-  var adminRaw;
-  try { adminRaw = localStorage.getItem('admin_xieCollection'); } catch(e) {}
-
-  var data = [];
-  if (adminRaw) {
-    try { data = JSON.parse(adminRaw); } catch(e) {}
-  } else if (raw) {
-    try { data = JSON.parse(raw); } catch(e) {}
-  }
-  return data;
+  try { raw = localStorage.getItem(key); } catch(e) {}
+  if (raw) { try { return JSON.parse(raw); } catch(e) {} }
+  return [];
 }
 
 var collectionData = loadData();
@@ -158,7 +149,7 @@ render('all');
 
 // 监听 localStorage 变化（后台修改后自动更新）
 window.addEventListener('storage', function(e) {
-  if (e.key === 'admin_xieCollection' || e.key === 'xie_collection') {
+  if (e.key === 'xie_admin_xieCollection') {
     collectionData = loadData();
     var activeTab = document.querySelector('.cat-tab.active');
     render(activeTab ? activeTab.dataset.cat : 'all');
