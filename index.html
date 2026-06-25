@@ -66,7 +66,7 @@
           <small data-i18n="logo.subtitle">宁海 · 下枫槎村</small>
         </div>
       </a>
-      <button class="nav-toggle" id="menuBtn" onclick="var n=document.querySelector('.main-nav');var isOpen=n.style.display==='block';n.style.display=isOpen?'none':'block';this.textContent=isOpen?'☰':'✕'" aria-label="菜单">☰</button>
+      <button class="nav-toggle" id="menuBtn" onclick="var n=document.querySelector('.main-nav');var isOpen=n.style.display==='block';if(isOpen){n.style.display='none';this.textContent='☰'}else{n.style.cssText='display:block!important;position:fixed!important;top:60px!important;left:0!important;right:0!important;z-index:999999!important;background:#fff!important;padding:20px!important;box-shadow:0 8px 40px rgba(0,0,0,0.2)!important;overflow-y:auto!important;max-height:calc(100vh - 60px)!important';this.textContent='✕'}" aria-label="菜单">☰</button>
       <nav class="main-nav">
         <ul>
           <li><a href="index.html" class="active" data-i18n="nav.home">首页</a></li>
