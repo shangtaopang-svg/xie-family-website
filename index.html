@@ -371,39 +371,48 @@
   <a href="javascript:history.back()" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
 
-    <!-- ===== 浮动导航按钮 ===== -->
-  <div id="navFloater" onclick="document.getElementById('navPanel').style.display='block'" style="position:fixed;right:12px;bottom:100px;z-index:99999;background:rgba(255,255,255,0.8);backdrop-filter:blur(12px);border:1px solid rgba(0,0,0,0.06);border-radius:12px;padding:8px 14px;box-shadow:0 2px 12px rgba(0,0,0,0.06);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#888;transition:all 0.3s;opacity:0.45;-webkit-tap-highlight-color:transparent;user-select:none;">
-    <span style="font-size:15px">☰</span><span>导航</span>
-  </div>
-  <div id="navPanel" style="display:none;position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,0.35);backdrop-filter:blur(4px);" onclick="if(event.target===this)this.style.display='none'">
-    <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;padding:20px 16px 36px;max-height:78vh;overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,0.12);">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding:0 4px;">
-        <span style="font-size:17px;font-weight:700;color:#1a1a1a;">📋 网站导航</span>
-        <button onclick="document.getElementById('navPanel').style.display='none'" style="width:30px;height:30px;border:none;border-radius:50%;background:#f0f0f0;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#666;">✕</button>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
-        <a href="index.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px;background:#f7f7f7;border-radius:12px;text-decoration:none;font-size:11px;color:#333;font-weight:500;">🏠<span>首页</span></a>
-        <a href="pages/history.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px;background:#f7f7f7;border-radius:12px;text-decoration:none;font-size:11px;color:#333;font-weight:500;">📜<span>家族历史</span></a>
-        <a href="pages/genealogy.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px;background:#f7f7f7;border-radius:12px;text-decoration:none;font-size:11px;color:#333;font-weight:500;">🌳<span>族谱查询</span></a>
-        <a href="pages/celebrities.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px;background:#f7f7f7;border-radius:12px;text-decoration:none;font-size:11px;color:#333;font-weight:500;">🏆<span>名人事迹</span></a>
-        <a href="pages/merit-scroll.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px;background:#f7f7f7;border-radius:12px;text-decoration:none;font-size:11px;color:#333;font-weight:500;">📜<span>功德卷轴</span></a>
-        <a href="pages/news.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px;background:#f7f7f7;border-radius:12px;text-decoration:none;font-size:11px;color:#333;font-weight:500;">📰<span>消息发布</span></a>
-        <a href="pages/members.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px;background:#f7f7f7;border-radius:12px;text-decoration:none;font-size:11px;color:#333;font-weight:500;">👥<span>家族成员</span></a>
-        <a href="pages/activities.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px;background:#f7f7f7;border-radius:12px;text-decoration:none;font-size:11px;color:#333;font-weight:500;">🎪<span>家族活动</span></a>
-        <a href="pages/today.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px;background:#f7f7f7;border-radius:12px;text-decoration:none;font-size:11px;color:#333;font-weight:500;">📸<span>今日下枫槎</span></a>
-        <a href="pages/reports.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px;background:#f7f7f7;border-radius:12px;text-decoration:none;font-size:11px;color:#333;font-weight:500;">📋<span>新闻报道</span></a>
-        <a href="pages/contact.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px;background:#f7f7f7;border-radius:12px;text-decoration:none;font-size:11px;color:#333;font-weight:500;">✉️<span>联系我们</span></a>
-        <a href="pages/audio.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px;background:#f7f7f7;border-radius:12px;text-decoration:none;font-size:11px;color:#333;font-weight:500;">🎧<span>听下枫槎</span></a>
-        <a href="pages/vinyl-player.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px;background:#f7f7f7;border-radius:12px;text-decoration:none;font-size:11px;color:#c9a84c;font-weight:600;">🎵<span>留声机</span></a>
-        <a href="pages/xie-collection.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px;background:#f7f7f7;border-radius:12px;text-decoration:none;font-size:11px;color:#c9a84c;font-weight:600;">📚<span>谢氏集萃</span></a>
-        <a href="pages/admin.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px;background:#f7f7f7;border-radius:12px;text-decoration:none;font-size:11px;color:#ff6b00;font-weight:600;">🔐<span>管理后台</span></a>
-      </div>
-    </div>
-  </div>
-  <style>
-    #navFloater:hover { opacity:0.85 !important; }
-    [data-theme="dark"] #navFloater { background:rgba(30,30,50,0.8); border-color:rgba(255,255,255,0.06); color:#999; }
-    [data-theme="dark"] #navPanel > div { background:#16162a; }
-    [data-theme="dark"] #navPanel a { background:rgba(255,255,255,0.04); color:#ccc; }
-  </style>
+  <!-- ===== 手机底部导航 ===== -->
+  <nav class="mobile-bottom-nav">
+    <a href="index.html" class="mb-item active">🏠<span>首页</span></a>
+    <a href="pages/history.html" class="mb-item">📜<span>历史</span></a>
+    <a href="pages/genealogy.html" class="mb-item">🌳<span>族谱</span></a>
+    <a href="pages/celebrities.html" class="mb-item">🏆<span>名人</span></a>
+    <a href="pages/activities.html" class="mb-item">🎪<span>活动</span></a>
+    <a href="pages/audio.html" class="mb-item">🎧<span>听下枫槎</span></a>
+    <a href="pages/xie-collection.html" class="mb-item">📚<span>集萃</span></a>
+    <a href="pages/contact.html" class="mb-item">✉️<span>联系</span></a>
+  </nav>
+
+  <audio id="bg-music" loop></audio>
+
+  <script defer src="js/main.js?v=20260625"></script>
+
+  <!-- ===== 天气特效粒子引擎 ===== -->
+
+  <!-- ===== 全屏查看 ===== -->
+  <script defer src="js/lightbox-viewer.js?v=af0a9a"></script>
+
+  <!-- ===== 动态加载 ===== -->
+  <script defer src="js/dynamic-content.js?v=4a"></script>
+
+  <script defer src="js/weather-particle.js?v=b977c9"></script>
+
+  <!-- ===== 手机底部导航（所有栏目） ===== -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <a href="index.html" class="mb-item active">🏠<span>首页</span></a>
+    <a href="pages/history.html" class="mb-item">📜<span>历史</span></a>
+    <a href="pages/genealogy.html" class="mb-item">🌳<span>族谱</span></a>
+    <a href="pages/celebrities.html" class="mb-item">🏆<span>名人</span></a>
+    <a href="pages/merit-scroll.html" class="mb-item">📜<span>功德</span></a>
+    <a href="pages/news.html" class="mb-item">📰<span>消息</span></a>
+    <a href="pages/members.html" class="mb-item">👥<span>成员</span></a>
+    <a href="pages/activities.html" class="mb-item">🎪<span>活动</span></a>
+    <a href="pages/today.html" class="mb-item">📸<span>今日</span></a>
+    <a href="pages/reports.html" class="mb-item">📋<span>报道</span></a>
+    <a href="pages/audio.html" class="mb-item">🎧<span>听枫槎</span></a>
+    <a href="pages/vinyl-player.html" class="mb-item">🎵<span>留声机</span></a>
+    <a href="pages/xie-collection.html" class="mb-item" style="color:#c9a84c;">📚<span>集萃</span></a>
+    <a href="pages/contact.html" class="mb-item">✉️<span>联系</span></a>
+    <a href="pages/admin.html" class="mb-item">🔐<span>管理</span></a>
+  </nav>
 </body>
