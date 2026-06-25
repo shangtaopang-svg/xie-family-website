@@ -16,14 +16,15 @@
     .carousel-slide { height: 100%; }
   </style>
   <style>
-    /* 手机底部导航 */
-    .mobile-bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; z-index:99999; background:#fff; border-top:1px solid #f0ede8; padding:4px 0; justify-content:space-around; box-shadow:0 -2px 12px rgba(0,0,0,0.06); }
-    .mobile-bottom-nav .mb-item { display:flex; flex-direction:column; align-items:center; gap:1px; text-decoration:none; font-size:10px; color:#999; padding:4px 0; flex:1; transition:color 0.2s; -webkit-tap-highlight-color:transparent; }
+    /* 手机底部导航（横向滚动，所有栏目可见） */
+    .mobile-bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; z-index:99999; background:#fff; border-top:1px solid #f0ede8; padding:6px 0; box-shadow:0 -2px 12px rgba(0,0,0,0.06); overflow-x:auto; -webkit-overflow-scrolling:touch; white-space:nowrap; }
+    .mobile-bottom-nav::-webkit-scrollbar { display:none; }
+    .mobile-bottom-nav .mb-item { display:inline-flex; flex-direction:column; align-items:center; gap:1px; text-decoration:none; font-size:10px; color:#999; padding:2px 12px; min-width:56px; transition:color 0.2s; -webkit-tap-highlight-color:transparent; vertical-align:top; }
     .mobile-bottom-nav .mb-item:active { color:#c4a050; background:#fefcf5; border-radius:6px; }
-    .mobile-bottom-nav .mb-item span { font-size:9px; font-weight:500; }
+    .mobile-bottom-nav .mb-item span { font-size:9px; font-weight:500; display:block; text-align:center; white-space:nowrap; }
     @media (max-width: 900px) {
     .mobile-bottom-nav { display:flex; }
-    body { padding-bottom: 64px; }
+    body { padding-bottom: 68px; }
       .hero-stats { gap: 8px !important; bottom: 35px !important; flex-wrap: wrap; padding: 0 10px; }
       .hero-stat-num { font-size: 16px !important; }
       .hero-stat-label { font-size: 9px !important; }
@@ -66,7 +67,7 @@
           <small data-i18n="logo.subtitle">宁海 · 下枫槎村</small>
         </div>
       </a>
-      <button class="nav-toggle" id="menuBtn" onclick="var n=document.querySelector('.main-nav');var isOpen=n.style.display==='block';if(isOpen){n.style.display='none';this.textContent='☰'}else{n.style.cssText='display:block!important;position:fixed!important;top:60px!important;left:0!important;right:0!important;z-index:999999!important;background:#fff!important;padding:20px!important;box-shadow:0 8px 40px rgba(0,0,0,0.2)!important;overflow-y:auto!important;max-height:calc(100vh - 60px)!important';this.textContent='✕'}" aria-label="菜单">☰</button>
+      <button class="nav-toggle" onclick="document.getElementById('mobileBottomNav').scrollIntoView({behavior:'smooth'});document.getElementById('mobileBottomNav').scrollLeft=0" aria-label="菜单">☰</button>
       <nav class="main-nav">
         <ul>
           <li><a href="index.html" class="active" data-i18n="nav.home">首页</a></li>
@@ -395,4 +396,23 @@
   <script defer src="js/dynamic-content.js?v=4a"></script>
 
   <script defer src="js/weather-particle.js?v=b977c9"></script>
+
+  <!-- ===== 手机底部导航（所有栏目） ===== -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <a href="index.html" class="mb-item active">🏠<span>首页</span></a>
+    <a href="pages/history.html" class="mb-item">📜<span>历史</span></a>
+    <a href="pages/genealogy.html" class="mb-item">🌳<span>族谱</span></a>
+    <a href="pages/celebrities.html" class="mb-item">🏆<span>名人</span></a>
+    <a href="pages/merit-scroll.html" class="mb-item">📜<span>功德</span></a>
+    <a href="pages/news.html" class="mb-item">📰<span>消息</span></a>
+    <a href="pages/members.html" class="mb-item">👥<span>成员</span></a>
+    <a href="pages/activities.html" class="mb-item">🎪<span>活动</span></a>
+    <a href="pages/today.html" class="mb-item">📸<span>今日</span></a>
+    <a href="pages/reports.html" class="mb-item">📋<span>报道</span></a>
+    <a href="pages/audio.html" class="mb-item">🎧<span>听枫槎</span></a>
+    <a href="pages/vinyl-player.html" class="mb-item">🎵<span>留声机</span></a>
+    <a href="pages/xie-collection.html" class="mb-item" style="color:#c9a84c;">📚<span>集萃</span></a>
+    <a href="pages/contact.html" class="mb-item">✉️<span>联系</span></a>
+    <a href="pages/admin.html" class="mb-item">🔐<span>管理</span></a>
+  </nav>
 </body>
