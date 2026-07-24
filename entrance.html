@@ -6,108 +6,140 @@
   <title>下枫槎 · 山水画卷 — 宁海谢氏家族</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <style>
-    :root { scrollbar-gutter: stable; }
+    :root { scrollbar-gutter:stable; }
     html, body { margin:0; padding:0; background:#0a0806; scroll-behavior:auto; }
     body { font-family:'Noto Sans SC',sans-serif; color:#f5e6c8; overflow-x:hidden; }
     * { box-sizing:border-box; }
     a { text-decoration:none; }
 
-    @keyframes bobUp {
-      0%,100% { transform:translateY(0); }
-      50% { transform:translateY(-6px); }
-    }
+    @keyframes bobUp { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-6px); } }
 
     /* ── Scroll spacer + sticky stage ── */
     #scroll-root { height:520vh; position:relative; }
-    #stage {
-      position:sticky; top:0; left:0; width:100%; height:100vh;
-      overflow:hidden; background:#0a0806;
-    }
+    #stage { position:sticky; top:0; left:0; width:100%; height:100vh; overflow:hidden; background:#0a0806; }
 
-    /* ── Layers ── */
-    .layer { position:absolute; inset:0; width:100%; height:100%; will-change:transform,opacity; pointer-events:none; }
-    #bg-left {
-      position:absolute; left:0; top:0; width:50%; height:100%; z-index:0;
+    /* ── Background images with smooth mask transitions ── */
+    .bg-half {
+      position:absolute; top:0; height:100%; width:50%; z-index:0;
       background-size:cover; background-position:center;
-      will-change:clip-path; pointer-events:none;
+      pointer-events:none; will-change:transform;
+    }
+    #bg-left { left:0; }
+    #bg-right { right:0; }
+    /* Smooth edge mask - left fades on right, right fades on left */
+    #bg-left {
+      -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 120px), transparent calc(100% - 20px));
+      mask-image: linear-gradient(90deg, #000 calc(100% - 120px), transparent calc(100% - 20px));
+      -webkit-mask-composite: source-over; mask-composite: add;
     }
     #bg-right {
-      position:absolute; right:0; left:auto; top:0; width:50%; height:100%; z-index:0;
-      background-size:cover; background-position:center;
-      will-change:clip-path; pointer-events:none;
+      -webkit-mask-image: linear-gradient(270deg, #000 calc(100% - 120px), transparent calc(100% - 20px));
+      mask-image: linear-gradient(270deg, #000 calc(100% - 120px), transparent calc(100% - 20px));
+      -webkit-mask-composite: source-over; mask-composite: add;
     }
+    /* Dynamic mask adjustment via JS will set custom property */
+
     #world-overlay {
       position:absolute; inset:0; z-index:1; pointer-events:none;
       background:
-        radial-gradient(ellipse at 50% 80%, rgba(10,8,6,0) 0%, rgba(10,8,6,0.5) 70%, rgba(10,8,6,0.9) 100%),
-        linear-gradient(180deg, rgba(10,8,6,0.2) 0%, transparent 40%, transparent 70%, rgba(10,8,6,0.6) 100%);
+        radial-gradient(ellipse at 50% 80%, rgba(10,8,6,0) 30%, rgba(10,8,6,0.6) 80%, rgba(10,8,6,0.92) 100%),
+        linear-gradient(180deg, rgba(10,8,6,0.15) 0%, transparent 30%, transparent 70%, rgba(10,8,6,0.5) 100%);
     }
 
-    /* ── Draggable Scroll Bars (卷轴) ── */
-    .scroll-bar {
-      position:absolute; top:0; height:100%; z-index:10;
-      cursor:ew-resize; user-select:none; -webkit-user-select:none;
+    /* ── Elegant Scroll Axles (画轴) ── */
+    .scroll-axle {
+      position:absolute; top:6%; height:88%; z-index:10;
+      width:16px; cursor:ew-resize; user-select:none; -webkit-user-select:none;
       will-change:transform;
-    }
-    /* Left scroll — paper texture */
-    #scroll-left {
-      left:0; width:0; min-width:60px; max-width:50%;
       background:
-        repeating-linear-gradient(0deg, transparent,transparent 2px, rgba(180,160,130,0.03) 2px,rgba(180,160,130,0.03) 3px),
-        repeating-linear-gradient(90deg, transparent,transparent 6px, rgba(160,140,110,0.04) 6px,rgba(160,140,110,0.04) 7px),
-        linear-gradient(90deg, #e8dfcf 0%,#f0e8d8 3%,#f5edde 8%,#f2e9d9 20%,#f0e7d7 50%,#efe6d6 80%,#ede4d4 92%,#e8dfcf 100%);
-      border-right:2px solid rgba(160,130,90,0.25);
-      transform:translateX(0%);
+        repeating-linear-gradient(0deg, rgba(120,80,40,0.08),rgba(120,80,40,0.08) 1px, transparent 1px, transparent 5px),
+        linear-gradient(90deg, #6B4226 0%, #8B5E3A 20%, #A07850 40%, #B08860 50%, #A07850 60%, #8B5E3A 80%, #5A3A22 100%);
+      box-shadow:0 0 15px rgba(0,0,0,0.3), 0 0 30px rgba(0,0,0,0.15);
+      border-radius:4px;
+      transition:box-shadow 0.4s;
     }
-    /* Right scroll */
-    #scroll-right {
-      right:0; width:0; min-width:60px; max-width:50%;
-      background:
-        repeating-linear-gradient(0deg, transparent,transparent 2px, rgba(180,160,130,0.03) 2px,rgba(180,160,130,0.03) 3px),
-        repeating-linear-gradient(90deg, transparent,transparent 6px, rgba(160,140,110,0.04) 6px,rgba(160,140,110,0.04) 7px),
-        linear-gradient(270deg, #e8dfcf 0%,#f0e8d8 3%,#f5edde 8%,#f2e9d9 20%,#f0e7d7 50%,#efe6d6 80%,#ede4d4 92%,#e8dfcf 100%);
-      border-left:2px solid rgba(160,130,90,0.25);
-      transform:translateX(0%);
+    .scroll-axle:hover { box-shadow:0 0 20px rgba(0,0,0,0.4), 0 0 40px rgba(0,0,0,0.2); }
+    /* End caps (轴头) */
+    .axle-cap {
+      position:absolute; left:50%; transform:translateX(-50%); z-index:11;
+      width:26px; height:18px; border-radius:4px;
+      background:linear-gradient(180deg, #8B6B4A 0%, #A0805F 25%, #C4A07A 50%, #B89670 75%, #7A5A3A 100%);
+      box-shadow:0 1px 4px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.1);
     }
-    /* Decorative bands */
-    .scroll-band {
-      position:absolute; left:0; right:0; height:10px; z-index:2; pointer-events:none;
-      background:linear-gradient(180deg, rgba(160,130,90,0.15) 0%, transparent 100%);
-    }
-    .scroll-band.top { top:0; }
-    .scroll-band.bottom {
-      bottom:0;
-      background:linear-gradient(0deg, rgba(160,130,90,0.15) 0%, transparent 100%);
+    .axle-cap.top { top:-4px; border-radius:5px 5px 3px 3px; }
+    .axle-cap.bottom { bottom:-4px; border-radius:3px 3px 5px 5px; }
+    /* Decorative ribbon/knot on end caps */
+    .axle-cap::after {
+      content:''; position:absolute; inset:2px;
+      border:1px solid rgba(255,255,255,0.06); border-radius:2px;
     }
 
-    /* 3D Wooden Rollers */
-    .scroll-roller {
-      position:absolute; top:0; height:100%; z-index:11; pointer-events:none; width:20px;
+    /* ── Center joinery (中缝装裱) ── */
+    #center-joint {
+      position:absolute; left:50%; top:0; transform:translateX(-50%);
+      width:4px; height:100%; z-index:2; pointer-events:none;
+      background:linear-gradient(180deg,
+        transparent 0%, rgba(201,168,76,0.08) 15%,
+        rgba(201,168,76,0.12) 50%, rgba(201,168,76,0.08) 85%, transparent 100%
+      );
     }
-    #roller-left {
-      right:-2px;
-      background:repeating-linear-gradient(0deg, rgba(120,80,40,0.06),rgba(120,80,40,0.06) 1px,transparent 1px,transparent 4px),
-        linear-gradient(90deg, #6B4226 0%,#7A4E2E 10%,#8B5E3A 25%,#A07850 40%,#B08860 50%,#A07850 60%,#8B5E3A 75%,#7A4E2E 90%,#5A3A22 100%);
-      box-shadow:-3px 0 10px rgba(0,0,0,0.2); border-radius:3px 0 0 3px;
+
+    /* ── Centered Clock (月窗式时钟) ── */
+    #clock-frame {
+      position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+      z-index:15; pointer-events:auto;
+      width:clamp(180px, 22vw, 320px); aspect-ratio:1/1;
+      border-radius:50%;
+      background:rgba(10,8,6,0.4);
+      backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+      border:1.5px solid rgba(201,168,76,0.15);
+      box-shadow:0 0 60px rgba(0,0,0,0.3), 0 0 120px rgba(0,0,0,0.15), inset 0 0 60px rgba(0,0,0,0.1);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      opacity:0; transform:translate(-50%,-50%) scale(0.9);
+      transition:opacity 1s ease .6s, transform 1s ease .6s, box-shadow 0.6s;
     }
-    #roller-right {
-      left:-2px;
-      background:repeating-linear-gradient(0deg, rgba(120,80,40,0.06),rgba(120,80,40,0.06) 1px,transparent 1px,transparent 4px),
-        linear-gradient(270deg, #6B4226 0%,#7A4E2E 10%,#8B5E3A 25%,#A07850 40%,#B08860 50%,#A07850 60%,#8B5E3A 75%,#7A4E2E 90%,#5A3A22 100%);
-      box-shadow:3px 0 10px rgba(0,0,0,0.2); border-radius:0 3px 3px 0;
+    #clock-frame.show { opacity:1; transform:translate(-50%,-50%) scale(1); }
+    #clock-frame:hover { box-shadow:0 0 80px rgba(201,168,76,0.1), 0 0 120px rgba(0,0,0,0.2), inset 0 0 60px rgba(0,0,0,0.1); }
+
+    /* Decorative ring inside clock */
+    #clock-frame::before {
+      content:''; position:absolute; inset:8px;
+      border-radius:50%;
+      border:1px solid rgba(201,168,76,0.08);
+      pointer-events:none;
     }
-    .roller-cap {
-      position:absolute; left:50%; z-index:12; width:32px; height:20px; margin-left:-16px;
-      border-radius:5px 5px 2px 2px;
-      background:linear-gradient(180deg, #8B6B4A 0%,#A0805F 20%,#C4A07A 45%,#B89670 60%,#A0805F 80%,#7A5A3A 100%);
-      box-shadow:0 2px 6px rgba(0,0,0,0.25), inset 0 1px 2px rgba(255,255,255,0.1);
+    #clock-frame::after {
+      content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:6px; height:6px;
+      border-radius:50%;
+      background:rgba(201,168,76,0.3);
+      pointer-events:none;
     }
-    .roller-cap::after { content:''; position:absolute; inset:3px; border:1px solid rgba(255,255,255,0.06); border-radius:3px; }
-    .roller-cap.top { top:-4px; }
-    .roller-cap.bottom { bottom:-4px; }
+    .clock-time {
+      font-family:'Noto Serif SC',serif;
+      font-size:clamp(36px, 6vw, 64px); font-weight:700;
+      color:#f5e6c8; line-height:1; letter-spacing:0.04em;
+      text-shadow:0 2px 20px rgba(0,0,0,0.4);
+      margin-top:-8px;
+    }
+    .clock-date {
+      font-size:clamp(11px, 1.1vw, 14px);
+      color:rgba(245,230,200,0.55); letter-spacing:0.15em;
+      margin-top:6px;
+    }
+    .clock-lunar {
+      font-size:clamp(10px, 0.9vw, 12px);
+      color:rgba(201,168,76,0.45); letter-spacing:0.1em;
+      margin-top:2px;
+    }
+    /* Clock decorative dots (时辰标记) */
+    .clock-dot {
+      position:absolute; width:3px; height:3px; border-radius:50%;
+      background:rgba(201,168,76,0.2);
+    }
 
     /* ── Navigation ── */
     nav {
@@ -116,65 +148,30 @@
       padding:20px 48px; pointer-events:auto;
     }
     .nav-left,.nav-right { display:flex; align-items:center; gap:20px; }
-    .nav-link { font-size:12px; letter-spacing:0.12em; color:rgba(245,230,200,0.8); text-decoration:none; transition:color .3s; }
+    .nav-link { font-size:12px; letter-spacing:0.12em; color:rgba(245,230,200,0.7); text-decoration:none; transition:color .3s; }
     .nav-link:hover { color:#c9a84c; }
     .nav-emblem { display:flex; align-items:center; gap:8px; opacity:0; transition:opacity .8s ease; }
     .nav-emblem.show { opacity:1; }
     .nav-emblem .seal {
-      width:36px; height:36px; flex:none; background:#a83030; border-radius:4px;
+      width:32px; height:32px; flex:none; background:#a83030; border-radius:3px;
       display:grid; place-items:center; font-family:'Noto Serif SC',serif;
-      font-size:20px; font-weight:900; color:#f5e6c8;
+      font-size:18px; font-weight:900; color:#f5e6c8;
       box-shadow:0 1px 6px rgba(168,48,48,0.3); position:relative;
     }
-    .nav-emblem .seal::after {
-      content:''; position:absolute; inset:3px;
-      border:1px solid rgba(245,230,200,0.3); border-radius:2px;
-    }
-    .nav-emblem .seal-text { font-family:'Noto Serif SC',serif; font-size:14px; font-weight:600; color:#c9a84c; letter-spacing:0.12em; }
+    .nav-emblem .seal::after { content:''; position:absolute; inset:2px; border:1px solid rgba(245,230,200,0.25); border-radius:1px; }
+    .nav-emblem .seal-text { font-family:'Noto Serif SC',serif; font-size:13px; font-weight:600; color:#c9a84c; letter-spacing:0.12em; }
 
-    /* ── Hero / Clock ── */
-    #scene1 {
-      position:absolute; inset:0; z-index:20;
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      opacity:1; pointer-events:none; padding:80px 40px;
-    }
-    .hero-clock {
-      text-align:center; pointer-events:auto;
-      opacity:0; transform:translateY(20px);
-      transition:opacity .8s ease .6s, transform .8s ease .6s;
-    }
-    .hero-clock.show { opacity:1; transform:translateY(0); }
-    .clock-time {
-      font-family:'Noto Serif SC',serif;
-      font-size:clamp(56px,10vw,120px); font-weight:700;
-      color:#f5e6c8; line-height:1; letter-spacing:0.04em;
-      text-shadow:0 4px 40px rgba(0,0,0,0.5);
-    }
-    .clock-date {
-      font-size:clamp(14px,1.6vw,20px);
-      color:rgba(245,230,200,0.7);
-      letter-spacing:0.2em; margin-top:8px;
-      text-shadow:0 2px 16px rgba(0,0,0,0.4);
-    }
-    .clock-lunar {
-      font-size:clamp(12px,1.2vw,15px);
-      color:rgba(201,168,76,0.6);
-      letter-spacing:0.15em; margin-top:4px;
-    }
-    .hero-drag-hint {
-      position:absolute; bottom:80px; left:0; right:0; text-align:center;
-      font-size:11px; color:rgba(245,230,200,0.25);
+    /* ── Drag hint ── */
+    .drag-hint {
+      position:absolute; bottom:70px; left:0; right:0; text-align:center; z-index:15;
+      font-size:11px; color:rgba(245,230,200,0.2);
       letter-spacing:0.15em; pointer-events:none;
       opacity:0; transition:opacity .8s ease 1.2s;
     }
-    .hero-drag-hint.show { opacity:1; }
+    .drag-hint.show { opacity:1; }
 
     /* ── Scene 2: Village Story ── */
-    #scene2 {
-      position:absolute; inset:0; z-index:21;
-      display:flex; align-items:center; justify-content:center;
-      opacity:0; pointer-events:none; padding:0 40px;
-    }
+    #scene2 { position:absolute; inset:0; z-index:21; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; padding:0 40px; }
     .story-wrap { text-align:center; max-width:640px; }
     .story-eyebrow { font-family:'Noto Serif SC',serif; font-size:13px; letter-spacing:0.25em; color:rgba(201,168,76,0.6); margin-bottom:12px; }
     .story-title { font-family:'Noto Serif SC',serif; font-size:clamp(28px,4vw,52px); font-weight:700; color:#f5e6c8; margin:0 0 16px; line-height:1.2; text-shadow:0 2px 20px rgba(0,0,0,0.3); }
@@ -187,11 +184,7 @@
     .stat-label { font-size:11px; color:rgba(245,230,200,0.5); margin-top:6px; letter-spacing:0.08em; }
 
     /* ── Scene 3: CTA ── */
-    #scene3 {
-      position:absolute; inset:0; z-index:22;
-      display:flex; align-items:center; justify-content:center;
-      opacity:0; pointer-events:none; padding:0 40px;
-    }
+    #scene3 { position:absolute; inset:0; z-index:22; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; padding:0 40px; }
     .cta-wrap { text-align:center; max-width:520px; }
     .cta-title { font-family:'Noto Serif SC',serif; font-size:clamp(32px,5vw,64px); font-weight:700; color:#f5e6c8; letter-spacing:0.06em; line-height:1.15; margin:0 0 20px; text-shadow:0 2px 20px rgba(0,0,0,0.3); }
     .cta-desc { font-size:clamp(14px,1.2vw,17px); line-height:1.7; color:rgba(245,230,200,0.6); margin:0 auto 28px; max-width:440px; }
@@ -202,15 +195,11 @@
     .cta-link:hover { color:#c9a84c; border-color:rgba(201,168,76,0.3); background:rgba(201,168,76,0.06); }
 
     /* ── Scroll Cue ── */
-    .scroll-cue {
-      position:absolute; bottom:36px; left:50%; transform:translateX(-50%);
-      display:flex; flex-direction:column; align-items:center; gap:8px;
-      z-index:30; cursor:pointer; pointer-events:auto;
-      opacity:0; transition:opacity .8s ease;
-    }
+    .scroll-cue { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:6px; z-index:30; cursor:pointer; pointer-events:auto; opacity:0; transition:opacity .8s ease; }
     .scroll-cue.show { opacity:1; }
-    .scroll-cue span { font-size:10px; letter-spacing:0.2em; color:rgba(245,230,200,0.4); }
-    .scroll-cue .chev { width:32px; height:32px; border-radius:50%; border:1px solid rgba(245,230,200,0.2); display:grid; place-items:center; animation:bobUp 1.8s ease-in-out infinite; }
+    .scroll-cue span { font-size:10px; letter-spacing:0.2em; color:rgba(245,230,200,0.25); }
+    .scroll-cue .chev { width:28px; height:28px; border-radius:50%; border:1px solid rgba(245,230,200,0.15); display:grid; place-items:center; animation:bobUp 1.8s ease-in-out infinite; }
+    .scroll-cue .chev svg { opacity:0.4; }
 
     /* ── Responsive ── */
     @media (max-width:767px) {
@@ -219,18 +208,14 @@
       .nav-link.nav-enter-mobile { display:inline-block; font-size:11px; }
       .nav-right .nav-link { display:none; }
       .nav-link.nav-back-mobile { display:inline-block; }
-      .nav-emblem .seal { width:28px; height:28px; font-size:15px; }
-      .nav-emblem .seal-text { font-size:12px; }
-      #scene1 { padding:60px 20px; }
-      .scroll-bar { min-width:40px !important; }
-      .scroll-roller { width:14px !important; }
-      .roller-cap { display:none; }
-      .hero-drag-hint { bottom:50px; font-size:10px; }
-      #scene2 { padding:0 20px; }
-      #scene3 { padding:0 20px; }
-      .cta-btn { padding:12px 32px; font-size:14px; }
-    }
-    @media (max-width:767px) {
+      .nav-emblem .seal { width:26px; height:26px; font-size:14px; }
+      .nav-emblem .seal-text { font-size:11px; }
+      .scroll-axle { width:10px; top:10%; height:80%; }
+      .axle-cap { width:18px; height:12px; }
+      .axle-cap.top { top:-3px; }
+      .axle-cap.bottom { bottom:-3px; }
+      #clock-frame { width:clamp(140px, 40vw, 200px); }
+      .drag-hint { bottom:50px; font-size:10px; }
       .enter-fixed {
         display:flex; position:fixed; z-index:999;
         bottom:24px; left:50%; transform:translateX(-50%);
@@ -250,27 +235,22 @@
   <div id="scroll-root">
     <div id="stage">
 
-      <!-- Two side-by-side background images -->
-      <div id="bg-left"></div>
-      <div id="bg-right"></div>
-      <div id="world-overlay" class="layer"></div>
+      <!-- Background images -->
+      <div id="bg-left" class="bg-half"></div>
+      <div id="bg-right" class="bg-half"></div>
+      <div id="world-overlay"></div>
 
-      <!-- Draggable Scroll Bars (卷轴) -->
-      <div id="scroll-left" class="scroll-bar">
-        <div class="scroll-band top"></div>
-        <div class="scroll-band bottom"></div>
-        <div id="roller-left" class="scroll-roller">
-          <div class="roller-cap top"></div>
-          <div class="roller-cap bottom"></div>
-        </div>
+      <!-- Center joint decorative line -->
+      <div id="center-joint"></div>
+
+      <!-- Elegant Scroll Axles (细轴) - controls position via drag -->
+      <div id="axle-left" class="scroll-axle">
+        <div class="axle-cap top"></div>
+        <div class="axle-cap bottom"></div>
       </div>
-      <div id="scroll-right" class="scroll-bar">
-        <div id="roller-right" class="scroll-roller">
-          <div class="roller-cap top"></div>
-          <div class="roller-cap bottom"></div>
-        </div>
-        <div class="scroll-band top"></div>
-        <div class="scroll-band bottom"></div>
+      <div id="axle-right" class="scroll-axle">
+        <div class="axle-cap top"></div>
+        <div class="axle-cap bottom"></div>
       </div>
 
       <!-- Navigation -->
@@ -291,17 +271,16 @@
         </div>
       </nav>
 
-      <!-- Scene 1: Centered Clock + Drag Hint -->
-      <div id="scene1">
-        <div class="hero-clock" id="heroClock">
-          <div class="clock-time" id="clockTime">--:--</div>
-          <div class="clock-date" id="clockDate"></div>
-          <div class="clock-lunar" id="clockLunar"></div>
-        </div>
-        <div class="hero-drag-hint" id="dragHint">⟷ 拖动卷轴 · 探索画卷</div>
+      <!-- Centered Moon Clock -->
+      <div id="clock-frame">
+        <div class="clock-time" id="clockTime">--:--</div>
+        <div class="clock-date" id="clockDate"></div>
+        <div class="clock-lunar" id="clockLunar"></div>
       </div>
 
-      <!-- Scene 2: Village Story -->
+      <div class="drag-hint" id="dragHint">⟷ 滑动画轴 · 展卷观山</div>
+
+      <!-- Scene 2 -->
       <div id="scene2">
         <div class="story-wrap">
           <div class="story-eyebrow">· 望府山下 · 枫槎溪畔 ·</div>
@@ -317,7 +296,7 @@
         </div>
       </div>
 
-      <!-- Scene 3: CTA -->
+      <!-- Scene 3 -->
       <div id="scene3">
         <div class="cta-wrap">
           <h2 class="cta-title">探索下枫槎</h2>
@@ -333,7 +312,6 @@
         </div>
       </div>
 
-      <!-- Scroll Cue -->
       <div class="scroll-cue" id="scrollCue">
         <span>向下展开画卷</span>
         <div class="chev">
@@ -343,133 +321,122 @@
     </div>
   </div>
 
-  <!-- Fixed enter button (mobile) -->
   <a class="enter-fixed" id="enterFixed" href="index.html">✦ 进入下枫槎</a>
 
   <script>
-    // ── Images ──
-    var BG_LEFT = 'images/bg-entrance.jpg';   // 11.jpg
-    var BG_RIGHT = 'images/bg-right.jpg';     // 121.jpg
+    var BG_LEFT = 'images/bg-entrance.jpg';
+    var BG_RIGHT = 'images/bg-right.jpg';
 
-    // ── DOM refs ──
     var bgLeft = document.getElementById('bg-left');
     var bgRight = document.getElementById('bg-right');
-    var scrollLeft = document.getElementById('scroll-left');
-    var scrollRight = document.getElementById('scroll-right');
-    var rollerLeft = document.getElementById('roller-left');
-    var rollerRight = document.getElementById('roller-right');
-    var scene1 = document.getElementById('scene1');
+    var axleLeft = document.getElementById('axle-left');
+    var axleRight = document.getElementById('axle-right');
     var scene2 = document.getElementById('scene2');
     var scene3 = document.getElementById('scene3');
     var scrollCue = document.getElementById('scrollCue');
     var navEmblem = document.getElementById('navEmblem');
-    var heroClock = document.getElementById('heroClock');
+    var clockFrame = document.getElementById('clock-frame');
     var dragHint = document.getElementById('dragHint');
     var clockTime = document.getElementById('clockTime');
     var clockDate = document.getElementById('clockDate');
     var clockLunar = document.getElementById('clockLunar');
 
-    // ── Load background images ──
+    // Load images
     bgLeft.style.backgroundImage = "url('" + BG_LEFT + "')";
     bgRight.style.backgroundImage = "url('" + BG_RIGHT + "')";
 
-    // ── Scroll bar drag state ──
+    // ── Axle drag state ──
     var isDragging = false;
-    var activeScroll = null; // 'left' or 'right'
+    var activeAxle = null;
     var dragStartX = 0;
-    var dragStartWidth = 0;
-    var leftWidth = 50;  // percentage of viewport
-    var rightWidth = 50;
+    var dragStartPos = 0;
+    var leftPos = 50;   // % from left edge (0-50)
+    var rightPos = 50;  // % from left edge (50-100)
+    var minEdge = 4;
 
-    // ── Math ──
     function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
     function lerp(a, b, t) { return a + (b - a) * t; }
 
     // ── Responsive ──
-    var isMobile = false;
-    var mq = window.matchMedia('(max-width: 767px)');
-    function onMq(e) { isMobile = e.matches; }
-    onMq(mq);
-    if (mq.addEventListener) mq.addEventListener('change', onMq); else mq.addListener(onMq);
+    var isMobile = window.matchMedia('(max-width: 767px)').matches;
+    if (isMobile) minEdge = 3;
 
     // ── Scroll progress ──
     var scrollProgress = 0;
     function readScroll() {
       var root = document.getElementById('scroll-root');
-      var scrollable = root.offsetHeight - window.innerHeight;
-      scrollProgress = scrollable > 0 ? clamp(window.scrollY / scrollable, 0, 1) : 0;
+      var s = root.offsetHeight - window.innerHeight;
+      scrollProgress = s > 0 ? clamp(window.scrollY / s, 0, 1) : 0;
     }
     window.addEventListener('scroll', readScroll, { passive: true });
     window.addEventListener('resize', readScroll);
     readScroll();
 
-    // ── Clock update ──
+    // ── Clock ──
     function updateClock() {
       var now = new Date();
-      var h = String(now.getHours()).padStart(2, '0');
-      var m = String(now.getMinutes()).padStart(2, '0');
-      clockTime.textContent = h + ':' + m;
-
-      var days = ['日', '一', '二', '三', '四', '五', '六'];
-      var dayNames = ['初','一','二','三','四','五','六','七','八','九','十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
-      var y = now.getFullYear();
-      var month = now.getMonth() + 1;
-      var day = now.getDate();
-      var weekday = days[now.getDay()];
-      clockDate.textContent = y + '年' + month + '月' + day + '日 · 星期' + weekday;
-
-      // Simplified lunar calendar calculation
-      // Use a fixed lookup for 2026
-      var lunarInfo = {
-        '2026-7-24': '六月廿一'
-      };
-      var key = y + '-' + month + '-' + day;
-      var lunar = lunarInfo[key] || '';
-      clockLunar.textContent = lunar ? '农历' + lunar : '';
+      clockTime.textContent = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+      var days = ['日','一','二','三','四','五','六'];
+      clockDate.textContent = now.getFullYear()+'年'+(now.getMonth()+1)+'月'+now.getDate()+'日 · 星期'+days[now.getDay()];
+      var lunar = {'2026-7-24':'六月廿一','2026-7-25':'六月廿二','2026-7-26':'六月廿三','2026-7-27':'六月廿四','2026-7-28':'六月廿五','2026-7-29':'六月廿六','2026-7-30':'六月廿七','2026-7-31':'六月廿八'};
+      var key = now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();
+      clockLunar.textContent = lunar[key] ? '农历'+lunar[key] : '';
     }
     updateClock();
     setInterval(updateClock, 10000);
 
-    // ── Update scroll bar widths ──
-    function updateScrollBars() {
+    // ── Update axles and image masks ──
+    function updateVisuals() {
       var vw = window.innerWidth;
-      var minPx = isMobile ? 40 : 60;
-      var maxPct = 50;
-      var minPct = (minPx / vw) * 100;
+      var minEdge = isMobile ? 4 : 6;
+      var edge = isMobile ? 3 : 6;
+      leftPos = clamp(leftPos, edge, 50);
+      rightPos = clamp(rightPos, 50, 100 - edge);
 
-      leftWidth = clamp(leftWidth, minPct, maxPct);
-      rightWidth = clamp(rightWidth, minPct, maxPct);
+      // Position the axle elements
+      axleLeft.style.left = leftPos + '%';
+      axleRight.style.left = (rightPos - (isMobile ? 10 : 16) / vw * 100) + '%';
 
-      scrollLeft.style.width = leftWidth + '%';
-      scrollRight.style.width = rightWidth + '%';
+      // Update image masks
+      var leftCut = leftPos; // left image visible from 0 to leftPos%
+      var rightCut = 100 - rightPos; // right image visible from rightPos% to 100%
 
-      // Update clip paths for images
-      // Left image: visible from 0 to (50 - leftWidth)%
-      var leftVisible = Math.max(0, 50 - leftWidth);
-      bgLeft.style.clipPath = 'inset(0 ' + (leftWidth * 2) + '% 0 0)';
-      // Right image: visible from (50 + rightWidth) to 100%
-      bgRight.style.clipPath = 'inset(0 0 0 ' + (rightWidth * 2) + '%)';
+      // Left image: mask cuts off from leftPos to 50%
+      // Mask is relative to element (50% viewport). leftPos in viewport = leftPos*2 in element%
+      var lCut = leftPos * 2;
+      bgLeft.style.maskImage = 'linear-gradient(90deg, #000 ' + Math.max(0, lCut - 30) + '%, #000 ' + lCut + '%, transparent ' + (lCut + 10) + '%)';
+      bgLeft.style.webkitMaskImage = 'linear-gradient(90deg, #000 ' + Math.max(0, lCut - 30) + '%, #000 ' + lCut + '%, transparent ' + (lCut + 10) + '%)';
+
+      // Right image: mask cuts off from 0 to (rightCut from the right)
+      // Element spans 50%-100% viewport. rightCut = 100 - rightPos.
+      // In element-relative: clip (100 - rightCut*2)% from left, show remaining
+      var rShow = (100 - rightPos) * 2; // % of element visible from right
+      var rCut = 100 - rShow; // % to cut from left of element
+      bgRight.style.maskImage = 'linear-gradient(270deg, #000 ' + Math.max(0, rShow - 30) + '%, #000 ' + rShow + '%, transparent ' + (rShow + 10) + '%)';
+      bgRight.style.webkitMaskImage = 'linear-gradient(270deg, #000 ' + Math.max(0, rShow - 30) + '%, #000 ' + rShow + '%, transparent ' + (rShow + 10) + '%)';
     }
 
+    updateVisuals();
+
     // ── Drag interaction ──
-    function getScrollAtPoint(x, y) {
-      var rectL = scrollLeft.getBoundingClientRect();
-      var rectR = scrollRight.getBoundingClientRect();
-      // Expand hit area
-      if (x >= rectL.left - 10 && x <= rectL.right + 10 && y >= rectL.top && y <= rectL.bottom) return 'left';
-      if (x >= rectR.left - 10 && x <= rectR.right + 10 && y >= rectR.top && y <= rectR.bottom) return 'right';
+    function hitTest(x, y) {
+      var rL = axleLeft.getBoundingClientRect();
+      var rR = axleRight.getBoundingClientRect();
+      var pad = isMobile ? 15 : 25;
+      if (x >= rL.left - pad && x <= rL.right + pad && y >= rL.top - pad && y <= rL.bottom + pad) return 'left';
+      if (x >= rR.left - pad && x <= rR.right + pad && y >= rR.top - pad && y <= rR.bottom + pad) return 'right';
       return null;
     }
 
     function onPointerDown(e) {
       var x = e.clientX || (e.touches && e.touches[0].clientX);
       var y = e.clientY || (e.touches && e.touches[0].clientY);
-      var target = getScrollAtPoint(x, y);
-      if (!target) return;
+      var hit = hitTest(x, y);
+      if (!hit) return;
       isDragging = true;
-      activeScroll = target;
+      activeAxle = hit;
       dragStartX = x;
-      dragStartWidth = target === 'left' ? leftWidth : rightWidth;
+      dragStartPos = hit === 'left' ? leftPos : rightPos;
       e.preventDefault();
     }
 
@@ -477,74 +444,57 @@
       var x = e.clientX || (e.touches && e.touches[0].clientX);
       if (!isDragging || !x) return;
       var vw = window.innerWidth;
-      var dx = (x - dragStartX) / vw * 100; // percentage of viewport
-      if (activeScroll === 'left') {
-        leftWidth = clamp(dragStartWidth + dx, isMobile ? 40/100*100 : 0.5, 50);
-      } else if (activeScroll === 'right') {
-        rightWidth = clamp(dragStartWidth - dx, isMobile ? 40/100*100 : 0.5, 50);
-      }
-      updateScrollBars();
+      var dx = (x - dragStartX) / vw * 100;
+      if (activeAxle === 'left') leftPos = clamp(dragStartPos + dx, isMobile ? 3 : 6, 50);
+      else if (activeAxle === 'right') rightPos = clamp(dragStartPos + dx, 50, isMobile ? 97 : 94);
+      updateVisuals();
     }
 
-    function onPointerUp() {
-      isDragging = false;
-      activeScroll = null;
-    }
+    function onPointerUp() { isDragging = false; activeAxle = null; }
 
-    // Mouse events
     document.addEventListener('mousedown', onPointerDown);
     document.addEventListener('mousemove', onPointerMove);
     document.addEventListener('mouseup', onPointerUp);
-    // Touch events
     document.addEventListener('touchstart', onPointerDown, { passive: false });
     document.addEventListener('touchmove', onPointerMove, { passive: false });
     document.addEventListener('touchend', onPointerUp);
 
     // ── Entrance animation ──
-    // Scroll bars auto-open on load
-    setTimeout(function () {
-      leftWidth = 4;
-      rightWidth = 4;
-      updateScrollBars();
-      // Animate to slightly open
-      var targetL = 12, targetR = 12;
-      var startL = 4, startR = 4;
+    setTimeout(function() {
+      // Smoothly open from center
+      var startL = 50, startR = 50;
+      var targetL = 42, targetR = 58;
       var startTime = Date.now();
-      function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
-      function animateOpen() {
-        var elapsed = Date.now() - startTime;
-        var t = Math.min(elapsed / 1200, 1);
-        var eased = easeOutCubic(t);
-        leftWidth = startL + (targetL - startL) * eased;
-        rightWidth = startR + (targetR - startR) * eased;
-        updateScrollBars();
-        if (t < 1) requestAnimationFrame(animateOpen);
-        else {
-          // After open animation, scroll bars become freely draggable
-          leftWidth = targetL;
-          rightWidth = targetR;
-          updateScrollBars();
-        }
-      }
-      animateOpen();
-    }, 100);
 
-    // Fade in UI after delay
-    setTimeout(function () {
-      heroClock.classList.add('show');
+      function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+      function animateIn() {
+        var elapsed = Date.now() - startTime;
+        var t = Math.min(elapsed / 1400, 1);
+        var e = easeOutCubic(t);
+        leftPos = startL + (targetL - startL) * e;
+        rightPos = startR + (targetR - startR) * e;
+        updateVisuals();
+        if (t < 1) requestAnimationFrame(animateIn);
+      }
+      animateIn();
+    }, 200);
+
+    // Fade in UI
+    setTimeout(function() {
+      clockFrame.classList.add('show');
       dragHint.classList.add('show');
       navEmblem.classList.add('show');
       scrollCue.classList.add('show');
-    }, 600);
+    }, 700);
 
-    // ── Mouse parallax (subtle, only on images) ──
-    var targetRX = 0, targetRY = 0, curRX = 0, curRY = 0;
-    window.addEventListener('mousemove', function (e) {
-      targetRX = (e.clientX / window.innerWidth) * 2 - 1;
-      targetRY = (e.clientY / window.innerHeight) * 2 - 1;
+    // ── Mouse parallax ──
+    var tx = 0, ty = 0, cx = 0, cy = 0;
+    window.addEventListener('mousemove', function(e) {
+      tx = (e.clientX / window.innerWidth) * 2 - 1;
+      ty = (e.clientY / window.innerHeight) * 2 - 1;
     });
 
-    // ── Stats counter ──
+    // ── Stats ──
     var statsAnimated = false;
     function animateStats() {
       if (statsAnimated) return;
@@ -552,15 +502,12 @@
       if (!els.length) return;
       statsAnimated = true;
       els.forEach(function(el) {
-        var target = parseInt(el.getAttribute('data-target'), 10) || 0;
-        var duration = 1500;
-        var startTime = Date.now();
+        var t = parseInt(el.getAttribute('data-target'), 10) || 0;
+        var d = 1500, s = Date.now();
         function tick() {
-          var elapsed = Date.now() - startTime;
-          var p = Math.min(elapsed / duration, 1);
-          el.textContent = Math.round(easeOutCubic(p) * target);
-          if (p < 1) requestAnimationFrame(tick);
-          else el.textContent = target;
+          var p = Math.min((Date.now() - s) / d, 1);
+          el.textContent = Math.round(easeOutCubic(p) * t);
+          if (p < 1) requestAnimationFrame(tick); else el.textContent = t;
         }
         tick();
       });
@@ -569,29 +516,23 @@
 
     // ── Render loop ──
     function tick() {
-      curRX = lerp(curRX, targetRX, 0.05);
-      curRY = lerp(curRY, targetRY, 0.05);
-      var rx = curRX, ry = curRY;
+      cx = lerp(cx, tx, 0.05);
+      cy = lerp(cy, ty, 0.05);
       var p = scrollProgress;
 
-      // Image subtle parallax
       var scale = 1 + p * 0.08;
-      bgLeft.style.transform = 'scale(' + scale + ') translate3d(' + (rx * 3) + 'px,' + (ry * 2) + 'px,0)';
-      bgRight.style.transform = 'scale(' + scale + ') translate3d(' + (rx * 3) + 'px,' + (ry * 2) + 'px,0)';
+      bgLeft.style.transform = 'scale('+scale+') translate3d('+(cx*2)+'px,'+(cy*2)+'px,0)';
+      bgRight.style.transform = 'scale('+scale+') translate3d('+(cx*2)+'px,'+(cy*2)+'px,0)';
 
-      // Scene 1 (clock) fades out
+      // Scene 1 (clock + drag hint)
       var s1 = clamp(1 - p / 0.25, 0, 1);
-      scene1.style.opacity = s1;
-      scene1.style.pointerEvents = s1 > 0.05 ? 'auto' : 'none';
-      // Lock scroll bars while scene 1 is visible
-      if (s1 < 0.1 && !isDragging) {
-        // When scrolled away, scroll bars stay where they are
-      }
+      clockFrame.style.opacity = s1;
+      dragHint.style.opacity = s1;
 
       // Scene 2
-      var s2In = clamp((p - 0.22) / 0.15, 0, 1);
-      var s2Out = clamp(1 - (p - 0.55) / 0.12, 0, 1);
-      var s2 = Math.min(s2In, s2Out);
+      var s2in = clamp((p - 0.22) / 0.15, 0, 1);
+      var s2out = clamp(1 - (p - 0.55) / 0.12, 0, 1);
+      var s2 = Math.min(s2in, s2out);
       scene2.style.opacity = s2;
       scene2.style.pointerEvents = s2 > 0.05 ? 'auto' : 'none';
       if (s2 > 0.3 && !statsAnimated) animateStats();
@@ -601,24 +542,17 @@
       scene3.style.opacity = s3;
       scene3.style.pointerEvents = s3 > 0.05 ? 'auto' : 'none';
 
-      // Scroll cue
       scrollCue.style.opacity = s1 > 0.1 ? 1 : 0;
-
-      // Nav emblem
       if (p > 0.05 && !navEmblem.classList.contains('show')) navEmblem.classList.add('show');
 
-      // Mobile fixed button
-      var enterFixed = document.getElementById('enterFixed');
-      if (enterFixed) enterFixed.style.opacity = s3 > 0.3 ? '1' : '0';
+      var ef = document.getElementById('enterFixed');
+      if (ef) ef.style.opacity = s3 > 0.3 ? '1' : '0';
 
       requestAnimationFrame(tick);
     }
     requestAnimationFrame(tick);
 
-    // ── Resize handler for scroll bars ──
-    window.addEventListener('resize', function() {
-      updateScrollBars();
-    });
+    window.addEventListener('resize', updateVisuals);
   </script>
 </body>
 </html>
