@@ -16,7 +16,6 @@
     a { text-decoration:none; }
 
     @keyframes bobUp { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-6px); } }
-    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
 
     /* ── Scroll spacer + sticky stage ── */
     #scroll-root { height:520vh; position:relative; }
@@ -28,29 +27,29 @@
     /* ── Parallax layers ── */
     .layer { position:absolute; inset:0; width:100%; height:100%; will-change:transform,opacity; pointer-events:none; }
 
-    /* Main panorama (scales from zoomed-in to full view) */
-    #world-bg {
+    /* World background — the full village panorama */
+    #world {
       background-size:cover; background-position:center 30%;
-      transform-origin:50% 50%; z-index:0;
+      transform-origin:50% 50%; z-index:1; opacity:0;
     }
 
-    /* Second image layer (emerges as overlay) */
-    #reveal-layer {
+    /* Portal — zooms dramatically to reveal the world */
+    #portal {
       background-size:cover; background-position:center 40%;
-      transform-origin:50% 50%; z-index:1; opacity:0;
+      transform-origin:52% 38%; z-index:2;
     }
 
     /* Dark overlay gradient */
     #overlay {
-      z-index:2;
+      z-index:3;
       background:
         radial-gradient(ellipse at 50% 80%, rgba(10,8,6,0) 20%, rgba(10,8,6,0.5) 75%, rgba(10,8,6,0.88) 100%),
-        linear-gradient(180deg, rgba(10,8,6,0.1) 0%, transparent 25%, transparent 75%, rgba(10,8,6,0.35) 100%);
+        linear-gradient(180deg, rgba(10,8,6,0.08) 0%, transparent 25%, transparent 75%, rgba(10,8,6,0.3) 100%);
     }
 
-    /* ── Scroll Curtains (卷轴帷幕) ── */
+    /* ── Curtains ── */
     .curtain {
-      position:absolute; top:0; height:100%; z-index:5; will-change:transform; pointer-events:none;
+      position:absolute; top:0; height:100%; z-index:8; will-change:transform; pointer-events:none;
       width:50%;
       background:
         repeating-linear-gradient(0deg, transparent,transparent 2px, rgba(180,160,130,0.02) 2px,rgba(180,160,130,0.02) 3px),
@@ -58,8 +57,6 @@
     }
     #curtain-left { left:0; transform-origin:left center; }
     #curtain-right { right:0; transform-origin:right center; }
-
-    /* Curtain decorative border */
     .curtain::after {
       content:''; position:absolute; top:5%; height:90%; width:2px;
       background:linear-gradient(180deg, transparent 0%, #c9a84c 20%, #c9a84c 80%, transparent 100%);
@@ -68,9 +65,9 @@
     #curtain-left::after { right:20px; }
     #curtain-right::after { left:20px; }
 
-    /* Wooden rollers on curtain edges */
+    /* Wooden rollers */
     .curtain-roller {
-      position:absolute; top:6%; height:88%; width:16px; z-index:6; pointer-events:none;
+      position:absolute; top:6%; height:88%; width:16px; z-index:9; pointer-events:none;
       background:repeating-linear-gradient(0deg, rgba(120,80,40,0.06),rgba(120,80,40,0.06) 1px,transparent 1px,transparent 4px),
         linear-gradient(90deg, #6B4226 0%, #8B5E3A 20%, #A07850 40%, #B08860 50%, #A07850 60%, #8B5E3A 75%, #5A3A22 100%);
       box-shadow:0 0 15px rgba(0,0,0,0.25); border-radius:3px;
@@ -78,7 +75,7 @@
     #roller-left { right:-2px; border-radius:3px 0 0 3px; }
     #roller-right { left:-2px; border-radius:0 3px 3px 0; }
     .roller-cap {
-      position:absolute; left:50%; transform:translateX(-50%); z-index:7;
+      position:absolute; left:50%; transform:translateX(-50%); z-index:10;
       width:24px; height:16px; border-radius:3px;
       background:linear-gradient(180deg, #8B6B4A 0%, #A0805F 25%, #C4A07A 50%, #B89670 75%, #7A5A3A 100%);
       box-shadow:0 1px 4px rgba(0,0,0,0.2);
@@ -102,18 +99,12 @@
     .nav-emblem .seal::after { content:''; position:absolute; inset:2px; border:1px solid rgba(245,230,200,0.25); border-radius:1px; }
     .nav-emblem .seal-text { font-family:'Noto Serif SC',serif; font-size:13px; font-weight:600; color:#c9a84c; letter-spacing:0.12em; }
 
-    /* ── Scene 1: Hero ── */
+    /* ── Scene 1 Hero ── */
     #scene1 {
       position:absolute; inset:0; z-index:20;
       display:flex; flex-direction:column; align-items:center; justify-content:center;
       pointer-events:none; padding:80px 40px;
     }
-    .hero-badge {
-      font-family:'Noto Serif SC',serif; font-size:clamp(11px,1vw,14px);
-      letter-spacing:0.3em; color:rgba(201,168,76,0.5); margin-bottom:12px;
-      opacity:0; transition:opacity 1s ease .8s;
-    }
-    .hero-badge.show { opacity:1; }
     .hero-title {
       font-family:'Noto Serif SC',serif;
       font-size:clamp(48px,10vw,120px); font-weight:900;
@@ -133,31 +124,35 @@
       transition:opacity .8s ease 1.1s;
     }
     .hero-motto.show { opacity:1; }
-    .hero-sub {
-      font-size:clamp(12px,1.2vw,16px);
-      color:rgba(245,230,200,0.5); letter-spacing:0.2em;
-      opacity:0; transition:opacity .8s ease 1.3s;
-    }
-    .hero-sub.show { opacity:1; }
 
-    /* ── Clock ── */
-    #clock-frame {
-      position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) scale(0.9);
-      z-index:15; pointer-events:auto;
-      width:clamp(160px,18vw,260px); aspect-ratio:1/1;
-      border-radius:50%;
-      background:rgba(168,48,48,0.12);
-      backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-      border:1.5px solid rgba(168,48,48,0.15);
-      box-shadow:0 0 50px rgba(168,48,48,0.06), 0 0 100px rgba(0,0,0,0.15);
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      opacity:0; transition:opacity 1s ease .6s, transform 1s ease .6s;
+    /* ── Cards row (like reference) ── */
+    .hero-cards {
+      position:absolute; bottom:70px; display:flex; gap:14px; z-index:20;
+      opacity:0; transition:opacity 1s ease 1.6s;
     }
-    #clock-frame.show { opacity:1; transform:translate(-50%,-50%) scale(1); }
-    #clock-frame::before { content:''; position:absolute; inset:6px; border-radius:50%; border:1px solid rgba(168,48,48,0.06); pointer-events:none; }
-    .clock-time { font-family:'Noto Serif SC',serif; font-size:clamp(32px,5vw,56px); font-weight:700; color:#f5e6c8; line-height:1; letter-spacing:0.04em; text-shadow:0 2px 20px rgba(0,0,0,0.4); margin-top:-6px; }
-    .clock-date { font-size:clamp(10px,0.9vw,13px); color:rgba(245,230,200,0.5); letter-spacing:0.15em; margin-top:4px; }
-    .clock-lunar { font-size:clamp(9px,0.8vw,11px); color:rgba(201,168,76,0.4); letter-spacing:0.1em; margin-top:2px; }
+    .hero-cards.show { opacity:1; }
+    .hero-card {
+      width:clamp(80px,10vw,130px); height:clamp(80px,10vw,130px);
+      border-radius:18px; overflow:hidden;
+      position:relative; background:rgba(10,8,6,0.3);
+      backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+      border:1px solid rgba(245,230,200,0.1);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      text-decoration:none; color:#f5e6c8; cursor:pointer;
+      transition:all .3s cubic-bezier(0.22,1,0.36,1);
+    }
+    .hero-card:hover { transform:translateY(-4px) scale(1.03); border-color:rgba(201,168,76,0.3); }
+    .hero-card .card-icon { font-size:clamp(18px,2.2vw,28px); margin-bottom:4px; }
+    .hero-card .card-label { font-family:'Noto Serif SC',serif; font-size:clamp(10px,1.1vw,14px); letter-spacing:0.06em; }
+
+    /* ── Clock (small, top-right like reference) ── */
+    #clock-frame {
+      position:absolute; top:80px; right:48px; z-index:25; pointer-events:auto;
+      text-align:right; opacity:0; transition:opacity 1s ease .6s;
+    }
+    #clock-frame.show { opacity:1; }
+    .clock-time { font-family:'Noto Serif SC',serif; font-size:clamp(20px,2.4vw,32px); font-weight:700; color:#f5e6c8; line-height:1.1; letter-spacing:0.04em; text-shadow:0 2px 16px rgba(0,0,0,0.4); }
+    .clock-date { font-size:clamp(10px,0.8vw,12px); color:rgba(245,230,200,0.5); letter-spacing:0.1em; margin-top:2px; }
 
     /* ── Scene 2 ── */
     #scene2 { position:absolute; inset:0; z-index:21; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; padding:0 40px; }
@@ -188,7 +183,6 @@
     .scroll-cue span { font-size:10px; letter-spacing:0.2em; color:rgba(245,230,200,0.25); }
     .scroll-cue .chev { width:28px; height:28px; border-radius:50%; border:1px solid rgba(245,230,200,0.15); display:grid; place-items:center; animation:bobUp 1.8s ease-in-out infinite; }
 
-    /* ── Responsive ── */
     @media (max-width:767px) {
       nav { padding:12px 16px; }
       .nav-left .nav-link:not(.nav-enter-mobile) { display:none; }
@@ -197,20 +191,12 @@
       .nav-link.nav-back-mobile { display:inline-block; }
       .nav-emblem .seal { width:26px; height:26px; font-size:14px; }
       .nav-emblem .seal-text { font-size:11px; }
-      #scene1 { padding:60px 20px; }
+      #scene1 { padding:40px 20px; }
       .curtain { width:50%; }
-      #clock-frame { width:clamp(130px,35vw,180px); }
-      .enter-fixed {
-        display:flex; position:fixed; z-index:999;
-        bottom:24px; left:50%; transform:translateX(-50%);
-        font-family:'Noto Serif SC',serif; font-size:13px; letter-spacing:0.12em;
-        color:#0a0806; background:linear-gradient(135deg,#c9a84c,#e8c97a);
-        padding:10px 28px; border-radius:50px; text-decoration:none;
-        border:1px solid rgba(201,168,76,0.3);
-        backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
-        box-shadow:0 4px 16px rgba(0,0,0,0.3);
-        transition:opacity .8s ease; opacity:0;
-      }
+      #clock-frame { top:60px; right:16px; }
+      .hero-cards { bottom:40px; gap:8px; flex-wrap:wrap; justify-content:center; }
+      .hero-card { width:clamp(60px,18vw,90px); height:clamp(60px,18vw,90px); border-radius:12px; }
+      .enter-fixed { display:flex; position:fixed; z-index:999; bottom:24px; left:50%; transform:translateX(-50%); font-family:'Noto Serif SC',serif; font-size:13px; letter-spacing:0.12em; color:#0a0806; background:linear-gradient(135deg,#c9a84c,#e8c97a); padding:10px 28px; border-radius:50px; text-decoration:none; border:1px solid rgba(201,168,76,0.3); backdrop-filter:blur(8px); box-shadow:0 4px 16px rgba(0,0,0,0.3); transition:opacity .8s ease; opacity:0; }
       .enter-fixed.show { opacity:1; }
     }
   </style>
@@ -219,9 +205,9 @@
   <div id="scroll-root">
     <div id="stage">
 
-      <!-- Parallax layers -->
-      <div id="world-bg" class="layer"></div>
-      <div id="reveal-layer" class="layer"></div>
+      <!-- Parallax layers: World + Portal + Overlay -->
+      <div id="world" class="layer"></div>
+      <div id="portal" class="layer"></div>
       <div id="overlay" class="layer"></div>
 
       <!-- Curtains -->
@@ -256,19 +242,24 @@
         </div>
       </nav>
 
-      <!-- Scene 1: Hero -->
-      <div id="scene1">
-        <div class="hero-badge" id="heroBadge">NINGHAI · XIE CLAN</div>
-        <h1 class="hero-title" id="heroTitle"><span class="hl">下枫槎</span></h1>
-        <div class="hero-motto" id="heroMotto">乌衣世泽 · 宝树家声</div>
-        <div class="hero-sub" id="heroSub">宁海 · 谢氏家族 · 山水茶村</div>
-      </div>
-
-      <!-- Clock -->
+      <!-- Clock (top-right) -->
       <div id="clock-frame">
         <div class="clock-time" id="clockTime">--:--</div>
         <div class="clock-date" id="clockDate"></div>
-        <div class="clock-lunar" id="clockLunar"></div>
+      </div>
+
+      <!-- Scene 1: Hero center -->
+      <div id="scene1">
+        <h1 class="hero-title" id="heroTitle"><span class="hl">下枫槎</span></h1>
+        <div class="hero-motto" id="heroMotto">乌衣世泽 · 宝树家声</div>
+      </div>
+
+      <!-- Cards row (bottom) -->
+      <div class="hero-cards" id="heroCards">
+        <a class="hero-card" href="pages/genealogy.html"><span class="card-icon">🌳</span><span class="card-label">族谱</span></a>
+        <a class="hero-card" href="pages/celebrities.html"><span class="card-icon">🏆</span><span class="card-label">名人</span></a>
+        <a class="hero-card" href="pages/merit-scroll.html"><span class="card-icon">📜</span><span class="card-label">功德</span></a>
+        <a class="hero-card" href="pages/today.html"><span class="card-icon">📸</span><span class="card-label">今日</span></a>
       </div>
 
       <!-- Scene 2 -->
@@ -314,46 +305,45 @@
 
   <script>
     // ── Images ──
-    // World: the main panoramic (left image from user)
-    // Reveal: the right image that emerges on zoom
+    // World = full village panorama (the "destination")
+    // Portal = the zoom-in image that reveals the world
     var WORLD_BG = 'images/bg-left.png';
-    var REVEAL_BG = 'images/bg-right.png';
+    var PORTAL_BG = 'images/bg-right.png';
 
-    // ── DOM refs ──
-    var worldBg = document.getElementById('world-bg');
-    var revealLayer = document.getElementById('reveal-layer');
-    var curtainLeft = document.getElementById('curtain-left');
-    var curtainRight = document.getElementById('curtain-right');
-    var rollerLeft = document.getElementById('roller-left');
-    var rollerRight = document.getElementById('roller-right');
+    // ── DOM ──
+    var world = document.getElementById('world');
+    var portal = document.getElementById('portal');
+    var curtainL = document.getElementById('curtain-left');
+    var curtainR = document.getElementById('curtain-right');
+    var rollerL = document.getElementById('roller-left');
+    var rollerR = document.getElementById('roller-right');
     var scene1 = document.getElementById('scene1');
     var scene2 = document.getElementById('scene2');
     var scene3 = document.getElementById('scene3');
     var scrollCue = document.getElementById('scrollCue');
     var navEmblem = document.getElementById('navEmblem');
     var clockFrame = document.getElementById('clock-frame');
+    var heroCards = document.getElementById('heroCards');
     var clockTime = document.getElementById('clockTime');
     var clockDate = document.getElementById('clockDate');
-    var clockLunar = document.getElementById('clockLunar');
 
     // ── Load images ──
-    worldBg.style.backgroundImage = "url('" + WORLD_BG + "')";
-    revealLayer.style.backgroundImage = "url('" + REVEAL_BG + "')";
+    world.style.backgroundImage = "url('" + WORLD_BG + "')";
+    portal.style.backgroundImage = "url('" + PORTAL_BG + "')";
 
     // ── Math ──
-    function easeInOutCubic(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2; }
+    function easeInOut(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
     function lerp(a,b,t) { return a + (b - a) * t; }
     function clamp(v,min,max) { return Math.max(min, Math.min(max, v)); }
 
-    // ── Responsive ──
     var isMobile = window.matchMedia('(max-width: 767px)').matches;
 
     // ── Scroll progress ──
-    var p = 0;
+    var scrollP = 0;
     function readScroll() {
       var root = document.getElementById('scroll-root');
       var s = root.offsetHeight - window.innerHeight;
-      p = s > 0 ? clamp(window.scrollY / s, 0, 1) : 0;
+      scrollP = s > 0 ? clamp(window.scrollY / s, 0, 1) : 0;
     }
     window.addEventListener('scroll', readScroll, { passive: true });
     window.addEventListener('resize', readScroll);
@@ -363,17 +353,13 @@
     function updateClock() {
       var n = new Date();
       clockTime.textContent = String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
-      var d = ['日','一','二','三','四','五','六'];
-      clockDate.textContent = n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日 · 星期'+d[n.getDay()];
-      var lunar = {'2026-7-24':'六月廿一','2026-7-25':'六月廿二','2026-7-26':'六月廿三','2026-7-27':'六月廿四','2026-7-28':'六月廿五','2026-7-29':'六月廿六','2026-7-30':'六月廿七','2026-7-31':'六月廿八'};
-      var key = n.getFullYear()+'-'+(n.getMonth()+1)+'-'+n.getDate();
-      clockLunar.textContent = lunar[key] ? '农历'+lunar[key] : '';
+      clockDate.textContent = n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日';
     }
     updateClock();
     setInterval(updateClock, 10000);
 
-    // ── Mouse parallax ──
-    var rx = 0, ry = 0, cx = 0, cy = 0;
+    // ── Mouse ──
+    var rx=0, ry=0, cx=0, cy=0;
     window.addEventListener('mousemove', function(e) {
       rx = (e.clientX / window.innerWidth) * 2 - 1;
       ry = (e.clientY / window.innerHeight) * 2 - 1;
@@ -387,87 +373,88 @@
       if (!els.length) return;
       statsAnimated = true;
       els.forEach(function(el) {
-        var t = parseInt(el.getAttribute('data-target'), 10) || 0;
-        var d = 1500, s = Date.now();
+        var t = parseInt(el.getAttribute('data-target'),10)||0;
+        var d=1500,s=Date.now();
         function tic() {
-          var p2 = Math.min((Date.now()-s)/d, 1);
-          el.textContent = Math.round(easeOutCubic(p2)*t);
-          if (p2 < 1) requestAnimationFrame(tic); else el.textContent = t;
+          var p2=Math.min((Date.now()-s)/d,1);
+          el.textContent=Math.round(easeOutCubic(p2)*t);
+          if(p2<1) requestAnimationFrame(tic); else el.textContent=t;
         }
         tic();
       });
     }
-    function easeOutCubic(t) { return 1 - Math.pow(1-t, 3); }
+    function easeOutCubic(t) { return 1-Math.pow(1-t,3); }
 
-    // ── Entrance ──
+    // ── Entrance fade ──
     setTimeout(function() {
-      document.getElementById('heroBadge').classList.add('show');
       document.getElementById('heroTitle').classList.add('show');
       document.getElementById('heroMotto').classList.add('show');
-      document.getElementById('heroSub').classList.add('show');
       clockFrame.classList.add('show');
       scrollCue.classList.add('show');
       navEmblem.classList.add('show');
-    }, 300);
+    }, 400);
+    setTimeout(function() { heroCards.classList.add('show'); }, 1200);
 
-    // ── Render Loop ──
-    var entranceDone = false;
-    setTimeout(function() { entranceDone = true; }, 2200);
+    // ─── REFERENCE-STYLE RENDER LOOP ───
+    // Mirrors the effect from :3003 — world scale, portal zoom, curtain open
+    var entranceStarted = false;
+    setTimeout(function() { entranceStarted = true; }, 100);
 
     function tick() {
-      cx = lerp(cx, rx, 0.05);
-      cy = lerp(cy, ry, 0.05);
-      var progress = p;
-      var eased = easeInOutCubic(progress);
+      cx = lerp(cx, rx, 0.07);
+      cy = lerp(cy, ry, 0.07);
+      var p = scrollP;
+      var eased = easeInOut(p);
 
-      // ── World Background ──
-      // Starts zoomed in (1.3x), zooms out to 1.0x as scroll progresses
-      // The village panorama "emerges" as you scroll
-      var worldScale = lerp(1.35, 1.0, eased);
-      var worldY = lerp(-15, 0, eased);
-      worldBg.style.transform = 'scale('+worldScale+') translate3d('+(cx*3)+'px,'+(cy*3+worldY)+'px,0)';
+      // ── World background ──
+      // Starts hidden — the village panorama slowly emerges behind the portal as you scroll
+      var worldOpacity = clamp((scrollP - 0.05) / 0.30, 0, 1);
+      var worldScale = lerp(1.35, 1.18, eased);
+      world.style.opacity = worldOpacity;
+      world.style.transform = 'scale('+worldScale+') translate3d('+(cx*5)+'px,'+(cy*5)+'px,0)';
 
-      // ── Reveal Layer ──
-      // The second image fades in as the world zooms out
-      var revealOpacity = clamp((progress - 0.1) / 0.25, 0, 1);
-      var revealScale = lerp(1.4, 1.05, clamp((progress - 0.1) / 0.3, 0, 1));
-      revealLayer.style.opacity = revealOpacity;
-      revealLayer.style.transform = 'scale('+revealScale+') translate3d('+(cx*4)+'px,'+(cy*4)+'px,0)';
+      // ── Portal zoom effect ──
+      // The landscape image in front — zooms from 1x → 7x and fades out
+      // Behind it, the village panorama emerges
+      var portalScale = lerp(1.0, 7.0, eased);
+      var portalOpacity = clamp(1 - (p - 0.30) / 0.30, 0, 1);
+      if (p < 0.05) portalOpacity = 1;
+      portal.style.opacity = portalOpacity;
+      portal.style.transform = 'scale('+portalScale+') translate3d('+(cx*6)+'px,'+(cy*6)+'px,0)';
 
       // ── Curtains ──
-      // Start closed (0% shift), open to 50% shift as scroll progresses
-      var curtainShift = 0 + eased * 50;
-      if (!entranceDone) { curtainShift = 0; }
-      curtainLeft.style.transform = 'translateX(-'+curtainShift+'%)';
-      curtainRight.style.transform = 'translateX('+curtainShift+'%)';
-      rollerLeft.style.transform = 'translateX(-'+curtainShift+'%)';
-      rollerRight.style.transform = 'translateX('+curtainShift+'%)';
+      // Start fully closed, open as scroll progresses
+      var curtainShift = entranceStarted ? eased * 50 : 0;
+      var curtainScale = lerp(1.0, 1.15, eased);
+      curtainL.style.transform = 'translateX(-'+curtainShift+'%) scale('+curtainScale+')';
+      curtainR.style.transform = 'translateX('+curtainShift+'%) scale('+curtainScale+')';
+      rollerL.style.transform = 'translateX(-'+curtainShift+'%)';
+      rollerR.style.transform = 'translateX('+curtainShift+'%)';
 
       // ── Scene 1 fade ──
-      var s1 = clamp(1 - progress / 0.20, 0, 1);
+      var s1 = clamp(1 - p / 0.20, 0, 1);
       scene1.style.opacity = s1;
-      clockFrame.style.opacity = s1 > 0.05 ? s1 : 0;
+      heroCards.style.opacity = s1 > 0.05 ? s1 : 0;
+      // Clock and scroll cue also fade with scene 1 (but slower)
+      if (clockFrame) clockFrame.style.opacity = clamp(1 - p / 0.25, 0, 1);
 
       // ── Scene 2 ──
-      var s2in = clamp((progress - 0.22) / 0.15, 0, 1);
-      var s2out = clamp(1 - (progress - 0.55) / 0.12, 0, 1);
+      var s2in = clamp((p - 0.22) / 0.15, 0, 1);
+      var s2out = clamp(1 - (p - 0.55) / 0.12, 0, 1);
       var s2 = Math.min(s2in, s2out);
       scene2.style.opacity = s2;
       scene2.style.pointerEvents = s2 > 0.05 ? 'auto' : 'none';
       if (s2 > 0.3 && !statsAnimated) animateStats();
 
       // ── Scene 3 ──
-      var s3 = clamp((progress - 0.58) / 0.15, 0, 1);
+      var s3 = clamp((p - 0.58) / 0.15, 0, 1);
       scene3.style.opacity = s3;
       scene3.style.pointerEvents = s3 > 0.05 ? 'auto' : 'none';
 
       // Scroll cue
       scrollCue.style.opacity = s1 > 0.1 ? 1 : 0;
+      if (p > 0.05 && !navEmblem.classList.contains('show')) navEmblem.classList.add('show');
 
-      // Nav emblem
-      if (progress > 0.05 && !navEmblem.classList.contains('show')) navEmblem.classList.add('show');
-
-      // Mobile button
       var ef = document.getElementById('enterFixed');
       if (ef) ef.style.opacity = s3 > 0.3 ? '1' : '0';
 
