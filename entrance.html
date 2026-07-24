@@ -80,90 +80,213 @@
     }
 
     /* ── Chinese Scroll Bars (卷轴) ── */
+    /*
+       卷轴结构：
+       ┌────────────────────────────────────┐
+       │  ═══ top decorative border ═══     │
+       │  ┌─  mounting (绫绢)  ──────────┐  │
+       │  │  纸本 Paper                   │  │
+       │  │  warm textured surface        │  │
+       │  └───────────────────────────────┘  │
+       │  ═══ bottom decorative border ═══   │
+       │     ■■  wooden roller  ■■           │
+       └────────────────────────────────────┘
+    */
     .scroll-bar {
       position: absolute; top: 0; height: 100%; z-index: 10;
       will-change: transform;
+      overflow: hidden;
     }
+    /* Scroll paper surface (shared) */
+    .scroll-bar::before {
+      content: ''; position: absolute; inset: 0; z-index: 0;
+    }
+    /* Outer mounting border (绫绢镶边) */
+    .scroll-bar::after {
+      content: ''; position: absolute; z-index: 1; pointer-events: none;
+    }
+
+    /* ─── Left scroll ─── */
     #scroll-left {
       left: 0; width: 50%;
-      background:
-        linear-gradient(90deg,
-          rgba(240,232,218,0.97) 0%,
-          rgba(235,226,210,0.97) 4%,
-          rgba(240,232,218,0.97) 8%,
-          rgba(238,229,214,0.97) 15%,
-          rgba(240,232,218,0.97) 50%,
-          rgba(237,227,212,0.97) 85%,
-          rgba(239,230,216,0.97) 100%
-        );
-      border-right: none;
       transform: translateX(0%);
+      /* Paper base - warm aged xuan paper with subtle grain */
+      background:
+        /* Fiber texture layer */
+        repeating-linear-gradient(0deg,
+          transparent, transparent 2px,
+          rgba(180,160,130,0.03) 2px, rgba(180,160,130,0.03) 3px
+        ),
+        /* Subtle vertical fibers */
+        repeating-linear-gradient(90deg,
+          transparent, transparent 6px,
+          rgba(160,140,110,0.04) 6px, rgba(160,140,110,0.04) 7px
+        ),
+        /* Warm paper base gradient */
+        linear-gradient(90deg,
+          #e8dfcf 0%, #f0e8d8 3%, #f5edde 8%,
+          #f2e9d9 20%, #f0e7d7 50%, #efe6d6 80%,
+          #ede4d4 92%, #e8dfcf 100%
+        );
     }
+    /* Mounting brocade border on left scroll (inner side) */
+    #scroll-left::after {
+      right: 0; top: 0; bottom: 0; width: 32px;
+      background: linear-gradient(90deg,
+        transparent 0%, rgba(180,155,120,0.08) 15%, rgba(180,155,120,0.12) 50%,
+        rgba(180,155,120,0.08) 85%, transparent 100%
+      );
+      border-right: 1.5px solid rgba(160,130,90,0.2);
+    }
+    /* Top/bottom decorative bands on left scroll */
+    #scroll-left .scroll-band-top,
+    #scroll-left .scroll-band-bottom {
+      position: absolute; left: 0; right: 32px; z-index: 2; pointer-events: none;
+    }
+    #scroll-left .scroll-band-top {
+      top: 0; height: 12px;
+      background: linear-gradient(180deg,
+        rgba(160,130,90,0.2) 0%, rgba(200,180,150,0.15) 40%, transparent 100%
+      );
+    }
+    #scroll-left .scroll-band-bottom {
+      bottom: 0; height: 12px;
+      background: linear-gradient(0deg,
+        rgba(160,130,90,0.2) 0%, rgba(200,180,150,0.15) 40%, transparent 100%
+      );
+    }
+
+    /* ─── Right scroll ─── */
     #scroll-right {
       right: 0; width: 50%;
-      background:
-        linear-gradient(270deg,
-          rgba(240,232,218,0.97) 0%,
-          rgba(235,226,210,0.97) 4%,
-          rgba(240,232,218,0.97) 8%,
-          rgba(238,229,214,0.97) 15%,
-          rgba(240,232,218,0.97) 50%,
-          rgba(237,227,212,0.97) 85%,
-          rgba(239,230,216,0.97) 100%
-        );
-      border-left: none;
       transform: translateX(0%);
+      background:
+        repeating-linear-gradient(0deg,
+          transparent, transparent 2px,
+          rgba(180,160,130,0.03) 2px, rgba(180,160,130,0.03) 3px
+        ),
+        repeating-linear-gradient(90deg,
+          transparent, transparent 6px,
+          rgba(160,140,110,0.04) 6px, rgba(160,140,110,0.04) 7px
+        ),
+        linear-gradient(270deg,
+          #e8dfcf 0%, #f0e8d8 3%, #f5edde 8%,
+          #f2e9d9 20%, #f0e7d7 50%, #efe6d6 80%,
+          #ede4d4 92%, #e8dfcf 100%
+        );
+    }
+    /* Mounting brocade border on right scroll (inner side) */
+    #scroll-right::after {
+      left: 0; top: 0; bottom: 0; width: 32px;
+      background: linear-gradient(270deg,
+        transparent 0%, rgba(180,155,120,0.08) 15%, rgba(180,155,120,0.12) 50%,
+        rgba(180,155,120,0.08) 85%, transparent 100%
+      );
+      border-left: 1.5px solid rgba(160,130,90,0.2);
+    }
+    /* Top/bottom decorative bands on right scroll */
+    #scroll-right .scroll-band-top,
+    #scroll-right .scroll-band-bottom {
+      position: absolute; left: 32px; right: 0; z-index: 2; pointer-events: none;
+    }
+    #scroll-right .scroll-band-top {
+      top: 0; height: 12px;
+      background: linear-gradient(180deg,
+        rgba(160,130,90,0.2) 0%, rgba(200,180,150,0.15) 40%, transparent 100%
+      );
+    }
+    #scroll-right .scroll-band-bottom {
+      bottom: 0; height: 12px;
+      background: linear-gradient(0deg,
+        rgba(160,130,90,0.2) 0%, rgba(200,180,150,0.15) 40%, transparent 100%
+      );
     }
 
-    /* Wooden rollers (木轴) at the inner edges */
+    /* ── 3D Wooden Rollers (木轴) ── */
     .scroll-roller {
-      position: absolute; top: 0; height: 100%; width: 18px; z-index: 11;
+      position: absolute; top: 0; height: 100%; z-index: 11;
       will-change: transform;
+      width: 24px;
     }
     #roller-left {
-      right: 0;
+      right: -2px;
+      /* Wood grain with 3D cylinder effect */
       background:
+        /* Grain lines */
+        repeating-linear-gradient(0deg,
+          rgba(120,80,40,0.06), rgba(120,80,40,0.06) 1px,
+          transparent 1px, transparent 5px,
+          rgba(100,65,30,0.04) 5px, rgba(100,65,30,0.04) 6px,
+          transparent 6px, transparent 10px
+        ),
+        /* 3D cylinder shading */
         linear-gradient(90deg,
-          #8B6B4A 0%, #A0805F 15%, #B89670 30%,
-          #C4A07A 45%, #B89670 55%, #A0805F 70%,
-          #8B6B4A 85%, #7A5A3A 100%
+          #6B4226 0%, #7A4E2E 10%, #8B5E3A 25%,
+          #A07850 40%, #B08860 50%, #A07850 60%,
+          #8B5E3A 75%, #7A4E2E 90%, #5A3A22 100%
         );
-      box-shadow: -2px 0 8px rgba(0,0,0,0.15), inset 1px 0 2px rgba(255,255,255,0.1);
+      box-shadow:
+        -3px 0 10px rgba(0,0,0,0.2),
+        inset -1px 0 3px rgba(255,255,255,0.08);
+      border-radius: 3px 0 0 3px;
     }
     #roller-right {
-      left: 0;
+      left: -2px;
       background:
+        repeating-linear-gradient(0deg,
+          rgba(120,80,40,0.06), rgba(120,80,40,0.06) 1px,
+          transparent 1px, transparent 5px,
+          rgba(100,65,30,0.04) 5px, rgba(100,65,30,0.04) 6px,
+          transparent 6px, transparent 10px
+        ),
         linear-gradient(270deg,
-          #8B6B4A 0%, #A0805F 15%, #B89670 30%,
-          #C4A07A 45%, #B89670 55%, #A0805F 70%,
-          #8B6B4A 85%, #7A5A3A 100%
+          #6B4226 0%, #7A4E2E 10%, #8B5E3A 25%,
+          #A07850 40%, #B08860 50%, #A07850 60%,
+          #8B5E3A 75%, #7A4E2E 90%, #5A3A22 100%
         );
-      box-shadow: 2px 0 8px rgba(0,0,0,0.15), inset -1px 0 2px rgba(255,255,255,0.1);
+      box-shadow:
+        3px 0 10px rgba(0,0,0,0.2),
+        inset 1px 0 3px rgba(255,255,255,0.08);
+      border-radius: 0 3px 3px 0;
     }
-    /* Roller end caps (轴头装饰) */
+
+    /* Roller end caps (轴头) — 传统蘑菇形轴头 */
     .roller-cap {
-      position: absolute; left: 50%; transform: translateX(-50%);
-      width: 28px; height: 16px; z-index: 12;
+      position: absolute; left: 50%; z-index: 12;
+      width: 36px; height: 24px; margin-left: -18px;
+      border-radius: 6px 6px 3px 3px;
       background:
         linear-gradient(180deg,
-          #A0805F 0%, #C4A07A 30%, #B89670 60%, #8B6B4A 100%
+          #8B6B4A 0%, #A0805F 20%, #C4A07A 45%,
+          #B89670 60%, #A0805F 80%, #7A5A3A 100%
         );
-      border-radius: 4px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      box-shadow:
+        0 2px 6px rgba(0,0,0,0.25),
+        inset 0 1px 2px rgba(255,255,255,0.15);
     }
-    .roller-cap.top { top: 10px; }
-    .roller-cap.bottom { bottom: 10px; }
+    .roller-cap::after {
+      content: ''; position: absolute; inset: 3px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 3px;
+    }
+    .roller-cap.top { top: -6px; }
+    .roller-cap.bottom { bottom: -6px; }
 
-    /* Decorative line on scroll edge (inner) */
-    .scroll-border {
-      position: absolute; top: 5%; height: 90%; width: 2px; z-index: 11;
-      background: linear-gradient(180deg,
-        transparent 0%, #c9a84c 15%, #c9a84c 85%, transparent 100%
+    /* ── Gap Light Effect (画卷展开时的金光) ── */
+    #scroll-glow {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 0; height: 100%; z-index: 9;
+      pointer-events: none;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(201,168,76,0.15) 30%,
+        rgba(201,168,76,0.25) 50%,
+        rgba(201,168,76,0.15) 70%,
+        transparent 100%
       );
-      opacity: 0.4;
+      transition: width 1.6s cubic-bezier(0.22,1,0.36,1);
     }
-    #scroll-left .scroll-border { right: 22px; }
-    #scroll-right .scroll-border { left: 22px; }
+    #scroll-glow.open { width: 120px; }
 
     /* ── Navigation ── */
     nav {
@@ -524,6 +647,13 @@
 
       .roller-cap { display: none; }
       .scroll-roller { width: 12px; }
+      #scroll-left::after, #scroll-right::after { width: 16px !important; }
+      .scroll-band-top, .scroll-band-bottom { height: 6px !important; }
+      #scroll-left .scroll-band-top,
+      #scroll-left .scroll-band-bottom { right: 16px !important; }
+      #scroll-right .scroll-band-top,
+      #scroll-right .scroll-band-bottom { left: 16px !important; }
+      #scroll-glow.open { width: 60px !important; }
 
       .hero-motto { letter-spacing: 0.2em; }
     }
@@ -569,10 +699,13 @@
 
       <!-- Chinese Scroll Bars (卷轴) -->
       <div id="scroll-left" class="scroll-bar">
-        <div class="scroll-border"></div>
+        <div class="scroll-band-top"></div>
+        <div class="scroll-band-bottom"></div>
       </div>
+      <div id="scroll-glow"></div>
       <div id="scroll-right" class="scroll-bar">
-        <div class="scroll-border"></div>
+        <div class="scroll-band-top"></div>
+        <div class="scroll-band-bottom"></div>
       </div>
       <!-- Rollers -->
       <div id="roller-left" class="scroll-roller">
@@ -734,7 +867,7 @@
     var scene2 = document.getElementById('scene2');
     var scene3 = document.getElementById('scene3');
     var scrollCue = document.getElementById('scrollCue');
-    var navEmblem = document.getElementById('navEmblem');
+    var scrollGlow = document.getElementById('scroll-glow');
 
     // ── Load background ──
     var img = new Image();
@@ -787,12 +920,14 @@
     scrollRight.style.transition = 'transform 1.6s cubic-bezier(0.22,1,0.36,1)';
     rollerLeft.style.transition = 'transform 1.6s cubic-bezier(0.22,1,0.36,1)';
     rollerRight.style.transition = 'transform 1.6s cubic-bezier(0.22,1,0.36,1)';
+    scrollGlow.style.transition = 'width 1.6s cubic-bezier(0.22,1,0.36,1)';
 
     // Start closed
     scrollLeft.style.transform = 'translateX(0%)';
     scrollRight.style.transform = 'translateX(0%)';
     rollerLeft.style.transform = 'translateX(0%)';
     rollerRight.style.transform = 'translateX(0%)';
+    scrollGlow.style.width = '0';
 
     // Open scrolls after 200ms
     setTimeout(function () {
@@ -800,6 +935,7 @@
       scrollRight.style.transform = 'translateX(100%)';
       rollerLeft.style.transform = 'translateX(-100%)';
       rollerRight.style.transform = 'translateX(100%)';
+      scrollGlow.classList.add('open');
     }, 200);
 
     // Fade in hero elements
@@ -824,6 +960,7 @@
       scrollRight.style.transition = 'none';
       rollerLeft.style.transition = 'none';
       rollerRight.style.transition = 'none';
+      scrollGlow.style.transition = 'none';
     }, 2500);
 
     // ── Stats counter animation ──
