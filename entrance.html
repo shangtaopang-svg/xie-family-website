@@ -26,15 +26,15 @@
     position:absolute;top:0;height:100%;z-index:8;will-change:transform;pointer-events:none;
     width:50%;background-size:cover;background-position:center;
   }
-  /* Left panel shows the :3003 world bg on the left side */
+  /* Left panel — shows right half of :3003 image, slight right overlap to hide seam */
   #s-left{
     left:0;transform-origin:left center;
-    background-image:url('images/world-bg-ref.webp');background-position:right center;
+    background-image:url('images/world-bg-ref.webp');background-position:right center;right:-1px;
   }
-  /* Right panel shows the :3003 world bg on the right side */
+  /* Right panel — shows left half of :3003 image, slight left overlap to hide seam */
   #s-right{
     right:0;transform-origin:right center;
-    background-image:url('images/world-bg-ref.webp');background-position:left center;
+    background-image:url('images/world-bg-ref.webp');background-position:left center;left:-1px;
   }
 
   /* Portal overlay on each panel (half each) */
@@ -195,7 +195,7 @@ var isOpen=false,isAnimating=false;
 document.getElementById('enterBtn').addEventListener('click',function(){
   if(isAnimating)return;isAnimating=true;
   var wrap=document.getElementById('enter-wrap');
-  var dur=2000,st=Date.now();
+  var dur=2200,st=Date.now();
   var opening=!isOpen;
   var startShift=opening?0:48,targetShift=opening?48:0;
 
