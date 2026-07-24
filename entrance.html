@@ -28,7 +28,7 @@
   .nv-sig{border:1px solid rgba(245,230,200,0.15);border-radius:20px;padding:3px 12px;background:rgba(255,255,255,0.04)}
 
   /* Hero text (left side, like :3003) */
-  #hero-text{position:absolute;top:46%;left:clamp(30px,5vw,60px);transform:translateY(-50%);z-index:20;pointer-events:none;max-width:clamp(240px,30vw,440px);opacity:0;transition:opacity 1.2s ease 0.5s}
+  #hero-text{position:absolute;top:50%;left:clamp(30px,5vw,60px);transform:translateY(-50%);z-index:20;pointer-events:none;max-width:clamp(240px,30vw,440px);opacity:0;transition:opacity 1.2s ease 0.5s}
   #hero-text.show{opacity:1}
   .ht-title{font-family:'Noto Serif SC',serif;font-size:clamp(28px,5vw,64px);font-weight:700;color:#f5e6c8;line-height:1.1;letter-spacing:0.06em;margin:0 0 16px;text-shadow:0 2px 24px rgba(0,0,0,0.45)}
   .ht-divider{width:clamp(24px,3vw,40px);height:1.5px;background:rgba(245,230,200,0.35);margin:0 0 16px}
@@ -159,7 +159,9 @@ window.addEventListener('wheel',function(e){if(!isOpen&&!isAnim){if(e.deltaY<0)p
 // ── Toggle open/close ──
 document.getElementById('openBtn').addEventListener('click',function(){
   if(isAnim)return;isAnim=true;
-  var dur=2200,st=Date.now(),opening=!isOpen;
+  var opening=!isOpen;
+  if(opening){document.getElementById('hc').classList.remove('show');document.getElementById('hero-text').classList.remove('show');}
+  var dur=2200,st=Date.now();
   var ss=opening?0:50,ts=opening?50:0;
   !function an(){
     var el=Date.now()-st,t=Math.min(el/dur,1),e=eoc(t),sh=ss+(ts-ss)*e;
@@ -176,7 +178,7 @@ document.getElementById('openBtn').addEventListener('click',function(){
       isOpen=opening;isAnim=false;
       if(opening){
         v.style.opacity=1;v.style.transform='scale(1)';pt.style.display='none';
-        vn.classList.add('show');ent.classList.add('show');document.getElementById('hc').classList.remove('show');document.getElementById('hero-text').classList.remove('show');
+        vn.classList.add('show');ent.classList.add('show');
         document.getElementById('openBtn').textContent='✦ 收起';
       } else {
         v.style.opacity=0;pt.style.display='';pt.style.opacity=1;pt.style.transform='none';
