@@ -84,21 +84,6 @@
     .roller-cap.top { top:-6px; }
     .roller-cap.bottom { bottom:-6px; }
 
-    /* ── Navigation ── */
-    nav {
-      position:absolute; top:0; left:0; right:0; z-index:50;
-      display:flex; align-items:center; justify-content:space-between;
-      padding:20px 48px; pointer-events:auto;
-    }
-    .nav-left,.nav-right { display:flex; align-items:center; gap:20px; }
-    .nav-link { font-size:12px; letter-spacing:0.12em; color:rgba(245,230,200,0.7); text-decoration:none; transition:color .3s; }
-    .nav-link:hover { color:#c9a84c; }
-    .nav-emblem { display:flex; align-items:center; gap:8px; opacity:0; transition:opacity .8s ease; }
-    .nav-emblem.show { opacity:1; }
-    .nav-emblem .seal { width:32px; height:32px; flex:none; background:#a83030; border-radius:3px; display:grid; place-items:center; font-family:'Noto Serif SC',serif; font-size:18px; font-weight:900; color:#f5e6c8; box-shadow:0 1px 6px rgba(168,48,48,0.3); position:relative; }
-    .nav-emblem .seal::after { content:''; position:absolute; inset:2px; border:1px solid rgba(245,230,200,0.25); border-radius:1px; }
-    .nav-emblem .seal-text { font-family:'Noto Serif SC',serif; font-size:13px; font-weight:600; color:#c9a84c; letter-spacing:0.12em; }
-
     /* ── Scene 1 Hero ── */
     #scene1 {
       position:absolute; inset:0; z-index:20;
@@ -184,13 +169,6 @@
     .scroll-cue .chev { width:28px; height:28px; border-radius:50%; border:1px solid rgba(245,230,200,0.15); display:grid; place-items:center; animation:bobUp 1.8s ease-in-out infinite; }
 
     @media (max-width:767px) {
-      nav { padding:12px 16px; }
-      .nav-left .nav-link:not(.nav-enter-mobile) { display:none; }
-      .nav-link.nav-enter-mobile { display:inline-block; font-size:11px; }
-      .nav-right .nav-link:not(.nav-back-mobile) { display:none; }
-      .nav-link.nav-back-mobile { display:inline-block; }
-      .nav-emblem .seal { width:26px; height:26px; font-size:14px; }
-      .nav-emblem .seal-text { font-size:11px; }
       #scene1 { padding:40px 20px; }
       .curtain { width:50%; }
       #clock-frame { top:60px; right:16px; }
@@ -223,24 +201,6 @@
           <div class="roller-cap bottom"></div>
         </div>
       </div>
-
-      <!-- Navigation -->
-      <nav>
-        <div class="nav-left">
-          <a class="nav-link" href="pages/history.html">📜 历史</a>
-          <a class="nav-link" href="pages/genealogy.html">🌳 族谱</a>
-          <a class="nav-link nav-enter-mobile" href="index.html">🏠 主站</a>
-        </div>
-        <div class="nav-emblem" id="navEmblem">
-          <div class="seal">谢</div>
-          <span class="seal-text">下枫槎</span>
-        </div>
-        <div class="nav-right">
-          <a class="nav-link nav-back-mobile" href="pages/activities.html">🎪 活动</a>
-          <a class="nav-link" href="pages/celebrities.html">🏆 名人</a>
-          <a class="nav-link" href="pages/today.html">📸 今日</a>
-        </div>
-      </nav>
 
       <!-- Clock (top-right) -->
       <div id="clock-frame">
@@ -321,7 +281,6 @@
     var scene2 = document.getElementById('scene2');
     var scene3 = document.getElementById('scene3');
     var scrollCue = document.getElementById('scrollCue');
-    var navEmblem = document.getElementById('navEmblem');
     var clockFrame = document.getElementById('clock-frame');
     var heroCards = document.getElementById('heroCards');
     var clockTime = document.getElementById('clockTime');
@@ -391,7 +350,6 @@
       document.getElementById('heroMotto').classList.add('show');
       clockFrame.classList.add('show');
       scrollCue.classList.add('show');
-      navEmblem.classList.add('show');
     }, 400);
     setTimeout(function() { heroCards.classList.add('show'); }, 1200);
 
@@ -406,18 +364,21 @@
       var p = scrollP;
       var eased = easeInOut(p);
 
-      // ── World background ──
-      // Starts hidden — the village panorama slowly emerges behind the portal as you scroll
-      var worldOpacity = clamp((scrollP - 0.05) / 0.30, 0, 1);
-      var worldScale = lerp(1.35, 1.18, eased);
-      world.style.opacity = worldOpacity;
+      // ── World background (village panorama) ──
+      // Revealed through a radial mask — starts as tiny circle (stone gate opening)
+      // and expands to full, creating the "looking through the gate" effect
+      var revealP = clamp((scrollP - 0.05) / 0.30, 0, 1);
+      var radialSize = lerp(6, 105, revealP);
+      var radialGrad = 'radial-gradient(circle at 50% 50%, #000 ' + radialSize + '%, transparent ' + (radialSize + 5) + '%)';
+      world.style.maskImage = radialGrad;
+      world.style.webkitMaskImage = radialGrad;
       world.style.transform = 'scale('+worldScale+') translate3d('+(cx*5)+'px,'+(cy*5)+'px,0)';
 
       // ── Portal zoom effect ──
       // The landscape image in front — zooms from 1x → 7x and fades out
       // Behind it, the village panorama emerges
-      var portalScale = lerp(1.0, 7.0, eased);
-      var portalOpacity = clamp(1 - (p - 0.30) / 0.30, 0, 1);
+      var portalScale = lerp(1.0, 8.0, eased);
+      var portalOpacity = clamp(1 - (p - 0.20) / 0.35, 0, 1);
       if (p < 0.05) portalOpacity = 1;
       portal.style.opacity = portalOpacity;
       portal.style.transform = 'scale('+portalScale+') translate3d('+(cx*6)+'px,'+(cy*6)+'px,0)';
@@ -453,7 +414,6 @@
 
       // Scroll cue
       scrollCue.style.opacity = s1 > 0.1 ? 1 : 0;
-      if (p > 0.05 && !navEmblem.classList.contains('show')) navEmblem.classList.add('show');
 
       var ef = document.getElementById('enterFixed');
       if (ef) ef.style.opacity = s3 > 0.3 ? '1' : '0';
