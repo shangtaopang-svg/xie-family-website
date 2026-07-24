@@ -35,7 +35,7 @@
       will-change:clip-path; pointer-events:none;
     }
     #bg-right {
-      position:absolute; right:0; top:0; width:50%; height:100%; z-index:0;
+      position:absolute; right:0; left:auto; top:0; width:50%; height:100%; z-index:0;
       background-size:cover; background-position:center;
       will-change:clip-path; pointer-events:none;
     }
@@ -251,8 +251,8 @@
     <div id="stage">
 
       <!-- Two side-by-side background images -->
-      <div id="bg-left" class="layer"></div>
-      <div id="bg-right" class="layer"></div>
+      <div id="bg-left"></div>
+      <div id="bg-right"></div>
       <div id="world-overlay" class="layer"></div>
 
       <!-- Draggable Scroll Bars (卷轴) -->
