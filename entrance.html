@@ -109,6 +109,11 @@ v.style.opacity=0;
 !function u(){var n=new Date();ct.textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');cd.textContent=n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日';setTimeout(u,10000)}();
 setTimeout(function(){document.getElementById('clk').classList.add('show');},500);
 
+// Mouse parallax (like :3003)
+var rx=0,ry=0,cx=0,cy=0;
+window.addEventListener('mousemove',function(e){rx=(e.clientX/window.innerWidth)*2-1;ry=(e.clientY/window.innerHeight)*2-1;});
+!function tick(){cx+=(rx-cx)*0.07;cy+=(ry-cy)*0.07;if(!isOpen&&!isAnim)pt.style.transform='translate3d('+(cx*12)+'px,'+(cy*8)+'px,0)';requestAnimationFrame(tick);}();
+
 // Toggle open/close
 var isOpen=false,isAnim=false;
 document.getElementById('openBtn').addEventListener('click',function(){
