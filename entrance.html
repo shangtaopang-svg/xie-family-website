@@ -17,17 +17,16 @@
   /* Village (deepest) */
   #village{background-size:cover;background-position:center 30%;z-index:0;opacity:0}
 
-  /* :3003 scene — ONE complete image, ONE portal doorway (NOT split) */
-  #ref-bg{background-size:cover;background-position:center;z-index:1}
-  #ref-portal{background-size:cover;background-position:center;transform-origin:52% 38%;z-index:2}
+  /* Portal — sits in center ON TOP of scroll panels, one complete doorway */
+  #ref-portal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10;pointer-events:none;background-size:contain;background-repeat:no-repeat;background-position:center;background-image:url('images/portal-bg-ref.webp');width:clamp(250px,32vw,450px);height:clamp(250px,32vw,450px);opacity:1;will-change:transform,opacity}
 
   /* Overlay */
   #overlay{z-index:3;background:radial-gradient(ellipse at 50% 80%,rgba(10,8,6,0) 20%,rgba(10,8,6,0.5) 80%,rgba(10,8,6,0.9) 100%),linear-gradient(180deg,rgba(10,8,6,0.1) 0%,transparent 30%,transparent 70%,rgba(10,8,6,0.3) 100%)}
 
-  /* Scroll panels — paper colored, sit on top, cover the portal */
-  .sp{position:absolute;top:0;height:100%;z-index:8;will-change:transform;pointer-events:none;width:50%}
-  #spl{left:0;transform-origin:left center;background:linear-gradient(90deg,#d9c8a8 0%,#e8d8b8 5%,#f0e0c0 12%,#f2e2c4 30%,#f0e0c0 50%,#ede0c0 75%,#e8d8b8 93%,#d9c8a8 100%)}
-  #spr{right:0;transform-origin:right center;background:linear-gradient(270deg,#d9c8a8 0%,#e8d8b8 5%,#f0e0c0 12%,#f2e2c4 30%,#f0e0c0 50%,#ede0c0 75%,#e8d8b8 93%,#d9c8a8 100%)}
+  /* Scroll panels — show :3003 world bg (left/right halves = complete scene when closed) */
+  .sp{position:absolute;top:0;height:100%;z-index:8;will-change:transform;pointer-events:none;width:50%;background-size:cover;background-position:center}
+  #spl{left:0;transform-origin:left center;background-image:url('images/world-bg-ref.webp');background-position:right center}
+  #spr{right:0;transform-origin:right center;background-image:url('images/world-bg-ref.webp');background-position:left center}
   .sp::after{content:'';position:absolute;top:4%;height:92%;width:1.5px;background:linear-gradient(180deg,transparent 0%,#c9a84c 25%,#c9a84c 75%,transparent 100%);opacity:0.25}
   #spl::after{right:22px}#spr::after{left:22px}
 
@@ -74,8 +73,7 @@
 <div id="stage">
 
   <div id="village" class="layer"></div>
-  <div id="ref-bg" class="layer"></div>
-  <div id="ref-portal" class="layer"></div>
+  <div id="ref-portal"></div>
   <div id="overlay" class="layer"></div>
 
   <!-- Paper scroll panels (cover the portal) -->
@@ -105,14 +103,13 @@
 </div>
 
 <script>
-var v=document.getElementById('village'),bg=document.getElementById('ref-bg'),pt=document.getElementById('ref-portal');
+var v=document.getElementById('village'),pt=document.getElementById('ref-portal');
 var sl=document.getElementById('spl'),sr=document.getElementById('spr');
 var rl=document.getElementById('rll'),rr=document.getElementById('rlr');
 var ct=document.getElementById('ct'),cd=document.getElementById('cd');
 var vn=document.getElementById('vn'),ent=document.getElementById('ent');
 
 v.style.backgroundImage="url('images/bg-left.png')";
-bg.style.backgroundImage="url('images/world-bg-ref.webp')";
 pt.style.backgroundImage="url('images/portal-bg-ref.webp')";
 
 function lerp(a,b,t){return a+(b-a)*t}
@@ -138,21 +135,21 @@ document.getElementById('openBtn').addEventListener('click',function(){
     rl.style.transform='translateX(-'+sh+'%)';rr.style.transform='translateX('+sh+'%)';
     if(opening){
       v.style.opacity=e;v.style.transform='scale('+lerp(1.3,1.1,e)+')';
-      bg.style.opacity=1-e;pt.style.opacity=1-e;
+      var ps=lerp(1,8,e);pt.style.transform='translate(-50%,-50%) scale('+ps+')';pt.style.opacity=1-e;
     } else {
       v.style.opacity=1-e;v.style.transform='scale('+lerp(1.1,1.3,e)+')';
-      bg.style.opacity=e;pt.style.opacity=e;
+      var ps2=lerp(8,1,e);pt.style.transform='translate(-50%,-50%) scale('+ps2+')';pt.style.opacity=e;
     }
     if(t<1) requestAnimationFrame(an);
     else {
       isOpen=opening;isAnim=false;
       if(opening){
-        v.style.opacity=1;bg.style.display='none';pt.style.display='none';
+        v.style.opacity=1;pt.style.display='none';
         vn.classList.add('show');ent.classList.add('show');
         document.getElementById('openBtn').textContent='✦ 收起';
       } else {
-        v.style.opacity=0;bg.style.display='';pt.style.display='';
-        bg.style.opacity=1;pt.style.opacity=1;
+        v.style.opacity=0;pt.style.display='';
+        pt.style.opacity=1;pt.style.transform='translate(-50%,-50%) scale(1)';
         vn.classList.remove('show');ent.classList.remove('show');
         document.getElementById('openBtn').textContent='✦ 探索下枫槎';
       }
