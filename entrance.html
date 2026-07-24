@@ -82,12 +82,12 @@
   /* Cards */
   .hcs{position:absolute;bottom:70px;display:flex;gap:16px;z-index:16;opacity:0;transition:opacity 1s ease}
   .hcs.show{opacity:1}
-  .hc{width:150px;height:150px;border-radius:24px;overflow:hidden;position:relative;background-size:cover;background-position:center;box-shadow:0 18px 50px rgba(0,0,0,0.45);display:block;text-decoration:none;transition:transform .4s cubic-bezier(0.22,1,0.36,1)}
+  .hc{width:158px;height:158px;border-radius:28px;overflow:hidden;position:relative;background-size:cover;background-position:center;box-shadow:0 18px 50px rgba(0,0,0,0.45);display:block;text-decoration:none;transition:transform .4s cubic-bezier(0.22,1,0.36,1)}
   .hc:hover{transform:translateY(-6px) scale(1.03)}
-  .hc .cl{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:12px;padding:20px 22px;background:linear-gradient(to top,rgba(0,0,0,0.72) 0%,rgba(0,0,0,0.18) 60%,transparent 100%);font-family:'Noto Serif SC',serif;font-size:18px;letter-spacing:0.08em;font-weight:600;color:#f5e6c8}
-  .hc .cp{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.9);display:grid;place-items:center;color:#2a1808;flex:none}
-  .hc .cp svg{width:10px;height:10px}
-  .hc .cm{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-size:clamp(20px,2.6vw,34px);font-weight:600;line-height:1.15;background:linear-gradient(to top,rgba(0,0,0,0.6),transparent 70%);letter-spacing:0.06em;color:#f5e6c8;padding:20px}
+  .hc .cl{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:12px;padding:20px 22px;background:linear-gradient(to top,rgba(0,0,0,0.72) 0%,rgba(0,0,0,0.18) 60%,transparent 100%);font-size:20px;letter-spacing:0.08em;font-weight:600;color:#f5e6c8}
+  .hc .cp{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.92);display:grid;place-items:center;color:#2a1808;flex:none}
+  .hc .cp svg{width:12px;height:12px}
+  .hc .cm{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(20px,2.6vw,34px);font-weight:600;line-height:1.15;background:linear-gradient(to top,rgba(0,0,0,0.6),transparent 70%);letter-spacing:0.06em;color:#f5e6c8;padding:20px}
 
   /* Scenes 2 & 3 */
   #s2{position:absolute;inset:0;z-index:21;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;padding:0 40px}
@@ -110,8 +110,8 @@
   @media(max-width:767px){
     #clock{top:50px;right:16px}.scroll-panel{width:50%}
     .enter-btn{padding:12px 28px;font-size:14px}.enter-sub{font-size:10px}
-    .hcs{bottom:40px;gap:10px}.hc{width:100px;height:100px;border-radius:16px}
-    .hc .cl{padding:12px 14px;font-size:12px;gap:8px}.hc .cp{width:24px;height:24px}.hc .cp svg{width:8px;height:8px}
+    .hcs{bottom:40px;gap:12px}.hc{width:110px;height:110px;border-radius:18px}
+    .hc .cl{padding:14px 16px;font-size:13px;gap:8px}.hc .cp{width:26px;height:26px}.hc .cp svg{width:8px;height:8px}
     .roller{width:12px}.rcap{display:none}
   }
   </style>
