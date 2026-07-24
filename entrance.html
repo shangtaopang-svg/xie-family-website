@@ -17,8 +17,8 @@
   /* Village (deepest) */
   #village{background-size:cover;background-position:center 30%;z-index:0;opacity:0}
 
-  /* Portal — sits in center ON TOP of scroll panels, one complete doorway */
-  #ref-portal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10;pointer-events:none;background-size:contain;background-repeat:no-repeat;background-position:center;background-image:url('images/portal-bg-ref.webp');width:clamp(250px,32vw,450px);height:clamp(250px,32vw,450px);opacity:1;will-change:transform,opacity}
+  /* Portal — full-screen like :3003, one complete doorway */
+  #ref-portal{position:absolute;inset:0;z-index:10;pointer-events:none;background-size:cover;background-position:center;background-image:url('images/portal-bg-ref.webp');opacity:1;will-change:transform,opacity}
 
   /* Overlay */
   #overlay{z-index:3;background:radial-gradient(ellipse at 50% 80%,rgba(10,8,6,0) 20%,rgba(10,8,6,0.5) 80%,rgba(10,8,6,0.9) 100%),linear-gradient(180deg,rgba(10,8,6,0.1) 0%,transparent 30%,transparent 70%,rgba(10,8,6,0.3) 100%)}
@@ -30,12 +30,7 @@
   .sp::after{content:'';position:absolute;top:4%;height:92%;width:1.5px;background:linear-gradient(180deg,transparent 0%,#c9a84c 25%,#c9a84c 75%,transparent 100%);opacity:0.25}
   #spl::after{right:22px}#spr::after{left:22px}
 
-  /* Rollers */
-  .rl{position:absolute;top:5%;height:90%;width:18px;z-index:9;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(120,80,40,0.08) 0,rgba(120,80,40,0.08) 1px,transparent 1px,transparent 5px),linear-gradient(90deg,#6B4226 0%,#8B5E3A 20%,#A07850 45%,#B08860 55%,#A07850 65%,#8B5E3A 80%,#5A3A22 100%);box-shadow:0 0 20px rgba(0,0,0,0.3);border-radius:4px}
-  #rll{right:-3px;border-radius:4px 0 0 4px}#rlr{left:-3px;border-radius:0 4px 4px 0}
-  .rc{position:absolute;left:50%;transform:translateX(-50%);z-index:10;width:26px;height:18px;border-radius:4px;background:linear-gradient(180deg,#8B6B4A 0%,#A0805F 25%,#C4A07A 50%,#B89670 75%,#7A5A3A 100%);box-shadow:0 1px 6px rgba(0,0,0,0.25)}
-  .rc::after{content:'';position:absolute;inset:3px;border:1px solid rgba(255,255,255,0.06);border-radius:2px}
-  .rc.t{top:-8px}.rc.b{bottom:-8px}
+  /* Rollers (removed for now) */
   .sb{position:absolute;left:0;right:0;height:12px;z-index:9;pointer-events:none;background:linear-gradient(180deg,rgba(180,155,120,0.12),transparent)}
   .sb.bt{bottom:0;background:linear-gradient(0deg,rgba(180,155,120,0.12),transparent)}
 
@@ -77,14 +72,8 @@
   <div id="overlay" class="layer"></div>
 
   <!-- Paper scroll panels (cover the portal) -->
-  <div id="spl" class="sp">
-    <div class="sb"></div><div class="sb bt"></div>
-    <div id="rll" class="rl"><div class="rc t"></div><div class="rc b"></div></div>
-  </div>
-  <div id="spr" class="sp">
-    <div id="rlr" class="rl"><div class="rc t"></div><div class="rc b"></div></div>
-    <div class="sb"></div><div class="sb bt"></div>
-  </div>
+  <div id="spl" class="sp"><div class="sb"></div><div class="sb bt"></div></div>
+  <div id="spr" class="sp"><div class="sb"></div><div class="sb bt"></div></div>
 
   <!-- Open button -->
   <div id="btnw">
@@ -105,7 +94,6 @@
 <script>
 var v=document.getElementById('village'),pt=document.getElementById('ref-portal');
 var sl=document.getElementById('spl'),sr=document.getElementById('spr');
-var rl=document.getElementById('rll'),rr=document.getElementById('rlr');
 var ct=document.getElementById('ct'),cd=document.getElementById('cd');
 var vn=document.getElementById('vn'),ent=document.getElementById('ent');
 
@@ -116,7 +104,6 @@ function lerp(a,b,t){return a+(b-a)*t}
 function eoc(t){return 1-Math.pow(1-t,3)}
 
 sl.style.transform='translateX(0%)';sr.style.transform='translateX(0%)';
-rl.style.transform='translateX(0%)';rr.style.transform='translateX(0%)';
 v.style.opacity=0;
 
 // Clock
@@ -132,7 +119,6 @@ document.getElementById('openBtn').addEventListener('click',function(){
   !function an(){
     var el=Date.now()-st,t=Math.min(el/dur,1),e=eoc(t),sh=ss+(ts-ss)*e;
     sl.style.transform='translateX(-'+sh+'%)';sr.style.transform='translateX('+sh+'%)';
-    rl.style.transform='translateX(-'+sh+'%)';rr.style.transform='translateX('+sh+'%)';
     if(opening){
       v.style.opacity=e;v.style.transform='scale('+lerp(1.3,1.1,e)+')';
       var ps=lerp(1,8,e);pt.style.transform='translate(-50%,-50%) scale('+ps+')';pt.style.opacity=1-e;
