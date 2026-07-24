@@ -268,7 +268,7 @@
     // World = full village panorama (the "destination")
     // Portal = the zoom-in image that reveals the world
     var WORLD_BG = 'images/bg-left.png';
-    var PORTAL_BG = 'images/dynamic-element.png';
+    var PORTAL_BG = 'images/portal-gate.png';
 
     // ── DOM ──
     var world = document.getElementById('world');
@@ -364,24 +364,21 @@
       var p = scrollP;
       var eased = easeInOut(p);
 
-      // ── World background (village panorama) ──
-      // Revealed through a radial mask — starts as tiny circle (stone gate opening)
-      // and expands to full, creating the "looking through the gate" effect
-      var revealP = clamp((scrollP - 0.05) / 0.30, 0, 1);
-      var radialSize = lerp(6, 105, revealP);
-      var radialGrad = 'radial-gradient(circle at 50% 50%, #000 ' + radialSize + '%, transparent ' + (radialSize + 5) + '%)';
-      world.style.maskImage = radialGrad;
-      world.style.webkitMaskImage = radialGrad;
-      world.style.transform = 'scale('+worldScale+') translate3d('+(cx*5)+'px,'+(cy*5)+'px,0)';
-
-      // ── Portal zoom effect ──
-      // The landscape image in front — zooms from 1x → 7x and fades out
-      // Behind it, the village panorama emerges
-      var portalScale = lerp(1.0, 8.0, eased);
-      var portalOpacity = clamp(1 - (p - 0.20) / 0.35, 0, 1);
-      if (p < 0.05) portalOpacity = 1;
-      portal.style.opacity = portalOpacity;
+      // ── Portal (stone gate) with cutout mask ──
+      // The gate has a circular hole cut in the center via radial mask
+      // The hole EXPANDS as you scroll, revealing the village behind it
+      var portalScale = lerp(1.0, 1.3, eased);
+      var holeSize = lerp(6, 105, clamp((scrollP - 0.02) / 0.30, 0, 1));
+      var portalHole = 'radial-gradient(circle at 50% 50%, transparent ' + holeSize + '%, #000 ' + (holeSize + 8) + '%)';
+      portal.style.maskImage = portalHole;
+      portal.style.webkitMaskImage = portalHole;
       portal.style.transform = 'scale('+portalScale+') translate3d('+(cx*6)+'px,'+(cy*6)+'px,0)';
+      portal.style.opacity = 1;
+
+      // ── World background (village panorama) ──
+      // Fully visible behind the gate, seen through the gate's expanding cutout
+      var worldScale = lerp(1.3, 1.15, eased);
+      world.style.transform = 'scale('+worldScale+') translate3d('+(cx*5)+'px,'+(cy*5)+'px,0)';
 
       // ── Curtains ──
       // Start fully closed, open as scroll progresses
