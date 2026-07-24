@@ -78,13 +78,40 @@
     }
 
     /* ── Center joinery (中缝装裱) ── */
-    #center-joint {
-      position:absolute; left:50%; top:0; transform:translateX(-50%);
-      width:4px; height:100%; z-index:2; pointer-events:none;
-      background:linear-gradient(180deg,
-        transparent 0%, rgba(201,168,76,0.08) 15%,
-        rgba(201,168,76,0.12) 50%, rgba(201,168,76,0.08) 85%, transparent 100%
-      );
+    /* ── Center Mounting Panel (画卷中缝装裱) ── */
+    #center-mount {
+      position:absolute; top:6%; height:88%; z-index:2; pointer-events:none;
+      background:linear-gradient(90deg, rgba(235,225,210,0.06), rgba(235,225,210,0.10) 30%, rgba(235,225,210,0.10) 70%, rgba(235,225,210,0.06));
+      border-left:1px solid rgba(201,168,76,0.08);
+      border-right:1px solid rgba(201,168,76,0.08);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      overflow:hidden;
+    }
+    #center-mount .mount-text {
+      font-family:'Ma Shan Zheng','Noto Serif SC',serif;
+      color:rgba(201,168,76,0.2);
+      white-space:nowrap; text-align:center;
+      line-height:1.4; letter-spacing:0.08em;
+      transition:opacity 0.4s;
+    }
+    #center-mount .mount-title {
+      font-size:clamp(18px, 2.8vw, 42px);
+      font-weight:400;
+    }
+    #center-mount .mount-motto {
+      font-size:clamp(10px, 1.4vw, 20px);
+      margin-top:6px;
+      color:rgba(201,168,76,0.12);
+    }
+    #center-mount .mount-seal {
+      margin-top:12px;
+      width:clamp(20px, 2.4vw, 36px); height:clamp(20px, 2.4vw, 36px);
+      border:1px solid rgba(168,48,48,0.15);
+      display:grid; place-items:center;
+      font-family:'Noto Serif SC',serif;
+      font-size:clamp(10px, 1.2vw, 18px);
+      color:rgba(168,48,48,0.12);
+      transform:rotate(-3deg);
     }
 
     /* ── Centered Clock (月窗式时钟) ── */
@@ -240,6 +267,13 @@
       <div id="bg-right" class="bg-half"></div>
       <div id="world-overlay"></div>
 
+      <!-- Center mounting panel (fills gap between axles) -->
+      <div id="center-mount">
+        <div class="mount-title mount-text">下枫槎</div>
+        <div class="mount-motto mount-text">乌衣世泽 · 宝树家声</div>
+        <div class="mount-seal">谢</div>
+      </div>
+
       <!-- Center joint decorative line -->
       <div id="center-joint"></div>
 
@@ -324,11 +358,12 @@
   <a class="enter-fixed" id="enterFixed" href="index.html">✦ 进入下枫槎</a>
 
   <script>
-    var BG_LEFT = 'images/bg-entrance.jpg';
+    var BG_LEFT = 'images/bg-left.jpg';
     var BG_RIGHT = 'images/bg-right.jpg';
 
     var bgLeft = document.getElementById('bg-left');
     var bgRight = document.getElementById('bg-right');
+    var centerMount = document.getElementById('center-mount');
     var axleLeft = document.getElementById('axle-left');
     var axleRight = document.getElementById('axle-right');
     var scene2 = document.getElementById('scene2');
@@ -396,6 +431,17 @@
       // Position the axle elements
       axleLeft.style.left = leftPos + '%';
       axleRight.style.left = (rightPos - (isMobile ? 10 : 16) / vw * 100) + '%';
+
+      // Position center mounting panel between the two axles
+      var mountW = rightPos - leftPos;
+      if (centerMount) {
+        centerMount.style.left = leftPos + '%';
+        centerMount.style.width = mountW + '%';
+        // Fade out mounting text when gap is too narrow
+        var mountTexts = centerMount.querySelectorAll('.mount-text, .mount-seal');
+        var textOpacity = Math.min(1, Math.max(0, (mountW - 8) / 20));
+        mountTexts.forEach(function(el) { el.style.opacity = textOpacity; });
+      }
 
       // Update image masks
       var leftCut = leftPos; // left image visible from 0 to leftPos%
