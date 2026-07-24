@@ -43,52 +43,14 @@
         linear-gradient(180deg, rgba(10,8,6,0.08) 0%, transparent 25%, transparent 75%, rgba(10,8,6,0.3) 100%);
     }
 
-    /* ── Reference-style yellow paper curtains ── */
+    /* ── Reference-style curtains (:3003 real curtain images) ── */
     .curtain {
       position:absolute; top:0; height:100%; z-index:8; will-change:transform; pointer-events:none;
       width:50%;
-      background:
-        repeating-linear-gradient(0deg, transparent,transparent 3px, rgba(200,180,150,0.04) 3px, rgba(200,180,150,0.04) 4px),
-        repeating-linear-gradient(90deg, transparent,transparent 15px, rgba(180,160,130,0.03) 15px, rgba(180,160,130,0.03) 16px),
-        linear-gradient(90deg, #d9c8a8 0%, #e8d8b8 4%, #f0e0c0 10%, #f2e2c4 25%, #f0e0c0 50%, #ede0c0 75%, #e8d8b8 90%, #d9c8a8 100%);
+      background-size:cover; background-position:center;
     }
-    #curtain-left { left:0; transform-origin:left center; }
-    #curtain-right { right:0; transform-origin:right center; }
-
-    /* Curtain decorative edge band (like reference mounted border) */
-    .curtain::before {
-      content:''; position:absolute; top:0; width:18px; height:100%; z-index:9;
-      background:linear-gradient(90deg, rgba(180,155,120,0.15), rgba(180,155,120,0.25) 30%, rgba(180,155,120,0.25) 70%, rgba(180,155,120,0.15));
-    }
-    #curtain-left::before { right:0; border-right:1.5px solid rgba(160,130,90,0.2); }
-    #curtain-right::before { left:0; border-left:1.5px solid rgba(160,130,90,0.2); }
-
-    .curtain::after {
-      content:''; position:absolute; top:3%; height:94%; width:1px; z-index:10;
-      background:linear-gradient(180deg, transparent 0%, #c9a84c 25%, #c9a84c 75%, transparent 100%);
-      opacity:0.25;
-    }
-    #curtain-left::after { right:30px; }
-    #curtain-right::after { left:30px; }
-
-    /* Rollers */
-    .curtain-roller {
-      position:absolute; top:5%; height:90%; width:18px; z-index:11; pointer-events:none;
-      background:repeating-linear-gradient(0deg, rgba(120,80,40,0.08),rgba(120,80,40,0.08) 1px,transparent 1px,transparent 5px),
-        linear-gradient(90deg, #6B4226 0%, #8B5E3A 20%, #A07850 45%, #B08860 55%, #A07850 65%, #8B5E3A 80%, #5A3A22 100%);
-      box-shadow:0 0 20px rgba(0,0,0,0.3), 0 0 40px rgba(0,0,0,0.1); border-radius:4px;
-    }
-    #roller-left { right:-3px; border-radius:4px 0 0 4px; }
-    #roller-right { left:-3px; border-radius:0 4px 4px 0; }
-    .r-cap {
-      position:absolute; left:50%; transform:translateX(-50%); z-index:12;
-      width:26px; height:18px; border-radius:4px;
-      background:linear-gradient(180deg, #8B6B4A 0%, #A0805F 25%, #C4A07A 50%, #B89670 75%, #7A5A3A 100%);
-      box-shadow:0 1px 6px rgba(0,0,0,0.25);
-    }
-    .r-cap::after { content:''; position:absolute; inset:3px; border:1px solid rgba(255,255,255,0.06); border-radius:2px; }
-    .r-cap.top { top:-8px; }
-    .r-cap.bottom { bottom:-8px; }
+    #curtain-left { left:0; transform-origin:left center; background-image:url('images/curtain-left.webp'); }
+    #curtain-right { right:0; transform-origin:right center; background-image:url('images/curtain-right.webp'); }
 
     /* ── Scene 1 Hero (village name, over everything) ── */
     #scene1 {
@@ -195,18 +157,8 @@
       <div id="overlay" class="layer"></div>
 
       <!-- Top: yellow paper curtains (reference-style), auto-open -->
-      <div id="curtain-left" class="curtain">
-        <div id="roller-left" class="curtain-roller">
-          <div class="r-cap top"></div>
-          <div class="r-cap bottom"></div>
-        </div>
-      </div>
-      <div id="curtain-right" class="curtain">
-        <div id="roller-right" class="curtain-roller">
-          <div class="r-cap top"></div>
-          <div class="r-cap bottom"></div>
-        </div>
-      </div>
+      <div id="curtain-left" class="curtain"></div>
+      <div id="curtain-right" class="curtain"></div>
 
       <!-- Scene 1: village name -->
       <div id="scene1">
@@ -277,8 +229,6 @@
     var gate = document.getElementById('gate');
     var curtainL = document.getElementById('curtain-left');
     var curtainR = document.getElementById('curtain-right');
-    var rollerL = document.getElementById('roller-left');
-    var rollerR = document.getElementById('roller-right');
     var scene1 = document.getElementById('scene1');
     var scene2 = document.getElementById('scene2');
     var scene3 = document.getElementById('scene3');
@@ -353,8 +303,6 @@
     // Initial state: curtains closed, gate hole tiny
     curtainL.style.transform = 'translateX(0%)';
     curtainR.style.transform = 'translateX(0%)';
-    rollerL.style.transform = 'translateX(0%)';
-    rollerR.style.transform = 'translateX(0%)';
 
     // Start the auto-animation after a brief pause
     setTimeout(function() {
@@ -370,8 +318,6 @@
         var shift = e * 50;
         curtainL.style.transform = 'translateX(-' + shift + '%)';
         curtainR.style.transform = 'translateX(' + shift + '%)';
-        rollerL.style.transform = 'translateX(-' + shift + '%)';
-        rollerR.style.transform = 'translateX(' + shift + '%)';
 
         // 2. Gate cutout expands: tiny hole (5%) → full (105%)
         var holeSize = lerp(5, 105, e);
@@ -389,8 +335,6 @@
           // Final state: fully open
           curtainL.style.transform = 'translateX(-50%)';
           curtainR.style.transform = 'translateX(50%)';
-          rollerL.style.transform = 'translateX(-50%)';
-          rollerR.style.transform = 'translateX(50%)';
           gate.style.maskImage = 'none';
           gate.style.webkitMaskImage = 'none';
         }
