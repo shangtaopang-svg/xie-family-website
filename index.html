@@ -11,7 +11,33 @@
 
   <link rel="stylesheet" href="css/style.css?v=20260625">
   <style>
-    /* Carousel mobile fix - ensure slides have height */
+    /* ── Left Sidebar Navigation (ref: rifat-ishtiyak.web.app) ── */
+    .sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;z-index:100;background:linear-gradient(180deg,#1a1410 0%,#0f0a08 100%);display:none;flex-direction:column;align-items:center;justify-content:space-between;padding:28px 0;border-right:1px solid rgba(245,230,200,0.04);overflow-y:auto}
+    .sidebar::-webkit-scrollbar{width:2px;background:transparent}
+    .sidebar::-webkit-scrollbar-thumb{background:rgba(245,230,200,0.04);border-radius:2px}
+    .sidebar .s-logo{text-align:center;padding:0 10px}
+    .sidebar .s-logo .s-seal{width:80px;height:80px;margin:0 auto;background:#a83030;border-radius:6px;display:grid;place-items:center;font-family:'Noto Serif SC',serif;font-size:38px;font-weight:900;color:#f5e6c8;box-shadow:0 2px 12px rgba(168,48,48,0.2);position:relative}
+    .sidebar .s-logo .s-seal::after{content:'';position:absolute;inset:5px;border:1px solid rgba(245,230,200,0.15);border-radius:3px}
+    .sidebar .s-logo .s-name{font-family:'Noto Serif SC',serif;font-size:15px;color:#c9a84c;letter-spacing:0.12em;margin-top:12px;font-weight:600}
+    .sidebar .s-logo .s-sub{font-size:10px;color:rgba(245,230,200,0.15);letter-spacing:0.08em;margin-top:2px}
+    .sidebar .s-nav{width:100%;padding:0 12px;flex:1;overflow-y:auto;margin-top:10px}
+    .sidebar .s-nav::-webkit-scrollbar{width:2px;background:transparent}
+    .sidebar .s-nav::-webkit-scrollbar-thumb{background:rgba(245,230,200,0.03);border-radius:2px}
+    .sidebar .s-nav .s-grp{font-size:9px;color:rgba(245,230,200,0.08);letter-spacing:0.12em;padding:16px 16px 4px;text-transform:uppercase}
+    .sidebar .s-nav a{display:block;padding:9px 16px;border-radius:6px;color:rgba(245,230,200,0.3);font-size:13px;letter-spacing:0.04em;text-decoration:none;transition:all 0.25s;margin:1px 0;position:relative}
+    .sidebar .s-nav a:hover{color:#c9a84c;background:rgba(201,168,76,0.04);letter-spacing:0.1em}
+    .sidebar .s-nav a.active{color:#c9a84c;background:rgba(201,168,76,0.06)}
+    .sidebar .s-nav a.active::before{content:'';position:absolute;left:0;top:20%;height:60%;width:2px;background:#c9a84c;border-radius:2px}
+    .sidebar .s-bottom{text-align:center;padding:16px 16px 0;width:100%;border-top:1px solid rgba(245,230,200,0.03)}
+    .sidebar .s-bottom a{display:inline-block;padding:7px 16px;border-radius:16px;border:1px solid rgba(245,230,200,0.04);color:rgba(245,230,200,0.1);font-size:11px;letter-spacing:0.06em;text-decoration:none;transition:all 0.3s}
+    .sidebar .s-bottom a:hover{color:#c9a84c;border-color:rgba(201,168,76,0.1)}
+    @media(min-width:901px){.sidebar{display:flex !important}}
+    .content{margin-left:0}@media(min-width:901px){.content{margin-left:220px !important}}
+
+    /* Hide old top header on desktop */
+    @media(min-width:901px){.site-header{display:none !important}}
+
+    /* Carousel mobile fix */
     .carousel-container { aspect-ratio: 21/9; overflow: hidden; }
     .carousel-slide { height: 100%; }
   </style>
@@ -54,6 +80,37 @@
 </head>
 <body>
 <canvas id="weather-canvas"></canvas>
+
+<!-- Left Sidebar (ref: rifat-ishtiyak.web.app) -->
+<aside class="sidebar">
+  <div class="s-logo">
+    <div class="s-seal">谢</div>
+    <div class="s-name">下枫槎谢氏</div>
+    <div class="s-sub">宁海 · 下枫槎村</div>
+  </div>
+  <nav class="s-nav">
+    <div class="s-grp">· 主栏目 ·</div>
+    <a href="index.html" class="active">🏠 首页</a>
+    <a href="pages/history.html">📜 家族历史</a>
+    <a href="pages/genealogy.html">🌳 族谱查询</a>
+    <a href="pages/celebrities.html">🏆 名人事迹</a>
+    <a href="pages/merit-scroll.html">📜 功德卷轴</a>
+    <a href="pages/news.html">📰 消息发布</a>
+    <div class="s-grp">· 更多 ·</div>
+    <a href="pages/members.html">👥 家族成员</a>
+    <a href="pages/activities.html">🎪 家族活动</a>
+    <a href="pages/today.html">📸 今日下枫槎</a>
+    <a href="pages/reports.html">📋 新闻报道</a>
+    <a href="pages/audio.html">🎧 听下枫槎</a>
+    <a href="pages/vinyl-player.html">🎵 枫槎留声机</a>
+    <a href="pages/xie-collection.html">📚 谢氏集萃</a>
+    <a href="pages/contact.html">✉️ 联系我们</a>
+    <a href="pages/admin.html">🔐 管理后台</a>
+  </nav>
+  <div class="s-bottom">
+    <a href="index.html">✦ 返回首页</a>
+  </div>
+</aside>
 
 <div class="content">
 
