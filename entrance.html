@@ -6,417 +6,258 @@
   <title>下枫槎 · 山水画卷 — 宁海谢氏家族</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <style>
     :root { scrollbar-gutter:stable; }
-    html, body { margin:0; padding:0; background:#0a0806; scroll-behavior:auto; }
+    html,body { margin:0; padding:0; background:#0a0806; scroll-behavior:auto; }
     body { font-family:'Noto Sans SC',sans-serif; color:#f5e6c8; overflow-x:hidden; overscroll-behavior:none; }
     * { box-sizing:border-box; }
     a { text-decoration:none; }
-
+    @keyframes bobUp { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-6px); } }
     #scroll-root { height:520vh; position:relative; }
-    #stage {
-      position:sticky; top:0; left:0; width:100%; height:100vh;
-      overflow:hidden; background:#0a0806;
-    }
-
+    #stage { position:sticky; top:0; left:0; width:100%; height:100vh; overflow:hidden; background:#0a0806; }
     .layer { position:absolute; inset:0; width:100%; height:100%; will-change:transform,opacity; pointer-events:none; }
 
-    /* ── Village panorama (behind curtains) ── */
-    #world {
-      background-size:cover; background-position:center 30%;
-      transform-origin:50% 50%; z-index:1; opacity:0;
-    }
+    /* ── Layer 1: Village panorama (final reveal, deepest) ── */
+    #village { background-size:cover; background-position:center 30%; transform-origin:50% 50%; z-index:0; opacity:0; }
+
+    /* ── Layer 2: :3003 World background (initial scene) ── */
+    #ref-world { background-size:cover; background-position:center; transform-origin:50% 50%; z-index:1; }
+
+    /* ── Layer 3: :3003 Portal (the "gate/doorway" that zooms to reveal) ── */
+    #ref-portal { background-size:cover; background-position:center; transform-origin:52% 38%; z-index:2; }
 
     /* ── Dark overlay ── */
-    #overlay {
-      z-index:2;
-      background:radial-gradient(ellipse at 50% 80%, rgba(10,8,6,0) 20%, rgba(10,8,6,0.5) 75%, rgba(10,8,6,0.88) 100%),
-        linear-gradient(180deg, rgba(10,8,6,0.08) 0%, transparent 25%, transparent 75%, rgba(10,8,6,0.3) 100%);
-    }
+    #overlay { z-index:3; background:radial-gradient(ellipse at 50% 80%, rgba(10,8,6,0) 20%, rgba(10,8,6,0.5) 80%, rgba(10,8,6,0.9) 100%), linear-gradient(180deg, rgba(10,8,6,0.1) 0%, transparent 30%, transparent 70%, rgba(10,8,6,0.3) 100%); }
 
-    /* ── Curtains (:3003 style) — centered at page middle ── */
-    /* Solid warm backing to prevent any black showing through */
-    #curtain-back {
-      position:absolute; inset:0; z-index:7; pointer-events:none;
-      background:linear-gradient(135deg, #2a2018 0%, #3d3025 25%, #4a3a2c 50%, #3d3025 75%, #2a2018 100%);
-    }
-    .curtain {
-      position:absolute; top:0; height:100%; z-index:8; will-change:transform; pointer-events:none;
-      width:50%;
-      background-size:cover; background-position:center;
-    }
+    /* ── Warm curtain backing ── */
+    #curtain-back { position:absolute; inset:0; z-index:7; pointer-events:none; background:linear-gradient(135deg,#2a2018 0%,#3d3025 25%,#4a3a2c 50%,#3d3025 75%,#2a2018 100%); }
+
+    /* ── Curtains (:3003) ── */
+    .curtain { position:absolute; top:0; height:100%; z-index:8; will-change:transform; pointer-events:none; width:50%; background-size:cover; background-position:center; }
     #curtain-left { left:0; transform-origin:left center; background-image:url('images/curtain-left.webp'); }
     #curtain-right { right:0; transform-origin:right center; background-image:url('images/curtain-right.webp'); }
 
-    /* ── Centered "探索下枫槎" Button ── */
-    #enter-btn-wrap {
-      position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-      z-index:20; text-align:center; pointer-events:auto;
-      opacity:1; transition:opacity 0.8s ease;
-    }
-    #enter-btn-wrap.hidden { opacity:0; pointer-events:none; }
-    .enter-btn {
-      display:inline-block;
-      font-family:'Noto Serif SC',serif;
-      font-size:clamp(16px,1.8vw,22px);
-      letter-spacing:0.2em;
-      color:#f5e6c8;
-      background:rgba(10,8,6,0.3);
-      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
-      border:1.5px solid rgba(201,168,76,0.25);
-      padding:16px 48px;
-      border-radius:50px;
-      cursor:pointer;
-      transition:all 0.5s cubic-bezier(0.22,1,0.36,1);
-      box-shadow:0 4px 30px rgba(0,0,0,0.3);
-    }
-    .enter-btn:hover {
-      background:rgba(201,168,76,0.12);
-      border-color:rgba(201,168,76,0.4);
-      transform:scale(1.05);
-      box-shadow:0 8px 40px rgba(201,168,76,0.08), 0 4px 30px rgba(0,0,0,0.3);
-    }
-    .enter-btn-sub {
-      font-size:clamp(11px,1vw,13px);
-      color:rgba(245,230,200,0.3);
-      letter-spacing:0.15em;
-      margin-top:10px;
-      transition:color 0.3s;
-    }
-    .enter-btn:hover + .enter-btn-sub { color:rgba(245,230,200,0.5); }
+    /* ── Button ── */
+    #enter-wrap { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:20; text-align:center; pointer-events:auto; opacity:1; transition:opacity 0.8s ease; }
+    #enter-wrap.hidden { opacity:0; pointer-events:none; }
+    .enter-btn { display:inline-block; font-family:'Noto Serif SC',serif; font-size:clamp(16px,1.8vw,22px); letter-spacing:0.2em; color:#f5e6c8; background:rgba(10,8,6,0.35); backdrop-filter:blur(12px); border:1.5px solid rgba(201,168,76,0.2); padding:16px 48px; border-radius:50px; cursor:pointer; transition:all 0.5s cubic-bezier(0.22,1,0.36,1); box-shadow:0 4px 30px rgba(0,0,0,0.4); }
+    .enter-btn:hover { background:rgba(201,168,76,0.1); border-color:rgba(201,168,76,0.35); transform:scale(1.05); box-shadow:0 8px 40px rgba(201,168,76,0.06); }
+    .enter-sub { font-size:clamp(11px,1vw,13px); color:rgba(245,230,200,0.25); letter-spacing:0.15em; margin-top:10px; }
 
-    /* ── Clock (top-right) ── */
-    #clock-frame {
-      position:absolute; top:70px; right:40px; z-index:25; pointer-events:auto;
-      text-align:right; opacity:0; transition:opacity 1s ease;
-    }
-    #clock-frame.show { opacity:1; }
-    .clock-time { font-family:'Noto Serif SC',serif; font-size:clamp(18px,2vw,28px); font-weight:700; color:#f5e6c8; line-height:1.1; letter-spacing:0.04em; text-shadow:0 2px 16px rgba(0,0,0,0.4); }
-    .clock-date { font-size:clamp(9px,0.7vw,11px); color:rgba(245,230,200,0.4); letter-spacing:0.1em; margin-top:2px; }
+    /* ── Clock ── */
+    #clock { position:absolute; top:70px; right:40px; z-index:25; text-align:right; opacity:0; transition:opacity 1s ease; pointer-events:auto; }
+    #clock.show { opacity:1; }
+    .c-time { font-family:'Noto Serif SC',serif; font-size:clamp(18px,2vw,28px); font-weight:700; color:#f5e6c8; line-height:1.1; letter-spacing:0.04em; text-shadow:0 2px 16px rgba(0,0,0,0.4); }
+    .c-date { font-size:clamp(9px,0.7vw,11px); color:rgba(245,230,200,0.4); letter-spacing:0.1em; margin-top:2px; }
 
-    /* ── Scene 1 title (shows after opening) ── */
-    #scene1 {
-      position:absolute; inset:0; z-index:15;
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      pointer-events:none; padding:80px 40px; opacity:0;
-      transition:opacity 1.2s ease;
-    }
+    /* ── Scene 1 ── */
+    #scene1 { position:absolute; inset:0; z-index:15; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; opacity:0; transition:opacity 1.2s ease; }
     #scene1.show { opacity:1; }
-    .hero-title {
-      font-family:'Noto Serif SC',serif;
-      font-size:clamp(48px,10vw,120px); font-weight:900;
-      color:#f5e6c8; line-height:1; letter-spacing:0.06em;
-      text-shadow:0 4px 40px rgba(0,0,0,0.5), 0 2px 80px rgba(0,0,0,0.3);
-      margin:0;
-    }
-    .hero-title .hl { background:linear-gradient(135deg,#c9a84c,#e8c97a,#c9a84c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-    .hero-motto {
-      font-family:'Noto Serif SC',serif;
-      font-size:clamp(14px,1.8vw,24px); font-weight:600;
-      color:#c9a84c; letter-spacing:0.3em;
-      text-shadow:0 2px 20px rgba(0,0,0,0.4); margin:8px 0 0;
-    }
+    .s1-title { font-family:'Noto Serif SC',serif; font-size:clamp(48px,10vw,120px); font-weight:900; color:#f5e6c8; line-height:1; letter-spacing:0.06em; text-shadow:0 4px 40px rgba(0,0,0,0.5); margin:0; }
+    .s1-title .hl { background:linear-gradient(135deg,#c9a84c,#e8c97a,#c9a84c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .s1-motto { font-family:'Noto Serif SC',serif; font-size:clamp(14px,1.8vw,24px); font-weight:600; color:#c9a84c; letter-spacing:0.3em; text-shadow:0 2px 20px rgba(0,0,0,0.4); margin:8px 0 0; }
 
     /* ── Cards ── */
-    .hero-cards {
-      position:absolute; bottom:70px; display:flex; gap:14px; z-index:16;
-      opacity:0; transition:opacity 1s ease;
-    }
+    .hero-cards { position:absolute; bottom:70px; display:flex; gap:14px; z-index:16; opacity:0; transition:opacity 1s ease; }
     .hero-cards.show { opacity:1; }
-    .hero-card {
-      width:clamp(80px,10vw,130px); height:clamp(80px,10vw,130px);
-      border-radius:18px; overflow:hidden; position:relative;
-      background:rgba(10,8,6,0.3); backdrop-filter:blur(8px);
-      border:1px solid rgba(245,230,200,0.1);
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      text-decoration:none; color:#f5e6c8; cursor:pointer;
-      transition:all .3s cubic-bezier(0.22,1,0.36,1);
-    }
-    .hero-card:hover { transform:translateY(-4px) scale(1.03); border-color:rgba(201,168,76,0.3); }
-    .hero-card .card-icon { font-size:clamp(18px,2.2vw,28px); margin-bottom:4px; }
-    .hero-card .card-label { font-family:'Noto Serif SC',serif; font-size:clamp(10px,1.1vw,14px); letter-spacing:0.06em; }
-    .hero-card .card-sub { font-size:clamp(7px,0.7vw,9px); color:rgba(245,230,200,0.4); margin-top:2px; letter-spacing:0.04em; }
+    .h-card { width:clamp(80px,10vw,130px); height:clamp(80px,10vw,130px); border-radius:18px; position:relative; background:rgba(10,8,6,0.3); backdrop-filter:blur(8px); border:1px solid rgba(245,230,200,0.1); display:flex; flex-direction:column; align-items:center; justify-content:center; text-decoration:none; color:#f5e6c8; transition:all .3s cubic-bezier(0.22,1,0.36,1); }
+    .h-card:hover { transform:translateY(-4px) scale(1.03); border-color:rgba(201,168,76,0.3); }
+    .h-card .ci { font-size:clamp(18px,2.2vw,28px); margin-bottom:4px; }
+    .h-card .cl { font-family:'Noto Serif SC',serif; font-size:clamp(10px,1.1vw,14px); letter-spacing:0.06em; }
+    .h-card .cs { font-size:clamp(7px,0.7vw,9px); color:rgba(245,230,200,0.4); margin-top:2px; letter-spacing:0.04em; }
 
-    /* ── Scene 2 ── */
+    /* ── Scene 2 & 3 ── */
     #scene2 { position:absolute; inset:0; z-index:21; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; padding:0 40px; }
-    .story-wrap { text-align:center; max-width:640px; }
-    .story-eyebrow { font-family:'Noto Serif SC',serif; font-size:13px; letter-spacing:0.25em; color:rgba(201,168,76,0.6); margin-bottom:12px; }
-    .story-title { font-family:'Noto Serif SC',serif; font-size:clamp(28px,4vw,52px); font-weight:700; color:#f5e6c8; margin:0 0 16px; line-height:1.2; text-shadow:0 2px 20px rgba(0,0,0,0.3); }
-    .story-text { font-size:clamp(14px,1.3vw,17px); line-height:1.9; color:rgba(245,230,200,0.7); margin:0 auto 28px; max-width:520px; }
-    .stats-grid { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; max-width:600px; margin:0 auto; }
-    .stat-item { flex:1; min-width:80px; max-width:120px; background:rgba(245,230,200,0.06); border:1px solid rgba(245,230,200,0.08); border-radius:16px; padding:16px 8px; text-align:center; backdrop-filter:blur(8px); }
-    .stat-num { font-family:'Noto Serif SC',serif; font-size:clamp(24px,3vw,36px); font-weight:700; color:#c9a84c; line-height:1; }
-    .stat-num .unit { font-size:0.5em; color:rgba(201,168,76,0.6); margin-left:2px; }
-    .stat-label { font-size:11px; color:rgba(245,230,200,0.5); margin-top:6px; letter-spacing:0.08em; }
-
-    /* ── Scene 3 ── */
+    .s2-wrap { text-align:center; max-width:640px; }
+    .s2-e { font-family:'Noto Serif SC',serif; font-size:13px; letter-spacing:0.25em; color:rgba(201,168,76,0.6); margin-bottom:12px; }
+    .s2-t { font-family:'Noto Serif SC',serif; font-size:clamp(28px,4vw,52px); font-weight:700; color:#f5e6c8; margin:0 0 16px; line-height:1.2; text-shadow:0 2px 20px rgba(0,0,0,0.3); }
+    .s2-d { font-size:clamp(14px,1.3vw,17px); line-height:1.9; color:rgba(245,230,200,0.7); margin:0 auto 28px; max-width:520px; }
+    .stats { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; max-width:600px; margin:0 auto; }
+    .st { flex:1; min-width:80px; max-width:120px; background:rgba(245,230,200,0.06); border:1px solid rgba(245,230,200,0.08); border-radius:16px; padding:16px 8px; text-align:center; backdrop-filter:blur(8px); }
+    .st-n { font-family:'Noto Serif SC',serif; font-size:clamp(24px,3vw,36px); font-weight:700; color:#c9a84c; line-height:1; }
+    .st-n .u { font-size:0.5em; color:rgba(201,168,76,0.6); margin-left:2px; }
+    .st-l { font-size:11px; color:rgba(245,230,200,0.5); margin-top:6px; letter-spacing:0.08em; }
     #scene3 { position:absolute; inset:0; z-index:22; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; padding:0 40px; }
-    .cta-wrap { text-align:center; max-width:520px; }
-    .cta-title { font-family:'Noto Serif SC',serif; font-size:clamp(32px,5vw,64px); font-weight:700; color:#f5e6c8; letter-spacing:0.06em; line-height:1.15; margin:0 0 20px; text-shadow:0 2px 20px rgba(0,0,0,0.3); }
-    .cta-desc { font-size:clamp(14px,1.2vw,17px); line-height:1.7; color:rgba(245,230,200,0.6); margin:0 auto 28px; max-width:440px; }
-    .cta-btn { display:inline-block; font-family:'Noto Serif SC',serif; font-size:16px; letter-spacing:0.15em; color:#0a0806; background:linear-gradient(135deg,#c9a84c,#e8c97a); padding:14px 48px; border-radius:50px; text-decoration:none; border:none; transition:all .3s; cursor:pointer; box-shadow:0 4px 20px rgba(201,168,76,0.25); }
-    .cta-btn:hover { transform:scale(1.05); box-shadow:0 8px 30px rgba(201,168,76,0.4); }
-    .cta-links { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-top:24px; }
-    .cta-link { font-size:13px; color:rgba(245,230,200,0.5); padding:8px 18px; border-radius:20px; border:1px solid rgba(245,230,200,0.1); transition:all .3s; letter-spacing:0.06em; }
-    .cta-link:hover { color:#c9a84c; border-color:rgba(201,168,76,0.3); background:rgba(201,168,76,0.06); }
-
-    .scroll-cue { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:6px; z-index:30; cursor:pointer; pointer-events:auto; opacity:0; transition:opacity .8s ease; }
+    .c3 { text-align:center; max-width:520px; }
+    .c3t { font-family:'Noto Serif SC',serif; font-size:clamp(32px,5vw,64px); font-weight:700; color:#f5e6c8; letter-spacing:0.06em; line-height:1.15; margin:0 0 20px; text-shadow:0 2px 20px rgba(0,0,0,0.3); }
+    .c3d { font-size:clamp(14px,1.2vw,17px); line-height:1.7; color:rgba(245,230,200,0.6); margin:0 auto 28px; max-width:440px; }
+    .c3b { display:inline-block; font-family:'Noto Serif SC',serif; font-size:16px; letter-spacing:0.15em; color:#0a0806; background:linear-gradient(135deg,#c9a84c,#e8c97a); padding:14px 48px; border-radius:50px; text-decoration:none; transition:all .3s; box-shadow:0 4px 20px rgba(201,168,76,0.25); }
+    .c3b:hover { transform:scale(1.05); box-shadow:0 8px 30px rgba(201,168,76,0.4); }
+    .c3l { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-top:24px; }
+    .c3l a { font-size:13px; color:rgba(245,230,200,0.5); padding:8px 18px; border-radius:20px; border:1px solid rgba(245,230,200,0.1); transition:all .3s; letter-spacing:0.06em; }
+    .c3l a:hover { color:#c9a84c; border-color:rgba(201,168,76,0.3); background:rgba(201,168,76,0.06); }
+    .scroll-cue { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:6px; z-index:30; opacity:0; transition:opacity .8s ease; }
     .scroll-cue.show { opacity:1; }
     .scroll-cue span { font-size:10px; letter-spacing:0.2em; color:rgba(245,230,200,0.25); }
     .scroll-cue .chev { width:28px; height:28px; border-radius:50%; border:1px solid rgba(245,230,200,0.15); display:grid; place-items:center; animation:bobUp 1.8s ease-in-out infinite; }
-
     @media (max-width:767px) {
-      #clock-frame { top:50px; right:16px; }
+      #clock { top:50px; right:16px; }
       .enter-btn { padding:12px 28px; font-size:14px; }
       .hero-cards { bottom:40px; gap:8px; flex-wrap:wrap; justify-content:center; }
-      .hero-card { width:clamp(60px,18vw,90px); height:clamp(60px,18vw,90px); border-radius:12px; }
+      .h-card { width:clamp(60px,18vw,90px); height:clamp(60px,18vw,90px); border-radius:12px; }
     }
   </style>
 </head>
 <body>
-  <div id="scroll-root">
-    <div id="stage">
+  <div id="scroll-root"><div id="stage">
 
-      <!-- Village panorama -->
-      <div id="world" class="layer"></div>
-      <div id="overlay" class="layer"></div>
+    <!-- Village panorama (final reveal) -->
+    <div id="village" class="layer"></div>
 
-      <!-- Solid warm backing behind curtains (prevents black gaps) -->
-      <div id="curtain-back" class="layer"></div>
+    <!-- :3003 reference scene layers (initial view) -->
+    <div id="ref-world" class="layer"></div>
+    <div id="ref-portal" class="layer"></div>
 
-      <!-- Curtains centered -->
-      <div id="curtain-left" class="curtain"></div>
-      <div id="curtain-right" class="curtain"></div>
+    <!-- Overlay -->
+    <div id="overlay" class="layer"></div>
 
-      <!-- "探索下枫槎" button (centered) -->
-      <div id="enter-btn-wrap">
-        <button class="enter-btn" id="enterBtn">✦ 探索下枫槎</button>
-        <div class="enter-btn-sub">徐徐展开 · 一卷山水</div>
-      </div>
+    <!-- Curtain backing -->
+    <div id="curtain-back" class="layer"></div>
 
-      <!-- Clock -->
-      <div id="clock-frame">
-        <div class="clock-time" id="clockTime">--:--</div>
-        <div class="clock-date" id="clockDate"></div>
-      </div>
+    <!-- Curtains -->
+    <div id="curtain-left" class="curtain"></div>
+    <div id="curtain-right" class="curtain"></div>
 
-      <!-- Scene 1 title -->
-      <div id="scene1">
-        <h1 class="hero-title"><span class="hl">下枫槎</span></h1>
-        <div class="hero-motto">乌衣世泽 · 宝树家声</div>
-      </div>
-
-      <!-- Three entrance cards (作品/影集/足迹 style) -->
-      <div class="hero-cards" id="heroCards">
-        <a class="hero-card" href="pages/genealogy.html"><span class="card-icon">🌳</span><span class="card-label">族谱</span><span class="card-sub">世系源流</span></a>
-        <a class="hero-card" href="pages/today.html"><span class="card-icon">📸</span><span class="card-label">影集</span><span class="card-sub">今日下枫槎</span></a>
-        <a class="hero-card" href="pages/history.html"><span class="card-icon">📜</span><span class="card-label">足迹</span><span class="card-sub">家族历史</span></a>
-      </div>
-
-      <!-- Scene 2 -->
-      <div id="scene2">
-        <div class="story-wrap">
-          <div class="story-eyebrow">· 望府山下 · 枫槎溪畔 ·</div>
-          <h2 class="story-title">绿水青山<br>望府香</h2>
-          <p class="story-text">白峤港畔、望府山下、枫槎岭口，有一个山青水绿、风景优美的村庄——下枫槎村。自明初建村至今已有650余年历史。望府银毫茶香万里，谢氏文脉源远流长。</p>
-          <div class="stats-grid">
-            <div class="stat-item"><div class="stat-num"><span class="stat-val" data-target="256">0</span><span class="unit">户</span></div><div class="stat-label">人家</div></div>
-            <div class="stat-item"><div class="stat-num"><span class="stat-val" data-target="726">0</span><span class="unit">人</span></div><div class="stat-label">人口</div></div>
-            <div class="stat-item"><div class="stat-num"><span class="stat-val" data-target="400">0</span><span class="unit">亩</span></div><div class="stat-label">茶园</div></div>
-            <div class="stat-item"><div class="stat-num"><span class="stat-val" data-target="2120">0</span><span class="unit">亩</span></div><div class="stat-label">山林</div></div>
-            <div class="stat-item"><div class="stat-num"><span class="stat-val" data-target="650">0</span><span class="unit">年</span></div><div class="stat-label">历史</div></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Scene 3 -->
-      <div id="scene3">
-        <div class="cta-wrap">
-          <h2 class="cta-title">探索下枫槎</h2>
-          <p class="cta-desc">宗祠文化、族谱世系、名人风骨、今日新貌<br>一卷山水，尽在指间</p>
-          <a class="cta-btn" href="index.html">✦ 进入主站</a>
-          <div class="cta-links">
-            <a class="cta-link" href="pages/history.html">家族历史</a>
-            <a class="cta-link" href="pages/activities.html">家族活动</a>
-            <a class="cta-link" href="pages/audio.html">听·下枫槎</a>
-            <a class="cta-link" href="pages/vinyl-player.html">枫槎留声机</a>
-            <a class="cta-link" href="pages/xie-collection.html">谢氏集萃</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="scroll-cue" id="scrollCue">
-        <span>向下展开画卷</span>
-        <div class="chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(245,230,200,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
-      </div>
+    <!-- Button -->
+    <div id="enter-wrap">
+      <button class="enter-btn" id="enterBtn">✦ 探索下枫槎</button>
+      <div class="enter-sub">门洞开启 · 村庄浮现</div>
     </div>
-  </div>
+
+    <!-- Clock -->
+    <div id="clock"><div class="c-time" id="ct"></div><div class="c-date" id="cd"></div></div>
+
+    <!-- Scene 1 -->
+    <div id="scene1"><h1 class="s1-title"><span class="hl">下枫槎</span></h1><div class="s1-motto">乌衣世泽 · 宝树家声</div></div>
+
+    <!-- Cards -->
+    <div class="hero-cards" id="hCards">
+      <a class="h-card" href="pages/genealogy.html"><span class="ci">🌳</span><span class="cl">族谱</span><span class="cs">世系源流</span></a>
+      <a class="h-card" href="pages/today.html"><span class="ci">📸</span><span class="cl">影集</span><span class="cs">今日下枫槎</span></a>
+      <a class="h-card" href="pages/history.html"><span class="ci">📜</span><span class="cl">足迹</span><span class="cs">家族历史</span></a>
+    </div>
+
+    <!-- Scene 2 & 3 -->
+    <div id="scene2"><div class="s2-wrap"><div class="s2-e">· 望府山下 · 枫槎溪畔 ·</div><h2 class="s2-t">绿水青山<br>望府香</h2><p class="s2-d">白峤港畔、望府山下、枫槎岭口，有一个山青水绿、风景优美的村庄——下枫槎村。自明初建村至今已有650余年历史。望府银毫茶香万里，谢氏文脉源远流长。</p><div class="stats"><div class="st"><div class="st-n"><span class="sv" data-t="256">0</span><span class="u">户</span></div><div class="st-l">人家</div></div><div class="st"><div class="st-n"><span class="sv" data-t="726">0</span><span class="u">人</span></div><div class="st-l">人口</div></div><div class="st"><div class="st-n"><span class="sv" data-t="400">0</span><span class="u">亩</span></div><div class="st-l">茶园</div></div><div class="st"><div class="st-n"><span class="sv" data-t="2120">0</span><span class="u">亩</span></div><div class="st-l">山林</div></div><div class="st"><div class="st-n"><span class="sv" data-t="650">0</span><span class="u">年</span></div><div class="st-l">历史</div></div></div></div></div>
+    <div id="scene3"><div class="c3"><h2 class="c3t">探索下枫槎</h2><p class="c3d">宗祠文化、族谱世系、名人风骨、今日新貌<br>一卷山水，尽在指间</p><a class="c3b" href="index.html">✦ 进入主站</a><div class="c3l"><a href="pages/history.html">家族历史</a><a href="pages/activities.html">家族活动</a><a href="pages/audio.html">听·下枫槎</a><a href="pages/vinyl-player.html">枫槎留声机</a><a href="pages/xie-collection.html">谢氏集萃</a></div></div></div>
+
+    <div class="scroll-cue" id="sc"><span>向下展开画卷</span><div class="chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(245,230,200,0.6)" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div></div>
+  </div></div>
 
   <script>
-    var WORLD_BG = 'images/bg-left.png';
+    var v = document.getElementById('village');
+    var rw = document.getElementById('ref-world');
+    var rp = document.getElementById('ref-portal');
+    var cL = document.getElementById('curtain-left');
+    var cR = document.getElementById('curtain-right');
+    var cb = document.getElementById('curtain-back');
+    var s1 = document.getElementById('scene1');
+    var s2 = document.getElementById('scene2');
+    var s3 = document.getElementById('scene3');
+    var sc = document.getElementById('sc');
+    var hc = document.getElementById('hCards');
+    var ct = document.getElementById('ct');
+    var cd = document.getElementById('cd');
 
-    var world = document.getElementById('world');
-    var curtainL = document.getElementById('curtain-left');
-    var curtainR = document.getElementById('curtain-right');
-    var scene1 = document.getElementById('scene1');
-    var scene2 = document.getElementById('scene2');
-    var scene3 = document.getElementById('scene3');
-    var scrollCue = document.getElementById('scrollCue');
-    var clockFrame = document.getElementById('clock-frame');
-    var heroCards = document.getElementById('heroCards');
-    var clockTime = document.getElementById('clockTime');
-    var clockDate = document.getElementById('clockDate');
-    var enterBtn = document.getElementById('enterBtn');
-    var enterWrap = document.getElementById('enter-btn-wrap');
+    // Load images
+    v.style.backgroundImage = "url('images/bg-left.png')";
+    rw.style.backgroundImage = "url('images/world-bg-ref.webp')";
+    rp.style.backgroundImage = "url('images/portal-bg-ref.webp')";
 
-    world.style.backgroundImage = "url('" + WORLD_BG + "')";
+    function lerp(a,b,t) { return a+(b-a)*t; }
+    function clamp(v,m,M) { return Math.max(m,Math.min(M,v)); }
+    function eoc(t) { return 1-Math.pow(1-t,3); }
 
-    function lerp(a,b,t) { return a + (b - a) * t; }
-    function clamp(v,min,max) { return Math.max(min, Math.min(max, v)); }
-    function easeOutCubic(t) { return 1 - Math.pow(1-t, 3); }
+    // Initial state: :3003 scene visible, curtains partially open (62% like ref)
+    cL.style.transform = 'translateX(-32%)';
+    cR.style.transform = 'translateX(32%)';
+    rw.style.opacity = 1;
+    rp.style.opacity = 1;
+    v.style.opacity = 0;
 
-    var isMobile = window.matchMedia('(max-width: 767px)').matches;
-
-    // ── Scroll ──
-    var scrollP = 0;
-    function readScroll() {
+    // Scroll
+    var sp = 0;
+    window.addEventListener('scroll', function() {
       var root = document.getElementById('scroll-root');
       var s = root.offsetHeight - window.innerHeight;
-      scrollP = s > 0 ? clamp(window.scrollY / s, 0, 1) : 0;
-    }
-    window.addEventListener('scroll', readScroll, { passive: true });
-    window.addEventListener('resize', readScroll);
-    readScroll();
+      sp = s > 0 ? clamp(window.scrollY / s, 0, 1) : 0;
+    }, { passive: true });
 
-    // ── Clock ──
-    function updateClock() {
-      var n = new Date();
-      clockTime.textContent = String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
-      clockDate.textContent = n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日';
-    }
-    updateClock(); setInterval(updateClock, 10000);
+    // Clock
+    !function u(){var n=new Date();ct.textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');cd.textContent=n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日';setTimeout(u,10000)}();
+    setTimeout(function(){document.getElementById('clock').classList.add('show');},500);
 
-    // ── Mouse ──
-    var rx=0, ry=0, cx=0, cy=0;
-    window.addEventListener('mousemove', function(e) {
-      rx = (e.clientX / window.innerWidth) * 2 - 1;
-      ry = (e.clientY / window.innerHeight) * 2 - 1;
-    });
+    // Mouse
+    var rx=0,ry=0,cx=0,cy=0;
+    window.addEventListener('mousemove',function(e){rx=(e.clientX/window.innerWidth)*2-1;ry=(e.clientY/window.innerHeight)*2-1;});
 
-    // ── Stats ──
-    var statsAnimated = false;
-    function animateStats() {
-      if (statsAnimated) return;
-      var els = document.querySelectorAll('.stat-val');
-      if (!els.length) return;
-      statsAnimated = true;
-      els.forEach(function(el) {
-        var t = parseInt(el.getAttribute('data-target'),10)||0;
-        var d=1500,s=Date.now();
-        function tic() {
-          var p2=Math.min((Date.now()-s)/d,1);
-          el.textContent=Math.round(easeOutCubic(p2)*t);
-          if(p2<1) requestAnimationFrame(tic); else el.textContent=t;
-        }
-        tic();
-      });
-    }
+    // Stats
+    var sa=false;
+    function as(){if(sa)return;sa=true;document.querySelectorAll('.sv').forEach(function(el){var t=parseInt(el.getAttribute('data-t'),10)||0,d=1500,st=Date.now();!function ti(){var p=Math.min((Date.now()-st)/d,1);el.textContent=Math.round(eoc(p)*t);if(p<1)requestAnimationFrame(ti);else el.textContent=t;}();});}
 
-    // ════════════════════════════════════════
-    //  CLICK TO REVEAL: curtains open + village emerges
-    // ════════════════════════════════════════
-
-    // Initial: curtains closed
-    curtainL.style.transform = 'translateX(0%)';
-    curtainR.style.transform = 'translateX(0%)';
-
-    // Show clock on load
-    setTimeout(function() { clockFrame.classList.add('show'); }, 500);
-
-    // Button click → animate open
+    // ═══ CLICK: :3003 scene transforms + curtains open + village emerges ═══
     var isOpen = false;
-    enterBtn.addEventListener('click', function() {
+    document.getElementById('enterBtn').addEventListener('click', function() {
       if (isOpen) return;
       isOpen = true;
+      document.getElementById('enter-wrap').classList.add('hidden');
 
-      // Hide button
-      enterWrap.classList.add('hidden');
+      var dur = 3000, st = Date.now();
+      !function anim() {
+        var el = Date.now() - st;
+        var t = Math.min(el / dur, 1);
+        var e = eoc(t);
 
-      // Animate curtains open + village emerge
-      var duration = 2800;
-      var startTime = Date.now();
+        // 1. Curtains open: from 32% to 50%
+        var shift = 32 + e * 18;
+        cL.style.transform = 'translateX(-' + shift + '%)';
+        cR.style.transform = 'translateX(' + shift + '%)';
+        if (cb) cb.style.opacity = 1 - e;
 
-      function openAnim() {
-        var elapsed = Date.now() - startTime;
-        var t = Math.min(elapsed / duration, 1);
-        var e = easeOutCubic(t);
+        // 2. :3003 portal zooms dramatically (like the reference page effect)
+        var ps = lerp(1.0, 8.0, e);
+        rp.style.transform = 'scale(' + ps + ')';
+        rp.style.opacity = 1 - e;
 
-        // 1. Curtains open
-        var shift = e * 50;
-        curtainL.style.transform = 'translateX(-' + shift + '%)';
-        curtainR.style.transform = 'translateX(' + shift + '%)';
+        // 3. :3003 world fades out
+        rw.style.opacity = 1 - e * 0.7;
 
-        // 2. Backing fades out as curtains open
-        var backing = document.getElementById('curtain-back');
-        if (backing) backing.style.opacity = 1 - e;
-
-        // 3. World (village) fades in with slight zoom
-        world.style.opacity = e;
-        var ws = lerp(1.35, 1.15, e);
-        world.style.transform = 'scale('+ws+')';
+        // 4. Village emerges — feels like looking through the portal/gate
+        v.style.opacity = e;
+        v.style.transform = 'scale(' + lerp(1.3, 1.1, e) + ')';
 
         if (t < 1) {
-          requestAnimationFrame(openAnim);
+          requestAnimationFrame(anim);
         } else {
-          curtainL.style.transform = 'translateX(-50%)';
-          curtainR.style.transform = 'translateX(50%)';
-          if (backing) backing.style.opacity = 0;
-          world.style.opacity = 1;
-          world.style.transform = 'scale(1.15)';
-          // Show title and cards after open
-          scene1.classList.add('show');
-          setTimeout(function() { heroCards.classList.add('show'); }, 400);
-          setTimeout(function() { scrollCue.classList.add('show'); }, 600);
+          cL.style.transform = 'translateX(-50%)'; cR.style.transform = 'translateX(50%)';
+          rp.style.display = 'none'; rw.style.display = 'none';
+          if (cb) cb.style.display = 'none';
+          v.style.opacity = 1; v.style.transform = 'scale(1.1)';
+          s1.classList.add('show');
+          setTimeout(function(){hc.classList.add('show');},400);
+          setTimeout(function(){sc.classList.add('show');},600);
         }
-      }
-      openAnim();
+      }();
     });
 
-    // ── Scroll-driven render loop ──
-    function tick() {
-      cx = lerp(cx, rx, 0.07);
-      cy = lerp(cy, ry, 0.07);
-      var p = scrollP;
-
-      // Mouse parallax on world
-      world.style.transform = 'scale(' + lerp(1.15, 1.18, p) + ') translate3d('+(cx*4)+'px,'+(cy*4)+'px,0)';
-
-      // Scene 1 fades
-      var s1 = clamp(1 - p / 0.18, 0, 1);
-      scene1.style.opacity = s1;
-      heroCards.style.opacity = s1 > 0.05 ? s1 : 0;
-      if (clockFrame) clockFrame.style.opacity = clamp(1 - p / 0.22, 0, 1);
-
-      // Scene 2
-      var s2in = clamp((p - 0.22) / 0.15, 0, 1);
-      var s2out = clamp(1 - (p - 0.55) / 0.12, 0, 1);
-      var s2 = Math.min(s2in, s2out);
-      scene2.style.opacity = s2;
-      scene2.style.pointerEvents = s2 > 0.05 ? 'auto' : 'none';
-      if (s2 > 0.3 && !statsAnimated) animateStats();
-
-      // Scene 3
-      var s3 = clamp((p - 0.58) / 0.15, 0, 1);
-      scene3.style.opacity = s3;
-      scene3.style.pointerEvents = s3 > 0.05 ? 'auto' : 'none';
-
-      scrollCue.style.opacity = s1 > 0.1 ? 1 : 0;
-
+    // Render loop
+    !function tick() {
+      cx = lerp(cx, rx, 0.07); cy = lerp(cy, ry, 0.07);
+      var p = sp;
+      v.style.transform = 'scale(' + lerp(1.1, 1.15, p) + ') translate3d('+(cx*4)+'px,'+(cy*4)+'px,0)';
+      var s1o = clamp(1-p/0.18, 0, 1);
+      s1.style.opacity = s1o; hc.style.opacity = s1o > 0.05 ? s1o : 0;
+      var s2i = clamp((p-0.22)/0.15,0,1), s2o = clamp(1-(p-0.55)/0.12,0,1);
+      var s2v = Math.min(s2i,s2o);
+      s2.style.opacity = s2v; s2.style.pointerEvents = s2v>0.05?'auto':'none';
+      if(s2v>0.3&&!sa) as();
+      var s3v = clamp((p-0.58)/0.15,0,1);
+      s3.style.opacity = s3v; s3.style.pointerEvents = s3v>0.05?'auto':'none';
+      sc.style.opacity = s1o > 0.1 ? 1 : 0;
       requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
+    }();
   </script>
 </body>
 </html>
