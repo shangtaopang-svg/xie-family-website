@@ -380,14 +380,13 @@
     bgLeft.style.backgroundImage = "url('" + BG_LEFT + "')";
     bgRight.style.backgroundImage = "url('" + BG_RIGHT + "')";
 
-    // ── Axle drag state ──
+    // ── Axle drag state (dual-linked: both move together) ──
     var isDragging = false;
-    var activeAxle = null;
     var dragStartX = 0;
-    var dragStartPos = 0;
-    var leftPos = 50;   // % from left edge (0-50)
-    var rightPos = 50;  // % from left edge (50-100)
+    var centerPos = 50; // center point between the two axles (0-100)
+    var axleGap = 0;   // fixed gap between axles (%, animated on load to 16)
     var minEdge = 4;
+    var leftPos = 50, rightPos = 50;
 
     function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
     function lerp(a, b, t) { return a + (b - a) * t; }
@@ -423,10 +422,12 @@
     // ── Update axles and image masks ──
     function updateVisuals() {
       var vw = window.innerWidth;
-      var minEdge = isMobile ? 4 : 6;
       var edge = isMobile ? 3 : 6;
-      leftPos = clamp(leftPos, edge, 50);
-      rightPos = clamp(rightPos, 50, 100 - edge);
+      var halfGap = axleGap / 2;
+      // Clamp center so axles stay within bounds
+      centerPos = clamp(centerPos, edge + halfGap, 100 - edge - halfGap);
+      leftPos = centerPos - halfGap;
+      rightPos = centerPos + halfGap;
 
       // Position the axle elements
       axleLeft.style.left = leftPos + '%';
@@ -480,9 +481,8 @@
       var hit = hitTest(x, y);
       if (!hit) return;
       isDragging = true;
-      activeAxle = hit;
       dragStartX = x;
-      dragStartPos = hit === 'left' ? leftPos : rightPos;
+      dragStartPos = centerPos;
       e.preventDefault();
     }
 
@@ -491,12 +491,11 @@
       if (!isDragging || !x) return;
       var vw = window.innerWidth;
       var dx = (x - dragStartX) / vw * 100;
-      if (activeAxle === 'left') leftPos = clamp(dragStartPos + dx, isMobile ? 3 : 6, 50);
-      else if (activeAxle === 'right') rightPos = clamp(dragStartPos + dx, 50, isMobile ? 97 : 94);
+      centerPos = clamp(dragStartPos + dx, isMobile ? 3 + axleGap/2 : 6 + axleGap/2, isMobile ? 97 - axleGap/2 : 94 - axleGap/2);
       updateVisuals();
     }
 
-    function onPointerUp() { isDragging = false; activeAxle = null; }
+    function onPointerUp() { isDragging = false; }
 
     document.addEventListener('mousedown', onPointerDown);
     document.addEventListener('mousemove', onPointerMove);
@@ -508,19 +507,17 @@
     // ── Entrance animation ──
     setTimeout(function() {
       // Smoothly open from center
-      var startL = 50, startR = 50;
-      var targetL = 42, targetR = 58;
+      var startGap = axleGap, targetGap = 16;
       var startTime = Date.now();
-
       function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
       function animateIn() {
         var elapsed = Date.now() - startTime;
         var t = Math.min(elapsed / 1400, 1);
         var e = easeOutCubic(t);
-        leftPos = startL + (targetL - startL) * e;
-        rightPos = startR + (targetR - startR) * e;
+        axleGap = startGap + (targetGap - startGap) * e;
         updateVisuals();
         if (t < 1) requestAnimationFrame(animateIn);
+        else axleGap = targetGap;
       }
       animateIn();
     }, 200);
