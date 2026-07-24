@@ -37,6 +37,11 @@
     }
 
     /* ── Curtains (:3003 style) — centered at page middle ── */
+    /* Solid warm backing to prevent any black showing through */
+    #curtain-back {
+      position:absolute; inset:0; z-index:7; pointer-events:none;
+      background:linear-gradient(135deg, #1a1410 0%, #2a2018 50%, #1a1410 100%);
+    }
     .curtain {
       position:absolute; top:0; height:100%; z-index:8; will-change:transform; pointer-events:none;
       width:50%;
@@ -177,6 +182,9 @@
       <!-- Village panorama -->
       <div id="world" class="layer"></div>
       <div id="overlay" class="layer"></div>
+
+      <!-- Solid warm backing behind curtains (prevents black gaps) -->
+      <div id="curtain-back" class="layer"></div>
 
       <!-- Curtains centered -->
       <div id="curtain-left" class="curtain"></div>
