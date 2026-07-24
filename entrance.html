@@ -18,7 +18,7 @@
   #village{background-size:cover;background-position:center 30%;z-index:0;opacity:0}
 
   /* Portal — full-screen like :3003, one complete doorway */
-  #ref-portal{position:absolute;inset:0;z-index:10;pointer-events:none;background-size:cover;background-position:center;background-image:url('images/portal-bg-ref.webp');opacity:1;will-change:transform,opacity}
+  #ref-portal{position:absolute;inset:0;z-index:10;pointer-events:none;background-size:cover;background-position:center;background-image:url('images/portal-bg-ref.webp');opacity:1;transform-origin:52% 38%;will-change:transform,opacity}
 
   /* Overlay */
   #overlay{z-index:3;background:radial-gradient(ellipse at 50% 80%,rgba(10,8,6,0) 20%,rgba(10,8,6,0.5) 80%,rgba(10,8,6,0.9) 100%),linear-gradient(180deg,rgba(10,8,6,0.1) 0%,transparent 30%,transparent 70%,rgba(10,8,6,0.3) 100%)}
@@ -120,7 +120,7 @@ document.getElementById('openBtn').addEventListener('click',function(){
     var el=Date.now()-st,t=Math.min(el/dur,1),e=eoc(t),sh=ss+(ts-ss)*e;
     sl.style.transform='translateX(-'+sh+'%)';sr.style.transform='translateX('+sh+'%)';
     if(opening){
-      v.style.opacity=e;v.style.transform='scale('+lerp(1.3,1.1,e)+')';
+      v.style.opacity=e;v.style.transform='scale('+lerp(1.3,1.0,e)+')';
       var ps=lerp(1,8,e);pt.style.transform='translate(-50%,-50%) scale('+ps+')';pt.style.opacity=1-e;
     } else {
       v.style.opacity=1-e;v.style.transform='scale('+lerp(1.1,1.3,e)+')';
@@ -130,12 +130,12 @@ document.getElementById('openBtn').addEventListener('click',function(){
     else {
       isOpen=opening;isAnim=false;
       if(opening){
-        v.style.opacity=1;pt.style.display='none';
+        v.style.opacity=1;v.style.transform='scale(1)';pt.style.display='none';
         vn.classList.add('show');ent.classList.add('show');
         document.getElementById('openBtn').textContent='✦ 收起';
       } else {
         v.style.opacity=0;pt.style.display='';
-        pt.style.opacity=1;pt.style.transform='translate(-50%,-50%) scale(1)';
+        pt.style.opacity=1;pt.style.transform='none';
         vn.classList.remove('show');ent.classList.remove('show');
         document.getElementById('openBtn').textContent='✦ 探索下枫槎';
       }
