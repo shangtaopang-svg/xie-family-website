@@ -132,6 +132,7 @@
     .hero-card:hover { transform:translateY(-4px) scale(1.03); border-color:rgba(201,168,76,0.3); }
     .hero-card .card-icon { font-size:clamp(18px,2.2vw,28px); margin-bottom:4px; }
     .hero-card .card-label { font-family:'Noto Serif SC',serif; font-size:clamp(10px,1.1vw,14px); letter-spacing:0.06em; }
+    .hero-card .card-sub { font-size:clamp(7px,0.7vw,9px); color:rgba(245,230,200,0.4); margin-top:2px; letter-spacing:0.04em; }
 
     /* ── Scene 2 ── */
     #scene2 { position:absolute; inset:0; z-index:21; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; padding:0 40px; }
@@ -199,12 +200,11 @@
         <div class="hero-motto">乌衣世泽 · 宝树家声</div>
       </div>
 
-      <!-- Cards -->
+      <!-- Three entrance cards (作品/影集/足迹 style) -->
       <div class="hero-cards" id="heroCards">
-        <a class="hero-card" href="pages/genealogy.html"><span class="card-icon">🌳</span><span class="card-label">族谱</span></a>
-        <a class="hero-card" href="pages/celebrities.html"><span class="card-icon">🏆</span><span class="card-label">名人</span></a>
-        <a class="hero-card" href="pages/merit-scroll.html"><span class="card-icon">📜</span><span class="card-label">功德</span></a>
-        <a class="hero-card" href="pages/today.html"><span class="card-icon">📸</span><span class="card-label">今日</span></a>
+        <a class="hero-card" href="pages/genealogy.html"><span class="card-icon">🌳</span><span class="card-label">族谱</span><span class="card-sub">世系源流</span></a>
+        <a class="hero-card" href="pages/today.html"><span class="card-icon">📸</span><span class="card-label">影集</span><span class="card-sub">今日下枫槎</span></a>
+        <a class="hero-card" href="pages/history.html"><span class="card-icon">📜</span><span class="card-label">足迹</span><span class="card-sub">家族历史</span></a>
       </div>
 
       <!-- Scene 2 -->
