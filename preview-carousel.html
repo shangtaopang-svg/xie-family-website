@@ -7,53 +7,57 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0806;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;overflow:hidden;padding:20px}
+body{background:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;overflow:hidden;padding:20px}
 
-h2{color:#c9a84c;font-size:26px;letter-spacing:0.15em;margin-bottom:40px;font-weight:500}
+h2{color:#d4793a;font-size:26px;letter-spacing:0.15em;margin-bottom:40px;font-weight:500}
 
 .project-data-wrapper{
-  perspective-origin:50% 50%;perspective:140em;
+  perspective-origin:50% 50%;perspective:160em;
   display:flex;justify-content:center;align-items:center;
   position:relative;overflow:hidden;
-  min-height:520px;width:100%;max-width:900px;
+  min-height:580px;width:100%;max-width:900px;
 }
 
 .project-data-wrapper .project-data{
   position:absolute;left:50%;display:flex;align-items:center;
   height:100%;cursor:pointer;
-  transform:translateZ(calc(var(--distance)*-1)) rotateX(2deg);
+  transform:translateZ(calc(var(--distance)*-1));
   transform-style:preserve-3d;
 }
 
 .project-card{
   padding:0;overflow:hidden;
-  width:min(400px,-70px + 100vw);max-width:340px;
-  background:#1a1410;border-radius:1em;
+  width:min(320px,-70px + 100vw);max-width:300px;
+  background:#1a1410;border-radius:16px;
   position:absolute;cursor:pointer;
   transform:translateX(-50%) rotateY(var(--rotation)) translateZ(var(--distance));
   transition:filter 1s,box-shadow 0.3s;
   backface-visibility:visible;pointer-events:none;
-  filter:grayscale(100%) blur(6px) brightness(0.5);
+  filter:grayscale(100%) blur(6px) brightness(0.6);
   border:1px solid rgba(245,230,200,0.04);
 }
 .project-card.focused{
   filter:grayscale(0%) blur(0px) brightness(1);
-  box-shadow:0 0 40px 10px rgba(201,168,76,0.06),0 0 20px 5px rgba(0,0,0,0.3);
+  box-shadow:0 0 50px 15px rgba(201,168,76,0.08),0 0 20px 5px rgba(0,0,0,0.3);
   pointer-events:auto;
 }
-.project-card:hover{box-shadow:0 0 30px 1px rgba(201,168,76,0.08)}
+.project-card.near{
+  filter:grayscale(30%) blur(1px) brightness(0.85);
+  pointer-events:none;
+}
+.project-card:hover{box-shadow:0 0 30px 1px rgba(201,168,76,0.1)}
 
-.project-card img{width:100%;height:100%;object-fit:cover;display:block}
+.project-card img{width:100%;height:clamp(280px,50vh,420px);object-fit:cover;display:block}
 .project-card.focused img{cursor:pointer}
 
 /* Arrows */
 .project-data-wrapper .arrow-left,.project-data-wrapper .arrow-right{
   position:absolute;top:50%;transform:translateY(-50%);
-  font-size:30px;cursor:pointer;color:#c9a84c;z-index:10;
+  font-size:30px;cursor:pointer;color:#d4793a;z-index:10;
   background:transparent;border:none;padding:12px 24px;
   transition:color 0.3s;
 }
-.project-data-wrapper .arrow-left:hover,.project-data-wrapper .arrow-right:hover{color:#e8c97a}
+.project-data-wrapper .arrow-left:hover,.project-data-wrapper .arrow-right:hover{color:#d4793a}
 .project-data-wrapper .arrow-left{left:0}
 .project-data-wrapper .arrow-right{right:0}
 
@@ -62,13 +66,13 @@ h2{color:#c9a84c;font-size:26px;letter-spacing:0.15em;margin-bottom:40px;font-we
   position:absolute;bottom:1rem;display:flex;gap:10px;cursor:pointer;z-index:10;
 }
 .project-data-wrapper .navigation .nav-dot{
-  padding:5px;background:rgba(255,255,255,0.15);
-  border:1px solid rgba(34,34,34,0.46);
+  padding:5px;background:rgba(0,0,0,0.06);
+  border:1px solid rgba(0,0,0,0.12);
   border-radius:50%;transition:all 0.4s;
 }
 .project-data-wrapper .navigation .focused{background:#c9a84c;scale:1.4}
 
-.idx-label{color:rgba(245,230,200,0.2);font-size:13px;letter-spacing:0.1em;text-align:center;margin-top:16px}
+.idx-label{color:#999;font-size:13px;letter-spacing:0.1em;text-align:center;margin-top:16px}
 
 /* Lightbox */
 #lightbox{
@@ -146,7 +150,7 @@ function isPaused(){return hoverPaused||blurPaused||offscreen}
 function mod(a,b){return((a%b)+b)%b}
 function getFocusedIndex(){return mod(focused,photos.length)}
 
-var radius = 400 / (2 * Math.sin(Math.PI / photos.length));
+var radius = 380 / (2 * Math.sin(Math.PI / photos.length));
 var distToEdge = Math.round(Math.sqrt(radius * radius - 200 * 200) + 30);
 projectsElem.style.setProperty('--distance', distToEdge + 'px');
 
@@ -189,7 +193,9 @@ function update() {
   });
   for (var i = 0; i < photos.length; i++) {
     var isFocused = (getFocusedIndex() === i);
+    var isNear = (i === mod(getFocusedIndex()-1, photos.length) || i === mod(getFocusedIndex()+1, photos.length));
     projectsElem.children[i].classList.toggle('focused', isFocused);
+    projectsElem.children[i].classList.toggle('near', isNear && !isFocused);
     navElem.children[i].classList.toggle('focused', isFocused);
   }
   idxLabel.textContent = (getFocusedIndex() + 1) + ' / ' + photos.length;
