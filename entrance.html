@@ -34,21 +34,21 @@
       -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 120px), transparent calc(100% - 20px));
       mask-image: linear-gradient(90deg, #000 calc(100% - 120px), transparent calc(100% - 20px));
       -webkit-mask-composite: source-over; mask-composite: add;
-      background-size:auto 90%; background-position:center center;
+      background-size:cover; background-position:center center;
     }
     #bg-right {
       -webkit-mask-image: linear-gradient(270deg, #000 calc(100% - 120px), transparent calc(100% - 20px));
       mask-image: linear-gradient(270deg, #000 calc(100% - 120px), transparent calc(100% - 20px));
       -webkit-mask-composite: source-over; mask-composite: add;
-      background-size:auto 90%; background-position:center center;
+      background-size:cover; background-position:center center;
     }
     /* Dynamic mask adjustment via JS will set custom property */
 
     #world-overlay {
       position:absolute; inset:0; z-index:1; pointer-events:none;
       background:
-        radial-gradient(ellipse at 50% 80%, rgba(10,8,6,0) 30%, rgba(10,8,6,0.6) 80%, rgba(10,8,6,0.92) 100%),
-        linear-gradient(180deg, rgba(10,8,6,0.15) 0%, transparent 30%, transparent 70%, rgba(10,8,6,0.5) 100%);
+        radial-gradient(ellipse at 50% 80%, rgba(10,8,6,0) 30%, rgba(10,8,6,0.35) 80%, rgba(10,8,6,0.7) 100%),
+        linear-gradient(180deg, rgba(10,8,6,0.08) 0%, transparent 30%, transparent 70%, rgba(10,8,6,0.2) 100%);
     }
 
     /* ── Elegant Scroll Axles (画轴) ── */
@@ -83,9 +83,9 @@
     /* ── Center Mounting Panel (画卷中缝装裱) ── */
     #center-mount {
       position:absolute; top:6%; height:88%; z-index:2; pointer-events:none;
-      background:linear-gradient(90deg, rgba(235,225,210,0.06), rgba(235,225,210,0.10) 30%, rgba(235,225,210,0.10) 70%, rgba(235,225,210,0.06));
-      border-left:1px solid rgba(201,168,76,0.08);
-      border-right:1px solid rgba(201,168,76,0.08);
+      background:transparent;
+      border-left:1px solid rgba(201,168,76,0.05);
+      border-right:1px solid rgba(201,168,76,0.05);
       display:flex; flex-direction:column; align-items:center; justify-content:center;
       overflow:hidden;
     }
