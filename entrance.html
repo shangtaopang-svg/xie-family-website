@@ -9,261 +9,248 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <style>
-    :root { scrollbar-gutter:stable; }
-    html,body { margin:0; padding:0; background:#0a0806; scroll-behavior:auto; }
-    body { font-family:'Noto Sans SC',sans-serif; color:#f5e6c8; overflow-x:hidden; }
-    * { box-sizing:border-box; }
-    a { text-decoration:none; }
-    @keyframes bobUp { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-6px); } }
-    #scroll-root { height:520vh; position:relative; }
-    #stage { position:sticky; top:0; left:0; width:100%; height:100vh; overflow:hidden; background:#0a0806; }
-    .layer { position:absolute; inset:0; width:100%; height:100%; will-change:transform,opacity; pointer-events:none; }
+  :root{scrollbar-gutter:stable}html,body{margin:0;padding:0;background:#0a0806;scroll-behavior:auto}body{font-family:'Noto Sans SC',sans-serif;color:#f5e6c8;overflow-x:hidden}*{box-sizing:border-box}a{text-decoration:none}
+  @keyframes bobUp{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  #scroll-root{height:520vh;position:relative}
+  #stage{position:sticky;top:0;left:0;width:100%;height:100vh;overflow:hidden;background:#0a0806}
+  .layer{position:absolute;inset:0;width:100%;height:100%;will-change:transform,opacity;pointer-events:none}
 
-    /* ── Village panorama (final reveal, behind scrolls) ── */
-    #village { background-size:cover; background-position:center 30%; transform-origin:50% 50%; z-index:0; opacity:0; }
+  /* Village panorama (behind scrolls) */
+  #village{background-size:cover;background-position:center 30%;transform-origin:50% 50%;z-index:0;opacity:0}
 
-    /* ── :3003 scene (initial full page background) ── */
-    #ref-world { background-size:cover; background-position:center; transform-origin:50% 50%; z-index:1; }
-    #ref-portal { background-size:cover; background-position:center; transform-origin:52% 38%; z-index:2; }
-    #overlay { z-index:3; background:radial-gradient(ellipse at 50% 80%, rgba(10,8,6,0) 20%, rgba(10,8,6,0.5) 80%, rgba(10,8,6,0.9) 100%), linear-gradient(180deg, rgba(10,8,6,0.1) 0%, transparent 30%, transparent 70%, rgba(10,8,6,0.3) 100%); }
+  /* Overlay */
+  #overlay{z-index:1;background:radial-gradient(ellipse at 50% 80%,rgba(10,8,6,0) 20%,rgba(10,8,6,0.5) 80%,rgba(10,8,6,0.9) 100%),linear-gradient(180deg,rgba(10,8,6,0.1) 0%,transparent 30%,transparent 70%,rgba(10,8,6,0.3) 100%)}
 
-    /* ── Chinese scroll bars (卷轴) at center, covering the middle ── */
-    .scroll-panel {
-      position:absolute; top:0; height:100%; z-index:10; will-change:transform; pointer-events:none;
-      width:44%;
-      background:
-        repeating-linear-gradient(0deg, transparent 0,transparent 3px, rgba(180,160,130,0.03) 3px, rgba(180,160,130,0.03) 4px),
-        linear-gradient(90deg, #d9c8a8 0%, #e8d8b8 5%, #f0e0c0 12%, #f2e2c4 30%, #f0e0c0 50%, #ede0c0 75%, #e8d8b8 93%, #d9c8a8 100%);
-    }
-    #scroll-left { left:0; transform-origin:left center; }
-    #scroll-right { right:0; transform-origin:right center; }
+  /* ── Scroll panels: they ARE the :3003 page ── */
+  .scroll-panel{
+    position:absolute;top:0;height:100%;z-index:8;will-change:transform;pointer-events:none;
+    width:50%;background-size:cover;background-position:center;
+  }
+  /* Left panel shows the :3003 world bg on the left side */
+  #s-left{
+    left:0;transform-origin:left center;
+    background-image:url('images/world-bg-ref.webp');background-position:right center;
+  }
+  /* Right panel shows the :3003 world bg on the right side */
+  #s-right{
+    right:0;transform-origin:right center;
+    background-image:url('images/world-bg-ref.webp');background-position:left center;
+  }
 
-    /* Wooden roller (木轴) at the inner edge of each scroll */
-    .roller {
-      position:absolute; top:5%; height:90%; width:18px; z-index:11; pointer-events:none;
-      background:repeating-linear-gradient(0deg, rgba(120,80,40,0.08) 0, rgba(120,80,40,0.08) 1px, transparent 1px, transparent 5px),
-        linear-gradient(90deg, #6B4226 0%, #8B5E3A 20%, #A07850 45%, #B08860 55%, #A07850 65%, #8B5E3A 80%, #5A3A22 100%);
-      box-shadow:0 0 20px rgba(0,0,0,0.3); border-radius:4px;
-    }
-    #roller-left { right:-2px; border-radius:4px 0 0 4px; }
-    #roller-right { left:-2px; border-radius:0 4px 4px 0; }
-    .rcap {
-      position:absolute; left:50%; transform:translateX(-50%); z-index:12;
-      width:26px; height:18px; border-radius:4px;
-      background:linear-gradient(180deg, #8B6B4A 0%, #A0805F 25%, #C4A07A 50%, #B89670 75%, #7A5A3A 100%);
-      box-shadow:0 1px 6px rgba(0,0,0,0.25);
-    }
-    .rcap::after { content:''; position:absolute; inset:3px; border:1px solid rgba(255,255,255,0.06); border-radius:2px; }
-    .rcap.top { top:-8px; }
-    .rcap.bottom { bottom:-8px; }
+  /* Portal overlay on each panel (half each) */
+  .portal-half{
+    position:absolute;inset:0;z-index:9;pointer-events:none;
+    background-image:url('images/portal-bg-ref.webp');background-size:cover;
+  }
+  #portal-left{background-position:right center;right:-1px}
+  #portal-right{background-position:left center;left:-1px}
 
-    /* Scroll paper band decoration */
-    .sband { position:absolute; left:0; right:0; height:12px; z-index:11; pointer-events:none; background:linear-gradient(180deg, rgba(180,155,120,0.12), transparent); }
-    .sband.bot { bottom:0; background:linear-gradient(0deg, rgba(180,155,120,0.12), transparent); }
+  /* Wooden roller (木轴) */
+  .roller{
+    position:absolute;top:5%;height:90%;width:18px;z-index:11;pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(120,80,40,0.08) 0,rgba(120,80,40,0.08) 1px,transparent 1px,transparent 5px),
+      linear-gradient(90deg,#6B4226 0%,#8B5E3A 20%,#A07850 45%,#B08860 55%,#A07850 65%,#8B5E3A 80%,#5A3A22 100%);
+    box-shadow:0 0 20px rgba(0,0,0,0.3);border-radius:4px;
+  }
+  #roller-l{right:-2px;border-radius:4px 0 0 4px}
+  #roller-r{left:-2px;border-radius:0 4px 4px 0}
+  .rcap{position:absolute;left:50%;transform:translateX(-50%);z-index:12;width:26px;height:18px;border-radius:4px;background:linear-gradient(180deg,#8B6B4A 0%,#A0805F 25%,#C4A07A 50%,#B89670 75%,#7A5A3A 100%);box-shadow:0 1px 6px rgba(0,0,0,0.25)}
+  .rcap::after{content:'';position:absolute;inset:3px;border:1px solid rgba(255,255,255,0.06);border-radius:2px}
+  .rcap.top{top:-8px}.rcap.bottom{bottom:-8px}
+  .sband{position:absolute;left:0;right:0;height:12px;z-index:11;pointer-events:none;background:linear-gradient(180deg,rgba(180,155,120,0.12),transparent)}
+  .sband.bot{bottom:0;background:linear-gradient(0deg,rgba(180,155,120,0.12),transparent)}
 
-    /* Dark gap filler behind scroll panels */
-    #scroll-back { position:absolute; left:50%; top:0; transform:translateX(-50%); width:12%; height:100%; z-index:9; background:#0a0806; pointer-events:none; }
+  /* Button */
+  #enter-wrap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;text-align:center;pointer-events:auto;transition:opacity 0.5s}
+  .enter-btn{display:inline-block;font-family:'Noto Serif SC',serif;font-size:clamp(16px,1.8vw,22px);letter-spacing:0.2em;color:#f5e6c8;background:rgba(10,8,6,0.35);backdrop-filter:blur(12px);border:1.5px solid rgba(201,168,76,0.2);padding:16px 48px;border-radius:50px;cursor:pointer;transition:all 0.5s cubic-bezier(0.22,1,0.36,1);box-shadow:0 4px 30px rgba(0,0,0,0.4)}
+  .enter-btn:hover{background:rgba(201,168,76,0.1);border-color:rgba(201,168,76,0.35);transform:scale(1.05)}
+  .enter-sub{font-size:clamp(11px,1vw,13px);color:rgba(245,230,200,0.25);letter-spacing:0.15em;margin-top:10px}
 
-    /* ── Button ── */
-    #enter-wrap { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:20; text-align:center; pointer-events:auto; }
-    .enter-btn { display:inline-block; font-family:'Noto Serif SC',serif; font-size:clamp(16px,1.8vw,22px); letter-spacing:0.2em; color:#f5e6c8; background:rgba(10,8,6,0.35); backdrop-filter:blur(12px); border:1.5px solid rgba(201,168,76,0.2); padding:16px 48px; border-radius:50px; cursor:pointer; transition:all 0.5s cubic-bezier(0.22,1,0.36,1); box-shadow:0 4px 30px rgba(0,0,0,0.4); }
-    .enter-btn:hover { background:rgba(201,168,76,0.1); border-color:rgba(201,168,76,0.35); transform:scale(1.05); }
-    .enter-sub { font-size:clamp(11px,1vw,13px); color:rgba(245,230,200,0.25); letter-spacing:0.15em; margin-top:10px; }
+  /* Clock */
+  #clock{position:absolute;top:70px;right:40px;z-index:25;text-align:right;opacity:0;transition:opacity 1s ease;pointer-events:auto}
+  #clock.show{opacity:1}
+  .ct{font-family:'Noto Serif SC',serif;font-size:clamp(18px,2vw,28px);font-weight:700;color:#f5e6c8;text-shadow:0 2px 16px rgba(0,0,0,0.4)}
+  .cd{font-size:clamp(9px,0.7vw,11px);color:rgba(245,230,200,0.4);letter-spacing:0.1em;margin-top:2px}
 
-    /* ── Clock ── */
-    #clock { position:absolute; top:70px; right:40px; z-index:25; text-align:right; opacity:0; transition:opacity 1s ease; pointer-events:auto; }
-    #clock.show { opacity:1; }
-    .c-time { font-family:'Noto Serif SC',serif; font-size:clamp(18px,2vw,28px); font-weight:700; color:#f5e6c8; text-shadow:0 2px 16px rgba(0,0,0,0.4); }
-    .c-date { font-size:clamp(9px,0.7vw,11px); color:rgba(245,230,200,0.4); letter-spacing:0.1em; margin-top:2px; }
+  /* Scene 1 */
+  #s1{position:absolute;inset:0;z-index:15;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity 1.2s ease}
+  #s1.show{opacity:1}
+  .s1t{font-family:'Noto Serif SC',serif;font-size:clamp(48px,10vw,120px);font-weight:900;color:#f5e6c8;text-shadow:0 4px 40px rgba(0,0,0,0.5);margin:0}
+  .s1t .hl{background:linear-gradient(135deg,#c9a84c,#e8c97a,#c9a84c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .s1m{font-family:'Noto Serif SC',serif;font-size:clamp(14px,1.8vw,24px);font-weight:600;color:#c9a84c;letter-spacing:0.3em;text-shadow:0 2px 20px rgba(0,0,0,0.4);margin:8px 0 0}
 
-    /* ── Scene 1 ── */
-    #scene1 { position:absolute; inset:0; z-index:15; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; opacity:0; transition:opacity 1.2s ease; }
-    #scene1.show { opacity:1; }
-    .s1t { font-family:'Noto Serif SC',serif; font-size:clamp(48px,10vw,120px); font-weight:900; color:#f5e6c8; text-shadow:0 4px 40px rgba(0,0,0,0.5); margin:0; }
-    .s1t .hl { background:linear-gradient(135deg,#c9a84c,#e8c97a,#c9a84c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-    .s1m { font-family:'Noto Serif SC',serif; font-size:clamp(14px,1.8vw,24px); font-weight:600; color:#c9a84c; letter-spacing:0.3em; text-shadow:0 2px 20px rgba(0,0,0,0.4); margin:8px 0 0; }
+  /* Cards */
+  .hcs{position:absolute;bottom:70px;display:flex;gap:16px;z-index:16;opacity:0;transition:opacity 1s ease}
+  .hcs.show{opacity:1}
+  .hc{width:150px;height:150px;border-radius:24px;overflow:hidden;position:relative;background-size:cover;background-position:center;box-shadow:0 18px 50px rgba(0,0,0,0.45);display:block;text-decoration:none;transition:transform .4s cubic-bezier(0.22,1,0.36,1)}
+  .hc:hover{transform:translateY(-6px) scale(1.03)}
+  .hc .cl{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:12px;padding:20px 22px;background:linear-gradient(to top,rgba(0,0,0,0.72) 0%,rgba(0,0,0,0.18) 60%,transparent 100%);font-family:'Noto Serif SC',serif;font-size:18px;letter-spacing:0.08em;font-weight:600;color:#f5e6c8}
+  .hc .cp{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.9);display:grid;place-items:center;color:#2a1808;flex:none}
+  .hc .cp svg{width:10px;height:10px}
+  .hc .cm{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-size:clamp(20px,2.6vw,34px);font-weight:600;line-height:1.15;background:linear-gradient(to top,rgba(0,0,0,0.6),transparent 70%);letter-spacing:0.06em;color:#f5e6c8;padding:20px}
 
-    /* ── Cards ── */
-    .hcs { position:absolute; bottom:70px; display:flex; gap:16px; z-index:16; opacity:0; transition:opacity 1s ease; }
-    .hcs.show { opacity:1; }
-    .hc { width:150px; height:150px; border-radius:24px; overflow:hidden; position:relative; background-size:cover; background-position:center; box-shadow:0 18px 50px rgba(0,0,0,0.45); display:block; text-decoration:none; transition:transform .4s cubic-bezier(0.22,1,0.36,1); }
-    .hc:hover { transform:translateY(-6px) scale(1.03); }
-    .hc .clabel { position:absolute; left:0; right:0; bottom:0; display:flex; align-items:center; gap:12px; padding:20px 22px; background:linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.18) 60%, transparent 100%); font-family:'Noto Serif SC',serif; font-size:18px; letter-spacing:0.08em; font-weight:600; color:#f5e6c8; }
-    .hc .cplay { width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.9); display:grid; place-items:center; color:#2a1808; flex:none; }
-    .hc .cplay svg { width:10px; height:10px; }
-    .hc .cmetric { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Noto Serif SC',serif; font-size:clamp(20px,2.6vw,34px); font-weight:600; line-height:1.15; background:linear-gradient(to top, rgba(0,0,0,0.6), transparent 70%); letter-spacing:0.06em; color:#f5e6c8; padding:20px; }
+  /* Scenes 2 & 3 */
+  #s2{position:absolute;inset:0;z-index:21;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;padding:0 40px}
+  .sw{text-align:center;max-width:640px}.se{font-family:'Noto Serif SC',serif;font-size:13px;letter-spacing:0.25em;color:rgba(201,168,76,0.6);margin-bottom:12px}
+  .stt{font-family:'Noto Serif SC',serif;font-size:clamp(28px,4vw,52px);font-weight:700;color:#f5e6c8;margin:0 0 16px}.sd{font-size:clamp(14px,1.3vw,17px);line-height:1.9;color:rgba(245,230,200,0.7);margin:0 auto 28px;max-width:520px}
+  .sg{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:600px;margin:0 auto}
+  .si{flex:1;min-width:80px;max-width:120px;background:rgba(245,230,200,0.06);border:1px solid rgba(245,230,200,0.08);border-radius:16px;padding:16px 8px;text-align:center}
+  .sn{font-family:'Noto Serif SC',serif;font-size:clamp(24px,3vw,36px);font-weight:700;color:#c9a84c}.sn .u{font-size:0.5em;color:rgba(201,168,76,0.6);margin-left:2px}.sl{font-size:11px;color:rgba(245,230,200,0.5);margin-top:6px}
+  #s3{position:absolute;inset:0;z-index:22;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;padding:0 40px}
+  .c3w{text-align:center;max-width:520px}.c3t{font-family:'Noto Serif SC',serif;font-size:clamp(32px,5vw,64px);font-weight:700;color:#f5e6c8;margin:0 0 20px}
+  .c3d{font-size:clamp(14px,1.2vw,17px);line-height:1.7;color:rgba(245,230,200,0.6);margin:0 auto 28px;max-width:440px}
+  .c3b{display:inline-block;font-family:'Noto Serif SC',serif;font-size:16px;letter-spacing:0.15em;color:#0a0806;background:linear-gradient(135deg,#c9a84c,#e8c97a);padding:14px 48px;border-radius:50px;transition:all .3s;box-shadow:0 4px 20px rgba(201,168,76,0.25)}
+  .c3b:hover{transform:scale(1.05)}.c3l{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:24px}
+  .c3l a{font-size:13px;color:rgba(245,230,200,0.5);padding:8px 18px;border-radius:20px;border:1px solid rgba(245,230,200,0.1);transition:all .3s}
+  .c3l a:hover{color:#c9a84c;border-color:rgba(201,168,76,0.3);background:rgba(201,168,76,0.06)}
+  #scue{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;z-index:30;opacity:0;transition:opacity .8s ease}
+  #scue.show{opacity:1}#scue span{font-size:10px;letter-spacing:0.2em;color:rgba(245,230,200,0.25)}
+  #scue .chev{width:28px;height:28px;border-radius:50%;border:1px solid rgba(245,230,200,0.15);display:grid;place-items:center;animation:bobUp 1.8s ease-in-out infinite}
 
-    /* ── Scene 2 & 3 ── */
-    #s2 { position:absolute; inset:0; z-index:21; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; padding:0 40px; }
-    .sw { text-align:center; max-width:640px; }
-    .se { font-family:'Noto Serif SC',serif; font-size:13px; letter-spacing:0.25em; color:rgba(201,168,76,0.6); margin-bottom:12px; }
-    .stt { font-family:'Noto Serif SC',serif; font-size:clamp(28px,4vw,52px); font-weight:700; color:#f5e6c8; margin:0 0 16px; }
-    .sd { font-size:clamp(14px,1.3vw,17px); line-height:1.9; color:rgba(245,230,200,0.7); margin:0 auto 28px; max-width:520px; }
-    .sg { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; max-width:600px; margin:0 auto; }
-    .si { flex:1; min-width:80px; max-width:120px; background:rgba(245,230,200,0.06); border:1px solid rgba(245,230,200,0.08); border-radius:16px; padding:16px 8px; text-align:center; }
-    .sn { font-family:'Noto Serif SC',serif; font-size:clamp(24px,3vw,36px); font-weight:700; color:#c9a84c; }
-    .sn .u { font-size:0.5em; color:rgba(201,168,76,0.6); margin-left:2px; }
-    .sl { font-size:11px; color:rgba(245,230,200,0.5); margin-top:6px; }
-    #s3 { position:absolute; inset:0; z-index:22; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; padding:0 40px; }
-    .c3w { text-align:center; max-width:520px; }
-    .c3t { font-family:'Noto Serif SC',serif; font-size:clamp(32px,5vw,64px); font-weight:700; color:#f5e6c8; margin:0 0 20px; }
-    .c3d { font-size:clamp(14px,1.2vw,17px); line-height:1.7; color:rgba(245,230,200,0.6); margin:0 auto 28px; max-width:440px; }
-    .c3b { display:inline-block; font-family:'Noto Serif SC',serif; font-size:16px; letter-spacing:0.15em; color:#0a0806; background:linear-gradient(135deg,#c9a84c,#e8c97a); padding:14px 48px; border-radius:50px; transition:all .3s; box-shadow:0 4px 20px rgba(201,168,76,0.25); }
-    .c3b:hover { transform:scale(1.05); }
-    .c3l { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-top:24px; }
-    .c3l a { font-size:13px; color:rgba(245,230,200,0.5); padding:8px 18px; border-radius:20px; border:1px solid rgba(245,230,200,0.1); transition:all .3s; }
-    .c3l a:hover { color:#c9a84c; border-color:rgba(201,168,76,0.3); background:rgba(201,168,76,0.06); }
-    #scue { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:6px; z-index:30; opacity:0; transition:opacity .8s ease; }
-    #scue.show { opacity:1; }
-    #scue span { font-size:10px; letter-spacing:0.2em; color:rgba(245,230,200,0.25); }
-    #scue .chev { width:28px; height:28px; border-radius:50%; border:1px solid rgba(245,230,200,0.15); display:grid; place-items:center; animation:bobUp 1.8s ease-in-out infinite; }
-
-    @media (max-width:767px) {
-      #clock { top:50px; right:16px; }
-      .scroll-panel { width:42%; }
-      .enter-btn { padding:12px 28px; font-size:14px; }
-      .hcs { bottom:40px; gap:10px; }
-      .hc { width:100px; height:100px; border-radius:16px; }
-      .hc .clabel { padding:12px 14px; font-size:12px; gap:8px; }
-      .hc .cplay { width:24px; height:24px; }
-      .hc .cplay svg { width:8px; height:8px; }
-      .roller { width:12px; } .rcap { display:none; }
-      #scroll-back { width:16%; }
-    }
+  @media(max-width:767px){
+    #clock{top:50px;right:16px}.scroll-panel{width:50%}
+    .enter-btn{padding:12px 28px;font-size:14px}.enter-sub{font-size:10px}
+    .hcs{bottom:40px;gap:10px}.hc{width:100px;height:100px;border-radius:16px}
+    .hc .cl{padding:12px 14px;font-size:12px;gap:8px}.hc .cp{width:24px;height:24px}.hc .cp svg{width:8px;height:8px}
+    .roller{width:12px}.rcap{display:none}
+  }
   </style>
 </head>
 <body>
-  <div id="scroll-root"><div id="stage">
+<div id="scroll-root"><div id="stage">
 
-    <!-- Village panorama (behind everything) -->
-    <div id="village" class="layer"></div>
+  <!-- Village panorama (final reveal, behind scrolls) -->
+  <div id="village" class="layer"></div>
+  <div id="overlay" class="layer"></div>
 
-    <!-- :3003 scene (initial full background) -->
-    <div id="ref-world" class="layer"></div>
-    <div id="ref-portal" class="layer"></div>
-    <div id="overlay" class="layer"></div>
+  <!-- Scroll panels = :3003 page itself! They form the complete scene when closed -->
+  <div id="s-left" class="scroll-panel">
+    <div id="portal-left" class="portal-half"></div>
+    <div class="sband"></div><div class="sband bot"></div>
+    <div id="roller-l" class="roller"><div class="rcap top"></div><div class="rcap bottom"></div></div>
+  </div>
+  <div id="s-right" class="scroll-panel">
+    <div id="portal-right" class="portal-half"></div>
+    <div id="roller-r" class="roller"><div class="rcap top"></div><div class="rcap bottom"></div></div>
+    <div class="sband"></div><div class="sband bot"></div>
+  </div>
 
-    <!-- Dark filler behind scroll gap -->
-    <div id="scroll-back"></div>
+  <!-- Button -->
+  <div id="enter-wrap">
+    <button class="enter-btn" id="enterBtn">✦ 探索下枫槎</button>
+    <div class="enter-sub">点击展开 · 村庄呈现</div>
+  </div>
 
-    <!-- Chinese scroll panels at center (44% each = 88% total, 12% gap) -->
-    <div id="scroll-left" class="scroll-panel">
-      <div class="sband"></div>
-      <div class="sband bot"></div>
-      <div id="roller-left" class="roller">
-        <div class="rcap top"></div>
-        <div class="rcap bottom"></div>
-      </div>
-    </div>
-    <div id="scroll-right" class="scroll-panel">
-      <div id="roller-right" class="roller">
-        <div class="rcap top"></div>
-        <div class="rcap bottom"></div>
-      </div>
-      <div class="sband"></div>
-      <div class="sband bot"></div>
-    </div>
+  <!-- Clock -->
+  <div id="clock"><div class="ct" id="ct"></div><div class="cd" id="cd"></div></div>
 
-    <!-- Button -->
-    <div id="enter-wrap">
-      <button class="enter-btn" id="enterBtn">✦ 探索下枫槎</button>
-      <div class="enter-sub">点击展开 · 村庄呈现</div>
-    </div>
+  <!-- Scene 1 -->
+  <div id="s1"><h1 class="s1t"><span class="hl">下枫槎</span></h1><div class="s1m">乌衣世泽 · 宝树家声</div></div>
 
-    <!-- Clock -->
-    <div id="clock"><div class="c-time" id="ct"></div><div class="c-date" id="cd"></div></div>
+  <!-- Cards -->
+  <div class="hcs" id="hcs">
+    <a class="hc" href="pages/genealogy.html" style="background-image:url('images/carousel/38.jpg')"><div class="cl"><span class="cp"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M3 2l7 4-7 4V2z"/></svg></span>族谱</div></a>
+    <a class="hc" href="pages/today.html" style="background-image:url('images/carousel/121.jpg')"><div class="cm">📸<br>影集</div></a>
+    <a class="hc" href="pages/history.html" style="background-image:url('images/carousel/23.jpg')"><div class="cl"><span class="cp"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M3 2l7 4-7 4V2z"/></svg></span>足迹</div></a>
+  </div>
 
-    <!-- Scene 1 -->
-    <div id="scene1"><h1 class="s1t"><span class="hl">下枫槎</span></h1><div class="s1m">乌衣世泽 · 宝树家声</div></div>
+  <!-- Scene 2 & 3 -->
+  <div id="s2"><div class="sw"><div class="se">· 望府山下 · 枫槎溪畔 ·</div><h2 class="stt">绿水青山<br>望府香</h2><p class="sd">白峤港畔、望府山下、枫槎岭口，有一个山青水绿、风景优美的村庄——下枫槎村。自明初建村至今已有650余年历史。望府银毫茶香万里，谢氏文脉源远流长。</p><div class="sg"><div class="si"><div class="sn"><span class="sv" data-t="256">0</span><span class="u">户</span></div><div class="sl">人家</div></div><div class="si"><div class="sn"><span class="sv" data-t="726">0</span><span class="u">人</span></div><div class="sl">人口</div></div><div class="si"><div class="sn"><span class="sv" data-t="400">0</span><span class="u">亩</span></div><div class="sl">茶园</div></div><div class="si"><div class="sn"><span class="sv" data-t="2120">0</span><span class="u">亩</span></div><div class="sl">山林</div></div><div class="si"><div class="sn"><span class="sv" data-t="650">0</span><span class="u">年</span></div><div class="sl">历史</div></div></div></div></div>
+  <div id="s3"><div class="c3w"><h2 class="c3t">探索下枫槎</h2><p class="c3d">宗祠文化、族谱世系、名人风骨、今日新貌<br>一卷山水，尽在指间</p><a class="c3b" href="index.html">✦ 进入主站</a><div class="c3l"><a href="pages/history.html">家族历史</a><a href="pages/activities.html">家族活动</a><a href="pages/audio.html">听·下枫槎</a><a href="pages/vinyl-player.html">枫槎留声机</a><a href="pages/xie-collection.html">谢氏集萃</a></div></div></div>
 
-    <!-- Cards -->
-    <div class="hcs" id="hcs">
-      <a class="hc" href="pages/genealogy.html" style="background-image:url('images/carousel/38.jpg')"><div class="clabel"><span class="cplay"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M3 2l7 4-7 4V2z"/></svg></span>族谱</div></a>
-      <a class="hc" href="pages/today.html" style="background-image:url('images/carousel/121.jpg')"><div class="cmetric">📸<br>影集</div></a>
-      <a class="hc" href="pages/history.html" style="background-image:url('images/carousel/23.jpg')"><div class="clabel"><span class="cplay"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M3 2l7 4-7 4V2z"/></svg></span>足迹</div></a>
-    </div>
+  <div id="scue"><span>向下探索</span><div class="chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(245,230,200,0.6)" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div></div>
+</div></div>
 
-    <!-- Scene 2 & 3 -->
-    <div id="s2"><div class="sw"><div class="se">· 望府山下 · 枫槎溪畔 ·</div><h2 class="stt">绿水青山<br>望府香</h2><p class="sd">白峤港畔、望府山下、枫槎岭口，有一个山青水绿、风景优美的村庄——下枫槎村。自明初建村至今已有650余年历史。望府银毫茶香万里，谢氏文脉源远流长。</p><div class="sg"><div class="si"><div class="sn"><span class="sv" data-t="256">0</span><span class="u">户</span></div><div class="sl">人家</div></div><div class="si"><div class="sn"><span class="sv" data-t="726">0</span><span class="u">人</span></div><div class="sl">人口</div></div><div class="si"><div class="sn"><span class="sv" data-t="400">0</span><span class="u">亩</span></div><div class="sl">茶园</div></div><div class="si"><div class="sn"><span class="sv" data-t="2120">0</span><span class="u">亩</span></div><div class="sl">山林</div></div><div class="si"><div class="sn"><span class="sv" data-t="650">0</span><span class="u">年</span></div><div class="sl">历史</div></div></div></div></div>
-    <div id="s3"><div class="c3w"><h2 class="c3t">探索下枫槎</h2><p class="c3d">宗祠文化、族谱世系、名人风骨、今日新貌<br>一卷山水，尽在指间</p><a class="c3b" href="index.html">✦ 进入主站</a><div class="c3l"><a href="pages/history.html">家族历史</a><a href="pages/activities.html">家族活动</a><a href="pages/audio.html">听·下枫槎</a><a href="pages/vinyl-player.html">枫槎留声机</a><a href="pages/xie-collection.html">谢氏集萃</a></div></div></div>
+<script>
+var v=document.getElementById('village'),sL=document.getElementById('s-left'),sR=document.getElementById('s-right');
+var pL=document.getElementById('portal-left'),pR=document.getElementById('portal-right');
+var rL=document.getElementById('roller-l'),rR=document.getElementById('roller-r');
+var s1=document.getElementById('s1'),s2=document.getElementById('s2'),s3=document.getElementById('s3');
+var sc=document.getElementById('scue'),hc=document.getElementById('hcs'),ct=document.getElementById('ct'),cd=document.getElementById('cd');
 
-    <div id="scue"><span>向下展开画卷</span><div class="chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(245,230,200,0.6)" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div></div>
-  </div></div>
+v.style.backgroundImage="url('images/bg-left.png')";
 
-  <script>
-    var v=document.getElementById('village'), rw=document.getElementById('ref-world'), rp=document.getElementById('ref-portal');
-    var sL=document.getElementById('scroll-left'), sR=document.getElementById('scroll-right'), rL=document.getElementById('roller-left'), rR=document.getElementById('roller-right'), sb=document.getElementById('scroll-back');
-    var s1=document.getElementById('scene1'), s2=document.getElementById('s2'), s3=document.getElementById('s3');
-    var sc=document.getElementById('scue'), hc=document.getElementById('hcs'), ct=document.getElementById('ct'), cd=document.getElementById('cd');
+function lerp(a,b,t){return a+(b-a)*t}function clamp(v,m,M){return Math.max(m,Math.min(M,v))}
+function eoc(t){return 1-Math.pow(1-t,3)}
 
-    v.style.backgroundImage="url('images/bg-left.png')";
-    rw.style.backgroundImage="url('images/world-bg-ref.webp')";
-    rp.style.backgroundImage="url('images/portal-bg-ref.webp')";
+// Scroll panels start CLOSED — they form the complete :3003 scene
+sL.style.transform='translateX(0%)';sR.style.transform='translateX(0%)';
+rL.style.transform='translateX(0%)';rR.style.transform='translateX(0%)';
+v.style.opacity=0;
 
-    function lerp(a,b,t){return a+(b-a)*t;} function clamp(v,m,M){return Math.max(m,Math.min(M,v));}
-    function eoc(t){return 1-Math.pow(1-t,3);}
+var sp=0;
+window.addEventListener('scroll',function(){var r=document.getElementById('scroll-root'),s=r.offsetHeight-window.innerHeight;sp=s>0?clamp(window.scrollY/s,0,1):0;},{passive:true});
 
-    // Initial: :3003 scene fully visible, scroll panels cover center
-    sL.style.transform='translateX(0%)'; sR.style.transform='translateX(0%)';
-    rL.style.transform='translateX(0%)'; rR.style.transform='translateX(0%)';
-    rw.style.opacity=1; rp.style.opacity=1; v.style.opacity=0;
+!function u(){var n=new Date();ct.textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');cd.textContent=n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日';setTimeout(u,10000)}();
+setTimeout(function(){document.getElementById('clock').classList.add('show');},500);
 
-    var sp=0;
-    window.addEventListener('scroll',function(){var r=document.getElementById('scroll-root'),s=r.offsetHeight-window.innerHeight;sp=s>0?clamp(window.scrollY/s,0,1):0;},{passive:true});
+var rx=0,ry=0,cx=0,cy=0;
+window.addEventListener('mousemove',function(e){rx=(e.clientX/window.innerWidth)*2-1;ry=(e.clientY/window.innerHeight)*2-1;});
 
-    !function u(){var n=new Date();ct.textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');cd.textContent=n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日';setTimeout(u,10000)}();
-    setTimeout(function(){document.getElementById('clock').classList.add('show');},500);
+var sa=false;
+function as(){if(sa)return;sa=true;document.querySelectorAll('.sv').forEach(function(el){var t=parseInt(el.getAttribute('data-t'),10)||0,d=1500,st=Date.now();!function ti(){var p=Math.min((Date.now()-st)/d,1);el.textContent=Math.round(eoc(p)*t);if(p<1)requestAnimationFrame(ti);else el.textContent=t;}();});}
 
-    var rx=0,ry=0,cx=0,cy=0;
-    window.addEventListener('mousemove',function(e){rx=(e.clientX/window.innerWidth)*2-1;ry=(e.clientY/window.innerHeight)*2-1;});
+// ═══ TOGGLE: click to open/close scroll panels (50% each → edges) ═══
+var isOpen=false,isAnimating=false;
+document.getElementById('enterBtn').addEventListener('click',function(){
+  if(isAnimating)return;isAnimating=true;
+  var wrap=document.getElementById('enter-wrap');
+  var dur=2000,st=Date.now();
+  var opening=!isOpen;
+  var startShift=opening?0:48,targetShift=opening?48:0;
 
-    var sa=false;
-    function as(){if(sa)return;sa=true;document.querySelectorAll('.sv').forEach(function(el){var t=parseInt(el.getAttribute('data-t'),10)||0,d=1500,st=Date.now();!function ti(){var p=Math.min((Date.now()-st)/d,1);el.textContent=Math.round(eoc(p)*t);if(p<1)requestAnimationFrame(ti);else el.textContent=t;}();});}
+  !function anim(){
+    var el=Date.now()-st,t=Math.min(el/dur,1),e=eoc(t);
+    var shift=startShift+(targetShift-startShift)*e;
 
-    // ═══ CLICK: scroll panels open + village emerges from center ═══
-    var isOpen=false;
-    document.getElementById('enterBtn').addEventListener('click',function(){
-      if(isOpen)return;isOpen=true;
-      document.getElementById('enter-wrap').style.opacity='0';document.getElementById('enter-wrap').style.pointerEvents='none';
+    sL.style.transform='translateX(-'+shift+'%)';sR.style.transform='translateX('+shift+'%)';
+    rL.style.transform='translateX(-'+shift+'%)';rR.style.transform='translateX('+shift+'%)';
 
-      var dur=2800,st=Date.now();
-      !function anim(){
-        var el=Date.now()-st,t=Math.min(el/dur,1),e=eoc(t);
-        var shift=e*44;
-        sL.style.transform='translateX(-'+shift+'%)'; sR.style.transform='translateX('+shift+'%)';
-        rL.style.transform='translateX(-'+shift+'%)'; rR.style.transform='translateX('+shift+'%)';
-        if(sb)sb.style.opacity=1-e;
+    if(opening){
+      v.style.opacity=e;
+      v.style.transform='scale('+lerp(1.3,1.1,e)+')';
+      pL.style.opacity=1-e;pR.style.opacity=1-e;
+    } else {
+      v.style.opacity=1-e;
+      v.style.transform='scale('+lerp(1.1,1.3,e)+')';
+      pL.style.opacity=e;pR.style.opacity=e;
+    }
 
-        v.style.opacity=e;
-        var vs=lerp(1.3,1.1,e); v.style.transform='scale('+vs+')';
+    if(t<1) requestAnimationFrame(anim);
+    else {
+      isOpen=opening;isAnimating=false;
+      sL.style.transform='translateX(-'+targetShift+'%)';sR.style.transform='translateX('+targetShift+'%)';
+      rL.style.transform='translateX(-'+targetShift+'%)';rR.style.transform='translateX('+targetShift+'%)';
 
-        rp.style.transform='scale('+lerp(1,5,e)+')'; rp.style.opacity=1-e;
-        rw.style.opacity=1-e*0.6;
+      if(opening){
+        v.style.opacity=1;v.style.transform='scale(1.1)';
+        pL.style.display='none';pR.style.display='none';
+        s1.classList.add('show');
+        setTimeout(function(){hc.classList.add('show');},400);
+        setTimeout(function(){sc.classList.add('show');},600);
+        document.querySelector('.enter-sub').textContent='点击收起 · 卷轴合拢';
+      } else {
+        v.style.opacity=0;
+        pL.style.display='';pR.style.display='';
+        pL.style.opacity=1;pR.style.opacity=1;
+        s1.classList.remove('show');hc.classList.remove('show');sc.classList.remove('show');
+        document.querySelector('.enter-sub').textContent='点击展开 · 村庄呈现';
+      }
+    }
+  }();
+});
 
-        if(t<1) requestAnimationFrame(anim);
-        else {
-          sL.style.transform='translateX(-44%)'; sR.style.transform='translateX(44%)';
-          rL.style.transform='translateX(-44%)'; rR.style.transform='translateX(44%)';
-          rp.style.display='none'; rw.style.display='none'; if(sb)sb.style.display='none';
-          v.style.opacity=1; v.style.transform='scale(1.1)';
-          s1.classList.add('show');
-          setTimeout(function(){hc.classList.add('show');},400);
-          setTimeout(function(){sc.classList.add('show');},600);
-        }
-      }();
-    });
-
-    !function tick(){
-      cx=lerp(cx,rx,0.07);cy=lerp(cy,ry,0.07);var p=sp;
-      v.style.transform='scale('+lerp(1.1,1.15,p)+') translate3d('+(cx*4)+'px,'+(cy*4)+'px,0)';
-      var o=clamp(1-p/0.18,0,1);s1.style.opacity=o;hc.style.opacity=o>0.05?o:0;
-      var i=clamp((p-0.22)/0.15,0,1),o2=clamp(1-(p-0.55)/0.12,0,1),v2=Math.min(i,o2);
-      s2.style.opacity=v2;s2.style.pointerEvents=v2>0.05?'auto':'none';
-      if(v2>0.3&&!sa) as();
-      var v3=clamp((p-0.58)/0.15,0,1);s3.style.opacity=v3;s3.style.pointerEvents=v3>0.05?'auto':'none';
-      sc.style.opacity=o>0.1?1:0;
-      requestAnimationFrame(tick);
-    }();
-  </script>
+!function tick(){
+  cx=lerp(cx,rx,0.07);cy=lerp(cy,ry,0.07);var p=sp;
+  v.style.transform='scale('+lerp(1.1,1.15,p)+') translate3d('+(cx*4)+'px,'+(cy*4)+'px,0)';
+  var o=clamp(1-p/0.18,0,1);s1.style.opacity=o;hc.style.opacity=o>0.05?o:0;
+  var i=clamp((p-0.22)/0.15,0,1),o2=clamp(1-(p-0.55)/0.12,0,1),v2=Math.min(i,o2);
+  s2.style.opacity=v2;s2.style.pointerEvents=v2>0.05?'auto':'none';
+  if(v2>0.3&&!sa)as();
+  var v3=clamp((p-0.58)/0.15,0,1);s3.style.opacity=v3;s3.style.pointerEvents=v3>0.05?'auto':'none';
+  sc.style.opacity=o>0.1?1:0;
+  requestAnimationFrame(tick);
+}();
+</script>
 </body>
 </html>
