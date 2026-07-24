@@ -358,7 +358,11 @@
         curtainL.style.transform = 'translateX(-' + shift + '%)';
         curtainR.style.transform = 'translateX(' + shift + '%)';
 
-        // 2. World (village) fades in with slight zoom
+        // 2. Backing fades out as curtains open
+        var backing = document.getElementById('curtain-back');
+        if (backing) backing.style.opacity = 1 - e;
+
+        // 3. World (village) fades in with slight zoom
         world.style.opacity = e;
         var ws = lerp(1.35, 1.15, e);
         world.style.transform = 'scale('+ws+')';
@@ -368,6 +372,7 @@
         } else {
           curtainL.style.transform = 'translateX(-50%)';
           curtainR.style.transform = 'translateX(50%)';
+          if (backing) backing.style.opacity = 0;
           world.style.opacity = 1;
           world.style.transform = 'scale(1.15)';
           // Show title and cards after open
