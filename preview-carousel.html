@@ -12,7 +12,7 @@ body{background:#fff;min-height:100vh;display:flex;flex-direction:column;align-i
 h2{color:#d4793a;font-size:26px;letter-spacing:0.15em;margin-bottom:40px;font-weight:500}
 
 .project-data-wrapper{
-  perspective-origin:50% 50%;perspective:160em;
+  perspective-origin:50% 50%;perspective:200em;
   display:flex;justify-content:center;align-items:center;
   position:relative;overflow:hidden;
   min-height:580px;width:100%;max-width:900px;
@@ -42,7 +42,7 @@ h2{color:#d4793a;font-size:26px;letter-spacing:0.15em;margin-bottom:40px;font-we
   pointer-events:auto;
 }
 .project-card.near{
-  filter:grayscale(30%) blur(1px) brightness(0.85);
+  filter:grayscale(60%) blur(3px) brightness(0.7);
   pointer-events:none;
 }
 .project-card:hover{box-shadow:0 0 30px 1px rgba(201,168,76,0.1)}
@@ -150,7 +150,7 @@ function isPaused(){return hoverPaused||blurPaused||offscreen}
 function mod(a,b){return((a%b)+b)%b}
 function getFocusedIndex(){return mod(focused,photos.length)}
 
-var radius = 380 / (2 * Math.sin(Math.PI / photos.length));
+var radius = 480 / (2 * Math.sin(Math.PI / photos.length));
 var distToEdge = Math.round(Math.sqrt(radius * radius - 200 * 200) + 30);
 projectsElem.style.setProperty('--distance', distToEdge + 'px');
 
