@@ -34,11 +34,13 @@
       -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 120px), transparent calc(100% - 20px));
       mask-image: linear-gradient(90deg, #000 calc(100% - 120px), transparent calc(100% - 20px));
       -webkit-mask-composite: source-over; mask-composite: add;
+      background-size:auto 90%; background-position:center center;
     }
     #bg-right {
       -webkit-mask-image: linear-gradient(270deg, #000 calc(100% - 120px), transparent calc(100% - 20px));
       mask-image: linear-gradient(270deg, #000 calc(100% - 120px), transparent calc(100% - 20px));
       -webkit-mask-composite: source-over; mask-composite: add;
+      background-size:auto 90%; background-position:center center;
     }
     /* Dynamic mask adjustment via JS will set custom property */
 
@@ -423,7 +425,7 @@
     // ── Update axles and image masks ──
     function updateVisuals() {
       var vw = window.innerWidth;
-      var edge = isMobile ? 3 : 6;
+      var edge = isMobile ? 1 : 2;
       leftPos = clamp(leftPos, edge, 50);
       rightPos = clamp(rightPos, 50, 100 - edge);
 
@@ -490,8 +492,8 @@
       if (!isDragging || !x) return;
       var vw = window.innerWidth;
       var dx = (x - dragStartX) / vw * 100;
-      if (activeAxle === 'left') leftPos = clamp(dragStartPos + dx, isMobile ? 3 : 6, 50);
-      else if (activeAxle === 'right') rightPos = clamp(dragStartPos + dx, 50, isMobile ? 97 : 94);
+      if (activeAxle === 'left') leftPos = clamp(dragStartPos + dx, isMobile ? 1 : 2, 50);
+      else if (activeAxle === 'right') rightPos = clamp(dragStartPos + dx, 50, isMobile ? 99 : 98);
       updateVisuals();
     }
 
