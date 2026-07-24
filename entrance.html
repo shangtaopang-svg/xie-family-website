@@ -144,7 +144,7 @@ setTimeout(function(){document.getElementById('clk').classList.add('show');docum
 // ── Mouse parallax + wheel zoom (like :3003 portal) ──
 var rx=0,ry=0,cx=0,cy=0,isOpen=false,isAnim=false,portalZoom=1;
 window.addEventListener('mousemove',function(e){rx=(e.clientX/window.innerWidth)*2-1;ry=(e.clientY/window.innerHeight)*2-1;});
-window.addEventListener('wheel',function(e){if(!isOpen&&!isAnim&&e.deltaY<0){portalZoom=clamp(portalZoom*1.07,1,6);e.preventDefault();}},{passive:false});
+window.addEventListener('wheel',function(e){if(!isOpen&&!isAnim){if(e.deltaY<0)portalZoom=clamp(portalZoom*1.07,1,6);else portalZoom=clamp(portalZoom*0.93,1,6);e.preventDefault();}},{passive:false});
 
 !function tick(){
   cx=lerp(cx,rx,0.07);cy=lerp(cy,ry,0.07);
