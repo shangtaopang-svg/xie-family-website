@@ -134,12 +134,12 @@ setTimeout(function(){document.getElementById('clk').classList.add('show');docum
 // ── Mouse parallax + wheel zoom (like :3003 portal) ──
 var rx=0,ry=0,cx=0,cy=0,isOpen=false,isAnim=false,portalZoom=1;
 window.addEventListener('mousemove',function(e){rx=(e.clientX/window.innerWidth)*2-1;ry=(e.clientY/window.innerHeight)*2-1;});
-window.addEventListener('wheel',function(e){if(!isOpen&&!isAnim){portalZoom=clamp(portalZoom-e.deltaY*0.002,0.8,6);e.preventDefault();}},{passive:false});
+window.addEventListener('wheel',function(e){if(!isOpen&&!isAnim){if(e.deltaY>0)portalZoom=clamp(portalZoom*0.93,0.8,6);else portalZoom=clamp(portalZoom*1.07,0.8,6);e.preventDefault();}},{passive:false});
 
 !function tick(){
   cx=lerp(cx,rx,0.07);cy=lerp(cy,ry,0.07);
   if(!isAnim&&!isOpen){
-    pt.style.transform='scale('+portalZoom+') translate3d('+(cx*15/portalZoom)+'px,'+(cy*10/portalZoom)+'px,0)';
+    pt.style.transform='scale('+portalZoom+')';
     w.style.transform='translate3d('+(cx*6)+'px,'+(cy*6)+'px,0)';
   }
   if(isOpen){v.style.transform='translate3d('+(cx*4)+'px,'+(cy*4)+'px,0)';}
