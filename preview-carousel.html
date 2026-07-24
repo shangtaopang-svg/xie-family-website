@@ -50,16 +50,10 @@ h2{color:#d4793a;font-size:26px;letter-spacing:0.15em;margin-bottom:40px;font-we
 .project-card img{width:100%;height:clamp(280px,50vh,420px);object-fit:cover;display:block}
 .project-card.focused img{cursor:pointer}
 
-/* Arrows */
-.project-data-wrapper .arrow-left,.project-data-wrapper .arrow-right{
-  position:absolute;top:50%;transform:translateY(-50%);
-  font-size:30px;cursor:pointer;color:#d4793a;z-index:10;
-  background:transparent;border:none;padding:12px 24px;
-  transition:color 0.3s;
-}
-.project-data-wrapper .arrow-left:hover,.project-data-wrapper .arrow-right:hover{color:#d4793a}
-.project-data-wrapper .arrow-left{left:0}
-.project-data-wrapper .arrow-right{right:0}
+/* Arrows — below carousel */
+.arrows-bar{display:flex;align-items:center;justify-content:center;gap:30px;margin-top:20px;z-index:10}
+.arrows-bar .arrow{font-size:28px;cursor:pointer;color:#d4793a;background:transparent;border:none;padding:8px 20px;transition:color 0.3s}
+.arrows-bar .arrow:hover{color:#e8c97a}
 
 /* Navigation dots */
 .project-data-wrapper .navigation{
@@ -104,12 +98,14 @@ body{animation:fadeIn 0.8s ease forwards}
 <h2>✦ 下枫槎 · 摄影集</h2>
 
 <div class="project-data-wrapper">
-  <button class="arrow-left" id="arrowLeft">‹</button>
   <div class="project-data" id="projectData"></div>
-  <button class="arrow-right" id="arrowRight">›</button>
   <div class="navigation" id="navDots"></div>
 </div>
-<div class="idx-label" id="idxLabel"></div>
+<div class="arrows-bar">
+  <button class="arrow" id="arrowLeft">‹</button>
+  <div class="idx-label" id="idxLabel"></div>
+  <button class="arrow" id="arrowRight">›</button>
+</div>
 
 <!-- Lightbox -->
 <div id="lightbox">
