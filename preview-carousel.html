@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D 照片轮播 — 完全复刻</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0806;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;overflow:hidden;padding:20px}
+
+h2{color:#c9a84c;font-size:26px;letter-spacing:0.15em;margin-bottom:40px;font-weight:500}
+
+.project-data-wrapper{
+  perspective-origin:50% 50%;perspective:140em;
+  display:flex;justify-content:center;align-items:center;
+  position:relative;overflow:hidden;
+  min-height:520px;width:100%;max-width:900px;
+}
+
+.project-data-wrapper .project-data{
+  position:absolute;left:50%;display:flex;align-items:center;
+  height:100%;cursor:pointer;
+  transform:translateZ(calc(var(--distance)*-1)) rotateX(2deg);
+  transform-style:preserve-3d;
+}
+
+.project-card{
+  padding:0;overflow:hidden;
+  width:min(400px,-70px + 100vw);max-width:340px;
+  background:#1a1410;border-radius:1em;
+  position:absolute;cursor:pointer;
+  transform:translateX(-50%) rotateY(var(--rotation)) translateZ(var(--distance));
+  transition:filter 1s,box-shadow 0.3s;
+  backface-visibility:visible;pointer-events:none;
+  filter:grayscale(100%) blur(6px) brightness(0.5);
+  border:1px solid rgba(245,230,200,0.04);
+}
+.project-card.focused{
+  filter:grayscale(0%) blur(0px) brightness(1);
+  box-shadow:0 0 40px 10px rgba(201,168,76,0.06),0 0 20px 5px rgba(0,0,0,0.3);
+  pointer-events:auto;
+}
+.project-card:hover{box-shadow:0 0 30px 1px rgba(201,168,76,0.08)}
+
+.project-card img{width:100%;height:100%;object-fit:cover;display:block}
+.project-card.focused img{cursor:pointer}
+
+/* Arrows */
+.project-data-wrapper .arrow-left,.project-data-wrapper .arrow-right{
+  position:absolute;top:50%;transform:translateY(-50%);
+  font-size:30px;cursor:pointer;color:#c9a84c;z-index:10;
+  background:transparent;border:none;padding:12px 24px;
+  transition:color 0.3s;
+}
+.project-data-wrapper .arrow-left:hover,.project-data-wrapper .arrow-right:hover{color:#e8c97a}
+.project-data-wrapper .arrow-left{left:0}
+.project-data-wrapper .arrow-right{right:0}
+
+/* Navigation dots */
+.project-data-wrapper .navigation{
+  position:absolute;bottom:1rem;display:flex;gap:10px;cursor:pointer;z-index:10;
+}
+.project-data-wrapper .navigation .nav-dot{
+  padding:5px;background:rgba(255,255,255,0.15);
+  border:1px solid rgba(34,34,34,0.46);
+  border-radius:50%;transition:all 0.4s;
+}
+.project-data-wrapper .navigation .focused{background:#c9a84c;scale:1.4}
+
+.idx-label{color:rgba(245,230,200,0.2);font-size:13px;letter-spacing:0.1em;text-align:center;margin-top:16px}
+
+/* Lightbox */
+#lightbox{
+  position:fixed;inset:0;z-index:999;
+  background:rgba(0,0,0,0.92);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 0.4s;
+  cursor:zoom-out;
+}
+#lightbox.show{opacity:1;pointer-events:auto}
+#lightbox img{max-width:90vw;max-height:90vh;object-fit:contain;transform:scale(0.8);transition:transform 0.4s ease;border-radius:4px}
+#lightbox.show img{transform:scale(1)}
+#lightbox .lb-close{
+  position:absolute;top:20px;right:30px;font-size:30px;color:rgba(255,255,255,0.4);
+  cursor:pointer;transition:color 0.3s;border:none;background:none;
+}
+#lightbox .lb-close:hover{color:#fff}
+#lightbox .lb-label{
+  position:absolute;bottom:30px;left:50%;transform:translateX(-50%);
+  color:rgba(255,255,255,0.3);font-size:14px;letter-spacing:0.1em;
+}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+body{animation:fadeIn 0.8s ease forwards}
+</style>
+</head>
+<body>
+
+<h2>✦ 下枫槎 · 摄影集</h2>
+
+<div class="project-data-wrapper">
+  <button class="arrow-left" id="arrowLeft">‹</button>
+  <div class="project-data" id="projectData"></div>
+  <button class="arrow-right" id="arrowRight">›</button>
+  <div class="navigation" id="navDots"></div>
+</div>
+<div class="idx-label" id="idxLabel"></div>
+
+<!-- Lightbox -->
+<div id="lightbox">
+  <button class="lb-close" id="lbClose">✕</button>
+  <img id="lbImg" src="" alt="">
+  <div class="lb-label" id="lbLabel"></div>
+</div>
+
+<script>
+var photos = [
+  {src:'摄影中的照片/11.jpg', title:'下枫槎村景', desc:'村庄入口·绿树成荫'},
+  {src:'摄影中的照片/23.jpg', title:'下枫槎村景', desc:'村道小巷·岁月静好'},
+  {src:'摄影中的照片/38.jpg', title:'望府山下', desc:'茶园风光·名茶飘香'},
+  {src:'摄影中的照片/40.jpg', title:'枫槎溪畔', desc:'溪水潺潺·山青水绿'},
+  {src:'摄影中的照片/42.jpg', title:'文化礼堂', desc:'村民活动·文化传承'},
+  {src:'摄影中的照片/51.jpg', title:'新村新貌', desc:'别墅成排·美丽乡村'},
+  {src:'摄影中的照片/88.jpg', title:'宗祠古韵', desc:'谢氏宗祠·百年传承'},
+  {src:'摄影中的照片/121.jpg', title:'望府银毫', desc:'全国名茶·茶园一隅'},
+  {src:'摄影中的照片/123.jpg', title:'山水之间', desc:'望府山·枫槎岭'},
+  {src:'摄影中的照片/W020230307562232959074.jpg', title:'宗祠全景', desc:'谢氏宗祠·正门全景'},
+];
+
+var projectsElem = document.getElementById('projectData');
+var navElem = document.getElementById('navDots');
+var idxLabel = document.getElementById('idxLabel');
+var lb = document.getElementById('lightbox');
+var lbImg = document.getElementById('lbImg');
+var lbLabel = document.getElementById('lbLabel');
+
+var rotationAmt = 360 / photos.length;
+var focused = 0;
+var hoverPaused = false;
+var blurPaused = false;
+var offscreen = false;
+var timeout;
+
+function isPaused(){return hoverPaused||blurPaused||offscreen}
+function mod(a,b){return((a%b)+b)%b}
+function getFocusedIndex(){return mod(focused,photos.length)}
+
+var radius = 400 / (2 * Math.sin(Math.PI / photos.length));
+var distToEdge = Math.round(Math.sqrt(radius * radius - 200 * 200) + 30);
+projectsElem.style.setProperty('--distance', distToEdge + 'px');
+
+photos.forEach(function(photo, i) {
+  var card = document.createElement('div');
+  card.className = 'project-card';
+  card.style.setProperty('--rotation', (i * rotationAmt) + 'deg');
+  card.innerHTML = '<img src="'+photo.src+'" alt="'+photo.title+'">';
+  // Click to zoom (only focused cards)
+  card.addEventListener('click', function(e) {
+    var isFocused = this.classList.contains('focused');
+    if (isFocused) {
+      lbImg.src = photo.src;
+      lbLabel.textContent = photo.title;
+      lb.classList.add('show');
+    }
+  });
+  projectsElem.appendChild(card);
+
+  var dot = document.createElement('div');
+  dot.className = 'nav-dot';
+  dot.addEventListener('click', function() { select(i); });
+  navElem.appendChild(dot);
+});
+
+// Lightbox close
+lb.addEventListener('click', function() { lb.classList.remove('show'); });
+document.getElementById('lbClose').addEventListener('click', function(e) { e.stopPropagation(); lb.classList.remove('show'); });
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') lb.classList.remove('show');
+  if (e.key === 'ArrowLeft' && !lb.classList.contains('show')) { focused--; update(); }
+  if (e.key === 'ArrowRight' && !lb.classList.contains('show')) { focused++; update(); }
+});
+
+function update() {
+  gsap.to(projectsElem, {
+    rotationY: -focused * rotationAmt,
+    duration: 1,
+    ease: 'power2.out'
+  });
+  for (var i = 0; i < photos.length; i++) {
+    var isFocused = (getFocusedIndex() === i);
+    projectsElem.children[i].classList.toggle('focused', isFocused);
+    navElem.children[i].classList.toggle('focused', isFocused);
+  }
+  idxLabel.textContent = (getFocusedIndex() + 1) + ' / ' + photos.length;
+  if (timeout) clearTimeout(timeout);
+  timeout = setTimeout(function() {
+    if (isPaused()) { update(); } else { focused++; update(); }
+  }, 4000);
+}
+
+function select(index) { focused += index - getFocusedIndex(); update(); }
+
+document.getElementById('arrowLeft').addEventListener('click', function() { focused--; update(); });
+document.getElementById('arrowRight').addEventListener('click', function() { focused++; update(); });
+
+projectsElem.addEventListener('mouseenter', function() { hoverPaused = true; });
+projectsElem.addEventListener('mouseleave', function() { hoverPaused = false; });
+window.onblur = function() { blurPaused = true; };
+window.onfocus = function() { blurPaused = false; };
+if ('IntersectionObserver' in window) {
+  new IntersectionObserver(function(entries) { offscreen = !entries[0].isIntersecting; }).observe(projectsElem);
+}
+
+update();
+</script>
+</body>
+</html>
