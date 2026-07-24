@@ -446,10 +446,9 @@
       // Update clip paths for images
       // Left image: visible from 0 to (50 - leftWidth)%
       var leftVisible = Math.max(0, 50 - leftWidth);
-      bgLeft.style.clipPath = 'inset(0 ' + (100 - leftVisible * 2) + '% 0 0)';
+      bgLeft.style.clipPath = 'inset(0 ' + (leftWidth * 2) + '% 0 0)';
       // Right image: visible from (50 + rightWidth) to 100%
-      var rightStart = 50 + rightWidth;
-      bgRight.style.clipPath = 'inset(0 0 0 ' + (rightStart) + '%)';
+      bgRight.style.clipPath = 'inset(0 0 0 ' + (rightWidth * 2) + '%)';
     }
 
     // ── Drag interaction ──
