@@ -887,7 +887,7 @@
     function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
 
     // ── Parallax magnitudes ──
-    var MAG = { scroll: 18, world: 5 };
+    var MAG = { scroll: 18, world: 5, scrollParallax: 20 };
 
     // ── Responsive flag ──
     var isMobile = false;
@@ -915,6 +915,7 @@
     });
 
     // ── Entrance animation ──
+    var entranceComplete = false;
     // Scrolls start fully closed (translateX 0 = covering screen)
     scrollLeft.style.transition = 'transform 1.6s cubic-bezier(0.22,1,0.36,1)';
     scrollRight.style.transition = 'transform 1.6s cubic-bezier(0.22,1,0.36,1)';
@@ -962,6 +963,12 @@
       rollerLeft.style.transition = 'none';
       rollerRight.style.transition = 'none';
       scrollGlow.style.transition = 'none';
+      entranceComplete = true;
+      // Reset transforms to clean percentage values (remove any render-loop interference during entrance)
+      scrollLeft.style.transform = 'translateX(-100%)';
+      scrollRight.style.transform = 'translateX(100%)';
+      rollerLeft.style.transform = 'translateX(-100%)';
+      rollerRight.style.transform = 'translateX(100%)';
     }, 2500);
 
     // ── Stats counter animation ──
@@ -1001,11 +1008,14 @@
       var worldScale = lerp(1, 1.15, p);
       worldBg.style.transform = 'scale(' + worldScale + ') translate3d(' + (rx * MAG.world) + 'px,' + (ry * MAG.world) + 'px,0)';
 
-      // ── Scroll bars slight parallax ──
-      // After entrance (p>0), scrolls move slightly for parallax feel
-      var scrollOffset = eased * MAG.scroll;
-      if (p > 0) {
-        // Already opened via CSS transition, just add slight parallax offset
+      // ── Scroll bars mouse parallax ──
+      // After entrance completes, scroll bars subtly follow mouse movement
+      if (entranceComplete) {
+        var px = rx * MAG.scrollParallax;
+        scrollLeft.style.transform = 'translateX(calc(-100% + ' + px + 'px))';
+        scrollRight.style.transform = 'translateX(calc(100% - ' + px + 'px))';
+        rollerLeft.style.transform = 'translateX(calc(-100% + ' + px + 'px))';
+        rollerRight.style.transform = 'translateX(calc(100% - ' + px + 'px))';
       }
 
       // ── Scene 1: Hero ──
