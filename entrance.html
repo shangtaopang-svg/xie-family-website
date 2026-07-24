@@ -84,13 +84,14 @@
     .s1m { font-family:'Noto Serif SC',serif; font-size:clamp(14px,1.8vw,24px); font-weight:600; color:#c9a84c; letter-spacing:0.3em; text-shadow:0 2px 20px rgba(0,0,0,0.4); margin:8px 0 0; }
 
     /* ── Cards ── */
-    .hcs { position:absolute; bottom:70px; display:flex; gap:14px; z-index:16; opacity:0; transition:opacity 1s ease; }
+    .hcs { position:absolute; bottom:70px; display:flex; gap:16px; z-index:16; opacity:0; transition:opacity 1s ease; }
     .hcs.show { opacity:1; }
-    .hc { width:clamp(80px,10vw,130px); height:clamp(80px,10vw,130px); border-radius:18px; background:rgba(10,8,6,0.3); backdrop-filter:blur(8px); border:1px solid rgba(245,230,200,0.1); display:flex; flex-direction:column; align-items:center; justify-content:center; text-decoration:none; color:#f5e6c8; transition:all .3s; }
-    .hc:hover { transform:translateY(-4px) scale(1.03); border-color:rgba(201,168,76,0.3); }
-    .hc .ci { font-size:clamp(18px,2.2vw,28px); margin-bottom:4px; }
-    .hc .cl { font-family:'Noto Serif SC',serif; font-size:clamp(10px,1.1vw,14px); }
-    .hc .cs { font-size:clamp(7px,0.7vw,9px); color:rgba(245,230,200,0.4); margin-top:2px; }
+    .hc { width:150px; height:150px; border-radius:24px; overflow:hidden; position:relative; background-size:cover; background-position:center; box-shadow:0 18px 50px rgba(0,0,0,0.45); display:block; text-decoration:none; transition:transform .4s cubic-bezier(0.22,1,0.36,1); }
+    .hc:hover { transform:translateY(-6px) scale(1.03); }
+    .hc .clabel { position:absolute; left:0; right:0; bottom:0; display:flex; align-items:center; gap:12px; padding:20px 22px; background:linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.18) 60%, transparent 100%); font-family:'Noto Serif SC',serif; font-size:18px; letter-spacing:0.08em; font-weight:600; color:#f5e6c8; }
+    .hc .cplay { width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.9); display:grid; place-items:center; color:#2a1808; flex:none; }
+    .hc .cplay svg { width:10px; height:10px; }
+    .hc .cmetric { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Noto Serif SC',serif; font-size:clamp(20px,2.6vw,34px); font-weight:600; line-height:1.15; background:linear-gradient(to top, rgba(0,0,0,0.6), transparent 70%); letter-spacing:0.06em; color:#f5e6c8; padding:20px; }
 
     /* ── Scene 2 & 3 ── */
     #s2 { position:absolute; inset:0; z-index:21; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; padding:0 40px; }
@@ -121,8 +122,11 @@
       #clock { top:50px; right:16px; }
       .scroll-panel { width:42%; }
       .enter-btn { padding:12px 28px; font-size:14px; }
-      .hcs { bottom:40px; gap:8px; flex-wrap:wrap; justify-content:center; }
-      .hc { width:clamp(60px,18vw,90px); height:clamp(60px,18vw,90px); border-radius:12px; }
+      .hcs { bottom:40px; gap:10px; }
+      .hc { width:100px; height:100px; border-radius:16px; }
+      .hc .clabel { padding:12px 14px; font-size:12px; gap:8px; }
+      .hc .cplay { width:24px; height:24px; }
+      .hc .cplay svg { width:8px; height:8px; }
       .roller { width:12px; } .rcap { display:none; }
       #scroll-back { width:16%; }
     }
@@ -174,9 +178,9 @@
 
     <!-- Cards -->
     <div class="hcs" id="hcs">
-      <a class="hc" href="pages/genealogy.html"><span class="ci">🌳</span><span class="cl">族谱</span><span class="cs">世系源流</span></a>
-      <a class="hc" href="pages/today.html"><span class="ci">📸</span><span class="cl">影集</span><span class="cs">今日下枫槎</span></a>
-      <a class="hc" href="pages/history.html"><span class="ci">📜</span><span class="cl">足迹</span><span class="cs">家族历史</span></a>
+      <a class="hc" href="pages/genealogy.html" style="background-image:url('images/carousel/38.jpg')"><div class="clabel"><span class="cplay"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M3 2l7 4-7 4V2z"/></svg></span>族谱</div></a>
+      <a class="hc" href="pages/today.html" style="background-image:url('images/carousel/121.jpg')"><div class="cmetric">📸<br>影集</div></a>
+      <a class="hc" href="pages/history.html" style="background-image:url('images/carousel/23.jpg')"><div class="clabel"><span class="cplay"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M3 2l7 4-7 4V2z"/></svg></span>足迹</div></a>
     </div>
 
     <!-- Scene 2 & 3 -->
