@@ -79,16 +79,6 @@
   .s1t .hl{background:linear-gradient(135deg,#c9a84c,#e8c97a,#c9a84c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
   .s1m{font-family:'Noto Serif SC',serif;font-size:clamp(14px,1.8vw,24px);font-weight:600;color:#c9a84c;letter-spacing:0.3em;text-shadow:0 2px 20px rgba(0,0,0,0.4);margin:8px 0 0}
 
-  /* Cards */
-  .hcs{position:absolute;bottom:70px;display:flex;gap:16px;z-index:16;opacity:0;transition:opacity 1s ease}
-  .hcs.show{opacity:1}
-  .hc{width:158px;height:158px;border-radius:28px;overflow:hidden;position:relative;background-size:cover;background-position:center;box-shadow:0 18px 50px rgba(0,0,0,0.45);display:block;text-decoration:none;transition:transform .4s cubic-bezier(0.22,1,0.36,1)}
-  .hc:hover{transform:translateY(-6px) scale(1.03)}
-  .hc .cl{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:12px;padding:20px 22px;background:linear-gradient(to top,rgba(0,0,0,0.72) 0%,rgba(0,0,0,0.18) 60%,transparent 100%);font-size:20px;letter-spacing:0.08em;font-weight:600;color:#f5e6c8}
-  .hc .cp{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.92);display:grid;place-items:center;color:#2a1808;flex:none}
-  .hc .cp svg{width:12px;height:12px}
-  .hc .cm{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(20px,2.6vw,34px);font-weight:600;line-height:1.15;background:linear-gradient(to top,rgba(0,0,0,0.6),transparent 70%);letter-spacing:0.06em;color:#f5e6c8;padding:20px}
-
   /* Scenes 2 & 3 */
   #s2{position:absolute;inset:0;z-index:21;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;padding:0 40px}
   .sw{text-align:center;max-width:640px}.se{font-family:'Noto Serif SC',serif;font-size:13px;letter-spacing:0.25em;color:rgba(201,168,76,0.6);margin-bottom:12px}
@@ -110,8 +100,6 @@
   @media(max-width:767px){
     #clock{top:50px;right:16px}.scroll-panel{width:50%}
     .enter-btn{padding:12px 28px;font-size:14px}.enter-sub{font-size:10px}
-    .hcs{bottom:40px;gap:12px}.hc{width:110px;height:110px;border-radius:18px}
-    .hc .cl{padding:14px 16px;font-size:13px;gap:8px}.hc .cp{width:26px;height:26px}.hc .cp svg{width:8px;height:8px}
     .roller{width:12px}.rcap{display:none}
   }
   </style>
@@ -147,13 +135,6 @@
   <!-- Scene 1 -->
   <div id="s1"><h1 class="s1t"><span class="hl">下枫槎</span></h1><div class="s1m">乌衣世泽 · 宝树家声</div></div>
 
-  <!-- Cards -->
-  <div class="hcs" id="hcs">
-    <a class="hc" href="pages/genealogy.html" style="background-image:url('images/carousel/38.jpg')"><div class="cl"><span class="cp"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M3 2l7 4-7 4V2z"/></svg></span>族谱</div></a>
-    <a class="hc" href="pages/today.html" style="background-image:url('images/carousel/121.jpg')"><div class="cm">📸<br>影集</div></a>
-    <a class="hc" href="pages/history.html" style="background-image:url('images/carousel/23.jpg')"><div class="cl"><span class="cp"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M3 2l7 4-7 4V2z"/></svg></span>足迹</div></a>
-  </div>
-
   <!-- Scene 2 & 3 -->
   <div id="s2"><div class="sw"><div class="se">· 望府山下 · 枫槎溪畔 ·</div><h2 class="stt">绿水青山<br>望府香</h2><p class="sd">白峤港畔、望府山下、枫槎岭口，有一个山青水绿、风景优美的村庄——下枫槎村。自明初建村至今已有650余年历史。望府银毫茶香万里，谢氏文脉源远流长。</p><div class="sg"><div class="si"><div class="sn"><span class="sv" data-t="256">0</span><span class="u">户</span></div><div class="sl">人家</div></div><div class="si"><div class="sn"><span class="sv" data-t="726">0</span><span class="u">人</span></div><div class="sl">人口</div></div><div class="si"><div class="sn"><span class="sv" data-t="400">0</span><span class="u">亩</span></div><div class="sl">茶园</div></div><div class="si"><div class="sn"><span class="sv" data-t="2120">0</span><span class="u">亩</span></div><div class="sl">山林</div></div><div class="si"><div class="sn"><span class="sv" data-t="650">0</span><span class="u">年</span></div><div class="sl">历史</div></div></div></div></div>
   <div id="s3"><div class="c3w"><h2 class="c3t">探索下枫槎</h2><p class="c3d">宗祠文化、族谱世系、名人风骨、今日新貌<br>一卷山水，尽在指间</p><a class="c3b" href="index.html">✦ 进入主站</a><div class="c3l"><a href="pages/history.html">家族历史</a><a href="pages/activities.html">家族活动</a><a href="pages/audio.html">听·下枫槎</a><a href="pages/vinyl-player.html">枫槎留声机</a><a href="pages/xie-collection.html">谢氏集萃</a></div></div></div>
@@ -166,7 +147,7 @@ var v=document.getElementById('village'),sL=document.getElementById('s-left'),sR
 var pL=document.getElementById('portal-left'),pR=document.getElementById('portal-right');
 var rL=document.getElementById('roller-l'),rR=document.getElementById('roller-r');
 var s1=document.getElementById('s1'),s2=document.getElementById('s2'),s3=document.getElementById('s3');
-var sc=document.getElementById('scue'),hc=document.getElementById('hcs'),ct=document.getElementById('ct'),cd=document.getElementById('cd');
+var sc=document.getElementById('scue'),ct=document.getElementById('ct'),cd=document.getElementById('cd');
 
 v.style.backgroundImage="url('images/bg-left.png')";
 
@@ -226,14 +207,13 @@ document.getElementById('enterBtn').addEventListener('click',function(){
         v.style.opacity=1;v.style.transform='scale(1.1)';
         pL.style.display='none';pR.style.display='none';
         s1.classList.add('show');
-        setTimeout(function(){hc.classList.add('show');},400);
         setTimeout(function(){sc.classList.add('show');},600);
         document.querySelector('.enter-sub').textContent='点击收起 · 卷轴合拢';
       } else {
         v.style.opacity=0;
         pL.style.display='';pR.style.display='';
         pL.style.opacity=1;pR.style.opacity=1;
-        s1.classList.remove('show');hc.classList.remove('show');sc.classList.remove('show');
+        s1.classList.remove('show')sc.classList.remove('show');
         document.querySelector('.enter-sub').textContent='点击展开 · 村庄呈现';
       }
     }
@@ -243,7 +223,7 @@ document.getElementById('enterBtn').addEventListener('click',function(){
 !function tick(){
   cx=lerp(cx,rx,0.07);cy=lerp(cy,ry,0.07);var p=sp;
   v.style.transform='scale('+lerp(1.1,1.15,p)+') translate3d('+(cx*4)+'px,'+(cy*4)+'px,0)';
-  var o=clamp(1-p/0.18,0,1);s1.style.opacity=o;hc.style.opacity=o>0.05?o:0;
+  var o=clamp(1-p/0.18,0,1);s1.style.opacity=o;
   var i=clamp((p-0.22)/0.15,0,1),o2=clamp(1-(p-0.55)/0.12,0,1),v2=Math.min(i,o2);
   s2.style.opacity=v2;s2.style.pointerEvents=v2>0.05?'auto':'none';
   if(v2>0.3&&!sa)as();
