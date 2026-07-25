@@ -149,15 +149,21 @@
     <a href="pages/contact.html">✉️ 联系我们</a>
     <a href="pages/admin.html">🔐 管理后台</a>
   </nav>
-  <div class="s-controls">
+    <div class="s-controls">
     <div class="sc-row">
-      <button class="sc-btn" id="weatherBtn" title="天气效果" onclick="toggleWeather()">🌤</button>
-      <button class="sc-btn" id="musicBtn" title="背景音乐" onclick="toggleMusic()">🎵</button>
+      <button class="sc-btn" onclick="changeWeather('sun')" title="晴天">☀</button>
+      <button class="sc-btn" onclick="changeWeather('rain')" title="下雨">🌧</button>
+      <button class="sc-btn" onclick="changeWeather('snow')" title="下雪">❄</button>
       <span class="sc-div"></span>
-      <button class="sc-btn" title="缩小" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(0.8)">🔍−</button>
-      <button class="sc-btn" title="放大" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(1.2)">🔍+</button>
+      <button class="sc-btn" onclick="toggleMusic()" title="播放/暂停" id="musicBtn">🎵</button>
+      <button class="sc-btn" onclick="changeVolume(-0.2)" title="音量-">🔉</button>
+      <button class="sc-btn" onclick="changeVolume(0.2)" title="音量+">🔊</button>
+      <span class="sc-div"></span>
+      <button class="sc-btn" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(0.8)" title="缩小">🔍−</button>
+      <button class="sc-btn" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(1.2)" title="放大">🔍+</button>
     </div>
   </div>
+    </div>
   <div class="s-bottom">
     <div class="s-toggle" id="themeToggle">
       <span class="s-icon" id="themeIcon">☀️</span>
@@ -203,15 +209,21 @@
           <li><a href="pages/admin.html" style="color:var(--accent-orange);" data-i18n="nav.admin">🔐 管理后台</a></li>
         </ul>
       </nav>
-  <div class="s-controls">
+    <div class="s-controls">
     <div class="sc-row">
-      <button class="sc-btn" id="weatherBtn" title="天气效果" onclick="toggleWeather()">🌤</button>
-      <button class="sc-btn" id="musicBtn" title="背景音乐" onclick="toggleMusic()">🎵</button>
+      <button class="sc-btn" onclick="changeWeather('sun')" title="晴天">☀</button>
+      <button class="sc-btn" onclick="changeWeather('rain')" title="下雨">🌧</button>
+      <button class="sc-btn" onclick="changeWeather('snow')" title="下雪">❄</button>
       <span class="sc-div"></span>
-      <button class="sc-btn" title="缩小" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(0.8)">🔍−</button>
-      <button class="sc-btn" title="放大" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(1.2)">🔍+</button>
+      <button class="sc-btn" onclick="toggleMusic()" title="播放/暂停" id="musicBtn">🎵</button>
+      <button class="sc-btn" onclick="changeVolume(-0.2)" title="音量-">🔉</button>
+      <button class="sc-btn" onclick="changeVolume(0.2)" title="音量+">🔊</button>
+      <span class="sc-div"></span>
+      <button class="sc-btn" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(0.8)" title="缩小">🔍−</button>
+      <button class="sc-btn" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(1.2)" title="放大">🔍+</button>
     </div>
   </div>
+    </div>
     </div>
   </header>
 
@@ -507,15 +519,21 @@
     <a href="pages/xie-collection.html" class="mb-item">📚<span>集萃</span></a>
     <a href="pages/contact.html" class="mb-item">✉️<span>联系</span></a>
   </nav>
-  <div class="s-controls">
+    <div class="s-controls">
     <div class="sc-row">
-      <button class="sc-btn" id="weatherBtn" title="天气效果" onclick="toggleWeather()">🌤</button>
-      <button class="sc-btn" id="musicBtn" title="背景音乐" onclick="toggleMusic()">🎵</button>
+      <button class="sc-btn" onclick="changeWeather('sun')" title="晴天">☀</button>
+      <button class="sc-btn" onclick="changeWeather('rain')" title="下雨">🌧</button>
+      <button class="sc-btn" onclick="changeWeather('snow')" title="下雪">❄</button>
       <span class="sc-div"></span>
-      <button class="sc-btn" title="缩小" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(0.8)">🔍−</button>
-      <button class="sc-btn" title="放大" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(1.2)">🔍+</button>
+      <button class="sc-btn" onclick="toggleMusic()" title="播放/暂停" id="musicBtn">🎵</button>
+      <button class="sc-btn" onclick="changeVolume(-0.2)" title="音量-">🔉</button>
+      <button class="sc-btn" onclick="changeVolume(0.2)" title="音量+">🔊</button>
+      <span class="sc-div"></span>
+      <button class="sc-btn" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(0.8)" title="缩小">🔍−</button>
+      <button class="sc-btn" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(1.2)" title="放大">🔍+</button>
     </div>
   </div>
+    </div>
 
   <audio id="bg-music" loop></audio>
 
@@ -551,16 +569,62 @@
     <a href="pages/contact.html" class="mb-item">✉️<span>联系</span></a>
     <a href="pages/admin.html" class="mb-item">🔐<span>管理</span></a>
   </nav>
-  <div class="s-controls">
+    <div class="s-controls">
     <div class="sc-row">
-      <button class="sc-btn" id="weatherBtn" title="天气效果" onclick="toggleWeather()">🌤</button>
-      <button class="sc-btn" id="musicBtn" title="背景音乐" onclick="toggleMusic()">🎵</button>
+      <button class="sc-btn" onclick="changeWeather('sun')" title="晴天">☀</button>
+      <button class="sc-btn" onclick="changeWeather('rain')" title="下雨">🌧</button>
+      <button class="sc-btn" onclick="changeWeather('snow')" title="下雪">❄</button>
       <span class="sc-div"></span>
-      <button class="sc-btn" title="缩小" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(0.8)">🔍−</button>
-      <button class="sc-btn" title="放大" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(1.2)">🔍+</button>
+      <button class="sc-btn" onclick="toggleMusic()" title="播放/暂停" id="musicBtn">🎵</button>
+      <button class="sc-btn" onclick="changeVolume(-0.2)" title="音量-">🔉</button>
+      <button class="sc-btn" onclick="changeVolume(0.2)" title="音量+">🔊</button>
+      <span class="sc-div"></span>
+      <button class="sc-btn" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(0.8)" title="缩小">🔍−</button>
+      <button class="sc-btn" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(1.2)" title="放大">🔍+</button>
     </div>
   </div>
+    </div>
 <script>
 (function(){var t=document.getElementById("themeToggle"),k=document.getElementById("themeTrack"),i1=document.getElementById("themeIcon"),i2=document.getElementById("themeIcon2");var d=localStorage.getItem("theme")!=="light";function a(){document.documentElement.setAttribute("data-theme",d?"dark":"light");if(k)k.classList.toggle("active",d);if(i1)i1.classList.toggle("active",!d);if(i2)i2.classList.toggle("active",d);localStorage.setItem("theme",d?"dark":"light");}if(t)t.addEventListener("click",function(){d=!d;a();});a();})();
+</script>
+
+<script>
+// 天气切换
+window.changeWeather = function(type) {
+  var canvas = document.getElementById('weather-canvas');
+  if (canvas) canvas.style.display = 'block';
+  localStorage.setItem('xie_weather', type);
+  var btns = document.querySelectorAll('.sc-btn');
+  btns.forEach(function(b) {
+    if (b.textContent === '☀' || b.textContent === '🌧' || b.textContent === '❄') {
+      b.style.color = '';
+    }
+  });
+  event.target.style.color = '#04BF00';
+  // Trigger weather change event
+  var evt = new CustomEvent('weatherChange', { detail: { type: type } });
+  window.dispatchEvent(evt);
+};
+
+// 音乐播放/暂停
+window.toggleMusic = function() {
+  var btn = document.getElementById('musicBtn');
+  var audio = document.getElementById('bg-music');
+  if (!audio) return;
+  if (audio.paused) {
+    audio.play().catch(function(){});
+    if (btn) { btn.textContent = '⏸'; btn.style.color = '#04BF00'; }
+  } else {
+    audio.pause();
+    if (btn) { btn.textContent = '🎵'; btn.style.color = ''; }
+  }
+};
+
+// 音量控制
+window.changeVolume = function(delta) {
+  var audio = document.getElementById('bg-music');
+  if (!audio) return;
+  audio.volume = Math.max(0, Math.min(1, audio.volume + delta));
+};
 </script>
 </body>
