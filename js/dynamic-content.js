@@ -106,11 +106,13 @@
           var video = document.createElement('video');
           video.className = 'reel-video';
           video.dataset.src = v.src;  // lazy load: don't set src until play
-          // No poster - video title shown as overlay
+          // No preload - 无src时设置preload会导致部分浏览器显示黄色感叹号
+          // 使用CSS占位背景，播放时才加载视频
           video.muted = false;
           video.loop = true;
           video.playsInline = true;
-          video.preload = 'metadata';
+          // 不设preload — 无src时设preload会导致浏览器显示黄色感叹号
+          // 视频在用户点击播放时才通过 dataset.src 加载
 
           item.appendChild(video);
 

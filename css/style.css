@@ -2079,6 +2079,13 @@ body {
   position: relative;
   z-index: 1;
 }
+/* 无源时不显示破损图标 */
+.reel-video:not([src]) {
+  visibility: hidden;
+}
+.reel-video[src] {
+  visibility: visible;
+}
 
 /* 横屏/宽视频：铺满裁剪 */
 .reel-item.is-landscape .reel-video {
