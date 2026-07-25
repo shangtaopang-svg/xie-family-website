@@ -20,11 +20,12 @@
     .sidebar .s-logo .s-seal::after{content:'';position:absolute;inset:4px;border:1px solid rgba(245,230,200,0.12);border-radius:3px}
     .sidebar .s-logo .s-name{font-family:'Noto Serif SC',serif;font-size:14px;color:#c9a84c;letter-spacing:0.1em;margin-top:10px;font-weight:600}
     .sidebar .s-logo .s-sub{font-size:10px;color:rgba(245,230,200,0.08);letter-spacing:0.06em;margin-top:2px}
-    .sidebar .s-nav{width:100%;padding:0 10px;flex:1;overflow-y:auto;margin-top:4px}
+    .sidebar .s-nav{width:100%;padding:0 10px;flex:1;overflow-y:auto;margin-top:4px;border-top:1px solid rgba(245,230,200,0.03);border-bottom:1px solid rgba(245,230,200,0.03)}
     .sidebar .s-nav::-webkit-scrollbar{width:2px;background:transparent}
     .sidebar .s-nav::-webkit-scrollbar-thumb{background:rgba(245,230,200,0.03);border-radius:2px}
-    .sidebar .s-nav .s-grp{font-size:9px;color:rgba(245,230,200,0.04);letter-spacing:0.12em;padding:14px 16px 2px;text-transform:uppercase;font-weight:300}
-    .sidebar .s-nav a{display:block;padding:9px 16px;border-radius:4px;color:rgba(245,230,200,0.2);font-size:13px;letter-spacing:0.04em;text-decoration:none;transition:all 0.3s;margin:1px 0;position:relative}
+    .sidebar .s-nav .s-grp{font-size:9px;color:rgba(245,230,200,0.04);letter-spacing:0.12em;padding:14px 16px 2px;text-transform:uppercase;font-weight:300;border-bottom:1px solid rgba(245,230,200,0.02);margin-bottom:2px}
+    .sidebar .s-nav a{display:block;padding:9px 16px;border-radius:4px;color:rgba(245,230,200,0.2);font-size:13px;letter-spacing:0.04em;text-decoration:none;transition:all 0.3s;margin:1px 0;position:relative;border-bottom:1px solid rgba(245,230,200,0.02)}
+    .sidebar .s-nav a:last-of-type{border-bottom:none}
     .sidebar .s-nav a:hover{color:#c9a84c;background:rgba(201,168,76,0.03);letter-spacing:0.15em}
     .sidebar .s-nav a.active{color:#c9a84c;background:rgba(201,168,76,0.05);letter-spacing:0.08em}
     .sidebar .s-nav a.active::before{content:'';position:absolute;left:0;top:20%;height:60%;width:2px;background:#c9a84c;border-radius:2px;opacity:0.6}
