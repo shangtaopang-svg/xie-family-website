@@ -24,7 +24,9 @@
       0%   { opacity: 0; transform: translateY(40px); }
       100% { opacity: 1; transform: translateY(0); }
     }
-  </style>
+  
+@media(min-width:901px){.sidebar{display:flex !important}}
+</style>
   <link rel="manifest" href="../manifest.json">
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
   
@@ -148,7 +150,9 @@
           /* red seal stamp */
           .scroll-seal{position:absolute;bottom:40px;right:36px;width:42px;height:42px;border-radius:50%;border:2px solid rgba(180,50,50,0.12);display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(180,50,50,0.15);transform:rotate(-12deg);z-index:2;font-family:"STKaiti",serif;line-height:1.2;text-align:center;writing-mode:horizontal-tb}
           @media(max-width:768px){.scroll-inner{font-size:13px;padding:14px 14px 18px 50px;max-height:420px;line-height:2.6}.scroll-title{font-size:17px}.scroll-binding{width:26px}.scroll-binding .bind-hole{width:6px;height:6px}.scroll-seal{width:34px;height:34px;bottom:30px;right:20px;font-size:7px}}
-        </style>
+        
+@media(min-width:901px){.sidebar{display:flex !important}}
+</style>
         <div class="scroll-wrap">
           <div class="scroll-rod" id="scroll-rod"></div>
           <div style="display:flex;align-items:stretch;position:relative;z-index:2;">
@@ -592,7 +596,9 @@
       .lineage-modal-body { font-size:13px; line-height:1.8; color:var(--text-secondary); }
       .lineage-modal-body .lm-row { padding:2px 0; }
       .lineage-modal-body .lm-label { color:var(--text-tertiary); margin-right:6px; }
-    </style>
+    
+@media(min-width:901px){.sidebar{display:flex !important}}
+</style>
 
     <section id="ancient-lineage" class="fade-in" style="margin-bottom:50px;">
       <div class="section-title">
@@ -1155,6 +1161,8 @@ function renderChain(ids) {
 
     /* Hide old top header on desktop */
     @media(min-width:901px){.site-header{display:none !important}}
+
+@media(min-width:901px){.sidebar{display:flex !important}}
 </style>
 
       <div class="carousel-wrap glass-card" style="padding:0;" id="carouselContainer">
