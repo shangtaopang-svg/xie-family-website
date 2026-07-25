@@ -12,26 +12,20 @@
   <link rel="stylesheet" href="css/style.css?v=20260625">
   <style>
     /* ── Left Sidebar Navigation (ref: rifat-ishtiyak.web.app) ── */
-    .sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;z-index:100;background:#0f0d0a;display:none;flex-direction:column;align-items:center;justify-content:space-between;padding:24px 0 16px;border-right:1px solid rgba(245,230,200,0.03);overflow-y:auto}
-    .sidebar::-webkit-scrollbar{width:2px;background:transparent}
-    .sidebar::-webkit-scrollbar-thumb{background:rgba(245,230,200,0.04);border-radius:2px}
-    .sidebar .s-logo{text-align:center;padding:0 10px;margin-bottom:6px}
-    .sidebar .s-logo .s-seal{width:72px;height:72px;margin:0 auto;background:#a83030;border-radius:6px;display:grid;place-items:center;font-family:'Noto Serif SC',serif;font-size:34px;font-weight:900;color:#f5e6c8;box-shadow:0 2px 12px rgba(168,48,48,0.15);position:relative}
-    .sidebar .s-logo .s-seal::after{content:'';position:absolute;inset:4px;border:1px solid rgba(245,230,200,0.12);border-radius:3px}
-    .sidebar .s-logo .s-name{font-family:'Noto Serif SC',serif;font-size:14px;color:#c9a84c;letter-spacing:0.1em;margin-top:10px;font-weight:600}
-    .sidebar .s-logo .s-sub{font-size:10px;color:rgba(245,230,200,0.08);letter-spacing:0.06em;margin-top:2px}
-    .sidebar .s-nav{width:100%;padding:0 10px;flex:1;overflow-y:auto;margin-top:4px;border-top:1px solid rgba(245,230,200,0.03);border-bottom:1px solid rgba(245,230,200,0.03)}
-    .sidebar .s-nav::-webkit-scrollbar{width:2px;background:transparent}
-    .sidebar .s-nav::-webkit-scrollbar-thumb{background:rgba(245,230,200,0.03);border-radius:2px}
-    .sidebar .s-nav .s-grp{font-size:9px;color:rgba(245,230,200,0.04);letter-spacing:0.12em;padding:14px 16px 2px;text-transform:uppercase;font-weight:300;border-bottom:1px solid rgba(245,230,200,0.02);margin-bottom:2px}
-    .sidebar .s-nav a{display:block;padding:9px 16px;border-radius:4px;color:rgba(245,230,200,0.2);font-size:13px;letter-spacing:0.04em;text-decoration:none;transition:all 0.3s;margin:1px 0;position:relative;border-bottom:1px solid rgba(245,230,200,0.02)}
+    .sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;z-index:100;background:rgb(7,16,31);display:none;flex-direction:column;align-items:center;justify-content:space-between;padding:36px 0;box-shadow:rgba(0,0,0,0.24) 0px 3px 8px 0px;overflow-y:auto}
+    .sidebar .s-logo{text-align:center;padding:0;margin-bottom:16px}
+    .sidebar .s-logo .s-seal{width:100px;height:100px;margin:0 auto;background:#a83030;border-radius:8px;display:grid;place-items:center;font-family:'Noto Serif SC',serif;font-size:44px;font-weight:900;color:#f5e6c8;position:relative}
+    .sidebar .s-logo .s-seal::after{content:'';position:absolute;inset:6px;border:1px solid rgba(245,230,200,0.1);border-radius:6px}
+    .sidebar .s-logo .s-name{font-family:'Noto Serif SC',serif;font-size:16px;color:#f5e6c8;letter-spacing:0.08em;margin-top:16px;font-weight:600}
+    .sidebar .s-logo .s-sub{font-size:11px;color:rgba(245,230,200,0.15);letter-spacing:0.06em;margin-top:2px}
+    .sidebar .s-nav{width:100%;padding:0;flex:1;overflow-y:auto;border-top:1px solid rgba(71,85,105,0.2);border-bottom:1px solid rgba(71,85,105,0.2)}
+    .sidebar .s-nav a{display:block;padding:15px 24px;color:rgba(245,230,200,0.5);font-size:14px;letter-spacing:0.04em;text-decoration:none;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);border-bottom:1px solid rgba(71,85,105,0.2);line-height:20px}
     .sidebar .s-nav a:last-of-type{border-bottom:none}
-    .sidebar .s-nav a:hover{color:#c9a84c;background:rgba(201,168,76,0.03);letter-spacing:0.15em}
-    .sidebar .s-nav a.active{color:#c9a84c;background:rgba(201,168,76,0.05);letter-spacing:0.08em}
-    .sidebar .s-nav a.active::before{content:'';position:absolute;left:0;top:20%;height:60%;width:2px;background:#c9a84c;border-radius:2px;opacity:0.6}
-    .sidebar .s-bottom{text-align:center;padding:14px 16px 0;width:100%;border-top:1px solid rgba(245,230,200,0.02);margin-top:8px}
-    .sidebar .s-bottom a{display:inline-block;padding:6px 14px;border-radius:12px;border:1px solid rgba(245,230,200,0.03);color:rgba(245,230,200,0.08);font-size:11px;letter-spacing:0.06em;text-decoration:none;transition:all 0.3s}
-    .sidebar .s-bottom a:hover{color:#c9a84c;border-color:rgba(201,168,76,0.08);letter-spacing:0.12em}
+    .sidebar .s-nav a:hover{color:#c9a84c;letter-spacing:0.12em}
+    .sidebar .s-nav a.active{color:#c9a84c;letter-spacing:0.08em}
+    .sidebar .s-bottom{text-align:center;padding:20px 24px 0;width:100%}
+    .sidebar .s-bottom a{display:block;padding:12px 0;color:rgba(245,230,200,0.1);font-size:12px;letter-spacing:0.06em;text-decoration:none;transition:all 0.3s;border-top:1px solid rgba(71,85,105,0.2)}
+    .sidebar .s-bottom a:hover{color:#c9a84c;letter-spacing:0.1em}
     @media(min-width:901px){.sidebar{display:flex !important}}
     .content{margin-left:0}@media(min-width:901px){.content{margin-left:220px !important}}
 
