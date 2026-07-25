@@ -167,7 +167,11 @@
     <a href="contact.html">✉️ 联系我们</a>
     <a href="admin.html">🔐 管理后台</a>
   </nav>
-  <div class="s-bottom">
+  <div class="s-bottom">    <div class="s-toggle" id="themeToggle">
+      <span class="s-icon" id="themeIcon">☀️</span>
+      <div class="track" id="themeTrack"><div class="thumb"></div></div>
+      <span class="s-icon" id="themeIcon2">🌙</span>
+    </div>
     <a href="../index.html">✦ 返回首页</a>
   </div>
 </aside>
@@ -235,5 +239,11 @@
 </div>
   <a href="javascript:history.back()" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
+<script>
+var toggle=document.getElementById('themeToggle'),track=document.getElementById('themeTrack'),icon1=document.getElementById('themeIcon'),icon2=document.getElementById('themeIcon2');
+var isDark=localStorage.getItem('theme')!=='light';
+function applyTheme(){document.documentElement.setAttribute('data-theme',isDark?'dark':'light');track.classList.toggle('active',isDark);icon1.classList.toggle('active',!isDark);icon2.classList.toggle('active',isDark);localStorage.setItem('theme',isDark?'dark':'light');}
+toggle.addEventListener('click',function(){isDark=!isDark;applyTheme();});applyTheme();
+</script>
 </body>
 </html>

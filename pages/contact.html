@@ -23,8 +23,15 @@
     .sidebar .s-nav a:hover{color:#04BF00;letter-spacing:0.12em}
     .sidebar .s-nav a.active{color:#04BF00;letter-spacing:0.08em}
     .sidebar .s-bottom{text-align:center;padding:20px 24px 0;width:100%}
-    .sidebar .s-bottom a{display:block;padding:12px 0;color:rgba(245,230,200,0.2);font-size:12px;letter-spacing:0.06em;text-decoration:none;transition:all 0.3s;border-top:1px solid rgb(71,85,105)}
+    .sidebar .s-bottom a{display:block;padding:10px 0;color:rgba(245,230,200,0.2);font-size:12px;letter-spacing:0.06em;text-decoration:none;transition:all 0.3s}
     .sidebar .s-bottom a:hover{color:#04BF00;letter-spacing:0.1em}
+    .sidebar .s-bottom .s-toggle{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;cursor:pointer;user-select:none}
+    .sidebar .s-bottom .s-toggle .track{width:44px;height:22px;border-radius:11px;background:rgb(50,65,90);position:relative;transition:background 0.3s;flex:none}
+    .sidebar .s-bottom .s-toggle .track.active{background:#04BF00}
+    .sidebar .s-bottom .s-toggle .track .thumb{width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:all 0.3s;box-shadow:0 1px 4px rgba(0,0,0,0.2)}
+    .sidebar .s-bottom .s-toggle .track.active .thumb{left:24px}
+    .sidebar .s-bottom .s-toggle .s-icon{font-size:13px;color:rgba(245,230,200,0.15);transition:color 0.3s;line-height:1}
+    .sidebar .s-bottom .s-toggle .s-icon.active{color:rgba(245,230,200,0.5)}
     @media(min-width:901px){.sidebar{display:flex !important}}
     .page-content{margin-left:0}@media(min-width:901px){.page-content{margin-left:220px !important}}
     @media(min-width:901px){.site-header{display:none !important}}
@@ -54,7 +61,11 @@
     <a href="contact.html" class="active">✉️ 联系我们</a>
     <a href="admin.html">🔐 管理后台</a>
   </nav>
-  <div class="s-bottom">
+  <div class="s-bottom">    <div class="s-toggle" id="themeToggle">
+      <span class="s-icon" id="themeIcon">☀️</span>
+      <div class="track" id="themeTrack"><div class="thumb"></div></div>
+      <span class="s-icon" id="themeIcon2">🌙</span>
+    </div>
     <a href="../index.html">✦ 返回首页</a>
   </div>
 </aside>
@@ -246,5 +257,11 @@
   </script>
     <audio id="bg-music" loop></audio>
 
+<script>
+var toggle=document.getElementById('themeToggle'),track=document.getElementById('themeTrack'),icon1=document.getElementById('themeIcon'),icon2=document.getElementById('themeIcon2');
+var isDark=localStorage.getItem('theme')!=='light';
+function applyTheme(){document.documentElement.setAttribute('data-theme',isDark?'dark':'light');track.classList.toggle('active',isDark);icon1.classList.toggle('active',!isDark);icon2.classList.toggle('active',isDark);localStorage.setItem('theme',isDark?'dark':'light');}
+toggle.addEventListener('click',function(){isDark=!isDark;applyTheme();});applyTheme();
+</script>
 </body>
 </html>
