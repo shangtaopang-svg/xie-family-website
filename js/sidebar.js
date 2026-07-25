@@ -102,3 +102,31 @@
   if (toggle) toggle.addEventListener('click', function() { isDark = !isDark; applyTheme(); });
   applyTheme();
 })();
+// 天气效果切换
+window.toggleWeather = function() {
+  var btn = document.getElementById('weatherBtn');
+  var canvas = document.getElementById('weather-canvas');
+  if (!canvas) return;
+  var current = canvas.style.display || '';
+  if (current === 'none') {
+    canvas.style.display = 'block';
+    if (btn) btn.style.color = '#04BF00';
+  } else {
+    canvas.style.display = 'none';
+    if (btn) btn.style.color = '';
+  }
+};
+
+// 背景音乐切换
+window.toggleMusic = function() {
+  var btn = document.getElementById('musicBtn');
+  var audio = document.getElementById('bg-music');
+  if (!audio) return;
+  if (audio.paused) {
+    audio.play().catch(function(){});
+    if (btn) { btn.textContent = '⏹'; btn.style.color = '#04BF00'; }
+  } else {
+    audio.pause();
+    if (btn) { btn.textContent = '🎵'; btn.style.color = ''; }
+  }
+};
