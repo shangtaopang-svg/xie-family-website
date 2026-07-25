@@ -34,6 +34,11 @@
     .sidebar .s-bottom .s-toggle .s-icon.active{color:rgba(245,230,200,0.5)}
     .sidebar .s-bottom a{display:block;padding:10px 0;color:rgba(245,230,200,0.2);font-size:12px;letter-spacing:0.06em;text-decoration:none;transition:all 0.3s}
     .sidebar .s-bottom a:hover{color:#04BF00;letter-spacing:0.1em}
+    .sidebar .s-controls{padding:8px 10px 4px;border-top:1px solid rgb(71,85,105);width:100%}
+    .sidebar .s-controls .sc-row{display:flex;align-items:center;justify-content:space-evenly;gap:2px}
+    .sidebar .s-controls .sc-btn{width:28px;height:28px;border-radius:50%;border:1px solid rgba(245,230,200,0.04);background:transparent;color:rgba(245,230,200,0.15);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.25s;padding:0;line-height:1}
+    .sidebar .s-controls .sc-btn:hover{color:#04BF00;border-color:rgba(4,191,0,0.15);transform:scale(1.1)}
+    .sidebar .s-controls .sc-div{width:1px;height:16px;background:rgb(71,85,105)}
 @media(min-width:901px){.sidebar{display:flex !important}}
 
 
@@ -63,6 +68,11 @@
     .sidebar .s-bottom .s-toggle .s-icon.active{color:rgba(245,230,200,0.5)}
     .sidebar .s-bottom a{display:block;padding:10px 0;color:rgba(245,230,200,0.2);font-size:12px;letter-spacing:0.06em;text-decoration:none;transition:all 0.3s}
     .sidebar .s-bottom a:hover{color:#04BF00;letter-spacing:0.1em}
+    .sidebar .s-controls{padding:8px 10px 4px;border-top:1px solid rgb(71,85,105);width:100%}
+    .sidebar .s-controls .sc-row{display:flex;align-items:center;justify-content:space-evenly;gap:2px}
+    .sidebar .s-controls .sc-btn{width:28px;height:28px;border-radius:50%;border:1px solid rgba(245,230,200,0.04);background:transparent;color:rgba(245,230,200,0.15);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.25s;padding:0;line-height:1}
+    .sidebar .s-controls .sc-btn:hover{color:#04BF00;border-color:rgba(4,191,0,0.15);transform:scale(1.1)}
+    .sidebar .s-controls .sc-div{width:1px;height:16px;background:rgb(71,85,105)}
 @media(min-width:901px){.sidebar{display:flex !important}}
 
 
@@ -96,6 +106,15 @@
     <a href="contact.html">✉️ 联系我们</a>
     <a href="admin.html">🔐 管理后台</a>
   </nav>
+    <div class="s-controls">
+    <div class="sc-row">
+      <button class="sc-btn" id="weatherBtn" title="天气效果" onclick="toggleWeather()">🌤</button>
+      <button class="sc-btn" id="musicBtn" title="背景音乐" onclick="toggleMusic()">🎵</button>
+      <span class="sc-div"></span>
+      <button class="sc-btn" title="缩小" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(0.8)">🔍−</button>
+      <button class="sc-btn" title="放大" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(1.2)">🔍+</button>
+    </div>
+  </div>
   <div class="s-bottom">
     <div class="s-toggle" id="themeToggle">
       <span class="s-icon" id="themeIcon">☀️</span>
@@ -151,6 +170,15 @@
           </div>
         </div>
       </nav>
+    <div class="s-controls">
+    <div class="sc-row">
+      <button class="sc-btn" id="weatherBtn" title="天气效果" onclick="toggleWeather()">🌤</button>
+      <button class="sc-btn" id="musicBtn" title="背景音乐" onclick="toggleMusic()">🎵</button>
+      <span class="sc-div"></span>
+      <button class="sc-btn" title="缩小" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(0.8)">🔍−</button>
+      <button class="sc-btn" title="放大" onclick="window.zoomGenealogyTree&&zoomGenealogyTree(1.2)">🔍+</button>
+    </div>
+  </div>
     </div>
   </header>
 
