@@ -244,7 +244,7 @@ function loadData(callback) {
   xhr.onload = function() {
     try {
       var d = JSON.parse(xhr.responseText);
-      if (d && d.length) { collectionData = d; if(callback) callback(); return; }
+      if (d && d.length) { collectionData = d; addLocalVideos(); if(callback) callback(); return; }
     } catch(e) {}
     try {
       var raw = localStorage.getItem('xie_admin_xieCollection');
@@ -260,6 +260,14 @@ function loadData(callback) {
     if (callback) callback();
   };
   xhr.send();
+}
+
+// 本地视频
+function addLocalVideos() {
+  collectionData.unshift(
+    { title:'下枫槎村宣传片', url:'/video/1.mp4', source:'本地', cat:'家族起源', desc:'下枫槎村宣传片', id:'loc1', local:true },
+    { title:'下枫槎村宣传片2', url:'/video/2.mp4', source:'本地', cat:'历史名人', desc:'下枫槎村宣传片2', id:'loc2', local:true }
+  );
 }
 
 var TABS = [
@@ -306,6 +314,22 @@ function render(cat) {
     var srcClass = SOURCE_CLASS[source] || 'other';
     var bvMatch = url.match(/bilibili\.com\/video\/(BV[a-zA-Z0-9]+)/i);
     var bvid = bvMatch ? bvMatch[1] : null;
+
+    var isLocal = item.local;
+
+    if (isLocal) {
+      return '<div class="collect-card" style="text-decoration:none;cursor:default">' +
+        '<div class="card-hover-wrap">' +
+          '<div class="card-cover" style="background:#1a1410;display:flex;align-items:center;justify-content:center;overflow:hidden">' +
+            '<video src="' + url + ' style="width:100%;height:100%;object-fit:cover" controls preload="metadata"></video>' +
+          '</div>' +
+        '</div>' +
+        '<div class="info">' +
+          '<div class="title">' + (item.title||'") + '</div>' +
+          '<div class="meta"><span class="tag video">📹 本地视频</span></div>' +
+        '</div>' +
+      '</div>';
+    }
 
     return '<a href="' + url + '" target="_blank" rel="noopener" class="collect-card" style="text-decoration:none">' +
       '<div class="card-hover-wrap">' +
