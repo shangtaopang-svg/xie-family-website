@@ -68,6 +68,14 @@
         </div>
       </a>
       <div class="header-actions" style="display:flex;align-items:center;gap:6px;margin-left:auto">
+        <!-- 日夜切换 -->
+        <div class="theme-toggle" id="themeToggleTop" style="display:flex;align-items:center;gap:4px;cursor:pointer;user-select:none" onclick="toggleTheme()">
+          <span id="themeIconTop" style="font-size:12px">☀️</span>
+          <div class="tt-track" id="themeTrackTop" style="width:36px;height:18px;border-radius:9px;background:#ccc;position:relative;transition:background 0.3s">
+            <div class="tt-thumb" id="themeThumbTop" style="width:14px;height:14px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:all 0.3s;box-shadow:0 1px 3px rgba(0,0,0,0.15)"></div>
+          </div>
+          <span id="themeIcon2Top" style="font-size:12px;opacity:0.4">🌙</span>
+        </div>
         <a href="entrance.html" style="font-size:11px;color:#999;text-decoration:none;padding:4px 10px;border-radius:12px;border:1px solid #eee;white-space:nowrap">⛩ 返回石门</a>
         <button class="nav-toggle" onclick="document.getElementById('mobileBottomNav').scrollIntoView({behavior:'smooth'});document.getElementById('mobileBottomNav').scrollLeft=0" aria-label="菜单">☰</button>
       </div>
@@ -436,5 +444,7 @@
 window.changeWeather=function(t){var c=document.getElementById("weather-canvas");if(c)c.style.display="block";localStorage.setItem("xie_weather",t);var b=document.querySelectorAll("#float-controls button");for(var i=0;i<b.length;i++){if(b[i].textContent==="☀"||b[i].textContent==="🌧"||b[i].textContent==="❄")b[i].style.background="rgba(255,255,255,0.9)";}event.target.style.background="rgba(4,191,0,0.15)";};
 window.toggleMusic=function(){var b=document.getElementById("musicFloatBtn"),a=document.getElementById("bg-music");if(!a)return;if(a.paused){a.play().catch(function(){});if(b){b.textContent="⏸";b.style.background="rgba(4,191,0,0.15)";}}else{a.pause();if(b){b.textContent="🎵";b.style.background="rgba(255,255,255,0.9)";}}};
 window.changeVolume=function(d){var a=document.getElementById("bg-music");if(a)a.volume=Math.max(0,Math.min(1,a.volume+d));};
+window.toggleTheme=function(){var d=localStorage.getItem("theme")==="dark";var n=d?"light":"dark";document.documentElement.setAttribute("data-theme",n);localStorage.setItem("theme",n);var t=document.getElementById("themeTrackTop"),b=document.getElementById("themeThumbTop"),i1=document.getElementById("themeIconTop"),i2=document.getElementById("themeIcon2Top");if(t)t.style.background=n==="dark"?"#04BF00":"#ccc";if(b)b.style.left=n==="dark"?"20px":"2px";if(i1)i1.style.opacity=n==="dark"?"0.4":"1";if(i2)i2.style.opacity=n==="dark"?"1":"0.4";};
+(function(){var s=localStorage.getItem("theme");if(s==="dark"){document.documentElement.setAttribute("data-theme","dark");var t=document.getElementById("themeTrackTop"),b=document.getElementById("themeThumbTop"),i1=document.getElementById("themeIconTop"),i2=document.getElementById("themeIcon2Top");if(t)t.style.background="#04BF00";if(b)b.style.left="20px";if(i1)i1.style.opacity="0.4";if(i2)i2.style.opacity="1";}})();
 </script>
 </body>
