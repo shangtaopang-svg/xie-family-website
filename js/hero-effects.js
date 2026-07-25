@@ -15,10 +15,10 @@
     btns.forEach(function(b) { b.classList.remove('active'); });
     var match = document.querySelector('.hbg-btn[data-style="' + style + '"]');
     if (match) match.classList.add('active');
+    if (!bg) bg = "/images/carousel/38.jpg";
     if (style === 'map') {
       hero.classList.add('hero-map-bg');
       document.dispatchEvent(new CustomEvent('xie-bg-mode', { detail: 'map' }));
-    if (!bg) bg = "/images/carousel/38.jpg";
     } else if (bg && style === 'photo') {
       hero.classList.add('hero-photo-bg');
       hero.style.backgroundImage = 'url(' + bg + ')';
@@ -49,11 +49,11 @@
   function applyHero(bg, style) {
     hero.classList.remove('hero-photo-bg', 'hero-map-bg');
     hero.style.backgroundImage = '';
+    if (!bg) bg = "/images/carousel/38.jpg";
     if (style === 'map') {
       hero.classList.add('hero-map-bg');
       document.dispatchEvent(new CustomEvent('xie-bg-mode', { detail: 'map' }));
       window._xieBgPending = 'map';
-    if (!bg) bg = "/images/carousel/38.jpg";
     } else if (bg && style === 'photo') {
       hero.classList.add('hero-photo-bg');
       hero.style.backgroundImage = 'url(' + bg + ')';
