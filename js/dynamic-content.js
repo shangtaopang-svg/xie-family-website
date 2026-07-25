@@ -82,6 +82,11 @@
         // Always prepend promo videos first
         var allVids = [
 	          { id: 'intro', src: '/video/reports-intro.mp4', title: '下枫槎宣传片', poster: '/images/carousel/123.jpg' },
+          { id: 'xiezong', src: '/video/xiezong.mp4', title: '谢总121', poster: '/images/carousel/123.jpg' },
+          { id: 'yuanyu', src: '/video/yuanpu.mp4', title: '圆谱2026', poster: '/images/carousel/123.jpg' },
+          { id: 'chaye', src: '/video/chaye.mp4', title: '茶园风光', poster: '/images/carousel/123.jpg' },
+          { id: 'ninghai', src: '/video/ninghai.mp4', title: '宁海夜景', poster: '/images/carousel/123.jpg' },
+          { id: 'wangfu', src: '/video/wangfu.mp4', title: '望府茶园', poster: '/images/carousel/123.jpg' },
           { id: 'promo2', src: '/video/promo2.mp4', title: '宣传片2', poster: '/images/carousel/123.jpg' },
           { id: 'v777', src: '/video/777.mp4', title: '视频777', poster: '/images/carousel/123.jpg' }
         ].concat(videos);
