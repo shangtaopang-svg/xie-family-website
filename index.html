@@ -415,4 +415,23 @@
     <a href="pages/contact.html" class="mb-item">✉️<span>联系</span></a>
     <a href="pages/admin.html" class="mb-item">🔐<span>管理</span></a>
   </nav>
+
+<div id="float-controls" style="position:fixed;bottom:80px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:6px">
+  <button onclick="changeWeather('sun')" title="晴天" style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.9);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.06)">☀</button>
+  <button onclick="changeWeather('rain')" title="下雨" style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.9);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.06)">🌧</button>
+  <button onclick="changeWeather('snow')" title="下雪" style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.9);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.06)">❄</button>
+  <div style="width:36px;height:1px;background:rgba(0,0,0,0.06);margin:2px 0"></div>
+  <button id="musicFloatBtn" onclick="toggleMusic()" title="背景音乐" style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.9);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.06)">🎵</button>
+  <button onclick="changeVolume(-0.2)" title="音量-" style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.9);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.06)">🔉</button>
+  <button onclick="changeVolume(0.2)" title="音量+" style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.9);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.06)">🔊</button>
+  <div style="width:36px;height:1px;background:rgba(0,0,0,0.06);margin:2px 0"></div>
+  <button onclick="window.zoomGenealogyTree&&zoomGenealogyTree(0.8)" title="缩小" style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.9);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.06)">🔍−</button>
+  <button onclick="window.zoomGenealogyTree&&zoomGenealogyTree(1.2)" title="放大" style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.9);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.06)">🔍+</button>
+</div>
+
+<script>
+window.changeWeather=function(t){var c=document.getElementById("weather-canvas");if(c)c.style.display="block";localStorage.setItem("xie_weather",t);var b=document.querySelectorAll("#float-controls button");for(var i=0;i<b.length;i++){if(b[i].textContent==="☀"||b[i].textContent==="🌧"||b[i].textContent==="❄")b[i].style.background="rgba(255,255,255,0.9)";}event.target.style.background="rgba(4,191,0,0.15)";};
+window.toggleMusic=function(){var b=document.getElementById("musicFloatBtn"),a=document.getElementById("bg-music");if(!a)return;if(a.paused){a.play().catch(function(){});if(b){b.textContent="⏸";b.style.background="rgba(4,191,0,0.15)";}}else{a.pause();if(b){b.textContent="🎵";b.style.background="rgba(255,255,255,0.9)";}}};
+window.changeVolume=function(d){var a=document.getElementById("bg-music");if(a)a.volume=Math.max(0,Math.min(1,a.volume+d));};
+</script>
 </body>
