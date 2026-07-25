@@ -33,11 +33,11 @@
     .sidebar .s-bottom .s-toggle .s-icon.active{color:rgba(245,230,200,0.5)}
     .sidebar .s-bottom a{display:block;padding:10px 0;color:rgba(245,230,200,0.2);font-size:12px;letter-spacing:0.06em;text-decoration:none;transition:all 0.3s}
     .sidebar .s-bottom a:hover{color:#04BF00;letter-spacing:0.1em}
-    @media(min-width:901px){.sidebar{display:flex !important}}
+
     .content{margin-left:0}@media(min-width:901px){.content{margin-left:220px !important}}
 
     /* Hide old top header on desktop */
-    @media(min-width:901px){.site-header{display:none !important}}
+
 
     /* Carousel mobile fix */
     .carousel-container { aspect-ratio: 21/9; overflow: hidden; }
@@ -79,6 +79,7 @@
   <script defer src="js/file-store.js?v=6"></script>
   <link rel="manifest" href="/manifest.json">
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");</script>
+  <script defer src="js/sidebar.js"></script>
 </head>
 <body>
 <canvas id="weather-canvas"></canvas>
@@ -449,23 +450,7 @@
 
   <script defer src="js/main.js?v=20260625"></script>
 
-  <script>
-  // Theme toggle (like rifat-ishtiyak.web.app)
-  var toggle = document.getElementById('themeToggle');
-  var track = document.getElementById('themeTrack');
-  var icon1 = document.getElementById('themeIcon');
-  var icon2 = document.getElementById('themeIcon2');
-  var isDark = localStorage.getItem('theme') !== 'light';
-  function applyTheme() {
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-    track.classList.toggle('active', isDark);
-    icon1.classList.toggle('active', !isDark);
-    icon2.classList.toggle('active', isDark);
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-  }
-  toggle.addEventListener('click', function() { isDark = !isDark; applyTheme(); });
-  applyTheme();
-  </script>
+  
 
   <!-- ===== 天气特效粒子引擎 ===== -->
 
