@@ -23,7 +23,12 @@
       100% { opacity: 1; transform: translateY(0); }
     }
   
-    .sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;z-index:100;background:rgb(25,38,60) !important;display:none;flex-direction:column;align-items:center;justify-content:space-between;padding:36px 0;box-shadow:rgba(0,0,0,0.24) 0px 3px 8px 0px;overflow-y:auto}
+
+    @media(min-width:901px){.sidebar{display:flex !important}}
+    .page-content{margin-left:0}@media(min-width:901px){.page-content{margin-left:220px !important}}
+    @media(min-width:901px){.site-header{display:none !important}}
+
+.sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;z-index:100;background:rgb(25,38,60) !important;display:none;flex-direction:column;align-items:center;justify-content:space-between;padding:36px 0;box-shadow:rgba(0,0,0,0.24) 0px 3px 8px 0px;overflow-y:auto}
     .sidebar .s-logo{text-align:center;padding:0;margin-bottom:16px}
     .sidebar .s-logo .s-seal{width:100px;height:100px;margin:0 auto;background:#a83030;border-radius:8px;display:grid;place-items:center;font-family:'Noto Serif SC',serif;font-size:44px;font-weight:900;color:#f5e6c8;position:relative}
     .sidebar .s-logo .s-seal::after{content:'';position:absolute;inset:6px;border:1px solid rgba(245,230,200,0.1);border-radius:6px}
@@ -34,9 +39,7 @@
     .sidebar .s-nav a:last-of-type{border-bottom:none}
     .sidebar .s-nav a:hover{color:#04BF00;letter-spacing:0.12em}
     .sidebar .s-nav a.active{color:#04BF00;letter-spacing:0.08em}
-    .sidebar .s-bottom{text-align:center;padding:20px 24px 0;width:100%}
-    .sidebar .s-bottom a{display:block;padding:10px 0;color:rgba(245,230,200,0.2);font-size:12px;letter-spacing:0.06em;text-decoration:none;transition:all 0.3s}
-    .sidebar .s-bottom a:hover{color:#04BF00;letter-spacing:0.1em}
+    .sidebar .s-bottom{text-align:center;padding:16px 0 0;width:100%}
     .sidebar .s-bottom .s-toggle{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;cursor:pointer;user-select:none}
     .sidebar .s-bottom .s-toggle .track{width:44px;height:22px;border-radius:11px;background:rgb(50,65,90);position:relative;transition:background 0.3s;flex:none}
     .sidebar .s-bottom .s-toggle .track.active{background:#04BF00}
@@ -44,9 +47,15 @@
     .sidebar .s-bottom .s-toggle .track.active .thumb{left:24px}
     .sidebar .s-bottom .s-toggle .s-icon{font-size:13px;color:rgba(245,230,200,0.15);transition:color 0.3s;line-height:1}
     .sidebar .s-bottom .s-toggle .s-icon.active{color:rgba(245,230,200,0.5)}
+    .sidebar .s-bottom a{display:block;padding:10px 0;color:rgba(245,230,200,0.2);font-size:12px;letter-spacing:0.06em;text-decoration:none;transition:all 0.3s}
+    .sidebar .s-bottom a:hover{color:#04BF00;letter-spacing:0.1em}
     @media(min-width:901px){.sidebar{display:flex !important}}
-    .page-content{margin-left:0}@media(min-width:901px){.page-content{margin-left:220px !important}}
+    .content{margin-left:0}@media(min-width:901px){.content{margin-left:220px !important}}
+
+    /* Hide old top header on desktop */
     @media(min-width:901px){.site-header{display:none !important}}
+
+    /* Carousel mobile fix */
 </style>
   <link rel="manifest" href="../manifest.json">
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
@@ -59,23 +68,24 @@
     <div class="s-sub">宁海 · 下枫槎村</div>
   </div>
   <nav class="s-nav">
-    <a href="../index.html">🏠 首页</a>
-    <a href="history.html">📜 家族历史</a>
-    <a href="genealogy.html">🌳 族谱查询</a>
-    <a href="celebrities.html">🏆 名人事迹</a>
-    <a href="merit-scroll.html">📜 功德卷轴</a>
-    <a href="news.html">📰 消息发布</a>
-    <a href="members.html">👥 家族成员</a>
-    <a href="activities.html">🎪 家族活动</a>
-    <a href="today.html">📸 今日下枫槎</a>
-    <a href="reports.html">📋 新闻报道</a>
-    <a href="audio.html">🎧 听下枫槎</a>
-    <a href="vinyl-player.html">🎵 枫槎留声机</a>
-    <a href="xie-collection.html">📚 谢氏集萃</a>
-    <a href="contact.html">✉️ 联系我们</a>
-    <a href="admin.html">🔐 管理后台</a>
+    <a href="../index.html" class="active">🏠 首页</a>
+    <a href="pages/history.html">📜 家族历史</a>
+    <a href="pages/genealogy.html">🌳 族谱查询</a>
+    <a href="pages/celebrities.html">🏆 名人事迹</a>
+    <a href="pages/merit-scroll.html">📜 功德卷轴</a>
+    <a href="pages/news.html">📰 消息发布</a>
+    <a href="pages/members.html">👥 家族成员</a>
+    <a href="pages/activities.html">🎪 家族活动</a>
+    <a href="pages/today.html">📸 今日下枫槎</a>
+    <a href="pages/reports.html">📋 新闻报道</a>
+    <a href="pages/audio.html">🎧 听下枫槎</a>
+    <a href="pages/vinyl-player.html">🎵 枫槎留声机</a>
+    <a href="pages/xie-collection.html">📚 谢氏集萃</a>
+    <a href="pages/contact.html">✉️ 联系我们</a>
+    <a href="pages/admin.html">🔐 管理后台</a>
   </nav>
-  <div class="s-bottom">    <div class="s-toggle" id="themeToggle">
+  <div class="s-bottom">
+    <div class="s-toggle" id="themeToggle">
       <span class="s-icon" id="themeIcon">☀️</span>
       <div class="track" id="themeTrack"><div class="thumb"></div></div>
       <span class="s-icon" id="themeIcon2">🌙</span>
@@ -83,6 +93,7 @@
     <a href="../index.html">✦ 返回首页</a>
   </div>
 </aside>
+
 
 <div class="content page-content">
 
@@ -100,7 +111,7 @@
           <li><a href="genealogy.html">族谱查询</a>
           <li><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a></li>
           
-          <li><a href="scenery.html" class="active">风物古迹</a></li>
+          <li><a href="scenery.html" class="active" class="active">风物古迹</a></li>
           <li><a href="news.html" data-i18n="nav.news">消息发布</a></li>
           <li><a href="members.html" data-i18n="nav.members">家族成员</a></li>
           <li><a href="activities.html" data-i18n="nav.activities">家族活动</a></li>
@@ -271,7 +282,7 @@
     <div class="footer-inner">
       <div class="footer-section"><h4>下枫槎谢氏</h4><p>宁海下枫槎村谢氏家族数字宗祠</p></div>
       <div class="footer-section"><h4>快捷链接</h4><a href="../index.html">首页</a><a href="history.html">家族历史</a><a href="genealogy.html">族谱查询</a></div>
-      <div class="footer-section"><h4>内容</h4><a href="celebrities.html">名人事迹</a><a href="scenery.html">风物古迹</a><a href="news.html">消息发布</a><a href="activities.html">家族活动</a><a href="today.html">今日下枫槎</a><a href="reports.html">新闻报道</a></div>
+      <div class="footer-section"><h4>内容</h4><a href="celebrities.html">名人事迹</a><a href="scenery.html" class="active">风物古迹</a><a href="news.html">消息发布</a><a href="activities.html">家族活动</a><a href="today.html">今日下枫槎</a><a href="reports.html">新闻报道</a></div>
       <div class="footer-section"><h4>联系</h4><a href="contact.html">联系我们</a></div>
     </div>
     <div class="footer-bottom"><p>&copy; 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p></div>
@@ -283,11 +294,12 @@
 
 <script defer src="../js/main.js?v=10"></script>
 <audio id="bg-music" loop></audio>
+
 <script>
-var toggle=document.getElementById('themeToggle'),track=document.getElementById('themeTrack'),icon1=document.getElementById('themeIcon'),icon2=document.getElementById('themeIcon2');
-var isDark=localStorage.getItem('theme')!=='light';
-function applyTheme(){document.documentElement.setAttribute('data-theme',isDark?'dark':'light');track.classList.toggle('active',isDark);icon1.classList.toggle('active',!isDark);icon2.classList.toggle('active',isDark);localStorage.setItem('theme',isDark?'dark':'light');}
-toggle.addEventListener('click',function(){isDark=!isDark;applyTheme();});applyTheme();
+var toggle=document.getElementById("themeToggle"),track=document.getElementById("themeTrack"),icon1=document.getElementById("themeIcon"),icon2=document.getElementById("themeIcon2");
+var isDark=localStorage.getItem("theme")!=="light";
+function applyTheme(){document.documentElement.setAttribute("data-theme",isDark?"dark":"light");track.classList.toggle("active",isDark);icon1.classList.toggle("active",!isDark);icon2.classList.toggle("active",isDark);localStorage.setItem("theme",isDark?"dark":"light");}
+toggle.addEventListener("click",function(){isDark=!isDark;applyTheme();});applyTheme();
 </script>
 </body>
 </html>
