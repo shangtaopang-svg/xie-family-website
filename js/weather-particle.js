@@ -174,6 +174,9 @@
       }
     }
 
+    window.startWeatherEffect = null;
+    // expose startEffect globally
+    function _expose(){window.startWeatherEffect=startEffect;}_expose();
     // --- 引擎循环 ---
     function startEffect(type) {
       stopEffect();
