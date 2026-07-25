@@ -33,3 +33,5 @@ xie-family-promo/node_modules/
 
 # Server runtime
 server.log
+
+video/*.mp4
