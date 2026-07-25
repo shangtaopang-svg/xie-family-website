@@ -11,8 +11,7 @@
   <script defer src="../js/file-store.js?v=3"></script>
   <script defer src="../js/supabase.js?v=3"></script>
 
-<style>
-
+  <style>
     /* ===== 新闻报道 ===== */
     .reports-list-wrap {
       min-height:200px;
@@ -72,47 +71,14 @@
       .report-title { font-size:15px; width:100%; order:-1; }
       .report-source { font-size:11px; }
     }
-</style>
-
+  </style>  </style>
 
   <link rel="manifest" href="../manifest.json">
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
 </head>
 <body>
-<aside class="sidebar">
-  <div class="s-logo">
-    <div class="s-seal">谢</div>
-    <div class="s-name">下枫槎谢氏</div>
-    <div class="s-sub">宁海 · 下枫槎村</div>
-  </div>
-  <nav class="s-nav">
-    <a href="../index.html">🏠 首页</a>
-    <a href="history.html">📜 家族历史</a>
-    <a href="genealogy.html">🌳 族谱查询</a>
-    <a href="celebrities.html">🏆 名人事迹</a>
-    <a href="merit-scroll.html">📜 功德卷轴</a>
-    <a href="news.html">📰 消息发布</a>
-    <a href="members.html">👥 家族成员</a>
-    <a href="activities.html">🎪 家族活动</a>
-    <a href="today.html">📸 今日下枫槎</a>
-    <a href="reports.html" class="active">📋 新闻报道</a>
-    <a href="audio.html">🎧 听下枫槎</a>
-    <a href="vinyl-player.html">🎵 枫槎留声机</a>
-    <a href="xie-collection.html">📚 谢氏集萃</a>
-    <a href="contact.html">✉️ 联系我们</a>
-    <a href="admin.html">🔐 管理后台</a>
-  </nav>
-  <div class="s-bottom">
-    <div class="s-toggle" id="themeToggle">
-      <span class="s-icon" id="themeIcon">☀️</span>
-      <div class="track" id="themeTrack"><div class="thumb"></div></div>
-      <span class="s-icon" id="themeIcon2">🌙</span>
-    </div>
-    <a href="../index.html">✦ 返回首页</a>
-  </div>
-</aside>
 
-<div class="content" style="margin-left:0">
+<div class="content">
 
   <header class="site-header">
     <div class="header-inner">
@@ -131,7 +97,7 @@
           <li><a href="members.html" data-i18n="nav.members">家族成员</a></li>
           <li><a href="activities.html" data-i18n="nav.activities">家族活动</a></li>
           <li><a href="today.html" data-i18n="nav.today">今日下枫槎</a></li>
-          <li><a href="reports.html" class="active" class="active" data-i18n="nav.reports">新闻报道</a></li>
+          <li><a href="reports.html" class="active" data-i18n="nav.reports">新闻报道</a></li>
           <li><a href="contact.html" data-i18n="nav.contact">联系我们</a></li>
           <li><a href="admin.html" style="color:var(--accent-orange);">🔐 管理后台</a></li>
         </ul>
@@ -179,7 +145,7 @@
     <div class="footer-inner">
       <div class="footer-section"><h4 data-i18n="footer.section1.title">下枫槎谢氏</h4><p data-i18n="footer.desc">宁海下枫槎村谢氏家族数字宗祠</p></div>
       <div class="footer-section"><h4 data-i18n="footer.section2.title">快捷链接</h4><a href="../index.html" data-i18n="nav.home">首页</a><a href="history.html" data-i18n="nav.history">家族历史</a><a href="genealogy.html">族谱查询</a>
-      <div class="footer-section"><h4 data-i18n="footer.section.content">内容</h4><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a><a href="news.html" data-i18n="nav.news">消息发布</a><a href="activities.html" data-i18n="nav.activities">家族活动</a><a href="today.html" data-i18n="nav.today">今日下枫槎</a><a href="reports.html" class="active" class="active" data-i18n="nav.reports">新闻报道</a></div>
+      <div class="footer-section"><h4 data-i18n="footer.section.content">内容</h4><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a><a href="news.html" data-i18n="nav.news">消息发布</a><a href="activities.html" data-i18n="nav.activities">家族活动</a><a href="today.html" data-i18n="nav.today">今日下枫槎</a><a href="reports.html" class="active" data-i18n="nav.reports">新闻报道</a></div>
       <div class="footer-section"><h4 data-i18n="footer.section.contact">联系</h4><a href="contact.html" data-i18n="nav.contact">联系我们</a></div>
     </div>
     <div class="footer-bottom">
@@ -297,8 +263,5 @@
   </script>
     <audio id="bg-music" loop></audio>
 
-<script>
-(function(){var t=document.getElementById('themeToggle'),k=document.getElementById('themeTrack'),i1=document.getElementById('themeIcon'),i2=document.getElementById('themeIcon2');var d=localStorage.getItem('theme')!=='light';function a(){document.documentElement.setAttribute('data-theme',d?'dark':'light');if(k)k.classList.toggle('active',d);if(i1)i1.classList.toggle('active',!d);if(i2)i2.classList.toggle('active',d);localStorage.setItem('theme',d?'dark':'light');}if(t)t.addEventListener('click',function(){d=!d;a();});a();})();
-</script>
 </body>
 </html>
