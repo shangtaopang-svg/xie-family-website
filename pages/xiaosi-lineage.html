@@ -244,5 +244,27 @@ document.addEventListener('DOMContentLoaded', render);
 <script>
 (function(){var t=document.getElementById("themeToggle"),k=document.getElementById("themeTrack"),i1=document.getElementById("themeIcon"),i2=document.getElementById("themeIcon2");var d=localStorage.getItem("theme")!=="light";function a(){document.documentElement.setAttribute("data-theme",d?"dark":"light");if(k)k.classList.toggle("active",d);if(i1)i1.classList.toggle("active",!d);if(i2)i2.classList.toggle("active",d);localStorage.setItem("theme",d?"dark":"light");}if(t)t.addEventListener("click",function(){d=!d;a();});a();})();
 </script>
+
+<script>
+window.changeWeather = function(type) {
+  var canvas = document.getElementById('weather-canvas');
+  if (canvas) canvas.style.display = 'block';
+  localStorage.setItem('xie_weather', type);
+  var evt = new CustomEvent('weatherChange', {detail:{type:type}});
+  window.dispatchEvent(evt);
+};
+window.toggleMusic = function() {
+  var btn = document.getElementById('musicBtn');
+  var audio = document.getElementById('bg-music');
+  if (!audio) return;
+  if (audio.paused) { audio.play().catch(function(){}); if(btn){btn.textContent='⏸';btn.style.color='#04BF00';} }
+  else { audio.pause(); if(btn){btn.textContent='🎵';btn.style.color='';} }
+};
+window.changeVolume = function(delta) {
+  var audio = document.getElementById('bg-music');
+  if (audio) audio.volume = Math.max(0, Math.min(1, audio.volume + delta));
+};
+</script>
+
 </body>
 </html>
