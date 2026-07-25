@@ -81,14 +81,14 @@
 
         // Always prepend promo videos first
         var allVids = [
-	          { id: 'intro', src: '/video/reports-intro.mp4', title: '下枫槎宣传片' },
-          { id: 'xiezong', src: '/video/xiezong.mp4', title: '谢总121' },
-          { id: 'yuanyu', src: '/video/yuanpu.mp4', title: '圆谱2026' },
-          { id: 'chaye', src: '/video/chaye.mp4', title: '茶园风光' },
-          { id: 'ninghai', src: '/video/ninghai.mp4', title: '宁海夜景' },
-          { id: 'wangfu', src: '/video/wangfu.mp4', title: '望府茶园' },
-          { id: 'promo2', src: '/video/promo2.mp4', title: '宣传片2' },
-          { id: 'v777', src: '/video/777.mp4', title: '视频777' }
+	          { id: 'intro', src: '/video/reports-intro.mp4', poster: 'images/carousel/38.jpg', title: '下枫槎宣传片' },
+          { id: 'xiezong', src: '/video/xiezong.mp4', poster: 'images/carousel/121.jpg', title: '谢总121' },
+          { id: 'yuanyu', src: '/video/yuanpu.mp4', poster: 'images/carousel/123.jpg', title: '圆谱2026' },
+          { id: 'chaye', src: '/video/chaye.mp4', poster: 'images/carousel/38.jpg', title: '茶园风光' },
+          { id: 'ninghai', src: '/video/ninghai.mp4', poster: 'images/carousel/40.jpg', title: '宁海夜景' },
+          { id: 'wangfu', src: '/video/wangfu.mp4', poster: 'images/carousel/42.jpg', title: '望府茶园' },
+          { id: 'promo2', src: '/video/promo2.mp4', poster: 'images/carousel/51.jpg', title: '宣传片2' },
+          { id: 'v777', src: '/video/777.mp4', poster: 'images/carousel/23.jpg', title: '视频777' }
         ].concat(videos);
 
         if (!allVids.length) {
@@ -106,7 +106,7 @@
           var video = document.createElement('video');
           video.className = 'reel-video';
           video.dataset.src = v.src;  // lazy load: don't set src until play
-          if (v.poster) video.poster = v.poster;
+          if (v.poster) video.poster = v.poster; else video.poster = 'images/carousel/123.jpg';
           video.muted = false;
           video.loop = true;
           video.playsInline = true;
