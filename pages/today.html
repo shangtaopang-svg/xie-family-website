@@ -14,7 +14,6 @@
   <script defer src="../js/supabase.js?v=3"></script>
   <link rel="manifest" href="../manifest.json">
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
-  
 </head>
 <body>
 <aside class="sidebar">
@@ -137,9 +136,7 @@
         @media(max-width:1000px){.hw-grid{grid-template-columns:repeat(3,1fr)}}
         @media(max-width:720px){.hw-grid{grid-template-columns:repeat(2,1fr);gap:14px}.doc-card{padding:18px 16px 14px;min-height:160px}.doc-card .award-name{font-size:1.05rem}.doc-card .award-name.smaller{font-size:.9rem}.doc-card .award-name.xsmall{font-size:.8rem}.doc-card .body-text{font-size:.62rem}.doc-card .footer{font-size:.55rem}.doc-card .chop{width:24px;height:24px;font-size:.32rem;bottom:8px;right:6px}}
         @media(max-width:440px){.hw-grid{gap:12px}.doc-card{padding:14px 12px 12px;min-height:140px}.doc-card .award-name{font-size:.9rem}.doc-card .award-name.smaller{font-size:.78rem}.doc-card .award-name.xsmall{font-size:.7rem}.doc-card .body-text{font-size:.55rem}.doc-card .footer{font-size:.48rem;flex-direction:column;align-items:flex-start;gap:3px}.doc-card .red-title{font-size:.65rem}.doc-card .doc-header{font-size:.5rem}.doc-card .chop{display:none}}
-      
-@media(min-width:901px){.sidebar{display:flex !important}}
-</style>
+      </style>
       <div class="hw-grid">
         <div class="doc-card"><span class="red-bar"></span><div class="doc-header"><span class="num">荣誉〔2026〕第01号</span><span class="level">★永久</span></div><div class="red-title">中共宁波市委 宁波市人民政府</div><div class="award-name">文明村</div><div class="body-text">经考核评定，授予望府村<span class="label">「文明村」</span>荣誉称号。</div><div class="chop">宁波<br>市委</div><div class="footer"><div class="issuer">中共宁波市委<br>宁波市人民政府</div></div></div>
         <div class="doc-card"><span class="red-bar"></span><div class="doc-header"><span class="num">荣誉〔2007〕第02号</span><span class="level">★永久</span></div><div class="red-title">宁波生态市建设工作领导小组办公室</div><div class="award-name smaller">宁波市级生态村</div><div class="body-text">授予望府村<span class="label">「宁波市级生态村」</span>称号。</div><div class="footer"><div class="issuer">宁波生态市建设工作领导小组办公室</div><div class="year">二〇〇七年二月</div></div></div>
@@ -178,9 +175,7 @@
         .tl-item:last-child .tl-dot::after { display:none; }
         .tl-desc { flex:1; font-size:13px; color:var(--text-secondary); line-height:1.7; padding-bottom:4px; }
         .tl-era-tag { font-size:11px; padding:2px 10px; border-radius:4px; font-weight:500; }
-      
-@media(min-width:901px){.sidebar{display:flex !important}}
-</style>
+      </style>
       <div class="tl-era">
         <div class="tl-era-header" onclick="tlToggle(this)" style="background:linear-gradient(135deg,rgba(180,130,70,0.12),rgba(180,130,70,0.04));">
           <span class="tl-arrow">▶</span><span>古代 · 晋至明</span>
@@ -663,7 +658,7 @@
 
     #honors-wrap { border:none; background:transparent; }
   
-    .sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;z-index:100;background:rgb(7,16,31) !important;display:none;flex-direction:column;align-items:center;justify-content:space-between;padding:32px 0;box-shadow:rgba(0,0,0,0.24) 0px 3px 8px 0px;overflow-y:auto}
+    .sidebar{position:fixed;left:0;top:0;width:180px;height:100vh;z-index:100;background:rgb(7,16,31) !important;display:none;flex-direction:column;align-items:center;justify-content:space-between;padding:28px 0;box-shadow:rgba(0,0,0,0.24) 0px 3px 8px 0px;overflow-y:auto}
     .sidebar .s-logo{text-align:center;padding:0;margin-bottom:16px}
     .sidebar .s-logo .s-seal{width:100px;height:100px;margin:0 auto;background:#a83030;border-radius:8px;display:grid;place-items:center;font-family:'Noto Serif SC',serif;font-size:44px;font-weight:900;color:#f5e6c8;position:relative}
     .sidebar .s-logo .s-seal::after{content:'';position:absolute;inset:6px;border:1px solid rgba(245,230,200,0.1);border-radius:6px}
@@ -684,13 +679,13 @@
     .sidebar .s-bottom .s-toggle .s-icon.active{color:rgba(245,230,200,0.5)}
     .sidebar .s-bottom a{display:block;padding:10px 0;color:rgba(245,230,200,0.2);font-size:12px;letter-spacing:0.06em;text-decoration:none;transition:all 0.3s}
     .sidebar .s-bottom a:hover{color:#04BF00;letter-spacing:0.1em}
+@media(min-width:901px){.sidebar{display:flex !important}}
 
-    .content{margin-left:0}@media(min-width:901px){.content{margin-left:220px !important}}
+
+    .content{margin-left:0}@media(min-width:901px){.content{margin-left:180px !important}body{margin-left:180px}}
 
     /* Hide old top header on desktop */
     @media(min-width:901px){.site-header{display:none !important}}
-
-@media(min-width:901px){.sidebar{display:flex !important}}
 </style>
   <script>
   function toggleHonors() {

@@ -13,7 +13,6 @@
   <script defer src="../js/supabase.js?v=3"></script>
   <link rel="manifest" href="../manifest.json">
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
-  
 </head>
   <script defer src="../js/timeline.js?v=2"></script>
 <script defer src="../js/genealogy-migration.js?v=1"></script>
@@ -476,9 +475,7 @@
         .apt-hline{position:absolute;top:0;left:6px;right:6px;height:2px;background:var(--accent-orange);opacity:0.15;}
         .apt-btn-expand{width:18px;height:18px;border:none;border-radius:50%;font-size:10px;line-height:1;cursor:pointer;background:var(--accent-orange);color:#fff;transition:transform 0.1s;}
         .apt-btn-expand:hover{transform:scale(1.2);}
-            
-@media(min-width:901px){.sidebar{display:flex !important}}
-</style>
+            </style>
 <!-- 管理提示 -->
       <div style="background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:20px;text-align:center;" class="fade-in">
         <h4 style="font-family:var(--font-title);color:var(--accent-orange);margin-bottom:8px;font-weight:500;">🔧 管理员操作</h4>
@@ -584,8 +581,6 @@
 .genealogy-tree-section-fullscreen { position:fixed !important; top:0 !important; left:0 !important; right:0 !important; bottom:0 !important; z-index:99999 !important; padding:20px !important; margin:0 !important; background:var(--bg-primary) !important; overflow:hidden !important; }
 .genealogy-tree-section-fullscreen .genealogy-tree-scroll { width:100% !important; height:100% !important; border:none !important; border-radius:0 !important; padding:0 !important; margin:0 !important; }
 .genealogy-tree-section-fullscreen #tree-container { width:100% !important; height:100% !important; }
-
-@media(min-width:901px){.sidebar{display:flex !important}}
 </style>
 
 <script>
@@ -2744,8 +2739,6 @@ function toggleGenChart() {
 .apt-zoom-btn{width:26px;height:26px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;}
 .apt-zoom-btn:hover{background:var(--accent-orange-dim);border-color:var(--accent-orange);}
 .gz-tree-viewport .apt-btn-add,.gz-tree-viewport .apt-btn-del,.gz-tree-viewport .apt-card-actions,.gz-tree-viewport .apt-btn-expand{display:none !important}
-
-@media(min-width:901px){.sidebar{display:flex !important}}
 </style>
 <script>
 var _gzZoom=1,_gzPanX=0,_gzPanY=0,_gzDrag=false,_gzDx=0,_gzDy=0,_gzSx=0,_gzSy=0;
@@ -2764,7 +2757,7 @@ window.zoomGenealogyTree=function(factor){var vp=document.getElementById("gz-tre
   <script src="../js/admin.js?v=45" onload="if(window.renderTreeSVG&&window.getGenealogyData)setTimeout(function(){renderTreeSVG(getGenealogyData())},100)"></script>
 
       
-    .sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;z-index:100;background:rgb(7,16,31) !important;display:none;flex-direction:column;align-items:center;justify-content:space-between;padding:32px 0;box-shadow:rgba(0,0,0,0.24) 0px 3px 8px 0px;overflow-y:auto}
+    .sidebar{position:fixed;left:0;top:0;width:180px;height:100vh;z-index:100;background:rgb(7,16,31) !important;display:none;flex-direction:column;align-items:center;justify-content:space-between;padding:28px 0;box-shadow:rgba(0,0,0,0.24) 0px 3px 8px 0px;overflow-y:auto}
     .sidebar .s-logo{text-align:center;padding:0;margin-bottom:16px}
     .sidebar .s-logo .s-seal{width:100px;height:100px;margin:0 auto;background:#a83030;border-radius:8px;display:grid;place-items:center;font-family:'Noto Serif SC',serif;font-size:44px;font-weight:900;color:#f5e6c8;position:relative}
     .sidebar .s-logo .s-seal::after{content:'';position:absolute;inset:6px;border:1px solid rgba(245,230,200,0.1);border-radius:6px}
@@ -2785,13 +2778,13 @@ window.zoomGenealogyTree=function(factor){var vp=document.getElementById("gz-tre
     .sidebar .s-bottom .s-toggle .s-icon.active{color:rgba(245,230,200,0.5)}
     .sidebar .s-bottom a{display:block;padding:10px 0;color:rgba(245,230,200,0.2);font-size:12px;letter-spacing:0.06em;text-decoration:none;transition:all 0.3s}
     .sidebar .s-bottom a:hover{color:#04BF00;letter-spacing:0.1em}
+@media(min-width:901px){.sidebar{display:flex !important}}
 
-    .content{margin-left:0}@media(min-width:901px){.content{margin-left:220px !important}}
+
+    .content{margin-left:0}@media(min-width:901px){.content{margin-left:180px !important}body{margin-left:180px}}
 
     /* Hide old top header on desktop */
     @media(min-width:901px){.site-header{display:none !important}}
-
-@media(min-width:901px){.sidebar{display:flex !important}}
 </style>
 
 <script>
