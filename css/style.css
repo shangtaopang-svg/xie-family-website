@@ -186,10 +186,10 @@ html { scroll-behavior: smooth; }
   justify-content: center;
 }
 
-/* 顶部绿色进度条 */
+/* 底部绿色进度条 */
 .pt-bar {
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: -100%;
   height: 3px;
   width: 100%;
@@ -205,59 +205,54 @@ html { scroll-behavior: smooth; }
 /* 居中内容 */
 .pt-content {
   text-align: center;
-  animation: ptFadeIn 0.3s ease 0.15s both;
+  animation: ptFadeIn 0.3s ease both;
 }
 @keyframes ptFadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* 三角形加载动画（react-spinner-loader 风格） */
+/* 三角形加载动画（三条独立线段，不闭合） */
 .pt-tri {
-  width: 55px;
-  height: 55px;
-  margin: 0 auto 28px;
-  position: relative;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 20px;
 }
 .pt-tri svg {
   width: 100%;
   height: 100%;
+  animation: ptTriSpin 1.6s linear infinite;
 }
-.pt-tri svg polygon {
-  fill: none;
+.pt-tri svg line {
   stroke: #04BF00;
-  stroke-width: 2.8;
+  stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-dasharray: 150;
-  stroke-dashoffset: 0;
-  animation: ptTriSpin 1.2s ease-in-out infinite;
-  transform-origin: center;
 }
 @keyframes ptTriSpin {
-  0%   { stroke-dashoffset: 150; transform: rotate(0deg); }
-  50%  { stroke-dashoffset: 0; transform: rotate(180deg); }
-  100% { stroke-dashoffset: -150; transform: rotate(360deg); }
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 .pt-title {
   font-family: inherit;
-  font-size: 20px;
+  font-size: 18px;
   color: #fff;
-  letter-spacing: 2px;
-  margin-bottom: 10px;
-  font-weight: 400;
-}
-
-.pt-sub {
-  font-size: 13px;
-  color: #04BF00;
   letter-spacing: 1px;
   font-weight: 400;
+  white-space: nowrap;
 }
-.pt-dot { animation: ptDot 1.4s ease infinite; }
-.pt-dot:nth-child(2) { animation-delay: 0.2s; }
-.pt-dot:nth-child(3) { animation-delay: 0.4s; }
+
+.pt-title .pt-dot { 
+  display: inline;
+  animation: ptDot 1.4s ease infinite;
+  color: rgba(255,255,255,0.6);
+}
+.pt-title .pt-dot:nth-child(2) { animation-delay: 0.2s; }
+.pt-title .pt-dot:nth-child(3) { animation-delay: 0.4s; }
+
+
+
 @keyframes ptDot {
   0%, 100% { opacity: 0.2; }
   50%      { opacity: 1; }
