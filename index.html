@@ -53,8 +53,57 @@
   <link rel="manifest" href="/manifest.json">
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");</script>
 </head>
-<body>
-<script>if(sessionStorage.getItem('pt_transition')){sessionStorage.removeItem('pt_transition');if(!document.getElementById('pt-keyframes')){var ks=document.createElement('style');ks.id='pt-keyframes';ks.textContent='@keyframes ptBarSlide{0%{left:-100%}100%{left:0}}';document.head.appendChild(ks)}var pt=document.createElement('div');pt.id='page-transition';pt.style.cssText='display:flex !important;position:fixed;inset:0;z-index:999999;background:rgb(7,16,31);flex-direction:column;align-items:center;justify-content:center;';pt.innerHTML='<div class="pt-bar" style="position:absolute;bottom:0;left:-100%;height:3px;width:100%;background:#04BF00;box-shadow:0 0 12px rgba(4,191,0,0.5);animation:ptBarSlide 0.7s ease-in-out forwards;"></div><div class="pt-content"><div class="pt-tri"><svg viewBox="0 0 60 60"><line x1="30" y1="6" x2="7" y2="48"/><line x1="7" y1="48" x2="53" y2="48"/><line x1="53" y1="48" x2="30" y2="6"/></svg></div><div class="pt-title">ShangTaoPang 正在工作中<span class="pt-dot">.</span><span class="pt-dot">.</span><span class="pt-dot">.</span></div></div>';document.body.appendChild(pt);}</script>
+<body><script>
+(function(){
+  var ptKey = 'pt_go';
+  var pt = document.getElementById('page-transition');
+  
+  // If arriving from transition (sessionStorage flag)
+  if (sessionStorage.getItem(ptKey)) {
+    sessionStorage.removeItem(ptKey);
+    if (!pt) {
+      pt = document.createElement('div');
+      pt.id = 'page-transition';
+      pt.style.cssText = 'position:fixed;inset:0;z-index:999999;background:rgb(7,16,31);display:flex;flex-direction:column;align-items:center;justify-content:center;';
+      pt.innerHTML = '<div style="position:absolute;bottom:0;left:-100%;height:3px;width:100%;background:#04BF00;box-shadow:0 0 12px rgba(4,191,0,0.5);animation:ptSlide 0.7s ease-in-out forwards;"></div><div style="text-align:center;animation:ptFade 0.3s ease both;"><div style="width:52px;height:52px;margin:0 auto 20px;animation:ptSpin 1.6s linear infinite;"><svg viewBox="0 0 60 60" style="width:100%;height:100%;"><line x1="30" y1="6" x2="7" y2="48" stroke="#04BF00" stroke-width="3" stroke-linecap="round"/><line x1="7" y1="48" x2="53" y2="48" stroke="#04BF00" stroke-width="3" stroke-linecap="round"/><line x1="53" y1="48" x2="30" y2="6" stroke="#04BF00" stroke-width="3" stroke-linecap="round"/></svg></div><div style="font-size:18px;color:#fff;letter-spacing:1px;white-space:nowrap;">ShangTaoPang 正在工作中<span style="display:inline;animation:ptDot 1.4s ease infinite;">.</span><span style="display:inline;animation:ptDot 1.4s ease infinite;animation-delay:0.2s;">.</span><span style="display:inline;animation:ptDot 1.4s ease infinite;animation-delay:0.4s;">.</span></div></div>';
+      document.body.appendChild(pt);
+    }
+    // Fade out after brief display
+    setTimeout(function(){ pt.style.transition='opacity 0.5s ease'; pt.style.opacity='0'; setTimeout(function(){ pt.style.display='none'; },500); },300);
+    return;
+  }
+  
+  // If overlay HTML exists on page (from index.html), ensure it's hidden
+  if (pt) pt.style.display = 'none';
+  
+  // Intercept nav clicks directly (inline, reliable)
+  document.addEventListener('click', function(e){
+    var a = e.target.closest('a');
+    if (!a) return;
+    var h = a.getAttribute('href');
+    if (!h || h==='#' || h.startsWith('javascript:') || h.startsWith('http') || h.startsWith('tel:') || h.startsWith('mailto:') || !h.includes('.html')) return;
+    var cur = window.location.pathname.split('/').pop() || 'index.html';
+    if (h === cur || h === './'+cur) return;
+    e.preventDefault();
+    e.stopPropagation();
+    sessionStorage.setItem(ptKey, '1');
+    // Show overlay with all inline styles
+    var ov = document.getElementById('page-transition') || document.createElement('div');
+    ov.id = 'page-transition';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:999999;background:rgb(7,16,31);display:flex;flex-direction:column;align-items:center;justify-content:center;';
+    ov.innerHTML = '<div style="position:absolute;bottom:0;left:-100%;height:3px;width:100%;background:#04BF00;box-shadow:0 0 12px rgba(4,191,0,0.5);animation:ptSlide 0.7s ease-in-out forwards;"></div><div style="text-align:center;animation:ptFade 0.3s ease both;"><div style="width:52px;height:52px;margin:0 auto 20px;animation:ptSpin 1.6s linear infinite;"><svg viewBox="0 0 60 60" style="width:100%;height:100%;"><line x1="30" y1="6" x2="7" y2="48" stroke="#04BF00" stroke-width="3" stroke-linecap="round"/><line x1="7" y1="48" x2="53" y2="48" stroke="#04BF00" stroke-width="3" stroke-linecap="round"/><line x1="53" y1="48" x2="30" y2="6" stroke="#04BF00" stroke-width="3" stroke-linecap="round"/></svg></div><div style="font-size:18px;color:#fff;letter-spacing:1px;white-space:nowrap;">ShangTaoPang 正在工作中<span style="display:inline;animation:ptDot 1.4s ease infinite;">.</span><span style="display:inline;animation:ptDot 1.4s ease infinite;animation-delay:0.2s;">.</span><span style="display:inline;animation:ptDot 1.4s ease infinite;animation-delay:0.4s;">.</span></div></div>';
+    if (!document.getElementById('pt-keyframes')) {
+      var ks = document.createElement('style');
+      ks.id = 'pt-keyframes';
+      ks.textContent = '@keyframes ptSlide{0%{left:-100%}100%{left:0}}@keyframes ptSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes ptFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@keyframes ptDot{0%,100%{opacity:0.2}50%{opacity:1}}';
+      document.head.appendChild(ks);
+    }
+    if (ov.parentNode !== document.body) document.body.appendChild(ov);
+    setTimeout(function(){ window.location.href = h; }, 800);
+  });
+})();
+</script>
+
 <canvas id="weather-canvas"></canvas>
 
 <div class="content">
