@@ -100,51 +100,104 @@
         allVids.forEach(function(v, idx) {
           var item = document.createElement('div');
           item.className = 'reel-item';
-          // 所有视频默认暂停，互不影响
           item.classList.add('paused');
+          // 存储视频信息供点击时使用
+          item.dataset.videoSrc = v.src;
+          item.dataset.videoTitle = v.title || '';
+          item.dataset.videoId = v.id || ('v_' + idx);
 
-          var video = document.createElement('video');
-          video.className = 'reel-video';
-          video.dataset.src = v.src;  // lazy load: don't set src until play
-          // 视频第一帧截图作为封面海报（非大礼堂照片）
-          var posterName = v.src.replace('/video/', '').replace('.mp4', '') + '-poster.jpg';
-          video.poster = '/images/video-posters/' + posterName;
-          // No preload -无src时设置preload会导致部分浏览器显示黄色感叹号
-          // 使用CSS占位背景，播放时才加载视频
-          video.muted = false;
-          video.loop = true;
-          video.playsInline = true;
-          // 不设preload — 无src时设preload会导致浏览器显示黄色感叹号
-          // 视频在用户点击播放时才通过 dataset.src 加载
+          // 封面海报作为背景（不使用video标签，避免浏览器显示黄色感叹号）
+          var posterUrl = '/images/video-posters/' + v.src.replace('/video/', '').replace('.mp4', '') + '-poster.jpg';
+          item.style.backgroundImage = 'url(' + posterUrl + ')';
+          item.style.backgroundSize = 'cover';
+          item.style.backgroundPosition = 'center';
 
-          item.appendChild(video);
+          // 视频元素（初始不创建，点击播放时才生成）
+          var video = null;
+          // 播放状态标记
+          var _hasBeenPlayed = false;
 
-          // 视频比例检测
-          video.addEventListener('loadedmetadata', function() {
-            if (video.videoHeight > video.videoWidth) {
-              item.classList.add('is-portrait');
-            } else if (video.videoWidth / video.videoHeight > 1.5) {
-              item.classList.add('is-landscape');
-            }
-          });
-
-          // Play icon overlay — 直接点击播放，防止被其他元素拦截
+          // Play icon overlay
           var playIcon = document.createElement('div');
           playIcon.className = 'reel-play-icon';
           playIcon.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>';
           playIcon.addEventListener('click', function(e) {
             e.stopPropagation();
-            if (video.paused) {
-              // Lazy-load video src on first play
-              if (!video.src && video.dataset.src) {
-                video.src = video.dataset.src;
-                video.load();
-              }
-              video.play().catch(function(e){console.log('Video play error:',e);item.querySelector('.reel-play-icon').innerHTML='<span style=color:red>⚠️</span>';});
-              item.classList.remove('paused');
+            if (!video) {
+              // 首次点击：创建video元素并加载
+              video = document.createElement('video');
+              video.className = 'reel-video';
+              video.src = item.dataset.videoSrc;
+              video.muted = false;
+              video.loop = true;
+              video.playsInline = true;
+              video.preload = 'auto';
+
+              // 插入到item最前面（背景图之上）
+              item.insertBefore(video, item.firstChild);
+
+              // 视频比例检测
+              video.addEventListener('loadedmetadata', function() {
+                if (video.videoHeight > video.videoWidth) {
+                  item.classList.add('is-portrait');
+                } else if (video.videoWidth / video.videoHeight > 1.5) {
+                  item.classList.add('is-landscape');
+                }
+              });
+
+              // 绑定播放/暂停按钮控制
+              video.addEventListener('play', function() {
+                item.classList.remove('paused');
+                if (playBtn) playBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+                var bgMusic = document.getElementById('bg-music');
+                if (bgMusic && !bgMusic.paused) {
+                  bgMusic.dataset._wasPlaying = 'true';
+                  bgMusic.pause();
+                }
+              });
+              video.addEventListener('pause', function() {
+                item.classList.add('paused');
+                if (playBtn) playBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>';
+              });
+
+              // 进度和时间更新
+              var _rafTick = false;
+              video.addEventListener('timeupdate', function() {
+                if (_rafTick) return;
+                if (!video.duration) return;
+                _rafTick = true;
+                requestAnimationFrame(function() {
+                  _rafTick = false;
+                  progressFill.style.width = ((video.currentTime / video.duration) * 100) + '%';
+                  var cm = Math.floor(video.currentTime / 60);
+                  var cs = Math.floor(video.currentTime % 60);
+                  var dm = Math.floor(video.duration / 60);
+                  var ds = Math.floor(video.duration % 60);
+                  timeDisplay.textContent = cm + ':' + (cs < 10 ? '0' : '') + cs + ' / ' + dm + ':' + (ds < 10 ? '0' : '') + ds;
+                });
+              });
+
+              // 视频加载完成后自动播放
+              video.addEventListener('canplay', function() {
+                video.play().catch(function(err) {
+                  console.log('Video play error:', err);
+                });
+              });
+
+              // 加载失败处理
+              video.addEventListener('error', function() {
+                console.log('Video load error:', video.error ? video.error.message : 'unknown');
+                playIcon.innerHTML = '<span style=color:red>⚠️</span>';
+              });
+
+              video.load();
+            } else if (video.paused) {
+              video.play().catch(function(err) {
+                console.log('Video play error:', err);
+                playIcon.innerHTML = '<span style=color:red>⚠️</span>';
+              });
             } else {
               video.pause();
-              item.classList.add('paused');
             }
           });
           item.appendChild(playIcon);
@@ -186,6 +239,7 @@
             return x / rect.width;
           }
           function seekTo(e) {
+            if (!video || !video.duration) return;
             var pct = getClickPct(e);
             progressFill.classList.add('is-seeking');
             progressFill.style.width = (pct * 100) + '%';
@@ -243,26 +297,18 @@
           playBtn.setAttribute('aria-label', '播放/暂停');
           playBtn.addEventListener('click', function(e) {
             e.stopPropagation();
+            if (!video) {
+              // 视频尚未创建，触发playIcon的点击
+              playIcon.click();
+              return;
+            }
             if (video.paused) {
-              video.play().catch(function(e){console.log('Video play error:',e);item.querySelector('.reel-play-icon').innerHTML='<span style=color:red>⚠️</span>';});
-              item.classList.remove('paused');
+              video.play().catch(function(e){console.log('Video play error:',e);playIcon.innerHTML='<span style=color:red>⚠️</span>';});
             } else {
               video.pause();
-              item.classList.add('paused');
             }
           });
-          video.addEventListener('play', function() {
-            playBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
-            // 暂停背景音乐
-            var bgMusic = document.getElementById('bg-music');
-            if (bgMusic && !bgMusic.paused) {
-              bgMusic.dataset._wasPlaying = 'true';
-              bgMusic.pause();
-            }
-          });
-          video.addEventListener('pause', function() {
-            playBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>';
-          });
+          // 移除了video.play/pause事件绑定（已在上方playIcon中处理）
           controls.appendChild(playBtn);
 
           var spacer = document.createElement('div');
@@ -291,6 +337,7 @@
           closeBtn.setAttribute('aria-label', '关闭');
           closeBtn.addEventListener('click', function(e) {
             e.stopPropagation();
+            if (!video) return;
             video.pause();
             video.currentTime = 0;
             video.loop = false;
@@ -305,6 +352,7 @@
           fsBtn.setAttribute('aria-label', '全屏播放');
           fsBtn.addEventListener('click', function(e) {
             e.stopPropagation();
+            if (!video) return;
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
               if (item.requestFullscreen) item.requestFullscreen();
               else if (item.webkitRequestFullscreen) item.webkitRequestFullscreen();

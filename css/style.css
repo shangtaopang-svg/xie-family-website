@@ -2076,15 +2076,17 @@ body {
   height: 100%;
   object-fit: cover;
   display: block;
-  position: relative;
+  position: absolute;
+  top: 0; left: 0;
   z-index: 1;
 }
-/* 无源且无poster时隐藏（避免显示破损图标） */
-.reel-video:not([src]):not([poster]) {
-  opacity: 0;
-}
-.reel-video[src], .reel-video[poster] {
-  opacity: 1;
+/* 视频覆盖背景图 */
+.reel-item .reel-video {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
 }
 
 /* 横屏/宽视频：铺满裁剪 */
