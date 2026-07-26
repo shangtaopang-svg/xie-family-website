@@ -17,24 +17,70 @@
       top: 0;
       width: 100%;
       height: 100%;
+      z-index: 5;
+      overflow: hidden;
+    }
+    .pi2-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
       background: linear-gradient(135deg, rgba(7,16,31,0.92) 0%, rgba(7,16,31,0.75) 100%);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       border: 3px solid #04BF00;
       box-shadow: inset 0 0 30px rgba(4,191,0,0.08);
-      transition: left 0.35s ease-in-out;
-      z-index: 5;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 20px;
       box-sizing: border-box;
+      transition: box-shadow 0.3s ease;
     }
-    .card2:hover .popup-info2 {
-      left: 0;
+    .card2:hover .pi2-inner {
       box-shadow: inset 0 0 30px rgba(4,191,0,0.08), 0 0 20px rgba(4,191,0,0.15);
     }
+    .pi2-pages {
+      position: relative;
+      width: 100%;
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    .pi2-page {
+      min-width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.35s ease-in-out;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    .pi2-page.active { transform: translateX(0); }
+    .pi2-page:not(.active) { transform: translateX(0); }
+    .pi2-page.slide-left { transform: translateX(-100%); }
+    .pi2-page.slide-right { transform: translateX(100%); }
+
+    .pi2-tabs {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+      flex-shrink: 0;
+    }
+    .pi2-tab {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: all 0.3s ease;
+    }
+    .pi2-tab.active { background: #04BF00; width: 24px; border-radius: 4px; }
+    .pi2-tab:hover { background: rgba(4,191,0,0.6); }
+
     .watch-btn {
       display: inline-flex;
       align-items: center;
@@ -49,7 +95,7 @@
       transition: all 0.3s ease;
       cursor: pointer;
       text-decoration: none;
-      margin-top: 14px;
+      margin-top: 10px;
       letter-spacing: 0.5px;
     }
     .watch-btn:hover { background: #04BF00; color: #fff; border-color: #04BF00; box-shadow: 0 4px 16px rgba(4,191,0,0.3); }
@@ -58,7 +104,7 @@
       font-weight: 600;
       color: #fff;
       text-align: center;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       line-height: 1.4;
     }
     .card-sub {
@@ -66,10 +112,19 @@
       color: rgba(255,255,255,0.6);
       text-align: center;
     }
+    .pi2-desc {
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+      text-align: center;
+      line-height: 1.6;
+      max-width: 90%;
+      margin: 6px 0;
+    }
     @media (max-width: 640px) {
-      .popup-info2 { padding: 12px; }
+      .pi2-inner { padding: 12px; }
       .card-title { font-size: 12px; }
       .watch-btn { font-size: 11px; padding: 6px 14px; }
+      .pi2-desc { font-size: 11px; }
     }
   </style>
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
@@ -217,22 +272,97 @@
       var popup = document.createElement('div');
       popup.className = 'popup-info2';
 
+      var inner = document.createElement('div');
+      inner.className = 'pi2-inner';
+
+      // Page wrapper for sliding
+      var pagesWrap = document.createElement('div');
+      pagesWrap.className = 'pi2-pages';
+
+      // Page 1: 观看视频
+      var page1 = document.createElement('div');
+      page1.className = 'pi2-page active';
+      page1.id = 'pi2-p1-' + (v.id || Math.random().toString(36).slice(2, 8));
+
       var titleEl = document.createElement('div');
       titleEl.className = 'card-title';
       titleEl.textContent = v.title || '';
-      popup.appendChild(titleEl);
+      page1.appendChild(titleEl);
 
       var subEl = document.createElement('div');
       subEl.className = 'card-sub';
       subEl.textContent = '下枫槎·谢氏';
-      popup.appendChild(subEl);
+      page1.appendChild(subEl);
 
       var btn = document.createElement('div');
       btn.className = 'watch-btn';
       btn.innerHTML = '▶ 观看视频';
-      popup.appendChild(btn);
+      page1.appendChild(btn);
 
+      pagesWrap.appendChild(page1);
+
+      // Page 2: 介绍
+      var page2 = document.createElement('div');
+      page2.className = 'pi2-page';
+
+      var titleEl2 = document.createElement('div');
+      titleEl2.className = 'card-title';
+      titleEl2.textContent = v.title || '';
+      page2.appendChild(titleEl2);
+
+      var descEl = document.createElement('div');
+      descEl.className = 'pi2-desc';
+      descEl.textContent = v.desc || '下枫槎村影像记录';
+      page2.appendChild(descEl);
+
+      pagesWrap.appendChild(page2);
+
+      inner.appendChild(pagesWrap);
+
+      // Tab dots
+      var tabs = document.createElement('div');
+      tabs.className = 'pi2-tabs';
+      var tab1 = document.createElement('button');
+      tab1.className = 'pi2-tab active';
+      tab1.dataset.page = '0';
+      var tab2 = document.createElement('button');
+      tab2.className = 'pi2-tab';
+      tab2.dataset.page = '1';
+      tabs.appendChild(tab1);
+      tabs.appendChild(tab2);
+      inner.appendChild(tabs);
+
+      popup.appendChild(inner);
       card.appendChild(popup);
+
+      // Tab switching
+      var pages = [page1, page2];
+      var pi2Tabs = [tab1, tab2];
+      var currentPage = 0;
+      pi2Tabs.forEach(function(t, idx) {
+        t.addEventListener('click', function(e) {
+          e.stopPropagation();
+          if (idx === currentPage) return;
+          // Slide out current, slide in new
+          var direction = idx > currentPage ? -1 : 1;
+          pages[currentPage].classList.remove('active');
+          pages[idx].classList.remove('slide-left', 'slide-right');
+          if (direction === -1) {
+            pages[idx].classList.add('slide-left');
+          } else {
+            pages[idx].classList.add('slide-right');
+          }
+          // After transition, set active
+          setTimeout(function() {
+            pages[currentPage].classList.remove('slide-left', 'slide-right');
+            pages[idx].classList.remove('slide-left', 'slide-right');
+            pages[idx].classList.add('active');
+            currentPage = idx;
+            pi2Tabs.forEach(function(t2) { t2.classList.remove('active'); });
+            t.classList.add('active');
+          }, 50);
+        });
+      });
 
       // 点击播放/关闭
       var _playing = false;
@@ -249,6 +379,15 @@
           card.style.backgroundSize = 'cover';
           card.style.backgroundPosition = 'center';
           popup.style.display = '';
+          // Reset to page 0 (观看视频)
+          var allPages = popup.querySelectorAll('.pi2-page');
+          var allTabs = popup.querySelectorAll('.pi2-tab');
+          if (allPages.length) {
+            allPages.forEach(function(p, i) { p.classList.remove('active', 'slide-left', 'slide-right'); if (i === 0) p.classList.add('active'); });
+          }
+          if (allTabs.length) {
+            allTabs.forEach(function(t, i) { t.classList.remove('active'); if (i === 0) t.classList.add('active'); });
+          }
           card.style.aspectRatio = '4/3';
           return;
         }
@@ -289,6 +428,15 @@
           card.style.backgroundSize = 'cover';
           card.style.backgroundPosition = 'center';
           popup.style.display = '';
+          // Reset to page 0 (观看视频)
+          var allPages = popup.querySelectorAll('.pi2-page');
+          var allTabs = popup.querySelectorAll('.pi2-tab');
+          if (allPages.length) {
+            allPages.forEach(function(p, i) { p.classList.remove('active', 'slide-left', 'slide-right'); if (i === 0) p.classList.add('active'); });
+          }
+          if (allTabs.length) {
+            allTabs.forEach(function(t, i) { t.classList.remove('active'); if (i === 0) t.classList.add('active'); });
+          }
           card.style.aspectRatio = '4/3';
         }
 
