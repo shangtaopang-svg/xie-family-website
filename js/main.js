@@ -687,6 +687,35 @@ document.addEventListener('DOMContentLoaded', initCarousel);
     }, { passive: true });
   });
 })();
+/* ===== 页面过渡特效 ===== */
+document.addEventListener('DOMContentLoaded', function() {
+  var overlay = document.getElementById('page-transition');
+  // 如果页面没有遮罩HTML，动态创建
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'page-transition';
+    overlay.style.display = 'none';
+    overlay.innerHTML = '<div class="pt-bar"></div><div class="pt-content"><div class="pt-tri"></div><div class="pt-title">下枫槎谢氏</div><div class="pt-sub">加载中<span class="pt-dot">.</span><span class="pt-dot">.</span><span class="pt-dot">.</span></div></div>';
+    document.body.appendChild(overlay);
+  }
+
+  // 拦截所有导航链接点击
+  document.querySelectorAll('.main-nav a, .mobile-bottom-nav a, .logo').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      var href = this.getAttribute('href') || this.closest('a')?.getAttribute('href');
+      if (!href || href === '#' || href.startsWith('javascript:') || href.startsWith('http')) return;
+      e.preventDefault();
+      // 显示遮罩
+      overlay.className = 'show';
+      overlay.style.display = 'flex';
+      // 动画播放完成后跳转
+      setTimeout(function() {
+        window.location.href = href;
+      }, 800);
+    });
+  });
+});
+
 /* ===== 打字机效果 ===== */
 document.addEventListener('DOMContentLoaded', function() {
   function typeWriter(el, text, speed, callback) {

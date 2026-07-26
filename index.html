@@ -9,7 +9,7 @@
   <title data-i18n="site.title">宁海下枫槎村 · 谢氏家族</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="css/style.css?v=20260727">
+  <link rel="stylesheet" href="css/style.css?v=20260728">
   <style>
     /* Carousel mobile fix - ensure slides have height */
     .carousel-container { aspect-ratio: 21/9; overflow: hidden; }
@@ -370,9 +370,19 @@
   <a href="javascript:history.back()" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
 
+  <!-- ===== 页面过渡遮罩 ===== -->
+  <div id="page-transition" style="display:none;">
+    <div class="pt-bar"></div>
+    <div class="pt-content">
+      <div class="pt-tri"></div>
+      <div class="pt-title">下枫槎谢氏</div>
+      <div class="pt-sub">加载中<span class="pt-dot">.</span><span class="pt-dot">.</span><span class="pt-dot">.</span></div>
+    </div>
+  </div>
+
   <audio id="bg-music" loop></audio>
 
-  <script defer src="js/main.js?v=20260727"></script>
+  <script defer src="js/main.js?v=20260728"></script>
 
   <!-- ===== 全屏查看 ===== -->
   <script defer src="js/lightbox-viewer.js?v=af0a9a"></script>

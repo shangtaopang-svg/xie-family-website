@@ -173,6 +173,82 @@ html { scroll-behavior: smooth; }
   50% { opacity: 0; }
 }
 
+/* ===== 页面过渡遮罩 ===== */
+#page-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: rgba(7,16,31,0.97);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+#page-transition.show { display: flex !important; }
+
+/* 顶部绿色进度条 */
+.pt-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0;
+  background: linear-gradient(90deg, #04BF00, #22d84a, #04BF00);
+  box-shadow: 0 0 12px rgba(4,191,0,0.5);
+  animation: ptBarSlide 0.8s ease-in-out forwards;
+}
+@keyframes ptBarSlide {
+  0%   { width: 0; left: 0; }
+  50%  { width: 60%; left: 20%; }
+  100% { width: 100%; left: 0; }
+}
+
+/* 居中内容 */
+.pt-content {
+  text-align: center;
+  animation: ptFadeIn 0.4s ease 0.2s both;
+}
+@keyframes ptFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 绿色三角形 */
+.pt-tri {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 24px;
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  background: #04BF00;
+  animation: ptTriFloat 2s ease-in-out infinite;
+  box-shadow: 0 0 20px rgba(4,191,0,0.3);
+}
+@keyframes ptTriFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+  50%      { transform: translateY(-12px) rotate(10deg) scale(1.05); opacity: 0.8; }
+}
+
+.pt-title {
+  font-family: 'STKaiti', 'KaiTi', '楷体', serif;
+  font-size: 22px;
+  color: #fff;
+  letter-spacing: 4px;
+  margin-bottom: 12px;
+}
+
+.pt-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 2px;
+}
+.pt-dot { animation: ptDot 1.4s ease infinite; }
+.pt-dot:nth-child(2) { animation-delay: 0.2s; }
+.pt-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes ptDot {
+  0%, 100% { opacity: 0.2; }
+  50%      { opacity: 1; }
+}
+
 /* ===== 链接悬浮下划线动画 ===== */
 .underline-anim {
   position: relative;
