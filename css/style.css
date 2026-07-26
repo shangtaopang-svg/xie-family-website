@@ -365,8 +365,9 @@ body {
 
 .main-nav a:hover,
 .main-nav a.active {
-  color: var(--text-primary);
+  color: var(--accent-orange);
   background: var(--glass-bg);
+  letter-spacing: 2px;
 }
 
 /* 管理后台 link stays orange in sidebar too */
