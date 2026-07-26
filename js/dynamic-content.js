@@ -281,23 +281,6 @@
             e.preventDefault(); seekTo(e.changedTouches[0]);
           }, { passive: false });
 
-          // 进度和时间更新
-          var _rafTick = false;
-          video.addEventListener('timeupdate', function() {
-            if (_rafTick) return;
-            if (!video.duration) return;
-            _rafTick = true;
-            requestAnimationFrame(function() {
-              _rafTick = false;
-              progressFill.style.width = ((video.currentTime / video.duration) * 100) + '%';
-              var cm = Math.floor(video.currentTime / 60);
-              var cs = Math.floor(video.currentTime % 60);
-              var dm = Math.floor(video.duration / 60);
-              var ds = Math.floor(video.duration % 60);
-              timeDisplay.textContent = cm + ':' + (cs < 10 ? '0' : '') + cs + ' / ' + dm + ':' + (ds < 10 ? '0' : '') + ds;
-            });
-          });
-
           overlay.appendChild(progressWrap);
 
           // Controls
