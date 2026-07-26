@@ -538,4 +538,4 @@ section a[href*="audio"] {
 .mbh-qb-arrow { font-size: 14px; color: #D4FF3A; opacity: 0.6; }
 
 /* 手机端隐藏桌面内容 */
-.mb-home + .content { display: none !important; }
+.mb-home ~ .content { display: none !important; }
