@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>宁海下枫槎 · 数字宗祠系统</title>
+  <title>专业族谱网站开发 · 数字宗祠系统</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    body { font-family: -apple-system, 'Noto Sans SC', 'PingFang SC', sans-serif; color: #1a1a1a; background: #f8f7f4; }
+    body { font-family: -apple-system, 'Noto Sans SC', 'PingFang SC', sans-serif; color: #1a1a1a; background: #f5f4f0; }
 
     /* ===== Nav ===== */
     nav {
@@ -21,103 +21,130 @@
       max-width: 1100px; margin: 0 auto; padding: 0 20px;
       display: flex; align-items: center; justify-content: space-between; height: 64px;
     }
-    .nav-logo { font-size: 18px; font-weight: 700; color: #c4a050; text-decoration: none; letter-spacing: 2px; }
-    .nav-logo span { color: #1a1a1a; }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px; text-decoration: none;
+    }
+    .nav-logo-icon {
+      width: 32px; height: 32px; background: #c4a050; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 16px; font-weight: 700;
+    }
+    .nav-logo-text { font-size: 16px; font-weight: 700; color: #1a1a1a; letter-spacing: 1px; }
+    .nav-logo-text small { display: block; font-size: 10px; font-weight: 400; color: #999; letter-spacing: 0; }
     .nav-links { display: flex; gap: 24px; align-items: center; }
     .nav-links a {
-      font-size: 13px; color: #555; text-decoration: none; transition: color 0.3s; letter-spacing: 0.5px;
+      font-size: 13px; color: #555; text-decoration: none; transition: color 0.3s;
     }
     .nav-links a:hover { color: #c4a050; }
     .nav-cta {
-      padding: 8px 20px; background: #c4a050; color: #fff !important; border-radius: 6px; font-weight: 600;
+      padding: 8px 22px; background: #c4a050; color: #fff !important;
+      border-radius: 6px; font-weight: 600; font-size: 13px !important;
     }
-    .nav-cta:hover { background: #b8913e !important; }
+    .nav-cta:hover { background: #b8913e !important; color: #fff !important; }
 
     /* ===== Hero ===== */
     .hero {
-      background: linear-gradient(135deg, #2c1810 0%, #3d2418 40%, #5a3424 100%);
-      padding: 80px 20px; text-align: center; position: relative; overflow: hidden;
+      background: linear-gradient(135deg, #1a0f0a 0%, #2c1810 40%, #3d2418 100%);
+      padding: 100px 20px; text-align: center; position: relative; overflow: hidden;
     }
     .hero::before {
-      content: '';
-      position: absolute; inset: 0;
+      content: ''; position: absolute; inset: 0;
       background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c4a050' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     }
     .hero-content { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
-    .hero-icon { font-size: 56px; margin-bottom: 16px; display: block; }
+    .hero-tag {
+      display: inline-block; padding: 5px 16px;
+      background: rgba(196,160,80,0.12); border-radius: 20px;
+      color: #c4a050; font-size: 12px; letter-spacing: 2px; margin-bottom: 20px;
+    }
     .hero h1 {
-      font-size: clamp(32px,4vw,44px); font-weight: 700;
-      color: #f5e6c8; letter-spacing: 4px; margin-bottom: 12px;
+      font-size: clamp(34px,5vw,48px); font-weight: 700;
+      color: #f5e6c8; letter-spacing: 3px; margin-bottom: 16px; line-height: 1.2;
     }
     .hero h1 .hl { color: #c4a050; }
     .hero p {
       font-size: clamp(15px,1.8vw,18px);
-      color: rgba(245,230,200,0.6); letter-spacing: 2px; margin-bottom: 28px; line-height: 1.8;
+      color: rgba(245,230,200,0.55); line-height: 1.9; margin-bottom: 32px;
     }
-    .hero-badge {
-      display: inline-block; padding: 6px 18px;
-      border: 1px solid rgba(196,160,80,0.3); border-radius: 20px;
-      color: #c4a050; font-size: 12px; letter-spacing: 2px; margin-bottom: 20px;
+    .hero-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .hero-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 13px 32px; border-radius: 8px; font-size: 15px;
+      font-weight: 600; text-decoration: none; transition: all 0.3s;
     }
+    .hero-btn-primary { background: #c4a050; color: #fff; }
+    .hero-btn-primary:hover { background: #b8913e; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(196,160,80,0.3); }
+    .hero-btn-secondary { border: 1.5px solid rgba(245,230,200,0.25); color: #f5e6c8; }
+    .hero-btn-secondary:hover { border-color: #c4a050; color: #c4a050; transform: translateY(-2px); }
 
     /* ===== Sections ===== */
-    .section-wrap { padding: 64px 20px; }
-    .section-inner { max-width: 1000px; margin: 0 auto; }
-    .section-title {
-      text-align: center; margin-bottom: 40px;
-    }
-    .section-title h2 {
+    section { padding: 72px 20px; }
+    .inner { max-width: 1000px; margin: 0 auto; }
+    .sec-title { text-align: center; margin-bottom: 44px; }
+    .sec-title h2 {
       font-size: clamp(24px,3vw,30px); font-weight: 700;
       color: #1a1a1a; letter-spacing: 2px; margin-bottom: 8px;
     }
-    .section-title p { font-size: 14px; color: #999; letter-spacing: 1px; }
-    .section-title .line {
+    .sec-title p { font-size: 14px; color: #999; letter-spacing: 1px; }
+    .sec-title .bar {
       width: 40px; height: 3px; background: #c4a050;
       margin: 14px auto 0; border-radius: 2px;
     }
 
-    /* ===== Features ===== */
-    .features-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    /* ===== Showcase ===== */
+    .showcase-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
     }
-    .feature-card {
-      background: #fff; padding: 28px 22px; text-align: center;
-      border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    .showcase-card {
+      background: #fff; padding: 32px 28px; border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
       transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
     }
-    .feature-card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
-    .feature-icon { font-size: 32px; margin-bottom: 12px; display: block; }
-    .feature-card h3 { font-size: 15px; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; }
-    .feature-card p { font-size: 12px; color: #999; line-height: 1.7; }
+    .showcase-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
+    .showcase-icon { font-size: 36px; margin-bottom: 12px; display: block; }
+    .showcase-card h3 { font-size: 16px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; }
+    .showcase-card p { font-size: 13px; color: #888; line-height: 1.7; }
 
-    /* ===== Stats ===== */
-    .stats {
-      display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;
-      padding: 40px 0; background: #f8f7f4; border-radius: 12px;
+    /* ===== Why me ===== */
+    .why-list { max-width: 700px; margin: 0 auto; }
+    .why-item {
+      display: flex; gap: 18px; align-items: flex-start;
+      padding: 20px 0; border-bottom: 1px solid rgba(0,0,0,0.05);
     }
-    .stat-item { text-align: center; }
-    .stat-num { font-size: 28px; font-weight: 700; color: #c4a050; }
-    .stat-label { font-size: 12px; color: #999; margin-top: 4px; letter-spacing: 1px; }
+    .why-item:last-child { border: none; }
+    .why-num {
+      font-size: 14px; font-weight: 700; color: #c4a050;
+      min-width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(196,160,80,0.1);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .why-item h4 { font-size: 15px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+    .why-item p { font-size: 13px; color: #888; line-height: 1.6; }
+
+    /* ===== CTA ===== */
+    .cta-section {
+      background: linear-gradient(135deg, #2c1810, #3d2418);
+      text-align: center;
+    }
+    .cta-section h2 { color: #f5e6c8; }
+    .cta-section p { color: rgba(245,230,200,0.5); }
+    .cta-section .bar { background: #c4a050; }
 
     /* ===== Footer ===== */
     footer {
-      background: #1a1a1a; color: rgba(255,255,255,0.5);
+      background: #1a1a1a; color: rgba(255,255,255,0.4);
       padding: 32px 20px 20px; text-align: center;
     }
     footer p { font-size: 12px; letter-spacing: 1px; }
-    footer a { color: rgba(255,255,255,0.5); text-decoration: none; }
-    footer a:hover { color: #c4a050; }
+    footer a { color: #c4a050; text-decoration: none; }
 
     /* ===== Animations ===== */
     .fade-up { opacity: 0; transform: translateY(30px); transition: all 0.6s cubic-bezier(0.22,1,0.36,1); }
     .fade-up.show { opacity: 1; transform: translateY(0); }
 
     @media (max-width: 768px) {
-      .features-grid { grid-template-columns: 1fr 1fr; }
+      .showcase-grid { grid-template-columns: 1fr; }
       .nav-links { display: none; }
-    }
-    @media (max-width: 480px) {
-      .features-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -125,116 +152,145 @@
 
 <nav>
   <div class="nav-inner">
-    <a href="intro.html" class="nav-logo">下枫槎<span>·谢氏</span></a>
+    <a href="intro.html" class="nav-logo">
+      <div class="nav-logo-icon">谢</div>
+      <div class="nav-logo-text">
+        族谱系统开发
+        <small>数字宗祠 · 专业建站</small>
+      </div>
+    </a>
     <div class="nav-links">
-      <a href="#features">功能</a>
-      <a href="#tech">技术</a>
-      <a href="index.html" class="nav-cta">进入宗祠 →</a>
+      <a href="#showcase">案例</a>
+      <a href="#why">优势</a>
+      <a href="#contact" class="nav-cta">立即咨询</a>
     </div>
   </div>
 </nav>
 
 <section class="hero">
   <div class="hero-content">
-    <span class="hero-icon">🏛️</span>
-    <div class="hero-badge">宁海下枫槎村 · 数字宗祠</div>
-    <h1>族谱网站<span class="hl">系统开发</span></h1>
-    <p>一个完整的数字宗祠平台 —— 族谱管理 · 家族树 · 成员图谱<br>从零到一全栈开发，助力家族文化数字化传承</p>
-    <a href="index.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 32px;background:#c4a050;color:#fff;border-radius:8px;text-decoration:none;font-size:15px;font-weight:600;transition:all 0.3s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(196,160,80,0.3)'" onmouseout="this.style.transform='';this.style.boxShadow=''">✦ 进入数字宗祠</a>
+    <div class="hero-tag">✅ 宁海下枫槎 · 数字宗祠已上线</div>
+    <h1>专业族谱网站<span class="hl">开发服务</span></h1>
+    <p>从零到一打造属于您家族的数字化宗祠平台<br>族谱管理 · 家族树 · 成员图谱 · 影像记录 · 全功能后台</p>
+    <div class="hero-btns">
+      <a href="index.html" class="hero-btn hero-btn-primary">✦ 参观案例：下枫槎谢氏</a>
+      <a href="#contact" class="hero-btn hero-btn-secondary">📩 为我的家族定制</a>
+    </div>
   </div>
 </section>
 
-<section class="section-wrap" id="features">
-  <div class="section-inner">
-    <div class="section-title fade-up">
-      <h2>核心功能</h2>
-      <p>数字宗祠 · 家族文化传承平台</p>
-      <div class="line"></div>
+<section id="showcase">
+  <div class="inner">
+    <div class="sec-title fade-up">
+      <h2>系统功能一览</h2>
+      <p>以宁海下枫槎谢氏家族网站为蓝本</p>
+      <div class="bar"></div>
     </div>
-    <div class="features-grid">
-      <div class="feature-card fade-up">
-        <span class="feature-icon">🌳</span>
+    <div class="showcase-grid">
+      <div class="showcase-card fade-up">
+        <span class="showcase-icon">🌳</span>
         <h3>家族世系树</h3>
-        <p>可视化家族树，直观展示世代传承脉络，支持缩放拖拽</p>
+        <p>交互式家族树可视化，世代关系一目了然，支持缩放拖拽，适配多端浏览</p>
       </div>
-      <div class="feature-card fade-up">
-        <span class="feature-icon">📜</span>
-        <h3>族谱查询</h3>
-        <p>族人信息检索，支持按姓名、字辈等多维度搜索</p>
+      <div class="showcase-card fade-up">
+        <span class="showcase-icon">📜</span>
+        <h3>族谱查询系统</h3>
+        <p>多维检索族人信息，按姓名、字辈、年代快速定位，数据管理便捷高效</p>
       </div>
-      <div class="feature-card fade-up">
-        <span class="feature-icon">👥</span>
-        <h3>家族成员</h3>
-        <p>完整的族人信息管理，包括生卒、配偶、事迹等详细记录</p>
+      <div class="showcase-card fade-up">
+        <span class="showcase-icon">👥</span>
+        <h3>家族成员库</h3>
+        <p>完整记录族人生卒、配偶、子嗣、事迹，支持批量导入导出</p>
       </div>
-      <div class="feature-card fade-up">
-        <span class="feature-icon">🏆</span>
-        <h3>名人事迹</h3>
-        <p>收录历代家族名人，弘扬先辈精神与文化传承</p>
+      <div class="showcase-card fade-up">
+        <span class="showcase-icon">🏆</span>
+        <h3>名人 & 功德</h3>
+        <p>收录家族先贤事迹，功德榜单展示，激励后人传承家族荣光</p>
       </div>
-      <div class="feature-card fade-up">
-        <span class="feature-icon">🗺️</span>
+      <div class="showcase-card fade-up">
+        <span class="showcase-icon">🗺️</span>
         <h3>迁徙地图</h3>
-        <p>动态迁徙路线展示，从谢邑到宁海下枫槎的千年历程</p>
+        <p>动态迁徙路线可视化，从始祖发源地到现居地的完整脉络</p>
       </div>
-      <div class="feature-card fade-up">
-        <span class="feature-icon">📰</span>
-        <h3>消息发布</h3>
-        <p>家族动态、村务通知、活动纪实等实时发布</p>
+      <div class="showcase-card fade-up">
+        <span class="showcase-icon">🎬</span>
+        <h3>影像资料库</h3>
+        <p>视频、照片集中管理，家族活动纪实，珍贵影像永续保存</p>
       </div>
-      <div class="feature-card fade-up">
-        <span class="feature-icon">🎬</span>
-        <h3>影像记录</h3>
-        <p>家族视频、摄影作品集中展示，留驻珍贵瞬间</p>
-      </div>
-      <div class="feature-card fade-up">
-        <span class="feature-icon">🌙</span>
+      <div class="showcase-card fade-up">
+        <span class="showcase-icon">🌙</span>
         <h3>深色模式</h3>
-        <p>支持浅色/深色双主题切换，适配不同使用场景</p>
+        <p>浅色/深色双主题自由切换，夜间浏览更舒适</p>
       </div>
-      <div class="feature-card fade-up">
-        <span class="feature-icon">🔐</span>
+      <div class="showcase-card fade-up">
+        <span class="showcase-icon">🔐</span>
         <h3>管理后台</h3>
-        <p>全功能后台管理系统，支持数据增删改查与备份</p>
+        <p>全功能后台：内容管理、数据备份、权限控制，操作简便</p>
       </div>
     </div>
   </div>
 </section>
 
-<section class="section-wrap" style="background: #fff;" id="tech">
-  <div class="section-inner">
-    <div class="section-title fade-up">
-      <h2>技术栈</h2>
-      <p>全栈自研 · 用心打造</p>
-      <div class="line"></div>
+<section style="background:#fff;" id="why">
+  <div class="inner">
+    <div class="sec-title fade-up">
+      <h2>为什么选择我</h2>
+      <p>全栈自研 · 交付即用 · 长期维护</p>
+      <div class="bar"></div>
     </div>
-    <div class="stats fade-up">
-      <div class="stat-item">
-        <div class="stat-num">纯前端</div>
-        <div class="stat-label">HTML/CSS/JS</div>
+    <div class="why-list">
+      <div class="why-item fade-up">
+        <div class="why-num">1</div>
+        <div>
+          <h4>完整交付，开箱即用</h4>
+          <p>从域名备案到服务器部署，一站式交付。PC + 手机多端适配，无需额外投入</p>
+        </div>
       </div>
-      <div class="stat-item">
-        <div class="stat-num">Node.js</div>
-        <div class="stat-label">后端服务</div>
+      <div class="why-item fade-up">
+        <div class="why-num">2</div>
+        <div>
+          <h4>数据安全，自主可控</h4>
+          <p>数据存储在自己服务器上，支持定期自动备份，可导出为标准格式</p>
+        </div>
       </div>
-      <div class="stat-item">
-        <div class="stat-num">Nginx</div>
-        <div class="stat-label">服务器部署</div>
+      <div class="why-item fade-up">
+        <div class="why-num">3</div>
+        <div>
+          <h4>长期维护，持续更新</h4>
+          <p>交付后提供长期技术支持和功能迭代，确保系统持久稳定运行</p>
+        </div>
       </div>
-      <div class="stat-item">
-        <div class="stat-num">响应式</div>
-        <div class="stat-label">多端适配</div>
+      <div class="why-item fade-up">
+        <div class="why-num">4</div>
+        <div>
+          <h4>实际案例可验证</h4>
+          <p>宁海下枫槎谢氏网站已上线运行，功能完备，欢迎参观体验：<br>
+          <a href="http://8.160.117.120" style="color:#c4a050;" target="_blank">http://8.160.117.120</a></p>
+        </div>
       </div>
-      <div class="stat-item">
-        <div class="stat-num">i18n</div>
-        <div class="stat-label">中英双语</div>
-      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="contact">
+  <div class="inner">
+    <div class="sec-title fade-up">
+      <h2>为您的家族打造数字宗祠</h2>
+      <p>让家族文化在数字时代传承不息</p>
+      <div class="bar"></div>
+    </div>
+    <div class="fade-up" style="text-align:center;">
+      <p style="color:rgba(245,230,200,0.6);margin-bottom:24px;font-size:15px;line-height:1.8;">
+        📞 <a href="tel:+8613685877064" style="color:#c4a050;text-decoration:none;">13685877064</a><br>
+        ✉ <a href="mailto:shangtaopang@gmail.com" style="color:#c4a050;text-decoration:none;">shangtaopang@gmail.com</a>
+      </p>
+      <a href="mailto:shangtaopang@gmail.com" class="hero-btn hero-btn-primary">📩 立即咨询定制</a>
     </div>
   </div>
 </section>
 
 <footer>
-  <p>© 2026 宁海下枫槎村谢氏家族 · 数字宗祠 &nbsp;|&nbsp; <a href="index.html">进入主站</a></p>
+  <p>© 2026 庞尚韬 · 专业族谱网站开发 &nbsp;|&nbsp; <a href="index.html">参观案例：下枫槎谢氏</a></p>
 </footer>
 
 <script>
