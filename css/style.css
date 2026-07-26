@@ -174,17 +174,17 @@ html { scroll-behavior: smooth; }
 }
 
 /* ===== 页面过渡遮罩 ===== */
+/* ===== 页面过渡遮罩（参考 rifat-ishtiyak） ===== */
 #page-transition {
   position: fixed;
   inset: 0;
   z-index: 999999;
-  background: rgba(7,16,31,0.97);
+  background: rgb(7,16,31);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 }
-#page-transition.show { display: flex !important; }
 
 /* 顶部绿色进度条 */
 .pt-bar {
@@ -192,38 +192,35 @@ html { scroll-behavior: smooth; }
   top: 0;
   left: 0;
   height: 3px;
-  width: 0;
-  background: linear-gradient(90deg, #04BF00, #22d84a, #04BF00);
+  background: #04BF00;
   box-shadow: 0 0 12px rgba(4,191,0,0.5);
-  animation: ptBarSlide 0.8s ease-in-out forwards;
+  animation: ptBarSlide 0.6s ease-in-out forwards;
 }
 @keyframes ptBarSlide {
-  0%   { width: 0; left: 0; }
-  50%  { width: 60%; left: 20%; }
-  100% { width: 100%; left: 0; }
+  0%   { width: 0; }
+  100% { width: 100%; }
 }
 
 /* 居中内容 */
 .pt-content {
   text-align: center;
-  animation: ptFadeIn 0.4s ease 0.2s both;
+  animation: ptFadeIn 0.3s ease 0.15s both;
 }
 @keyframes ptFadeIn {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* 三角形加载动画 - 三条线构成 */
+/* 三角形旋转 */
 .pt-tri {
-  width: 48px;
-  height: 48px;
-  margin: 0 auto 24px;
-  position: relative;
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 28px;
 }
 .pt-tri svg {
   width: 100%;
   height: 100%;
-  animation: ptTriSpin 1.2s linear infinite;
+  animation: ptTriSpin 1s linear infinite;
 }
 .pt-tri svg polygon {
   fill: none;

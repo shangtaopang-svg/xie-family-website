@@ -713,10 +713,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     e.preventDefault();
     e.stopPropagation();
-    overlay.style.cssText = 'display:flex !important;position:fixed;inset:0;z-index:999999;background:rgba(7,16,31,0.97);flex-direction:column;align-items:center;justify-content:center;';
+    overlay.style.cssText = 'display:flex !important;';
     setTimeout(function() {
       window.location.href = href;
-    }, 800);
+    }, 600);
   });
 });
 
