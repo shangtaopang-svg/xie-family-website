@@ -3,7 +3,6 @@
    参考风格：童寂 (light gradient + glassmorphism)
    ============================================ */
 
-
 /* ===== VARIABLES & THEME ===== */
 :root {
   --bg-primary: #ffffff;
@@ -173,88 +172,19 @@ html { scroll-behavior: smooth; }
   50% { opacity: 0; }
 }
 
-/* ===== 页面过渡遮罩 ===== */
-/* ===== 页面过渡遮罩（参考 rifat-ishtiyak） ===== */
-#page-transition {
-  position: fixed;
-  inset: 0;
-  z-index: 999999;
-  background: rgb(7,16,31);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-/* 底部绿色进度条 */
-.pt-bar {
-  position: absolute;
-  bottom: 0;
-  left: -100%;
-  height: 3px;
-  width: 100%;
-  background: #04BF00;
-  box-shadow: 0 0 12px rgba(4,191,0,0.5);
-  animation: ptBarSlide 0.7s ease-in-out forwards;
-}
-@keyframes ptBarSlide {
-  0%   { left: -100%; }
   100% { left: 0; }
 }
 
 /* 居中内容 */
-.pt-content {
-  text-align: center;
-  animation: ptFadeIn 0.3s ease both;
-}
-@keyframes ptFadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+
   to   { opacity: 1; transform: translateY(0); }
 }
 
 /* 三角形加载动画（三条独立线段，不闭合） */
-.pt-tri {
-  width: 52px;
-  height: 52px;
-  margin: 0 auto 20px;
-}
-.pt-tri svg {
-  width: 100%;
-  height: 100%;
-  animation: ptTriSpin 1.6s linear infinite;
-}
-.pt-tri svg line {
-  stroke: #04BF00;
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-@keyframes ptTriSpin {
-  from { transform: rotate(0deg); }
+
   to   { transform: rotate(360deg); }
 }
 
-.pt-title {
-  font-family: inherit;
-  font-size: 18px;
-  color: #fff;
-  letter-spacing: 1px;
-  font-weight: 400;
-  white-space: nowrap;
-}
-
-.pt-title .pt-dot { 
-  display: inline;
-  animation: ptDot 1.4s ease infinite;
-  color: rgba(255,255,255,0.6);
-}
-.pt-title .pt-dot:nth-child(2) { animation-delay: 0.2s; }
-.pt-title .pt-dot:nth-child(3) { animation-delay: 0.4s; }
-
-
-
-@keyframes ptDot {
-  0%, 100% { opacity: 0.2; }
   50%      { opacity: 1; }
 }
 
@@ -2081,7 +2011,6 @@ body {
   min-height: 380px;
 }
 
-
 .media-col {
   display: flex;
   flex-direction: column;
@@ -2136,7 +2065,6 @@ body {
   overflow: hidden;
   backdrop-filter: blur(12px);
 }
-
 
 .reels-container {
   width: 100%;
@@ -2455,7 +2383,6 @@ body {
   min-height: 100%;
   background: #000;
 }
-
 
 /* Responsive: stack on mobile */
 @media (max-width: 800px) {
@@ -4709,7 +4636,6 @@ body {
 @media (max-width: 900px) {
   .back-page-btn { display: flex; }
 }
-
 
 /* ===== 移动端响应式优化 ===== */
 @media (max-width: 768px) {
