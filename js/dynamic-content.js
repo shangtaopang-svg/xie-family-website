@@ -87,7 +87,7 @@
           { id: 'intro', src: '/video/reports-intro.mp4', title: '下枫槎宣传片' },
           { id: 'yuanyu', src: '/video/yuanpu.mp4', title: '圆谱2026' },
           { id: 'promo2', src: '/video/promo2.mp4', title: '宣传片2' },
-          { id: 'v777', src: '/video/777.mp4', title: '视频777' }
+          { id: 'v777', src: '/video/777.mp4', title: '下枫槎村谢氏来源' }
         ].concat(videos);
 
         if (!allVids.length) {
