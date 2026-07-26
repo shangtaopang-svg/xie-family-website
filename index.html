@@ -84,6 +84,7 @@
         <ul>
           <li><a href="index.html" class="active" data-i18n="nav.home">首页</a></li>
           <li><a href="pages/history.html" data-i18n="nav.history">家族历史</a></li>
+          <li><a href="pages/videos.html" style="color:var(--accent-orange);">🎬 视频</a></li>
           <li><a href="pages/genealogy.html" data-i18n="nav.genealogy">族谱查询</a></li>
           <li><a href="pages/celebrities.html" data-i18n="nav.celebrities">名人事迹</a></li>
           <li><a href="pages/merit-scroll.html" style="color:#c41e3a;">📜 功德卷轴</a></li>
@@ -264,96 +265,69 @@
     </a>
   </section>
 
-  <!-- ===== 视频 + 摄影 并排 ===== -->
-  <section class="media-row-section fade-in-section">
-    <div class="media-row">
-      <!-- 左：视频沉浸式 -->
-      <div class="media-col media-col-reels">
-        <div class="media-col-header">
-          <h2 data-i18n="section.video">视频</h2>
-          <div class="divider"></div>
-          <p data-i18n="section.video.sub">影像记录 · 家族记忆</p>
-        </div>
-        <div class="reels-wrapper">
-          <div class="reels-container" id="reels-container"></div>
-          <div class="reels-hint">
-            <span class="hint-arrows">
-              <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-              <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
-            </span>
-            <span>← 左右滑动 →</span>
+  <!-- ===== 摄影 ===== -->
+  <section class="fade-in-section" style="margin:40px auto;max-width:1000px;padding:0 20px;">
+    <div class="section-title">
+      <h2 data-i18n="section.carousel">摄影</h2>
+      <div class="divider"></div>
+      <p data-i18n="section.carousel.sub">下枫槎村风光 · 宗祠 · 家族活动</p>
+    </div>
+    <div class="photo-wrapper">
+      <div class="carousel-container">
+        <div class="carousel-track" id="carousel-track">
+          <div class="carousel-slide">
+            <img src="images/carousel/11.jpg" alt="下枫槎村景" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/11.jpg', '下枫槎村景 01')">
+            <span class="slide-label">下枫槎村景 01</span>
+          </div>
+          <div class="carousel-slide">
+            <img src="images/carousel/23.jpg" alt="下枫槎村景" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/23.jpg', '下枫槎村景 02')">
+            <span class="slide-label">下枫槎村景 02</span>
+          </div>
+          <div class="carousel-slide">
+            <img src="images/carousel/121.jpg" alt="下枫槎村景" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/121.jpg', '下枫槎村景 03')">
+            <span class="slide-label">下枫槎村景 03</span>
+          </div>
+          <div class="carousel-slide">
+            <img src="images/carousel/123.jpg" alt="下枫槎村景" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/123.jpg', '下枫槎村景 04')">
+            <span class="slide-label">下枫槎村景 04</span>
+          </div>
+          <div class="carousel-slide">
+            <img src="images/carousel/38.jpg" alt="下枫槎风光" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/38.jpg', '下枫槎风光 05')">
+            <span class="slide-label">下枫槎风光 05</span>
+          </div>
+          <div class="carousel-slide">
+            <img src="images/carousel/40.jpg" alt="下枫槎风光" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/40.jpg', '下枫槎风光 06')">
+            <span class="slide-label">下枫槎风光 06</span>
+          </div>
+          <div class="carousel-slide">
+            <img src="images/carousel/42.jpg" alt="下枫槎风光" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/42.jpg', '下枫槎风光 07')">
+            <span class="slide-label">下枫槎风光 07</span>
+          </div>
+          <div class="carousel-slide">
+            <img src="images/carousel/51.jpg" alt="下枫槎村景" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/51.jpg', '下枫槎村景 08')">
+            <span class="slide-label">下枫槎村景 08</span>
+          </div>
+          <div class="carousel-slide">
+            <img src="images/carousel/88.jpg" alt="下枫槎村景" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/88.jpg', '下枫槎村景 09')">
+            <span class="slide-label">下枫槎村景 09</span>
+          </div>
+          <div class="carousel-slide">
+            <img src="images/carousel/W020230307562232959074.jpg" alt="宗祠全景" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/W020230307562232959074.jpg', '宗祠全景')">
+            <span class="slide-label">宗祠全景</span>
+          </div>
+          <div class="carousel-slide">
+            <img src="images/carousel/W020230307562236561236.jpg" alt="宗祠内景" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/W020230307562236561236.jpg', '宗祠内景')">
+            <span class="slide-label">宗祠内景</span>
+          </div>
+          <div class="carousel-slide">
+            <img src="images/carousel/W020230307562241110405.jpg" alt="活动留影" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/W020230307562241110405.jpg', '活动留影')">
+            <span class="slide-label">活动留影</span>
           </div>
         </div>
+        <button class="carousel-btn carousel-prev" onclick="moveCarousel(-1)">‹</button>
+        <button class="carousel-btn carousel-next" onclick="moveCarousel(1)">›</button>
       </div>
-            <!-- 右：摄影轮播 -->
-      <div class="media-col media-col-photo">
-        <div class="media-col-header">
-          <h2 data-i18n="section.carousel">摄影</h2>
-          <div class="divider"></div>
-          <p data-i18n="section.carousel.sub">下枫槎村风光 · 宗祠 · 家族活动</p>
-        </div>
-        <div class="photo-wrapper">
-          <div class="carousel-container">
-            <div class="carousel-track" id="carousel-track">
-              <div class="carousel-slide">
-                <img src="images/carousel/11.jpg" alt="下枫槎村景" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/11.jpg', '下枫槎村景 01')">
-                <span class="slide-label">下枫槎村景 01</span>
-              </div>
-              <div class="carousel-slide">
-                <img src="images/carousel/23.jpg" alt="下枫槎村景" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/23.jpg', '下枫槎村景 02')">
-                <span class="slide-label">下枫槎村景 02</span>
-              </div>
-              <div class="carousel-slide">
-                <img src="images/carousel/121.jpg" alt="下枫槎村景" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/121.jpg', '下枫槎村景 03')">
-                <span class="slide-label">下枫槎村景 03</span>
-              </div>
-              <div class="carousel-slide">
-                <img src="images/carousel/123.jpg" alt="下枫槎村景" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/123.jpg', '下枫槎村景 04')">
-                <span class="slide-label">下枫槎村景 04</span>
-              </div>
-              <div class="carousel-slide">
-                <img src="images/carousel/38.jpg" alt="下枫槎风光" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/38.jpg', '下枫槎风光 05')">
-                <span class="slide-label">下枫槎风光 05</span>
-              </div>
-              <div class="carousel-slide">
-                <img src="images/carousel/40.jpg" alt="下枫槎风光" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/40.jpg', '下枫槎风光 06')">
-                <span class="slide-label">下枫槎风光 06</span>
-              </div>
-              <div class="carousel-slide">
-                <img src="images/carousel/42.jpg" alt="下枫槎风光" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/42.jpg', '下枫槎风光 07')">
-                <span class="slide-label">下枫槎风光 07</span>
-              </div>
-              <div class="carousel-slide">
-                <img src="images/carousel/51.jpg" alt="下枫槎村景" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/51.jpg', '下枫槎村景 08')">
-                <span class="slide-label">下枫槎村景 08</span>
-              </div>
-              <div class="carousel-slide">
-                <img src="images/carousel/88.jpg" alt="下枫槎村景" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/88.jpg', '下枫槎村景 09')">
-                <span class="slide-label">下枫槎村景 09</span>
-              </div>
-              <div class="carousel-slide">
-                <img src="images/carousel/W020230307562232959074.jpg" alt="宗祠全景" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/W020230307562232959074.jpg', '宗祠全景')">
-                <span class="slide-label">宗祠全景</span>
-              </div>
-              <div class="carousel-slide">
-                <img src="images/carousel/W020230307562236561236.jpg" alt="宗祠内景" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/W020230307562236561236.jpg', '宗祠内景')">
-                <span class="slide-label">宗祠内景</span>
-              </div>
-              <div class="carousel-slide">
-                <img src="images/carousel/W020230307562239043622.png" alt="古树" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/W020230307562239043622.png', '古树')">
-                <span class="slide-label">古树</span>
-              </div>
-              <div class="carousel-slide">
-                <img src="images/carousel/W020230307562241110405.jpg" alt="活动留影" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" decoding="async" onclick="openPhotoLightbox('images/carousel/W020230307562241110405.jpg', '活动留影')">
-                <span class="slide-label">活动留影</span>
-              </div>
-            </div>
-            <button class="carousel-btn carousel-prev" onclick="moveCarousel(-1)">‹</button>
-            <button class="carousel-btn carousel-next" onclick="moveCarousel(1)">›</button>
-          </div>
-          <div class="carousel-dots" id="carousel-dots"></div>
-        </div>
-      </div>
+      <div class="carousel-dots" id="carousel-dots"></div>
     </div>
   </section>
 
@@ -422,6 +396,7 @@
   <nav class="mobile-bottom-nav" id="mobileBottomNav">
     <a href="index.html" class="mb-item active">🏠<span>首页</span></a>
     <a href="pages/history.html" class="mb-item">📜<span>历史</span></a>
+    <a href="pages/videos.html" class="mb-item" style="color:var(--accent-orange);">🎬<span>视频</span></a>
     <a href="pages/genealogy.html" class="mb-item">🌳<span>族谱</span></a>
     <a href="pages/celebrities.html" class="mb-item">🏆<span>名人</span></a>
     <a href="pages/merit-scroll.html" class="mb-item">📜<span>功德</span></a>

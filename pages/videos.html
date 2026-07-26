@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>视频 · 下枫槎谢氏</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css?v=5">
+  <script defer src="../js/i18n.js"></script>
+  <link rel="manifest" href="../manifest.json">
+  <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
+</head>
+<body>
+
+<div class="content">
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        <div class="logo-icon">谢</div>
+        <div class="logo-text"><h1>下枫槎谢氏</h1><small>宁海 · 下枫槎村</small></div>
+      </a>
+      <button class="nav-toggle" aria-label="菜单">☰</button>
+      <a href="../entrance.html" style="font-size:11px;color:#999;text-decoration:none;padding:4px 10px;border-radius:12px;border:1px solid #eee;white-space:nowrap;margin-left:auto">⛩ 返回石门</a>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="../index.html">首页</a></li>
+          <li><a href="history.html">家族历史</a></li>
+          <li><a href="videos.html" class="active" style="color:var(--accent-orange);">🎬 视频</a></li>
+          <li><a href="genealogy.html">族谱查询</a>
+          <li><a href="celebrities.html">名人事迹</a></li>
+          <li><a href="news.html">消息发布</a></li>
+          <li><a href="members.html">家族成员</a></li>
+          <li><a href="activities.html">家族活动</a></li>
+          <li><a href="today.html">今日下枫槎</a></li>
+          <li><a href="reports.html">新闻报道</a></li>
+          <li><a href="contact.html">联系我们</a></li>
+          <li><a href="admin.html" style="color:var(--accent-orange);">🔐 管理后台</a></li>
+        </ul>
+        <div class="sidebar-controls">
+          <div class="sc-row">
+            <button class="weather-btn" data-weather="off" title="关闭特效">✕</button>
+            <button class="weather-btn" data-weather="sunny" title="晴天">☀</button>
+            <button class="weather-btn" data-weather="rain" title="下雨">🌧</button>
+            <button class="weather-btn" data-weather="snow" title="下雪">❄</button>
+            <button class="weather-btn" data-weather="meteor" title="流星">☄</button>
+          </div>
+          <div class="sc-row">
+            <button class="music-btn" id="music-toggle" title="播放/暂停">🔈</button>
+            <button class="music-btn" id="music-next" title="下一首">⏭</button>
+          </div>
+          <div class="sc-row">
+            <button class="nav-action-btn lang-btn" id="lang-toggle" title="中英文切换">EN</button>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrap">
+    <div class="page-title">
+      <h2 class="zoom-in-title">🎬 视频</h2>
+      <p>影像记录 · 家族记忆</p>
+    </div>
+
+    <!-- 视频网格 -->
+    <div style="max-width:1100px;margin:0 auto;padding:0 16px;">
+      <div id="videos-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;padding:8px 0;"></div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-section">
+        <h4>下枫槎谢氏</h4>
+        <p>宁海下枫槎村谢氏家族数字宗祠，致力于家族文化传承与宗亲联络。</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p>
+    </div>
+  </footer>
+
+</div>
+
+<a href="javascript:history.back()" class="back-page-btn" aria-label="返回上一页">← 返回</a>
+<button class="back-top" aria-label="回到顶部">↑</button>
+
+<audio id="bg-music" loop></audio>
+<script defer src="../js/main.js?v=20260625"></script>
+<script defer src="../js/weather-particle.js?v=b977c9"></script>
+
+<!-- ===== 手机底部导航 ===== -->
+<nav class="mobile-bottom-nav">
+  <a href="../index.html" class="mb-item">🏠<span>首页</span></a>
+  <a href="history.html" class="mb-item">📜<span>历史</span></a>
+  <a href="videos.html" class="mb-item active">🎬<span>视频</span></a>
+  <a href="genealogy.html" class="mb-item">🌳<span>族谱</span></a>
+  <a href="celebrities.html" class="mb-item">🏆<span>名人</span></a>
+  <a href="activities.html" class="mb-item">🎪<span>活动</span></a>
+  <a href="audio.html" class="mb-item">🎧<span>听枫槎</span></a>
+  <a href="contact.html" class="mb-item">✉️<span>联系</span></a>
+</nav>
+
+<script>
+(function() {
+  var container = document.getElementById('videos-grid');
+  if (!container) return;
+
+  var allVideos = [];
+
+  function buildGrid(videos) {
+    container.innerHTML = '';
+
+    var allVids = [
+      { id: 'intro', src: '/video/reports-intro.mp4', title: '下枫槎宣传片' },
+      { id: 'yuanyu', src: '/video/yuanpu.mp4', title: '圆谱2026' },
+      { id: 'promo2', src: '/video/promo2.mp4', title: '宣传片2' },
+      { id: 'v777', src: '/video/777.mp4', title: '视频777' }
+    ].concat(videos);
+
+    if (!allVids.length) {
+      container.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-muted)">暂无视频</div>';
+      return;
+    }
+
+    allVids.forEach(function(v) {
+      var card = document.createElement('div');
+      card.style.cssText = 'border-radius:12px;overflow:hidden;background:var(--bg-card);border:1px solid var(--glass-border);cursor:pointer;transition:all 0.3s ease;box-shadow:0 2px 8px rgba(0,0,0,0.06);';
+      card.onmouseenter = function() { card.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)'; card.style.transform = 'translateY(-2px)'; };
+      card.onmouseleave = function() { card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; card.style.transform = ''; };
+
+      var thumb = document.createElement('div');
+      thumb.style.cssText = 'aspect-ratio:16/9;position:relative;background:radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0f 100%);background-size:cover;background-position:center;';
+
+      var posterUrl = '';
+      if (v.poster && v.poster.trim()) {
+        posterUrl = v.poster;
+      } else if (v.src && v.src.indexOf('/video/') === 0) {
+        var pn = v.src.replace('/video/', '').replace('_comp.mp4', '.mp4').replace('.mp4', '') + '-poster.jpg';
+        posterUrl = '/images/video-posters/' + pn;
+        thumb.style.backgroundImage = 'url(' + posterUrl + ')';
+      } else if (v.src && v.src.indexOf('/uploads/') === 0) {
+        var upn = v.src.replace('/uploads/videos/', '').replace('_comp.mp4', '.mp4').replace('.mp4', '') + '.jpg';
+        posterUrl = '/uploads/posters/' + upn;
+        thumb.style.backgroundImage = 'url(' + posterUrl + ')';
+      }
+
+      var badge = document.createElement('div');
+      badge.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)"><polygon points="8,5 19,12 8,19 8,5"/></svg>';
+      badge.style.cssText = 'position:absolute;bottom:8px;right:8px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+      thumb.appendChild(badge);
+      card.appendChild(thumb);
+
+      var info = document.createElement('div');
+      info.style.cssText = 'padding:10px 12px 12px;';
+      var titleEl = document.createElement('div');
+      titleEl.textContent = v.title || '';
+      titleEl.style.cssText = 'font-size:13px;font-weight:500;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+      info.appendChild(titleEl);
+      card.appendChild(info);
+
+      var _played = false;
+      card.addEventListener('click', function() {
+        if (_played) return;
+        _played = true;
+        card.innerHTML = '';
+        card.style.background = '#000';
+        card.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)';
+        card.style.transform = '';
+        card.onmouseenter = null;
+        card.onmouseleave = null;
+
+        var video = document.createElement('video');
+        video.src = v.src;
+        video.muted = false;
+        video.playsInline = true;
+        video.controls = true;
+        video.autoplay = true;
+        video.preload = 'auto';
+        video.style.cssText = 'width:100%;display:block;background:#000;';
+
+        video.addEventListener('loadedmetadata', function() {
+          if (video.videoHeight && video.videoWidth) {
+            video.style.aspectRatio = video.videoWidth / video.videoHeight;
+          }
+        });
+
+        video.addEventListener('error', function() {
+          card.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;background:#000;color:#ff6b6b;gap:12px;"><span style="font-size:32px;">⚠️</span><span style="font-size:13px;">视频加载失败</span></div>';
+        });
+
+        card.appendChild(video);
+      });
+
+      container.appendChild(card);
+    });
+  }
+
+  // Load videos from server
+  try {
+    var cached = JSON.parse(localStorage.getItem('xie_admin_videos') || '[]');
+    if (cached.length) {
+      cached.forEach(function(v) {
+        if (v.file_url || (v.embed && v.embed.trim()) || v.url) {
+          allVideos.push({ id: v.id, src: v.file_url, embed: v.embed || '', title: v.title || '', desc: v.desc || '', poster: v.poster || '' });
+        }
+      });
+    }
+    buildGrid(allVideos);
+  } catch(e) { buildGrid(allVideos); }
+
+  // Fresh data
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", "/api/data/videos", true);
+  xhr.timeout = 20000;
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      try {
+        var sv = JSON.parse(xhr.responseText);
+        if (sv && Array.isArray(sv) && sv.length) {
+          localStorage.setItem('xie_admin_videos', JSON.stringify(sv));
+          allVideos = [];
+          sv.forEach(function(v) {
+            if (v.file_url || (v.embed && v.embed.trim()) || v.url) {
+              allVideos.push({ id: v.id, src: v.file_url, embed: v.embed || '', title: v.title || '', desc: v.desc || '', poster: v.poster || '' });
+            }
+          });
+          buildGrid(allVideos);
+        }
+      } catch(e) {}
+    }
+  };
+  xhr.onerror = function() {};
+  xhr.send();
+})();
+</script>
+
+</body>
+</html>
