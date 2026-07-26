@@ -5,197 +5,388 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ShangTaoPang · 智能体开发</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; background: #0a0806; font-family: -apple-system, 'Noto Sans SC', 'PingFang SC', sans-serif; overflow: hidden; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Noto Sans SC', sans-serif; color: #0a0a0a; background: #f5f5f5; }
 
-    #stage {
-      position: fixed; inset: 0;
-      background: radial-gradient(ellipse at 50% 30%, #1a1410 0%, #0a0806 60%, #050302 100%);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 24px;
+    /* ===== Top Bar ===== */
+    .top-bar {
+      background: #fff;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
     }
-
-    /* Logo / avatar */
-    .logo-wrap {
-      width: 72px; height: 72px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, rgba(4,191,0,0.2), rgba(4,191,0,0.05));
-      border: 2px solid rgba(4,191,0,0.3);
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 28px;
-      font-size: 28px; font-weight: 700; color: #04BF00;
-      font-family: 'Georgia', serif;
-      box-shadow: 0 0 40px rgba(4,191,0,0.08);
-      animation: logoPulse 3s ease-in-out infinite;
+    .top-bar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px 40px;
     }
-    @keyframes logoPulse {
-      0%, 100% { box-shadow: 0 0 40px rgba(4,191,0,0.08); }
-      50% { box-shadow: 0 0 60px rgba(4,191,0,0.15); }
-    }
-
-    /* Name */
-    .name {
-      font-size: clamp(32px, 5vw, 48px);
-      font-weight: 700;
-      color: #fff;
-      letter-spacing: 3px;
-      margin-bottom: 8px;
-      text-align: center;
-    }
-    .name .highlight { color: #04BF00; }
-
-    /* Tagline */
-    .tagline {
-      font-size: clamp(13px, 1.5vw, 16px);
-      color: rgba(255,255,255,0.5);
-      letter-spacing: 2px;
-      margin-bottom: 40px;
-      text-align: center;
-    }
-
-    /* Services grid */
-    .services {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      max-width: 480px;
-      width: 100%;
-      margin-bottom: 44px;
-    }
-    .service-item {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 12px;
-      padding: 18px 14px;
-      text-align: center;
-      transition: all 0.3s ease;
-    }
-    .service-item:hover {
-      background: rgba(4,191,0,0.05);
-      border-color: rgba(4,191,0,0.2);
-      transform: translateY(-2px);
-    }
-    .service-icon { font-size: 24px; margin-bottom: 8px; }
-    .service-name {
-      font-size: 13px;
-      color: rgba(255,255,255,0.85);
-      font-weight: 500;
-      letter-spacing: 1px;
-    }
-
-    /* Enter button */
-    .enter-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 44px;
-      background: rgba(4,191,0,0.1);
-      color: #04BF00;
-      font-size: 15px;
-      font-weight: 500;
-      letter-spacing: 3px;
-      border: 1px solid rgba(4,191,0,0.25);
-      border-radius: 50px;
-      cursor: pointer;
-      text-decoration: none;
-      transition: all 0.4s ease;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    }
-    .enter-btn:hover {
-      background: rgba(4,191,0,0.18);
-      border-color: rgba(4,191,0,0.4);
-      transform: scale(1.03);
-      box-shadow: 0 8px 30px rgba(4,191,0,0.12);
-    }
-    .enter-btn .arrow { transition: transform 0.3s ease; }
-    .enter-btn:hover .arrow { transform: translateX(4px); }
-
-    /* Contact */
-    .contact {
+    .top-bar-item {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    .contact-link {
       font-size: 13px;
-      color: rgba(255,255,255,0.35);
+      color: #555;
       text-decoration: none;
-      transition: color 0.3s ease;
+      transition: color 0.3s;
+    }
+    .top-bar-item:hover { color: #8e3451; }
+    .top-bar-icon { font-size: 16px; opacity: 0.7; }
+
+    /* ===== Nav ===== */
+    nav {
+      background: #fff;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+    }
+    .nav-logo {
+      font-size: 22px;
+      font-weight: 700;
+      color: #8e3451;
+      text-decoration: none;
+      letter-spacing: 2px;
+    }
+    .nav-logo span { color: #0a0a0a; }
+    .nav-links { display: flex; gap: 28px; align-items: center; }
+    .nav-links a {
+      font-size: 14px;
+      color: #444;
+      text-decoration: none;
+      transition: color 0.3s;
       letter-spacing: 0.5px;
     }
-    .contact-link:hover { color: #04BF00; }
-    .contact-dot {
-      font-size: 10px;
-      color: rgba(255,255,255,0.15);
+    .nav-links a:hover { color: #8e3451; }
+
+    /* ===== Hero ===== */
+    .hero {
+      background: linear-gradient(135deg, #8e3451, #75304a, #5e2a3d);
+      padding: 100px 20px;
+      text-align: center;
+      position: relative;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      opacity: 0.3;
+    }
+    .hero-content { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
+    .hero-logo {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      border: 2px solid rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 32px; font-weight: 700; color: #fff;
+    }
+    .hero h1 {
+      font-size: clamp(36px,5vw,52px);
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 3px;
+      margin-bottom: 12px;
+    }
+    .hero p {
+      font-size: clamp(16px,2vw,20px);
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 2px;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+    .hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .hero-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      letter-spacing: 1px;
+    }
+    .hero-btn-primary {
+      background: #fff;
+      color: #8e3451;
+      border: none;
+    }
+    .hero-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+    .hero-btn-secondary {
+      background: transparent;
+      color: #fff;
+      border: 1.5px solid rgba(255,255,255,0.5);
+    }
+    .hero-btn-secondary:hover { background: rgba(255,255,255,0.08); border-color: #fff; transform: translateY(-2px); }
+
+    /* ===== Sections ===== */
+    .section-wrap { padding: 80px 20px; }
+    .section-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .section-title {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .section-title h2 {
+      font-size: clamp(26px,3vw,34px);
+      font-weight: 700;
+      color: #1a1a1a;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+    .section-title p {
+      font-size: 15px;
+      color: #888;
+      letter-spacing: 1px;
+    }
+    .section-title .divider {
+      width: 50px; height: 3px;
+      background: #8e3451;
+      margin: 16px auto 0;
+      border-radius: 2px;
     }
 
-    /* Bottom info */
-    .bottom-info {
-      position: absolute;
-      bottom: 28px;
-      font-size: 11px;
-      color: rgba(255,255,255,0.15);
+    /* ===== About ===== */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+    .about-text p {
+      font-size: 15px;
+      color: #555;
+      line-height: 1.8;
+      margin-bottom: 16px;
+    }
+    .about-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .about-stat {
+      background: #fff;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+    .about-stat-num {
+      font-size: 28px;
+      font-weight: 700;
+      color: #8e3451;
+    }
+    .about-stat-label {
+      font-size: 12px;
+      color: #888;
+      margin-top: 4px;
       letter-spacing: 1px;
     }
 
-    /* Entrance animations */
-    .fade-in { animation: fi 0.8s ease both; }
-    .fade-in-d1 { animation: fi 0.8s ease 0.15s both; }
-    .fade-in-d2 { animation: fi 0.8s ease 0.3s both; }
-    .fade-in-d3 { animation: fi 0.8s ease 0.45s both; }
-    .fade-in-d4 { animation: fi 0.8s ease 0.6s both; }
-    @keyframes fi {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    /* ===== Services ===== */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 24px;
+    }
+    .service-card {
+      background: #fff;
+      padding: 36px 28px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      transition: all 0.3s ease;
+    }
+    .service-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.1);
+    }
+    .service-icon { font-size: 40px; margin-bottom: 16px; }
+    .service-card h3 {
+      font-size: 17px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+    .service-card p {
+      font-size: 13px;
+      color: #888;
+      line-height: 1.6;
     }
 
-    @media (max-width: 480px) {
-      .services { grid-template-columns: 1fr 1fr; gap: 8px; }
-      .service-item { padding: 14px 10px; }
-      .enter-btn { padding: 12px 32px; font-size: 14px; }
+    /* ===== Footer ===== */
+    footer {
+      background: #1a1a1a;
+      color: rgba(255,255,255,0.6);
+      padding: 40px 20px 24px;
+      text-align: center;
+    }
+    footer p { font-size: 13px; letter-spacing: 1px; }
+    footer a { color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.3s; }
+    footer a:hover { color: #fff; }
+
+    /* ===== Animations ===== */
+    .fade-up { opacity: 0; transform: translateY(30px); transition: all 0.6s ease; }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 768px) {
+      .about-grid { grid-template-columns: 1fr; }
+      .hero { padding: 60px 20px; }
+      .nav-links { display: none; }
     }
   </style>
 </head>
 <body>
-<div id="stage">
-  <div class="logo-wrap fade-in">S</div>
-  <h1 class="name fade-in-d1">ShangTao<span class="highlight">Pang</span></h1>
-  <p class="tagline fade-in-d2">全栈开发者 · AI 应用构建者</p>
 
-  <div class="services fade-in-d3">
-    <div class="service-item">
-      <div class="service-icon">🤖</div>
-      <div class="service-name">智能体开发</div>
-    </div>
-    <div class="service-item">
-      <div class="service-icon">🌐</div>
-      <div class="service-name">网站开发</div>
-    </div>
-    <div class="service-item">
-      <div class="service-icon">📱</div>
-      <div class="service-name">小程序开发</div>
-    </div>
-    <div class="service-item">
-      <div class="service-icon">🎓</div>
-      <div class="service-name">AI赋能培训</div>
-    </div>
+<!-- ===== Top Bar ===== -->
+<div class="top-bar">
+  <div class="top-bar-inner">
+    <a href="tel:+8613685877064" class="top-bar-item">
+      <span class="top-bar-icon">📞</span> 13685877064
+    </a>
+    <a href="mailto:shangtaopang@gmail.com" class="top-bar-item">
+      <span class="top-bar-icon">✉</span> shangtaopang@gmail.com
+    </a>
   </div>
-
-  <a href="entrance.html" class="enter-btn fade-in-d4">
-    探索更多 <span class="arrow">→</span>
-  </a>
-
-  <div class="contact fade-in-d4">
-    <a href="tel:+8613685877064" class="contact-link">📞 13685877064</a>
-    <span class="contact-dot">·</span>
-    <a href="mailto:shangtaopang@gmail.com" class="contact-link">✉ shangtaopang@gmail.com</a>
-  </div>
-
-  <div class="bottom-info">© 2026 庞尚韬 · ShangTaoPang</div>
 </div>
+
+<!-- ===== Nav ===== -->
+<nav>
+  <div class="nav-inner">
+    <a href="intro.html" class="nav-logo">ShangTao<span>Pang</span></a>
+    <div class="nav-links">
+      <a href="#about">关于</a>
+      <a href="#services">服务</a>
+      <a href="entrance.html">探索更多 →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== Hero ===== -->
+<section class="hero">
+  <div class="hero-content fade-up visible">
+    <div class="hero-logo">S</div>
+    <h1>ShangTaoPang</h1>
+    <p>全栈开发者 · AI 应用构建者<br>专注智能体开发、网站开发、小程序开发与 AI 赋能培训</p>
+    <div class="hero-btns">
+      <a href="#services" class="hero-btn hero-btn-primary">查看服务 →</a>
+      <a href="entrance.html" class="hero-btn hero-btn-secondary">探索更多</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== About ===== -->
+<section class="section-wrap" id="about">
+  <div class="section-inner">
+    <div class="section-title fade-up">
+      <h2>关于我</h2>
+      <p>以技术驱动创新，用代码构建未来</p>
+      <div class="divider"></div>
+    </div>
+    <div class="about-grid">
+      <div class="about-text fade-up">
+        <p>我是一名全栈开发者与 AI 应用构建者，致力于将前沿技术转化为实用的商业解决方案。从智能体开发到网站建设，从小程序到 AI 培训，我帮助企业和个人拥抱数字化时代。</p>
+        <p>我相信，技术的力量在于解决实际问题。每一个项目都是一次创新的机会，每一行代码都是通向更好的未来。</p>
+      </div>
+      <div class="about-stats fade-up">
+        <div class="about-stat">
+          <div class="about-stat-num">10+</div>
+          <div class="about-stat-label">项目经验</div>
+        </div>
+        <div class="about-stat">
+          <div class="about-stat-num">AI</div>
+          <div class="about-stat-label">智能体开发</div>
+        </div>
+        <div class="about-stat">
+          <div class="about-stat-num">Web</div>
+          <div class="about-stat-label">网站开发</div>
+        </div>
+        <div class="about-stat">
+          <div class="about-stat-num">📱</div>
+          <div class="about-stat-label">小程序开发</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Services ===== -->
+<section class="section-wrap" style="background:#fff;" id="services">
+  <div class="section-inner">
+    <div class="section-title fade-up">
+      <h2>服务领域</h2>
+      <p>专业的技术服务，助力数字化转型</p>
+      <div class="divider"></div>
+    </div>
+    <div class="services-grid">
+      <div class="service-card fade-up">
+        <div class="service-icon">🤖</div>
+        <h3>智能体开发</h3>
+        <p>基于大模型的 AI Agent 开发，打造智能自动化解决方案，提升业务效率</p>
+      </div>
+      <div class="service-card fade-up">
+        <div class="service-icon">🌐</div>
+        <h3>网站开发</h3>
+        <p>响应式网站、企业官网、电商平台，从前端到后端全栈开发</p>
+      </div>
+      <div class="service-card fade-up">
+        <div class="service-icon">📱</div>
+        <h3>小程序开发</h3>
+        <p>微信小程序、支付宝小程序开发，快速搭建移动端业务入口</p>
+      </div>
+      <div class="service-card fade-up">
+        <div class="service-icon">🎓</div>
+        <h3>AI赋能培训</h3>
+        <p>AI 工具应用培训、大模型落地指导，帮助团队掌握 AI 力量</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Footer ===== -->
+<footer>
+  <p style="margin-bottom:8px;">
+    📞 <a href="tel:+8613685877064">13685877064</a> &nbsp;·&nbsp; ✉ <a href="mailto:shangtaopang@gmail.com">shangtaopang@gmail.com</a>
+  </p>
+  <p>© 2026 庞尚韬 · ShangTaoPang</p>
+</footer>
+
+<script>
+// Fade-up on scroll
+(function(){
+  var els = document.querySelectorAll('.fade-up');
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) { e.target.classList.add('visible'); }
+    });
+  }, { threshold: 0.1 });
+  els.forEach(function(el) { obs.observe(el); });
+
+  // Nav scroll
+  document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+    a.addEventListener('click', function(e) {
+      e.preventDefault();
+      var target = document.querySelector(this.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+})();
+</script>
 </body>
 </html>
