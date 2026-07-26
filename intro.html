@@ -3,299 +3,350 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>专业族谱网站开发 · 数字宗祠系统</title>
+  <title>下枫槎 · 数字乡村</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    body { font-family: -apple-system, 'Noto Sans SC', 'PingFang SC', sans-serif; color: #1a1a1a; background: #f5f4f0; }
+    body { font-family: -apple-system,'Noto Sans SC','PingFang SC',sans-serif; color: #0a0a0a; background: #f5f5f5; }
+
+    /* ===== Top Bar ===== */
+    .top-bar { background: #fff; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+    .top-inner { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: center; flex-wrap: wrap; gap: 20px 40px; }
+    .top-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #555; text-decoration: none; transition: color 0.3s; }
+    .top-item:hover { color: #8e3451; }
 
     /* ===== Nav ===== */
-    nav {
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(0,0,0,0.06);
-      position: sticky; top: 0; z-index: 100;
-    }
-    .nav-inner {
-      max-width: 1100px; margin: 0 auto; padding: 0 20px;
-      display: flex; align-items: center; justify-content: space-between; height: 64px;
-    }
-    .nav-logo {
-      display: flex; align-items: center; gap: 10px; text-decoration: none;
-    }
-    .nav-logo-icon {
-      width: 32px; height: 32px; background: #c4a050; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      color: #fff; font-size: 16px; font-weight: 700;
-    }
-    .nav-logo-text { font-size: 16px; font-weight: 700; color: #1a1a1a; letter-spacing: 1px; }
-    .nav-logo-text small { display: block; font-size: 10px; font-weight: 400; color: #999; letter-spacing: 0; }
+    nav { background: #fff; border-bottom: 1px solid rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 100; }
+    .nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; height: 70px; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo-img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
+    .nav-logo-text { font-size: 15px; font-weight: 600; color: #1a1a1a; }
+    .nav-logo-text small { display: block; font-size: 10px; font-weight: 400; color: #999; }
     .nav-links { display: flex; gap: 24px; align-items: center; }
-    .nav-links a {
-      font-size: 13px; color: #555; text-decoration: none; transition: color 0.3s;
-    }
-    .nav-links a:hover { color: #c4a050; }
-    .nav-cta {
-      padding: 8px 22px; background: #c4a050; color: #fff !important;
-      border-radius: 6px; font-weight: 600; font-size: 13px !important;
-    }
-    .nav-cta:hover { background: #b8913e !important; color: #fff !important; }
+    .nav-links a { font-size: 13px; color: #444; text-decoration: none; transition: color 0.3s; position: relative; padding: 4px 0; }
+    .nav-links a:hover { color: #8e3451; }
+    .nav-links a::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 2px; background: #8e3451; transition: width 0.3s; }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta { padding: 9px 22px; background: #8e3451; color: #fff !important; border-radius: 6px; font-weight: 600; }
+    .nav-cta::after { display: none !important; }
+    .nav-cta:hover { background: #7a2e46 !important; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(142,52,81,0.3); }
 
     /* ===== Hero ===== */
     .hero {
-      background: linear-gradient(135deg, #1a0f0a 0%, #2c1810 40%, #3d2418 100%);
-      padding: 100px 20px; text-align: center; position: relative; overflow: hidden;
+      background: linear-gradient(135deg, #8e3451, #75304a, #5e2a3d);
+      padding: 90px 20px; text-align: center; position: relative; overflow: hidden;
     }
     .hero::before {
       content: ''; position: absolute; inset: 0;
-      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c4a050' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     }
     .hero-content { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
-    .hero-tag {
-      display: inline-block; padding: 5px 16px;
-      background: rgba(196,160,80,0.12); border-radius: 20px;
-      color: #c4a050; font-size: 12px; letter-spacing: 2px; margin-bottom: 20px;
+    .hero-badge {
+      display: inline-block; padding: 5px 18px;
+      border: 1px solid rgba(255,255,255,0.2); border-radius: 20px;
+      color: rgba(255,255,255,0.7); font-size: 12px; letter-spacing: 2px; margin-bottom: 20px;
     }
-    .hero h1 {
-      font-size: clamp(34px,5vw,48px); font-weight: 700;
-      color: #f5e6c8; letter-spacing: 3px; margin-bottom: 16px; line-height: 1.2;
-    }
-    .hero h1 .hl { color: #c4a050; }
-    .hero p {
-      font-size: clamp(15px,1.8vw,18px);
-      color: rgba(245,230,200,0.55); line-height: 1.9; margin-bottom: 32px;
-    }
-    .hero-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .hero h1 { font-size: clamp(34px,5vw,48px); font-weight: 700; color: #fff; letter-spacing: 3px; margin-bottom: 14px; }
+    .hero h1 .hl { color: #ffd700; }
+    .hero p { font-size: clamp(15px,1.8vw,18px); color: rgba(255,255,255,0.65); line-height: 1.9; margin-bottom: 30px; }
     .hero-btn {
       display: inline-flex; align-items: center; gap: 8px;
-      padding: 13px 32px; border-radius: 8px; font-size: 15px;
-      font-weight: 600; text-decoration: none; transition: all 0.3s;
+      padding: 13px 32px; border-radius: 8px; font-size: 15px; font-weight: 600;
+      text-decoration: none; transition: all 0.3s;
     }
-    .hero-btn-primary { background: #c4a050; color: #fff; }
-    .hero-btn-primary:hover { background: #b8913e; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(196,160,80,0.3); }
-    .hero-btn-secondary { border: 1.5px solid rgba(245,230,200,0.25); color: #f5e6c8; }
-    .hero-btn-secondary:hover { border-color: #c4a050; color: #c4a050; transform: translateY(-2px); }
+    .hero-btn-primary { background: #fff; color: #8e3451; }
+    .hero-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+    .hero-btn-secondary { border: 1.5px solid rgba(255,255,255,0.4); color: #fff; }
+    .hero-btn-secondary:hover { border-color: #fff; background: rgba(255,255,255,0.08); transform: translateY(-2px); }
 
-    /* ===== Sections ===== */
+    /* ===== Sections common ===== */
     section { padding: 72px 20px; }
-    .inner { max-width: 1000px; margin: 0 auto; }
+    .inner { max-width: 1100px; margin: 0 auto; }
     .sec-title { text-align: center; margin-bottom: 44px; }
-    .sec-title h2 {
-      font-size: clamp(24px,3vw,30px); font-weight: 700;
-      color: #1a1a1a; letter-spacing: 2px; margin-bottom: 8px;
-    }
-    .sec-title p { font-size: 14px; color: #999; letter-spacing: 1px; }
-    .sec-title .bar {
-      width: 40px; height: 3px; background: #c4a050;
-      margin: 14px auto 0; border-radius: 2px;
-    }
+    .sec-title h2 { font-size: clamp(24px,3vw,30px); font-weight: 700; color: #1a1a1a; letter-spacing: 2px; margin-bottom: 8px; }
+    .sec-title p { font-size: 14px; color: #888; letter-spacing: 1px; }
+    .sec-title .bar { width: 40px; height: 3px; background: #8e3451; margin: 14px auto 0; border-radius: 2px; }
 
-    /* ===== Showcase ===== */
-    .showcase-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    /* ===== Features (card2 style from video page) ===== */
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+    .feature-card {
+      position: relative; overflow: hidden; cursor: pointer;
+      background: #fff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      aspect-ratio: 4/3; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 24px;
+      background-size: cover; background-position: center;
     }
-    .showcase-card {
-      background: #fff; padding: 32px 28px; border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-      transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    .feature-card .card2-popup {
+      position: absolute; left: -100%; top: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, rgba(142,52,81,0.97) 0%, rgba(142,52,81,0.88) 100%);
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      border: 2.5px solid #8e3451;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px; box-sizing: border-box; z-index: 5;
+      transition: left 0.35s ease-in-out;
     }
-    .showcase-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
-    .showcase-icon { font-size: 36px; margin-bottom: 12px; display: block; }
-    .showcase-card h3 { font-size: 16px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; }
-    .showcase-card p { font-size: 13px; color: #888; line-height: 1.7; }
+    .feature-card:hover .card2-popup { left: 0; }
+    .feature-card:hover .card2-popup { box-shadow: inset 0 0 30px rgba(142,52,81,0.15), 0 0 20px rgba(142,52,81,0.1); }
+    .card2-popup h3 { font-size: 16px; font-weight: 600; color: #fff; text-align: center; margin-bottom: 6px; }
+    .card2-popup p { font-size: 12px; color: rgba(255,255,255,0.75); text-align: center; line-height: 1.6; }
+    .feat-icon { font-size: 36px; margin-bottom: 6px; filter: grayscale(0.3); }
 
-    /* ===== Why me ===== */
-    .why-list { max-width: 700px; margin: 0 auto; }
-    .why-item {
-      display: flex; gap: 18px; align-items: flex-start;
-      padding: 20px 0; border-bottom: 1px solid rgba(0,0,0,0.05);
+    /* ===== Why ===== */
+    .why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .why-card {
+      background: #fff; padding: 28px 24px; border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04); transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
     }
-    .why-item:last-child { border: none; }
-    .why-num {
-      font-size: 14px; font-weight: 700; color: #c4a050;
-      min-width: 28px; height: 28px; border-radius: 50%;
-      background: rgba(196,160,80,0.1);
-      display: flex; align-items: center; justify-content: center;
+    .why-card:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 12px 32px rgba(142,52,81,0.1); }
+    .why-card h3 { font-size: 15px; font-weight: 600; color: #8e3451; margin-bottom: 6px; }
+    .why-card p { font-size: 13px; color: #888; line-height: 1.7; }
+
+    /* ===== Contact ===== */
+    .contact-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-input {
+      width: 100%; padding: 13px 16px; border: 1px solid #e0ddd7;
+      border-radius: 8px; font-size: 14px; font-family: inherit;
+      background: #fff; transition: border 0.3s; box-sizing: border-box;
+      margin-bottom: 14px; outline: none;
     }
-    .why-item h4 { font-size: 15px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
-    .why-item p { font-size: 13px; color: #888; line-height: 1.6; }
+    .form-input:focus { border-color: #8e3451; }
+    .form-textarea { height: 140px; resize: vertical; }
+    .form-btn {
+      padding: 13px 36px; background: #8e3451; color: #fff;
+      border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+    }
+    .form-btn:hover { background: #7a2e46; transform: translateY(-2px); box-shadow: 0 4px 16px rgba(142,52,81,0.3); }
+
+    .contact-side { display: flex; flex-direction: column; gap: 16px; }
+    .contact-card {
+      background: #fff; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      transition: all 0.3s;
+    }
+    .contact-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+    .contact-card h3 { font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 20px; }
+    .contact-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; font-size: 14px; color: #555; }
+    .contact-row a { color: #555; text-decoration: none; transition: color 0.3s; }
+    .contact-row a:hover { color: #8e3451; }
+    .contact-icon { font-size: 16px; min-width: 22px; }
+    .contact-map { width: 100%; height: 200px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
 
     /* ===== CTA ===== */
-    .cta-section {
-      background: linear-gradient(135deg, #2c1810, #3d2418);
-      text-align: center;
-    }
-    .cta-section h2 { color: #f5e6c8; }
-    .cta-section p { color: rgba(245,230,200,0.5); }
-    .cta-section .bar { background: #c4a050; }
+    .cta-sec { background: linear-gradient(135deg, #8e3451, #75304a); text-align: center; }
+    .cta-sec .sec-title h2 { color: #fff; }
+    .cta-sec .sec-title p { color: rgba(255,255,255,0.6); }
+    .cta-sec .sec-title .bar { background: #ffd700; }
 
     /* ===== Footer ===== */
-    footer {
-      background: #1a1a1a; color: rgba(255,255,255,0.4);
-      padding: 32px 20px 20px; text-align: center;
-    }
+    footer { background: #1a1a1a; color: rgba(255,255,255,0.4); padding: 32px 20px 20px; text-align: center; }
     footer p { font-size: 12px; letter-spacing: 1px; }
-    footer a { color: #c4a050; text-decoration: none; }
+    footer a { color: rgba(255,255,255,0.6); text-decoration: none; }
+    footer a:hover { color: #8e3451; }
 
     /* ===== Animations ===== */
-    .fade-up { opacity: 0; transform: translateY(30px); transition: all 0.6s cubic-bezier(0.22,1,0.36,1); }
+    .fade-up { opacity: 0; transform: translateY(30px); transition: all 0.7s cubic-bezier(0.22,1,0.36,1); }
     .fade-up.show { opacity: 1; transform: translateY(0); }
+    .fade-left { opacity: 0; transform: translateX(-40px); transition: all 0.7s cubic-bezier(0.22,1,0.36,1); }
+    .fade-left.show { opacity: 1; transform: translateX(0); }
+    .fade-right { opacity: 0; transform: translateX(40px); transition: all 0.7s cubic-bezier(0.22,1,0.36,1); }
+    .fade-right.show { opacity: 1; transform: translateX(0); }
 
     @media (max-width: 768px) {
-      .showcase-grid { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .why-grid { grid-template-columns: 1fr; }
+      .contact-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
       .nav-links { display: none; }
+    }
+    @media (max-width: 480px) {
+      .features-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
+<div class="top-bar">
+  <div class="top-inner">
+    <a href="tel:+8613685877064" class="top-item">📞 13685877064</a>
+    <a href="mailto:shangtaopang@gmail.com" class="top-item">✉ shangtaopang@gmail.com</a>
+  </div>
+</div>
+
 <nav>
   <div class="nav-inner">
     <a href="intro.html" class="nav-logo">
-      <div class="nav-logo-icon">谢</div>
-      <div class="nav-logo-text">
-        族谱系统开发
-        <small>数字宗祠 · 专业建站</small>
-      </div>
+      <img src="images/shangtaopang.jpg" alt="" class="nav-logo-img">
+      <div class="nav-logo-text">系统开发<small>数字乡村 · 族谱平台</small></div>
     </a>
     <div class="nav-links">
-      <a href="#showcase">案例</a>
-      <a href="#why">优势</a>
-      <a href="#contact" class="nav-cta">立即咨询</a>
+      <a href="#features">功能</a>
+      <a href="#about">关于</a>
+      <a href="#contact">联系</a>
+      <a href="index.html" class="nav-cta">✦ 参观案例</a>
     </div>
   </div>
 </nav>
 
 <section class="hero">
-  <div class="hero-content">
-    <div class="hero-tag">✅ 宁海下枫槎 · 数字宗祠已上线</div>
-    <h1>专业族谱网站<span class="hl">开发服务</span></h1>
-    <p>从零到一打造属于您家族的数字化宗祠平台<br>族谱管理 · 家族树 · 成员图谱 · 影像记录 · 全功能后台</p>
-    <div class="hero-btns">
-      <a href="index.html" class="hero-btn hero-btn-primary">✦ 参观案例：下枫槎谢氏</a>
-      <a href="#contact" class="hero-btn hero-btn-secondary">📩 为我的家族定制</a>
+  <div class="hero-content fade-up show">
+    <div class="hero-badge">宁海下枫槎村 · 数字乡村平台</div>
+    <h1>同姓族人的<span class="hl">数字家园</span></h1>
+    <p>不止是族谱 —— 更是村庄文化展示、宗亲联络、活动纪实的一站式平台<br>为同姓族人打造专属的数字化乡村社区</p>
+    <div class="hero-btns" style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+      <a href="index.html" class="hero-btn hero-btn-primary">✦ 参观案例</a>
+      <a href="#contact" class="hero-btn hero-btn-secondary">📩 为我的宗族定制</a>
     </div>
   </div>
 </section>
 
-<section id="showcase">
+<section id="features">
   <div class="inner">
     <div class="sec-title fade-up">
-      <h2>系统功能一览</h2>
-      <p>以宁海下枫槎谢氏家族网站为蓝本</p>
+      <h2>平台功能</h2>
+      <p>族谱 · 村务 · 文化 · 影像 · 互动</p>
       <div class="bar"></div>
     </div>
-    <div class="showcase-grid">
-      <div class="showcase-card fade-up">
-        <span class="showcase-icon">🌳</span>
-        <h3>家族世系树</h3>
-        <p>交互式家族树可视化，世代关系一目了然，支持缩放拖拽，适配多端浏览</p>
+    <div class="features-grid">
+      <div class="feature-card fade-up" style="background:#fff;">
+        <span class="feat-icon">🌳</span>
+        <div class="card2-popup"><h3>家族世系树</h3><p>交互式可视化树，世代关系一目了然，支持缩放拖拽</p></div>
       </div>
-      <div class="showcase-card fade-up">
-        <span class="showcase-icon">📜</span>
-        <h3>族谱查询系统</h3>
-        <p>多维检索族人信息，按姓名、字辈、年代快速定位，数据管理便捷高效</p>
+      <div class="feature-card fade-up" style="background:#fff;">
+        <span class="feat-icon">📜</span>
+        <div class="card2-popup"><h3>族谱查询</h3><p>多维检索，按姓名字辈快速定位族人信息</p></div>
       </div>
-      <div class="showcase-card fade-up">
-        <span class="showcase-icon">👥</span>
-        <h3>家族成员库</h3>
-        <p>完整记录族人生卒、配偶、子嗣、事迹，支持批量导入导出</p>
+      <div class="feature-card fade-up" style="background:#fff;">
+        <span class="feat-icon">👥</span>
+        <div class="card2-popup"><h3>家族成员</h3><p>完整记录族人信息，支持批量管理</p></div>
       </div>
-      <div class="showcase-card fade-up">
-        <span class="showcase-icon">🏆</span>
-        <h3>名人 & 功德</h3>
-        <p>收录家族先贤事迹，功德榜单展示，激励后人传承家族荣光</p>
+      <div class="feature-card fade-up" style="background:#fff;">
+        <span class="feat-icon">🏆</span>
+        <div class="card2-popup"><h3>名人功德</h3><p>收录先贤事迹，功德榜单传承荣光</p></div>
       </div>
-      <div class="showcase-card fade-up">
-        <span class="showcase-icon">🗺️</span>
-        <h3>迁徙地图</h3>
-        <p>动态迁徙路线可视化，从始祖发源地到现居地的完整脉络</p>
+      <div class="feature-card fade-up" style="background:#fff;">
+        <span class="feat-icon">🗺️</span>
+        <div class="card2-popup"><h3>迁徙地图</h3><p>动态路线展示从始祖到现居的千年历程</p></div>
       </div>
-      <div class="showcase-card fade-up">
-        <span class="showcase-icon">🎬</span>
-        <h3>影像资料库</h3>
-        <p>视频、照片集中管理，家族活动纪实，珍贵影像永续保存</p>
+      <div class="feature-card fade-up" style="background:#fff;">
+        <span class="feat-icon">🏘️</span>
+        <div class="card2-popup"><h3>村庄概况</h3><p>村庄介绍、地理风貌、产业文化全景展示</p></div>
       </div>
-      <div class="showcase-card fade-up">
-        <span class="showcase-icon">🌙</span>
-        <h3>深色模式</h3>
-        <p>浅色/深色双主题自由切换，夜间浏览更舒适</p>
+      <div class="feature-card fade-up" style="background:#fff;">
+        <span class="feat-icon">📰</span>
+        <div class="card2-popup"><h3>村务消息</h3><p>通知公告、活动发布、新闻报道实时更新</p></div>
       </div>
-      <div class="showcase-card fade-up">
-        <span class="showcase-icon">🔐</span>
-        <h3>管理后台</h3>
-        <p>全功能后台：内容管理、数据备份、权限控制，操作简便</p>
+      <div class="feature-card fade-up" style="background:#fff;">
+        <span class="feat-icon">🎬</span>
+        <div class="card2-popup"><h3>影像记录</h3><p>视频照片集中管理，珍贵瞬间永续保存</p></div>
+      </div>
+      <div class="feature-card fade-up" style="background:#fff;">
+        <span class="feat-icon">🌙</span>
+        <div class="card2-popup"><h3>深浅主题</h3><p>双模式自由切换，夜间浏览更舒适</p></div>
+      </div>
+      <div class="feature-card fade-up" style="background:#fff;">
+        <span class="feat-icon">🔐</span>
+        <div class="card2-popup"><h3>管理后台</h3><p>全功能后台，数据备份权限管理一应俱全</p></div>
       </div>
     </div>
   </div>
 </section>
 
-<section style="background:#fff;" id="why">
+<section style="background:#fff;" id="about">
   <div class="inner">
     <div class="sec-title fade-up">
-      <h2>为什么选择我</h2>
-      <p>全栈自研 · 交付即用 · 长期维护</p>
+      <h2>关于这个平台</h2>
+      <p>以技术助力宗族文化数字化传承</p>
       <div class="bar"></div>
     </div>
-    <div class="why-list">
-      <div class="why-item fade-up">
-        <div class="why-num">1</div>
-        <div>
-          <h4>完整交付，开箱即用</h4>
-          <p>从域名备案到服务器部署，一站式交付。PC + 手机多端适配，无需额外投入</p>
-        </div>
+    <div class="why-grid">
+      <div class="why-card fade-left">
+        <h3>🏛️ 数字宗祠</h3>
+        <p>将传统宗祠搬到线上，族人无论身在何处都能查阅族谱、了解家族历史，参与宗族事务</p>
       </div>
-      <div class="why-item fade-up">
-        <div class="why-num">2</div>
-        <div>
-          <h4>数据安全，自主可控</h4>
-          <p>数据存储在自己服务器上，支持定期自动备份，可导出为标准格式</p>
-        </div>
+      <div class="why-card fade-right">
+        <h3>🏘️ 乡村展示</h3>
+        <p>全方位展示村庄风貌、产业特色、文化活动，打造对外宣传的数字化窗口</p>
       </div>
-      <div class="why-item fade-up">
-        <div class="why-num">3</div>
-        <div>
-          <h4>长期维护，持续更新</h4>
-          <p>交付后提供长期技术支持和功能迭代，确保系统持久稳定运行</p>
-        </div>
+      <div class="why-card fade-left">
+        <h3>📱 多端适配</h3>
+        <p>电脑、手机、平板均可流畅访问，族人随时随地都能使用</p>
       </div>
-      <div class="why-item fade-up">
-        <div class="why-num">4</div>
-        <div>
-          <h4>实际案例可验证</h4>
-          <p>宁海下枫槎谢氏网站已上线运行，功能完备，欢迎参观体验：<br>
-          <a href="http://8.160.117.120" style="color:#c4a050;" target="_blank">http://8.160.117.120</a></p>
-        </div>
+      <div class="why-card fade-right">
+        <h3>🔒 数据安全</h3>
+        <p>自有服务器部署，定期自动备份，数据安全自主可控</p>
       </div>
     </div>
   </div>
 </section>
 
-<section class="cta-section" id="contact">
+<section id="contact">
   <div class="inner">
     <div class="sec-title fade-up">
-      <h2>为您的家族打造数字宗祠</h2>
-      <p>让家族文化在数字时代传承不息</p>
+      <h2>联系我</h2>
+      <p>为您的宗族打造专属数字平台</p>
+      <div class="bar"></div>
+    </div>
+    <div class="contact-grid">
+      <div class="fade-left">
+        <form onsubmit="return false;">
+          <div class="form-row">
+            <input type="text" placeholder="姓名" class="form-input">
+            <input type="email" placeholder="邮箱" class="form-input">
+          </div>
+          <input type="text" placeholder="宗族/村庄名称" class="form-input">
+          <textarea placeholder="您的需求..." class="form-input form-textarea"></textarea>
+          <button type="button" class="form-btn" onclick="alert('感谢您的咨询！请直接发送邮件至 shangtaopang@gmail.com')">发送咨询 ✉</button>
+        </form>
+      </div>
+      <div class="contact-side fade-right">
+        <div class="contact-card">
+          <h3>ShangTaoPang</h3>
+          <div class="contact-row"><span class="contact-icon">📞</span><a href="tel:+8613685877064">13685877064</a></div>
+          <div class="contact-row"><span class="contact-icon">✉</span><a href="mailto:shangtaopang@gmail.com">shangtaopang@gmail.com</a></div>
+          <div class="contact-row"><span class="contact-icon">📍</span><span>浙江宁海县北斗北路81弄11号</span></div>
+        </div>
+        <div class="contact-map" id="map"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-sec">
+  <div class="inner">
+    <div class="sec-title fade-up">
+      <h2>为您的宗族打造数字家园</h2>
+      <p>让族谱文化在数字时代焕发新生</p>
       <div class="bar"></div>
     </div>
     <div class="fade-up" style="text-align:center;">
-      <p style="color:rgba(245,230,200,0.6);margin-bottom:24px;font-size:15px;line-height:1.8;">
-        📞 <a href="tel:+8613685877064" style="color:#c4a050;text-decoration:none;">13685877064</a><br>
-        ✉ <a href="mailto:shangtaopang@gmail.com" style="color:#c4a050;text-decoration:none;">shangtaopang@gmail.com</a>
-      </p>
-      <a href="mailto:shangtaopang@gmail.com" class="hero-btn hero-btn-primary">📩 立即咨询定制</a>
+      <a href="index.html" class="hero-btn hero-btn-primary" style="margin-bottom:12px;">✦ 参观下枫槎案例</a><br>
+      <a href="mailto:shangtaopang@gmail.com" class="hero-btn hero-btn-secondary">📩 立即咨询</a>
     </div>
   </div>
 </section>
 
 <footer>
-  <p>© 2026 庞尚韬 · 专业族谱网站开发 &nbsp;|&nbsp; <a href="index.html">参观案例：下枫槎谢氏</a></p>
+  <p>© 2026 庞尚韬 · 数字乡村/族谱系统开发 &nbsp;|&nbsp; <a href="index.html">参观案例：下枫槎村</a></p>
 </footer>
 
 <script>
+// Map
+document.addEventListener('DOMContentLoaded', function() {
+  var el = document.getElementById('map');
+  if (el && typeof L !== 'undefined') {
+    var m = L.map(el, { zoomControl: false }).setView([29.292, 121.431], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(m);
+    L.marker([29.292, 121.431]).addTo(m).bindPopup('宁海县北斗北路81弄11号');
+  }
+});
+
+// Scroll animations
 (function(){
-  var els = document.querySelectorAll('.fade-up');
+  var els = document.querySelectorAll('.fade-up, .fade-left, .fade-right');
   var obs = new IntersectionObserver(function(entries) {
     entries.forEach(function(e) {
       if (e.isIntersecting) e.target.classList.add('show');
