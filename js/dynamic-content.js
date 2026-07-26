@@ -82,11 +82,9 @@
         // Always prepend promo videos first
         var allVids = [
 	          { id: 'intro', src: '/video/reports-intro.mp4', title: '下枫槎宣传片' },
-          { id: 'xiezong', src: '/video/xiezong.mp4', title: '谢总121' },
           { id: 'yuanyu', src: '/video/yuanpu.mp4', title: '圆谱2026' },
           { id: 'chaye', src: '/video/chaye.mp4', title: '茶园风光' },
           { id: 'ninghai', src: '/video/ninghai.mp4', title: '宁海夜景' },
-          { id: 'wangfu', src: '/video/wangfu.mp4', title: '望府茶园' },
           { id: 'promo2', src: '/video/promo2.mp4', title: '宣传片2' },
           { id: 'v777', src: '/video/777.mp4', title: '视频777' }
         ].concat(videos);
@@ -113,11 +111,11 @@
             posterUrl = v.poster;
           } else if (v.src && v.src.indexOf('/video/') === 0) {
             // 硬编码视频：/images/video-posters/xxx-poster.jpg
-            var pn = v.src.replace('/video/', '').replace('.mp4', '') + '-poster.jpg';
+            var pn = v.src.replace('/video/', '').replace('_comp.mp4', '.mp4').replace('.mp4', '') + '-poster.jpg';
             posterUrl = '/images/video-posters/' + pn;
           } else if (v.src && v.src.indexOf('/uploads/') === 0) {
             // 用户上传视频：/uploads/posters/xxx.jpg
-            var upn = v.src.replace('/uploads/videos/', '').replace('.mp4', '') + '.jpg';
+            var upn = v.src.replace('/uploads/videos/', '').replace('_comp.mp4', '.mp4').replace('.mp4', '') + '.jpg';
             posterUrl = '/uploads/posters/' + upn;
           }
           if (posterUrl) {
