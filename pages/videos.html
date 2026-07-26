@@ -309,13 +309,18 @@
       var _currentPanel = 0;
       card.addEventListener('mouseenter', function() {
         if (_playing) return;
+        if (_autoTimer) clearInterval(_autoTimer);
         _autoTimer = setInterval(function() {
-          _currentPanel = _currentPanel === 0 ? 1 : 0;
-          panel1.className = 'pi-panel ' + (_currentPanel === 0 ? 'panel-center' : 'panel-left');
-          panel2.className = 'pi-panel ' + (_currentPanel === 1 ? 'panel-center' : 'panel-right');
-          dot1.className = 'pi-dot' + (_currentPanel === 0 ? ' active' : '');
-          dot2.className = 'pi-dot' + (_currentPanel === 1 ? ' active' : '');
-        }, 2500);
+          try {
+            _currentPanel = _currentPanel === 0 ? 1 : 0;
+            panel1.className = 'pi-panel ' + (_currentPanel === 0 ? 'panel-center' : 'panel-left');
+            panel2.className = 'pi-panel ' + (_currentPanel === 1 ? 'panel-center' : 'panel-right');
+            if (dot1 && dot2) {
+              dot1.className = 'pi-dot' + (_currentPanel === 0 ? ' active' : '');
+              dot2.className = 'pi-dot' + (_currentPanel === 1 ? ' active' : '');
+            }
+          } catch(e) { console.log('auto-switch error:', e); }
+        }, 1500);
       });
       card.addEventListener('mouseleave', function() {
         if (_autoTimer) { clearInterval(_autoTimer); _autoTimer = null; }
