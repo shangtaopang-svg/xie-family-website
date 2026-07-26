@@ -295,7 +295,6 @@
           panel2.className = 'pi-panel ' + (idx === 1 ? 'panel-center' : 'panel-right');
           dot1.className = 'pi-dot' + (idx === 0 ? ' active' : '');
           dot2.className = 'pi-dot' + (idx === 1 ? ' active' : '');
-          _currentPanel = idx;
         });
       });
       var dotsWrap = document.createElement('div');
@@ -304,27 +303,18 @@
       dotsWrap.appendChild(dot2);
       card.appendChild(dotsWrap);
 
-      // 悬停自动切换面板
-      var _autoTimer = null;
-      var _currentPanel = 0;
+      // 悬停切换面板
       card.addEventListener('mouseenter', function() {
         if (_playing) return;
-        if (_autoTimer) clearInterval(_autoTimer);
-        _autoTimer = setInterval(function() {
-          try {
-            _currentPanel = _currentPanel === 0 ? 1 : 0;
-            panel1.className = 'pi-panel ' + (_currentPanel === 0 ? 'panel-center' : 'panel-left');
-            panel2.className = 'pi-panel ' + (_currentPanel === 1 ? 'panel-center' : 'panel-right');
-            if (dot1 && dot2) {
-              dot1.className = 'pi-dot' + (_currentPanel === 0 ? ' active' : '');
-              dot2.className = 'pi-dot' + (_currentPanel === 1 ? ' active' : '');
-            }
-          } catch(e) { console.log('auto-switch error:', e); }
-        }, 1500);
+        // 立即切换到面板2（介绍）
+        panel1.className = 'pi-panel panel-left';
+        panel2.className = 'pi-panel panel-center';
+        dot1.className = 'pi-dot';
+        dot2.className = 'pi-dot active';
       });
       card.addEventListener('mouseleave', function() {
-        if (_autoTimer) { clearInterval(_autoTimer); _autoTimer = null; }
-        _currentPanel = 0;
+        if (_playing) return;
+        // 立即回到面板1（观看视频）
         panel1.className = 'pi-panel panel-center';
         panel2.className = 'pi-panel panel-right';
         dot1.className = 'pi-dot active';
@@ -350,13 +340,13 @@
           panel2.className = 'pi-panel panel-right';
           var allDots = card.querySelectorAll('.pi-dot');
           if (allDots.length) { allDots.forEach(function(d, i) { d.className = 'pi-dot' + (i === 0 ? ' active' : ''); }); }
-          if (_autoTimer) { clearInterval(_autoTimer); _autoTimer = null; }
+
           card.style.aspectRatio = '4/3';
           return;
         }
 
         _playing = true;
-        if (_autoTimer) { clearInterval(_autoTimer); _autoTimer = null; }
+
         panel1.style.display = 'none';
         panel2.style.display = 'none';
         card.style.background = '#000';
@@ -399,7 +389,7 @@
           panel2.className = 'pi-panel panel-right';
           var allDots = card.querySelectorAll('.pi-dot');
           if (allDots.length) { allDots.forEach(function(d, i) { d.className = 'pi-dot' + (i === 0 ? ' active' : ''); }); }
-          if (_autoTimer) { clearInterval(_autoTimer); _autoTimer = null; }
+
           card.style.aspectRatio = '4/3';
         }
 
