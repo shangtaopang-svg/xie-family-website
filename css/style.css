@@ -29,6 +29,205 @@
   --font-body: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;
 }
 
+/* ===== Mobile Theme Override (黑底霓虹黄) ===== */
+@media (max-width: 768px) {
+  :root {
+    --mb-bg: #0a0a0a;
+    --mb-brand: #D4FF3A;
+    --mb-brand-dim: #1a2200;
+    --mb-card: #141414;
+    --mb-card-2: #1c1c1c;
+    --mb-border: #2a2a2a;
+    --mb-text: #f5f5f5;
+    --mb-text-sub: #888888;
+    --mb-text-muted: #555555;
+    --mb-radius: 12px;
+    --mb-radius-lg: 20px;
+    --mb-radius-pill: 999px;
+  }
+  body {
+    background: var(--mb-bg) !important;
+    color: var(--mb-text) !important;
+  }
+  /* 隐藏桌面端侧边栏 */
+  .site-header { display: none !important; }
+  .content { margin-left: 0 !important; padding: 0 !important; }
+  .nav-controls { display: none !important; }
+  /* 页面标题 */
+  .page-title h2 { color: var(--mb-text); font-size: 28px; letter-spacing: 1px; }
+  .page-title p { color: var(--mb-text-sub); font-size: 13px; }
+  .page-wrap { padding: 0 16px 80px !important; }
+  /* 卡片风格 */
+  .glass-card, [class*="card"] {
+    background: var(--mb-card) !important;
+    border: 1px solid var(--mb-border) !important;
+    border-radius: var(--mb-radius-lg) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+  /* 文字颜色覆盖 */
+  h1, h2, h3, h4, h5, h6 { color: var(--mb-text) !important; }
+  p, span, li, div:not([class*="mb-"]) { color: var(--mb-text); }
+  /* 链接 */
+  a { color: var(--mb-brand); }
+  /* 分割线 */
+  .divider, [class*="divider"] { background: var(--mb-border) !important; }
+}
+
+/* ===== Mobile Theme (黑底霓虹黄) ===== */
+@media (max-width: 768px) {
+  :root {
+    --mb-bg: #0a0a0a;
+    --mb-brand: #D4FF3A;
+    --mb-brand-dim: #1a2200;
+    --mb-card: #141414;
+    --mb-card-2: #1c1c1c;
+    --mb-border: #2a2a2a;
+    --mb-text: #f5f5f5;
+    --mb-text-sub: #888888;
+    --mb-text-muted: #555555;
+    --mb-radius: 12px;
+    --mb-radius-lg: 20px;
+    --mb-radius-pill: 999px;
+  }
+  body { background: var(--mb-bg) !important; color: var(--mb-text) !important; }
+
+  /* ===== 隐藏桌面元素 ===== */
+  .site-header { display: none !important; }
+  .content { margin-left: 0 !important; padding: 0 !important; }
+  .nav-controls { display: none !important; }
+  .back-page-btn, .back-top { display: none !important; }
+  .float-toolbar { display: none !important; }
+  .hero-marquee { display: none !important; }
+
+  /* ===== 页面容器 ===== */
+  .page-wrap { padding: 0 16px 80px !important; }
+  .page-title { padding: 20px 0 8px !important; }
+  .page-title h2 {
+    color: var(--mb-text) !important;
+    font-size: 28px !important;
+    letter-spacing: 1px !important;
+    font-weight: 700 !important;
+  }
+  .page-title p {
+    color: var(--mb-text-sub) !important;
+    font-size: 13px !important;
+    margin-top: 4px !important;
+  }
+
+  /* ===== 底部TabBar ===== */
+  .mb-tabbar {
+    display: flex !important;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 64px;
+    background: #0a0a0a;
+    border-top: 1px solid #2a2a2a;
+    z-index: 99999;
+    padding: 6px 0 env(safe-area-inset-bottom, 0);
+    justify-content: space-around;
+    align-items: center;
+  }
+  .mb-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-decoration: none;
+    padding: 4px 12px;
+    min-width: 48px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mb-tab:active { transform: scale(0.92); }
+  .mb-tab-icon { font-size: 20px; line-height: 1; }
+  .mb-tab-label {
+    font-size: 10px;
+    color: #555;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+  .mb-tab.active .mb-tab-label { color: var(--mb-brand); }
+  .mb-tab.active .mb-tab-icon { filter: brightness(1.5); }
+
+  /* ===== 通用卡片 ===== */
+  .glass-card, [class*="card"]:not(.mb-tab):not(.reel-item):not(.photo-item) {
+    background: var(--mb-card) !important;
+    border: 1px solid var(--mb-border) !important;
+    border-radius: var(--mb-radius-lg) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+
+  /* ===== 按钮（胶囊） ===== */
+  .btn-primary-mb {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px 32px;
+    background: var(--mb-brand);
+    color: #000 !important;
+    border: none;
+    border-radius: var(--mb-radius-pill);
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .btn-primary-mb:active { opacity: 0.8; }
+  .btn-ghost-mb {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px 32px;
+    background: transparent;
+    color: var(--mb-brand) !important;
+    border: 1.5px solid var(--mb-brand);
+    border-radius: var(--mb-radius-pill);
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .btn-ghost-mb:active { opacity: 0.7; }
+
+  /* ===== 标题模块 ===== */
+  .sec-head-mb {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 0 12px;
+  }
+  .sec-head-mb .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--mb-brand);
+    flex-shrink: 0;
+  }
+  .sec-head-mb h3 {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: var(--mb-text) !important;
+    flex: 1;
+    letter-spacing: 0.5px !important;
+  }
+  .sec-head-mb .more {
+    font-size: 12px;
+    color: var(--mb-text-sub);
+  }
+
+  /* ===== 文字颜色覆盖 ===== */
+  h1, h2, h3, h4 { color: var(--mb-text) !important; }
+  p, li, td, th, label, .text-secondary { color: var(--mb-text); }
+  .text-muted, .text-tertiary { color: var(--mb-text-sub) !important; }
+  a:not(.mb-tab):not(.btn-primary-mb):not(.btn-ghost-mb) { color: var(--mb-brand); }
+  .divider, hr { background: var(--mb-border) !important; }
+  .section-title .divider { background: var(--mb-border) !important; }
+}
+
 /* ===== Dark Mode ===== */
 /* ===== DARK MODE ===== */
 [data-theme="dark"] {
