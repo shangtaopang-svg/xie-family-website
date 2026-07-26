@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShangTaoPang · 智能体开发</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; background: #0a0806; font-family: -apple-system, 'Noto Sans SC', 'PingFang SC', sans-serif; overflow: hidden; }
+
+    #stage {
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse at 50% 30%, #1a1410 0%, #0a0806 60%, #050302 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+
+    /* Logo / avatar */
+    .logo-wrap {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(4,191,0,0.2), rgba(4,191,0,0.05));
+      border: 2px solid rgba(4,191,0,0.3);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 28px;
+      font-size: 28px; font-weight: 700; color: #04BF00;
+      font-family: 'Georgia', serif;
+      box-shadow: 0 0 40px rgba(4,191,0,0.08);
+      animation: logoPulse 3s ease-in-out infinite;
+    }
+    @keyframes logoPulse {
+      0%, 100% { box-shadow: 0 0 40px rgba(4,191,0,0.08); }
+      50% { box-shadow: 0 0 60px rgba(4,191,0,0.15); }
+    }
+
+    /* Name */
+    .name {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 3px;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .name .highlight { color: #04BF00; }
+
+    /* Tagline */
+    .tagline {
+      font-size: clamp(13px, 1.5vw, 16px);
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 2px;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    /* Services grid */
+    .services {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      max-width: 480px;
+      width: 100%;
+      margin-bottom: 44px;
+    }
+    .service-item {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 18px 14px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    .service-item:hover {
+      background: rgba(4,191,0,0.05);
+      border-color: rgba(4,191,0,0.2);
+      transform: translateY(-2px);
+    }
+    .service-icon { font-size: 24px; margin-bottom: 8px; }
+    .service-name {
+      font-size: 13px;
+      color: rgba(255,255,255,0.85);
+      font-weight: 500;
+      letter-spacing: 1px;
+    }
+
+    /* Enter button */
+    .enter-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 44px;
+      background: rgba(4,191,0,0.1);
+      color: #04BF00;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 3px;
+      border: 1px solid rgba(4,191,0,0.25);
+      border-radius: 50px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.4s ease;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .enter-btn:hover {
+      background: rgba(4,191,0,0.18);
+      border-color: rgba(4,191,0,0.4);
+      transform: scale(1.03);
+      box-shadow: 0 8px 30px rgba(4,191,0,0.12);
+    }
+    .enter-btn .arrow { transition: transform 0.3s ease; }
+    .enter-btn:hover .arrow { transform: translateX(4px); }
+
+    /* Bottom info */
+    .bottom-info {
+      position: absolute;
+      bottom: 28px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.15);
+      letter-spacing: 1px;
+    }
+
+    /* Entrance animations */
+    .fade-in { animation: fi 0.8s ease both; }
+    .fade-in-d1 { animation: fi 0.8s ease 0.15s both; }
+    .fade-in-d2 { animation: fi 0.8s ease 0.3s both; }
+    .fade-in-d3 { animation: fi 0.8s ease 0.45s both; }
+    .fade-in-d4 { animation: fi 0.8s ease 0.6s both; }
+    @keyframes fi {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      .services { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .service-item { padding: 14px 10px; }
+      .enter-btn { padding: 12px 32px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+<div id="stage">
+  <div class="logo-wrap fade-in">S</div>
+  <h1 class="name fade-in-d1">ShangTao<span class="highlight">Pang</span></h1>
+  <p class="tagline fade-in-d2">全栈开发者 · AI 应用构建者</p>
+
+  <div class="services fade-in-d3">
+    <div class="service-item">
+      <div class="service-icon">🤖</div>
+      <div class="service-name">智能体开发</div>
+    </div>
+    <div class="service-item">
+      <div class="service-icon">🌐</div>
+      <div class="service-name">网站开发</div>
+    </div>
+    <div class="service-item">
+      <div class="service-icon">📱</div>
+      <div class="service-name">小程序开发</div>
+    </div>
+    <div class="service-item">
+      <div class="service-icon">🎓</div>
+      <div class="service-name">AI赋能培训</div>
+    </div>
+  </div>
+
+  <a href="entrance.html" class="enter-btn fade-in-d4">
+    探索更多 <span class="arrow">→</span>
+  </a>
+
+  <div class="bottom-info fade-in-d4">© 2026 ShangTaoPang</div>
+</div>
+</body>
+</html>
