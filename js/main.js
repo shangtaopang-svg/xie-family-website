@@ -713,6 +713,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     e.preventDefault();
     e.stopPropagation();
+    sessionStorage.setItem('pt_transition', '1');
     overlay.style.cssText = 'display:flex !important;';
     setTimeout(function() {
       window.location.href = href;

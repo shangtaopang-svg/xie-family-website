@@ -12,6 +12,7 @@
   <script src="../js/i18n.js"></script>
 </head>
 <body>
+<script>if(sessionStorage.getItem('pt_transition')){sessionStorage.removeItem('pt_transition');var pt=document.createElement('div');pt.id='page-transition';pt.style.cssText='display:flex !important;position:fixed;inset:0;z-index:999999;background:rgb(7,16,31);flex-direction:column;align-items:center;justify-content:center;';pt.innerHTML='<div class="pt-bar"></div><div class="pt-content"><div class="pt-tri"><svg viewBox="0 0 60 60"><line x1="30" y1="6" x2="7" y2="48"/><line x1="7" y1="48" x2="53" y2="48"/><line x1="53" y1="48" x2="30" y2="6"/></svg></div><div class="pt-title">ShangTaoPang 正在工作中<span class="pt-dot">.</span><span class="pt-dot">.</span><span class="pt-dot">.</span></div></div>';document.body.appendChild(pt);}</script>
 
 <div class="content">
 
