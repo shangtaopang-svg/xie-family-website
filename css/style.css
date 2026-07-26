@@ -3290,10 +3290,9 @@ body {
   max-width: 1000px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
   gap: 30px;
   margin-bottom: 30px;
-  text-align: center;
 }
 
 .footer-section h4 {
