@@ -2079,12 +2079,12 @@ body {
   position: relative;
   z-index: 1;
 }
-/* 无源时不显示破损图标 */
-.reel-video:not([src]) {
-  visibility: hidden;
+/* 无源且无poster时隐藏（避免显示破损图标） */
+.reel-video:not([src]):not([poster]) {
+  opacity: 0;
 }
-.reel-video[src] {
-  visibility: visible;
+.reel-video[src], .reel-video[poster] {
+  opacity: 1;
 }
 
 /* 横屏/宽视频：铺满裁剪 */

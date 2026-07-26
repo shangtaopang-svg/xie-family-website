@@ -106,7 +106,10 @@
           var video = document.createElement('video');
           video.className = 'reel-video';
           video.dataset.src = v.src;  // lazy load: don't set src until play
-          // No preload - 无src时设置preload会导致部分浏览器显示黄色感叹号
+          // 视频第一帧截图作为封面海报（非大礼堂照片）
+          var posterName = v.src.replace('/video/', '').replace('.mp4', '') + '-poster.jpg';
+          video.poster = '/images/video-posters/' + posterName;
+          // No preload -无src时设置preload会导致部分浏览器显示黄色感叹号
           // 使用CSS占位背景，播放时才加载视频
           video.muted = false;
           video.loop = true;
