@@ -304,17 +304,35 @@
       dotsWrap.appendChild(dot2);
       card.appendChild(dotsWrap);
 
-      // 悬停自动切换面板（仅在未播放时）
-
+      // 悬停自动切换面板
+      var _autoTimer = null;
+      var _currentPanel = 0;
+      card.addEventListener('mouseenter', function() {
+        if (_playing) return;
+        _autoTimer = setInterval(function() {
+          _currentPanel = _currentPanel === 0 ? 1 : 0;
+          panel1.className = 'pi-panel ' + (_currentPanel === 0 ? 'panel-center' : 'panel-left');
+          panel2.className = 'pi-panel ' + (_currentPanel === 1 ? 'panel-center' : 'panel-right');
+          dot1.className = 'pi-dot' + (_currentPanel === 0 ? ' active' : '');
+          dot2.className = 'pi-dot' + (_currentPanel === 1 ? ' active' : '');
+        }, 2500);
+      });
+      card.addEventListener('mouseleave', function() {
+        if (_autoTimer) { clearInterval(_autoTimer); _autoTimer = null; }
+        _currentPanel = 0;
+        panel1.className = 'pi-panel panel-center';
+        panel2.className = 'pi-panel panel-right';
+        dot1.className = 'pi-dot active';
+        dot2.className = 'pi-dot';
+      });
 
       // 点击播放/关闭
       var _playing = false;
       var _videoEl = null;
       card.addEventListener('click', function(e) {
         if (_playing) {
-          // 关闭
-          _videoEl.pause();
-          _videoEl.remove();
+          // 关闭（pause事件已触发restorePoster清理）
+          if (_videoEl && _videoEl.parentNode) { _videoEl.remove(); }
           _videoEl = null;
           _playing = false;
           card.style.background = '';
@@ -323,7 +341,6 @@
           card.style.backgroundPosition = 'center';
           panel1.style.display = '';
           panel2.style.display = '';
-          // Reset to page 0 (观看视频)
           panel1.className = 'pi-panel panel-center';
           panel2.className = 'pi-panel panel-right';
           var allDots = card.querySelectorAll('.pi-dot');
