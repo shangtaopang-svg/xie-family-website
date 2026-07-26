@@ -140,27 +140,7 @@
       opacity: 0.3;
       pointer-events: none;
     }
-    /* 两个装饰三角形 */
-    .hero-tri1, .hero-tri2 {
-      position: absolute;
-      width: 0;
-      height: 0;
-      z-index: 2;
-      opacity: 0.12;
-      pointer-events: none;
-    }
-    .hero-tri1, .hero-tri2 {
-      opacity: 0;
-      transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    .hero-tri1.visible {
-      opacity: 0.12;
-      transform: none;
-    }
-    .hero-tri2.visible {
-      opacity: 0.12;
-      transform: none;
-    }
+
     .hero-tri1 {
       top: 0;
       right: 0;
@@ -631,8 +611,6 @@
 
 <!-- ===== Hero ===== -->
 <section class="hero">
-  <div class="hero-tri1"></div>
-  <div class="hero-tri2"></div>
   <div class="hero-content fade-up visible">
     <div class="hero-logo"><img src="images/shangtaopang.jpg" alt="ShangTaoPang"></div>
     <h1>ShangTaoPang</h1>
@@ -805,7 +783,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Scroll animations (向下滑动出现，向上滑动隐藏)
 (function(){
-  var els = document.querySelectorAll('.scroll-up, .scroll-left, .scroll-right, .scroll-scale, .hero-tri1, .hero-tri2');
+  var els = document.querySelectorAll('.scroll-up, .scroll-left, .scroll-right, .scroll-scale');
   var obs = new IntersectionObserver(function(entries) {
     entries.forEach(function(e) {
       if (e.isIntersecting) {
