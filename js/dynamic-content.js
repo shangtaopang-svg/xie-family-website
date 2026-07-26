@@ -121,9 +121,8 @@
             posterUrl = '/uploads/posters/' + upn;
           }
           if (posterUrl) {
-            item.style.backgroundImage = 'url(' + posterUrl + ')';
-            item.style.backgroundSize = 'cover';
-            item.style.backgroundPosition = 'center';
+            // 多背景：海报在上，CSS渐变色兜底（图片加载失败时渐变可见）
+            item.style.background = 'url(' + posterUrl + ') center/cover no-repeat, radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0f 100%)';
           }
 
           // 视频元素（初始不创建，点击播放时才生成）
