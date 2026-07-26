@@ -3,806 +3,249 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ShangTaoPang · 智能体开发</title>
+  <title>宁海下枫槎 · 数字宗祠系统</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    body { font-family: 'Noto Sans SC', sans-serif; color: #0a0a0a; background: #f5f5f5; }
-
-    /* ===== Top Bar ===== */
-    .top-bar {
-      background: #fff;
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(0,0,0,0.05);
-    }
-    .top-bar-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 20px;
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 20px 40px;
-    }
-    .top-bar-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: #555;
-      text-decoration: none;
-      transition: color 0.3s;
-    }
-    .top-bar-item:hover { color: #8e3451; }
-    .top-bar-icon { font-size: 16px; opacity: 0.7; }
+    body { font-family: -apple-system, 'Noto Sans SC', 'PingFang SC', sans-serif; color: #1a1a1a; background: #f8f7f4; }
 
     /* ===== Nav ===== */
     nav {
-      background: #fff;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(0,0,0,0.06);
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      position: sticky; top: 0; z-index: 100;
     }
     .nav-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 80px;
+      max-width: 1100px; margin: 0 auto; padding: 0 20px;
+      display: flex; align-items: center; justify-content: space-between; height: 64px;
     }
-    .nav-logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-    }
-    .nav-logo img {
-      width: 42px; height: 42px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-    .nav-logo-text {
-      font-size: 15px;
-      font-weight: 600;
-      color: #1a1a1a;
-      letter-spacing: 0.5px;
-      line-height: 1.3;
-    }
-    .nav-logo-text small {
-      display: block;
-      font-size: 10px;
-      font-weight: 400;
-      color: #999;
-      letter-spacing: 1px;
-    }
-    .nav-links {
-      display: flex;
-      gap: 20px;
-      align-items: center;
-    }
+    .nav-logo { font-size: 18px; font-weight: 700; color: #c4a050; text-decoration: none; letter-spacing: 2px; }
+    .nav-logo span { color: #1a1a1a; }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
     .nav-links a {
-      font-size: 13px;
-      color: #444;
-      text-decoration: none;
-      transition: color 0.3s;
-      letter-spacing: 0.5px;
-      position: relative;
-      padding: 4px 0;
+      font-size: 13px; color: #555; text-decoration: none; transition: color 0.3s; letter-spacing: 0.5px;
     }
-    .nav-links a:hover { color: #8e3451; }
-    .nav-links a::after {
-      content: '';
-      position: absolute;
-      bottom: -2px;
-      left: 0;
-      width: 0;
-      height: 2px;
-      background: #8e3451;
-      transition: width 0.3s ease;
-    }
-    .nav-links a:hover::after { width: 100%; }
+    .nav-links a:hover { color: #c4a050; }
     .nav-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 10px 20px;
-      background: #8e3451;
-      color: #fff !important;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.3s ease;
-      letter-spacing: 0.5px;
+      padding: 8px 20px; background: #c4a050; color: #fff !important; border-radius: 6px; font-weight: 600;
     }
-    .nav-cta:hover { background: #7a2e46; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(142,52,81,0.3); }
-    .nav-cta::after { display: none !important; }
+    .nav-cta:hover { background: #b8913e !important; }
 
     /* ===== Hero ===== */
     .hero {
-      background: linear-gradient(135deg, #8e3451, #75304a, #5e2a3d);
-      padding: 100px 20px;
-      text-align: center;
-      position: relative;
+      background: linear-gradient(135deg, #2c1810 0%, #3d2418 40%, #5a3424 100%);
+      padding: 80px 20px; text-align: center; position: relative; overflow: hidden;
     }
     .hero::before {
       content: '';
-      position: absolute;
-      inset: 0;
-      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-      opacity: 0.3;
-      pointer-events: none;
-    }
-
-    .hero-tri1 {
-      top: 0;
-      right: 0;
-      border-style: solid;
-      border-width: 0 120px 120px 0;
-      border-color: transparent rgba(255,255,255,0.12) transparent transparent;
-      transform: translate(50%, -50%) scale(0);
-    }
-    .hero-tri1.visible {
-      opacity: 1;
-      transform: translate(0, 0) scale(1);
-    }
-    .hero-tri2 {
-      bottom: 0;
-      left: 0;
-      border-style: solid;
-      border-width: 0 0 120px 120px;
-      border-color: transparent transparent rgba(255,255,255,0.12) transparent;
-      transform: translate(-50%, 50%) scale(0);
-    }
-    .hero-tri2.visible {
-      opacity: 1;
-      transform: translate(0, 0) scale(1);
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c4a050' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     }
     .hero-content { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
-    .hero-logo {
-      width: 100px; height: 100px;
-      border-radius: 50%;
-      border: 3px solid rgba(255,255,255,0.25);
-      margin: 0 auto 24px;
-      overflow: hidden;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-    }
-    .hero-logo img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-    }
+    .hero-icon { font-size: 56px; margin-bottom: 16px; display: block; }
     .hero h1 {
-      font-size: clamp(36px,5vw,52px);
-      font-weight: 700;
-      color: #fff;
-      letter-spacing: 3px;
-      margin-bottom: 12px;
-      position: relative;
-      display: inline-block;
+      font-size: clamp(32px,4vw,44px); font-weight: 700;
+      color: #f5e6c8; letter-spacing: 4px; margin-bottom: 12px;
     }
-    .hero h1::before {
-      content: '▲';
-      position: absolute;
-      top: -20px;
-      left: -18px;
-      font-size: 12px;
-      color: rgba(255,255,255,0.15);
-      animation: heroTri 3s ease-in-out infinite;
-    }
-    .hero h1::after {
-      content: '▼';
-      position: absolute;
-      bottom: -18px;
-      right: -18px;
-      font-size: 10px;
-      color: rgba(255,255,255,0.1);
-      animation: heroTri 3s ease-in-out infinite 1.5s;
-    }
-    @keyframes heroTri {
-      0%, 100% { transform: translateY(0); opacity: 0.3; }
-      50% { transform: translateY(-5px); opacity: 0.6; }
-    }
+    .hero h1 .hl { color: #c4a050; }
     .hero p {
-      font-size: clamp(16px,2vw,20px);
-      color: rgba(255,255,255,0.7);
-      letter-spacing: 2px;
-      margin-bottom: 32px;
-      line-height: 1.6;
+      font-size: clamp(15px,1.8vw,18px);
+      color: rgba(245,230,200,0.6); letter-spacing: 2px; margin-bottom: 28px; line-height: 1.8;
     }
-    .hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
-    .hero-btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 14px 32px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.3s ease;
-      cursor: pointer;
-      letter-spacing: 1px;
+    .hero-badge {
+      display: inline-block; padding: 6px 18px;
+      border: 1px solid rgba(196,160,80,0.3); border-radius: 20px;
+      color: #c4a050; font-size: 12px; letter-spacing: 2px; margin-bottom: 20px;
     }
-    .hero-btn-primary {
-      background: #fff;
-      color: #8e3451;
-      border: none;
-    }
-    .hero-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
-    .hero-btn-secondary {
-      background: transparent;
-      color: #fff;
-      border: 1.5px solid rgba(255,255,255,0.5);
-    }
-    .hero-btn-secondary:hover { background: rgba(255,255,255,0.08); border-color: #fff; transform: translateY(-2px); }
 
     /* ===== Sections ===== */
-    .section-wrap { padding: 80px 20px; }
-    .section-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-    }
+    .section-wrap { padding: 64px 20px; }
+    .section-inner { max-width: 1000px; margin: 0 auto; }
     .section-title {
-      text-align: center;
-      margin-bottom: 48px;
+      text-align: center; margin-bottom: 40px;
     }
     .section-title h2 {
-      font-size: clamp(26px,3vw,34px);
-      font-weight: 700;
-      color: #1a1a1a;
-      letter-spacing: 2px;
-      margin-bottom: 8px;
+      font-size: clamp(24px,3vw,30px); font-weight: 700;
+      color: #1a1a1a; letter-spacing: 2px; margin-bottom: 8px;
     }
-    .section-title p {
-      font-size: 15px;
-      color: #888;
-      letter-spacing: 1px;
-    }
-    .section-title .divider {
-      width: 50px; height: 3px;
-      background: #8e3451;
-      margin: 16px auto 0;
-      border-radius: 2px;
+    .section-title p { font-size: 14px; color: #999; letter-spacing: 1px; }
+    .section-title .line {
+      width: 40px; height: 3px; background: #c4a050;
+      margin: 14px auto 0; border-radius: 2px;
     }
 
-    /* ===== About ===== */
-    .about-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 40px;
-      align-items: center;
+    /* ===== Features ===== */
+    .features-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
     }
-    .about-text p {
-      font-size: 15px;
-      color: #555;
-      line-height: 1.8;
-      margin-bottom: 16px;
+    .feature-card {
+      background: #fff; padding: 28px 22px; text-align: center;
+      border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
     }
-    .about-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .about-stat {
-      background: #fff;
-      padding: 24px;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-      cursor: default;
-    }
-    .about-stat:hover {
-      transform: translateY(-6px) scale(1.04);
-      box-shadow: 0 16px 32px rgba(142,52,81,0.12);
-    }
-    .about-stat:hover .about-stat-num {
-      animation: iconBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    .about-stat-num {
-      font-size: 28px;
-      font-weight: 700;
-      color: #8e3451;
-    }
-    .about-stat-label {
-      font-size: 12px;
-      color: #888;
-      margin-top: 4px;
-      letter-spacing: 1px;
-    }
+    .feature-card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
+    .feature-icon { font-size: 32px; margin-bottom: 12px; display: block; }
+    .feature-card h3 { font-size: 15px; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; }
+    .feature-card p { font-size: 12px; color: #999; line-height: 1.7; }
 
-    /* ===== Services ===== */
-    .services-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 24px;
+    /* ===== Stats ===== */
+    .stats {
+      display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;
+      padding: 40px 0; background: #f8f7f4; border-radius: 12px;
     }
-    .service-card {
-      background: #fff;
-      padding: 36px 28px;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-      cursor: default;
-    }
-    .service-card:hover {
-      transform: translateY(-8px) scale(1.03);
-      box-shadow: 0 20px 40px rgba(142,52,81,0.15);
-    }
-    .service-card:hover .service-icon {
-      animation: iconBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    @keyframes iconBounce {
-      0%   { transform: scale(1); }
-      30%  { transform: scale(1.3); }
-      60%  { transform: scale(0.9); }
-      100% { transform: scale(1); }
-    }
-    .service-card h3 {
-      font-size: 17px;
-      font-weight: 600;
-      color: #1a1a1a;
-      margin-bottom: 8px;
-      letter-spacing: 1px;
-      transition: color 0.3s;
-    }
-    .service-card:hover h3 { color: #8e3451; }
-    .service-icon { font-size: 40px; margin-bottom: 16px; display: inline-block; }
-    .service-card h3 {
-      font-size: 17px;
-      font-weight: 600;
-      color: #1a1a1a;
-      margin-bottom: 8px;
-      letter-spacing: 1px;
-    }
-    .service-card p {
-      font-size: 13px;
-      color: #888;
-      line-height: 1.6;
-    }
+    .stat-item { text-align: center; }
+    .stat-num { font-size: 28px; font-weight: 700; color: #c4a050; }
+    .stat-label { font-size: 12px; color: #999; margin-top: 4px; letter-spacing: 1px; }
 
-    /* ===== Contact ===== */
-    #contact { scroll-margin-top: 80px; }
-    .contact-grid {
-      display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 40px;
-      align-items: start;
-    }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .form-input {
-      width: 100%;
-      padding: 14px 16px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 14px;
-      font-family: inherit;
-      background: #fff;
-      transition: border-color 0.3s;
-      box-sizing: border-box;
-      margin-bottom: 16px;
-      outline: none;
-    }
-    .form-input:focus { border-color: #8e3451; }
-    .form-textarea { height: 140px; resize: vertical; }
-    .form-btn {
-      padding: 14px 36px;
-      background: #8e3451;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-      letter-spacing: 1px;
-    }
-    .form-btn:hover { background: #7a2e46; transform: translateY(-2px); box-shadow: 0 4px 16px rgba(142,52,81,0.3); }
-    
-    .contact-map {
-      width: 100%;
-      height: 220px;
-      margin-top: 16px;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .contact-card {
-      background: #fff;
-      padding: 36px 32px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-    }
-    .contact-card h3 {
-      font-size: 20px;
-      font-weight: 700;
-      color: #1a1a1a;
-      margin-bottom: 24px;
-      letter-spacing: 1px;
-    }
-    .contact-card-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
-      font-size: 14px;
-      color: #555;
-      line-height: 1.5;
-    }
-    .contact-card-icon { font-size: 18px; min-width: 24px; }
-    .contact-card-item a {
-      color: #555;
-      text-decoration: none;
-      transition: color 0.3s;
-    }
-    .contact-card-item a:hover { color: #8e3451; }
-    
-    @media (max-width: 768px) {
-      .contact-grid { grid-template-columns: 1fr; }
-      .form-row { grid-template-columns: 1fr; }
-    }
-    
-    /* ===== Location ===== */
-    #location {
-      scroll-margin-top: 80px;
-    }
-    .map-container {
-      width: 100%;
-      height: 400px;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-    }
-    .map-container iframe {
-      width: 100%;
-      height: 100%;
-      border: 0;
-    }
-    .map-address {
-      text-align: center;
-      margin-top: 12px;
-      font-size: 14px;
-      color: #666;
-    }
-    .map-address strong { color: #333; }
-    
     /* ===== Footer ===== */
     footer {
-      background: #8e3451;
-      color: rgba(255,255,255,0.85);
-      padding: 64px 20px 32px;
+      background: #1a1a1a; color: rgba(255,255,255,0.5);
+      padding: 32px 20px 20px; text-align: center;
     }
-    .footer-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1.5fr 1.5fr 1fr;
-      gap: 40px;
-      text-align: left;
-    }
-    .footer-col h3 {
-      font-size: 18px;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 20px;
-      letter-spacing: 1px;
-    }
-    .footer-col p, .footer-col span {
-      font-size: 14px;
-      color: rgba(255,255,255,0.75);
-      line-height: 1.8;
-    }
-    .footer-contact-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-    .footer-contact-icon {
-      font-size: 16px;
-      min-width: 20px;
-      opacity: 0.7;
-    }
-    .footer-contact-item a {
-      color: rgba(255,255,255,0.75);
-      text-decoration: none;
-      transition: color 0.3s;
-      font-size: 14px;
-      word-break: break-all;
-    }
-    .footer-contact-item a:hover { color: #fff; }
-    .footer-service-link {
-      display: block;
-      color: rgba(255,255,255,0.7);
-      text-decoration: none;
-      font-size: 14px;
-      padding: 4px 0;
-      transition: all 0.3s;
-    }
-    .footer-service-link:hover { color: #fff; padding-left: 4px; }
-    .footer-bottom {
-      max-width: 1100px;
-      margin: 32px auto 0;
-      padding-top: 20px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-      text-align: center;
-      font-size: 13px;
-      color: rgba(255,255,255,0.5);
-    }
-    .footer-bottom a { color: rgba(255,255,255,0.5); text-decoration: none; }
-    .footer-bottom a:hover { color: #fff; }
+    footer p { font-size: 12px; letter-spacing: 1px; }
+    footer a { color: rgba(255,255,255,0.5); text-decoration: none; }
+    footer a:hover { color: #c4a050; }
 
-    /* ===== Scroll Animations ===== */
-    .scroll-up {
-      opacity: 0;
-      transform: translateY(50px);
-      transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    .scroll-up.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .scroll-left {
-      opacity: 0;
-      transform: translateX(-50px);
-      transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    .scroll-left.visible {
-      opacity: 1;
-      transform: translateX(0);
-    }
-    .scroll-right {
-      opacity: 0;
-      transform: translateX(50px);
-      transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    .scroll-right.visible {
-      opacity: 1;
-      transform: translateX(0);
-    }
-    .scroll-scale {
-      opacity: 0;
-      transform: scale(0.8);
-      transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    .scroll-scale.visible {
-      opacity: 1;
-      transform: scale(1);
-    }
+    /* ===== Animations ===== */
+    .fade-up { opacity: 0; transform: translateY(30px); transition: all 0.6s cubic-bezier(0.22,1,0.36,1); }
+    .fade-up.show { opacity: 1; transform: translateY(0); }
 
     @media (max-width: 768px) {
-      .about-grid { grid-template-columns: 1fr; }
-      .hero { padding: 60px 20px; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
       .nav-links { display: none; }
-      .footer-inner { grid-template-columns: 1fr; gap: 32px; }
+    }
+    @media (max-width: 480px) {
+      .features-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-<!-- ===== Top Bar ===== -->
-<div class="top-bar">
-  <div class="top-bar-inner">
-    <a href="tel:+8613685877064" class="top-bar-item">
-      <span class="top-bar-icon">📞</span> 13685877064
-    </a>
-    <a href="mailto:shangtaopang@gmail.com" class="top-bar-item">
-      <span class="top-bar-icon">✉</span> shangtaopang@gmail.com
-    </a>
-  </div>
-</div>
-
-<!-- ===== Nav ===== -->
 <nav>
   <div class="nav-inner">
-    <a href="intro.html" class="nav-logo">
-      <img src="images/shangtaopang.jpg" alt="ShangTaoPang">
-      <div class="nav-logo-text">
-        ShangTaoPang
-        <small>全栈开发者 · AI 构建者</small>
-      </div>
-    </a>
+    <a href="intro.html" class="nav-logo">下枫槎<span>·谢氏</span></a>
     <div class="nav-links">
-      <a href="intro.html">首页</a>
-      <a href="#about">关于我</a>
-      <a href="#services">服务领域</a>
-      <a href="#contact">联系我</a>
+      <a href="#features">功能</a>
+      <a href="#tech">技术</a>
+      <a href="index.html" class="nav-cta">进入宗祠 →</a>
     </div>
   </div>
 </nav>
 
-<!-- ===== Hero ===== -->
 <section class="hero">
-  <div class="hero-content fade-up visible">
-    <div class="hero-logo"><img src="images/shangtaopang.jpg" alt="ShangTaoPang"></div>
-    <h1>ShangTaoPang</h1>
-    <p>专业智能体开发 · 网站开发 · 小程序开发 · AI赋能培训<br>以技术驱动创新，为您的业务提供定制化数字解决方案</p>
-    <div class="hero-btns">
-      <a href="#services" class="hero-btn hero-btn-primary">查看服务 →</a>
-      <a href="entrance.html" class="hero-btn hero-btn-secondary">探索更多</a>
-    </div>
+  <div class="hero-content">
+    <span class="hero-icon">🏛️</span>
+    <div class="hero-badge">宁海下枫槎村 · 数字宗祠</div>
+    <h1>族谱网站<span class="hl">系统开发</span></h1>
+    <p>一个完整的数字宗祠平台 —— 族谱管理 · 家族树 · 成员图谱<br>从零到一全栈开发，助力家族文化数字化传承</p>
+    <a href="index.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 32px;background:#c4a050;color:#fff;border-radius:8px;text-decoration:none;font-size:15px;font-weight:600;transition:all 0.3s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(196,160,80,0.3)'" onmouseout="this.style.transform='';this.style.boxShadow=''">✦ 进入数字宗祠</a>
   </div>
 </section>
 
-<!-- ===== About ===== -->
-<section class="section-wrap" id="about">
+<section class="section-wrap" id="features">
   <div class="section-inner">
-    <div class="section-title scroll-up">
-      <h2>关于我</h2>
-      <p>以技术驱动创新，用代码构建未来</p>
-      <div class="divider"></div>
+    <div class="section-title fade-up">
+      <h2>核心功能</h2>
+      <p>数字宗祠 · 家族文化传承平台</p>
+      <div class="line"></div>
     </div>
-    <div class="about-grid">
-      <div class="about-text scroll-left">
-        <p>ShangTaoPang 融合专业精神、创新思维与持续精进的技术力，为客户提供高效可靠的数字化解决方案。从前沿的智能体开发到稳健的网站建设，从便捷的小程序到赋能型的 AI 培训，致力于为企业和个人打造量身定制的技术服务。</p>
-        <p>我们坚信，技术的力量在于解决实际问题。每一次创新都是通往更好未来的阶梯，每一行代码都是构建数字世界的砖瓦。</p>
+    <div class="features-grid">
+      <div class="feature-card fade-up">
+        <span class="feature-icon">🌳</span>
+        <h3>家族世系树</h3>
+        <p>可视化家族树，直观展示世代传承脉络，支持缩放拖拽</p>
       </div>
-      <div class="about-stats scroll-right">
-        <div class="about-stat">
-          <div class="about-stat-num">新人</div>
-          <div class="about-stat-label">初入行业</div>
-        </div>
-        <div class="about-stat">
-          <div class="about-stat-num">AI</div>
-          <div class="about-stat-label">智能体开发</div>
-        </div>
-        <div class="about-stat">
-          <div class="about-stat-num">Web</div>
-          <div class="about-stat-label">网站开发</div>
-        </div>
-        <div class="about-stat">
-          <div class="about-stat-num">📱</div>
-          <div class="about-stat-label">小程序开发</div>
-        </div>
+      <div class="feature-card fade-up">
+        <span class="feature-icon">📜</span>
+        <h3>族谱查询</h3>
+        <p>族人信息检索，支持按姓名、字辈等多维度搜索</p>
+      </div>
+      <div class="feature-card fade-up">
+        <span class="feature-icon">👥</span>
+        <h3>家族成员</h3>
+        <p>完整的族人信息管理，包括生卒、配偶、事迹等详细记录</p>
+      </div>
+      <div class="feature-card fade-up">
+        <span class="feature-icon">🏆</span>
+        <h3>名人事迹</h3>
+        <p>收录历代家族名人，弘扬先辈精神与文化传承</p>
+      </div>
+      <div class="feature-card fade-up">
+        <span class="feature-icon">🗺️</span>
+        <h3>迁徙地图</h3>
+        <p>动态迁徙路线展示，从谢邑到宁海下枫槎的千年历程</p>
+      </div>
+      <div class="feature-card fade-up">
+        <span class="feature-icon">📰</span>
+        <h3>消息发布</h3>
+        <p>家族动态、村务通知、活动纪实等实时发布</p>
+      </div>
+      <div class="feature-card fade-up">
+        <span class="feature-icon">🎬</span>
+        <h3>影像记录</h3>
+        <p>家族视频、摄影作品集中展示，留驻珍贵瞬间</p>
+      </div>
+      <div class="feature-card fade-up">
+        <span class="feature-icon">🌙</span>
+        <h3>深色模式</h3>
+        <p>支持浅色/深色双主题切换，适配不同使用场景</p>
+      </div>
+      <div class="feature-card fade-up">
+        <span class="feature-icon">🔐</span>
+        <h3>管理后台</h3>
+        <p>全功能后台管理系统，支持数据增删改查与备份</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ===== Services ===== -->
-<section class="section-wrap" style="background:#fff;" id="services">
+<section class="section-wrap" style="background: #fff;" id="tech">
   <div class="section-inner">
-    <div class="section-title scroll-up">
-      <h2>服务领域</h2>
-      <p>专业的技术服务，助力数字化转型</p>
-      <div class="divider"></div>
+    <div class="section-title fade-up">
+      <h2>技术栈</h2>
+      <p>全栈自研 · 用心打造</p>
+      <div class="line"></div>
     </div>
-    <div class="services-grid">
-      <div class="service-card scroll-scale">
-        <div class="service-icon">🤖</div>
-        <h3>智能体开发</h3>
-        <p>基于大模型的 AI Agent 开发，打造智能自动化解决方案，提升业务效率</p>
+    <div class="stats fade-up">
+      <div class="stat-item">
+        <div class="stat-num">纯前端</div>
+        <div class="stat-label">HTML/CSS/JS</div>
       </div>
-      <div class="service-card scroll-scale">
-        <div class="service-icon">🌐</div>
-        <h3>网站开发</h3>
-        <p>响应式网站、企业官网、电商平台，从前端到后端全栈开发</p>
+      <div class="stat-item">
+        <div class="stat-num">Node.js</div>
+        <div class="stat-label">后端服务</div>
       </div>
-      <div class="service-card scroll-scale">
-        <div class="service-icon">📱</div>
-        <h3>小程序开发</h3>
-        <p>微信小程序、支付宝小程序开发，快速搭建移动端业务入口</p>
+      <div class="stat-item">
+        <div class="stat-num">Nginx</div>
+        <div class="stat-label">服务器部署</div>
       </div>
-      <div class="service-card scroll-scale">
-        <div class="service-icon">🎓</div>
-        <h3>AI赋能培训</h3>
-        <p>AI 工具应用培训、大模型落地指导，帮助团队掌握 AI 力量</p>
+      <div class="stat-item">
+        <div class="stat-num">响应式</div>
+        <div class="stat-label">多端适配</div>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== Contact ===== -->
-<section class="section-wrap" style="background:#f5f5f5;" id="contact">
-  <div class="section-inner">
-    <div class="section-title scroll-up">
-      <h2>联系我</h2>
-      <p>有任何需求，欢迎随时联系</p>
-      <div class="divider"></div>
-    </div>
-    <div class="contact-grid">
-      <div class="contact-form scroll-left">
-        <form onsubmit="return false;">
-          <div class="form-row">
-            <input type="text" placeholder="姓名" class="form-input">
-            <input type="email" placeholder="邮箱" class="form-input">
-          </div>
-          <input type="text" placeholder="主题" class="form-input">
-          <textarea placeholder="您的留言..." class="form-input form-textarea"></textarea>
-          <button type="button" class="form-btn">发送 ✉</button>
-        </form>
-      </div>
-      <div class="contact-info scroll-right">
-        <div class="contact-card">
-          <h3>ShangTaoPang</h3>
-          <div class="contact-card-item">
-            <span class="contact-card-icon">📍</span>
-            <span>浙江宁海县北斗北路81弄11号</span>
-          </div>
-          <div class="contact-card-item">
-            <span class="contact-card-icon">📞</span>
-            <a href="tel:+8613685877064">13685877064</a>
-          </div>
-          <div class="contact-card-item">
-            <span class="contact-card-icon">✉</span>
-            <a href="mailto:shangtaopang@gmail.com">shangtaopang@gmail.com</a>
-          </div>
-        </div>
-        <!-- Map -->
-        <div class="contact-map" id="contact-map"></div>
+      <div class="stat-item">
+        <div class="stat-num">i18n</div>
+        <div class="stat-label">中英双语</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ===== Footer ===== -->
-<footer id="footer">
-  <div class="footer-inner">
-    <div class="footer-col">
-      <h3>关于</h3>
-      <p>全栈开发者与 AI 应用构建者，专注于智能体开发、网站开发、小程序开发和 AI 赋能培训。以技术驱动创新，用代码构建未来。</p>
-    </div>
-    <div class="footer-col">
-      <h3>联系方式</h3>
-      <div class="footer-contact-item">
-        <span class="footer-contact-icon">📞</span>
-        <a href="tel:+8613685877064">13685877064</a>
-      </div>
-      <div class="footer-contact-item">
-        <span class="footer-contact-icon">✉</span>
-        <a href="mailto:shangtaopang@gmail.com">shangtaopang@gmail.com</a>
-      </div>
-
-    </div>
-    <div class="footer-col">
-      <h3>快速链接</h3>
-      <a href="#about" class="footer-service-link">关于我</a>
-      <a href="#services" class="footer-service-link">服务项目</a>
-      <a href="entrance.html" class="footer-service-link">下枫槎村</a>
-      <a href="index.html" class="footer-service-link">谢氏宗祠</a>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    © 2026 庞尚韬 · ShangTaoPang
-  </div>
+<footer>
+  <p>© 2026 宁海下枫槎村谢氏家族 · 数字宗祠 &nbsp;|&nbsp; <a href="index.html">进入主站</a></p>
 </footer>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// Init map
-document.addEventListener('DOMContentLoaded', function() {
-  var mapEl = document.getElementById('contact-map');
-  if (mapEl && typeof L !== 'undefined') {
-    var map = L.map(mapEl, { zoomControl: false }).setView([29.292, 121.431], 15);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19, attribution: '© OpenStreetMap'
-    }).addTo(map);
-    L.marker([29.292, 121.431]).addTo(map)
-      .bindPopup('宁海县北斗北路81弄11号');
-  }
-});
-
-// Scroll animations (向下滑动出现，向上滑动隐藏)
 (function(){
-  var els = document.querySelectorAll('.scroll-up, .scroll-left, .scroll-right, .scroll-scale');
+  var els = document.querySelectorAll('.fade-up');
   var obs = new IntersectionObserver(function(entries) {
     entries.forEach(function(e) {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-      } else {
-        e.target.classList.remove('visible');
-      }
+      if (e.isIntersecting) e.target.classList.add('show');
     });
-  }, { threshold: 0.15 });
+  }, { threshold: 0.1 });
   els.forEach(function(el) { obs.observe(el); });
-
-  // Nav smooth scroll
-  document.querySelectorAll('a[href^="#"]').forEach(function(a) {
-    a.addEventListener('click', function(e) {
-      e.preventDefault();
-      var target = document.querySelector(this.getAttribute('href'));
-      if (target) target.scrollIntoView({ behavior: 'smooth' });
-    });
-  });
 })();
 </script>
 </body>
