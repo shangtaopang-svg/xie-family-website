@@ -335,6 +335,78 @@
       line-height: 1.6;
     }
 
+    /* ===== Contact ===== */
+    #contact { scroll-margin-top: 80px; }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #fff;
+      transition: border-color 0.3s;
+      box-sizing: border-box;
+      margin-bottom: 16px;
+      outline: none;
+    }
+    .form-input:focus { border-color: #8e3451; }
+    .form-textarea { height: 140px; resize: vertical; }
+    .form-btn {
+      padding: 14px 36px;
+      background: #8e3451;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      letter-spacing: 1px;
+    }
+    .form-btn:hover { background: #7a2e46; transform: translateY(-2px); box-shadow: 0 4px 16px rgba(142,52,81,0.3); }
+    
+    .contact-card {
+      background: #fff;
+      padding: 36px 32px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .contact-card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 24px;
+      letter-spacing: 1px;
+    }
+    .contact-card-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      color: #555;
+      line-height: 1.5;
+    }
+    .contact-card-icon { font-size: 18px; min-width: 24px; }
+    .contact-card-item a {
+      color: #555;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .contact-card-item a:hover { color: #8e3451; }
+    
+    @media (max-width: 768px) {
+      .contact-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+    
     /* ===== Location ===== */
     #location {
       scroll-margin-top: 80px;
@@ -499,9 +571,7 @@
       <a href="intro.html">首页</a>
       <a href="#about">关于我</a>
       <a href="#services">服务领域</a>
-      <a href="#about">团队</a>
-      <a href="#location">位置</a>
-      <a href="mailto:shangtaopang@gmail.com" class="nav-cta">📩 立即联系</a>
+      <a href="#contact">联系我</a>
     </div>
   </div>
 </nav>
@@ -587,19 +657,43 @@
   </div>
 </section>
 
-<!-- ===== Location ===== -->
-<section class="section-wrap" style="background:#f5f5f5;" id="location">
+<!-- ===== Contact ===== -->
+<section class="section-wrap" style="background:#f5f5f5;" id="contact">
   <div class="section-inner">
     <div class="section-title scroll-up">
-      <h2>位置</h2>
-      <p>📍 浙江省宁波市宁海县</p>
+      <h2>联系我</h2>
+      <p>有任何需求，欢迎随时联系</p>
       <div class="divider"></div>
     </div>
-    <div class="scroll-up">
-      <div class="map-container">
-        <iframe src="https://uri.amap.com/marker?position=121.431052,29.291708&name=%E5%AE%81%E6%B5%B7%E5%8E%BF%E5%8C%97%E6%96%97%E5%8C%97%E8%B7%AF81%E5%BC%849%E5%8F%B7&src=mypage" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    <div class="contact-grid">
+      <div class="contact-form scroll-left">
+        <form onsubmit="return false;">
+          <div class="form-row">
+            <input type="text" placeholder="姓名" class="form-input">
+            <input type="email" placeholder="邮箱" class="form-input">
+          </div>
+          <input type="text" placeholder="主题" class="form-input">
+          <textarea placeholder="您的留言..." class="form-input form-textarea"></textarea>
+          <button type="button" class="form-btn">发送 ✉</button>
+        </form>
       </div>
-      <div class="map-address"><strong>宁海县北斗北路81弄9号</strong></div>
+      <div class="contact-info scroll-right">
+        <div class="contact-card">
+          <h3>ShangTaoPang</h3>
+          <div class="contact-card-item">
+            <span class="contact-card-icon">📍</span>
+            <span>浙江宁海县北斗北路81弄11号</span>
+          </div>
+          <div class="contact-card-item">
+            <span class="contact-card-icon">📞</span>
+            <a href="tel:+8613685877064">13685877064</a>
+          </div>
+          <div class="contact-card-item">
+            <span class="contact-card-icon">✉</span>
+            <a href="mailto:shangtaopang@gmail.com">shangtaopang@gmail.com</a>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
