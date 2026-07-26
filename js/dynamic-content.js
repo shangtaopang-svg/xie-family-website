@@ -79,8 +79,8 @@
       function buildReels(videos) {
         container.innerHTML = '';
         container.style.display = 'grid';
-        container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(220px, 1fr))';
-        container.style.gap = '12px';
+        container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(240px, 1fr))';
+        container.style.gap = '16px';
         container.style.padding = '8px';
 
         var allVids = [
@@ -96,67 +96,88 @@
         }
 
         allVids.forEach(function(v) {
+          // 卡片容器
           var card = document.createElement('div');
-          card.style.cssText = 'border-radius:12px;overflow:hidden;background:var(--glass-bg);border:1px solid var(--glass-border);position:relative;aspect-ratio:16/9;cursor:pointer;';
+          card.style.cssText = 'border-radius:12px;overflow:hidden;background:var(--bg-card);border:1px solid var(--glass-border);cursor:pointer;transition:all 0.3s ease;box-shadow:0 2px 8px rgba(0,0,0,0.06);';
+          card.onmouseenter = function() { card.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)'; card.style.transform = 'translateY(-2px)'; };
+          card.onmouseleave = function() { card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; card.style.transform = ''; };
 
-          // 封面海报
+          // 封面区域
+          var thumb = document.createElement('div');
+          thumb.style.cssText = 'aspect-ratio:16/9;position:relative;background:radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0f 100%);background-size:cover;background-position:center;';
+
           var posterUrl = '';
           if (v.poster && v.poster.trim()) {
             posterUrl = v.poster;
           } else if (v.src && v.src.indexOf('/video/') === 0) {
             var pn = v.src.replace('/video/', '').replace('_comp.mp4', '.mp4').replace('.mp4', '') + '-poster.jpg';
             posterUrl = '/images/video-posters/' + pn;
+            thumb.style.backgroundImage = 'url(' + posterUrl + ')';
           } else if (v.src && v.src.indexOf('/uploads/') === 0) {
             var upn = v.src.replace('/uploads/videos/', '').replace('_comp.mp4', '.mp4').replace('.mp4', '') + '.jpg';
             posterUrl = '/uploads/posters/' + upn;
+            thumb.style.backgroundImage = 'url(' + posterUrl + ')';
           }
 
-          // 视频标题
+          // 小播放图标（不是大覆盖，只是一个标记）
+          var badge = document.createElement('div');
+          badge.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)"><polygon points="8,5 19,12 8,19 8,5"/></svg>';
+          badge.style.cssText = 'position:absolute;bottom:8px;right:8px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+          thumb.appendChild(badge);
+
+          card.appendChild(thumb);
+
+          // 底部信息
+          var info = document.createElement('div');
+          info.style.cssText = 'padding:10px 12px 12px;';
           var titleEl = document.createElement('div');
           titleEl.textContent = v.title || '';
-          titleEl.style.cssText = 'padding:8px 10px;font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+          titleEl.style.cssText = 'font-size:13px;font-weight:500;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+          info.appendChild(titleEl);
+          card.appendChild(info);
 
-          if (posterUrl) {
-            card.style.background = 'url(' + posterUrl + ') center/cover no-repeat, radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0f 100%)';
-          } else {
-            card.style.background = 'radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0f 100%)';
-          }
-
-          // 播放按钮（居中大三角）
-          var playBtn2 = document.createElement('div');
-          playBtn2.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="rgba(255,255,255,0.85)" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"><polygon points="8,5 19,12 8,19 8,5"/></svg>';
-          playBtn2.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.8;transition:opacity 0.2s;pointer-events:none;';
-
-          card.appendChild(playBtn2);
-
-          // 点击播放：替换为video标签
+          // 点击播放（打开新窗口或内联播放）
           var _played = false;
           card.addEventListener('click', function() {
             if (_played) return;
             _played = true;
+            // 清除卡片内容，放入视频播放器
+            card.innerHTML = '';
+            card.style.background = '#000';
+            card.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)';
+            card.style.transform = '';
+            card.onmouseenter = null;
+            card.onmouseleave = null;
+            
             var video = document.createElement('video');
             video.src = v.src;
             video.muted = false;
             video.playsInline = true;
             video.controls = true;
             video.autoplay = true;
-            video.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;background:#000;';
-            video.addEventListener('error', function() {
-              card.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:red;font-size:24px;">⚠️</div>';
+            video.preload = 'auto';
+            video.style.cssText = 'width:100%;display:block;background:#000;';
+            
+            // 获取视频比例
+            var videoAspect = 16/9;
+            video.addEventListener('loadedmetadata', function() {
+              if (video.videoHeight && video.videoWidth) {
+                videoAspect = video.videoWidth / video.videoHeight;
+              }
+              video.style.aspectRatio = videoAspect;
             });
-            card.innerHTML = '';
-            card.style.background = '#000';
+            
+            video.addEventListener('error', function() {
+              card.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;background:#000;color:#ff6b6b;gap:12px;"><span style="font-size:32px;">⚠️</span><span style="font-size:13px;">视频加载失败</span></div>';
+            });
+            
             card.appendChild(video);
           });
 
-          var wrapper = document.createElement('div');
-          wrapper.appendChild(card);
-          wrapper.appendChild(titleEl);
-          container.appendChild(wrapper);
+          container.appendChild(card);
         });
       }
 
-      // Hide the hint text since we use grid
       var hint = container.closest('.reels-wrapper')?.querySelector('.reels-hint');
       if (hint) hint.style.display = 'none';
 function loadVideosFromServer(callback) {
