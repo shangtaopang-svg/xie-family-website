@@ -276,60 +276,6 @@
         card.appendChild(_videoEl);
       });
 
-      card.addEventListener('click', function() {
-        if (card.dataset.playing === 'true') {
-          mediaBox.innerHTML = '';
-          mediaBox.style.background = '';
-          mediaBox.style.backgroundImage = posterUrl ? 'url(' + posterUrl + ')' : '';
-          mediaBox.style.backgroundSize = 'cover';
-          mediaBox.style.backgroundPosition = 'center';
-          mediaBox.appendChild(badge);
-          delete card.dataset.playing;
-          card.style.cursor = 'pointer';
-          card.onmouseenter = function() { card.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)'; card.style.transform = 'translateY(-2px)'; };
-          card.onmouseleave = function() { card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; card.style.transform = ''; };
-        } else {
-          card.dataset.playing = 'true';
-          card.style.cursor = 'default';
-          card.onmouseenter = null;
-          card.onmouseleave = null;
-          card.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)';
-          card.style.transform = '';
-
-          mediaBox.innerHTML = '';
-          mediaBox.style.background = '#000';
-          mediaBox.style.backgroundImage = '';
-
-          var video = document.createElement('video');
-          video.src = v.src;
-          video.muted = false;
-          video.playsInline = true;
-          video.controls = true;
-          video.autoplay = true;
-          video.preload = 'auto';
-          video.style.cssText = 'width:100%;height:100%;display:block;background:#000;object-fit:contain;';
-
-          video.addEventListener('error', function() {
-            mediaBox.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#000;color:#ff6b6b;font-size:24px;">\u26a0\ufe0f</div>';
-          });
-
-          video.addEventListener('ended', function() {
-            mediaBox.innerHTML = '';
-            mediaBox.style.background = '';
-            mediaBox.style.backgroundImage = posterUrl ? 'url(' + posterUrl + ')' : '';
-            mediaBox.style.backgroundSize = 'cover';
-            mediaBox.style.backgroundPosition = 'center';
-            mediaBox.appendChild(badge);
-            delete card.dataset.playing;
-            card.style.cursor = 'pointer';
-            card.onmouseenter = function() { card.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)'; card.style.transform = 'translateY(-2px)'; };
-            card.onmouseleave = function() { card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; card.style.transform = ''; };
-          });
-
-          mediaBox.appendChild(video);
-        }
-      });
-
       container.appendChild(card);
     });
   }
