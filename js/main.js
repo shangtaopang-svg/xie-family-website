@@ -717,7 +717,7 @@ document.addEventListener('DOMContentLoaded', function() {
     overlay.style.cssText = 'display:flex !important;';
     setTimeout(function() {
       window.location.href = href;
-    }, 1500);
+    }, 800);
   });
 });
 

@@ -195,7 +195,7 @@ html { scroll-behavior: smooth; }
   width: 100%;
   background: #04BF00;
   box-shadow: 0 0 12px rgba(4,191,0,0.5);
-  animation: ptBarSlide 1.4s ease-in-out forwards;
+  animation: ptBarSlide 0.7s ease-in-out forwards;
 }
 @keyframes ptBarSlide {
   0%   { left: -100%; }
