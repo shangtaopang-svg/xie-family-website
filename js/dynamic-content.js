@@ -78,322 +78,88 @@
 
       function buildReels(videos) {
         container.innerHTML = '';
+        container.style.display = 'grid';
+        container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(220px, 1fr))';
+        container.style.gap = '12px';
+        container.style.padding = '8px';
 
-        // Always prepend promo videos first
         var allVids = [
-	          { id: 'intro', src: '/video/reports-intro.mp4', title: '下枫槎宣传片' },
+          { id: 'intro', src: '/video/reports-intro.mp4', title: '下枫槎宣传片' },
           { id: 'yuanyu', src: '/video/yuanpu.mp4', title: '圆谱2026' },
           { id: 'promo2', src: '/video/promo2.mp4', title: '宣传片2' },
           { id: 'v777', src: '/video/777.mp4', title: '视频777' }
         ].concat(videos);
 
         if (!allVids.length) {
-          container.innerHTML = '<div class="reel-empty">暂无视频</div>';
+          container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)">暂无视频</div>';
           return;
         }
 
-        // Build each reel item — 完全独立的卡片
-        allVids.forEach(function(v, idx) {
-          var item = document.createElement('div');
-          item.className = 'reel-item';
-          item.classList.add('paused');
-          // 存储视频信息供点击时使用
-          item.dataset.videoSrc = v.src;
-          item.dataset.videoTitle = v.title || '';
-          item.dataset.videoId = v.id || ('v_' + idx);
+        allVids.forEach(function(v) {
+          var card = document.createElement('div');
+          card.style.cssText = 'border-radius:12px;overflow:hidden;background:var(--glass-bg);border:1px solid var(--glass-border);position:relative;aspect-ratio:16/9;cursor:pointer;';
 
-          // 封面海报作为背景（不使用video标签，避免浏览器显示黄色感叹号）
+          // 封面海报
           var posterUrl = '';
-          // 优先使用视频数据中的poster字段（管理后台上传时设置）
           if (v.poster && v.poster.trim()) {
             posterUrl = v.poster;
           } else if (v.src && v.src.indexOf('/video/') === 0) {
-            // 硬编码视频：/images/video-posters/xxx-poster.jpg
             var pn = v.src.replace('/video/', '').replace('_comp.mp4', '.mp4').replace('.mp4', '') + '-poster.jpg';
             posterUrl = '/images/video-posters/' + pn;
           } else if (v.src && v.src.indexOf('/uploads/') === 0) {
-            // 用户上传视频：/uploads/posters/xxx.jpg
             var upn = v.src.replace('/uploads/videos/', '').replace('_comp.mp4', '.mp4').replace('.mp4', '') + '.jpg';
             posterUrl = '/uploads/posters/' + upn;
           }
+
+          // 视频标题
+          var titleEl = document.createElement('div');
+          titleEl.textContent = v.title || '';
+          titleEl.style.cssText = 'padding:8px 10px;font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+
           if (posterUrl) {
-            // 多背景：海报在上，CSS渐变色兜底（图片加载失败时渐变可见）
-            item.style.background = 'url(' + posterUrl + ') center/cover no-repeat, radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0f 100%)';
+            card.style.background = 'url(' + posterUrl + ') center/cover no-repeat, radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0f 100%)';
+          } else {
+            card.style.background = 'radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0f 100%)';
           }
 
-          // 视频元素（预先创建并预加载，保持隐藏直到用户点击）
-          var video = document.createElement('video');
-          video.className = 'reel-video';
-          video.src = item.dataset.videoSrc;
-          video.muted = false;
-          video.loop = true;
-          video.playsInline = true;
-          video.preload = 'auto';
-          video.style.opacity = '0';
-          video.style.position = 'absolute';
-          video.style.top = '0';
-          video.style.left = '0';
-          video.style.width = '100%';
-          video.style.height = '100%';
-          video.style.objectFit = 'cover';
-          video.style.zIndex = '1';
-          item.insertBefore(video, item.firstChild);
+          // 播放按钮（居中大三角）
+          var playBtn2 = document.createElement('div');
+          playBtn2.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="rgba(255,255,255,0.85)" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"><polygon points="8,5 19,12 8,19 8,5"/></svg>';
+          playBtn2.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.8;transition:opacity 0.2s;pointer-events:none;';
 
-          // 视频比例检测
-          video.addEventListener('loadedmetadata', function() {
-            if (video.videoHeight > video.videoWidth) {
-              item.classList.add('is-portrait');
-            } else if (video.videoWidth / video.videoHeight > 1.5) {
-              item.classList.add('is-landscape');
-            }
-          });
+          card.appendChild(playBtn2);
 
-          // 加载失败则隐藏
-          video.addEventListener('error', function() {
-            video.style.display = 'none';
-          });
-
-          // 开始预加载
-                    video.addEventListener('play', function() {
-            item.classList.remove('paused');
-            video.style.opacity = '1';
-            if (typeof playBtn !== 'undefined' && playBtn) playBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
-            var bgMusic = document.getElementById('bg-music');
-            if (bgMusic && !bgMusic.paused) {
-              bgMusic.dataset._wasPlaying = 'true';
-              bgMusic.pause();
-            }
-          });
-          video.addEventListener('pause', function() {
-            item.classList.add('paused');
-            if (typeof playBtn !== 'undefined' && playBtn) playBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>';
-          });
-          var _rafTick = false;
-          video.addEventListener('timeupdate', function() {
-            if (_rafTick) return;
-            if (!video.duration) return;
-            _rafTick = true;
-            requestAnimationFrame(function() {
-              _rafTick = false;
-              if (typeof progressFill !== 'undefined' && progressFill) {
-                progressFill.style.width = ((video.currentTime / video.duration) * 100) + '%';
-              }
-              if (typeof timeDisplay !== 'undefined' && timeDisplay) {
-                var cm = Math.floor(video.currentTime / 60);
-                var cs = Math.floor(video.currentTime % 60);
-                var dm = Math.floor(video.duration / 60);
-                var ds = Math.floor(video.duration % 60);
-                timeDisplay.textContent = cm + ':' + (cs < 10 ? '0' : '') + cs + ' / ' + dm + ':' + (ds < 10 ? '0' : '') + ds;
-              }
+          // 点击播放：替换为video标签
+          var _played = false;
+          card.addEventListener('click', function() {
+            if (_played) return;
+            _played = true;
+            var video = document.createElement('video');
+            video.src = v.src;
+            video.muted = false;
+            video.playsInline = true;
+            video.controls = true;
+            video.autoplay = true;
+            video.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;background:#000;';
+            video.addEventListener('error', function() {
+              card.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:red;font-size:24px;">⚠️</div>';
             });
+            card.innerHTML = '';
+            card.style.background = '#000';
+            card.appendChild(video);
           });
 
-          video.load()
-
-          // Play icon overlay
-          var playIcon = document.createElement('div');
-          playIcon.className = 'reel-play-icon';
-          playIcon.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>';
-          playIcon.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (video.paused) {
-              video.style.opacity = '1';
-              video.play().catch(function(err) {
-                console.log('Video play error:', err);
-                playIcon.innerHTML = '<span style=color:red>⚠️</span>';
-              });
-              item.classList.remove('paused');
-            } else {
-              video.pause();
-            }
-          });
-          item.appendChild(playIcon);
-
-          // Bottom gradient overlay
-          var overlay = document.createElement('div');
-          overlay.className = 'reel-overlay';
-
-          if (v.title) {
-            var titleEl = document.createElement('div');
-            titleEl.className = 'reel-title';
-            titleEl.textContent = v.title;
-            overlay.appendChild(titleEl);
-          }
-
-          // 进度条 + 时间
-          var progressWrap = document.createElement('div');
-          progressWrap.className = 'reel-progress-wrap';
-
-          var progressBar = document.createElement('div');
-          progressBar.className = 'reel-progress-bar';
-          var progressFill = document.createElement('div');
-          progressFill.className = 'reel-progress-fill';
-          progressBar.appendChild(progressFill);
-
-          var timeDisplay = document.createElement('span');
-          timeDisplay.className = 'reel-time';
-          timeDisplay.textContent = '0:00 / 0:00';
-
-          progressWrap.appendChild(progressBar);
-          progressWrap.appendChild(timeDisplay);
-
-          // 进度条点击拖拽
-          var _seeking = false;
-          function getClickPct(e) {
-            var rect = progressBar.getBoundingClientRect();
-            var cx = e.clientX || (e.changedTouches && e.changedTouches[0].clientX) || 0;
-            var x = Math.max(0, Math.min(cx - rect.left, rect.width));
-            return x / rect.width;
-          }
-          function seekTo(e) {
-            if (!video || !video.duration) return;
-            var pct = getClickPct(e);
-            progressFill.classList.add('is-seeking');
-            progressFill.style.width = (pct * 100) + '%';
-            var dur = video.duration;
-            if (dur && isFinite(dur) && dur > 0) {
-              video.currentTime = pct * dur;
-            }
-          }
-          progressBar.addEventListener('mousedown', function(e) {
-            e.stopPropagation(); _seeking = true; seekTo(e);
-          });
-          document.addEventListener('mousemove', function(e) {
-            if (!_seeking) return;
-            e.preventDefault();
-            var pct = getClickPct(e);
-            progressFill.style.width = (pct * 100) + '%';
-          });
-          document.addEventListener('mouseup', function() {
-            if (_seeking) { _seeking = false; progressFill.classList.remove('is-seeking'); }
-          });
-          progressBar.addEventListener('click', function(e) { e.stopPropagation(); seekTo(e); });
-          progressBar.addEventListener('touchstart', function(e) {
-            e.stopPropagation(); _seeking = true; seekTo(e.changedTouches[0]);
-          }, { passive: true });
-          progressBar.addEventListener('touchmove', function(e) {
-            e.preventDefault(); seekTo(e.changedTouches[0]);
-          }, { passive: false });
-
-          overlay.appendChild(progressWrap);
-
-          // Controls
-          var controls = document.createElement('div');
-          controls.className = 'reel-controls';
-
-          var playBtn = document.createElement('button');
-          playBtn.className = 'reel-btn reel-btn-play';
-          playBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>';
-          playBtn.setAttribute('aria-label', '播放/暂停');
-          playBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (video.paused) {
-              video.style.opacity = '1';
-              video.play().catch(function(e){console.log('Video play error:',e);playIcon.innerHTML='<span style=color:red>⚠️</span>';});
-            } else {
-              video.pause();
-            }
-          });
-          // 移除了video.play/pause事件绑定（已在上方playIcon中处理）
-          controls.appendChild(playBtn);
-
-          var spacer = document.createElement('div');
-          spacer.style.flex = '1';
-          controls.appendChild(spacer);
-
-          // 缩放
-          var zoomBtn = document.createElement('button');
-          zoomBtn.className = 'reel-btn reel-btn-zoom';
-          zoomBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>';
-          zoomBtn.setAttribute('aria-label', '缩放模式');
-          zoomBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            item.classList.toggle('is-zoomed');
-            var isZoomed = item.classList.contains('is-zoomed');
-            zoomBtn.innerHTML = isZoomed
-              ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>'
-              : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>';
-          });
-          controls.appendChild(zoomBtn);
-
-          // 关闭按钮
-          var closeBtn = document.createElement('button');
-          closeBtn.className = 'reel-btn reel-btn-close';
-          closeBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-          closeBtn.setAttribute('aria-label', '关闭');
-          closeBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (!video) return;
-            video.pause();
-            video.currentTime = 0;
-            video.loop = false;
-            item.classList.add('paused');
-          });
-          controls.appendChild(closeBtn);
-
-          // 全屏
-          var fsBtn = document.createElement('button');
-          fsBtn.className = 'reel-btn reel-btn-fs';
-          fsBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>';
-          fsBtn.setAttribute('aria-label', '全屏播放');
-          fsBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (!video) return;
-            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-              if (item.requestFullscreen) item.requestFullscreen();
-              else if (item.webkitRequestFullscreen) item.webkitRequestFullscreen();
-            } else {
-              if (document.exitFullscreen) document.exitFullscreen();
-              else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-            }
-          });
-          function updateFsIcon() {
-            var isFS = !!(document.fullscreenElement || document.webkitFullscreenElement);
-            fsBtn.innerHTML = isFS
-              ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>'
-              : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>';
-          }
-          document.addEventListener('fullscreenchange', updateFsIcon);
-          document.addEventListener('webkitfullscreenchange', updateFsIcon);
-          controls.appendChild(fsBtn);
-
-          overlay.appendChild(controls);
-          item.appendChild(overlay);
-
-          // 点击视频切换播放/暂停
-          item.addEventListener('click', function(e) {
-            if (e.target.closest('.reel-controls') || e.target.closest('.reel-progress-wrap')) return;
-            if (video.paused) {
-              video.play().catch(function(e){console.log('Video play error:',e);item.querySelector('.reel-play-icon').innerHTML='<span style=color:red>⚠️</span>';});
-              item.classList.remove('paused');
-            } else {
-              video.pause();
-              item.classList.add('paused');
-            }
-          });
-
-          container.appendChild(item);
+          var wrapper = document.createElement('div');
+          wrapper.appendChild(card);
+          wrapper.appendChild(titleEl);
+          container.appendChild(wrapper);
         });
-
-        // BGM: 当 reels 区域离开视口时恢复背景音乐
-        var reelsContainer = document.getElementById('reels-container');
-        if (reelsContainer) {
-          var sectionObserver = new IntersectionObserver(function(entries) {
-            entries.forEach(function(entry) {
-              if (!entry.isIntersecting) {
-                var bgMusic = document.getElementById('bg-music');
-                if (bgMusic && bgMusic.dataset._wasPlaying === 'true' && bgMusic.paused) {
-                  bgMusic.play().catch(function(){});
-                }
-              }
-            });
-          }, { threshold: 0 });
-          sectionObserver.observe(reelsContainer);
-        }
       }
 
-      // Load videos from server data
-      function loadVideosFromServer(callback) {
+      // Hide the hint text since we use grid
+      var hint = container.closest('.reels-wrapper')?.querySelector('.reels-hint');
+      if (hint) hint.style.display = 'none';
+function loadVideosFromServer(callback) {
         var vxhr = new XMLHttpRequest();
         vxhr.open("GET", "/api/data/videos", true);
         vxhr.timeout = 20000;
