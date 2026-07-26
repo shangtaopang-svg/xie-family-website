@@ -702,15 +702,17 @@ document.addEventListener('DOMContentLoaded', function() {
   // 拦截所有导航链接点击
   document.querySelectorAll('.main-nav a, .mobile-bottom-nav a, .logo').forEach(function(link) {
     link.addEventListener('click', function(e) {
-      var href = this.getAttribute('href');
+      var href = this.getAttribute('href') || '';
       if (!href || href === '#' || href.startsWith('javascript:') || href.startsWith('http')) return;
-      if (href === window.location.pathname.replace(/\/$/, '').replace('/index.html', '/').replace(/^\//, '') || 
-          href === window.location.pathname.split('/').pop()) return;
+      // 当前页不跳转
+      var page = href.split('/').pop().replace('.html', '');
+      var cur = window.location.pathname.split('/').pop().replace('.html', '');
+      if (page === cur || (page === 'index' && cur === '')) return;
+      
       e.preventDefault();
-      e.stopPropagation();
-      overlay.removeAttribute('style');
-      document.body.style.overflow = 'hidden';
-      overlay.style.display = 'flex';
+      // 显示遮罩
+      overlay.style.cssText = 'display:flex !important;position:fixed;inset:0;z-index:999999;background:rgba(7,16,31,0.97);flex-direction:column;align-items:center;justify-content:center;';
+      // 800ms后跳转
       setTimeout(function() {
         window.location.href = href;
       }, 800);
