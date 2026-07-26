@@ -173,6 +173,50 @@ html { scroll-behavior: smooth; }
   50% { opacity: 0; }
 }
 
+/* ===== 漂浮几何图形 ===== */
+.geo-shapes {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.geo-shape {
+  position: absolute;
+  opacity: 0.15;
+  animation: geoFloat 20s ease-in-out infinite;
+}
+.geo-tri {
+  width: 28px;
+  height: 28px;
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+.geo-square {
+  width: 22px;
+  height: 22px;
+  border-radius: 2px;
+}
+.geo-circle {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+}
+.geo-green { background: #04BF00; }
+.geo-green-light { background: #22d84a; }
+.geo-gray { background: #8899aa; }
+.geo-gray-light { background: #aabbcc; }
+.geo-white { background: #ffffff; }
+
+@keyframes geoFloat {
+  0%   { transform: translate(0, 0) rotate(0deg) scale(1); }
+  25%  { transform: translate(30px, -40px) rotate(90deg) scale(1.1); }
+  50%  { transform: translate(-20px, -80px) rotate(180deg) scale(0.9); }
+  75%  { transform: translate(-40px, -30px) rotate(270deg) scale(1.05); }
+  100% { transform: translate(0, 0) rotate(360deg) scale(1); }
+}
+
+[data-theme="dark"] .geo-shape { opacity: 0.08; }
+
 /* ===== 链接悬浮下划线动画 ===== */
 .underline-anim {
   position: relative;
