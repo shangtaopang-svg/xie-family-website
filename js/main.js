@@ -695,20 +695,22 @@ document.addEventListener('DOMContentLoaded', function() {
     overlay = document.createElement('div');
     overlay.id = 'page-transition';
     overlay.style.display = 'none';
-    overlay.innerHTML = '<div class="pt-bar"></div><div class="pt-content"><div class="pt-tri"></div><div class="pt-title">ShangTaoPANG</div><div class="pt-sub">工作中<span class="pt-dot">.</span><span class="pt-dot">.</span><span class="pt-dot">.</span></div></div>';
+    overlay.innerHTML = '<div class="pt-bar"></div><div class="pt-content"><div class="pt-tri"><svg viewBox="0 0 60 60"><polygon points="30,4 56,50 4,50"/></svg></div><div class="pt-title">ShangTaoPANG</div><div class="pt-sub">工作中<span class="pt-dot">.</span><span class="pt-dot">.</span><span class="pt-dot">.</span></div></div>';
     document.body.appendChild(overlay);
   }
 
   // 拦截所有导航链接点击
   document.querySelectorAll('.main-nav a, .mobile-bottom-nav a, .logo').forEach(function(link) {
     link.addEventListener('click', function(e) {
-      var href = this.getAttribute('href') || this.closest('a')?.getAttribute('href');
+      var href = this.getAttribute('href');
       if (!href || href === '#' || href.startsWith('javascript:') || href.startsWith('http')) return;
+      if (href === window.location.pathname.replace(/\/$/, '').replace('/index.html', '/').replace(/^\//, '') || 
+          href === window.location.pathname.split('/').pop()) return;
       e.preventDefault();
-      // 显示遮罩
-      overlay.className = 'show';
+      e.stopPropagation();
+      overlay.removeAttribute('style');
+      document.body.style.overflow = 'hidden';
       overlay.style.display = 'flex';
-      // 动画播放完成后跳转
       setTimeout(function() {
         window.location.href = href;
       }, 800);

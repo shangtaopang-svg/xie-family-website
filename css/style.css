@@ -213,19 +213,28 @@ html { scroll-behavior: smooth; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* 绿色三角形 */
+/* 三角形加载动画 - 三条线构成 */
 .pt-tri {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   margin: 0 auto 24px;
-  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-  background: #04BF00;
-  animation: ptTriFloat 2s ease-in-out infinite;
-  box-shadow: 0 0 20px rgba(4,191,0,0.3);
+  position: relative;
 }
-@keyframes ptTriFloat {
-  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
-  50%      { transform: translateY(-12px) rotate(10deg) scale(1.05); opacity: 0.8; }
+.pt-tri svg {
+  width: 100%;
+  height: 100%;
+  animation: ptTriSpin 1.2s linear infinite;
+}
+.pt-tri svg polygon {
+  fill: none;
+  stroke: #04BF00;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@keyframes ptTriSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 .pt-title {
