@@ -47,20 +47,23 @@
       display: flex;
       overflow: hidden;
     }
+    .pi2-track {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.35s ease-in-out;
+    }
+    .pi2-track.show-page0 { transform: translateX(0); }
+    .pi2-track.show-page1 { transform: translateX(-50%); }
     .pi2-page {
-      min-width: 100%;
+      min-width: 50%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      transition: transform 0.35s ease-in-out;
       padding: 10px;
       box-sizing: border-box;
     }
-    .pi2-page.active { transform: translateX(0); }
-    .pi2-page:not(.active) { transform: translateX(0); }
-    .pi2-page.slide-left { transform: translateX(-100%); }
-    .pi2-page.slide-right { transform: translateX(100%); }
 
     .pi2-tabs {
       display: flex;
@@ -278,10 +281,13 @@
       // Page wrapper for sliding
       var pagesWrap = document.createElement('div');
       pagesWrap.className = 'pi2-pages';
+      
+      var track = document.createElement('div');
+      track.className = 'pi2-track show-page0';
 
       // Page 1: 观看视频
       var page1 = document.createElement('div');
-      page1.className = 'pi2-page active';
+      page1.className = 'pi2-page';
       page1.id = 'pi2-p1-' + (v.id || Math.random().toString(36).slice(2, 8));
 
       var titleEl = document.createElement('div');
@@ -299,7 +305,7 @@
       btn.innerHTML = '▶ 观看视频';
       page1.appendChild(btn);
 
-      pagesWrap.appendChild(page1);
+      track.appendChild(page1);
 
       // Page 2: 介绍
       var page2 = document.createElement('div');
@@ -315,8 +321,8 @@
       descEl.textContent = v.desc || '下枫槎村影像记录';
       page2.appendChild(descEl);
 
-      pagesWrap.appendChild(page2);
-
+      track.appendChild(page2);
+      pagesWrap.appendChild(track);
       inner.appendChild(pagesWrap);
 
       // Tab dots
@@ -335,32 +341,14 @@
       popup.appendChild(inner);
       card.appendChild(popup);
 
-      // Tab switching
-      var pages = [page1, page2];
+      // Tab switching (translate the track)
       var pi2Tabs = [tab1, tab2];
-      var currentPage = 0;
       pi2Tabs.forEach(function(t, idx) {
         t.addEventListener('click', function(e) {
           e.stopPropagation();
-          if (idx === currentPage) return;
-          // Slide out current, slide in new
-          var direction = idx > currentPage ? -1 : 1;
-          pages[currentPage].classList.remove('active');
-          pages[idx].classList.remove('slide-left', 'slide-right');
-          if (direction === -1) {
-            pages[idx].classList.add('slide-left');
-          } else {
-            pages[idx].classList.add('slide-right');
-          }
-          // After transition, set active
-          setTimeout(function() {
-            pages[currentPage].classList.remove('slide-left', 'slide-right');
-            pages[idx].classList.remove('slide-left', 'slide-right');
-            pages[idx].classList.add('active');
-            currentPage = idx;
-            pi2Tabs.forEach(function(t2) { t2.classList.remove('active'); });
-            t.classList.add('active');
-          }, 50);
+          track.className = 'pi2-track show-page' + idx;
+          pi2Tabs.forEach(function(t2) { t2.classList.remove('active'); });
+          t.classList.add('active');
         });
       });
 
@@ -380,11 +368,9 @@
           card.style.backgroundPosition = 'center';
           popup.style.display = '';
           // Reset to page 0 (观看视频)
-          var allPages = popup.querySelectorAll('.pi2-page');
+          var pi2Track = popup.querySelector('.pi2-track');
           var allTabs = popup.querySelectorAll('.pi2-tab');
-          if (allPages.length) {
-            allPages.forEach(function(p, i) { p.classList.remove('active', 'slide-left', 'slide-right'); if (i === 0) p.classList.add('active'); });
-          }
+          if (pi2Track) pi2Track.className = 'pi2-track show-page0';
           if (allTabs.length) {
             allTabs.forEach(function(t, i) { t.classList.remove('active'); if (i === 0) t.classList.add('active'); });
           }
@@ -429,11 +415,9 @@
           card.style.backgroundPosition = 'center';
           popup.style.display = '';
           // Reset to page 0 (观看视频)
-          var allPages = popup.querySelectorAll('.pi2-page');
+          var pi2Track = popup.querySelector('.pi2-track');
           var allTabs = popup.querySelectorAll('.pi2-tab');
-          if (allPages.length) {
-            allPages.forEach(function(p, i) { p.classList.remove('active', 'slide-left', 'slide-right'); if (i === 0) p.classList.add('active'); });
-          }
+          if (pi2Track) pi2Track.className = 'pi2-track show-page0';
           if (allTabs.length) {
             allTabs.forEach(function(t, i) { t.classList.remove('active'); if (i === 0) t.classList.add('active'); });
           }
