@@ -107,10 +107,24 @@
           item.dataset.videoId = v.id || ('v_' + idx);
 
           // 封面海报作为背景（不使用video标签，避免浏览器显示黄色感叹号）
-          var posterUrl = '/images/video-posters/' + v.src.replace('/video/', '').replace('.mp4', '') + '-poster.jpg';
-          item.style.backgroundImage = 'url(' + posterUrl + ')';
-          item.style.backgroundSize = 'cover';
-          item.style.backgroundPosition = 'center';
+          var posterUrl = '';
+          // 优先使用视频数据中的poster字段（管理后台上传时设置）
+          if (v.poster && v.poster.trim()) {
+            posterUrl = v.poster;
+          } else if (v.src && v.src.indexOf('/video/') === 0) {
+            // 硬编码视频：/images/video-posters/xxx-poster.jpg
+            var pn = v.src.replace('/video/', '').replace('.mp4', '') + '-poster.jpg';
+            posterUrl = '/images/video-posters/' + pn;
+          } else if (v.src && v.src.indexOf('/uploads/') === 0) {
+            // 用户上传视频：/uploads/posters/xxx.jpg
+            var upn = v.src.replace('/uploads/videos/', '').replace('.mp4', '') + '.jpg';
+            posterUrl = '/uploads/posters/' + upn;
+          }
+          if (posterUrl) {
+            item.style.backgroundImage = 'url(' + posterUrl + ')';
+            item.style.backgroundSize = 'cover';
+            item.style.backgroundPosition = 'center';
+          }
 
           // 视频元素（初始不创建，点击播放时才生成）
           var video = null;
