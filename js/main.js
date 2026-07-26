@@ -687,3 +687,57 @@ document.addEventListener('DOMContentLoaded', initCarousel);
     }, { passive: true });
   });
 })();
+/* ===== 打字机效果 ===== */
+document.addEventListener('DOMContentLoaded', function() {
+  function typeWriter(el, text, speed, callback) {
+    el.textContent = '';
+    var cursor = document.createElement('span');
+    cursor.className = 'tw-cursor';
+    el.after(cursor);
+    var i = 0;
+    function type() {
+      if (i < text.length) {
+        el.textContent += text.charAt(i);
+        i++;
+        setTimeout(type, speed);
+      } else {
+        setTimeout(function() {
+          cursor.classList.add('stop');
+          setTimeout(function() {
+            if (cursor.parentNode) cursor.remove();
+            if (callback) callback();
+          }, 2500);
+        }, 500);
+      }
+    }
+    type();
+  }
+
+  // 侧边栏打字：下枫槎谢氏
+  var sidebarTitle = document.querySelector('.logo-text h1');
+  if (sidebarTitle && !sessionStorage.getItem('tw_sidebar_done')) {
+    var origText = sidebarTitle.textContent;
+    if (origText) {
+      typeWriter(sidebarTitle, origText, 120, function() {
+        sessionStorage.setItem('tw_sidebar_done', '1');
+      });
+    }
+  }
+
+  // 首页 hero 打字：乌衣世泽 宝树家声 → 副标题
+  var heroMotto = document.querySelector('.hero-motto');
+  if (heroMotto && !sessionStorage.getItem('tw_hero_done')) {
+    var mottoText = heroMotto.textContent;
+    heroMotto.style.display = 'inline-block';
+    typeWriter(heroMotto, mottoText, 150, function() {
+      var heroSub = document.querySelector('.hero-sub');
+      if (heroSub) {
+        var subText = heroSub.textContent;
+        heroSub.style.display = 'inline-block';
+        typeWriter(heroSub, subText, 100, function() {
+          sessionStorage.setItem('tw_hero_done', '1');
+        });
+      }
+    });
+  }
+});
