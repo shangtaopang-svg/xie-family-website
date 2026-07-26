@@ -8,6 +8,60 @@
   <link rel="stylesheet" href="../css/style.css?v=5">
   <script defer src="../js/i18n.js"></script>
   <link rel="manifest" href="../manifest.json">
+    <style>
+    .card2 { transition: all 0.3s ease-in-out; }
+    .card2:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+    .popup-info2 {
+      position: absolute;
+      left: -100%;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(7,16,31,0.95);
+      border: 1.5px solid #04BF00;
+      transition: left 0.35s ease-in-out;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .card2:hover .popup-info2 { left: 0; }
+    .watch-btn {
+      display: inline-block;
+      padding: 8px 20px;
+      background: #fff;
+      color: #111;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      text-decoration: none;
+      margin-top: 10px;
+    }
+    .watch-btn:hover { background: #04BF00; color: #fff; }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+    .card-sub {
+      font-size: 11px;
+      color: rgba(255,255,255,0.6);
+      text-align: center;
+    }
+    @media (max-width: 640px) {
+      .popup-info2 { padding: 12px; }
+      .card-title { font-size: 12px; }
+      .watch-btn { font-size: 11px; padding: 6px 14px; }
+    }
+  </style>
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
 </head>
 <body>
@@ -111,6 +165,10 @@
 
   function buildGrid(videos) {
     container.innerHTML = '';
+    container.style.display = 'grid';
+    container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(250px, 1fr))';
+    container.style.gap = '16px';
+    container.style.padding = '8px 0';
 
     var allVids = [
       { id: 'intro', src: '/video/reports-intro.mp4', title: '下枫槎宣传片' },
@@ -126,78 +184,156 @@
 
     allVids.forEach(function(v) {
       var card = document.createElement('div');
-      card.style.cssText = 'border-radius:12px;overflow:hidden;background:var(--bg-card);border:1px solid var(--glass-border);cursor:pointer;transition:all 0.3s ease;box-shadow:0 2px 8px rgba(0,0,0,0.06);';
-      card.onmouseenter = function() { card.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)'; card.style.transform = 'translateY(-2px)'; };
-      card.onmouseleave = function() { card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; card.style.transform = ''; };
+      card.className = 'card2';
+      card.style.cssText = 'position:relative;overflow:hidden;cursor:pointer;background:radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0f 100%);background-size:cover;background-position:center;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);width:100%;aspect-ratio:4/3;';
 
-      var thumb = document.createElement('div');
-      thumb.style.cssText = 'aspect-ratio:16/9;position:relative;background:radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0f 100%);background-size:cover;background-position:center;';
-
+      // 海报封面
       var posterUrl = '';
       if (v.poster && v.poster.trim()) {
         posterUrl = v.poster;
       } else if (v.src && v.src.indexOf('/video/') === 0) {
         var pn = v.src.replace('/video/', '').replace('_comp.mp4', '.mp4').replace('.mp4', '') + '-poster.jpg';
         posterUrl = '/images/video-posters/' + pn;
-        thumb.style.backgroundImage = 'url(' + posterUrl + ')';
       } else if (v.src && v.src.indexOf('/uploads/') === 0) {
         var upn = v.src.replace('/uploads/videos/', '').replace('_comp.mp4', '.mp4').replace('.mp4', '') + '.jpg';
         posterUrl = '/uploads/posters/' + upn;
-        thumb.style.backgroundImage = 'url(' + posterUrl + ')';
       }
 
-      var badge = document.createElement('div');
-      badge.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)"><polygon points="8,5 19,12 8,19 8,5"/></svg>';
-      badge.style.cssText = 'position:absolute;bottom:8px;right:8px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
-      thumb.appendChild(badge);
-      card.appendChild(thumb);
+      if (posterUrl) {
+        card.style.backgroundImage = 'url(' + posterUrl + ')';
+      }
 
-      var info = document.createElement('div');
-      info.style.cssText = 'padding:10px 12px 12px;';
+      // 滑入面板（popup-info2 — 参考网站效果）
+      var popup = document.createElement('div');
+      popup.className = 'popup-info2';
+
       var titleEl = document.createElement('div');
+      titleEl.className = 'card-title';
       titleEl.textContent = v.title || '';
-      titleEl.style.cssText = 'font-size:13px;font-weight:500;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
-      info.appendChild(titleEl);
-      card.appendChild(info);
+      popup.appendChild(titleEl);
 
-      var _played = false;
-      card.addEventListener('click', function() {
-        if (_played) return;
-        _played = true;
-        card.innerHTML = '';
+      var subEl = document.createElement('div');
+      subEl.className = 'card-sub';
+      subEl.textContent = '下枫槎·谢氏';
+      popup.appendChild(subEl);
+
+      var btn = document.createElement('div');
+      btn.className = 'watch-btn';
+      btn.innerHTML = '▶ 观看视频';
+      popup.appendChild(btn);
+
+      card.appendChild(popup);
+
+      // 点击播放/关闭
+      var _playing = false;
+      var _videoEl = null;
+      card.addEventListener('click', function(e) {
+        if (_playing) {
+          // 关闭
+          _videoEl.pause();
+          _videoEl.remove();
+          _videoEl = null;
+          _playing = false;
+          card.style.background = '';
+          if (posterUrl) card.style.backgroundImage = 'url(' + posterUrl + ')';
+          card.style.backgroundSize = 'cover';
+          card.style.backgroundPosition = 'center';
+          popup.style.display = '';
+          card.style.aspectRatio = '4/3';
+          return;
+        }
+
+        _playing = true;
+        popup.style.display = 'none';
         card.style.background = '#000';
-        card.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)';
-        card.style.transform = '';
-        card.onmouseenter = null;
-        card.onmouseleave = null;
+        card.style.backgroundImage = '';
 
-        var video = document.createElement('video');
-        video.src = v.src;
-        video.muted = false;
-        video.playsInline = true;
-        video.controls = true;
-        video.autoplay = true;
-        video.preload = 'auto';
-        video.style.cssText = 'width:100%;display:block;background:#000;';
+        _videoEl = document.createElement('video');
+        _videoEl.src = v.src;
+        _videoEl.muted = false;
+        _videoEl.playsInline = true;
+        _videoEl.controls = true;
+        _videoEl.autoplay = true;
+        _videoEl.preload = 'auto';
+        _videoEl.style.cssText = 'width:100%;height:100%;display:block;background:#000;object-fit:contain;';
 
-        video.addEventListener('loadedmetadata', function() {
-          if (video.videoHeight && video.videoWidth) {
-            video.style.aspectRatio = video.videoWidth / video.videoHeight;
-          }
+        _videoEl.addEventListener('error', function() {
+          card.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#000;color:#ff6b6b;font-size:24px;">\u26a0\ufe0f</div>';
         });
 
-        video.addEventListener('error', function() {
-          card.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;background:#000;color:#ff6b6b;gap:12px;"><span style="font-size:32px;">⚠️</span><span style="font-size:13px;">视频加载失败</span></div>';
+        _videoEl.addEventListener('ended', function() {
+          _videoEl.remove();
+          _videoEl = null;
+          _playing = false;
+          card.style.background = '';
+          if (posterUrl) card.style.backgroundImage = 'url(' + posterUrl + ')';
+          card.style.backgroundSize = 'cover';
+          card.style.backgroundPosition = 'center';
+          popup.style.display = '';
+          card.style.aspectRatio = '4/3';
         });
 
-        card.appendChild(video);
+        card.appendChild(_videoEl);
+      });
+
+      card.addEventListener('click', function() {
+        if (card.dataset.playing === 'true') {
+          mediaBox.innerHTML = '';
+          mediaBox.style.background = '';
+          mediaBox.style.backgroundImage = posterUrl ? 'url(' + posterUrl + ')' : '';
+          mediaBox.style.backgroundSize = 'cover';
+          mediaBox.style.backgroundPosition = 'center';
+          mediaBox.appendChild(badge);
+          delete card.dataset.playing;
+          card.style.cursor = 'pointer';
+          card.onmouseenter = function() { card.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)'; card.style.transform = 'translateY(-2px)'; };
+          card.onmouseleave = function() { card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; card.style.transform = ''; };
+        } else {
+          card.dataset.playing = 'true';
+          card.style.cursor = 'default';
+          card.onmouseenter = null;
+          card.onmouseleave = null;
+          card.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)';
+          card.style.transform = '';
+
+          mediaBox.innerHTML = '';
+          mediaBox.style.background = '#000';
+          mediaBox.style.backgroundImage = '';
+
+          var video = document.createElement('video');
+          video.src = v.src;
+          video.muted = false;
+          video.playsInline = true;
+          video.controls = true;
+          video.autoplay = true;
+          video.preload = 'auto';
+          video.style.cssText = 'width:100%;height:100%;display:block;background:#000;object-fit:contain;';
+
+          video.addEventListener('error', function() {
+            mediaBox.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#000;color:#ff6b6b;font-size:24px;">\u26a0\ufe0f</div>';
+          });
+
+          video.addEventListener('ended', function() {
+            mediaBox.innerHTML = '';
+            mediaBox.style.background = '';
+            mediaBox.style.backgroundImage = posterUrl ? 'url(' + posterUrl + ')' : '';
+            mediaBox.style.backgroundSize = 'cover';
+            mediaBox.style.backgroundPosition = 'center';
+            mediaBox.appendChild(badge);
+            delete card.dataset.playing;
+            card.style.cursor = 'pointer';
+            card.onmouseenter = function() { card.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)'; card.style.transform = 'translateY(-2px)'; };
+            card.onmouseleave = function() { card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; card.style.transform = ''; };
+          });
+
+          mediaBox.appendChild(video);
+        }
       });
 
       container.appendChild(card);
     });
   }
 
-  // Load videos from server
   try {
     var cached = JSON.parse(localStorage.getItem('xie_admin_videos') || '[]');
     if (cached.length) {
@@ -210,7 +346,6 @@
     buildGrid(allVideos);
   } catch(e) { buildGrid(allVideos); }
 
-  // Fresh data
   var xhr = new XMLHttpRequest();
   xhr.open("GET", "/api/data/videos", true);
   xhr.timeout = 20000;
@@ -234,7 +369,7 @@
   xhr.onerror = function() {};
   xhr.send();
 })();
-</script>
+</script></script>
 
 </body>
 </html>
