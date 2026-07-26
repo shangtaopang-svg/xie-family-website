@@ -714,7 +714,16 @@ document.addEventListener('DOMContentLoaded', function() {
     e.preventDefault();
     e.stopPropagation();
     sessionStorage.setItem('pt_transition', '1');
-    overlay.style.cssText = 'display:flex !important;';
+    overlay.style.cssText = 'display:flex !important;position:fixed;inset:0;z-index:999999;background:rgb(7,16,31);flex-direction:column;align-items:center;justify-content:center;';
+    // Inject keyframes if not exists
+    if (!document.getElementById('pt-keyframes')) {
+      var ks = document.createElement('style');
+      ks.id = 'pt-keyframes';
+      ks.textContent = '@keyframes ptBarSlide{0%{left:-100%}100%{left:0}}';
+      document.head.appendChild(ks);
+    }
+    var bar = overlay.querySelector('.pt-bar');
+    if (bar) { bar.style.cssText = 'position:absolute;bottom:0;left:-100%;height:3px;width:100%;background:#04BF00;box-shadow:0 0 12px rgba(4,191,0,0.5);animation:ptBarSlide 0.7s ease-in-out forwards;'; }
     setTimeout(function() {
       window.location.href = href;
     }, 800);
