@@ -352,6 +352,24 @@
         });
       });
 
+      // 悬停自动切换面板（仅在未播放时）
+      var _autoTimer = null;
+      var _currentAutoPage = 0;
+      card.addEventListener('mouseenter', function() {
+        if (_playing || !posterUrl) return;
+        _autoTimer = setInterval(function() {
+          _currentAutoPage = _currentAutoPage === 0 ? 1 : 0;
+          track.className = 'pi2-track show-page' + _currentAutoPage;
+          pi2Tabs.forEach(function(t2, i2) { t2.classList.toggle('active', i2 === _currentAutoPage); });
+        }, 2500);
+      });
+      card.addEventListener('mouseleave', function() {
+        if (_autoTimer) { clearInterval(_autoTimer); _autoTimer = null; }
+        _currentAutoPage = 0;
+        track.className = 'pi2-track show-page0';
+        pi2Tabs.forEach(function(t2, i2) { t2.classList.toggle('active', i2 === 0); });
+      });
+
       // 点击播放/关闭
       var _playing = false;
       var _videoEl = null;
@@ -379,6 +397,7 @@
         }
 
         _playing = true;
+        if (_autoTimer) { clearInterval(_autoTimer); _autoTimer = null; }
         popup.style.display = 'none';
         card.style.background = '#000';
         card.style.backgroundImage = '';
