@@ -699,24 +699,24 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.appendChild(overlay);
   }
 
-  // 拦截所有导航链接点击
-  document.querySelectorAll('.main-nav a, .mobile-bottom-nav a, .logo').forEach(function(link) {
-    link.addEventListener('click', function(e) {
-      var href = this.getAttribute('href') || '';
-      if (!href || href === '#' || href.startsWith('javascript:') || href.startsWith('http')) return;
-      // 当前页不跳转
-      var page = href.split('/').pop().replace('.html', '');
-      var cur = window.location.pathname.split('/').pop().replace('.html', '');
-      if (page === cur || (page === 'index' && cur === '')) return;
-      
-      e.preventDefault();
-      // 显示遮罩
-      overlay.style.cssText = 'display:flex !important;position:fixed;inset:0;z-index:999999;background:rgba(7,16,31,0.97);flex-direction:column;align-items:center;justify-content:center;';
-      // 800ms后跳转
-      setTimeout(function() {
-        window.location.href = href;
-      }, 800);
-    });
+  // 事件委托：拦截所有导航点击
+  document.addEventListener('click', function(e) {
+    var link = e.target.closest('a');
+    if (!link) return;
+    var href = link.getAttribute('href') || '';
+    // 只拦截站内导航
+    if (!href || href === '#' || href.startsWith('javascript:') || href.startsWith('http') || href.startsWith('tel:') || href.startsWith('mailto:')) return;
+    if (!href.includes('.html') && !href.includes('/')) return;
+    // 当前页不跳转
+    var cur = window.location.pathname.split('/').pop() || 'index.html';
+    if (href === cur || href === './' + cur) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+    overlay.style.cssText = 'display:flex !important;position:fixed;inset:0;z-index:999999;background:rgba(7,16,31,0.97);flex-direction:column;align-items:center;justify-content:center;';
+    setTimeout(function() {
+      window.location.href = href;
+    }, 800);
   });
 });
 
