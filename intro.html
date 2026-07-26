@@ -397,6 +397,13 @@
     }
     .form-btn:hover { background: #7a2e46; transform: translateY(-2px); box-shadow: 0 4px 16px rgba(142,52,81,0.3); }
     
+    .contact-map {
+      width: 100%;
+      height: 220px;
+      margin-top: 16px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
     .contact-card {
       background: #fff;
       padding: 36px 32px;
@@ -719,6 +726,8 @@
             <a href="mailto:shangtaopang@gmail.com">shangtaopang@gmail.com</a>
           </div>
         </div>
+        <!-- Map -->
+        <div class="contact-map" id="contact-map"></div>
       </div>
     </div>
   </div>
@@ -756,7 +765,22 @@
   </div>
 </footer>
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+// Init map
+document.addEventListener('DOMContentLoaded', function() {
+  var mapEl = document.getElementById('contact-map');
+  if (mapEl && typeof L !== 'undefined') {
+    var map = L.map(mapEl, { zoomControl: false }).setView([29.292, 121.431], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19, attribution: '© OpenStreetMap'
+    }).addTo(map);
+    L.marker([29.292, 121.431]).addTo(map)
+      .bindPopup('宁海县北斗北路81弄11号');
+  }
+});
+
 // Scroll animations (向下滑动出现，向上滑动隐藏)
 (function(){
   var els = document.querySelectorAll('.scroll-up, .scroll-left, .scroll-right, .scroll-scale');
