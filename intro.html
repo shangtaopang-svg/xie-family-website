@@ -132,12 +132,36 @@
       text-align: center;
       position: relative;
     }
-    .hero::after {
+    .hero::before {
       content: '';
       position: absolute;
       inset: 0;
       background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
       opacity: 0.3;
+      pointer-events: none;
+    }
+    /* 两个装饰三角形 */
+    .hero-tri1, .hero-tri2 {
+      position: absolute;
+      width: 0;
+      height: 0;
+      z-index: 2;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+    .hero-tri1 {
+      top: 0;
+      right: 0;
+      border-style: solid;
+      border-width: 0 120px 120px 0;
+      border-color: transparent #fff transparent transparent;
+    }
+    .hero-tri2 {
+      bottom: 0;
+      left: 0;
+      border-style: solid;
+      border-width: 0 0 120px 120px;
+      border-color: transparent transparent #fff transparent;
     }
     .hero-content { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
     .hero-logo {
@@ -578,6 +602,8 @@
 
 <!-- ===== Hero ===== -->
 <section class="hero">
+  <div class="hero-tri1"></div>
+  <div class="hero-tri2"></div>
   <div class="hero-content fade-up visible">
     <div class="hero-logo"><img src="images/shangtaopang.jpg" alt="ShangTaoPang"></div>
     <h1>ShangTaoPang</h1>
