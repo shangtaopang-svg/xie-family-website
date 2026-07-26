@@ -1,94 +1,91 @@
 /* ============================================
-   手机端专属样式 · 黑底霓虹黄主题
+   手机端 · 黑底霓虹黄主题
+   复刻「桦褐孔菌松茸茶」小程序设计
    完全独立，不影响桌面端
-   加载方式: <link media="(max-width:768px)" href="css/mobile.css">
    ============================================ */
 
 /* ===== 变量 ===== */
 :root {
   --mb-bg: #0a0a0a;
   --mb-brand: #D4FF3A;
+  --mb-brand-dim: #1a2200;
   --mb-card: #141414;
   --mb-card2: #1c1c1c;
   --mb-border: #2a2a2a;
   --mb-text: #f5f5f5;
   --mb-sub: #888888;
   --mb-muted: #555555;
+  --mb-radius: 12px;
+  --mb-radius-lg: 20px;
+  --mb-radius-pill: 999px;
 }
 
-/* ===== 基础重置 ===== */
 body {
   background: var(--mb-bg) !important;
   color: var(--mb-text) !important;
+  font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif !important;
   padding-bottom: 70px !important;
 }
 
-/* ===== 隐藏桌面元素 ===== */
+/* ===== 隐藏桌面端所有元素 ===== */
 .site-header, .nav-controls, .sidebar-controls,
 .back-page-btn, .back-top, .float-toolbar,
-.hero-marquee, .hero-bg-toggle,
-.main-nav, .header-actions, .nav-toggle,
-.site-footer, .footer-inner, .footer-bottom { display: none !important; }
+.hero-marquee, .hero-bg-toggle, .main-nav,
+.header-actions, .nav-toggle, .nav-links,
+.site-footer, .footer-inner, .footer-bottom,
+.mobile-bottom-nav, .weather-controls, #weather-canvas, #bg-canvas,
+.photo-wrapper, .carousel-container, .carousel-dots,
+.reels-wrapper, .reels-hint, .media-row-section,
+.hc, .hc-card, .hc .arrow,
+#clk, #vn, #hero-text, #btnw, #ent,
+#spl, #spr, #ref-portal, #overlay, #village, #world,
+#stage, .sp, .sb { display: none !important; }
 
 .content { margin-left: 0 !important; padding: 0 !important; }
 
-/* ===== 页面包装 ===== */
+/* ===== 页面容器 ===== */
 .page-wrap { padding: 0 16px 16px !important; }
-.page-title { padding: 20px 0 12px !important; text-align: left !important; border: none !important; }
-.page-title h2 { font-size: 26px !important; color: #fff !important; font-weight: 700 !important; letter-spacing: 0.5px !important; }
-.page-title p { font-size: 13px !important; color: var(--mb-sub) !important; margin-top: 2px !important; }
-.section-title { margin-bottom: 14px !important; text-align: left !important; }
-.section-title h2 { font-size: 20px !important; color: #fff !important; font-weight: 700 !important; }
-.section-title p { font-size: 12px !important; color: var(--mb-sub) !important; }
-.section-title .divider { display: none !important; }
+.page-title {
+  padding: 20px 0 12px !important;
+  text-align: left !important;
+  border: none !important;
+}
+.page-title h2 {
+  font-size: 26px !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+}
+.page-title p {
+  font-size: 13px !important;
+  color: var(--mb-sub) !important;
+  margin-top: 2px !important;
+}
 
 /* ===== 通用卡片 ===== */
-[class*="card"]:not(.mb-tab):not(.reel-item):not(.reel-card):not(.photo-item) {
+[class*="card"]:not(.mb-tab) {
   background: var(--mb-card) !important;
   border: 1px solid var(--mb-border) !important;
-  border-radius: 16px !important;
+  border-radius: var(--mb-radius-lg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
   padding: 16px !important;
 }
-.glass-card { background: var(--mb-card) !important; border-color: var(--mb-border) !important; }
 
-/* ===== 分割线 ===== */
-.divider, hr, [class*="divider"] { background: var(--mb-border) !important; }
-.section-wrap { border: none !important; }
-
-/* ===== 文字颜色 ===== */
+/* ===== 文字覆盖 ===== */
 h1, h2, h3, h4, h5 { color: #fff !important; }
-p, li, td, th, label, span, div { color: var(--mb-text); }
+p, li, td, th, span, div, label { color: var(--mb-text); }
 .text-secondary, .text-tertiary, .text-muted { color: var(--mb-sub) !important; }
-
-/* ===== 按钮（胶囊风格） ===== */
-.mb-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 11px 28px;
-  border-radius: 999px;
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: opacity 0.15s;
-  border: none;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-.mb-btn:active { opacity: 0.7; transform: scale(0.97); }
-.mb-btn-primary { background: var(--mb-brand); color: #000 !important; }
-.mb-btn-ghost { background: transparent; color: var(--mb-brand) !important; border: 1.5px solid var(--mb-brand); }
+a { color: var(--mb-brand); }
+.divider, hr { background: var(--mb-border) !important; }
 
 /* ===== 底部导航 ===== */
 .mb-tabbar {
   display: flex !important;
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  height: 60px;
+  height: 56px;
   background: #0f0f0f;
   border-top: 1px solid #222;
   z-index: 999999;
@@ -108,107 +105,185 @@ p, li, td, th, label, span, div { color: var(--mb-text); }
 }
 .mb-tab:active { opacity: 0.6; }
 .mb-tab-icon { font-size: 20px; line-height: 1; }
-.mb-tab-label { font-size: 10px; color: #555; font-weight: 500; margin-top: 1px; }
+.mb-tab-label { font-size: 10px; color: #555; font-weight: 500; letter-spacing: 0; }
 .mb-tab.active .mb-tab-label { color: var(--mb-brand); }
-
-/* ===== 模块标题 ===== */
-.mb-section-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 16px 0 10px;
-}
-.mb-section-header .dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--mb-brand);
-  flex-shrink: 0;
-}
-.mb-section-header h3 {
-  font-size: 17px !important;
-  font-weight: 700 !important;
-  color: #fff !important;
-  flex: 1;
-  margin: 0 !important;
-}
-.mb-section-header .more {
-  font-size: 12px;
-  color: var(--mb-sub);
-  text-decoration: none;
-}
 
 /* ===== 首页 Hero ===== */
 .hero-section {
   min-height: auto !important;
-  padding: 24px 16px 16px !important;
+  padding: 20px 16px !important;
 }
 .hero-motto {
-  font-size: 32px !important;
+  font-size: 30px !important;
   color: #fff !important;
+  font-weight: 700 !important;
   letter-spacing: 2px !important;
   text-align: left !important;
+  margin-bottom: 4px !important;
 }
 .hero-sub {
-  font-size: 14px !important;
+  font-size: 13px !important;
   color: var(--mb-sub) !important;
+  font-weight: 400 !important;
   text-align: left !important;
   margin-bottom: 16px !important;
 }
 .hero-desc { display: none !important; }
-.hero-info { margin-bottom: 0 !important; }
+.hero-info { margin-bottom: 12px !important; }
 .hero-date-box {
   background: var(--mb-card) !important;
-  border-color: var(--mb-border) !important;
+  border: 1px solid var(--mb-border) !important;
   border-radius: 16px !important;
-  padding: 14px 18px !important;
+  padding: 14px 16px !important;
   backdrop-filter: none !important;
+  box-shadow: none !important;
 }
-.hero-date-day { font-size: 32px !important; color: #fff !important; }
+.hero-date-day { font-size: 30px !important; color: #fff !important; }
 .hero-date-month { font-size: 14px !important; }
-.hero-divider { background: var(--mb-border) !important; }
+.hero-divider { background: var(--mb-border) !important; width: 1px !important; height: 36px !important; }
 .hero-stats {
   position: relative !important;
   transform: none !important;
   left: auto !important;
   bottom: auto !important;
-  margin-top: 16px !important;
-  gap: 12px !important;
+  margin-top: 12px !important;
+  gap: 8px !important;
+  flex-wrap: wrap;
 }
 .hero-stat-num { font-size: 18px !important; color: var(--mb-brand) !important; }
-.hero-stat-label { font-size: 10px !important; color: var(--mb-sub) !important; }
+.hero-stat-label { font-size: 10px !important; color: var(--mb-sub) !important; letter-spacing: 0.5px !important; }
+.hero-stat-dot { display: none !important; }
+.hero-bg-toggle { display: none !important; }
+#map-bg { display: none !important; }
 
-/* ===== 族谱查询页 ===== */
-.genealogy-search {
+/* ===== 村庄简介 ===== */
+.fade-in-section {
+  margin: 0 !important;
+  padding: 0 16px !important;
+}
+.fade-in-section .section-title {
+  text-align: left !important;
+  margin-bottom: 12px !important;
+}
+.fade-in-section .section-title h2 {
+  font-size: 20px !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+}
+.fade-in-section .section-title .divider { display: none !important; }
+.fade-in-section .section-title p {
+  font-size: 12px !important;
+  color: var(--mb-sub) !important;
+}
+.fade-in-section .glass-card {
+  background: var(--mb-card) !important;
+  border-color: var(--mb-border) !important;
+  border-radius: 16px !important;
+  padding: 16px !important;
+  margin-bottom: 16px !important;
+}
+.fade-in-section .glass-card p {
+  font-size: 13px !important;
+  line-height: 1.8 !important;
+  color: var(--mb-sub) !important;
+}
+.stat-card {
+  background: var(--mb-card) !important;
+  border-color: var(--mb-border) !important;
+  border-radius: 12px !important;
+  padding: 12px 8px !important;
+}
+.stat-card div:first-child { color: var(--mb-brand) !important; }
+.stat-card div:last-child { color: var(--mb-sub) !important; }
+
+/* ===== 引用 ===== */
+.fullwidth-quote {
+  padding: 20px 16px !important;
+}
+.quote-text {
+  font-size: 16px !important;
+  color: var(--mb-brand) !important;
+}
+.quote-author {
+  font-size: 12px !important;
+  color: var(--mb-sub) !important;
+}
+.quote-line { background: var(--mb-border) !important; }
+
+/* ===== 音频入口 ===== */
+section a[href*="audio"] {
   background: var(--mb-card) !important;
   border-color: var(--mb-border) !important;
   border-radius: 16px !important;
 }
-.genealogy-search input,
-.genealogy-search select {
-  background: #1c1c1c !important;
-  border-color: var(--mb-border) !important;
+
+/* ===== Section wrap ===== */
+.section-wrap { border: none !important; }
+.section-title { text-align: left !important; margin-bottom: 12px !important; }
+.section-title h2 { font-size: 20px !important; color: #fff !important; font-weight: 700 !important; }
+.section-title p { font-size: 12px !important; color: var(--mb-sub) !important; }
+.section-title .divider { display: none !important; }
+
+/* ===== 按钮 ===== */
+.mb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 24px;
+  border-radius: var(--mb-radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.mb-btn:active { opacity: 0.7; transform: scale(0.97); }
+.mb-btn-primary { background: var(--mb-brand); color: #000 !important; }
+.mb-btn-ghost { background: transparent; color: var(--mb-brand) !important; border: 1.5px solid var(--mb-brand); }
+
+/* ===== 族谱查询页 ===== */
+.genealogy-tools {
+  background: var(--mb-card) !important;
+  border: 1px solid var(--mb-border) !important;
+  border-radius: 16px !important;
+  padding: 16px !important;
+}
+.genealogy-tools input,
+.genealogy-tools select {
+  background: var(--mb-card2) !important;
+  border: 1px solid var(--mb-border) !important;
   color: #fff !important;
   border-radius: 10px !important;
+  padding: 12px 14px !important;
+  font-size: 14px !important;
+  width: 100% !important;
 }
-.genealogy-tree {
-  background: transparent !important;
+.genealogy-tools button {
+  background: var(--mb-brand) !important;
+  color: #000 !important;
+  border: none !important;
+  border-radius: var(--mb-radius-pill) !important;
+  padding: 12px 24px !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
 }
 
 /* ===== 家族成员页 ===== */
-#members-grid {
-  gap: 12px !important;
-}
+#members-grid { gap: 12px !important; }
 .member-card {
-  padding: 14px !important;
   background: var(--mb-card) !important;
-  border-color: var(--mb-border) !important;
+  border: 1px solid var(--mb-border) !important;
   border-radius: 16px !important;
+  padding: 14px !important;
 }
-.member-card .name { color: #fff !important; }
-.member-card .info { color: var(--mb-sub) !important; }
+.member-card .name { color: #fff !important; font-size: 15px !important; }
+.member-card .info { color: var(--mb-sub) !important; font-size: 12px !important; }
 
-/* ===== 响应式网格 ===== */
-@media (max-width: 480px) {
-  .hero-motto { font-size: 26px !important; }
+/* ===== 超小屏 ===== */
+@media (max-width: 420px) {
+  .hero-motto { font-size: 24px !important; }
   .page-title h2 { font-size: 22px !important; }
 }
