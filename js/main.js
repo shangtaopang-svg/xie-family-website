@@ -715,18 +715,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 侧边栏打字：下枫槎谢氏
   var sidebarTitle = document.querySelector('.logo-text h1');
-  if (sidebarTitle && !sessionStorage.getItem('tw_sidebar_done')) {
+  if (sidebarTitle) {
     var origText = sidebarTitle.textContent;
     if (origText) {
       typeWriter(sidebarTitle, origText, 120, function() {
-        sessionStorage.setItem('tw_sidebar_done', '1');
+        
       });
     }
   }
 
   // 首页 hero 打字：乌衣世泽 宝树家声 → 副标题
   var heroMotto = document.querySelector('.hero-motto');
-  if (heroMotto && !sessionStorage.getItem('tw_hero_done')) {
+  if (heroMotto) {
     var mottoText = heroMotto.textContent;
     heroMotto.style.display = 'inline-block';
     typeWriter(heroMotto, mottoText, 150, function() {
@@ -735,7 +735,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var subText = heroSub.textContent;
         heroSub.style.display = 'inline-block';
         typeWriter(heroSub, subText, 100, function() {
-          sessionStorage.setItem('tw_hero_done', '1');
+          
         });
       }
     });
