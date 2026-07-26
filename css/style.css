@@ -190,15 +190,16 @@ html { scroll-behavior: smooth; }
 .pt-bar {
   position: absolute;
   top: 0;
-  left: 0;
+  left: -100%;
   height: 3px;
+  width: 100%;
   background: #04BF00;
   box-shadow: 0 0 12px rgba(4,191,0,0.5);
   animation: ptBarSlide 1.4s ease-in-out forwards;
 }
 @keyframes ptBarSlide {
-  0%   { width: 0; }
-  100% { width: 100%; }
+  0%   { left: -100%; }
+  100% { left: 0; }
 }
 
 /* 居中内容 */
@@ -211,41 +212,48 @@ html { scroll-behavior: smooth; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* 三角形旋转 */
+/* 三角形加载动画（react-spinner-loader 风格） */
 .pt-tri {
-  width: 50px;
-  height: 50px;
+  width: 55px;
+  height: 55px;
   margin: 0 auto 28px;
+  position: relative;
 }
 .pt-tri svg {
   width: 100%;
   height: 100%;
-  animation: ptTriSpin 1s linear infinite;
 }
 .pt-tri svg polygon {
   fill: none;
   stroke: #04BF00;
-  stroke-width: 2.5;
+  stroke-width: 2.8;
   stroke-linecap: round;
   stroke-linejoin: round;
+  stroke-dasharray: 150;
+  stroke-dashoffset: 0;
+  animation: ptTriSpin 1.2s ease-in-out infinite;
+  transform-origin: center;
 }
 @keyframes ptTriSpin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  0%   { stroke-dashoffset: 150; transform: rotate(0deg); }
+  50%  { stroke-dashoffset: 0; transform: rotate(180deg); }
+  100% { stroke-dashoffset: -150; transform: rotate(360deg); }
 }
 
 .pt-title {
-  font-family: 'STKaiti', 'KaiTi', '楷体', serif;
-  font-size: 22px;
+  font-family: inherit;
+  font-size: 20px;
   color: #fff;
-  letter-spacing: 4px;
-  margin-bottom: 12px;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  font-weight: 400;
 }
 
 .pt-sub {
   font-size: 13px;
-  color: rgba(255,255,255,0.5);
-  letter-spacing: 2px;
+  color: #04BF00;
+  letter-spacing: 1px;
+  font-weight: 400;
 }
 .pt-dot { animation: ptDot 1.4s ease infinite; }
 .pt-dot:nth-child(2) { animation-delay: 0.2s; }

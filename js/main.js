@@ -695,7 +695,7 @@ document.addEventListener('DOMContentLoaded', function() {
     overlay = document.createElement('div');
     overlay.id = 'page-transition';
     overlay.style.display = 'none';
-    overlay.innerHTML = '<div class="pt-bar"></div><div class="pt-content"><div class="pt-tri"><svg viewBox="0 0 60 60"><polygon points="30,4 56,50 4,50"/></svg></div><div class="pt-title">ShangTaoPANG</div><div class="pt-sub">工作中<span class="pt-dot">.</span><span class="pt-dot">.</span><span class="pt-dot">.</span></div></div>';
+    overlay.innerHTML = '<div class="pt-bar"></div><div class="pt-content"><div class="pt-tri"><svg viewBox="0 0 60 60"><polygon points="30,4 56,50 4,50"/></svg></div><div class="pt-title">ShangTaoPang</div><div class="pt-sub">正在工作中<span class="pt-dot">.</span><span class="pt-dot">.</span><span class="pt-dot">.</span></div></div>';
     document.body.appendChild(overlay);
   }
 
