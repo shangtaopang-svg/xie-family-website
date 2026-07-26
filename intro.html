@@ -377,9 +377,43 @@
     .footer-bottom a { color: rgba(255,255,255,0.5); text-decoration: none; }
     .footer-bottom a:hover { color: #fff; }
 
-    /* ===== Animations ===== */
-    .fade-up { opacity: 0; transform: translateY(30px); transition: all 0.6s ease; }
-    .fade-up.visible { opacity: 1; transform: translateY(0); }
+    /* ===== Scroll Animations ===== */
+    .scroll-up {
+      opacity: 0;
+      transform: translateY(50px);
+      transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .scroll-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .scroll-left {
+      opacity: 0;
+      transform: translateX(-50px);
+      transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .scroll-left.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .scroll-right {
+      opacity: 0;
+      transform: translateX(50px);
+      transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .scroll-right.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .scroll-scale {
+      opacity: 0;
+      transform: scale(0.8);
+      transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .scroll-scale.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
 
     @media (max-width: 768px) {
       .about-grid { grid-template-columns: 1fr; }
@@ -415,9 +449,10 @@
     </a>
     <div class="nav-links">
       <a href="intro.html">首页</a>
-      <a href="#about">关于</a>
-      <a href="#services">服务</a>
-      <a href="entrance.html">探索</a>
+      <a href="#about">事务所</a>
+      <a href="#services">执业领域</a>
+      <a href="#about">团队</a>
+      <a href="#footer">位置</a>
       <a href="mailto:shangtaopang@gmail.com" class="nav-cta">📩 立即联系</a>
     </div>
   </div>
@@ -439,17 +474,17 @@
 <!-- ===== About ===== -->
 <section class="section-wrap" id="about">
   <div class="section-inner">
-    <div class="section-title fade-up">
+    <div class="section-title scroll-up">
       <h2>关于我</h2>
       <p>以技术驱动创新，用代码构建未来</p>
       <div class="divider"></div>
     </div>
     <div class="about-grid">
-      <div class="about-text fade-up">
+      <div class="about-text scroll-left">
         <p>ShangTaoPang 融合专业精神、创新思维与持续精进的技术力，为客户提供高效可靠的数字化解决方案。从前沿的智能体开发到稳健的网站建设，从便捷的小程序到赋能型的 AI 培训，致力于为企业和个人打造量身定制的技术服务。</p>
         <p>我们坚信，技术的力量在于解决实际问题。每一次创新都是通往更好未来的阶梯，每一行代码都是构建数字世界的砖瓦。</p>
       </div>
-      <div class="about-stats fade-up">
+      <div class="about-stats scroll-right">
         <div class="about-stat">
           <div class="about-stat-num">10+</div>
           <div class="about-stat-label">项目经验</div>
@@ -474,28 +509,28 @@
 <!-- ===== Services ===== -->
 <section class="section-wrap" style="background:#fff;" id="services">
   <div class="section-inner">
-    <div class="section-title fade-up">
+    <div class="section-title scroll-up">
       <h2>服务领域</h2>
       <p>专业的技术服务，助力数字化转型</p>
       <div class="divider"></div>
     </div>
     <div class="services-grid">
-      <div class="service-card fade-up">
+      <div class="service-card scroll-scale">
         <div class="service-icon">🤖</div>
         <h3>智能体开发</h3>
         <p>基于大模型的 AI Agent 开发，打造智能自动化解决方案，提升业务效率</p>
       </div>
-      <div class="service-card fade-up">
+      <div class="service-card scroll-scale">
         <div class="service-icon">🌐</div>
         <h3>网站开发</h3>
         <p>响应式网站、企业官网、电商平台，从前端到后端全栈开发</p>
       </div>
-      <div class="service-card fade-up">
+      <div class="service-card scroll-scale">
         <div class="service-icon">📱</div>
         <h3>小程序开发</h3>
         <p>微信小程序、支付宝小程序开发，快速搭建移动端业务入口</p>
       </div>
-      <div class="service-card fade-up">
+      <div class="service-card scroll-scale">
         <div class="service-icon">🎓</div>
         <h3>AI赋能培训</h3>
         <p>AI 工具应用培训、大模型落地指导，帮助团队掌握 AI 力量</p>
@@ -505,7 +540,7 @@
 </section>
 
 <!-- ===== Footer ===== -->
-<footer>
+<footer id="footer">
   <div class="footer-inner">
     <div class="footer-col">
       <h3>关于</h3>
@@ -544,17 +579,21 @@
 </footer>
 
 <script>
-// Fade-up on scroll
+// Scroll animations (向下滑动出现，向上滑动隐藏)
 (function(){
-  var els = document.querySelectorAll('.fade-up');
+  var els = document.querySelectorAll('.scroll-up, .scroll-left, .scroll-right, .scroll-scale');
   var obs = new IntersectionObserver(function(entries) {
     entries.forEach(function(e) {
-      if (e.isIntersecting) { e.target.classList.add('visible'); }
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+      } else {
+        e.target.classList.remove('visible');
+      }
     });
-  }, { threshold: 0.1 });
+  }, { threshold: 0.15 });
   els.forEach(function(el) { obs.observe(el); });
 
-  // Nav scroll
+  // Nav smooth scroll
   document.querySelectorAll('a[href^="#"]').forEach(function(a) {
     a.addEventListener('click', function(e) {
       e.preventDefault();
