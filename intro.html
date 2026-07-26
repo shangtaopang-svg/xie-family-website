@@ -111,6 +111,28 @@
     .enter-btn .arrow { transition: transform 0.3s ease; }
     .enter-btn:hover .arrow { transform: translateX(4px); }
 
+    /* Contact */
+    .contact {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .contact-link {
+      font-size: 13px;
+      color: rgba(255,255,255,0.35);
+      text-decoration: none;
+      transition: color 0.3s ease;
+      letter-spacing: 0.5px;
+    }
+    .contact-link:hover { color: #04BF00; }
+    .contact-dot {
+      font-size: 10px;
+      color: rgba(255,255,255,0.15);
+    }
+
     /* Bottom info */
     .bottom-info {
       position: absolute;
@@ -167,7 +189,13 @@
     探索更多 <span class="arrow">→</span>
   </a>
 
-  <div class="bottom-info fade-in-d4">© 2026 ShangTaoPang</div>
+  <div class="contact fade-in-d4">
+    <a href="tel:+8613685877064" class="contact-link">📞 13685877064</a>
+    <span class="contact-dot">·</span>
+    <a href="mailto:shangtaopang@gmail.com" class="contact-link">✉ shangtaopang@gmail.com</a>
+  </div>
+
+  <div class="bottom-info">© 2026 庞尚韬 · ShangTaoPang</div>
 </div>
 </body>
 </html>
