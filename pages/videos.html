@@ -262,6 +262,15 @@
         });
 
         _videoEl.addEventListener('ended', function() {
+          restorePoster();
+        });
+
+        // 用户手动暂停 → 恢复封面+滑动效果
+        _videoEl.addEventListener('pause', function() {
+          restorePoster();
+        });
+
+        function restorePoster() {
           _videoEl.remove();
           _videoEl = null;
           _playing = false;
@@ -271,7 +280,7 @@
           card.style.backgroundPosition = 'center';
           popup.style.display = '';
           card.style.aspectRatio = '4/3';
-        });
+        }
 
         card.appendChild(_videoEl);
       });
