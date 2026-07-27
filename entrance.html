@@ -43,8 +43,10 @@
   .sb.bt{bottom:0;background:linear-gradient(0deg,rgba(180,155,120,0.12),transparent)}
 
   #btnw{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);z-index:20;text-align:center;pointer-events:auto;transition:opacity 0.5s}
-  .btn{display:inline-block;font-family:'Noto Serif SC',serif;font-size:clamp(14px,1.5vw,18px);letter-spacing:0.15em;color:#0a0806;background:rgba(255,255,255,0.92);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.25);padding:14px 44px;border-radius:50px;cursor:pointer;transition:all 0.4s ease;box-shadow:0 4px 20px rgba(0,0,0,0.2)}
+  .btn{display:inline-flex;align-items:center;gap:6px;font-family:'Noto Serif SC',serif;font-size:clamp(13px,1.3vw,16px);letter-spacing:0.12em;color:#0a0806;background:rgba(255,255,255,0.92);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.25);padding:12px 28px;border-radius:50px;cursor:pointer;transition:all 0.4s ease;box-shadow:0 4px 20px rgba(0,0,0,0.2);text-decoration:none}
   .btn:hover{transform:scale(1.04);background:#fff;box-shadow:0 8px 30px rgba(0,0,0,0.25)}
+  .btn-ghost{background:transparent;backdrop-filter:none;color:rgba(245,230,200,0.7);border-color:rgba(245,230,200,0.15);box-shadow:none}
+  .btn-ghost:hover{background:rgba(255,255,255,0.06);color:#f5e6c8;border-color:rgba(245,230,200,0.3)}
 
   #ent{position:absolute;left:50%;top:65%;transform:translate(-50%,-50%);z-index:20;opacity:0;pointer-events:none;transition:opacity 0.8s ease 0.5s}
   #ent.show{opacity:1;pointer-events:auto}
@@ -52,15 +54,8 @@
   .eb:hover{transform:scale(1.05);box-shadow:0 8px 40px rgba(201,168,76,0.2)}
 
   /* Bottom swipe card */
-  .hc{position:absolute;bottom:clamp(40px,6vh,70px);left:50%;transform:translateX(-50%);z-index:20;opacity:0;transition:opacity 0.8s ease;display:flex;align-items:center;gap:10px}
+  .hc{position:absolute;bottom:clamp(36px,5vh,60px);left:50%;transform:translateX(-50%);z-index:20;opacity:0;transition:opacity 0.8s ease;display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center}
   .hc.show{opacity:1}
-  .hc-card{width:clamp(180px,24vw,260px);height:clamp(100px,13vh,140px);border-radius:18px;overflow:hidden;position:relative;background:#d4793a;border:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;align-items:center;justify-content:center;text-decoration:none;transition:all 0.3s ease;box-shadow:0 8px 25px rgba(0,0,0,0.25)}
-  .hc-card:hover{background:#e0853f;transform:translateY(-2px)}
-  .hc-card .hc-icon{font-size:clamp(22px,2.8vw,32px);margin-bottom:6px}
-  .hc-card .hc-label{font-family:'Noto Serif SC',serif;font-size:clamp(13px,1.3vw,16px);letter-spacing:0.08em;color:#f5e6c8;font-weight:500}
-  .hc-card .hc-sub{font-size:clamp(10px,0.9vw,12px);color:rgba(245,230,200,0.5);margin-top:2px;letter-spacing:0.04em}
-  .hc .arrow{width:clamp(28px,3vw,36px);height:clamp(28px,3vw,36px);border-radius:50%;background:rgba(10,8,6,0.25);backdrop-filter:blur(6px);border:1px solid rgba(245,230,200,0.08);display:grid;place-items:center;cursor:pointer;font-size:16px;color:rgba(245,230,200,0.5);transition:all 0.3s;user-select:none}
-  .hc .arrow:hover{background:rgba(10,8,6,0.4);color:#f5e6c8}
 
   #clk{position:absolute;top:40px;right:40px;z-index:25;text-align:right;opacity:0;transition:opacity 1s ease;pointer-events:auto}
   #clk.show{opacity:1}
@@ -216,15 +211,10 @@
 
   <div id="btnw"><button class="btn" id="openBtn">✦ 探索下枫槎</button></div>
 
-  <!-- Bottom cards (:3003 style) -->
+  <!-- Bottom buttons -->
   <div class="hc" id="hc">
-    <div class="arrow" id="hcPrev">‹</div>
-    <a class="hc-card" id="hcLink" href="pages/genealogy.html">
-      <div class="hc-icon" id="hcIcon">🌳</div>
-      <div class="hc-label" id="hcLabel">族谱查询</div>
-      <div class="hc-sub" id="hcSub">谢氏世系</div>
-    </a>
-    <div class="arrow" id="hcNext">›</div>
+    <button class="btn" id="openBtn2">✦ 探索下枫槎</button>
+    <a class="btn btn-ghost" href="intro.html">👤 开发者</a>
   </div>
   <div id="ent" style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
     <a class="eb" href="index.html">✦ 进入主站</a>
@@ -286,15 +276,7 @@ v.style.opacity=0;
 !function u(){var n=new Date();ct.textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');cd.textContent=n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日';setTimeout(u,10000)}();
 setTimeout(function(){document.getElementById('clk').classList.add('show');document.getElementById('hero-text').classList.add('show');document.getElementById('hc').classList.add('show');},500);
 
-// Swipe card items (mobile/desktop separate)
-var isMobile=window.innerWidth<768;
-var hcItems=isMobile
-  ? [{icon:'📜',label:'家族历史',sub:'谢氏源流',url:'pages/history.html'},{icon:'📰',label:'消息发布',sub:'家族动态',url:'pages/news.html'},{icon:'🎧',label:'听·下枫槎',sub:'村庄故事',url:'pages/audio.html'}]
-  : [{icon:'🌳',label:'族谱查询',sub:'谢氏世系',url:'pages/genealogy.html'},{icon:'📰',label:'消息发布',sub:'家族动态',url:'pages/news.html'},{icon:'🎧',label:'听·下枫槎',sub:'村庄故事',url:'pages/audio.html'}];
-var hcIdx=0;
-function hcUpdate(){var i=hcItems[hcIdx];document.getElementById('hcIcon').textContent=i.icon;document.getElementById('hcLabel').textContent=i.label;document.getElementById('hcSub').textContent=i.sub;document.getElementById('hcLink').href=i.url;}
-document.getElementById('hcPrev').addEventListener('click',function(){hcIdx=(hcIdx-1+hcItems.length)%hcItems.length;hcUpdate();});
-document.getElementById('hcNext').addEventListener('click',function(){hcIdx=(hcIdx+1)%hcItems.length;hcUpdate();});
+document.getElementById('openBtn2').addEventListener('click',function(){document.getElementById('openBtn').click();});
 
 // ── Mouse parallax + wheel zoom (like :3003 portal) ──
 var rx=0,ry=0,cx=0,cy=0,isOpen=false,isAnim=false,portalZoom=1;
