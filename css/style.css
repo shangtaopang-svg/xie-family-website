@@ -5486,3 +5486,9 @@ section a[href*="audio"] {
   .mb-show-main .hero-section.hero-map-bg .hero-date-day { font-size: 20px !important; }
   .mb-show-main .hero-section.hero-map-bg .hero-divider { height: 24px !important; }
 }
+
+
+/* ===== 手机端隐藏地图缩放按钮 ===== */
+@media (max-width: 768px) {
+  .map-float-zoom { display: none !important; }
+}
