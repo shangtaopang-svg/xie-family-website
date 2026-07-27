@@ -5248,32 +5248,6 @@ section a[href*="audio"] {
   background-size: cover; background-position: center;
   position: relative;
 }
-.mbh-subtitle {
-  position: absolute; top: 0; right: 0; bottom: 0; left: 0;
-  padding: 16px 14px 16px 30%;
-  background: linear-gradient(to left, rgba(0,0,0,0.7), transparent 70%);
-  font-family: 'STKaiti', 'KaiTi', 'Noto Serif SC', serif;
-  font-size: 13px; color: #e8c97a;
-  line-height: 1.8; letter-spacing: 0;
-  text-shadow: 0 0 3px rgba(0,0,0,0.95), 0 0 10px rgba(232,201,122,0.08);
-  font-weight: 500;
-  writing-mode: vertical-rl;
-  text-orientation: upright;
-  -webkit-text-orientation: upright;
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
-}
-.mbh-subtitle .hl-cursor {
-  display: inline-block;
-  width: 1px; height: 1.2em;
-  background: #e8c97a;
-  box-shadow: 0 0 6px #e8c97a;
-  vertical-align: baseline;
-  animation: wlCursor 0.7s step-end infinite;
-  margin: 0 2px;
-}
-@keyframes wlCursor { 50% { opacity: 0; } }
 
 .mbh-pills { display: flex; gap: 10px; margin: 0 16px 14px; }
 .mbh-pill {
