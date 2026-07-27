@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的 · 下枫槎谢氏</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, 'PingFang SC', 'Noto Sans SC', sans-serif;
+      background: #0a0a0a; color: #f5f5f5; min-height: 100vh;
+      padding-bottom: 70px;
+    }
+    .header { padding: 48px 20px 20px; text-align: center; }
+    .header .avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: #D4FF3A; color: #000;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; font-weight: 700; margin: 0 auto 12px;
+    }
+    .header h1 { font-size: 22px; font-weight: 700; color: #fff; }
+    .header p { font-size: 13px; color: #888; margin-top: 4px; }
+
+    .info-card {
+      margin: 0 16px 16px; padding: 20px;
+      background: #141414; border: 1px solid #2a2a2a; border-radius: 20px;
+    }
+    .info-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid #2a2a2a;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { font-size: 13px; color: #888; }
+    .info-value { font-size: 14px; color: #fff; font-weight: 500; }
+
+    .menu-list { margin: 0 16px 16px; }
+    .menu-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 16px; text-decoration: none;
+      background: #141414; border: 1px solid #2a2a2a; border-radius: 14px;
+      margin-bottom: 8px;
+    }
+    .menu-item:active { opacity: 0.6; }
+    .menu-icon { font-size: 20px; width: 28px; text-align: center; }
+    .menu-text { flex: 1; font-size: 14px; color: #fff; font-weight: 500; }
+    .menu-arrow { font-size: 12px; color: #D4FF3A; opacity: 0.5; }
+
+    .unreg-card {
+      margin: 0 16px 16px; padding: 36px 24px;
+      background: #141414; border: 1px solid #2a2a2a; border-radius: 20px;
+      text-align: center;
+    }
+    .unreg-card h3 { font-size: 18px; color: #fff; margin-bottom: 8px; }
+    .unreg-card p { font-size: 13px; color: #888; margin-bottom: 20px; line-height: 1.6; }
+    .unreg-btn {
+      display: inline-flex; padding: 14px 32px;
+      background: #D4FF3A; color: #000; border-radius: 999px;
+      font-size: 15px; font-weight: 700; text-decoration: none;
+    }
+    .unreg-btn:active { opacity: 0.8; }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+
+<nav class="mb-tabbar">
+  <a href="../index.html" class="mb-tab"><span class="mb-tab-icon">🏠</span><span class="mb-tab-label">首页</span></a>
+  <a href="genealogy.html" class="mb-tab"><span class="mb-tab-icon">🌳</span><span class="mb-tab-label">族谱</span></a>
+  <a href="members.html" class="mb-tab"><span class="mb-tab-icon">👥</span><span class="mb-tab-label">成员</span></a>
+  <a href="activities.html" class="mb-tab"><span class="mb-tab-icon">🎪</span><span class="mb-tab-label">活动</span></a>
+  <a href="my.html" class="mb-tab active"><span class="mb-tab-icon">👤</span><span class="mb-tab-label">我的</span></a>
+</nav>
+
+<script>
+(function(){
+  var data = localStorage.getItem('mb_clan_data');
+  var app = document.getElementById('app');
+
+  if (!data) {
+    app.innerHTML = '<div class="header"><div class="avatar">?</div><h1>未登记</h1><p>您尚未登记族人信息</p></div><div class="unreg-card"><h3>🏛️ 加入下枫槎谢氏</h3><p>登记后即可查看个人档案<br>参与家族活动，记录功德</p><a href="clan-register.html" class="unreg-btn">📋 立即登记</a></div>';
+    return;
+  }
+
+  var info = JSON.parse(data);
+
+  app.innerHTML = '<div class="header"><div class="avatar">' + (info.name ? info.name.charAt(0) : '?') + '</div><h1>' + (info.name || '族人') + '</h1><p>下枫槎谢氏 · 数字宗祠</p></div><div class="info-card"><div class="info-row"><span class="info-label">姓名</span><span class="info-value">' + (info.name || '-') + '</span></div><div class="info-row"><span class="info-label">电话</span><span class="info-value">' + (info.phone || '-') + '</span></div><div class="info-row"><span class="info-label">字辈/世代</span><span class="info-value">' + (info.generation || '-') + '</span></div><div class="info-row"><span class="info-label">父亲</span><span class="info-value">' + (info.father || '-') + '</span></div><div class="info-row"><span class="info-label">分支</span><span class="info-value">' + (info.branch || '-') + '</span></div><div class="info-row"><span class="info-label">登记时间</span><span class="info-value">' + (info.time || '-') + '</span></div></div><div class="menu-list"><a href="clan-register.html" class="menu-item"><span class="menu-icon">✏️</span><span class="menu-text">编辑资料</span><span class="menu-arrow">▶</span></a><a href="merit-scroll.html" class="menu-item"><span class="menu-icon">📜</span><span class="menu-text">我的功德</span><span class="menu-arrow">▶</span></a><a href="../index.html" class="menu-item"><span class="menu-icon">🏠</span><span class="menu-text">返回首页</span><span class="menu-arrow">▶</span></a></div>';
+})();
+</script>
+</body>
+</html>

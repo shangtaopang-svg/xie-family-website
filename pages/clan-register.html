@@ -96,7 +96,17 @@
     document.getElementById('regSubmit').addEventListener('click', function() {
       var name = document.getElementById('regName').value.trim();
       if (!name) { alert('请输入姓名'); return; }
-      alert('登记信息已提交，管理员审核后会与您联系。');
+      var data = {
+        name: name,
+        phone: document.getElementById('regPhone').value.trim(),
+        generation: document.getElementById('regGen').value.trim(),
+        father: document.getElementById('regFather').value.trim(),
+        branch: document.getElementById('regBranch').value,
+        time: new Date().toLocaleString()
+      };
+      localStorage.setItem('mb_clan_data', JSON.stringify(data));
+      localStorage.setItem('mb_clan_asked', '1');
+      alert('✅ 登记成功！欢迎加入下枫槎谢氏数字宗祠。');
       window.location.href = '../index.html';
     });
   </script>
