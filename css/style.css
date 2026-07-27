@@ -5017,8 +5017,8 @@ a { color: var(--mb-brand); }
   align-items: center;
   gap: 1px;
   text-decoration: none;
-  padding: 4px 12px;
-  min-width: 44px;
+  padding: 4px 6px;
+  min-width: 40px;
   -webkit-tap-highlight-color: transparent;
 }
 .mb-tab:active { opacity: 0.6; }
