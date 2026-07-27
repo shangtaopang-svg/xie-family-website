@@ -13,7 +13,7 @@
   body{font-family:'Noto Sans SC',sans-serif}*{box-sizing:border-box}a{text-decoration:none}
   #stage{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;background:#0a0806}
   .layer{position:absolute;inset:0;width:100%;height:100%;will-change:transform,opacity;pointer-events:none}
-  #village{background-size:contain;background-position:center center;background-repeat:no-repeat;z-index:0;opacity:0}
+  #village{background:#0a0806;z-index:0;opacity:0}
   #world{background-size:cover;background-position:center;z-index:1}
   #ref-portal{position:absolute;inset:0;z-index:10;pointer-events:none;background-size:cover;background-position:center;background-image:url('images/portal-bg-ref.webp');opacity:1;transform-origin:52% 38%;will-change:transform,opacity}
   #overlay{z-index:3;background:radial-gradient(ellipse at 50% 80%,rgba(10,8,6,0) 20%,rgba(10,8,6,0.5) 80%,rgba(10,8,6,0.9) 100%),linear-gradient(180deg,rgba(10,8,6,0.1) 0%,transparent 30%,transparent 70%,rgba(10,8,6,0.3) 100%)}
@@ -229,7 +229,6 @@ var sl=document.getElementById('spl'),sr=document.getElementById('spr');
 var ct=document.getElementById('ct'),cd=document.getElementById('cd');
 var vn=document.getElementById('vn'),ent=document.getElementById('ent');
 
-v.style.backgroundImage="url('images/panorama.png')";
 w.style.backgroundImage="url('images/world-bg-ref.webp')";
 
 
