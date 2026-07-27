@@ -57,6 +57,7 @@
 (function(){
   if(window.innerWidth > 768 && !location.search.includes('testclan')) return;
   if(localStorage.getItem('mb_clan_asked')) return;
+  if(!document.body){setTimeout(arguments.callee,100);return;}
   var d = document.createElement('div');
   d.id = 'mb-clan-dialog';
   d.style.cssText = 'position:fixed;inset:0;z-index:9999999;background:rgba(0,0,0,0.5);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;';
