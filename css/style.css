@@ -5492,3 +5492,8 @@ section a[href*="audio"] {
 @media (max-width: 768px) {
   .map-float-zoom { display: none !important; }
 }
+
+
+/* ===== 访问计数加大 ===== */
+#visit-stat { font-size: 18px; font-weight: 600; letter-spacing: 1px; }
+#visit-count { font-size: 24px; font-weight: 700; color: var(--accent-orange); display: inline-block; min-width: 60px; text-align: center; }

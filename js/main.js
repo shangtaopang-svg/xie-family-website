@@ -87,7 +87,18 @@ document.addEventListener('DOMContentLoaded', function() {
     var visits = localStorage.getItem('xie_visits') || '0';
     var count = parseInt(visits) + 1;
     localStorage.setItem('xie_visits', count.toString());
-    countEl.textContent = count;
+    // 动态计数动画
+    var start = 0;
+    var target = count;
+    var step = Math.max(1, Math.floor(target / 30));
+    var timer = setInterval(function() {
+      start += step;
+      if (start >= target) {
+        start = target;
+        clearInterval(timer);
+      }
+      countEl.textContent = start;
+    }, 40);
     var adminVisits = document.getElementById('admin-visits');
     if (adminVisits) adminVisits.textContent = count;
   }
