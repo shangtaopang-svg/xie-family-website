@@ -521,35 +521,15 @@
 
       if (!data || data.length === 0) {
         container.innerHTML = '';
-        statsEl.innerHTML = '';
-        emptyEl.style.display = 'block';
-        return;
+              function statCard(n, l) {
+        return '<div class="stat-card-anim"><span class="border-line bl-top"></span><span class="border-line bl-right"></span><span class="border-line bl-bottom"></span><span class="border-line bl-left"></span><div class="stat-num">' + digitsHtml(n) + '</div><div class="stat-label">' + l + '</div></div>';
       }
-      emptyEl.style.display = 'none';
-
-      // Stats
-      var total = data.length;
-      var aliveNames = {};
-      data.forEach(function(p) { if (p.is_alive === '是') aliveNames[p.name + '_' + (p.generation_num||'0')] = true; });
-      var alive = Object.keys(aliveNames).length;
-      var males = 0, females = 0;
-      var genSet = {};
-      data.forEach(function(p) {
-        if (p.gender === '男') males++;
-        if (p.gender === '女') females++;
-        if (p.generation_num) genSet[p.generation_num] = true;
-      });
-
-      var hint = document.getElementById('alive-count-hint');
-      if (hint) hint.textContent = '在世 ' + alive + ' 人 / 共计 ' + total + ' 人';
-
-      function digitsHtml(n) { var s = String(n), r = ''; for (var i = 0; i < s.length; i++) { r += '<span style="display:inline-block;animation:digitPop 0.35s cubic-bezier(0.22,1,0.36,1) ' + (i * 0.08) + 's both;">' + s[i] + '</span>'; } return r; }
       statsEl.innerHTML = ''
-        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);white-space:nowrap;">' + digitsHtml(alive) + '</div><div style="font-size:11px;color:var(--text-tertiary);">在世成员</div></div>'
-        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);white-space:nowrap;">' + digitsHtml(total) + '</div><div style="font-size:11px;color:var(--text-tertiary);">总人数</div></div>'
-        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);white-space:nowrap;">' + digitsHtml(males) + '</div><div style="font-size:11px;color:var(--text-tertiary);">男</div></div>'
-        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);white-space:nowrap;">' + digitsHtml(females) + '</div><div style="font-size:11px;color:var(--text-tertiary);">女</div></div>'
-        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);white-space:nowrap;">' + digitsHtml(Math.max(...Object.keys(genSet).map(Number))) + '</div><div style="font-size:11px;color:var(--text-tertiary);">世代</div></div>';
+        + statCard(alive, '在世成员')
+        + statCard(total, '总人数')
+        + statCard(males, '男')
+        + statCard(females, '女')
+        + statCard(Math.max(...Object.keys(genSet).map(Number)), '世代');
 
       // Gen dropdown
       var gens = Object.keys(genSet).map(Number).sort(function(a,b){return a-b;});
@@ -690,6 +670,19 @@
     #members-grid { min-height:200px; }
     .gen-tab { font-family:var(--font-body); }
     @keyframes digitPop { from { opacity:0; transform:translateY(10px) scale(0.8); } to { opacity:1; transform:translateY(0) scale(1); } }
+    .stat-card-anim { position:relative; overflow:hidden; border-radius:16px; background:var(--mb-card,#141414); padding:14px; text-align:center; }
+    .stat-card-anim .stat-num { font-size:22px; font-weight:600; white-space:nowrap; animation:statColor 2.5s ease-in-out infinite alternate; }
+    .stat-card-anim .stat-label { font-size:11px; color:var(--text-tertiary); margin-top:2px; }
+    .stat-card-anim .border-line { position:absolute; display:block; }
+    .stat-card-anim .bl-top { top:0; left:-100%; width:100%; height:2px; background:linear-gradient(90deg,transparent,#04BF00); animation:blTop 2.5s ease-in-out infinite; }
+    .stat-card-anim .bl-right { right:0; top:-100%; height:100%; width:2px; background:linear-gradient(180deg,transparent,#04BF00); animation:blRight 2.5s ease-in-out infinite 0.35s; }
+    .stat-card-anim .bl-bottom { bottom:0; right:-100%; width:100%; height:2px; background:linear-gradient(270deg,transparent,#04BF00); animation:blBottom 2.5s ease-in-out infinite 0.7s; }
+    .stat-card-anim .bl-left { left:0; bottom:-100%; height:100%; width:2px; background:linear-gradient(0deg,transparent,#04BF00); animation:blLeft 2.5s ease-in-out infinite 1.05s; }
+    @keyframes statColor { 0% { color:var(--text-primary,#fff); } 100% { color:#04BF00; } }
+    @keyframes blTop { 0% { left:-100%; } 50% { left:100%; } 100% { left:100%; } }
+    @keyframes blRight { 0% { top:-100%; } 50% { top:100%; } 100% { top:100%; } }
+    @keyframes blBottom { 0% { right:-100%; } 50% { right:100%; } 100% { right:100%; } }
+    @keyframes blLeft { 0% { bottom:-100%; } 50% { bottom:100%; } 100% { bottom:100%; } }
   </style>
   <script>
     // bg-canvas removed
