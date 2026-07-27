@@ -5350,7 +5350,12 @@ section a[href*="audio"] {
   .mb-show-main .content { display: block !important; margin-left: 0 !important; padding: 0 0 70px !important; }
   
   /* 正式首页暗黑风格 */
+  .mb-show-main body, .mb-show-main html { overflow-x: hidden !important; max-width: 100vw !important; }
   .mb-show-main .hero-section { min-height: auto !important; padding: 20px 16px !important; }
+  .mb-show-main .hero-motto { word-break: break-word !important; }
+  .mb-show-main .content { max-width: 100vw !important; overflow-x: hidden !important; }
+  .mb-show-main .fade-in-section { max-width: 100vw !important; overflow-x: hidden !important; }
+  .mb-show-main [style*="display:flex;gap:10px;max-width:780px"] { flex-wrap: wrap !important; }
   .mb-show-main .hero-motto { font-size: 28px !important; color: #fff !important; font-weight: 700 !important; text-align: left !important; letter-spacing: 2px !important; margin-bottom: 4px !important; }
   .mb-show-main .hero-sub { font-size: 13px !important; color: #888 !important; text-align: left !important; margin-bottom: 12px !important; }
   .mb-show-main .hero-desc { display: none !important; }
