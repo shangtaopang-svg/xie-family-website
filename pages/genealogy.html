@@ -2644,12 +2644,16 @@ function locateInTree(personId) {
       if (parseInt(g) > genMax) genMax = parseInt(g);
     });
     var statsEl = document.getElementById('stats-container');
-    if (statsEl) statsEl.innerHTML = ''
-      + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--accent-orange);">' + total + '</div><div style="font-size:11px;color:var(--text-tertiary);">总人数</div></div>'
-      + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + genMax + '</div><div style="font-size:11px;color:var(--text-tertiary);">世代</div></div>'
-      + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + Object.keys(branches).length + '</div><div style="font-size:11px;color:var(--text-tertiary);">支系</div></div>'
-      + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + males + '</div><div style="font-size:11px;color:var(--text-tertiary);">男</div></div>'
-      + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:24px;font-weight:600;color:var(--text-primary);">' + females + '</div><div style="font-size:11px;color:var(--text-tertiary);">女</div></div>';
+    if (statsEl) {
+      function dg(n) { var s = String(n), r = ''; for (var i = 0; i < s.length; i++) { r += '<span style="display:inline-block;animation:digitPop 0.35s cubic-bezier(0.22,1,0.36,1) ' + (i * 0.08) + 's both;">' + s[i] + '</span>'; } return r; }
+      function sc(n, l) { return '<div class="stat-card-anim"><span class="border-line bl-top"></span><span class="border-line bl-right"></span><span class="border-line bl-bottom"></span><span class="border-line bl-left"></span><div class="stat-num">' + dg(n) + '</div><div class="stat-label">' + l + '</div></div>'; }
+      statsEl.innerHTML = ''
+        + sc(total, '总人数')
+        + sc(genMax, '世代')
+        + sc(Object.keys(branches).length, '支系')
+        + sc(males, '男')
+        + sc(females, '女');
+    }
 
     // Show loading for tree
     var tc = document.getElementById('tree-container');
@@ -2762,6 +2766,20 @@ function toggleGenChart() {
 .apt-zoom-btn{width:26px;height:26px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;}
 .apt-zoom-btn:hover{background:var(--accent-orange-dim);border-color:var(--accent-orange);}
 .gz-tree-viewport .apt-btn-add,.gz-tree-viewport .apt-btn-del,.gz-tree-viewport .apt-card-actions,.gz-tree-viewport .apt-btn-expand{display:none !important}
+.stat-card-anim { position:relative; overflow:hidden; border-radius:16px; background:var(--mb-card,#141414); padding:14px; text-align:center; }
+.stat-card-anim .stat-num { font-size:24px; font-weight:600; white-space:nowrap; animation:statColor 2.5s ease-in-out infinite alternate !important; }
+.stat-card-anim .stat-label { font-size:11px; color:var(--text-tertiary); margin-top:2px; }
+.stat-card-anim .border-line { position:absolute; display:block; }
+.stat-card-anim .bl-top { top:0; left:-100%; width:100%; height:2px; background:linear-gradient(90deg,transparent,#04BF00); animation:blTop 2.5s ease-in-out infinite; }
+.stat-card-anim .bl-right { right:0; top:-100%; height:100%; width:2px; background:linear-gradient(180deg,transparent,#04BF00); animation:blRight 2.5s ease-in-out infinite 0.35s; }
+.stat-card-anim .bl-bottom { bottom:0; right:-100%; width:100%; height:2px; background:linear-gradient(270deg,transparent,#04BF00); animation:blBottom 2.5s ease-in-out infinite 0.7s; }
+.stat-card-anim .bl-left { left:0; bottom:-100%; height:100%; width:2px; background:linear-gradient(0deg,transparent,#04BF00); animation:blLeft 2.5s ease-in-out infinite 1.05s; }
+@keyframes digitPop { from { opacity:0; transform:translateY(10px) scale(0.8); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes statColor { 0% { color:#ffffff; } 50% { color:#04BF00; } 100% { color:#ffffff; } }
+@keyframes blTop { 0% { left:-100%; } 50% { left:100%; } 100% { left:100%; } }
+@keyframes blRight { 0% { top:-100%; } 50% { top:100%; } 100% { top:100%; } }
+@keyframes blBottom { 0% { right:-100%; } 50% { right:100%; } 100% { right:100%; } }
+@keyframes blLeft { 0% { bottom:-100%; } 50% { bottom:100%; } 100% { bottom:100%; } }
 </style>
 <script>
 var _gzZoom=1,_gzPanX=0,_gzPanY=0,_gzDrag=false,_gzDx=0,_gzDy=0,_gzSx=0,_gzSy=0;
