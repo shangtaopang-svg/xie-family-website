@@ -545,10 +545,10 @@
 
       statsEl.innerHTML = ''
         + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);">' + alive + '</div><div style="font-size:11px;color:var(--text-tertiary);">在世成员</div></div>'
-        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--text-primary);">' + total + '</div><div style="font-size:11px;color:var(--text-tertiary);">总人数</div></div>'
-        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--text-primary);">' + males + '</div><div style="font-size:11px;color:var(--text-tertiary);">男</div></div>'
-        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--text-primary);">' + females + '</div><div style="font-size:11px;color:var(--text-tertiary);">女</div></div>'
-        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--text-primary);">' + Math.max(...Object.keys(genSet).map(Number)) + '</div><div style="font-size:11px;color:var(--text-tertiary);">世代</div></div>';
+        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);">' + total + '</div><div style="font-size:11px;color:var(--text-tertiary);">总人数</div></div>'
+        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);">' + males + '</div><div style="font-size:11px;color:var(--text-tertiary);">男</div></div>'
+        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);">' + females + '</div><div style="font-size:11px;color:var(--text-tertiary);">女</div></div>'
+        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);">' + Math.max(...Object.keys(genSet).map(Number)) + '</div><div style="font-size:11px;color:var(--text-tertiary);">世代</div></div>';
 
       // Gen dropdown
       var gens = Object.keys(genSet).map(Number).sort(function(a,b){return a-b;});
