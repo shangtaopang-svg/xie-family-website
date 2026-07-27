@@ -5537,3 +5537,70 @@ section a[href*="audio"] {
     object-fit: cover !important;
   }
 }
+
+
+/* ===== 手机端：活动/今日/成员/家族树 页面 ===== */
+@media (max-width: 768px) {
+  /* 活动页 */
+  .activity-card {
+    background: #141414 !important;
+    border: 1px solid #2a2a2a !important;
+    border-radius: 16px !important;
+    padding: 16px !important;
+    margin-bottom: 12px !important;
+  }
+  .activity-card h3 { color: #fff !important; font-size: 16px !important; }
+  .activity-card p, .activity-card .info { color: #888 !important; font-size: 13px !important; }
+  .activity-card .tag, .activity-card .label {
+    background: #D4FF3A !important;
+    color: #000 !important;
+    border-radius: 999px !important;
+    padding: 2px 12px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+  }
+
+  /* 今日下枫槎页 */
+  .today-item, .today-post {
+    background: #141414 !important;
+    border: 1px solid #2a2a2a !important;
+    border-radius: 16px !important;
+    padding: 16px !important;
+    margin-bottom: 12px !important;
+  }
+  .today-item h3, .today-post h3 { color: #fff !important; font-size: 16px !important; }
+  .today-item p, .today-post p { color: #888 !important; font-size: 13px !important; }
+
+  /* 家族成员页 */
+  #members-grid > div {
+    background: #141414 !important;
+    border: 1px solid #2a2a2a !important;
+    border-radius: 16px !important;
+    padding: 14px !important;
+  }
+  #members-grid .name {
+    color: #fff !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+  }
+  #members-grid .info, #members-grid .detail {
+    color: #888 !important;
+    font-size: 12px !important;
+  }
+
+  /* 家族树页 */
+  .tree-container, .tree-card {
+    background: #141414 !important;
+    border: 1px solid #2a2a2a !important;
+    border-radius: 16px !important;
+    padding: 16px !important;
+  }
+  .tree-container .name, .tree-card .name {
+    color: #fff !important;
+    font-size: 15px !important;
+  }
+  .tree-container .info, .tree-card .info {
+    color: #888 !important;
+    font-size: 12px !important;
+  }
+}
