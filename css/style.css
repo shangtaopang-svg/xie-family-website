@@ -4883,10 +4883,12 @@ body {
   /* ===== 页面标题 ===== */
   .page-wrap { padding: 0 16px 70px !important; }
   .page-title { padding: 16px 0 !important; text-align: left !important; }
-  .page-title h2 { font-size: 24px !important; color: #fff !important; }
+  .page-title h2 { font-size: 24px !important; color: #e8c97a !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; }
   .page-title p { font-size: 12px !important; color: #666 !important; }
   .section-title { margin-bottom: 16px !important; }
-  .section-title h2 { font-size: 20px !important; color: #fff !important; }
+  .section-title h2 { font-size: 20px !important; color: #e8c97a !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; }
   .section-title p { font-size: 12px !important; color: #666 !important; }
   
   /* ===== 所有卡片变深色 ===== */
@@ -4970,7 +4972,8 @@ body {
 }
 .page-title h2 {
   font-size: 26px !important;
-  color: #fff !important;
+  color: #e8c97a !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important;
   font-weight: 700 !important;
   letter-spacing: 0.5px !important;
 }
@@ -4992,7 +4995,8 @@ body {
 }
 
 /* ===== 文字覆盖 ===== */
-h1, h2, h3, h4, h5 { color: #fff !important; }
+h1, h2, h3, h4, h5 { color: #e8c97a !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; }
 p, li, td, th, span, div, label { color: var(--mb-text); }
 .text-secondary, .text-tertiary, .text-muted { color: var(--mb-sub) !important; }
 a { color: var(--mb-brand); }
@@ -5033,7 +5037,8 @@ a { color: var(--mb-brand); }
 }
 .hero-motto {
   font-size: 30px !important;
-  color: #fff !important;
+  color: #e8c97a !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important;
   font-weight: 700 !important;
   letter-spacing: 2px !important;
   text-align: left !important;
@@ -5056,7 +5061,8 @@ a { color: var(--mb-brand); }
   backdrop-filter: none !important;
   box-shadow: none !important;
 }
-.hero-date-day { font-size: 30px !important; color: #fff !important; }
+.hero-date-day { font-size: 30px !important; color: #e8c97a !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; }
 .hero-date-month { font-size: 14px !important; }
 .hero-divider { background: var(--mb-border) !important; width: 1px !important; height: 36px !important; }
 .hero-stats {
@@ -5086,7 +5092,8 @@ a { color: var(--mb-brand); }
 }
 .fade-in-section .section-title h2 {
   font-size: 20px !important;
-  color: #fff !important;
+  color: #e8c97a !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important;
   font-weight: 700 !important;
 }
 .fade-in-section .section-title .divider { display: none !important; }
@@ -5139,7 +5146,8 @@ section a[href*="audio"] {
 /* ===== Section wrap ===== */
 .section-wrap { border: none !important; }
 .section-title { text-align: left !important; margin-bottom: 12px !important; }
-.section-title h2 { font-size: 20px !important; color: #fff !important; font-weight: 700 !important; }
+.section-title h2 { font-size: 20px !important; color: #e8c97a !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; font-weight: 700 !important; }
 .section-title p { font-size: 12px !important; color: var(--mb-sub) !important; }
 .section-title .divider { display: none !important; }
 
@@ -5174,7 +5182,8 @@ section a[href*="audio"] {
 .genealogy-tools select {
   background: var(--mb-card2) !important;
   border: 1px solid var(--mb-border) !important;
-  color: #fff !important;
+  color: #e8c97a !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important;
   border-radius: 10px !important;
   padding: 12px 14px !important;
   font-size: 14px !important;
@@ -5198,7 +5207,8 @@ section a[href*="audio"] {
   border-radius: 16px !important;
   padding: 14px !important;
 }
-.member-card .name { color: #fff !important; font-size: 15px !important; }
+.member-card .name { color: #e8c97a !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; font-size: 15px !important; }
 .member-card .info { color: var(--mb-sub) !important; font-size: 12px !important; }
 
 /* ===== 超小屏 ===== */
@@ -5325,7 +5335,8 @@ section a[href*="audio"] {
 .genealogy-tools select {
   background: #1c1c1c !important;
   border: 1px solid #2a2a2a !important;
-  color: #fff !important;
+  color: #e8c97a !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important;
   border-radius: 12px !important;
   padding: 12px 14px !important;
   font-size: 14px !important;
@@ -5355,7 +5366,8 @@ section a[href*="audio"] {
   border-radius: 16px !important;
   padding: 14px !important;
 }
-#members-grid .name { color: #fff !important; font-size: 15px !important; }
+#members-grid .name { color: #e8c97a !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; font-size: 15px !important; }
 #members-grid .info { color: #888 !important; font-size: 12px !important; }
 
 }
@@ -5387,11 +5399,12 @@ section a[href*="audio"] {
   .mb-show-main .carousel-dots .carousel-dot { width: 6px; height: 6px; border-radius: 50%; background: #444; }
   .mb-show-main .carousel-dots .carousel-dot.active { background: #D4FF3A; width: 20px; border-radius: 3px; }
   .mb-show-main [style*="display:flex;gap:10px;max-width:780px"] { flex-wrap: wrap !important; }
-  .mb-show-main .hero-motto { font-size: 28px !important; color: #fff !important; font-weight: 700 !important; text-align: left !important; letter-spacing: 2px !important; margin-bottom: 4px !important; }
+  .mb-show-main .hero-motto { font-size: 28px !important; color: #e8c97a !important; font-weight: 700 !important; text-align: left !important; letter-spacing: 2px !important; margin-bottom: 4px !important; text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; }
   .mb-show-main .hero-sub { font-size: 13px !important; color: #888 !important; text-align: left !important; margin-bottom: 12px !important; }
   .mb-show-main .hero-desc { display: none !important; }
   .mb-show-main .hero-date-box { background: #141414 !important; border: 1px solid #2a2a2a !important; border-radius: 16px !important; padding: 14px 16px !important; backdrop-filter: none !important; box-shadow: none !important; }
-  .mb-show-main .hero-date-day { font-size: 30px !important; color: #fff !important; }
+  .mb-show-main .hero-date-day { font-size: 30px !important; color: #e8c97a !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; }
   .mb-show-main .hero-divider { background: #2a2a2a !important; }
   
   /* 背景切换胶囊按钮 */
@@ -5439,7 +5452,8 @@ section a[href*="audio"] {
   .mb-show-main .stat-card { background: #141414 !important; border-color: #2a2a2a !important; border-radius: 12px !important; padding: 12px 8px !important; }
   .mb-show-main .stat-card div:first-child { color: #D4FF3A !important; }
   .mb-show-main .section-title { text-align: left !important; margin-bottom: 12px !important; }
-  .mb-show-main .section-title h2 { font-size: 20px !important; color: #fff !important; font-weight: 700 !important; }
+  .mb-show-main .section-title h2 { font-size: 20px !important; color: #e8c97a !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; font-weight: 700 !important; }
   .mb-show-main .section-title p { font-size: 12px !important; color: #888 !important; }
   .mb-show-main .section-title .divider { display: none !important; }
   .mb-show-main .fullwidth-quote { padding: 20px 16px !important; }
@@ -5573,7 +5587,8 @@ section a[href*="audio"] {
     margin-bottom: 12px !important;
   }
   .activity-card, .activity-card .ac-photo-wrap { border-radius: 16px !important; }
-  .activity-card h3 { color: #fff !important; font-size: 16px !important; }
+  .activity-card h3 { color: #e8c97a !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; font-size: 16px !important; }
   .activity-card p, .activity-card div:not([class*="ac-"]) { color: #888 !important; font-size: 13px !important; }
   .activity-card [class*="tag"], .activity-card [class*="label"], .activity-card .status {
     background: #D4FF3A !important;
@@ -5592,10 +5607,12 @@ section a[href*="audio"] {
     padding: 16px !important;
     margin-bottom: 12px !important;
   }
-  .doc-card h3, .committee-card h3, .party-card h3 { color: #fff !important; font-size: 16px !important; }
+  .doc-card h3, .committee-card h3, .party-card h3 { color: #e8c97a !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; font-size: 16px !important; }
   .doc-card p, .committee-card p, .party-card p { color: #888 !important; font-size: 13px !important; }
   .tl-item { color: #888 !important; font-size: 13px !important; }
-  .tl-item strong { color: #fff !important; }
+  .tl-item strong { color: #e8c97a !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; }
 
   /* 家族成员页 */
   #members-grid .member-card {
@@ -5604,7 +5621,8 @@ section a[href*="audio"] {
     border-radius: 16px !important;
     padding: 14px !important;
   }
-  #members-grid .member-card div:first-child { color: #fff !important; font-size: 15px !important; font-weight: 600 !important; }
+  #members-grid .member-card div:first-child { color: #e8c97a !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; font-size: 15px !important; font-weight: 600 !important; }
   #members-grid .member-card div:not(:first-child) { color: #888 !important; font-size: 12px !important; }
 
   /* 家族树页 */
@@ -5614,6 +5632,7 @@ section a[href*="audio"] {
     border-radius: 12px !important;
     padding: 12px !important;
   }
-  .ancestor-card .name { color: #fff !important; font-size: 14px !important; font-weight: 600 !important; }
+  .ancestor-card .name { color: #e8c97a !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; font-size: 14px !important; font-weight: 600 !important; }
   .ancestor-card .info, .ancestor-card span:not(.name) { color: #888 !important; font-size: 12px !important; }
 }
