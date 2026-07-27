@@ -5415,6 +5415,25 @@ section a[href*="audio"] {
   .mb-show-main .back-page-btn, .mb-show-main .back-top, .mb-show-main .float-toolbar,
   .mb-show-main .hero-marquee, .mb-show-main .main-nav,
   .mb-show-main .header-actions, .mb-show-main .nav-toggle { display: none !important; }
+  /* 返回开启页按钮 */
+  .mb-show-main .mb-back-entrance-wrap { display: block !important; padding: 0 16px; margin-top: 4px; }
+  .mb-show-main .mb-back-entrance {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 0 16px 12px;
+    padding: 10px;
+    background: transparent;
+    border: 1px solid #2a2a2a;
+    border-radius: 999px;
+    color: #888;
+    font-size: 13px;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mb-show-main .mb-back-entrance:active { opacity: 0.6; }
+  
   /* TabBar on main page */
   .mb-show-main .mb-tabbar { display: flex !important; }
 }
