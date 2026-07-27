@@ -73,7 +73,88 @@
   .vt .hl{background:linear-gradient(135deg,#c9a84c,#e8c97a,#c9a84c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
   .vm{font-family:'Noto Serif SC',serif;font-size:clamp(14px,1.5vw,20px);font-weight:600;color:#c9a84c;letter-spacing:0.3em;text-shadow:0 2px 20px rgba(0,0,0,0.4);margin:6px 0 0}
 
-  </style>
+  
+  /* ===== 首次访问欢迎弹窗 ===== */
+/* removed */ {
+    position:fixed; inset:0; z-index:99999;
+    background:rgba(10,8,6,0.88);
+    display:flex; align-items:center; justify-content:center;
+    opacity:1; transition:opacity 0.6s ease;
+    backdrop-filter:blur(6px);
+  }
+/* removed */.hide { opacity:0; pointer-events:none; }
+  .wl-box {
+    background:linear-gradient(145deg,#1a1510,#0f0c08);
+    border:1px solid rgba(201,168,76,0.2);
+    border-radius:24px; padding:36px 32px 28px;
+    max-width:380px; width:90vw; text-align:center;
+    box-shadow:0 24px 80px rgba(0,0,0,0.6);
+    animation:welcomeIn 0.5s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  @keyframes welcomeIn { from{opacity:0;transform:scale(0.88) translateY(16px)} to{opacity:1;transform:scale(1) translateY(0)} }
+  .wl-box .wl-icon { font-size:40px; display:block; margin-bottom:10px; }
+  .wl-box h2 { font-family:'Noto Serif SC',serif; font-size:22px; color:#f5e6c8; margin:0 0 4px; letter-spacing:3px; font-weight:600; }
+  .wl-box .wl-sub { font-size:12px; color:rgba(245,230,200,0.35); letter-spacing:2px; margin-bottom:22px; }
+  .wl-box .wl-desc { font-size:13px; color:rgba(245,230,200,0.6); line-height:1.8; margin-bottom:24px; letter-spacing:0.5px; }
+  .wl-btn-row { display:flex; gap:12px; justify-content:center; }
+  .wl-btn {
+    flex:1; padding:12px 8px; border-radius:50px; font-size:14px; font-weight:600;
+    cursor:pointer; transition:all 0.3s; font-family:'Noto Serif SC',serif; letter-spacing:1px;
+  }
+  .wl-btn-primary { background:linear-gradient(135deg,#c9a84c,#e8c97a); color:#0a0806; border:none; }
+  .wl-btn-primary:hover { transform:scale(1.03); box-shadow:0 4px 16px rgba(201,168,76,0.3); }
+  .wl-btn-secondary { background:transparent; color:rgba(245,230,200,0.5); border:1px solid rgba(201,168,76,0.2); }
+  .wl-btn-secondary:hover { color:#f5e6c8; border-color:rgba(201,168,76,0.4); }
+  .wl-back { display:inline-block; margin-top:14px; font-size:11px; color:rgba(245,230,200,0.2); cursor:pointer; background:none; border:none; letter-spacing:1px; }
+  .wl-back:hover { color:rgba(245,230,200,0.4); }
+  /* 表单 */
+  .wl-field { width:100%; padding:10px 14px; border-radius:12px; border:1px solid rgba(201,168,76,0.15); background:rgba(255,255,255,0.05); color:#f5e6c8; font-size:13px; font-family:inherit; margin-bottom:10px; outline:none; transition:border-color 0.3s; }
+  .wl-field:focus { border-color:rgba(201,168,76,0.4); }
+  .wl-field::placeholder { color:rgba(245,230,200,0.25); }
+  .wl-login-row { display:flex; gap:10px; margin:12px 0; }
+  .wl-login-btn { flex:1; padding:10px; border-radius:12px; border:1px solid rgba(201,168,76,0.15); background:rgba(255,255,255,0.04); color:#f5e6c8; font-size:13px; cursor:pointer; transition:all 0.2s; }
+  .wl-login-btn:hover { border-color:rgba(201,168,76,0.3); background:rgba(255,255,255,0.08); }
+
+
+  /* ===== 首次访问欢迎弹窗 ===== */
+  #wl-overlay {
+    position:fixed; inset:0; z-index:99999;
+    background:rgba(10,8,6,0.88);
+    display:flex; align-items:center; justify-content:center;
+    opacity:1; transition:opacity 0.6s ease;
+    backdrop-filter:blur(6px);
+  }
+  #wl-overlay.hide { opacity:0; pointer-events:none; }
+  .wl-box {
+    background:linear-gradient(145deg,#1a1510,#0f0c08);
+    border:1px solid rgba(201,168,76,0.2);
+    border-radius:24px; padding:36px 32px 28px;
+    max-width:380px; width:90vw; text-align:center;
+    box-shadow:0 24px 80px rgba(0,0,0,0.6);
+    animation:wlfade 0.5s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  @keyframes wlfade{from{opacity:0;transform:scale(0.88) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .wl-box .wl-icon{font-size:40px;display:block;margin-bottom:8px}
+  .wl-box h2{font-family:'Noto Serif SC',serif;font-size:22px;color:#f5e6c8;margin:0 0 4px;letter-spacing:3px;font-weight:600}
+  .wl-box .wl-sub{font-size:12px;color:rgba(245,230,200,0.35);letter-spacing:2px;margin-bottom:20px}
+  .wl-box .wl-desc{font-size:14px;color:rgba(245,230,200,0.7);line-height:1.6;margin-bottom:20px;letter-spacing:0.5px}
+  .wl-box .wl-hint{font-size:11px;color:#e8c97a;margin-bottom:12px;min-height:16px}
+  .wl-btn-row{display:flex;gap:12px;justify-content:center}
+  .wl-btn{flex:1;padding:12px 8px;border-radius:50px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.3s;font-family:'Noto Serif SC',serif;letter-spacing:1px}
+  .wl-btn-p{background:linear-gradient(135deg,#c9a84c,#e8c97a);color:#0a0806;border:none}
+  .wl-btn-p:hover{transform:scale(1.03);box-shadow:0 4px 16px rgba(201,168,76,0.3)}
+  .wl-btn-s{background:transparent;color:rgba(245,230,200,0.5);border:1px solid rgba(201,168,76,0.2)}
+  .wl-btn-s:hover{color:#f5e6c8;border-color:rgba(201,168,76,0.4)}
+  .wl-back{display:inline-block;margin-top:14px;font-size:11px;color:rgba(245,230,200,0.2);cursor:pointer;background:none;border:none;letter-spacing:1px;font-family:inherit}
+  .wl-back:hover{color:rgba(245,230,200,0.4)}
+  .wl-field{width:100%;padding:10px 14px;border-radius:12px;border:1px solid rgba(201,168,76,0.15);background:rgba(255,255,255,0.05);color:#f5e6c8;font-size:13px;font-family:inherit;margin-bottom:10px;outline:none;transition:border-color 0.3s}
+  .wl-field:focus{border-color:rgba(201,168,76,0.4)}
+  .wl-field::placeholder{color:rgba(245,230,200,0.2)}
+  .wl-login-row{display:flex;gap:10px;margin:14px 0}
+  .wl-login-btn{flex:1;padding:10px;border-radius:12px;border:1px solid rgba(201,168,76,0.15);background:rgba(255,255,255,0.04);color:#f5e6c8;font-size:13px;cursor:pointer;transition:all 0.2s;font-family:inherit}
+  .wl-login-btn:hover{border-color:rgba(201,168,76,0.3);background:rgba(255,255,255,0.08)}
+  @media(max-width:767px){.wl-box{padding:28px 20px 24px}.wl-box h2{font-size:20px}.wl-btn{font-size:13px;padding:10px 6px}}
+</style>
 </head>
 <body>
 <div id="stage">
@@ -215,6 +296,60 @@ document.getElementById('openBtn').addEventListener('click',function(){
     }
   }();
 });
+</script>
+
+
+
+
+<div id="wl-overlay">
+  <div class="wl-box" id="wl-box">
+    <span class="wl-icon">🏮</span>
+    <h2>下枫槎·谢氏</h2>
+    <div class="wl-sub">宁海 · 乌衣世泽 宝树家声</div>
+    <div class="wl-desc" id="wl-desc">您是下枫槎村谢氏族人吗？</div>
+    <div class="wl-hint" id="wl-hint"></div>
+    <div id="wl-step"></div>
+  </div>
+</div>
+<script>
+(function(){
+  var overlay = document.getElementById('wl-overlay');
+  var step = document.getElementById('wl-step');
+  var desc = document.getElementById('wl-desc');
+  var hint = document.getElementById('wl-hint');
+  var box = document.getElementById('wl-box');
+
+  if (localStorage.getItem('wl_done')) { overlay.classList.add('hide'); return; }
+
+  function showStep(s) {
+    step.innerHTML = '';
+    hint.textContent = '';
+    if (s === 1) {
+      desc.textContent = '您是下枫槎村谢氏族人吗？';
+      step.innerHTML = '<div class="wl-btn-row"><button class="wl-btn wl-btn-p" onclick="window._wlGo(2)">是，我是族人</button><button class="wl-btn wl-btn-s" onclick="window._wlGo(3)">不是</button></div>';
+    } else if (s === 2) {
+      desc.textContent = '欢迎族人！请填写基本信息';
+      step.innerHTML = '<input class="wl-field" id="wl-name" placeholder="您的姓名"><input class="wl-field" id="wl-wechat" placeholder="微信 / 手机号"><input class="wl-field" id="wl-gen" placeholder="辈分 / 世系（选填）"><div class="wl-btn-row"><button class="wl-btn wl-btn-p" onclick="window._wlSubmit()">提交</button></div><button class="wl-back" onclick="window._wlGo(1)">← 返回</button>';
+    } else if (s === 3) {
+      desc.textContent = '欢迎您！请问您访问本站的目的是？';
+      step.innerHTML = '<input class="wl-field" id="wl-purpose" placeholder="如：了解谢氏文化、查阅族谱..."><div style="font-size:11px;color:rgba(245,230,200,0.2);margin-bottom:8px">或使用以下方式登录</div><div class="wl-login-row"><button class="wl-login-btn" onclick="window._wlDone()">💬 微信</button><button class="wl-login-btn" onclick="window._wlDone()">📞 电话</button></div><button class="wl-back" onclick="window._wlGo(1)">← 返回</button>';
+    }
+    box.style.animation = 'none';
+    void box.offsetHeight;
+    box.style.animation = 'wlfade 0.4s cubic-bezier(0.22,1,0.36,1) both';
+  }
+  window._wlGo = function(s) { showStep(s); };
+  window._wlSubmit = function() {
+    var name = document.getElementById('wl-name').value.trim();
+    if (!name) { hint.textContent = '请输入姓名'; return; }
+    window._wlDone();
+  };
+  window._wlDone = function() {
+    localStorage.setItem('wl_done', '1');
+    overlay.classList.add('hide');
+  };
+  showStep(1);
+})();
 </script>
 </body>
 </html>

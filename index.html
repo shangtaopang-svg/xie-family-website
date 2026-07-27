@@ -714,24 +714,25 @@ window.toggleTheme=function(){var d=localStorage.getItem("theme")==="dark";var n
   });
 })();
 
-// ===== 手机端22.jpg字幕打字机 =====
+// ===== 手机端22.jpg字幕打字机（高亮古文风格） =====
 (function(){
   var subEl = document.getElementById('mbhSubtitle');
   if (!subEl) return;
+  // 古文风格显示：用丨分隔换行
   var txt = '下枫槎谢氏一脉，世系源远流长。自申伯传三十六世至东山会稽，再由会稽南下经临海下渡，至石马（下谢）小四公，乃入浙东之近祖也。';
   var i = 0, timer = null;
-  var paused = false;
   function type() {
     if (i >= txt.length) { timer = null; return; }
     var ch = txt[i];
-    subEl.textContent = txt.substring(0, i + 1) + '█';
+    var shown = txt.substring(0, i + 1);
+    subEl.innerHTML = shown + '<span class="hl-cursor"></span>';
     i++;
-    // 标点处稍作停顿
-    var delay = '。，、；：？！'.indexOf(ch) >= 0 ? 120 : 35;
+    // 标点停顿加长，模拟古文诵读节奏
+    var delay = '。，、；：？！'.indexOf(ch) >= 0 ? 140 : 32;
     timer = setTimeout(type, delay);
   }
   subEl.textContent = '';
-  setTimeout(type, 800);
+  setTimeout(type, 900);
 })();
 </script>
 </body>
