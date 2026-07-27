@@ -148,7 +148,7 @@
     <section style="margin-bottom:24px;">
       <div class="section-title" style="cursor:pointer;" onclick="toggleMarriage()"><h2>💒 入赘婚配 <span id="marriage-toggle" style="font-size:18px;color:var(--accent-orange);">▶</span></h2><div class="divider"></div><p>点击展开查看</p></div>
       <div id="marriage-content" style="display:none;">
-      <div class="glass-card" style="padding:20px;overflow-x:auto;border:2px solid #ef4444;background:rgba(239,68,68,0.04);">
+      <div class="glass-card" style="padding:20px;overflow-x:auto;border:2px solid #2a2a2a;background:#0a0a0a;">
       <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:550px;">
         <thead>
           <tr style="background:rgba(239,68,68,0.12);color:var(--text-primary);font-weight:700;">
@@ -701,7 +701,7 @@
     @keyframes blRight { 0% { top:-100%; } 50% { top:100%; } 100% { top:100%; } }
     @keyframes blBottom { 0% { right:-100%; } 50% { right:100%; } 100% { right:100%; } }
     @keyframes blLeft { 0% { bottom:-100%; } 50% { bottom:100%; } 100% { bottom:100%; } }
-    @media(max-width:768px){#marriage-content .glass-card{background:#1a1a1a!important;border-color:#333!important;color:#fff!important}#marriage-content td,#marriage-content th{color:#fff!important;border-color:#333!important}#marriage-content td:first-child{color:#fff!important}}
+    #marriage-content .glass-card{background:#0a0a0a!important;border-color:#2a2a2a!important}#marriage-content td,#marriage-content th{color:#fff!important;border-color:#2a2a2a!important;background:#0a0a0a!important}
   </style>
   <script>
     // bg-canvas removed
