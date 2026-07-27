@@ -314,12 +314,13 @@ document.getElementById('openBtn2').addEventListener('click',function(){
       isOpen=opening;isAnim=false;
       if(opening){
         v.style.opacity=1;v.style.transform='scale(1)';pt.style.display='none';
+        sl.style.display='none';sr.style.display='none';
         vn.classList.add('show');ent.classList.add('show');etStart();
         document.getElementById('pv-trigger').classList.add('show');
         document.getElementById('openBtn2').textContent='✦ 收起';
       } else {
         v.style.opacity=0;pt.style.display='';pt.style.opacity=1;pt.style.transform='none';
-        w.style.transform='none';
+        sl.style.display='';sr.style.display='';w.style.transform='none';
         vn.classList.remove('show');ent.classList.remove('show');etStop();document.getElementById('hc').classList.add('show');document.getElementById('hero-text').classList.add('show');
         document.getElementById('openBtn2')='✦ 探索下枫槎';
       }
