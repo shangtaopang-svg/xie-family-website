@@ -242,7 +242,7 @@
         + (item.source ? ' 来源：' + escapeHtml(item.source) : '')
         + '</div>'
         + '<div style="font-size:14px;color:var(--text-secondary);line-height:2;">' + escapeHtml(fullContent).replace(/\n/g, '<br>') + '</div>'
-        + (hasUrl ? '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--divider);"><a href="' + escapeAttr(item.url) + '" target="_blank" style="color:var(--accent-orange);font-size:13px;text-decoration:none;">\u67e5\u770b\u539f\u6587\u94fe\u63a5 \u2192</a></div>' : '');
+        + (hasUrl ? '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--divider);"><a href="' + escapeAttr(item.url) + '" target="_blank" style="color:#d4793a;color:var(--accent-orange);font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:2px;">\u67e5\u770b\u539f\u6587\u94fe\u63a5 \u2192</a></div>' : '');
       overlay.appendChild(box);
       overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
       document.body.appendChild(overlay);

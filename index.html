@@ -132,7 +132,9 @@
 
   <div class="mbh-welcome">Welcome to Xia Feng Cha Village</div>
 
-  <div class="mbh-hero" style="background-image:url('images/22.jpg')"></div>
+  <div class="mbh-hero" style="background-image:url('images/22.jpg')">
+    <div class="mbh-subtitle" id="mbhSubtitle"></div>
+  </div>
 
   <div class="mbh-pills">
     <a href="pages/genealogy.html" class="mbh-pill mbh-pill-active">&#x1f4dc; 族谱查询</a>
@@ -710,6 +712,21 @@ window.toggleTheme=function(){var d=localStorage.getItem("theme")==="dark";var n
     overlay.classList.remove('show');
     textEl.textContent = '';
   });
+})();
+
+// ===== 手机端22.jpg字幕打字机 =====
+(function(){
+  var subEl = document.getElementById('mbhSubtitle');
+  if (!subEl) return;
+  var txt = '下枫槎谢氏一脉，世系源远流长。自申伯传三十六世至东山会稽，再由会稽南下经临海下渡，至石马（下谢）小四公，乃入浙东之近祖也。';
+  var i = 0, timer = null;
+  function type() {
+    if (i >= txt.length) { timer = null; return; }
+    subEl.textContent = txt.substring(0, i + 1);
+    i++;
+    timer = setTimeout(type, 40);
+  }
+  setTimeout(type, 600);
 })();
 </script>
 </body>
