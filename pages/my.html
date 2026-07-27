@@ -78,13 +78,25 @@
   var app = document.getElementById('app');
 
   if (!data) {
-    app.innerHTML = '<div class="header"><div class="avatar">?</div><h1>未登记</h1><p>您尚未登记族人信息</p></div><div class="unreg-card"><h3>🏛️ 加入下枫槎谢氏</h3><p>登记后即可查看个人档案<br>参与家族活动，记录功德</p><a href="clan-register.html" class="unreg-btn">📋 立即登记</a></div>';
+    app.innerHTML = '<div class="header"><div class="avatar">?</div><h1>未登记</h1><p>您尚未登记</p></div><div class="unreg-card"><h3>📋 欢迎登记</h3><p>登记后即可查看个人信息</p><a href="clan-register.html" class="unreg-btn">📋 立即登记</a></div>';
     return;
   }
 
   var info = JSON.parse(data);
+  var isClan = info.isClan === true || info.type === '族人';
+  var typeLabel = isClan ? '下枫槎谢氏 · 族人' : '下枫槎村 · 访客';
+  var avatar = info.name ? info.name.charAt(0) : '?';
 
-  app.innerHTML = '<div class="header"><div class="avatar">' + (info.name ? info.name.charAt(0) : '?') + '</div><h1>' + (info.name || '族人') + '</h1><p>下枫槎谢氏 · 数字宗祠</p></div><div class="info-card"><div class="info-row"><span class="info-label">姓名</span><span class="info-value">' + (info.name || '-') + '</span></div><div class="info-row"><span class="info-label">电话</span><span class="info-value">' + (info.phone || '-') + '</span></div><div class="info-row"><span class="info-label">字辈/世代</span><span class="info-value">' + (info.generation || '-') + '</span></div><div class="info-row"><span class="info-label">父亲</span><span class="info-value">' + (info.father || '-') + '</span></div><div class="info-row"><span class="info-label">分支</span><span class="info-value">' + (info.branch || '-') + '</span></div><div class="info-row"><span class="info-label">登记时间</span><span class="info-value">' + (info.time || '-') + '</span></div></div><div class="menu-list"><a href="clan-register.html" class="menu-item"><span class="menu-icon">✏️</span><span class="menu-text">编辑资料</span><span class="menu-arrow">▶</span></a><a href="merit-scroll.html" class="menu-item"><span class="menu-icon">📜</span><span class="menu-text">我的功德</span><span class="menu-arrow">▶</span></a><a href="../index.html" class="menu-item"><span class="menu-icon">🏠</span><span class="menu-text">返回首页</span><span class="menu-arrow">▶</span></a></div>';
+  var cardHtml = '<div class="header"><div class="avatar">' + avatar + '</div><h1>' + (info.name || '-') + '</h1><p>' + typeLabel + '</p></div><div class="info-card"><div class="info-row"><span class="info-label">姓名</span><span class="info-value">' + (info.name || '-') + '</span></div><div class="info-row"><span class="info-label">电话</span><span class="info-value">' + (info.phone || '-') + '</span></div><div class="info-row"><span class="info-label">类型</span><span class="info-value">' + (info.type || '-') + '</span></div>';
+
+  if (isClan) {
+    cardHtml += '<div class="info-row"><span class="info-label">字辈/世代</span><span class="info-value">' + (info.generation || '-') + '</span></div><div class="info-row"><span class="info-label">父亲</span><span class="info-value">' + (info.father || '-') + '</span></div><div class="info-row"><span class="info-label">分支</span><span class="info-value">' + (info.branch || '-') + '</span></div>';
+  } else {
+    cardHtml += '<div class="info-row"><span class="info-label">微信</span><span class="info-value">' + (info.wechat || '-') + '</span></div><div class="info-row"><span class="info-label">来访目的</span><span class="info-value">' + (info.purpose || '-') + '</span></div>';
+  }
+  cardHtml += '<div class="info-row"><span class="info-label">登记时间</span><span class="info-value">' + (info.time || '-') + '</span></div></div><div class="menu-list"><a href="clan-register.html" class="menu-item"><span class="menu-icon">✏️</span><span class="menu-text">编辑资料</span><span class="menu-arrow">▶</span></a><a href="../index.html" class="menu-item"><span class="menu-icon">🏠</span><span class="menu-text">返回首页</span><span class="menu-arrow">▶</span></a></div>';
+
+  app.innerHTML = cardHtml;
 })();
 </script>
 </body>
