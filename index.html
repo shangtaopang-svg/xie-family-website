@@ -480,15 +480,7 @@
     </div>
   </section>
 
-  <!-- ===== 手机端族史打印机 ===== -->
-  <div class="mb-printer-wrap">
-    <div class="mb-printer-btn" id="printerToggle">📜 点击查看族史</div>
-    <div class="mb-printer-box" id="printerBox">
-      <div class="mb-printer-content" id="printerContent"></div>
-    </div>
-  </div>
-
-    <!-- ===== 引用分隔 ===== -->
+  <!-- ===== 引用分隔 ===== -->
   <section class="section-wrap" style="padding:0;">
     <div class="fullwidth-quote">
       <div class="quote-line"></div>
@@ -612,54 +604,4 @@ window.changeVolume=function(d){var a=document.getElementById("bg-music");if(a)a
 window.toggleTheme=function(){var d=localStorage.getItem("theme")==="dark";var n=d?"light":"dark";document.documentElement.setAttribute("data-theme",n);localStorage.setItem("theme",n);var t=document.getElementById("themeTrackTop"),b=document.getElementById("themeThumbTop"),i1=document.getElementById("themeIconTop"),i2=document.getElementById("themeIcon2Top");if(t)t.style.background=n==="dark"?"#04BF00":"#ccc";if(b)b.style.left=n==="dark"?"20px":"2px";if(i1)i1.style.opacity=n==="dark"?"0.4":"1";if(i2)i2.style.opacity=n==="dark"?"1":"0.4";};
 (function(){var s=localStorage.getItem("theme");if(s==="dark"){document.documentElement.setAttribute("data-theme","dark");var t=document.getElementById("themeTrackTop"),b=document.getElementById("themeThumbTop"),i1=document.getElementById("themeIconTop"),i2=document.getElementById("themeIcon2Top");if(t)t.style.background="#04BF00";if(b)b.style.left="20px";if(i1)i1.style.opacity="0.4";if(i2)i2.style.opacity="1";}})();
 </script>
-
-<script>
-// 族史打印机效果
-(function(){
-  var btn = document.getElementById('printerToggle');
-  var box = document.getElementById('printerBox');
-  var el = document.getElementById('printerContent');
-  if (!btn || !box || !el) return;
-
-  var text = '下枫槎谢氏一脉，世系源远流长。自申伯传三十六世至东山会稽，再由会稽南下经临海下渡，至石马（下谢）小四公，乃入浙东之近祖也。由石马传二世，至文杲公，字克源，北宋宣和年间（约公元一一二五年）任越溪司巡检，始居岩下。公为枫槎谢氏之始迁祖，至今近九百载，传三十六世，瓜瓞绵绵。二世祖攒公、撰公，析居后枫槎与前枫槎，两支并茂，各立门户。初，吾族世居岩下。迨明隆庆壬申（公元一五七二年），山洪暴发，庐舍为墟。十六世祖彬公、乾公昆仲，相度地势，遂迁于双枫古槎之下，因名其地曰"下枫槎"。斩荆棘，辟草莱，筑室于兹，开基立业。自此一脉繁衍，枝分派衍，或习儒术而登科第，或事商贾而通有无，或精农桑而富仓廪。清乾隆间，合族建宗祠于村北，三进两厢，门楣高悬"谢氏宗祠"匾额，堂号"敦睦堂"，寓敦宗睦族之意。春秋二祭，少长咸集，尊祖敬宗，礼行肃穆。';
-
-  var isPrinting = false;
-  var hasPrinted = false;
-  var timer = null;
-
-  btn.addEventListener('click', function(){
-    if (!box.classList.contains('open')) {
-      box.classList.add('open');
-      btn.textContent = '⏹ 收起族史';
-      btn.classList.add('active');
-      if (!hasPrinted) startPrint();
-    } else {
-      box.classList.remove('open');
-      btn.textContent = '📜 点击查看族史';
-      btn.classList.remove('active');
-      if (timer) { clearInterval(timer); timer = null; }
-    }
-  });
-
-  function startPrint(){
-    isPrinting = true;
-    hasPrinted = true;
-    el.textContent = '';
-    var idx = 0;
-    timer = setInterval(function(){
-      if (idx < text.length) {
-        el.textContent = text.substring(0, idx + 1) + '█';
-        idx++;
-        box.scrollTop = box.scrollHeight;
-      } else {
-        el.textContent = text;
-        clearInterval(timer);
-        timer = null;
-        isPrinting = false;
-      }
-    }, 30);
-  }
-})();
-</script>
-
 </body>
