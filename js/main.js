@@ -795,3 +795,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+
+// ===== 返回按钮 capture 阶段监听（优先于所有其他处理器） =====
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('.back-page-btn');
+  if (!btn) return;
+  e.preventDefault();
+  e.stopPropagation();
+  if (window.history.length > 1) {
+    history.back();
+  } else {
+    location.href = '../entrance.html';
+  }
+}, true);
