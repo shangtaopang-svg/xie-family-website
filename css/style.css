@@ -4937,3 +4937,448 @@ body {
   }
 }
 \n/* Desktop: hide mobile-only elements */\n.mb-home, .mb-tabbar { display: none; }
+
+
+/* ===== MOBILE OVERRIDE ===== */
+@media (max-width: 768px) {
+/* ===== MOBILE OVERRIDE (合并mobile.css) ===== */
+/* ============================================
+   手机端 · 黑底霓虹黄主题
+   复刻「桦褐孔菌松茸茶」小程序设计
+   完全独立，不影响桌面端
+   ============================================ */
+
+/* ===== 变量 ===== */
+:root {
+  --mb-bg: #0a0a0a;
+  --mb-brand: #D4FF3A;
+  --mb-brand-dim: #1a2200;
+  --mb-card: #141414;
+  --mb-card2: #1c1c1c;
+  --mb-border: #2a2a2a;
+  --mb-text: #f5f5f5;
+  --mb-sub: #888888;
+  --mb-muted: #555555;
+  --mb-radius: 12px;
+  --mb-radius-lg: 20px;
+  --mb-radius-pill: 999px;
+}
+
+body {
+  background: var(--mb-bg) !important;
+  color: var(--mb-text) !important;
+  font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif !important;
+  padding-bottom: 70px !important;
+}
+
+/* ===== 隐藏桌面端所有元素 ===== */
+.site-header, .nav-controls, .sidebar-controls,
+.back-page-btn, .back-top, .float-toolbar,
+.hero-marquee, .hero-bg-toggle, .main-nav,
+.header-actions, .nav-toggle, .nav-links,
+.site-footer, .footer-inner, .footer-bottom,
+.mobile-bottom-nav, .weather-controls, #weather-canvas, #bg-canvas,
+.photo-wrapper, .carousel-container, .carousel-dots,
+.reels-wrapper, .reels-hint, .media-row-section,
+.hc, .hc-card, .hc .arrow,
+#clk, #vn, #hero-text, #btnw, #ent,
+#spl, #spr, #ref-portal, #overlay, #village, #world,
+#stage, .sp, .sb { display: none !important; }
+
+.content { margin-left: 0 !important; padding: 0 !important; }
+
+/* ===== 页面容器 ===== */
+.page-wrap { padding: 0 16px 16px !important; }
+.page-title {
+  padding: 20px 0 12px !important;
+  text-align: left !important;
+  border: none !important;
+}
+.page-title h2 {
+  font-size: 26px !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+}
+.page-title p {
+  font-size: 13px !important;
+  color: var(--mb-sub) !important;
+  margin-top: 2px !important;
+}
+
+/* ===== 通用卡片 ===== */
+[class*="card"]:not(.mb-tab) {
+  background: var(--mb-card) !important;
+  border: 1px solid var(--mb-border) !important;
+  border-radius: var(--mb-radius-lg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  padding: 16px !important;
+}
+
+/* ===== 文字覆盖 ===== */
+h1, h2, h3, h4, h5 { color: #fff !important; }
+p, li, td, th, span, div, label { color: var(--mb-text); }
+.text-secondary, .text-tertiary, .text-muted { color: var(--mb-sub) !important; }
+a { color: var(--mb-brand); }
+.divider, hr { background: var(--mb-border) !important; }
+
+/* ===== 底部导航 ===== */
+.mb-tabbar {
+  display: flex !important;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 56px;
+  background: #0f0f0f;
+  border-top: 1px solid #222;
+  z-index: 999999;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.mb-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  text-decoration: none;
+  padding: 4px 12px;
+  min-width: 44px;
+  -webkit-tap-highlight-color: transparent;
+}
+.mb-tab:active { opacity: 0.6; }
+.mb-tab-icon { font-size: 20px; line-height: 1; }
+.mb-tab-label { font-size: 10px; color: #555; font-weight: 500; letter-spacing: 0; }
+.mb-tab.active .mb-tab-label { color: var(--mb-brand); }
+
+/* ===== 首页 Hero ===== */
+.hero-section {
+  min-height: auto !important;
+  padding: 20px 16px !important;
+}
+.hero-motto {
+  font-size: 30px !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  letter-spacing: 2px !important;
+  text-align: left !important;
+  margin-bottom: 4px !important;
+}
+.hero-sub {
+  font-size: 13px !important;
+  color: var(--mb-sub) !important;
+  font-weight: 400 !important;
+  text-align: left !important;
+  margin-bottom: 16px !important;
+}
+.hero-desc { display: none !important; }
+.hero-info { margin-bottom: 12px !important; }
+.hero-date-box {
+  background: var(--mb-card) !important;
+  border: 1px solid var(--mb-border) !important;
+  border-radius: 16px !important;
+  padding: 14px 16px !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+.hero-date-day { font-size: 30px !important; color: #fff !important; }
+.hero-date-month { font-size: 14px !important; }
+.hero-divider { background: var(--mb-border) !important; width: 1px !important; height: 36px !important; }
+.hero-stats {
+  position: relative !important;
+  transform: none !important;
+  left: auto !important;
+  bottom: auto !important;
+  margin-top: 12px !important;
+  gap: 8px !important;
+  flex-wrap: wrap;
+}
+.hero-stat-num { font-size: 18px !important; color: var(--mb-brand) !important; }
+.hero-stat-label { font-size: 10px !important; color: var(--mb-sub) !important; letter-spacing: 0.5px !important; }
+.hero-stat-dot { display: none !important; }
+.hero-bg-toggle { display: none !important; }
+#map-bg { display: none !important; }
+
+/* ===== 村庄简介 ===== */
+.fade-in-section {
+  margin: 0 !important;
+  padding: 0 16px !important;
+}
+.fade-in-section .section-title {
+  text-align: left !important;
+  margin-bottom: 12px !important;
+}
+.fade-in-section .section-title h2 {
+  font-size: 20px !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+}
+.fade-in-section .section-title .divider { display: none !important; }
+.fade-in-section .section-title p {
+  font-size: 12px !important;
+  color: var(--mb-sub) !important;
+}
+.fade-in-section .glass-card {
+  background: var(--mb-card) !important;
+  border-color: var(--mb-border) !important;
+  border-radius: 16px !important;
+  padding: 16px !important;
+  margin-bottom: 16px !important;
+}
+.fade-in-section .glass-card p {
+  font-size: 13px !important;
+  line-height: 1.8 !important;
+  color: var(--mb-sub) !important;
+}
+.stat-card {
+  background: var(--mb-card) !important;
+  border-color: var(--mb-border) !important;
+  border-radius: 12px !important;
+  padding: 12px 8px !important;
+}
+.stat-card div:first-child { color: var(--mb-brand) !important; }
+.stat-card div:last-child { color: var(--mb-sub) !important; }
+
+/* ===== 引用 ===== */
+.fullwidth-quote {
+  padding: 20px 16px !important;
+}
+.quote-text {
+  font-size: 16px !important;
+  color: var(--mb-brand) !important;
+}
+.quote-author {
+  font-size: 12px !important;
+  color: var(--mb-sub) !important;
+}
+.quote-line { background: var(--mb-border) !important; }
+
+/* ===== 音频入口 ===== */
+section a[href*="audio"] {
+  background: var(--mb-card) !important;
+  border-color: var(--mb-border) !important;
+  border-radius: 16px !important;
+}
+
+/* ===== Section wrap ===== */
+.section-wrap { border: none !important; }
+.section-title { text-align: left !important; margin-bottom: 12px !important; }
+.section-title h2 { font-size: 20px !important; color: #fff !important; font-weight: 700 !important; }
+.section-title p { font-size: 12px !important; color: var(--mb-sub) !important; }
+.section-title .divider { display: none !important; }
+
+/* ===== 按钮 ===== */
+.mb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 24px;
+  border-radius: var(--mb-radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.mb-btn:active { opacity: 0.7; transform: scale(0.97); }
+.mb-btn-primary { background: var(--mb-brand); color: #000 !important; }
+.mb-btn-ghost { background: transparent; color: var(--mb-brand) !important; border: 1.5px solid var(--mb-brand); }
+
+/* ===== 族谱查询页 ===== */
+.genealogy-tools {
+  background: var(--mb-card) !important;
+  border: 1px solid var(--mb-border) !important;
+  border-radius: 16px !important;
+  padding: 16px !important;
+}
+.genealogy-tools input,
+.genealogy-tools select {
+  background: var(--mb-card2) !important;
+  border: 1px solid var(--mb-border) !important;
+  color: #fff !important;
+  border-radius: 10px !important;
+  padding: 12px 14px !important;
+  font-size: 14px !important;
+  width: 100% !important;
+}
+.genealogy-tools button {
+  background: var(--mb-brand) !important;
+  color: #000 !important;
+  border: none !important;
+  border-radius: var(--mb-radius-pill) !important;
+  padding: 12px 24px !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+}
+
+/* ===== 家族成员页 ===== */
+#members-grid { gap: 12px !important; }
+.member-card {
+  background: var(--mb-card) !important;
+  border: 1px solid var(--mb-border) !important;
+  border-radius: 16px !important;
+  padding: 14px !important;
+}
+.member-card .name { color: #fff !important; font-size: 15px !important; }
+.member-card .info { color: var(--mb-sub) !important; font-size: 12px !important; }
+
+/* ===== 超小屏 ===== */
+@media (max-width: 420px) {
+  .hero-motto { font-size: 24px !important; }
+  .page-title h2 { font-size: 22px !important; }
+}
+
+
+
+/* ===== 手机首页专属布局 ===== */
+.mb-home { display: block !important; padding: 0 0 16px; }
+
+.mbh-top { padding: 48px 20px 12px; text-align: center; }
+.mbh-title { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: 2px; }
+
+.mbh-search {
+  display: flex; align-items: center; gap: 8px;
+  margin: 0 16px 10px; padding: 0 4px 0 16px;
+  height: 48px; background: #141414;
+  border: 1px solid #2a2a2a; border-radius: 999px;
+}
+.mbh-search-icon { font-size: 18px; flex-shrink: 0; }
+.mbh-search-input {
+  flex: 1; background: none; border: none; outline: none;
+  color: #fff; font-size: 14px; padding: 0 8px; min-width: 0;
+}
+.mbh-search-input::placeholder { color: #555; }
+.mbh-search-btn {
+  background: #D4FF3A; color: #000; font-size: 13px;
+  font-weight: 700; padding: 8px 20px; border-radius: 999px;
+  flex-shrink: 0; cursor: pointer;
+}
+
+.mbh-welcome {
+  text-align: center; font-size: 13px; color: #555;
+  letter-spacing: 2px; padding: 0 20px 14px;
+  font-weight: 300; text-transform: uppercase;
+}
+
+.mbh-hero {
+  margin: 0 16px 14px; height: 200px;
+  border-radius: 20px; overflow: hidden;
+  background: linear-gradient(135deg, #1a2a1a, #0a1a0a);
+  background-image: url('/images/mb-hero.jpg');
+  background-size: cover; background-position: center;
+}
+
+.mbh-pills { display: flex; gap: 10px; margin: 0 16px 14px; }
+.mbh-pill {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 6px; height: 52px; border-radius: 999px;
+  font-size: 15px; font-weight: 600; text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.mbh-pill:active { opacity: 0.8; transform: scale(0.98); }
+.mbh-pill-active { background: #D4FF3A; color: #000 !important; }
+.mbh-pill:not(.mbh-pill-active) { background: #000; border: 1.5px solid #D4FF3A; color: #D4FF3A !important; }
+
+.mbh-quick {
+  display: flex; justify-content: space-around; align-items: center;
+  margin: 0 16px 14px; padding: 14px 8px;
+  background: #141414; border-radius: 20px;
+}
+.mbh-qitem {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px; text-decoration: none; min-width: 50px;
+  -webkit-tap-highlight-color: transparent;
+}
+.mbh-qitem:active { opacity: 0.6; }
+.mbh-qicon {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: #D4FF3A; color: #000;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.mbh-qlabel { font-size: 11px; color: #fff; font-weight: 500; }
+
+.mbh-list { margin: 0 16px 14px; display: flex; flex-direction: column; gap: 2px; }
+.mbh-li {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; text-decoration: none;
+  background: #141414; border-radius: 14px;
+  -webkit-tap-highlight-color: transparent;
+}
+.mbh-li:active { opacity: 0.7; }
+.mbh-li-icon { font-size: 18px; width: 24px; text-align: center; }
+.mbh-li-text { flex: 1; font-size: 14px; color: #fff; font-weight: 500; }
+.mbh-li-arrow { font-size: 12px; color: #D4FF3A; opacity: 0.5; }
+
+.mbh-quick-bar {
+  display: flex; align-items: stretch;
+  margin: 0 16px 14px;
+  background: #141414; border-radius: 16px;
+  border: 1px solid #2a2a2a; overflow: hidden;
+}
+.mbh-qb {
+  flex: 1; display: flex; align-items: center; gap: 10px;
+  padding: 14px 14px; text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.mbh-qb:active { opacity: 0.6; }
+.mbh-qb-divider { width: 1px; background: #2a2a2a; margin: 12px 0; }
+.mbh-qb-icon { font-size: 18px; flex-shrink: 0; }
+.mbh-qb-text { flex: 1; min-width: 0; }
+.mbh-qb-label { font-size: 13px; font-weight: 600; color: #fff; }
+.mbh-qb-sub { font-size: 11px; color: #888; margin-top: 2px; }
+.mbh-qb-arrow { font-size: 14px; color: #D4FF3A; opacity: 0.5; }
+
+.mb-home ~ .content { display: none !important; }
+
+
+/* ===== 族谱查询页 ===== */
+.genealogy-tools {
+  background: #141414 !important;
+  border: 1px solid #2a2a2a !important;
+  border-radius: 20px !important;
+  padding: 16px !important;
+  margin-bottom: 16px !important;
+}
+.genealogy-tools input,
+.genealogy-tools select {
+  background: #1c1c1c !important;
+  border: 1px solid #2a2a2a !important;
+  color: #fff !important;
+  border-radius: 12px !important;
+  padding: 12px 14px !important;
+  font-size: 14px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+.genealogy-tools button {
+  background: #D4FF3A !important;
+  color: #000 !important;
+  border: none !important;
+  border-radius: 999px !important;
+  padding: 12px 24px !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  width: 100% !important;
+  margin-top: 8px !important;
+}
+.genealogy-tree {
+  background: transparent !important;
+}
+
+/* ===== 家族成员页 ===== */
+#members-grid { gap: 12px !important; }
+#members-grid > div {
+  background: #141414 !important;
+  border: 1px solid #2a2a2a !important;
+  border-radius: 16px !important;
+  padding: 14px !important;
+}
+#members-grid .name { color: #fff !important; font-size: 15px !important; }
+#members-grid .info { color: #888 !important; font-size: 12px !important; }
+
+}
