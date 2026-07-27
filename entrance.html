@@ -73,7 +73,13 @@
   .vt .hl{background:linear-gradient(135deg,#c9a84c,#e8c97a,#c9a84c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
   .vm{font-family:'Noto Serif SC',serif;font-size:clamp(14px,1.5vw,20px);font-weight:600;color:#c9a84c;letter-spacing:0.3em;text-shadow:0 2px 20px rgba(0,0,0,0.4);margin:6px 0 0}
 
-  @media(max-width:767px){#clk{top:30px;right:16px}.btn{padding:12px 28px;font-size:14px}.eb{padding:10px 28px;font-size:13px}}
+  @media(max-width:767px){#clk{top:30px;right:16px}.btn{padding:12px 28px;font-size:14px}.eb{padding:10px 28px;font-size:13px}#ht-wrap{max-width:clamp(260px,85vw,420px);max-height:160px;top:45%}#ht-text{font-size:12px;line-height:1.7}}@media(min-width:768px){#ht-wrap{max-width:clamp(320px,30vw,480px)}}
+  #ht-wrap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:12;max-width:clamp(280px,40vw,520px);max-height:clamp(200px,35vh,360px);overflow-y:auto;opacity:0;pointer-events:none;transition:opacity 1.5s ease;scrollbar-width:none}
+  #ht-wrap::-webkit-scrollbar{display:none}
+  #ht-wrap.show{opacity:1}
+  #ht-text{font-family:'Noto Serif SC',serif;font-size:clamp(11px,1.1vw,15px);color:rgba(245,230,200,0.85);line-height:1.9;letter-spacing:0.06em;text-shadow:0 1px 12px rgba(0,0,0,0.5);white-space:pre-wrap}
+  .ht-cursor{display:inline;font-family:monospace;font-size:clamp(13px,1.3vw,17px);color:rgba(201,168,76,0.7);animation:htBlink 0.8s step-end infinite;vertical-align:baseline}
+  @keyframes htBlink{50%{opacity:0}}
   </style>
 </head>
 <body>
@@ -135,6 +141,7 @@
   </div>
   <div id="clk"><div class="ct" id="ct"></div><div class="cd" id="cd"></div></div>
   <div id="vn"><h1 class="vt"><span class="hl">下枫槎</span></h1><div class="vm">乌衣世泽 · 宝树家声</div></div>
+  <div id="ht-wrap"><div id="ht-text"></div><span class="ht-cursor">|</span></div>
 </div>
 
 <script>
@@ -181,6 +188,20 @@ window.addEventListener('wheel',function(e){if(!isOpen&&!isAnim){if(e.deltaY<0)p
   requestAnimationFrame(tick);
 }();
 
+// ── 谢氏历史打字机效果 ──
+var htText = "下枫槎谢氏一脉，世系源远流长。自申伯传三十六世至东山会稽，再由会稽南下经临海下渡，至石马（下谢）小四公，乃入浙东之近祖也。由石马传二世，至文杲公，字克源，北宋宣和年间（约公元一一二五年）任越溪司巡检，始居岩下。公为枫槎谢氏之始迁祖，至今近九百载，传三十六世，瓜瓞绵绵。二世祖攒公、撰公，析居后枫槎与前枫槎，两支并茂，各立门户。初，吾族世居岩下。迨明隆庆壬申（公元一五七二年），山洪暴发，庐舍为墟。十六世祖彬公、乾公昆仲，相度地势，遂迁于双枫古槎之下，因名其地曰“下枫槎”。斩荆棘，辟草莱，筑室于兹，开基立业。自此一脉繁衍，枝分派衍，或习儒术而登科第，或事商贾而通有无，或精农桑而富仓廪。清乾隆间，合族建宗祠于村北，三进两厢，门楣高悬“谢氏宗祠”匾额，堂号“敦睦堂”，寓敦宗睦族之意。春秋二祭，少长咸集，尊祖敬宗，礼行肃穆。";
+var htIdx = 0, htTimer = null, htEl = document.getElementById('ht-text'), htWrap = document.getElementById('ht-wrap');
+function htType() {
+  if (htIdx >= htText.length) { htTimer = null; return; }
+  var chunk = htText.substring(htIdx, htIdx + 3);
+  htIdx += 3;
+  htEl.textContent += chunk;
+  htWrap.scrollTop = htWrap.scrollHeight;
+  var delay = htText[htIdx-1] === '“' || htText[htIdx-1] === '”' || htText[htIdx-1] === '。' || htText[htIdx-1] === '，' || htText[htIdx-1] === '、' ? 60 : 24;
+  htTimer = setTimeout(htType, delay);
+}
+function htReset() { if (htTimer) { clearTimeout(htTimer); htTimer = null; } htIdx = 0; htEl.textContent = ''; htWrap.classList.remove('show'); }
+
 // ── Toggle open/close ──
 document.getElementById('openBtn').addEventListener('click',function(){
   if(isAnim)return;isAnim=true;
@@ -205,11 +226,13 @@ document.getElementById('openBtn').addEventListener('click',function(){
         v.style.opacity=1;v.style.transform='scale(1)';pt.style.display='none';
         vn.classList.add('show');ent.classList.add('show');
         document.getElementById('openBtn').textContent='✦ 收起';
+        setTimeout(function(){ htWrap.classList.add('show'); setTimeout(htType, 300); }, 400);
       } else {
         v.style.opacity=0;pt.style.display='';pt.style.opacity=1;pt.style.transform='none';
         w.style.transform='none';
         vn.classList.remove('show');ent.classList.remove('show');document.getElementById('hc').classList.add('show');document.getElementById('hero-text').classList.add('show');
         document.getElementById('openBtn').textContent='✦ 探索下枫槎';
+        htReset();
       }
     }
   }();
