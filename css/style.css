@@ -4636,7 +4636,22 @@ body {
 }
 .back-page-btn:hover { background: var(--glass-hover); color: var(--text-primary); }
 @media (max-width: 900px) {
-  .back-page-btn { display: flex; }
+  .back-page-btn {
+    display: flex;
+    background: #D4FF3A !important;
+    border: none !important;
+    color: #000 !important;
+    font-weight: 700 !important;
+    border-radius: 999px !important;
+    padding: 10px 24px !important;
+    backdrop-filter: none !important;
+    font-size: 14px !important;
+    bottom: 72px !important;
+    left: 16px !important;
+    z-index: 9999 !important;
+    box-shadow: 0 4px 12px rgba(212,255,58,0.3) !important;
+  }
+  .back-page-btn:active { opacity: 0.8; transform: scale(0.97); }
 }
 
 /* ===== 移动端响应式优化 ===== */
