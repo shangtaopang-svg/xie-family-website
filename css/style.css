@@ -4637,8 +4637,8 @@ body {
 .back-page-btn:hover { background: var(--glass-hover); color: var(--text-primary); }
 @media (max-width: 900px) {
   .back-page-btn {
-    display: flex;
-    background: #D4FF3A !important;
+    display: flex !important;
+    background: #FFC107 !important;
     border: none !important;
     color: #000 !important;
     font-weight: 700 !important;
@@ -4649,7 +4649,7 @@ body {
     bottom: 72px !important;
     left: 16px !important;
     z-index: 9999 !important;
-    box-shadow: 0 4px 12px rgba(212,255,58,0.3) !important;
+    box-shadow: 0 4px 12px rgba(255,193,7,0.4) !important;
   }
   .back-page-btn:active { opacity: 0.8; transform: scale(0.97); }
 }
@@ -5517,14 +5517,14 @@ section a[href*="audio"] {
 /* ===== 手机端返回按钮胶囊黄色 ===== */
 @media (max-width: 768px) {
   .back-page-btn {
-    background: #D4FF3A !important;
+    background: #FFC107 !important;
     border: none !important;
     color: #000 !important;
     font-weight: 700 !important;
     border-radius: 999px !important;
     padding: 10px 24px !important;
     backdrop-filter: none !important;
-    box-shadow: 0 4px 12px rgba(212,255,58,0.3) !important;
+    box-shadow: 0 4px 12px rgba(255,193,7,0.4) !important;
     font-size: 14px !important;
     display: flex !important;
     bottom: 72px !important;

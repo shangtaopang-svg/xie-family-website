@@ -156,8 +156,11 @@ v.style.opacity=0;
 !function u(){var n=new Date();ct.textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');cd.textContent=n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日';setTimeout(u,10000)}();
 setTimeout(function(){document.getElementById('clk').classList.add('show');document.getElementById('hero-text').classList.add('show');document.getElementById('hc').classList.add('show');},500);
 
-// Swipe card items
-var hcItems=[{icon:'🌳',label:'族谱查询',sub:'谢氏世系',url:'pages/genealogy.html'},{icon:'📰',label:'消息发布',sub:'家族动态',url:'pages/news.html'},{icon:'🎧',label:'听·下枫槎',sub:'村庄故事',url:'pages/audio.html'}];
+// Swipe card items (mobile/desktop separate)
+var isMobile=window.innerWidth<768;
+var hcItems=isMobile
+  ? [{icon:'📜',label:'家族历史',sub:'谢氏源流',url:'pages/history.html'},{icon:'📰',label:'消息发布',sub:'家族动态',url:'pages/news.html'},{icon:'🎧',label:'听·下枫槎',sub:'村庄故事',url:'pages/audio.html'}]
+  : [{icon:'🌳',label:'族谱查询',sub:'谢氏世系',url:'pages/genealogy.html'},{icon:'📰',label:'消息发布',sub:'家族动态',url:'pages/news.html'},{icon:'🎧',label:'听·下枫槎',sub:'村庄故事',url:'pages/audio.html'}];
 var hcIdx=0;
 function hcUpdate(){var i=hcItems[hcIdx];document.getElementById('hcIcon').textContent=i.icon;document.getElementById('hcLabel').textContent=i.label;document.getElementById('hcSub').textContent=i.sub;document.getElementById('hcLink').href=i.url;}
 document.getElementById('hcPrev').addEventListener('click',function(){hcIdx=(hcIdx-1+hcItems.length)%hcItems.length;hcUpdate();});
