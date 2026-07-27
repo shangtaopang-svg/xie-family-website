@@ -5456,3 +5456,33 @@ section a[href*="audio"] {
   /* TabBar on main page */
   .mb-show-main .mb-tabbar { display: flex !important; }
 }
+
+
+/* ===== 开启页进入按钮 ===== */
+@media (max-width: 768px) {
+  .mbh-enter-btn {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; margin: 0 16px 14px; padding: 14px;
+    background: #D4FF3A; color: #000 !important;
+    border-radius: 999px; font-size: 16px; font-weight: 700;
+    text-decoration: none; -webkit-tap-highlight-color: transparent;
+  }
+  .mbh-enter-btn:active { opacity: 0.8; transform: scale(0.98); }
+  
+  /* 迁徙地图展开时去掉黑色背景 */
+  .mb-show-main .hero-section.hero-map-bg {
+    background: transparent !important;
+    min-height: 350px !important;
+  }
+  .mb-show-main .hero-section.hero-map-bg::before { display: none !important; }
+  .mb-show-main .hero-section.hero-map-bg .hero-info {
+    position: absolute; top: 8px; right: 8px; z-index: 10;
+    margin-bottom: 0 !important;
+  }
+  .mb-show-main .hero-section.hero-map-bg .hero-date-box {
+    padding: 8px 12px !important; gap: 8px !important;
+    background: rgba(0,0,0,0.5) !important;
+  }
+  .mb-show-main .hero-section.hero-map-bg .hero-date-day { font-size: 20px !important; }
+  .mb-show-main .hero-section.hero-map-bg .hero-divider { height: 24px !important; }
+}
