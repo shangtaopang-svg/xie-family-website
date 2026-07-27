@@ -4893,7 +4893,8 @@ body {
     border-radius: 999px !important;
   }
 }
-\n/* Desktop: hide mobile-only elements */
+
+/* Desktop: hide mobile-only elements */
 .mb-home, .mb-tabbar { display: none; }
 
 
