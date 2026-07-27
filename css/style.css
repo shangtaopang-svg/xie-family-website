@@ -5549,58 +5549,48 @@ section a[href*="audio"] {
     padding: 16px !important;
     margin-bottom: 12px !important;
   }
+  .activity-card, .activity-card .ac-photo-wrap { border-radius: 16px !important; }
   .activity-card h3 { color: #fff !important; font-size: 16px !important; }
-  .activity-card p, .activity-card .info { color: #888 !important; font-size: 13px !important; }
-  .activity-card .tag, .activity-card .label {
+  .activity-card p, .activity-card div:not([class*="ac-"]) { color: #888 !important; font-size: 13px !important; }
+  .activity-card [class*="tag"], .activity-card [class*="label"], .activity-card .status {
     background: #D4FF3A !important;
     color: #000 !important;
     border-radius: 999px !important;
     padding: 2px 12px !important;
     font-size: 11px !important;
-    font-weight: 600 !important;
+    font-weight: 600 !important; display: inline-block !important;
   }
 
   /* 今日下枫槎页 */
-  .today-item, .today-post {
+  .doc-card, .committee-card, .party-card, .tl-item {
     background: #141414 !important;
     border: 1px solid #2a2a2a !important;
     border-radius: 16px !important;
     padding: 16px !important;
     margin-bottom: 12px !important;
   }
-  .today-item h3, .today-post h3 { color: #fff !important; font-size: 16px !important; }
-  .today-item p, .today-post p { color: #888 !important; font-size: 13px !important; }
+  .doc-card h3, .committee-card h3, .party-card h3 { color: #fff !important; font-size: 16px !important; }
+  .doc-card p, .committee-card p, .party-card p { color: #888 !important; font-size: 13px !important; }
+  .tl-item { color: #888 !important; font-size: 13px !important; }
+  .tl-item strong { color: #fff !important; }
 
   /* 家族成员页 */
-  #members-grid > div {
+  #members-grid .member-card {
     background: #141414 !important;
     border: 1px solid #2a2a2a !important;
     border-radius: 16px !important;
     padding: 14px !important;
   }
-  #members-grid .name {
-    color: #fff !important;
-    font-size: 15px !important;
-    font-weight: 600 !important;
-  }
-  #members-grid .info, #members-grid .detail {
-    color: #888 !important;
-    font-size: 12px !important;
-  }
+  #members-grid .member-card div:first-child { color: #fff !important; font-size: 15px !important; font-weight: 600 !important; }
+  #members-grid .member-card div:not(:first-child) { color: #888 !important; font-size: 12px !important; }
 
   /* 家族树页 */
-  .tree-container, .tree-card {
+  .ancestor-card {
     background: #141414 !important;
     border: 1px solid #2a2a2a !important;
-    border-radius: 16px !important;
-    padding: 16px !important;
+    border-radius: 12px !important;
+    padding: 12px !important;
   }
-  .tree-container .name, .tree-card .name {
-    color: #fff !important;
-    font-size: 15px !important;
-  }
-  .tree-container .info, .tree-card .info {
-    color: #888 !important;
-    font-size: 12px !important;
-  }
+  .ancestor-card .name { color: #fff !important; font-size: 14px !important; font-weight: 600 !important; }
+  .ancestor-card .info, .ancestor-card span:not(.name) { color: #888 !important; font-size: 12px !important; }
 }
