@@ -5342,37 +5342,42 @@ section a[href*="audio"] {
 
 }
 
-/* ===== 手机正式首页（暗黑风格） ===== */
+
+
+/* ===== 手机端：正式首页（开启页之后） ===== */
 @media (max-width: 768px) {
-  .mbh-enter-wrap { display: block !important; padding: 0 16px 14px; }
-  .mbh-enter-btn {
-    display: flex; align-items: center; justify-content: center;
-    gap: 8px; padding: 14px; width: 100%; box-sizing: border-box;
-    background: #D4FF3A; color: #000 !important;
-    border-radius: 999px; font-size: 16px; font-weight: 700;
-    text-decoration: none; -webkit-tap-highlight-color: transparent;
-  }
-  .mbh-enter-btn:active { opacity: 0.8; transform: scale(0.98); }
+  .mb-show-main .mb-home { display: none !important; }
+  .mb-show-main .content { display: block !important; margin-left: 0 !important; padding: 0 0 70px !important; }
   
-  /* 正式首页内容暗黑风格 */
-  .hero-section { min-height: auto !important; padding: 20px 16px !important; }
-  .hero-motto { font-size: 28px !important; color: #fff !important; font-weight: 700 !important; text-align: left !important; letter-spacing: 2px !important; margin-bottom: 4px !important; }
-  .hero-sub { font-size: 13px !important; color: #888 !important; text-align: left !important; margin-bottom: 12px !important; }
-  .hero-desc { display: none !important; }
-  .hero-date-box { background: #141414 !important; border: 1px solid #2a2a2a !important; border-radius: 16px !important; padding: 14px 16px !important; backdrop-filter: none !important; box-shadow: none !important; }
-  .hero-date-day { font-size: 30px !important; color: #fff !important; }
-  .hero-divider { background: #2a2a2a !important; }
-  .hero-stats { position: relative !important; transform: none !important; left: auto !important; bottom: auto !important; margin-top: 12px !important; }
-  .hero-stat-num { color: #D4FF3A !important; font-size: 18px !important; }
-  .hero-stat-label { color: #888 !important; font-size: 10px !important; }
-  .fade-in-section { margin: 0 !important; padding: 0 16px !important; }
-  .fade-in-section .glass-card { background: #141414 !important; border-color: #2a2a2a !important; border-radius: 16px !important; padding: 16px !important; }
-  .fade-in-section .glass-card p { color: #888 !important; font-size: 13px !important; }
-  .stat-card { background: #141414 !important; border-color: #2a2a2a !important; border-radius: 12px !important; }
-  .stat-card [style*="color:var"] { color: #D4FF3A !important; }
-  .fullwidth-quote { padding: 20px 16px !important; }
-  .quote-text { color: #D4FF3A !important; font-size: 16px !important; }
-  .quote-author { color: #888 !important; font-size: 12px !important; }
-  .quote-line { background: #2a2a2a !important; }
-  .site-footer { display: none !important; }
+  /* 正式首页暗黑风格 */
+  .mb-show-main .hero-section { min-height: auto !important; padding: 20px 16px !important; }
+  .mb-show-main .hero-motto { font-size: 28px !important; color: #fff !important; font-weight: 700 !important; text-align: left !important; letter-spacing: 2px !important; margin-bottom: 4px !important; }
+  .mb-show-main .hero-sub { font-size: 13px !important; color: #888 !important; text-align: left !important; margin-bottom: 12px !important; }
+  .mb-show-main .hero-desc { display: none !important; }
+  .mb-show-main .hero-date-box { background: #141414 !important; border: 1px solid #2a2a2a !important; border-radius: 16px !important; padding: 14px 16px !important; backdrop-filter: none !important; box-shadow: none !important; }
+  .mb-show-main .hero-date-day { font-size: 30px !important; color: #fff !important; }
+  .mb-show-main .hero-divider { background: #2a2a2a !important; }
+  .mb-show-main .hero-stats { position: relative !important; transform: none !important; left: auto !important; bottom: auto !important; margin-top: 12px !important; }
+  .mb-show-main .hero-stat-num { color: #D4FF3A !important; font-size: 18px !important; }
+  .mb-show-main .hero-stat-label { color: #888 !important; font-size: 10px !important; }
+  .mb-show-main .fade-in-section { margin: 0 !important; padding: 0 16px !important; }
+  .mb-show-main .fade-in-section .glass-card { background: #141414 !important; border-color: #2a2a2a !important; border-radius: 16px !important; padding: 16px !important; }
+  .mb-show-main .fade-in-section .glass-card p { color: #888 !important; font-size: 13px !important; line-height: 1.8 !important; }
+  .mb-show-main .stat-card { background: #141414 !important; border-color: #2a2a2a !important; border-radius: 12px !important; padding: 12px 8px !important; }
+  .mb-show-main .stat-card div:first-child { color: #D4FF3A !important; }
+  .mb-show-main .section-title { text-align: left !important; margin-bottom: 12px !important; }
+  .mb-show-main .section-title h2 { font-size: 20px !important; color: #fff !important; font-weight: 700 !important; }
+  .mb-show-main .section-title p { font-size: 12px !important; color: #888 !important; }
+  .mb-show-main .section-title .divider { display: none !important; }
+  .mb-show-main .fullwidth-quote { padding: 20px 16px !important; }
+  .mb-show-main .quote-text { color: #D4FF3A !important; font-size: 16px !important; }
+  .mb-show-main .quote-author { color: #888 !important; font-size: 12px !important; }
+  .mb-show-main .quote-line { background: #2a2a2a !important; }
+  .mb-show-main .site-footer { display: none !important; }
+  .mb-show-main .site-header, .mb-show-main .nav-controls, .mb-show-main .sidebar-controls,
+  .mb-show-main .back-page-btn, .mb-show-main .back-top, .mb-show-main .float-toolbar,
+  .mb-show-main .hero-marquee, .mb-show-main .hero-bg-toggle, .mb-show-main .main-nav,
+  .mb-show-main .header-actions, .mb-show-main .nav-toggle { display: none !important; }
+  /* TabBar on main page */
+  .mb-show-main .mb-tabbar { display: flex !important; }
 }

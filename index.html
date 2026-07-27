@@ -9,7 +9,7 @@
   <title data-i18n="site.title">宁海下枫槎村 · 谢氏家族</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="css/style.css?v=20260816">
+  <link rel="stylesheet" href="css/style.css?v=20260817">
   <style>
     /* Carousel mobile fix - ensure slides have height */
     .carousel-container { aspect-ratio: 21/9; overflow: hidden; }
@@ -52,6 +52,7 @@
   <script defer src="js/file-store.js?v=6"></script>
   <link rel="manifest" href="/manifest.json">
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");</script>
+<script>if(location.search.includes('main')){sessionStorage.setItem('mb_main','1');}if(sessionStorage.getItem('mb_main')){document.documentElement.classList.add('mb-show-main');}</script>
 </head>
 <body><script>
 (function(){
@@ -168,7 +169,7 @@
     </a>
   </div>
 
-    <a href="#main-content" class="mbh-enter-btn">✦ 进入主站</a>
+    <a href="index.html?main" class="mbh-enter-btn">✦ 进入主站</a>
 
   <div class="mbh-quick-bar">
     <a href="tel:+8613685877064" class="mbh-qb">
@@ -192,7 +193,7 @@
 </div>/div>
 
 
-<div class="content" id="main-content">
+<div class="content">
 
   <!-- ===== Header ===== -->
   <header class="site-header">
