@@ -40,7 +40,8 @@ pre{background:rgba(255,255,255,0.05);padding:16px;border-radius:8px;overflow:au
   document.addEventListener('click', function(e){
     var a = e.target.closest('a');
     if (!a) return;
-    var h = a.getAttribute('href');
+    if (a.classList.contains(\'back-page-btn\')) return;
+    var h = a.getAttribute(\'href\');
     if (!h || h==='#' || h.startsWith('javascript:') || h.startsWith('http') || h.startsWith('tel:') || h.startsWith('mailto:') || !h.includes('.html')) return;
     var cur = window.location.pathname.split('/').pop() || 'index.html';
     if (h === cur || h === './'+cur) return;
