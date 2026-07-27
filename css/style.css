@@ -5512,6 +5512,9 @@ section a[href*="audio"] {
     box-shadow: 0 4px 12px rgba(212,255,58,0.3) !important;
     font-size: 14px !important;
     display: flex !important;
+    bottom: 72px !important;
+    left: 16px !important;
+    z-index: 9999 !important;
   }
   .back-page-btn:active { opacity: 0.8; transform: scale(0.97); }
   /* 首页隐藏返回按钮 */
