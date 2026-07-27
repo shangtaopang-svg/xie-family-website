@@ -5251,12 +5251,13 @@ section a[href*="audio"] {
 .mbh-subtitle {
   position: absolute; bottom: 0; left: 0; right: 0;
   padding: 40px 16px 14px;
-  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  background: linear-gradient(transparent, rgba(0,0,0,0.75));
   font-family: 'Noto Serif SC', 'STKaiti', serif;
-  font-size: 13px; color: rgba(245,235,200,0.92);
-  line-height: 1.7; letter-spacing: 0.04em;
-  text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+  font-size: 14px; color: #f5e6c8;
+  line-height: 1.8; letter-spacing: 0.08em;
+  text-shadow: 0 0 12px rgba(0,0,0,0.9), 0 2px 4px rgba(0,0,0,0.8);
   white-space: pre-wrap; min-height: 60px;
+  font-weight: 500;
 }
 
 .mbh-pills { display: flex; gap: 10px; margin: 0 16px 14px; }

@@ -720,13 +720,18 @@ window.toggleTheme=function(){var d=localStorage.getItem("theme")==="dark";var n
   if (!subEl) return;
   var txt = '下枫槎谢氏一脉，世系源远流长。自申伯传三十六世至东山会稽，再由会稽南下经临海下渡，至石马（下谢）小四公，乃入浙东之近祖也。';
   var i = 0, timer = null;
+  var paused = false;
   function type() {
     if (i >= txt.length) { timer = null; return; }
-    subEl.textContent = txt.substring(0, i + 1);
+    var ch = txt[i];
+    subEl.textContent = txt.substring(0, i + 1) + '█';
     i++;
-    timer = setTimeout(type, 40);
+    // 标点处稍作停顿
+    var delay = '。，、；：？！'.indexOf(ch) >= 0 ? 120 : 35;
+    timer = setTimeout(type, delay);
   }
-  setTimeout(type, 600);
+  subEl.textContent = '';
+  setTimeout(type, 800);
 })();
 </script>
 </body>
