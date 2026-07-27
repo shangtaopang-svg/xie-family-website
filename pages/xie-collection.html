@@ -151,8 +151,8 @@
   document.addEventListener('click', function(e){
     var a = e.target.closest('a');
     if (!a) return;
-    if (a.classList.contains(\'back-page-btn\')) return;
-    var h = a.getAttribute(\'href\');
+    if (a.classList.contains('back-page-btn')) return;
+    var h = a.getAttribute('href');
     if (!h || h==='#' || h.startsWith('javascript:') || h.startsWith('http') || h.startsWith('tel:') || h.startsWith('mailto:') || !h.includes('.html')) return;
     var cur = window.location.pathname.split('/').pop() || 'index.html';
     if (h === cur || h === './'+cur) return;
@@ -260,7 +260,7 @@ function render(cat) {
   var tabsHtml = '';
   TABS.forEach(function(t){
     var cnt = t.id==='all' ? collectionData.length : collectionData.filter(function(i){ return (CAT_MAP[i.cat]||i.cat)===t.id; }).length;
-    tabsHtml += '<button class="cat-tab' + (t.id===cat?' active':'') + '" onclick="render(\''+t.id+'\')">' + t.icon + ' ' + t.label + ' <span class="badge">' + cnt + '</span></button>';
+    tabsHtml += '<button class="cat-tab' + (t.id===cat?' active':'') + '" onclick="render(''+t.id+'')">' + t.icon + ' ' + t.label + ' <span class="badge">' + cnt + '</span></button>';
   });
   document.getElementById('catTabs').innerHTML = tabsHtml;
 

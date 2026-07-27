@@ -43,8 +43,8 @@
   document.addEventListener('click', function(e){
     var a = e.target.closest('a');
     if (!a) return;
-    if (a.classList.contains(\'back-page-btn\')) return;
-    var h = a.getAttribute(\'href\');
+    if (a.classList.contains('back-page-btn')) return;
+    var h = a.getAttribute('href');
     if (!h || h==='#' || h.startsWith('javascript:') || h.startsWith('http') || h.startsWith('tel:') || h.startsWith('mailto:') || !h.includes('.html')) return;
     var cur = window.location.pathname.split('/').pop() || 'index.html';
     if (h === cur || h === './'+cur) return;
@@ -188,7 +188,7 @@
         listHtml += '<p>' + escapeHtml(excerpt) + '</p>';
         // 查看全文链接
         if (hasUrl) {
-          listHtml += '<a href="javascript:void(0)" onclick="window.open(\'' + escapeAttr(item.url) + '\',\'_blank\');return false;" class="read-more-link">查看全文 →</a>';
+          listHtml += '<a href="javascript:void(0)" onclick="window.open('' + escapeAttr(item.url) + '','_blank');return false;" class="read-more-link">查看全文 →</a>';
         } else {
           listHtml += '<a href="#" class="read-more-link" onclick="showFullArticle(this);return false;">阅读全文 →</a>';
         }
@@ -196,7 +196,7 @@
       });
 
       listHtml += '<div style="text-align:center;margin-top:24px;">';
-      listHtml += '<button class="btn" onclick="alert(\'更多历史消息正在加载...\')">加载更多 →</button>';
+      listHtml += '<button class="btn" onclick="alert('更多历史消息正在加载...')">加载更多 →</button>';
       listHtml += '</div></div>';
 
       // Sidebar
@@ -227,7 +227,7 @@
 
     function escapeAttr(text) {
       if (!text) return '';
-      return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      return text.replace(/'/g, "\'").replace(/"/g, '&quot;');
     }
 
     // ===== 阅读全文弹窗 =====

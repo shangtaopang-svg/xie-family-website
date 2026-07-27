@@ -136,8 +136,8 @@
   document.addEventListener('click', function(e){
     var a = e.target.closest('a');
     if (!a) return;
-    if (a.classList.contains(\'back-page-btn\')) return;
-    var h = a.getAttribute(\'href\');
+    if (a.classList.contains('back-page-btn')) return;
+    var h = a.getAttribute('href');
     if (!h || h==='#' || h.startsWith('javascript:') || h.startsWith('http') || h.startsWith('tel:') || h.startsWith('mailto:') || !h.includes('.html')) return;
     var cur = window.location.pathname.split('/').pop() || 'index.html';
     if (h === cur || h === './'+cur) return;
@@ -319,7 +319,7 @@
             html += '<div class="ac-photo-count">' + photos.length + '张</div>';
             for (var pi = 0; pi < photos.length; pi++) {
               html += '<div class="ac-photo-slide' + (pi === 0 ? ' active' : '') + '" data-pidx="' + pi + '">';
-              html += '<img' + (pi === 0 ? ' src="' + photos[pi] + '"' : ' data-src="' + photos[pi] + '"') + ' src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" onclick="handleActivityPhotoClick(' + i + ',' + pi + ')" onerror="this.parentElement.innerHTML=\'' + esc(a.icon || '🎉') + '\'">';
+              html += '<img' + (pi === 0 ? ' src="' + photos[pi] + '"' : ' data-src="' + photos[pi] + '"') + ' src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" onclick="handleActivityPhotoClick(' + i + ',' + pi + ')" onerror="this.parentElement.innerHTML='' + esc(a.icon || '🎉') + ''">';
               html += '</div>';
             }
             html += '<button class="ac-photo-nav ac-photo-prev" onclick="event.stopPropagation();navActivityCarousel(' + i + ',-1)">‹</button>';
