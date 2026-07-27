@@ -42,15 +42,12 @@
   .sb{position:absolute;left:0;right:0;height:12px;z-index:9;pointer-events:none;background:linear-gradient(180deg,rgba(180,155,120,0.12),transparent)}
   .sb.bt{bottom:0;background:linear-gradient(0deg,rgba(180,155,120,0.12),transparent)}
 
-  #btnw{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);z-index:20;text-align:center;pointer-events:auto;transition:opacity 0.5s}
   .btn{display:inline-flex;align-items:center;gap:6px;font-family:'Noto Serif SC',serif;font-size:clamp(13px,1.3vw,16px);letter-spacing:0.12em;color:#0a0806;background:rgba(255,255,255,0.92);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.25);padding:12px 28px;border-radius:50px;cursor:pointer;transition:all 0.4s ease;box-shadow:0 4px 20px rgba(0,0,0,0.2);text-decoration:none}
   .btn:hover{transform:scale(1.04);background:#fff;box-shadow:0 8px 30px rgba(0,0,0,0.25)}
-  .btn-ghost{background:transparent;backdrop-filter:none;color:rgba(245,230,200,0.7);border-color:rgba(245,230,200,0.15);box-shadow:none}
-  .btn-ghost:hover{background:rgba(255,255,255,0.06);color:#f5e6c8;border-color:rgba(245,230,200,0.3)}
 
   #ent{position:absolute;left:50%;top:65%;transform:translate(-50%,-50%);z-index:20;opacity:0;pointer-events:none;transition:opacity 0.8s ease 0.5s}
   #ent.show{opacity:1;pointer-events:auto}
-  .eb{display:inline-block;font-family:'Noto Serif SC',serif;font-size:clamp(14px,1.5vw,18px);letter-spacing:0.18em;color:#f5e6c8;background:linear-gradient(135deg,#c9a84c,#e8c97a);padding:14px 48px;border-radius:50px;text-decoration:none;transition:all 0.5s cubic-bezier(0.22,1,0.36,1);box-shadow:0 4px 30px rgba(0,0,0,0.3)}
+  .eb{display:inline-block;font-family:'Noto Serif SC',serif;font-size:clamp(14px,1.5vw,18px);letter-spacing:0.18em;color:#f5e6c8;background:linear-gradient(135deg,#c9a84c,#e8c97a);padding:14px 48px;border-radius:50px;text-decoration:none;transition:all 0.5s cubic-bezier(0.22,1,0.36,1);box-shadow:0 4px 30px rgba(0,0,0,0.3);white-space:nowrap}
   .eb:hover{transform:scale(1.05);box-shadow:0 8px 40px rgba(201,168,76,0.2)}
 
   /* Bottom swipe card */
@@ -275,7 +272,6 @@ v.style.opacity=0;
 !function u(){var n=new Date();ct.textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');cd.textContent=n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日';setTimeout(u,10000)}();
 setTimeout(function(){document.getElementById('clk').classList.add('show');document.getElementById('hero-text').classList.add('show');document.getElementById('hc').classList.add('show');},500);
 
-document.getElementById('openBtn2').addEventListener('click',function(){if(window._togglePortal)window._togglePortal();});
 
 // ── Mouse parallax + wheel zoom (like :3003 portal) ──
 var rx=0,ry=0,cx=0,cy=0,isOpen=false,isAnim=false,portalZoom=1;
@@ -295,8 +291,7 @@ window.addEventListener('wheel',function(e){if(!isOpen&&!isAnim){if(e.deltaY<0)p
 // ── 谢氏历史打字机效果 ──
 
 // ── Toggle open/close ──
-window._togglePortal = function() { document.getElementById('openBtn').click(); };
-document.getElementById('openBtn').addEventListener('click',function(){
+document.getElementById('openBtn2').addEventListener('click',function(){
   if(isAnim)return;isAnim=true;
   var opening=!isOpen;
   if(opening){document.getElementById('hc').classList.remove('show');document.getElementById('hero-text').classList.remove('show');}
@@ -319,12 +314,12 @@ document.getElementById('openBtn').addEventListener('click',function(){
         v.style.opacity=1;v.style.transform='scale(1)';pt.style.display='none';
         vn.classList.add('show');ent.classList.add('show');etStart();
         document.getElementById('pv-trigger').classList.add('show');
-        document.getElementById('openBtn').textContent='✦ 收起';
+        document.getElementById('openBtn2').textContent='✦ 收起';
       } else {
         v.style.opacity=0;pt.style.display='';pt.style.opacity=1;pt.style.transform='none';
         w.style.transform='none';
         vn.classList.remove('show');ent.classList.remove('show');etStop();document.getElementById('hc').classList.add('show');document.getElementById('hero-text').classList.add('show');
-        document.getElementById('openBtn').textContent='✦ 探索下枫槎';
+        document.getElementById('openBtn2')='✦ 探索下枫槎';
       }
     }
   }();
