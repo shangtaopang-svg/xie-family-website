@@ -5357,6 +5357,43 @@ section a[href*="audio"] {
   .mb-show-main .hero-date-box { background: #141414 !important; border: 1px solid #2a2a2a !important; border-radius: 16px !important; padding: 14px 16px !important; backdrop-filter: none !important; box-shadow: none !important; }
   .mb-show-main .hero-date-day { font-size: 30px !important; color: #fff !important; }
   .mb-show-main .hero-divider { background: #2a2a2a !important; }
+  
+  /* 背景切换胶囊按钮 */
+  .mb-show-main .hero-bg-toggle {
+    display: flex !important;
+    position: relative !important;
+    bottom: auto !important; right: auto !important;
+    justify-content: center;
+    gap: 8px;
+    margin: 12px 0 0;
+    padding: 4px;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 999px;
+    backdrop-filter: none !important;
+  }
+  .mb-show-main .hbg-btn {
+    flex: 1;
+    width: auto !important; height: auto !important;
+    padding: 8px 16px;
+    border-radius: 999px !important;
+    border: none !important;
+    background: transparent !important;
+    font-size: 12px !important;
+    color: #888 !important;
+    opacity: 1 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.2s;
+  }
+  .mb-show-main .hbg-btn.active {
+    background: #D4FF3A !important;
+    color: #000 !important;
+    font-weight: 600;
+  }
+  .mb-show-main .hbg-btn:active { opacity: 0.7; }
   .mb-show-main .hero-stats { position: relative !important; transform: none !important; left: auto !important; bottom: auto !important; margin-top: 12px !important; }
   .mb-show-main .hero-stat-num { color: #D4FF3A !important; font-size: 18px !important; }
   .mb-show-main .hero-stat-label { color: #888 !important; font-size: 10px !important; }
