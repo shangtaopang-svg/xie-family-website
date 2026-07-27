@@ -5350,7 +5350,7 @@ section a[href*="audio"] {
   .mb-show-main .content { display: block !important; margin-left: 0 !important; padding: 0 0 70px !important; }
   
   /* 正式首页暗黑风格 */
-  .mb-show-main body, .mb-show-main html { overflow-x: hidden !important; max-width: 100vw !important; }
+  html.mb-show-main, .mb-show-main body { overflow-x: hidden !important; max-width: 100vw !important; }
   .mb-show-main .hero-section { min-height: auto !important; padding: 20px 16px !important; }
   .mb-show-main .hero-motto { word-break: break-word !important; }
   .mb-show-main .content { max-width: 100vw !important; overflow-x: hidden !important; }
@@ -5399,7 +5399,7 @@ section a[href*="audio"] {
     font-weight: 600;
   }
   .mb-show-main .hbg-btn:active { opacity: 0.7; }
-  .mb-show-main .hero-stats { position: relative !important; transform: none !important; left: auto !important; bottom: auto !important; margin-top: 12px !important; }
+  .mb-show-main .hero-stats { position: relative !important; transform: none !important; left: auto !important; bottom: auto !important; margin-top: 12px !important; flex-wrap: wrap !important; gap: 8px !important; }
   .mb-show-main .hero-stat-num { color: #D4FF3A !important; font-size: 18px !important; }
   .mb-show-main .hero-stat-label { color: #888 !important; font-size: 10px !important; }
   .mb-show-main .fade-in-section { margin: 0 !important; padding: 0 16px !important; }
