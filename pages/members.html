@@ -521,7 +521,23 @@
 
       if (!data || data.length === 0) {
         container.innerHTML = '';
+        return;
       }
+
+      // 计算统计数据
+      var total = data.length;
+      var aliveNames = {};
+      data.forEach(function(p) { if (p.is_alive === '是') aliveNames[p.name + '_' + (p.generation_num||'0')] = true; });
+      var alive = Object.keys(aliveNames).length;
+      var males = 0, females = 0, genSet = {};
+      data.forEach(function(p) {
+        if (p.gender === '男') males++;
+        if (p.gender === '女') females++;
+        if (p.generation_num) genSet[p.generation_num] = true;
+      });
+      var hint = document.getElementById('alive-count-hint');
+      if (hint) hint.textContent = '在世 ' + alive + ' 人 / 共计 ' + total + ' 人';
+
       function digitsHtml(n) { var s = String(n), r = ''; for (var i = 0; i < s.length; i++) { r += '<span style=\"display:inline-block;animation:digitPop 0.35s cubic-bezier(0.22,1,0.36,1) ' + (i * 0.08) + 's both;\">' + s[i] + '</span>'; } return r; }
       function statCard(n, l) {
         return '<div class="stat-card-anim"><span class="border-line bl-top"></span><span class="border-line bl-right"></span><span class="border-line bl-bottom"></span><span class="border-line bl-left"></span><div class="stat-num">' + digitsHtml(n) + '</div><div class="stat-label">' + l + '</div></div>';
