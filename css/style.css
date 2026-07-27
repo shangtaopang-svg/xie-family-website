@@ -5353,7 +5353,7 @@ section a[href*="audio"] {
   
   /* 正式首页暗黑风格 */
   html.mb-show-main, .mb-show-main body { overflow-x: hidden !important; max-width: 100vw !important; }
-  .mb-show-main .hero-section { min-height: auto !important; padding: 20px 16px !important; }
+  .mb-show-main .hero-section { min-height: 300px !important; padding: 20px 16px !important; position: relative !important; overflow: hidden !important; }
   .mb-show-main .hero-motto { word-break: break-word !important; }
   .mb-show-main .content { max-width: 100vw !important; overflow-x: hidden !important; }
   .mb-show-main .fade-in-section { max-width: 100vw !important; overflow-x: hidden !important; }
