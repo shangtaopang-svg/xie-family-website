@@ -209,12 +209,11 @@
     <div class="ht-line2">穿越光影之门</div>
   </div>
 
-  <div id="btnw"><button class="btn" id="openBtn">✦ 探索下枫槎</button></div>
 
   <!-- Bottom buttons -->
   <div class="hc" id="hc">
-    <button class="btn" id="openBtn2">✦ 探索下枫槎</button>
-    <a class="btn btn-ghost" href="intro.html">👤 开发者</a>
+    <button class="eb" id="openBtn2">✦ 探索下枫槎</button>
+    <a class="eb" href="intro.html">👤 开发者</a>
   </div>
   <div id="ent" style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
     <a class="eb" href="index.html">✦ 进入主站</a>
@@ -276,7 +275,7 @@ v.style.opacity=0;
 !function u(){var n=new Date();ct.textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');cd.textContent=n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日';setTimeout(u,10000)}();
 setTimeout(function(){document.getElementById('clk').classList.add('show');document.getElementById('hero-text').classList.add('show');document.getElementById('hc').classList.add('show');},500);
 
-document.getElementById('openBtn2').addEventListener('click',function(){document.getElementById('openBtn').click();});
+document.getElementById('openBtn2').addEventListener('click',function(){if(window._togglePortal)window._togglePortal();});
 
 // ── Mouse parallax + wheel zoom (like :3003 portal) ──
 var rx=0,ry=0,cx=0,cy=0,isOpen=false,isAnim=false,portalZoom=1;
@@ -296,6 +295,7 @@ window.addEventListener('wheel',function(e){if(!isOpen&&!isAnim){if(e.deltaY<0)p
 // ── 谢氏历史打字机效果 ──
 
 // ── Toggle open/close ──
+window._togglePortal = function() { document.getElementById('openBtn').click(); };
 document.getElementById('openBtn').addEventListener('click',function(){
   if(isAnim)return;isAnim=true;
   var opening=!isOpen;
