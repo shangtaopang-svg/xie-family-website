@@ -5071,8 +5071,9 @@ a { color: var(--mb-brand); }
 .hero-stat-num { font-size: 18px !important; color: var(--mb-brand) !important; }
 .hero-stat-label { font-size: 10px !important; color: var(--mb-sub) !important; letter-spacing: 0.5px !important; }
 .hero-stat-dot { display: none !important; }
-.hero-bg-toggle { display: none !important; }
+.hero-bg-toggle { display: flex !important; }
 #map-bg { display: none !important; }
+#map-bg.active { display: block !important; }
 
 /* ===== 村庄简介 ===== */
 .fade-in-section {
