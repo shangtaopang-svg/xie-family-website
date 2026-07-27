@@ -613,13 +613,7 @@ body {
   margin-left: 220px;
   position: relative;
   z-index: 1;
-  min-height: calc(100vh - 70px);
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-.site-footer {
-  margin-top: auto;
+  min-height: 100vh;
 }
 
 /* ===== Hero Date & Weather ===== */
@@ -5413,7 +5407,7 @@ section a[href*="audio"] {
 /* ===== 手机端：正式首页（开启页之后） ===== */
 @media (max-width: 768px) {
   .mb-show-main .mb-home { display: none !important; }
-  .mb-show-main .content { display: block !important; margin-left: 0 !important; padding: 0 0 70px !important; transform: scale(0.95) !important; transform-origin: top center !important; }
+  .mb-show-main .content { display: block !important; margin-left: 0 !important; padding: 0 0 70px !important; }
   .mb-show-main .mb-home ~ .content { display: block !important; }
   
   /* 正式首页暗黑风格 */
