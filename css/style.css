@@ -5292,7 +5292,7 @@ section a[href*="audio"] {
 .mbh-qb-sub { font-size: 11px; color: #888; margin-top: 2px; }
 .mbh-qb-arrow { font-size: 14px; color: #D4FF3A; opacity: 0.5; }
 
-.mb-home ~ .content { display: none !important; }
+
 
 
 /* ===== 族谱查询页 ===== */
@@ -5340,4 +5340,39 @@ section a[href*="audio"] {
 #members-grid .name { color: #fff !important; font-size: 15px !important; }
 #members-grid .info { color: #888 !important; font-size: 12px !important; }
 
+}
+
+/* ===== 手机正式首页（暗黑风格） ===== */
+@media (max-width: 768px) {
+  .mbh-enter-wrap { display: block !important; padding: 0 16px 14px; }
+  .mbh-enter-btn {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; padding: 14px; width: 100%; box-sizing: border-box;
+    background: #D4FF3A; color: #000 !important;
+    border-radius: 999px; font-size: 16px; font-weight: 700;
+    text-decoration: none; -webkit-tap-highlight-color: transparent;
+  }
+  .mbh-enter-btn:active { opacity: 0.8; transform: scale(0.98); }
+  
+  /* 正式首页内容暗黑风格 */
+  .hero-section { min-height: auto !important; padding: 20px 16px !important; }
+  .hero-motto { font-size: 28px !important; color: #fff !important; font-weight: 700 !important; text-align: left !important; letter-spacing: 2px !important; margin-bottom: 4px !important; }
+  .hero-sub { font-size: 13px !important; color: #888 !important; text-align: left !important; margin-bottom: 12px !important; }
+  .hero-desc { display: none !important; }
+  .hero-date-box { background: #141414 !important; border: 1px solid #2a2a2a !important; border-radius: 16px !important; padding: 14px 16px !important; backdrop-filter: none !important; box-shadow: none !important; }
+  .hero-date-day { font-size: 30px !important; color: #fff !important; }
+  .hero-divider { background: #2a2a2a !important; }
+  .hero-stats { position: relative !important; transform: none !important; left: auto !important; bottom: auto !important; margin-top: 12px !important; }
+  .hero-stat-num { color: #D4FF3A !important; font-size: 18px !important; }
+  .hero-stat-label { color: #888 !important; font-size: 10px !important; }
+  .fade-in-section { margin: 0 !important; padding: 0 16px !important; }
+  .fade-in-section .glass-card { background: #141414 !important; border-color: #2a2a2a !important; border-radius: 16px !important; padding: 16px !important; }
+  .fade-in-section .glass-card p { color: #888 !important; font-size: 13px !important; }
+  .stat-card { background: #141414 !important; border-color: #2a2a2a !important; border-radius: 12px !important; }
+  .stat-card [style*="color:var"] { color: #D4FF3A !important; }
+  .fullwidth-quote { padding: 20px 16px !important; }
+  .quote-text { color: #D4FF3A !important; font-size: 16px !important; }
+  .quote-author { color: #888 !important; font-size: 12px !important; }
+  .quote-line { background: #2a2a2a !important; }
+  .site-footer { display: none !important; }
 }
