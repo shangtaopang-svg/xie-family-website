@@ -5250,26 +5250,28 @@ section a[href*="audio"] {
 }
 .mbh-subtitle {
   position: absolute; bottom: 0; left: 0; right: 0;
-  padding: 48px 18px 16px;
-  background: linear-gradient(transparent 20%, rgba(0,0,0,0.82));
+  padding: 50px 20px 18px;
+  background: linear-gradient(transparent 15%, rgba(0,0,0,0.85));
   font-family: 'Noto Serif SC', 'STKaiti', 'SimSun', serif;
-  font-size: 15px; color: #f5e6c8;
-  line-height: 1.9; letter-spacing: 0.12em;
-  text-shadow: 0 0 4px rgba(0,0,0,0.95), 0 0 16px rgba(0,0,0,0.6);
-  white-space: pre-wrap; min-height: 60px;
-  font-weight: 600;
-}
-.mbh-subtitle .hl-gold {
-  color: #e8c97a;
-  text-shadow: 0 0 8px rgba(232,201,122,0.15), 0 0 4px rgba(0,0,0,0.95);
+  font-size: 16px; color: #e8c97a;
+  line-height: 1.4; letter-spacing: 0.06em;
+  text-shadow: 0 0 4px rgba(0,0,0,0.95), 0 0 20px rgba(232,201,122,0.08);
+  min-height: 90px; max-height: 130px;
+  font-weight: 700;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: pre;
 }
 .mbh-subtitle .hl-cursor {
   display: inline-block;
-  width: 2px; height: 1em;
+  width: 1px; height: 1.2em;
   background: #e8c97a;
-  margin-left: 2px;
-  vertical-align: text-bottom;
+  box-shadow: 0 0 6px #e8c97a;
+  vertical-align: baseline;
   animation: wlCursor 0.7s step-end infinite;
+  margin: 0 2px;
 }
 @keyframes wlCursor { 50% { opacity: 0; } }
 

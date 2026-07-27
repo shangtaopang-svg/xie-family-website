@@ -714,25 +714,31 @@ window.toggleTheme=function(){var d=localStorage.getItem("theme")==="dark";var n
   });
 })();
 
-// ===== 手机端22.jpg字幕打字机（高亮古文风格） =====
+// ===== 22.jpg古文竖排打字机（从上到下·从右到左·金色高亮） =====
 (function(){
   var subEl = document.getElementById('mbhSubtitle');
   if (!subEl) return;
-  // 古文风格显示：用丨分隔换行
-  var txt = '下枫槎谢氏一脉，世系源远流长。自申伯传三十六世至东山会稽，再由会稽南下经临海下渡，至石马（下谢）小四公，乃入浙东之近祖也。';
-  var i = 0, timer = null;
+  var txt = '下枫槎谢氏一脉，世系源远流长。自申伯传三十六世至东山会稽，再由会稽南下经临海下渡，至石马（下谢）小四公，乃入浙东之近祖也。由石马传二世，至文杲公，字克源，北宋宣和年间（约公元一一二五年）任越溪司巡检，始居岩下。公为枫槎谢氏之始迁祖，至今近九百载，传三十六世，瓜瓞绵绵。二世祖攒公、撰公，析居后枫槎与前枫槎，两支并茂，各立门户。初，吾族世居岩下。迨明隆庆壬申（公元一五七二年），山洪暴发，庐舍为墟。十六世祖彬公、乾公昆仲，相度地势，遂迁于双枫古槎之下，因名其地曰"下枫槎"。斩荆棘，辟草莱，筑室于兹，开基立业。自此一脉繁衍，枝分派衍，或习儒术而登科第，或事商贾而通有无，或精农桑而富仓廪。清乾隆间，合族建宗祠于村北，三进两厢，门楣高悬"谢氏宗祠"匾额，堂号"敦睦堂"，寓敦宗睦族之意。春秋二祭，少长咸集，尊祖敬宗，礼行肃穆。';
+  var i = 0, timer = null, cursorEl = null;
   function type() {
-    if (i >= txt.length) { timer = null; return; }
+    if (i >= txt.length) { if(cursorEl)cursorEl.style.display='none'; timer=null; return; }
     var ch = txt[i];
-    var shown = txt.substring(0, i + 1);
-    subEl.innerHTML = shown + '<span class="hl-cursor"></span>';
+    // 用span包裹每个字，方便逐字金色高亮
+    var span = document.createElement('span');
+    span.textContent = ch;
+    span.style.cssText = 'color:#e8c97a;text-shadow:0 0 6px rgba(232,201,122,0.2)';
+    // 插入光标之前
+    if (!cursorEl) { cursorEl = document.createElement('span'); cursorEl.className = 'hl-cursor'; }
+    if (cursorEl.parentNode) cursorEl.parentNode.removeChild(cursorEl);
+    subEl.appendChild(span);
+    subEl.appendChild(cursorEl);
+    subEl.scrollLeft = subEl.scrollWidth;
     i++;
-    // 标点停顿加长，模拟古文诵读节奏
-    var delay = '。，、；：？！'.indexOf(ch) >= 0 ? 140 : 32;
+    var delay = '。，、；：？！""'.indexOf(ch) >= 0 ? 120 : 28;
     timer = setTimeout(type, delay);
   }
-  subEl.textContent = '';
-  setTimeout(type, 900);
+  subEl.innerHTML = '';
+  setTimeout(type, 1000);
 })();
 </script>
 </body>
