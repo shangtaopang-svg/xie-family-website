@@ -796,15 +796,15 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// ===== 返回按钮 capture 阶段监听（优先于所有其他处理器） =====
+// ===== 返回按钮处理（捕获阶段拦截，先于页面过渡JS） =====
 document.addEventListener('click', function(e) {
   var btn = e.target.closest('.back-page-btn');
   if (!btn) return;
   e.preventDefault();
-  e.stopPropagation();
+  e.stopImmediatePropagation();
   if (window.history.length > 1) {
-    history.back();
+    window.location.href = document.referrer || '../entrance.html';
   } else {
-    location.href = '../entrance.html';
+    window.location.href = btn.getAttribute('href') || '../entrance.html';
   }
 }, true);
