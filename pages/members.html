@@ -718,7 +718,7 @@ function renderMemberCharts() {
   if (!document.getElementById('chart-anim-style')) {
     var style = document.createElement('style');
     style.id = 'chart-anim-style';
-    style.textContent = '@keyframes barGlow { 0%,100% { filter: brightness(1); box-shadow: 0 0 6px rgba(255,107,0,0.2); } 50% { filter: brightness(1.15); box-shadow: 0 0 16px rgba(255,107,0,0.4); } }';
+    style.textContent = '@keyframes barGlow { 0%,100% { filter: brightness(1); box-shadow: 0 0 6px rgba(255,107,0,0.2); } 50% { filter: brightness(1.15); box-shadow: 0 0 16px rgba(255,107,0,0.4); } } @keyframes barSlide { 0% { width:0%; } 100% { width:var(--w); } }';
     document.head.appendChild(style);
   }
   
@@ -735,12 +735,13 @@ function renderMemberCharts() {
   sorted.forEach(function(g){if(genData[g]>maxCount)maxCount=genData[g];});
 
   var genHtml = '<div style="padding:4px;overflow-y:auto;height:100%;font-size:11px;">';
-  sorted.forEach(function(g) {
+  sorted.forEach(function(g, idx) {
     var pct = (genData[g] / maxCount * 100).toFixed(0);
+    var delay = (idx * 0.08).toFixed(2);
     genHtml += '<div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">';
     genHtml += '<span style="width:45px;text-align:right;color:var(--text-tertiary);flex-shrink:0;font-size:10px;">' + g + '世</span>';
     genHtml += '<div style="flex:1;height:16px;background:var(--glass-bg);border-radius:3px;overflow:hidden;">';
-    genHtml += '<div style="height:100%;width:' + pct + '%;background:#fb923c;border-radius:3px;animation:barGlow 2s ease-in-out infinite;"></div></div>';
+    genHtml += '<div style="height:100%;width:' + pct + '%;background:#fb923c;border-radius:3px;animation:barSlide 0.5s cubic-bezier(0.22,1,0.36,1) ' + delay + 's both, barGlow 2s ease-in-out infinite ' + (delay + 0.5) + 's;"></div></div>';
     genHtml += '<span style="width:28px;color:var(--text-secondary);flex-shrink:0;text-align:right;font-size:10px;">' + genData[g] + '</span>';
     genHtml += '</div>';
   });
