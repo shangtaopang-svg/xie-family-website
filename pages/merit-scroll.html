@@ -21,6 +21,7 @@
       min-height: 100vh;
       font-family: 'Noto Serif SC', serif;
       overflow-x: hidden;
+      padding-bottom: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -633,25 +634,30 @@
     .preface-scroll .col .gold { color: #c9a84c; }
     .preface-scroll .col .sig { margin-top: 20px; color: #8a7030; }
 
-    .preface-scroll:not(.open):hover .hint { color: #c41e3a; }/* ===== Responsive ===== */
+    .preface-scroll:not(.open):hover .hint { color: #c41e3a; }
+    .preface-scroll.open .paper { overflow-x: auto; }
+    .preface-scroll.open .paper::-webkit-scrollbar { height: 4px; }
+    .preface-scroll.open .paper::-webkit-scrollbar-thumb { background: rgba(139,105,20,0.3); border-radius: 2px; }
+    /* ===== Responsive ===== */
     @media (max-width: 640px) {
       .preface-scroll .content { min-width: 400px; padding: 12px 8px; }
       .preface-scroll .col { font-size: 0.58rem; padding: 0 4px; line-height: 1.8; }
       .preface-scroll .roller { width: 32px; }
       .preface-scroll .roller .label { font-size: 0.65rem; }
-      .page-wrap { padding: 5px 10px 30px; }
+      .page-wrap { padding: 5px 10px 80px; }
       .scroll-card-header { padding: 10px 12px; }
       .scroll-content { padding: 30px 10px; gap: 4px 8px; }
       .name-col .char { font-size: 0.78rem; }
       .name-col { min-width: 36px; }
       .toggle-btn { width: 56px; height: 24px; font-size: 0.65rem; }
     }
-  
+
     @media (max-width: 640px) {
-      .page-wrap { padding: 5px 8px 24px; }
+      .page-wrap { padding: 5px 8px 80px; }
       .scroll-content { padding: 30px 10px; gap: 4px 8px; }
       .name-col .char { font-size: 0.82rem; }
       .name-col { min-width: 32px; }
+      body { padding-bottom: 60px; }
     }
   /* ===== 手机端返回按钮 ===== */
   .back-page-btn { display: none; }
