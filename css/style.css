@@ -3282,12 +3282,14 @@ body {
 
 /* ===== Footer ===== */
 .site-footer {
-  position: relative;
-  z-index: 1;
   border-top: 1px solid var(--divider);
   padding: 48px 20px 20px;
   margin-top: 80px;
   background: linear-gradient(180deg, transparent, rgba(0,0,0,0.02));
+}
+
+.content > .site-footer {
+  margin-left: 0;
 }
 
 [data-theme="dark"] .site-footer {
