@@ -157,7 +157,7 @@ function toggleTheme() {
     }
     if (!allPhotos.length) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">暂无照片</div>'; return; }
     grid.innerHTML = allPhotos.map(function(p) {
-      return '<div class="gallery-item" onclick="openPhotoLightbox('' + p.src + '','' + (p.title||'') + '')">' +
+      return '<div class="gallery-item" onclick="openPhotoLightbox(' + "'" + p.src + "'" + ',' + "'" + (p.title||'') + "'" + ')">' +
         '<img src="' + p.src + '" alt="' + (p.title||'') + '" loading="lazy">' +
         (p.title ? '<div class="caption">' + p.title + '</div>' : '') +
       '</div>';

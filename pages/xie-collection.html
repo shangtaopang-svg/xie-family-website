@@ -260,7 +260,7 @@ function render(cat) {
   var tabsHtml = '';
   TABS.forEach(function(t){
     var cnt = t.id==='all' ? collectionData.length : collectionData.filter(function(i){ return (CAT_MAP[i.cat]||i.cat)===t.id; }).length;
-    tabsHtml += '<button class="cat-tab' + (t.id===cat?' active':'') + '" onclick="render(''+t.id+'')">' + t.icon + ' ' + t.label + ' <span class="badge">' + cnt + '</span></button>';
+    tabsHtml += '<button class="cat-tab' + (t.id===cat?' active':'') + '" onclick="render(' + "'" + t.id + "'" + ')">' + t.icon + ' ' + t.label + ' <span class="badge">' + cnt + '</span></button>';
   });
   document.getElementById('catTabs').innerHTML = tabsHtml;
 

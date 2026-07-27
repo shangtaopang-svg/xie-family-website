@@ -66,8 +66,7 @@
 	      data.forEach(function (p) { existingIds[p.id] = true; });
 	      roots = data.filter(function (p) { return p.father_id == null || !existingIds[parseInt(p.father_id)]; });
 	      if (roots.length === 0 && data.length > 0) roots = [data[0]];
-	    }
-);
+	
     // Use the found root directly (don't trace up - start from Xie ancestor)
     var roots;
     if (xieRoot) {
@@ -1935,7 +1934,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var box = document.createElement('div');
     box.className = 'person-detail-box';
 
-    var html = '<button onclick="this.closest('.person-detail-modal').remove()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-tertiary);">✕</button>';
+    var html = '<button onclick="this.closest(\'.person-detail-modal\').remove()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-tertiary);">✕</button>';
 
     html += '<div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">';
     html += '<div style="font-size:40px;">' + (person.gender === '男' ? '👤' : '👩') + '</div>';
@@ -1972,7 +1971,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     html += buildFamilyChart(person, data);
-    html += '<div style="text-align:center;margin-top:16px;"><button class="btn btn-accent" onclick="this.closest('.person-detail-modal').remove();showAncestors(' + person.id + ');" style="font-size:15px;padding:10px 28px;">\u2B06 \u67E5\u770B\u7956\u5148\u6811</button></div>';
+    html += '<div style="text-align:center;margin-top:16px;"><button class="btn btn-accent" onclick="this.closest(\'.person-detail-modal\').remove();showAncestors(' + person.id + ');" style="font-size:15px;padding:10px 28px;">\u2B06 \u67E5\u770B\u7956\u5148\u6811</button></div>';
     box.innerHTML = html;
     overlay.appendChild(box);
     document.body.appendChild(overlay);
@@ -2036,7 +2035,7 @@ document.addEventListener('DOMContentLoaded', function() {
     html += '</tr></thead><tbody>';
     results.forEach(function(p) {
       var rowBg = p.is_alive === '是' ? 'rgba(220,38,38,0.04)' : 'rgba(0,0,0,0.08)';
-html += '<tr style="border-bottom:1px solid var(--divider);background:' + rowBg + ';transition:background 0.15s;" onmouseover="this.style.background='var(--accent-orange-dim)'" onmouseout="this.style.background='' + rowBg + ''">';
+html += '<tr style="border-bottom:1px solid var(--divider);background:' + rowBg + ';transition:background 0.15s;" class="genealogy-hover-row">';
       html += '<td style="padding:6px 8px;color:var(--text-secondary);">' + (p.generation_num || '—') + '</td>';
       html += '<td style="padding:6px 8px;"><span style="cursor:pointer;font-weight:500;color:var(--text-primary);" onclick="showPersonDetail(' + p.id + ', getGenealogyData());locateInTree(' + p.id + ');">' + escapeHtml(p.name) + '</span>' + (p.adopted && p.adopted !== '否' ? (p.adopted === '出继' ? '<span style="font-size:10px;color:#22c55e;font-weight:600;margin-left:3px;">(出继)</span>' : '<span style="font-size:10px;color:var(--accent-orange);font-weight:600;margin-left:3px;">(入继)</span>') : '') + '</td>';
       html += '<td style="padding:6px 8px;text-align:center;">' + (p.gender === '男' ? '👤' : '👩') + '</td>';
@@ -2236,7 +2235,7 @@ function locateInTree(personId) {
     var html = '<div class="ancestor-tree-wrap" style="' + (hasBio ? 'max-width:650px;' : '') + '">';
     html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
     html += '<h4 style="margin:0;font-size:15px;font-weight:500;color:var(--text-primary);">⬆ ' + escapeHtml(person.name) + ' 的上代直系</h4>';
-    html += '<button class="btn btn-sm" onclick="this.closest('.ancestor-tree-wrap').parentElement.parentElement.remove()">✕ 关闭</button>';
+    html += '<button class="btn btn-sm" onclick="this.closest(\'.ancestor-tree-wrap\').parentElement.parentElement.remove()">✕ 关闭</button>';
     html += '</div>';
 
     // Identify split node (the adopted person, e.g. 世常 at splitIdx)

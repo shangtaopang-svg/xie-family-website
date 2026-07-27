@@ -188,7 +188,7 @@
         listHtml += '<p>' + escapeHtml(excerpt) + '</p>';
         // 查看全文链接
         if (hasUrl) {
-          listHtml += '<a href="javascript:void(0)" onclick="window.open('' + escapeAttr(item.url) + '','_blank');return false;" class="read-more-link">查看全文 →</a>';
+          listHtml += '<a href="' + escapeAttr(item.url) + '" target="_blank" rel="noopener" class="read-more-link">查看全文 →</a>';
         } else {
           listHtml += '<a href="#" class="read-more-link" onclick="showFullArticle(this);return false;">阅读全文 →</a>';
         }
@@ -196,7 +196,7 @@
       });
 
       listHtml += '<div style="text-align:center;margin-top:24px;">';
-      listHtml += '<button class="btn" onclick="alert('更多历史消息正在加载...')">加载更多 →</button>';
+      listHtml += '<button class="btn" onclick="alert(' + "'" + '更多历史消息正在加载...' + "'" + ')">加载更多 →</button>';
       listHtml += '</div></div>';
 
       // Sidebar
