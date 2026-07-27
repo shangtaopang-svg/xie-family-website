@@ -124,6 +124,6 @@
   app.innerHTML = cardHtml;
 })();
   </script>
-<script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();window.history.go(-1)});</script>
+<script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();var u=sessionStorage.getItem("back_to");if(u&&u!==window.location.href)window.location.href=u;else window.history.go(-1)});</script>
 </body>
 </html>
