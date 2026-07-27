@@ -1147,14 +1147,6 @@ renderScroll = function(key, data) {
 </script>
   <a id="backBtn" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
-  <nav class="mb-tabbar">
-    <a href="../index.html" class="mb-tab"><span class="mb-tab-icon">🚪</span><span class="mb-tab-label">开启页</span></a>
-    <a href="../index.html?main" class="mb-tab"><span class="mb-tab-icon">🏠</span><span class="mb-tab-label">根首页</span></a>
-    <a href="reports.html" class="mb-tab"><span class="mb-tab-icon">📰</span><span class="mb-tab-label">新闻报道</span></a>
-    <a href="xie-collection.html" class="mb-tab"><span class="mb-tab-icon">📜</span><span class="mb-tab-label">谢氏集萃</span></a>
-    <a href="activities.html" class="mb-tab"><span class="mb-tab-icon">🎪</span><span class="mb-tab-label">活动</span></a>
-    <a href="my.html" class="mb-tab"><span class="mb-tab-icon">👤</span><span class="mb-tab-label">我的</span></a>
-  </nav>
 <script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();var u=sessionStorage.getItem("back_to");if(u&&u!==window.location.href&&!u.includes(window.location.host+"/?"))window.location.href=u;else if(window.history.length>1)window.history.go(-1);else window.location.href="../entrance.html"});</script>
 </body>
 </html>
