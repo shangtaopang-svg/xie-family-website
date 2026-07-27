@@ -838,7 +838,7 @@ body {
   background: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.7));
   z-index: -1;
 }
-.hero-section.hero-photo-bg .hero-motto { color: #fff; text-shadow: 0 2px 16px rgba(0,0,0,0.4); }
+.hero-section.hero-photo-bg .hero-motto { color: #e8c97a; text-shadow: 0 2px 16px rgba(0,0,0,0.4); }
 .hero-section.hero-photo-bg .hero-sub { color: rgba(255,255,255,0.85); }
 .hero-section.hero-photo-bg .hero-desc { color: rgba(255,255,255,0.7); }
 .hero-section.hero-photo-bg .hero-info { color: #fff; }
@@ -948,7 +948,7 @@ body {
 
 .hero-section.hero-map-bg {
 }
-.hero-section.hero-map-bg .hero-motto { color: #fff; text-shadow: 0 2px 16px rgba(0,0,0,0.4); }
+.hero-section.hero-map-bg .hero-motto { color: #e8c97a; text-shadow: 0 2px 16px rgba(0,0,0,0.4); }
 .hero-section.hero-map-bg .hero-sub { color: rgba(255,255,255,0.85); }
 .hero-section.hero-map-bg .hero-desc { color: rgba(255,255,255,0.7); }
 .hero-section.hero-map-bg .hero-info {
