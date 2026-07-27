@@ -543,12 +543,13 @@
       var hint = document.getElementById('alive-count-hint');
       if (hint) hint.textContent = '在世 ' + alive + ' 人 / 共计 ' + total + ' 人';
 
+      function digitsHtml(n) { var s = String(n), r = ''; for (var i = 0; i < s.length; i++) { r += '<span style="display:inline-block;animation:digitPop 0.35s cubic-bezier(0.22,1,0.36,1) ' + (i * 0.08) + 's both;">' + s[i] + '</span>'; } return r; }
       statsEl.innerHTML = ''
-        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);">' + alive + '</div><div style="font-size:11px;color:var(--text-tertiary);">在世成员</div></div>'
-        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);">' + total + '</div><div style="font-size:11px;color:var(--text-tertiary);">总人数</div></div>'
-        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);">' + males + '</div><div style="font-size:11px;color:var(--text-tertiary);">男</div></div>'
-        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);">' + females + '</div><div style="font-size:11px;color:var(--text-tertiary);">女</div></div>'
-        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);">' + Math.max(...Object.keys(genSet).map(Number)) + '</div><div style="font-size:11px;color:var(--text-tertiary);">世代</div></div>';
+        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);white-space:nowrap;">' + digitsHtml(alive) + '</div><div style="font-size:11px;color:var(--text-tertiary);">在世成员</div></div>'
+        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);white-space:nowrap;">' + digitsHtml(total) + '</div><div style="font-size:11px;color:var(--text-tertiary);">总人数</div></div>'
+        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);white-space:nowrap;">' + digitsHtml(males) + '</div><div style="font-size:11px;color:var(--text-tertiary);">男</div></div>'
+        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);white-space:nowrap;">' + digitsHtml(females) + '</div><div style="font-size:11px;color:var(--text-tertiary);">女</div></div>'
+        + '<div class="glass-card" style="padding:14px;text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--accent-orange);white-space:nowrap;">' + digitsHtml(Math.max(...Object.keys(genSet).map(Number))) + '</div><div style="font-size:11px;color:var(--text-tertiary);">世代</div></div>';
 
       // Gen dropdown
       var gens = Object.keys(genSet).map(Number).sort(function(a,b){return a-b;});
@@ -688,6 +689,7 @@
     .member-card.hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
     #members-grid { min-height:200px; }
     .gen-tab { font-family:var(--font-body); }
+    @keyframes digitPop { from { opacity:0; transform:translateY(10px) scale(0.8); } to { opacity:1; transform:translateY(0) scale(1); } }
   </style>
   <script>
     // bg-canvas removed
