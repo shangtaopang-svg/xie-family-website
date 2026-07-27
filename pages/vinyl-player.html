@@ -846,7 +846,7 @@ updateClock();
 
   initLibrary();
 </script>
-  <a href="javascript:history.go(-1)" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
+  <a id="backBtn" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
   <nav class="mb-tabbar">
     <a href="../index.html" class="mb-tab"><span class="mb-tab-icon">🚪</span><span class="mb-tab-label">开启页</span></a>
@@ -856,5 +856,6 @@ updateClock();
     <a href="activities.html" class="mb-tab"><span class="mb-tab-icon">🎪</span><span class="mb-tab-label">活动</span></a>
     <a href="my.html" class="mb-tab"><span class="mb-tab-icon">👤</span><span class="mb-tab-label">我的</span></a>
   </nav>
+<script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();window.history.go(-1)});</script>
 </body>
 </html>

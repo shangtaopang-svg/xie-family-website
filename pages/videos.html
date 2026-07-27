@@ -234,7 +234,7 @@
 
 </div>
 
-<a href="javascript:history.go(-1)" class="back-page-btn" aria-label="返回上一页">← 返回</a>
+<a id="backBtn" class="back-page-btn" aria-label="返回上一页">← 返回</a>
 <button class="back-top" aria-label="回到顶部">↑</button>
 
 <audio id="bg-music" loop></audio>
@@ -499,5 +499,6 @@
     <a href="activities.html" class="mb-tab"><span class="mb-tab-icon">🎪</span><span class="mb-tab-label">活动</span></a>
     <a href="my.html" class="mb-tab"><span class="mb-tab-icon">👤</span><span class="mb-tab-label">我的</span></a>
   </nav>
+<script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();window.history.go(-1)});</script>
 </body>
 </html>

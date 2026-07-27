@@ -332,7 +332,7 @@
 <div class="footer-bottom"><p>&copy; 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p></div>
 </footer>
 
-<a href="javascript:history.go(-1)" class="back-page-btn">← 返回</a>
+<a id="backBtn" class="back-page-btn">← 返回</a>
 <button class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 </div>
 <script>
@@ -348,5 +348,6 @@ function fc(cat){document.querySelectorAll('.celebrity-filters .btn').forEach(fu
     <a href="activities.html" class="mb-tab"><span class="mb-tab-icon">🎪</span><span class="mb-tab-label">活动</span></a>
     <a href="my.html" class="mb-tab"><span class="mb-tab-icon">👤</span><span class="mb-tab-label">我的</span></a>
   </nav>
+<script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();window.history.go(-1)});</script>
 </body>
 </html>

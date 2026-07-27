@@ -178,7 +178,7 @@
 
 
 <div class="page-wrap">
-  <a href="javascript:history.go(-1)" class="back-page-btn" style="display:none">← 返回</a>
+  <a id="backBtn" class="back-page-btn" style="display:none">← 返回</a>
 
   <div class="page-header">
     <div class="title-wrap">
@@ -369,5 +369,6 @@ window.addEventListener('storage', function(e) {
     <a href="activities.html" class="mb-tab"><span class="mb-tab-icon">🎪</span><span class="mb-tab-label">活动</span></a>
     <a href="my.html" class="mb-tab"><span class="mb-tab-icon">👤</span><span class="mb-tab-label">我的</span></a>
   </nav>
+<script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();window.history.go(-1)});</script>
 </body>
 </html>

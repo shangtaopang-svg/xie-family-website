@@ -94,7 +94,7 @@
 <div id="app"></div>
 
   <nav class="mb-tabbar" style="justify-content:center">
-    <a href="javascript:history.go(-1)" class="back-page-btn" style="display:inline-flex">← 返回</a>
+    <a id="backBtn" class="back-page-btn" style="display:inline-flex">← 返回</a>
   </nav>
 
 <script>
@@ -124,5 +124,6 @@
   app.innerHTML = cardHtml;
 })();
   </script>
+<script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();window.history.go(-1)});</script>
 </body>
 </html>

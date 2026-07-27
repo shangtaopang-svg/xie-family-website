@@ -528,7 +528,7 @@
 
 </div>
 
-  <a href="javascript:history.go(-1)" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
+  <a id="backBtn" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
 
   <!-- ===== 页面过渡遮罩 ===== -->
@@ -732,4 +732,5 @@ window.toggleTheme=function(){var d=localStorage.getItem("theme")==="dark";var n
   setTimeout(t, 1000);
 })();
 </script>
+<script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();window.history.go(-1)});</script>
 </body>
