@@ -149,7 +149,7 @@
   nav{display:none!important}
   @media(max-width:767px){#clk{top:20px;right:50%;transform:translateX(50%);text-align:center}#clk .ct{font-size:clamp(32px,8vw,48px)!important;letter-spacing:2px;color:#f5e6c8!important;text-shadow:0 2px 20px rgba(0,0,0,0.6)!important}#clk .cd{font-size:clamp(14px,3.5vw,20px)!important;margin-top:4px;color:rgba(245,230,200,0.85)!important}.wl-box{padding:28px 20px 24px}.wl-box h2{font-size:20px}.wl-btn{font-size:13px;padding:10px 6px}}
 
-  #et-wrap{position:absolute;left:5%;top:10%;width:90%;height:80%;z-index:13;opacity:0;pointer-events:none;transition:opacity 1.5s ease}
+  #et-wrap{position:absolute;left:5%;top:10%;width:90%;height:80%;z-index:13;opacity:0;pointer-events:none;transition:opacity 1.5s ease;overflow:visible}
   #et-wrap.show{opacity:1}
   /* ===== 全屏图片查看器 ===== */
   #pv-trigger{position:absolute;inset:0;z-index:14;cursor:pointer;pointer-events:none;opacity:0;background:transparent}
@@ -164,7 +164,7 @@
   #pv-hint.show{opacity:1}
   #pv-counter{position:fixed;top:16px;left:16px;z-index:99999;color:rgba(255,255,255,0.4);font-size:13px;font-weight:500;opacity:0;transition:opacity 0.4s ease;pointer-events:none}
   #pv-counter.show{opacity:1}
-  #et-text{width:100%;height:100%;font-family:'STKaiti','KaiTi','Noto Serif SC',serif;font-size:clamp(12px,1.2vw,16px);color:#e8c97a;line-height:1.7;text-shadow:0 0 3px rgba(0,0,0,0.95),0 0 10px rgba(232,201,122,0.08);font-weight:600;writing-mode:vertical-rl;text-orientation:upright;-webkit-text-orientation:upright;overflow-x:auto;overflow-y:hidden;white-space:nowrap;letter-spacing:0}
+  #et-text{width:100%;height:100%;font-family:'STKaiti','KaiTi','Noto Serif SC',serif;font-size:clamp(12px,1.2vw,16px);color:#e8c97a;line-height:1.7;text-shadow:0 0 3px rgba(0,0,0,0.95),0 0 10px rgba(232,201,122,0.08);font-weight:600;writing-mode:vertical-rl;text-orientation:upright;-webkit-text-orientation:upright;overflow:visible;white-space:nowrap;letter-spacing:0}
   @media(max-width:767px){#et-text{font-size:11px;line-height:1.5}}
 </style>
 </head>
@@ -238,7 +238,7 @@ w.style.backgroundImage="url('images/world-bg-ref.webp')";
   var etEl = document.getElementById('et-text'), etWrap = document.getElementById('et-wrap'), etTimer = null, etIdx = 0;
   var etText = '下枫槎谢氏一脉，世系源远流长。自申伯传三十六世至东山会稽，再由会稽南下经临海下渡，至石马（下谢）小四公，乃入浙东之近祖也。由石马传二世，至文杲公，字克源，北宋宣和年间（约公元一一二五年）任越溪司巡检，始居岩下。公为枫槎谢氏之始迁祖，至今近九百载，传三十六世，瓜瓞绵绵。二世祖攒公、撰公，析居后枫槎与前枫槎，两支并茂，各立门户。初，吾族世居岩下。迨明隆庆壬申（公元一五七二年），山洪暴发，庐舍为墟。十六世祖彬公、乾公昆仲，相度地势，遂迁于双枫古槎之下，因名其地曰"下枫槎"。斩荆棘，辟草莱，筑室于兹，开基立业。自此一脉繁衍，枝分派衍，或习儒术而登科第，或事商贾而通有无，或精农桑而富仓廪。清乾隆间，合族建宗祠于村北，三进两厢，门楣高悬"谢氏宗祠"匾额，堂号"敦睦堂"，寓敦宗睦族之意。春秋二祭，少长咸集，尊祖敬宗，礼行肃穆。';
   function etStart() { etIdx = 0; etEl.textContent = ''; etWrap.classList.add('show'); setTimeout(etType, 500); }
-  function etType() { if (etIdx >= etText.length) return; etEl.textContent = etText.substring(0, etIdx + 1); try{etEl.scrollTo(-etEl.scrollWidth,0);}catch(e){etEl.scrollLeft=-9999;} etIdx++; var d = '。，、；：？！""'.indexOf(etText[etIdx-1]) >= 0 ? 100 : 25; etTimer = setTimeout(etType, d); }
+  function etType() { if (etIdx >= etText.length) return; etEl.textContent = etText.substring(0, etIdx + 1); etEl.scrollLeft = -999999; etIdx++; var d = '。，、；：？！""'.indexOf(etText[etIdx-1]) >= 0 ? 100 : 25; etTimer = setTimeout(etType, d); }
   function etStop() { if (etTimer) { clearTimeout(etTimer); etTimer = null; } etWrap.classList.remove('show'); etEl.textContent = ''; }
 
   // ── 全屏图片查看器 ──
