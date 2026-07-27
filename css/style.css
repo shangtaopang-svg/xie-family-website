@@ -5517,3 +5517,23 @@ section a[href*="audio"] {
   /* 首页隐藏返回按钮 */
   .mb-show-main .back-page-btn { display: none !important; }
 }
+
+
+/* ===== 手机端影像记录页修复 ===== */
+@media (max-width: 768px) {
+  #reels-container {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    padding: 0 !important;
+  }
+  #reels-container .reel-item {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 16/9 !important;
+    border-radius: 12px !important;
+  }
+  #reels-container .reel-video {
+    object-fit: cover !important;
+  }
+}
