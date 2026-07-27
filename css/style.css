@@ -5210,7 +5210,7 @@ section a[href*="audio"] {
 
 
 /* ===== 手机首页专属布局 ===== */
-.mb-home { display: block !important; padding: 0 0 16px; }
+.mb-home { display: block !important; padding: 0 0 16px; transform-origin: top center; }
   .mb-home ~ .content { display: none !important; }
 
 .mbh-top { padding: 48px 20px 12px; text-align: center; }
@@ -5365,7 +5365,7 @@ section a[href*="audio"] {
 /* ===== 手机端：正式首页（开启页之后） ===== */
 @media (max-width: 768px) {
   .mb-show-main .mb-home { display: none !important; }
-  .mb-show-main .content { display: block !important; margin-left: 0 !important; padding: 0 0 70px !important; }
+  .mb-show-main .content { display: block !important; margin-left: 0 !important; padding: 0 0 70px !important; transform: scale(0.95) !important; transform-origin: top center !important; }
   .mb-show-main .mb-home ~ .content { display: block !important; }
   
   /* 正式首页暗黑风格 */
