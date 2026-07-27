@@ -85,8 +85,6 @@
     if (!h || h==='#' || h.startsWith('javascript:') || h.startsWith('http') || h.startsWith('tel:') || h.startsWith('mailto:') || !h.includes('.html')) return;
     var cur = window.location.pathname.split('/').pop() || 'index.html';
     if (h === cur || h === './'+cur) return;
-    e.preventDefault();
-    e.stopPropagation();
     sessionStorage.setItem(ptKey, '1');
     // Show overlay with all inline styles
     var ov = document.getElementById('page-transition') || document.createElement('div');
