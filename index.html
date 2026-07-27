@@ -656,6 +656,22 @@ window.toggleTheme=function(){var d=localStorage.getItem("theme")==="dark";var n
     animation: hBlink 0.8s step-end infinite;
   }
   @keyframes hBlink { 50% { opacity: 0; } }
+  .mb-history-tip {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 16;
+    padding: 8px 18px;
+    background: rgba(0,0,0,0.4);
+    border-radius: 999px;
+    color: rgba(255,255,255,0.6);
+    font-size: 12px;
+    letter-spacing: 1px;
+    backdrop-filter: blur(4px);
+    pointer-events: none;
+  }
+  .mb-history-overlay.show .mb-history-tip { display: none; }
   .mb-history-close {
     position: absolute;
     top: 12px; right: 12px;
