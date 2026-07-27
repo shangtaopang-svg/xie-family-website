@@ -13,7 +13,7 @@
     body {
       font-family: -apple-system, 'PingFang SC', 'Noto Sans SC', sans-serif;
       background: #0a0a0a; color: #f5f5f5; min-height: 100vh;
-      padding-bottom: 70px;
+      padding-bottom: 80px;
     }
     .header { padding: 48px 20px 20px; text-align: center; }
     .header .avatar {
@@ -62,15 +62,42 @@
       font-size: 15px; font-weight: 700; text-decoration: none;
     }
     .unreg-btn:active { opacity: 0.8; }
+    /* ===== 底部黄色胶囊导航 ===== */
+    .mb-tabbar {
+      display: flex !important; gap: 8px; padding: 8px 16px;
+      justify-content: center; align-items: center;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: transparent; border: none; z-index: 999999;
+    }
+    .mb-tab {
+      display: flex; align-items: center; gap: 4px;
+      padding: 8px 14px; border-radius: 999px;
+      background: rgba(255,255,255,0.08); border: none;
+      text-decoration: none; color: rgba(255,255,255,0.5);
+      font-size: 12px; transition: all 0.2s;
+    }
+    .mb-tab.active { background: #FFC107; color: #000; font-weight: 700; }
+    .mb-tab:active { transform: scale(0.96); }
+    .mb-tab-icon { font-size: 14px; }
+    .mb-tab-label { font-size: 11px; }
+    .back-page-btn {
+      display: flex; align-items: center; gap: 4px;
+      padding: 8px 18px; border-radius: 999px;
+      background: #FFC107; color: #000;
+      text-decoration: none; font-size: 12px; font-weight: 700;
+      box-shadow: 0 2px 8px rgba(255,193,7,0.3);
+    }
+    .back-page-btn:active { transform: scale(0.96); }
   </style>
 </head>
 <body>
 <div id="app"></div>
 
   <nav class="mb-tabbar">
-    <a href="../index.html" class="mb-tab"><span class="mb-tab-icon">🚪</span><span class="mb-tab-label">开启页</span></a>
-    <a href="../index.html?main" class="mb-tab"><span class="mb-tab-icon">🏠</span><span class="mb-tab-label">根首页</span></a>
+    <a href="../entrance.html" class="mb-tab"><span class="mb-tab-icon">🚪</span><span class="mb-tab-label">开启页</span></a>
+    <a href="../index.html" class="mb-tab"><span class="mb-tab-icon">🏠</span><span class="mb-tab-label">根首页</span></a>
     <a href="my.html" class="mb-tab active"><span class="mb-tab-icon">👤</span><span class="mb-tab-label">我的</span></a>
+    <a href="javascript:if(window.history.length>1)history.back();else location.href='../entrance.html';" class="back-page-btn" style="display:inline-flex">← 返回</a>
   </nav>
 
 <script>
@@ -99,8 +126,6 @@
 
   app.innerHTML = cardHtml;
 })();
-</script>
-  <script defer src="../js/main.js?v=20260806"></script>
-  <a href="javascript:if(window.history.length>1)history.back();else location.href='../entrance.html';" class="back-page-btn">← 返回</a>
+  </script>
 </body>
 </html>
