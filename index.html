@@ -623,7 +623,7 @@ window.toggleTheme=function(){var d=localStorage.getItem("theme")==="dark";var n
   function t() {
     if (i >= txt.length) return;
     el.textContent = txt.substring(0, i+1);
-    el.scrollLeft = el.scrollWidth;
+    el.scrollLeft = -el.scrollWidth;
     i++;
     var d = '。，、；：？！""'.indexOf(txt[i-1]) >= 0 ? 100 : 25;
     setTimeout(t, d);
