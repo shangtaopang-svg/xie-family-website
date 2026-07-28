@@ -601,10 +601,10 @@
       overflow: hidden;
       position: relative;
       clip-path: inset(0 0 0 100%);
+      transition: clip-path 4.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
     .preface-scroll.open .paper {
       clip-path: inset(0 0 0 0%);
-      transition: clip-path 4.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
     .preface-scroll .paper::before {
       content: ''; position: absolute; inset: 0;
@@ -1064,18 +1064,10 @@ autoUnrollPreface();
 // ===== Preface scroll: click to toggle =====
 (function(){
   var ps = document.getElementById('prefaceScroll');
-  var pp = document.getElementById('prefacePaper');
-  if (!ps || !pp) return;
-  var isOpen = false;
+  if (!ps) return;
   ps.addEventListener('click', function(){
-    if (isOpen) return;
-    isOpen = true;
+    if (ps.classList.contains('open')) return;
     ps.classList.add('open');
-    pp.style.clipPath = 'inset(0 0% 0 0)';
-    pp.style.transition = 'clip-path 4.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-    setTimeout(function(){
-      pp.style.transition = '';
-    }, 5000);
   });
 })();
 
