@@ -131,39 +131,43 @@ function toggleTheme() {
   localStorage.setItem('xie_theme', isDark ? 'light' : 'dark');
 }
 // Load photos from admin data or carousel directory
-(async function() {
+(function() {
   var grid = document.getElementById('gallery-grid');
-  try {
-    // Try admin photos first
-    var adminPhotos = JSON.parse(localStorage.getItem('xie_admin_photos') || '[]');
-    var carouselImgs = [
-      '../images/carousel/11.jpg','../images/carousel/23.jpg','../images/carousel/121.jpg','../images/carousel/123.jpg',
-      '../images/carousel/38.jpg','../images/carousel/40.jpg','../images/carousel/42.jpg','../images/carousel/51.jpg',
-      '../images/carousel/88.jpg','../images/carousel/W020230307562232959074.jpg','../images/carousel/W020230307562236561236.jpg',
-      '../images/carousel/W020230307562239043622.png','../images/carousel/W020230307562241110405.jpg'
-    ];
-    var allPhotos = [];
-    if (adminPhotos.length) {
-      // Get file store data
-      var files = await (window.getAllFiles ? getAllFiles('photo_') : Promise.resolve([]));
-      var fileMap = {};
-      (files || []).forEach(function(f) { var id = parseInt(f.name.replace('photo_','')); fileMap[id] = f.dataUrl; });
-      adminPhotos.forEach(function(p) {
-        if (p.file_url || fileMap[p.id]) allPhotos.push({ src: p.file_url || fileMap[p.id], title: p.title || '家族照片' });
-      });
+  function renderPhotos(photos) {
+    if (!photos || !photos.length) {
+      // Fallback: carousel images
+      photos = ['../images/carousel/11.jpg','../images/carousel/23.jpg','../images/carousel/121.jpg','../images/carousel/123.jpg',
+        '../images/carousel/38.jpg','../images/carousel/40.jpg','../images/carousel/42.jpg','../images/carousel/51.jpg',
+        '../images/carousel/88.jpg','../images/carousel/W020230307562232959074.jpg','../images/carousel/W020230307562236561236.jpg',
+        '../images/carousel/W020230307562239043622.png','../images/carousel/W020230307562241110405.jpg'];
     }
-    // Fallback: carousel images
-    if (!allPhotos.length) {
-      carouselImgs.forEach(function(src) { allPhotos.push({ src: src, title: '' }); });
-    }
-    if (!allPhotos.length) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">暂无照片</div>'; return; }
-    grid.innerHTML = allPhotos.map(function(p) {
-      return '<div class="gallery-item" onclick="openPhotoLightbox(' + "'" + p.src + "'" + ',' + "'" + (p.title||'') + "'" + ')">' +
-        '<img src="' + p.src + '" alt="' + (p.title||'') + '" loading="lazy">' +
-        (p.title ? '<div class="caption">' + p.title + '</div>' : '') +
-      '</div>';
+    grid.innerHTML = photos.map(function(p) {
+      var src = p.file_url || p.src || p;
+      var title = p.title || '';
+      return '<div class="gallery-item" onclick="openPhotoLightbox(' + "'" + src + "'" + ',' + "'" + title + "'" + ')">' +
+        '<img src="' + src + '" alt="' + title + '" loading="lazy">' +
+        (title ? '<div class="caption">' + title + '</div>' : '') + '</div>';
     }).join('');
-  } catch(e) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">加载失败</div>'; }
+  }
+  try {
+    var adminPhotos = JSON.parse(localStorage.getItem('xie_admin_photos') || '[]');
+    if (adminPhotos.length) {
+      if (window.getAllFiles) {
+        getAllFiles('photo_').then(function(files) {
+          var fileMap = {};
+          (files || []).forEach(function(f) { var id = parseInt(f.name.replace('photo_','')); if (id) fileMap[id] = f.dataUrl; });
+          adminPhotos.forEach(function(p) {
+            if (p.file_url || fileMap[p.id]) p.src = p.file_url || fileMap[p.id];
+          });
+          renderPhotos(adminPhotos.filter(function(p) { return p.src; }));
+        }).catch(function() { renderPhotos([]); });
+      } else {
+        renderPhotos(adminPhotos.filter(function(p) { return p.file_url; }));
+      }
+    } else {
+      renderPhotos([]);
+    }
+  } catch(e) { renderPhotos([]); }
 })();
 </script>
   <a id="backBtn" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
