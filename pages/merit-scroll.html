@@ -599,11 +599,13 @@
       background: linear-gradient(135deg, #fdf8f0, #f8f0e0);
       border: 1px solid #d4c8b8; border-right: none;
       overflow: hidden;
-      max-width: 0;
-      transition: max-width 2.5s cubic-bezier(0.22, 0.1, 0.15, 1);
       position: relative;
+      clip-path: inset(0 100% 0 0);
     }
-    .preface-scroll.open .paper { max-width: 1200px; }
+    .preface-scroll.open .paper {
+      clip-path: inset(0 0% 0 0);
+      transition: clip-path 4.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
     .preface-scroll .paper::before {
       content: ''; position: absolute; inset: 0;
       background: linear-gradient(90deg, transparent 10%, rgba(180,150,100,0.04) 50%, transparent 90%);
@@ -618,7 +620,7 @@
     }
     .preface-scroll.open .content {
       opacity: 1;
-      transition-delay: 1.8s;
+      transition-delay: 3s;
     }
     .preface-scroll .col {
       writing-mode: vertical-rl; text-orientation: mixed;
@@ -1058,29 +1060,25 @@ function esc(t) {
 loadAll();
 autoUnrollPreface();
 
-// ===== Preface Auto-unroll on page load =====
-function autoUnrollPreface() {
+
+// ===== Preface scroll: click to toggle =====
+(function(){
   var ps = document.getElementById('prefaceScroll');
-  if (!ps) return;
-  // Delay to let page render first
-  window._prefaceTimer = setTimeout(function(){
+  var pp = document.getElementById('prefacePaper');
+  if (!ps || !pp) return;
+  var isOpen = false;
+  ps.addEventListener('click', function(){
+    if (isOpen) return;
+    isOpen = true;
     ps.classList.add('open');
-    // Play sound
-    if (!window._psound) {
-      window._psound = true;
-      try {
-        var ctx = new (window.AudioContext||window.webkitAudioContext)();
-        var len = ctx.sampleRate * 1.5;
-        var buf = ctx.createBuffer(1, len, ctx.sampleRate);
-        var d = buf.getChannelData(0);
-        for (var i = 0; i < len; i++) {
-          var t = i / ctx.sampleRate;
-          var env = Math.max(0, 1 - t / 1.5);
-          var noise = (Math.random() * 2 - 1) * 0.08;
-          var rumble = Math.sin(i*0.04)*0.2 + Math.sin(i*0.08)*0.1 + Math.sin(i*0.02)*0.25;
-          d[i] = (noise + rumble) * env * 0.15;
-        }
-        var src = ctx.createBufferSource();
+    pp.style.clipPath = 'inset(0 0% 0 0)';
+    pp.style.transition = 'clip-path 4.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    setTimeout(function(){
+      pp.style.transition = '';
+    }, 5000);
+  });
+})();
+
         src.buffer = buf;
         var flt = ctx.createBiquadFilter();
         flt.type = 'lowpass'; flt.frequency.value = 250;
