@@ -1069,19 +1069,6 @@ loadAll();
     ps.classList.add('open');
   });
 })();
-
-        src.buffer = buf;
-        var flt = ctx.createBiquadFilter();
-        flt.type = 'lowpass'; flt.frequency.value = 250;
-        var gn = ctx.createGain();
-        gn.gain.setValueAtTime(0.08, 0);
-        src.connect(flt); flt.connect(gn); gn.connect(ctx.destination);
-        src.start();
-      } catch(e) {}
-    }
-  }, 600);
-}
-
 document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
 // ===== Major Donors Spotlight (Top 5 by total) =====
 var _allTotals = {};
