@@ -239,7 +239,7 @@ w.style.backgroundImage="url('images/world-bg-ref.webp')";
   var etEl = document.getElementById('et-text'), etWrap = document.getElementById('et-wrap'), etTimer = null, etIdx = 0;
   var etText = '下枫槎谢氏一脉，世系源远流长。自申伯传三十六世至东山会稽，再由会稽南下经临海下渡，至石马（下谢）小四公，乃入浙东之近祖也。由石马传二世，至文杲公，字克源，北宋宣和年间（约公元一一二五年）任越溪司巡检，始居岩下。公为枫槎谢氏之始迁祖，至今近九百载，传三十六世，瓜瓞绵绵。二世祖攒公、撰公，析居后枫槎与前枫槎，两支并茂，各立门户。初，吾族世居岩下。迨明隆庆壬申（公元一五七二年），山洪暴发，庐舍为墟。十六世祖彬公、乾公昆仲，相度地势，遂迁于双枫古槎之下，因名其地曰"下枫槎"。斩荆棘，辟草莱，筑室于兹，开基立业。自此一脉繁衍，枝分派衍，或习儒术而登科第，或事商贾而通有无，或精农桑而富仓廪。清乾隆间，合族建宗祠于村北，三进两厢，门楣高悬"谢氏宗祠"匾额，堂号"敦睦堂"，寓敦宗睦族之意。春秋二祭，少长咸集，尊祖敬宗，礼行肃穆。';
   function etStart() { etIdx = 0; etEl.textContent = ''; etWrap.classList.add('show'); setTimeout(etType, 500); }
-  function etType() { if (etIdx >= etText.length) return; etEl.textContent = etText.substring(0, etIdx + 1); etEl.scrollLeft = -etEl.scrollWidth; etIdx++; var d = '。，、；：？！""'.indexOf(etText[etIdx-1]) >= 0 ? 100 : 25; etTimer = setTimeout(etType, d); }
+  function etType() { if (etIdx >= etText.length) return; etEl.textContent = etText.substring(0, etIdx + 1); if (window.innerWidth < 768) { etEl.scrollTop = etEl.scrollHeight; } else { etEl.scrollLeft = -etEl.scrollWidth; } etIdx++; var d = '。，、；：？！""'.indexOf(etText[etIdx-1]) >= 0 ? 100 : 25; etTimer = setTimeout(etType, d); }
   function etStop() { if (etTimer) { clearTimeout(etTimer); etTimer = null; } etWrap.classList.remove('show'); etEl.textContent = ''; }
 
   // ── 全屏图片查看器 ──
