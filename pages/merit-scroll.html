@@ -1063,10 +1063,29 @@ loadAll();
 // ===== Preface scroll: click to toggle =====
 (function(){
   var ps = document.getElementById('prefaceScroll');
+  var pp = document.getElementById('prefacePaper');
   if (!ps) return;
   ps.addEventListener('click', function(){
     if (ps.classList.contains('open')) return;
     ps.classList.add('open');
+    if (!pp) return;
+    // After unfold, enable scrolling
+    setTimeout(function(){
+      pp.style.overflowX = 'auto';
+      pp.style.overflowY = 'hidden';
+      pp.style.cursor = 'grab';
+      // Simple touch drag to pan
+      var isDown = false, sx = 0, sl = 0;
+      pp.addEventListener('touchstart', function(e){
+        if (e.touches.length === 1) { isDown = true; sx = e.touches[0].clientX; sl = pp.scrollLeft; }
+      });
+      pp.addEventListener('touchmove', function(e){
+        if (!isDown || e.touches.length !== 1) return;
+        pp.scrollLeft = sl - (e.touches[0].clientX - sx);
+      });
+      pp.addEventListener('touchend', function(){ isDown = false; });
+      pp.addEventListener('touchcancel', function(){ isDown = false; });
+    }, 5000);
   });
 })();
 document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
