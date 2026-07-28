@@ -1063,10 +1063,30 @@ loadAll();
 // ===== Preface scroll: click to toggle =====
 (function(){
   var ps = document.getElementById('prefaceScroll');
-  if (!ps) return;
+  var pc = document.getElementById('prefaceContent');
+  if (!ps || !pc) return;
+  // Store full text and clear content initially
+  var fullHTML = pc.innerHTML;
+  pc.innerHTML = '';
+  var texts = [];
+  var cols = fullHTML.split('</div>');
+  for (var ci = 0; ci < cols.length; ci++) {
+    var txt = cols[ci].replace(/<[^>]*>/g, '');
+    if (txt.trim()) texts.push(txt.trim());
+  }
+  var allText = texts.join('');
+  var idx = 0, timer = null;
   ps.addEventListener('click', function(){
     if (ps.classList.contains('open')) return;
     ps.classList.add('open');
+    // Start typewriter
+    setTimeout(function(){
+      timer = setInterval(function(){
+        if (idx >= allText.length) { clearInterval(timer); return; }
+        pc.innerHTML = allText.substring(0, idx + 1);
+        idx++;
+      }, 15);
+    }, 1200);
   });
 })();
 document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
