@@ -60,42 +60,34 @@
       return '';
     }
 
-    var html = '';
+    // 波形图：横轴世代，纵轴人数
+    var WAVE_H = 48, COL_W = 10;
+    var html = '<div style="position:relative;padding:4px 0 0;min-height:'+(WAVE_H+30)+'px;">';
+    // 波形区域
+    html += '<div style="display:flex;align-items:flex-end;height:'+WAVE_H+'px;padding:0 2px;gap:1px;">';
     gens.forEach(function(g) {
       var pop = genPop[g]||0;
-      var alive = genAlive[g]||0;
-      var deceased = genDeceased[g]||0;
-      var ch = genChars[g]||'';
       var names = genNames[g]||[];
       var keyName = findKeyName(g, names);
       var dc = getDynColor(g);
-      var barH = Math.max(10, (pop/maxH)*160);
-      var dH = pop > 0 ? Math.max(2, (deceased/pop)*barH) : 0;
-      var aH = pop > 0 ? Math.max(2, (alive/pop)*barH) : 0;
-
-      html += '<div class="tl-g" data-g="'+g+'" style="display:inline-flex;flex-direction:column;align-items:center;width:58px;flex-shrink:0;padding:6px 2px;border-radius:6px;cursor:pointer;vertical-align:top;">';
-      if (dc) html += '<div style="width:36px;height:5px;border-radius:2px;background:'+dc+';margin-bottom:4px;opacity:0.9;"></div>';
-      else html += '<div style="height:9px;"></div>';
-      html += '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;min-height:175px;padding:2px 0;">';
-      // Bar: deceased bottom (dark), alive top (green)
-      html += '<div class="tl-bar" style="width:26px;height:'+barH+'px;border-radius:3px;overflow:hidden;display:flex;flex-direction:column-reverse;transition:all 0.15s;">';
-      if (deceased > 0) {
-        html += '<div style="width:100%;height:'+(deceased/pop*100)+'%;background:rgba(100,100,120,0.65);display:flex;align-items:center;justify-content:center;" title="已故'+deceased+'人">';
-        if (pop > 0 && deceased > 0) html += '<span style="font-size:9px;color:#ccc;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,0.6);">'+deceased+'</span>';
-        html += '</div>';
-      }
-      if (alive > 0) {
-        html += '<div style="width:100%;height:'+(alive/pop*100)+'%;background:#22c55e;display:flex;align-items:center;justify-content:center;animation:barGlow 2.5s ease-in-out infinite;" title="在世'+alive+'人">';
-        if (alive > 0) html += '<span style="font-size:9px;color:#fff;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.5);">'+alive+'</span>';
-        html += '</div>';
-      }
-      html += '</div>';
-      if (pop > 0) html += '<div style="font-size:9px;color:var(--text-tertiary);margin-top:2px;line-height:1.1;">'+alive+'/'+deceased+'</div>';
-      html += '</div>';
-      if (ch) html += '<div style="font-size:11px;color:var(--accent-orange);font-weight:600;margin-top:4px;line-height:1.2;">'+ch+'</div>';
-      html += '<div style="font-size:10px;color:var(--text-tertiary);line-height:1.3;font-weight:600;">'+g+'世</div>';
+      var barH = pop > 0 ? Math.max(2, (pop / maxPop) * WAVE_H * 0.85) : 0;
+      html += '<div class="tl-g" data-g="'+g+'" style="display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative;" title="第'+g+'世 '+pop+'人">';
+      // 柱条 + 朝代色
+      html += '<div style="width:'+COL_W+'px;height:'+barH+'px;border-radius:1px 1px 0 0;background:'+(dc||'#3fb950')+';opacity:'+(pop>0?'0.9':'0.15')+';transition:opacity 0.15s;min-height:'+(pop>0?'2px':'0')+';"></div>';
+      // 世代号
+      html += '<div style="font-size:7px;color:'+(pop>0?'rgba(255,255,255,0.4)':'rgba(255,255,255,0.12)')+';line-height:1;margin-top:1px;white-space:nowrap;">'+g+'</div>';
       html += '</div>';
     });
+    html += '</div>';
+    // 关键人物标记行
+    html += '<div style="display:flex;gap:1px;padding:0 2px;margin-top:2px;">';
+    gens.forEach(function(g) {
+      var names = genNames[g]||[];
+      var keyName = findKeyName(g, names);
+      html += '<div style="width:'+COL_W+'px;flex-shrink:0;text-align:center;font-size:6px;color:#ff6b00;font-weight:600;line-height:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(keyName||'')+'</div>';
+    });
+    html += '</div>';
+    html += '</div>';
     wrap.innerHTML = legendHtml + html;
 
     wrap._genPop = genPop; wrap._genAlive = genAlive; wrap._genDeceased = genDeceased; wrap._genNames = genNames; wrap._genChars = genChars; wrap._genNums = gens;
