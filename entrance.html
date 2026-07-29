@@ -279,7 +279,7 @@ sl.style.transform='translateX(0%)';sr.style.transform='translateX(0%)';
 v.style.opacity=0;
 
 !function u(){var n=new Date();ct.textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');cd.textContent=n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日';setTimeout(u,10000)}();
-setTimeout(function(){document.getElementById('clk').classList.add('show');document.getElementById('hero-text').classList.add('show');document.getElementById('hc').classList.add('show');},500);
+var ttsBtn=document.getElementById("tts-btn"),ttsPlaying=false,ttsAudio=null;function toggleTTS(){if(ttsPlaying){if(ttsAudio){ttsAudio.pause();ttsAudio.currentTime=0}ttsPlaying=false;ttsBtn.textContent="🔇";ttsBtn.classList.remove("speaking");return}var a=new Audio("audio/tts-intro.mp3");ttsAudio=a;a.onplay=function(){ttsPlaying=true;ttsBtn.textContent="🔊";ttsBtn.classList.add("speaking")};a.onended=a.onpause=function(){ttsPlaying=false;ttsBtn.textContent="🔇";ttsBtn.classList.remove("speaking")};a.play()}ttsBtn.addEventListener("click",toggleTTS);setTimeout(function(){document.getElementById("clk").classList.add("show");document.getElementById("hero-text").classList.add("show");document.getElementById("hc").classList.add("show");ttsBtn.classList.add("show");},500);
 
 
 // ── Mouse parallax + wheel zoom (like :3003 portal) ──
