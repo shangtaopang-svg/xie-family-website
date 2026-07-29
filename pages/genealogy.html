@@ -2737,7 +2737,7 @@ function pageTreeFullscreen() {
   }
 }
 
-function exitPageFullscreen() {
+function exitPageFullscreen() { try { if (document.exitFullscreen) document.exitFullscreen(); } catch(e){} 
   var section = document.getElementById('genealogy-tree-section');
   if (section) section.classList.remove('genealogy-tree-section-fullscreen');
   document.body.style.overflow = '';
