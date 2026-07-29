@@ -68,29 +68,6 @@
 	      if (roots.length === 0 && data.length > 0) roots = [data[0]];
 	
     // Use the found root directly (don't trace up - start from Xie ancestor)
-    var roots;
-    var xieRoot = null; if (xieRoot) {
-      roots = [xieRoot];
-    } else {
-      var existingIds = {};
-      data.forEach(function (p) { existingIds[p.id] = true; });
-      roots = data.filter(function (p) { return p.father_id == null || !existingIds[parseInt(p.father_id)]; });
-      if (roots.length === 0 && data.length > 0) roots = [data[0]];
-    }
-
-    // Sort by descendant count
-    roots.forEach(function (r) { r._descCount = countDescendants(r.id); });
-    roots.sort(function (a, b) { return b._descCount - a._descCount; });
-    if (roots.length > 10) roots = roots.slice(0, 10);
-
-    // Build the displayed tree data
-    var maxDepth = 0;
-    function calcDepth(pid, d) { if (d > maxDepth) maxDepth = d; getChildren(pid).forEach(function (c) { calcDepth(c.id, d + 1); }); }
-    roots.forEach(function (r) { calcDepth(r.id, 0); });
-
-    render(roots, maxDepth + 1);
-  }
-
   function render(roots, totalDepth) {
     var ROW_H = 52;
     var W = container.clientWidth || 800;
@@ -2737,7 +2714,7 @@ function pageTreeFullscreen() {
   }
 }
 
-function exitPageFullscreen() {
+function exitPageFullscreen() { try { if (document.exitFullscreen) document.exitFullscreen(); else if (document.webkitExitFullscreen) document.webkitExitFullscreen(); else if (document.mozCancelFullscreen) document.mozCancelFullscreen(); } catch(e){} 
   var section = document.getElementById('genealogy-tree-section');
   if (section) section.classList.remove('genealogy-tree-section-fullscreen');
   document.body.style.overflow = '';
