@@ -234,6 +234,48 @@ const server = http.createServer(async (req, res) => {
     return sendJson(req, res, 401, { ok: false });
   }
 
+  // === API: 族人验证 ===
+  if (url === '/api/verify-member' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      try {
+        const { name, fatherName, grandpaName } = JSON.parse(body);
+        if (!name || !fatherName) {
+          return sendJson(req, res, 200, { verified: false, message: '请输入姓名和父亲名字' });
+        }
+        const filePath = path.join(DATA_DIR, 'genealogy.json');
+        if (!fs.existsSync(filePath)) {
+          return sendJson(req, res, 200, { verified: false, message: '族谱数据暂未加载' });
+        }
+        const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        const idMap = {};
+        data.forEach(p => idMap[p.id] = p.name);
+        const matches = data.filter(p => {
+          if (p.name !== name) return false;
+          if (!p.father_id) return false;
+          const fName = idMap[parseInt(p.father_id)];
+          if (!fName || fName !== fatherName) return false;
+          if (grandpaName) {
+            const father = data.find(f => f.id === parseInt(p.father_id));
+            if (!father || !father.father_id) return false;
+            const gName = idMap[parseInt(father.father_id)];
+            if (!gName || gName !== grandpaName) return false;
+          }
+          return true;
+        });
+        if (matches.length > 0) {
+          return sendJson(req, res, 200, { verified: true, message: '验证通过，欢迎回家！' });
+        } else {
+          return sendJson(req, res, 200, { verified: false, message: '信息不符，请核对或联系管理员' });
+        }
+      } catch(e) {
+        return sendJson(req, res, 200, { verified: false, message: '请求数据错误' });
+      }
+    });
+    return;
+  }
+
   // === API: Data read/write (local JSON storage, replaces Supabase) ===
   const dataMatch = url.match(/^\/api\/data\/([a-zA-Z_]+)$/);
   if (dataMatch) {
@@ -280,6 +322,47 @@ const server = http.createServer(async (req, res) => {
     }
 
     return sendJson(req, res, 405, { error: 'Method not allowed' });
+  }
+
+  // === API: 保存访客/族人信息 ===
+  if (url === '/api/save-visitor' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body);
+        const filePath = path.join(DATA_DIR, 'visitors.json');
+        let visitors = [];
+        if (fs.existsSync(filePath)) {
+          visitors = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        }
+        visitors.push(data);
+        fs.writeFileSync(filePath, JSON.stringify(visitors, null, 2));
+        return sendJson(req, res, 200, { ok: true });
+      } catch(e) {
+        return sendJson(req, res, 200, { ok: false });
+      }
+    });
+    return;
+  }
+
+  // === API: 获取访客信息（管理员专用） ===
+  if (url === '/api/visitors' && req.method === 'GET') {
+    const auth = req.headers['authorization'] || '';
+    const token = auth.replace('Bearer ', '');
+    if (!adminTokens.has(token)) {
+      return sendJson(req, res, 401, { error: 'Unauthorized' });
+    }
+    const filePath = path.join(DATA_DIR, 'visitors.json');
+    if (!fs.existsSync(filePath)) {
+      return sendJson(req, res, 200, []);
+    }
+    try {
+      const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      return sendJson(req, res, 200, data);
+    } catch(e) {
+      return sendJson(req, res, 200, []);
+    }
   }
 
   // === GitHub webhook for auto-deploy ===

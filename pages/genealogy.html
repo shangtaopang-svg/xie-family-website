@@ -69,7 +69,7 @@
 	
     // Use the found root directly (don't trace up - start from Xie ancestor)
     var roots;
-    if (xieRoot) {
+    var xieRoot = null; if (xieRoot) {
       roots = [xieRoot];
     } else {
       var existingIds = {};
@@ -426,8 +426,8 @@
             <button class="btn btn-sm" onclick="treeZoomIn()" title="放大">🔍+</button>
             <button class="btn btn-sm" onclick="treeZoomOut()" title="缩小">🔍−</button>
             <button class="btn btn-sm" onclick="treeZoomReset()" title="重置缩放">1:1</button>
-            <span id="tree-zoom-level" style="font-size:11px;color:var(--text-tertiary);min-width:32px;text-align:center;">100%</span>
-            <button class="btn btn-sm" onclick="toggleTreeFullscreen()" title="全屏观看" style="background:var(--accent-orange-dim);border-color:var(--accent-orange);">⛶ 全屏</button>
+            <button class="btn btn-sm" onclick="pageTreeFullscreen()" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;">⛶ 全屏</button><span id="tree-zoom-level" style="font-size:11px;color:var(--text-tertiary);min-width:32px;text-align:center;">100%</span>
+            <button class="btn btn-sm" onclick="pageTreeFullscreen()" title="全屏观看" style="background:var(--accent-orange-dim);border-color:var(--accent-orange);">⛶ 全屏</button>
             <button class="btn btn-sm" onclick="exportTreePNG()" title="导出为图片" style="background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3);">📥 导出</button>
             <span style="width:1px;height:18px;background:var(--divider);margin:0 4px;"></span>
           </div>
@@ -444,10 +444,11 @@
         </div>
         <!-- 树容器 -->
         <div class="genealogy-tree-scroll" id="tree-scroll-container">
-        <button id="fs-close-btn" onclick="exitTreeFullscreen()" style="display:none;position:fixed;top:20px;right:24px;z-index:99999;background:rgba(0,0,0,0.7);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:14px;cursor:pointer;align-items:center;gap:6px;">✕ 退出全屏</button>
           <div id="tree-container"></div>
         </div>
+<button id="fs-close-btn" onclick="exitPageFullscreen()" style="display:none;position:absolute;top:16px;right:16px;z-index:99999;background:rgba(0,0,0,0.7);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:14px;cursor:pointer;">✕ 退出全屏</button>
       </div>
+
 
             <!-- 世系表 -->
       <!-- ===== 迁徙路线互动地图 ===== -->
@@ -486,7 +487,7 @@
         .apt-btn-del{background:#e74c3c;color:#fff;}
         .apt-card:hover{border-color:var(--accent-orange);box-shadow:0 2px 8px rgba(251,146,60,0.12);transform:translateY(-1px);}
         .apt-male{border-left:3px solid #4a9eff;}
-        .apt-name{font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;}
+        .apt-name{font-size:14px;font-weight:600;color:#ff6b00!important;white-space:nowrap;}
         .apt-meta{font-size:10px;color:var(--text-tertiary);margin-top:2px;}
         .apt-branch{font-size:9px;padding:1px 6px;border-radius:3px;background:var(--accent-orange-dim);color:var(--accent-orange);margin-top:2px;display:inline-block;}
         .apt-children-count{font-size:8px;color:var(--text-tertiary);margin-top:2px;opacity:0.5;}
@@ -529,7 +530,7 @@
 
   <style>
 /* === Compact Tree (vertical, nested) === */
-.genealogy-tree-scroll { overflow:hidden; border:1px solid var(--glass-border); border-radius:12px; background:var(--bg-card); cursor:grab; min-height:500px; position:relative; width:100%; }
+.genealogy-tree-scroll { overflow:hidden; border:1px solid var(--glass-border); border-radius:12px; background:#1a1a2e; cursor:grab; min-height:500px; position:relative; width:100%; }
 .tree-connector-layer { position:absolute;top:0;left:0;z-index:0; }
 .tree-cards-layer { position:relative;z-index:1; }
 .tree-html-card { position:absolute;border-radius:8px;background:var(--glass-bg);border:2px solid var(--glass-border);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;transition:border-color 0.15s,box-shadow 0.15s;padding:4px;box-sizing:border-box; }
@@ -1040,7 +1041,7 @@ function renderTreeSVG(data) {
       '<button class="apt-zoom-btn" onclick="zoomGenealogyTree(0.77)" style="width:26px;height:26px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:14px;line-height:1;">−</button>' +
       '<button class="apt-zoom-btn" onclick="zoomGenealogyTree(1)" style="width:26px;height:26px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:12px;line-height:1;">⟳</button>' +
       '<span id="gz-zoom-level" style="font-size:10px;color:var(--text-tertiary);min-width:32px;text-align:center;">100%</span>' +
-    '</div><div class="gz-tree-viewport" id="gz-tree-viewport" style="overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-secondary);min-height:350px;">' +
+    '</div><div class="gz-tree-viewport" id="gz-tree-viewport" style="overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:#1a1a2e;min-height:350px;">' +
     buildAdminTreeHtml(data, {hideGen: false}) + '</div>';
     initGenealogyTreePanZoom();
     return;
@@ -1890,12 +1891,12 @@ document.addEventListener('DOMContentLoaded', function() {
   scrollContainer.style.cursor = 'grab';
 
   // Touch
-  var lastTouchDist = 0, lastTouchX = 0, lastTouchY = 0;
+  var lastTouchDist = 0, lastTouchX = 0, lastTouchY = 0, tzStart = 1;
   scrollContainer.addEventListener('touchstart', function(e) {
     if (e.touches.length === 2) {
       var dx = e.touches[0].clientX - e.touches[1].clientX;
       var dy = e.touches[0].clientY - e.touches[1].clientY;
-      lastTouchDist = Math.sqrt(dx*dx + dy*dy);
+      lastTouchDist = Math.sqrt(dx*dx + dy*dy); tzStart = treeScale;
     } else if (e.touches.length === 1) {
       lastTouchX = e.touches[0].clientX - treePanX;
       lastTouchY = e.touches[0].clientY - treePanY;
@@ -1908,8 +1909,8 @@ document.addEventListener('DOMContentLoaded', function() {
       var dy = e.touches[0].clientY - e.touches[1].clientY;
       var dist = Math.sqrt(dx*dx + dy*dy);
       if (lastTouchDist > 0) {
-        if (dist / lastTouchDist > 1.02) treeZoomIn();
-        else if (dist / lastTouchDist < 0.98) treeZoomOut();
+        treeScale = Math.max(0.02, Math.min(30, tzStart * (dist / lastTouchDist)));
+        applyTreeTransformSVG();
       }
       lastTouchDist = dist;
     } else if (e.touches.length === 1) {
@@ -2691,7 +2692,7 @@ function locateInTree(personId) {
     // bg-canvas removed
 
 // ===== Fullscreen toggle (CSS position:fixed approach) =====
-function toggleTreeFullscreen() {
+function pageTreeFullscreen() {
   var section = document.getElementById('genealogy-tree-section');
   if (!section) return;
   var isFS = section.classList.contains('genealogy-tree-section-fullscreen');
@@ -2732,11 +2733,11 @@ function toggleTreeFullscreen() {
       });
     });
   } else {
-    exitTreeFullscreen();
+    exitPageFullscreen();
   }
 }
 
-function exitTreeFullscreen() {
+function exitPageFullscreen() {
   var section = document.getElementById('genealogy-tree-section');
   if (section) section.classList.remove('genealogy-tree-section-fullscreen');
   document.body.style.overflow = '';
@@ -2747,7 +2748,7 @@ function exitTreeFullscreen() {
 
 // Escape key exits fullscreen
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') exitTreeFullscreen();
+  if (e.key === 'Escape') exitPageFullscreen();
 });
 
 function toggleGenChart() {
@@ -2760,7 +2761,7 @@ function toggleGenChart() {
   <audio id="bg-music" loop></audio>
 
 <style>
-.gz-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-secondary);min-height:350px;}
+.gz-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:#1a1a2e;min-height:350px;}
 .gz-tree-viewport:active{cursor:grabbing;}
 .gz-tree-viewport .apt-tree{transform-origin:0 0;transition:transform 0.05s;}
 .apt-zoom-btn{width:26px;height:26px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;}
@@ -2789,7 +2790,7 @@ var ga=function(){var t=vp.querySelector(".apt-tree");if(!t)return;t.style.trans
 vp.onwheel=function(e){e.preventDefault();var r=vp.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top,f=e.deltaY<0?1.1:0.9,nz=Math.max(0.05,Math.min(10,_gzZoom*f));_gzPanX=mx-(mx-_gzPanX)*(nz/_gzZoom);_gzPanY=my-(my-_gzPanY)*(nz/_gzZoom);_gzZoom=nz;ga();};
 vp.onmousedown=function(e){if(e.target.closest(".apt-zoom-btn,.apt-btn-expand,.apt-card,button"))return;_gzDrag=true;_gzDx=e.clientX;_gzDy=e.clientY;_gzSx=_gzPanX;_gzSy=_gzPanY;e.preventDefault();};
 window.addEventListener("mousemove",function(e){if(!_gzDrag)return;_gzPanX=_gzSx+(e.clientX-_gzDx);_gzPanY=_gzSy+(e.clientY-_gzDy);ga();});
-window.addEventListener("mouseup",function(){if(_gzDrag){_gzDrag=false;var v=document.getElementById("gz-tree-viewport");if(v)v.style.cursor="grab";}});
+window.addEventListener("mouseup",function(){if(_gzDrag){_gzDrag=false;var v=document.getElementById("gz-tree-viewport");if(v)v.style.cursor="grab";}});var gzTD=0,gzTX=0,gzTY=0,gzTZ=1;vp.addEventListener("touchstart",function(e){if(e.touches.length===2){var dx=e.touches[0].clientX-e.touches[1].clientX,dy=e.touches[0].clientY-e.touches[1].clientY;gzTD=Math.sqrt(dx*dx+dy*dy);gzTZ=_gzZoom;}else if(e.touches.length===1){gzTX=e.touches[0].clientX-_gzPanX;gzTY=e.touches[0].clientY-_gzPanY;}},{passive:true});vp.addEventListener("touchmove",function(e){if(e.touches.length===2){e.preventDefault();var dx=e.touches[0].clientX-e.touches[1].clientX,dy=e.touches[0].clientY-e.touches[1].clientY,nd=Math.sqrt(dx*dx+dy*dy);if(gzTD>0){_gzZoom=Math.max(0.05,Math.min(10,gzTZ*(nd/gzTD)));ga();}}else if(e.touches.length===1){_gzPanX=e.touches[0].clientX-gzTX;_gzPanY=e.touches[0].clientY-gzTY;ga();}},{passive:false});vp.addEventListener("touchend",function(){gzTD=0;});
 setTimeout(function(){var t=vp.querySelector(".apt-tree");if(!t)return;var vpr=vp.getBoundingClientRect(),tr=t.getBoundingClientRect();var s=Math.min(1,Math.min(vpr.width/(tr.width||1),vpr.height/(tr.height||1))*0.8);_gzZoom=Math.max(0.05,Math.min(1,s));_gzPanX=Math.max(0,(vpr.width-tr.width*_gzZoom)/2);_gzPanY=10;ga();},500);
 }
 window.zoomGenealogyTree=function(factor){var vp=document.getElementById("gz-tree-viewport");if(!vp)return;var el=vp.querySelector(".apt-tree");if(!el)return;if(factor===1){_gzZoom=1;_gzPanX=0;_gzPanY=0;}else{var r=vp.getBoundingClientRect();var mx=r.width/2,my=r.height/2,nz=Math.max(0.05,Math.min(10,_gzZoom*factor));_gzPanX=mx-(mx-_gzPanX)*(nz/_gzZoom);_gzPanY=my-(my-_gzPanY)*(nz/_gzZoom);_gzZoom=nz;}el.style.transform="translate("+_gzPanX+"px,"+_gzPanY+"px) scale("+_gzZoom+")";var zl=document.getElementById("gz-zoom-level");if(zl)zl.textContent=Math.round(_gzZoom*100)+"%";};

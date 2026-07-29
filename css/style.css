@@ -4910,11 +4910,11 @@ body {
   .content { margin-left: 0 !important; padding: 0 0 70px !important; }
   
   /* ===== 底部导航 ===== */
-  .mb-tabbar {
+  .mb-tabbar { display: none !important; 
     display: flex !important;
     position: fixed; bottom: 0; left: 0; right: 0;
     height: 60px;
-    background: #0f0f0f;
+    background: #000;
     border-top: 1px solid #222;
     z-index: 999999;
     justify-content: space-around;
@@ -4963,7 +4963,7 @@ body {
 }
 
 /* Desktop: hide mobile-only elements */
-.mb-home, .mb-tabbar { display: none; }
+.mb-home, .mb-tabbar, nav.mb-tabbar { display: none !important;  display: none !important; }
 
 
 /* ===== MOBILE OVERRIDE ===== */
@@ -5054,12 +5054,12 @@ a { color: var(--mb-brand); }
 .divider, hr { background: var(--mb-border) !important; }
 
 /* ===== 底部导航 ===== */
-.mb-tabbar {
+.mb-tabbar { display: none !important; 
   display: flex !important;
   position: fixed;
   bottom: 0; left: 0; right: 0;
   height: 56px;
-  background: #0f0f0f;
+  background: #000;
   border-top: 1px solid #222;
   z-index: 999999;
   justify-content: space-around;
@@ -5537,7 +5537,7 @@ section a[href*="audio"] {
   .mb-show-main .mb-back-entrance:active { opacity: 0.8; transform: scale(0.98); }
   
   /* TabBar on main page */
-  .mb-show-main .mb-tabbar { display: flex !important; }
+  .mb-show-main nav.mb-tabbar { display: none !important;  display: none !important; }
 }
 
 
