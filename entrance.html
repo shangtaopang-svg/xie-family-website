@@ -367,7 +367,7 @@ document.getElementById('openBtn2').addEventListener('click',function(){
       step.innerHTML = '<div class="wl-btn-row"><button class="wl-btn wl-btn-p" onclick="window._wlGo(2)">是，我是族人</button><button class="wl-btn wl-btn-s" onclick="window._wlGo(3)">不是</button></div>';
     } else if (s === 2) {
       desc.textContent = '欢迎族人！请填写基本信息';
-      step.innerHTML = '<input class="wl-field" id="wl-name" placeholder="您的姓名"><input class="wl-field" id="wl-wechat" placeholder="微信 / 手机号"><input class="wl-field" id="wl-gen" placeholder="辈分 / 世系（选填）"><div class="wl-btn-row"><button class="wl-btn wl-btn-p" onclick="window._wlSubmit()">提交</button></div><button class="wl-back" onclick="window._wlGo(1)">← 返回</button>';
+      step.innerHTML = '<input class="wl-field" id="wl-name" placeholder="您的姓名"><input class="wl-field" id="wl-father" placeholder="父亲名字"><input class="wl-field" id="wl-grandpa" placeholder="祖父名字（可留空）"><div class="wl-btn-row"><button class="wl-btn wl-btn-p" id="wl-submit-btn" onclick="window._wlSubmit()">验证身份</button></div><div class="wl-login-row" style="justify-content:center"><button class="wl-back" onclick="window._wlSkip()">暂不验证，先浏览</button><button class="wl-back" onclick="window._wlGo(1)">← 返回</button></div>';
     } else if (s === 3) {
       desc.textContent = '欢迎您！请问您访问本站的目的是？';
       step.innerHTML = '<input class="wl-field" id="wl-purpose" placeholder="如：了解谢氏文化、查阅族谱..."><div style="font-size:11px;color:rgba(245,230,200,0.2);margin-bottom:8px">或使用以下方式登录</div><div class="wl-login-row"><button class="wl-login-btn" onclick="window._wlDone()">💬 微信</button><button class="wl-login-btn" onclick="window._wlDone()">📞 电话</button></div><button class="wl-back" onclick="window._wlGo(1)">← 返回</button>';
@@ -379,8 +379,36 @@ document.getElementById('openBtn2').addEventListener('click',function(){
   window._wlGo = function(s) { showStep(s); };
   window._wlSubmit = function() {
     var name = document.getElementById('wl-name').value.trim();
-    if (!name) { hint.textContent = '请输入姓名'; return; }
-    window._wlDone();
+    var father = document.getElementById('wl-father').value.trim();
+    if (!name || !father) { hint.textContent = '请填写姓名和父亲名字'; return; }
+    var gp = document.getElementById('wl-grandpa').value.trim();
+    var btn = document.getElementById('wl-submit-btn');
+    if (btn.disabled) return;
+    btn.disabled = true; btn.textContent = '验证中…';
+    fetch('/api/verify-member', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, fatherName: father, grandpaName: gp || undefined })
+    }).then(function(r){ return r.json(); }).then(function(res){
+      btn.disabled = false; btn.textContent = '验证身份';
+      if (res.verified) {
+        try {
+          localStorage.setItem('ai_clan_token', res.token);
+          localStorage.setItem('ai_clan_person', JSON.stringify({ personId: res.personId, name: res.name }));
+        } catch(e) {}
+        localStorage.setItem('wl_done', '1');
+        overlay.classList.add('hide');
+      } else {
+        hint.textContent = res.message || '信息不符，请核对或联系管理员';
+      }
+    }).catch(function(){
+      btn.disabled = false; btn.textContent = '验证身份';
+      hint.textContent = '网络异常，请重试';
+    });
+  };
+  window._wlSkip = function() {
+    localStorage.setItem('wl_done', '1');
+    overlay.classList.add('hide');
   };
   window._wlDone = function() {
     localStorage.setItem('wl_done', '1');
@@ -389,7 +417,7 @@ document.getElementById('openBtn2').addEventListener('click',function(){
   showStep(1);
 })();
 </script>
-<script>(function(){var b=document.createElement("div");b.id="backTopBtn";b.innerHTML="↑";b.style.cssText="position:fixed;bottom:80px;right:16px;z-index:9999;width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.85);color:#0a0806;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;opacity:0.9;transition:opacity 0.3s;";b.onclick=function(){window.scrollTo({top:0,behavior:"smooth"})};window.addEventListener("scroll",function(){b.style.opacity=window.scrollY>50?"0.9":"0.3"});document.body.appendChild(b);})();</script><link rel="stylesheet" href="/css/ai.css?v=2">
-<script src="/js/ai-assistant.js?v=2" defer></script>
+<script>(function(){var b=document.createElement("div");b.id="backTopBtn";b.innerHTML="↑";b.style.cssText="position:fixed;bottom:80px;right:16px;z-index:9999;width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.85);color:#0a0806;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;opacity:0.9;transition:opacity 0.3s;";b.onclick=function(){window.scrollTo({top:0,behavior:"smooth"})};window.addEventListener("scroll",function(){b.style.opacity=window.scrollY>50?"0.9":"0.3"});document.body.appendChild(b);})();</script><link rel="stylesheet" href="/css/ai.css?v=3">
+<script src="/js/ai-assistant.js?v=3" defer></script>
 </body>
 </html>

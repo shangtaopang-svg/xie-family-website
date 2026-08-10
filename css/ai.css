@@ -23,10 +23,14 @@
   color: #fff;
   box-shadow: 0 6px 20px rgba(217, 119, 6, 0.35);
   -webkit-tap-highlight-color: transparent;
+  touch-action: none;          /* 拖拽时禁用浏览器默认滚动/缩放 */
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
   transition: transform .15s ease, box-shadow .15s ease;
 }
 #ai-fab:hover { transform: scale(1.06); }
-#ai-fab:active { transform: scale(0.94); }
+#ai-fab:active { transform: scale(0.94); cursor: grabbing; }
 
 /* ---------- 面板（桌面） ---------- */
 /* hidden 属性必须优先于 display:flex，否则面板加载即显示 */
@@ -65,6 +69,9 @@
   background: linear-gradient(135deg, #f5a623, #d97706);
   color: #fff;
   flex: none;
+  cursor: move;                /* 桌面端拖拽标题栏移动面板 */
+  user-select: none;
+  -webkit-user-select: none;
 }
 .ai-header .ai-title { display: flex; align-items: center; gap: 8px; }
 .ai-logo { font-size: 20px; }
@@ -256,7 +263,7 @@
   .ai-close { background: rgba(255, 255, 255, 0.1); }
   .ai-msgs { background: var(--mb-bg, #0a0a0a); padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
   .ai-msg.ai-user { background: var(--mb-brand, #D4FF3A); color: #0a0a0a; font-weight: 600; }
-  .ai-msg.ai-bot { background: var(--mb-card, #141414); border: 1px solid var(--mb-border, #2a2a2a); color: #eee; }
+  .ai-msg.ai-bot { background: #1c1c1c; border: 1px solid #333; color: #f5f5f5; }
   .ai-msg.ai-bot .ai-src { color: rgba(238, 238, 238, 0.45); }
   .ai-verify { background: var(--mb-card, #141414); border-color: var(--mb-border, #2a2a2a); }
   .ai-verify-tip { color: var(--mb-brand, #D4FF3A); }

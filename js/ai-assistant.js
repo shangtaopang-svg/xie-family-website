@@ -28,6 +28,8 @@
   var LS_HIST = 'ai_chat_history_v1';
   var LS_TOKEN = 'ai_clan_token';
   var LS_PERSON = 'ai_clan_person';
+  var LS_FAB_POS = 'ai_fab_pos';
+  var LS_PANEL_POS = 'ai_panel_pos';
   var MAX_HIST = 50;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -37,6 +39,9 @@
   var queuedMsg = null;
   var composing = false;
   var forceScroll = true;
+  var fabPos = null;    // 用户拖拽后悬浮球的位置 {x,y}(left/top)
+  var panelPos = null;  // 用户拖拽后面板的位置 {x,y}
+  var fabMoved = false; // 本次点击是否为拖拽（用于抑制打开面板）
 
   function isMb() { return window.matchMedia('(max-width:768px)').matches; }
   function getToken() { try { return localStorage.getItem(LS_TOKEN) || ''; } catch (e) { return ''; } }
@@ -51,7 +56,20 @@
     fab.id = 'ai-fab';
     fab.setAttribute('role', 'button');
     fab.setAttribute('aria-label', '家族 AI 咨询');
-    fab.textContent = '🤖';
+    // 机器人头像（参照腾讯 WorkBuddy「Buddy」风格：圆润可爱机器人，白色剪影适配橙/绿底色）
+    fab.innerHTML =
+      '<svg viewBox="0 0 56 56" width="46" height="46" aria-hidden="true">' +
+      '  <line x1="28" y1="9" x2="28" y2="15" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>' +
+      '  <circle cx="28" cy="6" r="4.5" fill="#fff"/>' +
+      '  <rect x="6" y="13" width="44" height="35" rx="14" fill="#fff"/>' +
+      '  <circle cx="20" cy="29" r="5.6" fill="#0a0a0a"/>' +
+      '  <circle cx="36" cy="29" r="5.6" fill="#0a0a0a"/>' +
+      '  <circle cx="18.2" cy="27" r="2.1" fill="#fff"/>' +
+      '  <circle cx="34.2" cy="27" r="2.1" fill="#fff"/>' +
+      '  <path d="M20 38 Q28 45 36 38" stroke="#0a0a0a" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+      '  <rect x="2" y="24" width="5" height="13" rx="2.5" fill="#fff" opacity="0.9"/>' +
+      '  <rect x="49" y="24" width="5" height="13" rx="2.5" fill="#fff" opacity="0.9"/>' +
+      '</svg>';
 
     panel = document.createElement('div');
     panel.id = 'ai-panel';
@@ -106,11 +124,29 @@
     });
   }
 
+  function clampPos(x, y, w, h, margin) {
+    var m = margin || 8;
+    x = Math.max(m, Math.min(x, window.innerWidth - w - m));
+    y = Math.max(m, Math.min(y, window.innerHeight - h - m));
+    return { x: x, y: y };
+  }
+
   function positionFab() {
+    if (fabPos) {
+      // 用户拖拽过：用保存的位置（clamp 到视口内）
+      var w = fab.offsetWidth || 56, h = fab.offsetHeight || 56;
+      var c = clampPos(fabPos.x, fabPos.y, w, h);
+      fab.style.left = c.x + 'px';
+      fab.style.top = c.y + 'px';
+      fab.style.right = 'auto';
+      fab.style.bottom = 'auto';
+      return;
+    }
     if (isMb()) {
       fab.style.right = '16px';
       fab.style.bottom = 'calc(66px + env(safe-area-inset-bottom))';
       fab.style.left = 'auto';
+      fab.style.top = 'auto';
     } else {
       // bottom 偏移以视口底部为基准：贴 float-toolbar 上方 14px
       var offset = 92;
@@ -122,6 +158,7 @@
       fab.style.right = '24px';
       fab.style.bottom = offset + 'px';
       fab.style.left = 'auto';
+      fab.style.top = 'auto';
     }
   }
 
@@ -139,6 +176,19 @@
     renderHistory();
     updateStatus();
     positionFab();
+    if (isMb()) {
+      // 手机全屏：清掉桌面拖拽遗留的 inline 定位，避免破坏 inset:0
+      panel.style.left = ''; panel.style.top = ''; panel.style.right = ''; panel.style.bottom = '';
+    } else if (panelPos) {
+      // 用户拖拽过面板：恢复到保存的位置（至少让标题栏在可视区）
+      var w = panel.offsetWidth || 380, h = panel.offsetHeight || 560;
+      var px = Math.max(14 - w + 200, Math.min(panelPos.x, window.innerWidth - 200));
+      var py = Math.max(0, Math.min(panelPos.y, window.innerHeight - 64));
+      panel.style.left = px + 'px';
+      panel.style.top = py + 'px';
+      panel.style.right = 'auto';
+      panel.style.bottom = 'auto';
+    }
     // 桌面端自动聚焦；手机端等用户点输入框（避免自动弹键盘）
     if (!isMb()) setTimeout(function () { input.focus(); }, 120);
     try { history.pushState({ ai: true }, ''); } catch (e) {}
@@ -357,9 +407,89 @@
     panel.style.top = '';
   }
 
+  /* ---------------- 拖拽（悬浮球 + 面板） ---------------- */
+  function setupFabDrag() {
+    var startX = 0, startY = 0, startL = 0, startT = 0, dragging = false, moved = false;
+    fab.addEventListener('pointerdown', function (e) {
+      if (e.button !== undefined && e.button !== 0 && e.pointerType === 'mouse') return; // 仅左键
+      dragging = true; moved = false;
+      startX = e.clientX; startY = e.clientY;
+      var r = fab.getBoundingClientRect();
+      startL = r.left; startT = r.top;
+      try { fab.setPointerCapture(e.pointerId); } catch (err) {}
+      e.preventDefault();
+    });
+    fab.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      var dx = e.clientX - startX, dy = e.clientY - startY;
+      if (!moved && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) moved = true;
+      if (!moved) return;
+      var c = clampPos(startL + dx, startT + dy, 56, 56);
+      fab.style.left = c.x + 'px';
+      fab.style.top = c.y + 'px';
+      fab.style.right = 'auto';
+      fab.style.bottom = 'auto';
+    });
+    var endFabDrag = function () {
+      if (!dragging) return;
+      dragging = false;
+      if (moved) {
+        fabMoved = true;
+        var r = fab.getBoundingClientRect();
+        var p = { x: Math.round(r.left), y: Math.round(r.top) };
+        fabPos = p;
+        try { localStorage.setItem(LS_FAB_POS, JSON.stringify(p)); } catch (err) {}
+      }
+    };
+    fab.addEventListener('pointerup', endFabDrag);
+    fab.addEventListener('pointercancel', endFabDrag);
+  }
+
+  function setupPanelDrag() {
+    if (!header) return;
+    var startX = 0, startY = 0, startL = 0, startT = 0, dragging = false;
+    header.addEventListener('pointerdown', function (e) {
+      if (isMb()) return;                                            // 手机全屏不拖动
+      if (e.target && e.target.closest && e.target.closest('.ai-close')) return; // 点关闭按钮不算
+      if (e.button !== undefined && e.button !== 0 && e.pointerType === 'mouse') return;
+      dragging = true;
+      startX = e.clientX; startY = e.clientY;
+      var r = panel.getBoundingClientRect();
+      startL = r.left; startT = r.top;
+      // 从 bottom 锚定切换为 left/top 自由定位
+      panel.style.left = r.left + 'px';
+      panel.style.top = r.top + 'px';
+      panel.style.right = 'auto';
+      panel.style.bottom = 'auto';
+      try { header.setPointerCapture(e.pointerId); } catch (err) {}
+      e.preventDefault();
+    });
+    header.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      var w = panel.offsetWidth || 380;
+      var px = Math.max(14 - w + 200, Math.min(startL + (e.clientX - startX), window.innerWidth - 200));
+      var py = Math.max(0, Math.min(startT + (e.clientY - startY), window.innerHeight - 64));
+      panel.style.left = px + 'px';
+      panel.style.top = py + 'px';
+    });
+    var endPanelDrag = function () {
+      if (!dragging) return;
+      dragging = false;
+      var r = panel.getBoundingClientRect();
+      var p = { x: Math.round(r.left), y: Math.round(r.top) };
+      panelPos = p;
+      try { localStorage.setItem(LS_PANEL_POS, JSON.stringify(p)); } catch (err) {}
+    };
+    header.addEventListener('pointerup', endPanelDrag);
+    header.addEventListener('pointercancel', endPanelDrag);
+  }
+
   /* ---------------- 事件绑定 ---------------- */
   function bindEvents() {
-    fab.addEventListener('click', function () { isOpen ? closePanel() : openPanel(); });
+    fab.addEventListener('click', function () {
+      if (fabMoved) { fabMoved = false; return; } // 拖拽后不触发打开
+      isOpen ? closePanel() : openPanel();
+    });
 
     $('#ai-close', panel).addEventListener('click', function () { closePanel(); });
 
@@ -415,8 +545,12 @@
   function init() {
     try { hist = JSON.parse(localStorage.getItem(LS_HIST) || '[]'); } catch (e) { hist = []; }
     if (!Array.isArray(hist)) hist = [];
+    try { fabPos = JSON.parse(localStorage.getItem(LS_FAB_POS) || 'null'); } catch (e) { fabPos = null; }
+    try { panelPos = JSON.parse(localStorage.getItem(LS_PANEL_POS) || 'null'); } catch (e) { panelPos = null; }
     buildUI();
     bindEvents();
+    setupFabDrag();
+    setupPanelDrag();
     positionFab();
     updateStatus();
   }

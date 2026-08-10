@@ -6,9 +6,9 @@
  * 因此把 `<link rel="stylesheet" href="/css/ai.css">` + `<script src="/js/ai-assistant.js" defer></script>`
  * 直接写进每个 .html 的 </body> 前。
  *
- * 幂等：已包含 js/ai-assistant.js?v= 的文件跳过；无 </body> 的跳过；黑名单跳过。
+ * 幂等：已包含 js/ai-assistant.js?v=当前版本 的文件跳过；无 </body> 的跳过；黑名单跳过。
  * 版本号：改样式/脚本后把 VERSION 数字 +1，强制手机端浏览器/SW 拉新资源（用户遇到旧缓存）。
- * 迁移：旧的无版本号标签会自动升级为带版本号。
+ * 迁移：旧的无版本号标签 / 旧的任意版本号标签(?v=N) 都会自动升级为当前版本号，避免重复注入。
  * 用法：node scripts/inject-ai-html.js
  */
 'use strict';
@@ -16,15 +16,17 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const VERSION = 2;
+const VERSION = 3;
 const MARK = 'js/ai-assistant.js?v=' + VERSION;
 const NEW_LINK = 'href="/css/ai.css?v=' + VERSION + '"';
 const NEW_SCRIPT = 'src="/js/ai-assistant.js?v=' + VERSION + '"';
 const INJECT =
   '<link rel="stylesheet" ' + NEW_LINK + '>\n' +
   '<script ' + NEW_SCRIPT + ' defer></script>\n';
-const OLD_LINK = 'href="/css/ai.css"';
-const OLD_SCRIPT = 'src="/js/ai-assistant.js"';
+
+// 匹配任意版本号或无版本号的 AI 标签（用于迁移升级）
+const RE_LINK = /href="\/css\/ai\.css(?:\?v=[0-9]+)?"/g;
+const RE_SCRIPT = /src="\/js\/ai-assistant\.js(?:\?v=[0-9]+)?"/g;
 
 // 黑名单：admin / recover 后台类页面不注入
 const BLACKLIST = new Set(['admin.html', 'recover.html']);
@@ -52,10 +54,10 @@ for (const fp of files) {
   let html;
   try { html = fs.readFileSync(fp, 'utf-8'); } catch (e) { skipped++; continue; }
   if (html.indexOf(MARK) !== -1) { skipped++; continue; } // 已是当前版本
-  // 迁移：旧的无版本号标签 → 升级
-  if (html.indexOf(OLD_LINK) !== -1 || html.indexOf(OLD_SCRIPT) !== -1) {
-    html = html.split(OLD_LINK).join(NEW_LINK).split(OLD_SCRIPT).join(NEW_SCRIPT);
-    fs.writeFileSync(fp, html, 'utf-8');
+  // 迁移：任意旧版本号 / 无版本号标签 → 升级为当前版本
+  const up = html.replace(RE_LINK, NEW_LINK).replace(RE_SCRIPT, NEW_SCRIPT);
+  if (up !== html) {
+    fs.writeFileSync(fp, up, 'utf-8');
     console.log('[migrate]', path.relative(ROOT, fp));
     migrated++;
     continue;
