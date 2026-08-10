@@ -30,10 +30,11 @@
   var LS_PERSON = 'ai_clan_person';
   var LS_FAB_POS = 'ai_fab_pos';
   var LS_PANEL_POS = 'ai_panel_pos';
+  var LS_GREET = 'ai_greeting_done';
   var MAX_HIST = 50;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
-  var fab, panel, msgs, chipsEl, input, sendBtn, statusEl, goBottom, header;
+  var fab, panel, msgs, chipsEl, input, sendBtn, statusEl, goBottom, header, bubble;
   var hist = [];
   var isOpen = false;
   var queuedMsg = null;
@@ -42,6 +43,7 @@
   var fabPos = null;    // 用户拖拽后悬浮球的位置 {x,y}(left/top)
   var panelPos = null;  // 用户拖拽后面板的位置 {x,y}
   var fabMoved = false; // 本次点击是否为拖拽（用于抑制打开面板）
+  var bubbleDismissed = false; // 用户是否关闭过问候气泡（记住，不再显示）
 
   function isMb() { return window.matchMedia('(max-width:768px)').matches; }
   function getToken() { try { return localStorage.getItem(LS_TOKEN) || ''; } catch (e) { return ''; } }
@@ -69,7 +71,12 @@
       '  <path d="M20 38 Q28 45 36 38" stroke="#0a0a0a" stroke-width="3" fill="none" stroke-linecap="round"/>' +
       '  <rect x="2" y="24" width="5" height="13" rx="2.5" fill="#fff" opacity="0.9"/>' +
       '  <rect x="49" y="24" width="5" height="13" rx="2.5" fill="#fff" opacity="0.9"/>' +
-      '</svg>';
+      '</svg>' +
+      '<span class="ai-bubble" id="ai-bubble" role="tooltip">' +
+      '  <span class="ai-bubble-text">您好呀，我是下枫槎谢氏的小管家，族谱、村史、世系想问什么都可以哦～</span>' +
+      '  <span class="ai-bubble-close" id="ai-bubble-close" role="button" aria-label="关闭问候">✕</span>' +
+      '</span>';
+    bubble = fab.querySelector('.ai-bubble');
 
     panel = document.createElement('div');
     panel.id = 'ai-panel';
@@ -167,11 +174,43 @@
     statusEl.textContent = (getToken() && p) ? '已验证 · ' + p.name : '未验证 · 仅公开问题';
   }
 
+  /* ---------------- 悬浮球问候气泡 ---------------- */
+  function hideBubble() { if (bubble) bubble.style.display = 'none'; }
+  function showBubble() { if (bubble && !bubbleDismissed) bubble.style.display = ''; }
+
+  function setupBubble() {
+    if (!bubble) return;
+    try { bubbleDismissed = localStorage.getItem(LS_GREET) === '1'; } catch (e) {}
+    if (bubbleDismissed) { hideBubble(); return; }
+    var collapse = function () {
+      if (isMb() && bubble) bubble.classList.add('collapsed'); // 手机端几秒后收起为小圆点
+    };
+    bubble._t = setTimeout(collapse, 4500);
+    bubble.addEventListener('click', function (e) {
+      var closeBtn = document.getElementById('ai-bubble-close');
+      if (e.target === closeBtn || (closeBtn && closeBtn.contains(e.target))) {
+        e.stopPropagation();
+        hideBubble();
+        bubbleDismissed = true;
+        try { localStorage.setItem(LS_GREET, '1'); } catch (err) {}
+        return;
+      }
+      if (bubble.classList.contains('collapsed')) {
+        e.stopPropagation(); // 点小圆点先展开，不触发 FAB 打开面板
+        bubble.classList.remove('collapsed');
+        clearTimeout(bubble._t);
+        bubble._t = setTimeout(collapse, 4500);
+      }
+      // 展开状态点气泡 → 冒泡给 FAB 的 click 打开咨询面板
+    });
+  }
+
   /* ---------------- 打开/关闭 ---------------- */
   function openPanel() {
     if (isOpen) return;
     isOpen = true;
     panel.hidden = false;
+    hideBubble(); // 打开面板时收起问候气泡
     document.body.style.overflow = 'hidden';
     renderHistory();
     updateStatus();
@@ -198,6 +237,7 @@
     if (!isOpen) return;
     isOpen = false;
     panel.hidden = true;
+    showBubble(); // 面板关闭后重新显示问候气泡
     document.body.style.overflow = '';
     input.blur();
     resetViewport();
@@ -553,6 +593,7 @@
     setupPanelDrag();
     positionFab();
     updateStatus();
+    setupBubble();
   }
 
   if (document.readyState === 'loading') {

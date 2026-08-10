@@ -1,4 +1,4 @@
-const CACHE = 'xie-clan-v5';
+const CACHE = 'xie-clan-v6';
 const STATIC = [
   '/css/style.css?v=5',
   '/js/i18n.js?v=9',
@@ -34,12 +34,28 @@ self.addEventListener('fetch', e => {
   // Skip HTML navigation - let them go directly to network (no SW delay)
   if (e.request.mode === 'navigate') return;
 
-  // For static assets: cache-first, update cache on miss
+  const path = url.pathname;
+
+  // CSS / JS: network-first（优先网络拿最新，离线回退缓存）
+  // 解决旧版 CSS/JS 被 SW 长期缓存导致样式不更新的问题
+  if (path.endsWith('.css') || path.endsWith('.js')) {
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+          return res;
+        })
+        .catch(() => caches.match(e.request).then(r => r || Response.error()))
+    );
+    return;
+  }
+
+  // 图片/字体等：cache-first，更新时回填
   e.respondWith(
     caches.match(e.request).then(r => r || fetch(e.request).then(res => {
       const ct = res.headers.get('Content-Type') || '';
-      // Only cache images, fonts, CSS, JS
-      if (ct.match(/image|font|css|javascript/)) {
+      if (ct.match(/image|font/)) {
         const clone = res.clone();
         caches.open(CACHE).then(c => c.put(e.request, clone));
       }
