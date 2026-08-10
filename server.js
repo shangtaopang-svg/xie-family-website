@@ -5,6 +5,48 @@ const zlib = require('zlib');
 const crypto = require('crypto');
 const { exec } = require('child_process');
 
+// 零依赖 .env 读取器：存在 .env 则把 KEY=VALUE 载入 process.env（已存在的环境变量优先）
+(function loadEnvFile() {
+  try {
+    const envFile = path.join(__dirname, '.env');
+    if (fs.existsSync(envFile)) {
+      const lines = fs.readFileSync(envFile, 'utf-8').split(/\r?\n/);
+      for (const line of lines) {
+        const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/);
+        if (m && process.env[m[1]] === undefined) {
+          process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
+        }
+      }
+    }
+  } catch (e) { /* .env 不存在或读取失败则忽略 */ }
+})();
+
+// AI 咨询模块
+const aiToken = require('./server/ai/token.js');
+const { buildKnowledge } = require('./scripts/build-ai-knowledge.js');
+
+// 启动时确保 AI 知识库存在且不早于任一源文件（重建约 1s，幂等）
+setTimeout(() => {
+  try {
+    const kbPath = path.join(DATA_DIR, 'ai', 'knowledge.json');
+    const sources = [
+      path.join(DATA_DIR, 'genealogy.json'),
+      path.join(DATA_DIR, 'parsed_entries.json'),
+      path.join(DATA_DIR, 'genealogy_book_extract.txt'),
+      path.join(DATA_DIR, 'genealogy_analysis.txt'),
+      path.join(__dirname, '上册_竖排提取.txt'),
+      path.join(__dirname, '下册_竖排提取.txt'),
+      path.join(__dirname, 'scripts', 'ai-seeds.js'),
+    ];
+    const need = !fs.existsSync(kbPath)
+      || sources.some(s => !fs.existsSync(s) || fs.statSync(s).mtimeMs > fs.statSync(kbPath).mtimeMs);
+    if (need) {
+      const r = buildKnowledge();
+      console.log('[ai] 知识库已重建:', JSON.stringify(r.stats));
+    }
+  } catch (e) { console.warn('[ai] 知识库检查失败:', e.message); }
+}, 2000);
+
 const PORT = parseInt(process.env.PORT, 10) || 3001;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin2025';
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
@@ -109,6 +151,20 @@ function gzipSend(req, res, status, headers, data) {
     res.writeHead(status, headers);
     res.end(data);
   }
+}
+
+// === AI 咨询窗口 HTML 注入（在 gzipSend 之前对 .html 做字符串替换） ===
+const AI_INJECT_BLACKLIST = new Set(['/admin.html', '/recover.html']);
+const AI_INJECT_MARK = '/js/ai-assistant.js';
+function injectAiHtml(buf) {
+  const html = buf.toString('utf-8');
+  if (html.indexOf(AI_INJECT_MARK) !== -1) return buf; // 已注入过，跳过
+  const m = html.search(/<\/body>/i);
+  if (m === -1) return buf; // 无 body（HTML 片段）则跳过
+  const inject =
+    '<link rel="stylesheet" href="/css/ai.css">\n' +
+    '<script src="/js/ai-assistant.js" defer></script>\n';
+  return Buffer.from(html.slice(0, m) + inject + '</body>' + html.slice(m + 7), 'utf-8');
 }
 
 const server = http.createServer(async (req, res) => {
@@ -265,7 +321,21 @@ const server = http.createServer(async (req, res) => {
           return true;
         });
         if (matches.length > 0) {
-          return sendJson(req, res, 200, { verified: true, message: '验证通过，欢迎回家！' });
+          const p = matches[0];
+          const resp = {
+            verified: true,
+            message: '验证通过，欢迎回家！',
+            personId: p.id,
+            name: p.name,
+            token: aiToken.signPersonToken(p),
+            expiresAt: Date.now() + 7 * 864e5
+          };
+          // 同名同父（多匹配）时附带候选信息，供前端提示补充祖父名
+          if (matches.length > 1) {
+            resp.ambiguous = true;
+            resp.candidates = matches.map(m => ({ id: m.id, name: m.name, branch: m.branch }));
+          }
+          return sendJson(req, res, 200, resp);
         } else {
           return sendJson(req, res, 200, { verified: false, message: '信息不符，请核对或联系管理员' });
         }
@@ -425,6 +495,16 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // === AI 咨询窗口 ===
+  if (url === '/api/ai/chat') {
+    try {
+      await require('./server/ai/index.js').handleAiChat(req, res, req.url);
+    } catch (e) {
+      sendJson(req, res, 500, { ok: false, error: 'AI 服务异常' });
+    }
+    return;
+  }
+
   // === Static file serving ===
   if (url === '/') url = '/index.html';
 
@@ -490,7 +570,7 @@ const server = http.createServer(async (req, res) => {
             res.writeHead(404, { 'Content-Length': '9' });
             return res.end('404 Not Found');
           }
-          return gzipSend(req, res, 200, { 'Content-Type': 'text/html;charset=utf-8' }, data2);
+          return gzipSend(req, res, 200, { 'Content-Type': 'text/html;charset=utf-8' }, injectAiHtml(data2));
         });
       }
       const msg = '404 Not Found';
@@ -502,6 +582,7 @@ const server = http.createServer(async (req, res) => {
     };
     if (ext === '.html') {
       headers['Cache-Control'] = 'no-cache';
+      if (!AI_INJECT_BLACKLIST.has(url)) data = injectAiHtml(data);
     } else if (cacheExts.includes(ext)) {
       headers['Cache-Control'] = 'public, max-age=604800, immutable';
     }

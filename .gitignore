@@ -34,4 +34,7 @@ xie-family-promo/node_modules/
 # Server runtime
 server.log
 
+# Secrets (never commit API keys)
+.env
+
 video/*.mp4

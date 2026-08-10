@@ -1,0 +1,429 @@
+/**
+ * js/ai-assistant.js — 家族 AI 咨询窗口（全站悬浮球）
+ * 自包含、零依赖，通过 server.js 对所有 .html 统一注入，覆盖不加载 main.js 的页面。
+ * 后端 /api/ai/chat（SSE 流式）；世系问题需先通过「姓名+父亲+祖父」验证身份。
+ */
+(function () {
+  'use strict';
+  if (window.__aiAssistantLoaded) return;
+  window.__aiAssistantLoaded = true;
+
+  /* ---- 与服务端 intent.js 镜像的世系判定（用于即时弹验证表单；服务端仍是最终安全边界） ---- */
+  var LIN = ['世系', '直系', '祖先', '祖宗', '后代', '后裔', '子孙', '后辈', '几代', '第几代', '第几世', '辈分', '排行', '谱系', '爷爷', '奶奶', '父亲', '爸爸', '母亲', '妈妈', '太公', '儿子', '女儿', '侄子', '侄女', '叔伯', '叔叔', '伯伯', '姑姑', '堂兄弟', '堂姐妹', '表兄弟', '表姐妹', '兄弟', '姐妹', '高祖', '曾祖', '始祖', '先祖', '太爷爷', '太奶奶'];
+  function looksLineage(m) {
+    if (/我/.test(m) && LIN.some(function (k) { return m.indexOf(k) !== -1; })) return true;
+    if (/(和|与).{1,20}?什么关系/.test(m)) return true;
+    if (/(的后代|的子孙|的后裔|的祖先|的先祖|的世系|的谱系|的后辈)/.test(m)) return true;
+    return false;
+  }
+
+  var CHIPS = [
+    { t: '请列出我的直系10代族谱世系图', lock: true },
+    { t: '下枫槎谢氏的始祖是谁？族谱记载了哪些早期祖先？', lock: false },
+    { t: '谢氏家族是如何迁徙到宁海下枫槎村的？', lock: false },
+    { t: '我现在是第几代？和我同辈的族人有哪些？', lock: true },
+    { t: '字辈排行诗是什么？各世对应哪个字？', lock: false }
+  ];
+
+  var LS_HIST = 'ai_chat_history_v1';
+  var LS_TOKEN = 'ai_clan_token';
+  var LS_PERSON = 'ai_clan_person';
+  var MAX_HIST = 50;
+  var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
+
+  var fab, panel, msgs, chipsEl, input, sendBtn, statusEl, goBottom, header;
+  var hist = [];
+  var isOpen = false;
+  var queuedMsg = null;
+  var composing = false;
+  var forceScroll = true;
+
+  function isMb() { return window.matchMedia('(max-width:768px)').matches; }
+  function getToken() { try { return localStorage.getItem(LS_TOKEN) || ''; } catch (e) { return ''; } }
+  function getPerson() { try { return JSON.parse(localStorage.getItem(LS_PERSON) || 'null'); } catch (e) { return null; } }
+
+  function $(sel, root) { return (root || document).querySelector(sel); }
+
+  /* ---------------- UI 构建 ---------------- */
+  function buildUI() {
+    if (document.getElementById('ai-fab')) return;
+    fab = document.createElement('button');
+    fab.id = 'ai-fab';
+    fab.setAttribute('role', 'button');
+    fab.setAttribute('aria-label', '家族 AI 咨询');
+    fab.textContent = '🤖';
+
+    panel = document.createElement('div');
+    panel.id = 'ai-panel';
+    panel.hidden = true;
+    panel.innerHTML =
+      '<div class="ai-header">' +
+      '  <div class="ai-title">' +
+      '    <span class="ai-logo">🤖</span>' +
+      '    <div><div class="ai-name">家族 AI 咨询</div><div class="ai-status" id="ai-status"></div></div>' +
+      '  </div>' +
+      '  <button type="button" class="ai-close" id="ai-close" aria-label="关闭">✕</button>' +
+      '</div>' +
+      '<div class="ai-msgs" id="ai-msgs"></div>' +
+      '<div class="ai-chips" id="ai-chips"></div>' +
+      '<div class="ai-input-row">' +
+      '  <textarea id="ai-input" rows="1" placeholder="输入问题，如：谢氏家族是怎么迁徙来的？" enterkeyhint="send"></textarea>' +
+      '  <button type="button" class="ai-send" id="ai-send" disabled>发送</button>' +
+      '</div>';
+    panel.appendChild((goBottom = document.createElement('button')));
+    goBottom.className = 'ai-gobottom';
+    goBottom.textContent = '↓ 回到最新';
+    goBottom.hidden = true;
+
+    document.body.appendChild(fab);
+    document.body.appendChild(panel);
+
+    msgs = $('#ai-msgs', panel);
+    chipsEl = $('#ai-chips', panel);
+    input = $('#ai-input', panel);
+    sendBtn = $('#ai-send', panel);
+    statusEl = $('#ai-status', panel);
+    header = $('.ai-header', panel);
+
+    // 预设问题 chips
+    CHIPS.forEach(function (c) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ai-chip';
+      b.textContent = (c.lock ? '🔒 ' : '') + c.t;
+      b.addEventListener('click', function () {
+        if (c.lock && !getToken()) {
+          // 先显示用户消息再弹验证，避免追问丢失在记录外
+          appendMessage('user', c.t);
+          hist.push({ role: 'user', content: c.t });
+          persist();
+          showVerify(c.t, null);
+          return;
+        }
+        doSend(c.t);
+      });
+      chipsEl.appendChild(b);
+    });
+  }
+
+  function positionFab() {
+    if (isMb()) {
+      fab.style.right = '16px';
+      fab.style.bottom = 'calc(66px + env(safe-area-inset-bottom))';
+      fab.style.left = 'auto';
+    } else {
+      // bottom 偏移以视口底部为基准：贴 float-toolbar 上方 14px
+      var offset = 92;
+      var ft = document.querySelector('.float-toolbar');
+      if (ft) {
+        var r = ft.getBoundingClientRect();
+        if (r.height > 0 && r.bottom < window.innerHeight) offset = window.innerHeight - r.bottom + 14;
+      }
+      fab.style.right = '24px';
+      fab.style.bottom = offset + 'px';
+      fab.style.left = 'auto';
+    }
+  }
+
+  function updateStatus() {
+    var p = getPerson();
+    statusEl.textContent = (getToken() && p) ? '已验证 · ' + p.name : '未验证 · 仅公开问题';
+  }
+
+  /* ---------------- 打开/关闭 ---------------- */
+  function openPanel() {
+    if (isOpen) return;
+    isOpen = true;
+    panel.hidden = false;
+    document.body.style.overflow = 'hidden';
+    renderHistory();
+    updateStatus();
+    positionFab();
+    // 桌面端自动聚焦；手机端等用户点输入框（避免自动弹键盘）
+    if (!isMb()) setTimeout(function () { input.focus(); }, 120);
+    try { history.pushState({ ai: true }, ''); } catch (e) {}
+  }
+
+  function closePanel(skipBack) {
+    if (!isOpen) return;
+    isOpen = false;
+    panel.hidden = true;
+    document.body.style.overflow = '';
+    input.blur();
+    resetViewport();
+    if (!skipBack && history.state && history.state.ai) { try { history.back(); } catch (e) {} }
+  }
+
+  function renderHistory() {
+    msgs.innerHTML = '';
+    if (!hist.length) {
+      appendMessage('bot', WELCOME);
+      return;
+    }
+    hist.forEach(function (m) { appendMessage(m.role, m.content); });
+    scrollBottom(true);
+  }
+
+  function persist() {
+    try {
+      hist = hist.slice(-MAX_HIST);
+      localStorage.setItem(LS_HIST, JSON.stringify(hist));
+    } catch (e) {}
+  }
+
+  /* ---------------- 消息 ---------------- */
+  function appendMessage(role, text, opts) {
+    var el = document.createElement('div');
+    el.className = 'ai-msg ' + (role === 'user' ? 'ai-user' : 'ai-bot');
+    var body = document.createElement('div');
+    body.textContent = text;
+    el.appendChild(body);
+    if (opts && opts.id) el.dataset.mid = opts.id;
+    msgs.appendChild(el);
+    scrollBottom(true);
+    return el;
+  }
+
+  function scrollBottom(force) {
+    if (force === true) forceScroll = true;
+    if (!forceScroll) return;
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function doSend(text) {
+    var t = (text || '').trim();
+    if (!t) return;
+    appendMessage('user', t);
+    hist.push({ role: 'user', content: t });
+    persist();
+    if (looksLineage(t) && !getToken()) { showVerify(t, null); return; }
+    chat(t);
+  }
+
+  /* ---------------- 与后端通信（SSE） ---------------- */
+  function chat(text) {
+    var botEl = appendMessage('bot', '思考中…');
+    var body = botEl.firstChild;
+    var done = false;
+
+    var finish = function (answer, sources) {
+      if (done) return;
+      done = true;
+      body.textContent = answer || '（无回答）';
+      if (sources && sources.length) {
+        var src = document.createElement('div');
+        src.className = 'ai-src';
+        src.textContent = '📚 参考：' + sources.join('、');
+        botEl.appendChild(src);
+      }
+      hist.push({ role: 'assistant', content: answer || '' });
+      persist();
+      scrollBottom(true);
+    };
+
+    var fail = function (err) {
+      if (done) return;
+      if (err && err.code === 'AUTH_REQUIRED') {
+        botEl.remove();
+        showVerify(text, err.message);
+        return;
+      }
+      body.textContent = (err && err.message) || '出错了，请重试';
+      done = true;
+      scrollBottom(true);
+    };
+
+    var reqBody = { message: text, stream: true };
+    var tok = getToken();
+    if (tok) reqBody.token = tok;
+    var histBody = hist.slice(-12).filter(function (m) { return m.content; }).map(function (m) { return { role: m.role, content: m.content }; });
+    if (histBody.length) reqBody.history = histBody;
+
+    fetch('/api/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(reqBody)
+    }).then(function (resp) {
+      if (resp.status === 429) {
+        return resp.json().then(function (j) { fail({ message: '提问太频繁，请' + (j.retryAfter || 10) + '秒后再试' }); });
+      }
+      var ct = resp.headers.get('content-type') || '';
+      if (ct.indexOf('text/event-stream') === -1) {
+        return resp.json().then(function (j) {
+          if (j.ok) finish(j.answer, j.sources || []);
+          else fail(j);
+        });
+      }
+      var reader = resp.body.getReader();
+      var dec = new TextDecoder();
+      var buf = '';
+      var collect = '';
+      var parseBlock = function (block) {
+        var ev = '', data = '';
+        block.split('\n').forEach(function (l) {
+          if (l.indexOf('event:') === 0) ev = l.slice(6).trim();
+          else if (l.indexOf('data:') === 0) data += l.slice(5).trim();
+        });
+        if (!data) return;
+        var j;
+        try { j = JSON.parse(data); } catch (e) { return; }
+        if (ev === 'meta') {
+          if (!j.ok) fail(j);
+        } else if (ev === 'delta') {
+          if (j.t) { collect += j.t; body.textContent = collect; scrollBottom(false); }
+        } else if (ev === 'done') {
+          finish(j.answer || collect, j.sources || []);
+        } else if (ev === 'error') {
+          fail(j);
+        }
+      };
+      var pump = function () {
+        return reader.read().then(function (r) {
+          if (r.done) return;
+          buf += dec.decode(r.value, { stream: true });
+          var idx;
+          while ((idx = buf.indexOf('\n\n')) !== -1) {
+            parseBlock(buf.slice(0, idx));
+            buf = buf.slice(idx + 2);
+          }
+          return pump();
+        });
+      };
+      return pump();
+    }).catch(function (e) {
+      fail({ message: '网络错误，请重试' });
+    });
+  }
+
+  /* ---------------- 身份验证气泡 ---------------- */
+  function showVerify(queued, hint) {
+    queuedMsg = queued || queuedMsg;
+    var old = msgs.querySelector('.ai-msg-verify');
+    if (old) old.remove();
+
+    var wrap = document.createElement('div');
+    wrap.className = 'ai-msg ai-msg-verify';
+    wrap.innerHTML =
+      '<div class="ai-verify">' +
+      '  <div class="ai-verify-tip">🔒 ' + (hint || '该问题涉及个人世系图谱，请先完成族人身份验证（与站内验证一致，填姓名、父亲、祖父）。') + '</div>' +
+      '  <input id="ai-v-name" placeholder="您的姓名" autocomplete="off">' +
+      '  <input id="ai-v-father" placeholder="父亲名字" autocomplete="off">' +
+      '  <input id="ai-v-grandpa" placeholder="祖父名字（可留空）" autocomplete="off">' +
+      '  <div class="ai-verify-err" id="ai-v-err"></div>' +
+      '  <button type="button" class="ai-send" id="ai-v-submit">验证身份</button>' +
+      '</div>';
+    msgs.appendChild(wrap);
+    scrollBottom(true);
+    var errEl = $('#ai-v-err', wrap);
+    $('#ai-v-name', wrap).focus();
+
+    $('#ai-v-submit', wrap).addEventListener('click', function () {
+      var name = $('#ai-v-name', wrap).value.trim();
+      var father = $('#ai-v-father', wrap).value.trim();
+      var grandpa = $('#ai-v-grandpa', wrap).value.trim();
+      if (!name || !father) { errEl.textContent = '请填写姓名和父亲名字'; return; }
+      errEl.textContent = '验证中…';
+      fetch('/api/verify-member', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, fatherName: father, grandpaName: grandpa || undefined })
+      }).then(function (r) { return r.json(); }).then(function (res) {
+        if (res.verified) {
+          try {
+            localStorage.setItem(LS_TOKEN, res.token);
+            localStorage.setItem(LS_PERSON, JSON.stringify({ personId: res.personId, name: res.name }));
+          } catch (e) {}
+          wrap.remove();
+          updateStatus();
+          var q = queuedMsg; queuedMsg = null;
+          if (q) chat(q);
+          else appendMessage('bot', '✅ 身份验证通过，现在可以查询您的个人世系了。');
+        } else {
+          errEl.textContent = res.message || '信息不符，请核对';
+        }
+      }).catch(function () { errEl.textContent = '网络错误，请重试'; });
+    });
+  }
+
+  /* ---------------- 手机端软键盘（visualViewport） ---------------- */
+  function adjustForKeyboard() {
+    if (!isOpen || !isMb() || !window.visualViewport) return;
+    var vv = window.visualViewport;
+    panel.style.height = vv.height + 'px';
+    panel.style.top = (vv.offsetTop || 0) + 'px';
+  }
+  function resetViewport() {
+    panel.style.height = '';
+    panel.style.top = '';
+  }
+
+  /* ---------------- 事件绑定 ---------------- */
+  function bindEvents() {
+    fab.addEventListener('click', function () { isOpen ? closePanel() : openPanel(); });
+
+    $('#ai-close', panel).addEventListener('click', function () { closePanel(); });
+
+    // 发送
+    sendBtn.addEventListener('click', function () { doSend(input.value); });
+    input.addEventListener('input', function () {
+      sendBtn.disabled = !input.value.trim();
+      input.style.height = 'auto';
+      input.style.height = Math.min(120, input.scrollHeight) + 'px';
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey && !composing) {
+        e.preventDefault();
+        doSend(input.value);
+      }
+    });
+    input.addEventListener('compositionstart', function () { composing = true; });
+    input.addEventListener('compositionend', function () { composing = false; });
+
+    input.addEventListener('focus', function () {
+      setTimeout(adjustForKeyboard, 80);
+      if (!sendBtn.disabled) { try { input.scrollIntoView({ block: 'end' }); } catch (e) {} }
+    });
+    input.addEventListener('blur', function () { setTimeout(resetViewport, 200); });
+
+    // 滚动控制
+    msgs.addEventListener('scroll', function () {
+      var near = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 60;
+      forceScroll = near;
+      goBottom.hidden = near;
+    });
+    goBottom.addEventListener('click', function () { scrollBottom(true); });
+
+    // 返回键 / Esc
+    window.addEventListener('popstate', function () { if (isOpen) closePanel(true); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && isOpen) closePanel();
+    });
+
+    // 可视区域变化（键盘弹出/收起、旋转）
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', adjustForKeyboard);
+      window.visualViewport.addEventListener('scroll', adjustForKeyboard);
+    }
+    window.addEventListener('resize', function () {
+      positionFab();
+      resetViewport();
+    });
+    document.addEventListener('DOMContentLoaded', positionFab);
+  }
+
+  /* ---------------- 启动 ---------------- */
+  function init() {
+    try { hist = JSON.parse(localStorage.getItem(LS_HIST) || '[]'); } catch (e) { hist = []; }
+    if (!Array.isArray(hist)) hist = [];
+    buildUI();
+    bindEvents();
+    positionFab();
+    updateStatus();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

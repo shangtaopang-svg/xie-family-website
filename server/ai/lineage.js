@@ -1,0 +1,238 @@
+/**
+ * server/ai/lineage.js
+ * 确定性世系引擎：所有世系/辈分/亲属结论完全由 data/genealogy.json 的 father_id 链计算得出，
+ * 不经过大模型 —— 从根上杜绝"编造族谱数据"。
+ *
+ * 数据常驻内存（Map<id,Person> + Map<name,id[]>），每次查询前按 mtime 检测，
+ * 管理后台修改族谱后即时生效。
+ */
+'use strict';
+const fs = require('fs');
+const path = require('path');
+
+const DATA_FILE = path.join(__dirname, '..', '..', 'data', 'genealogy.json');
+
+let byId = null;
+let byName = null;
+let mtimeMs = -1;
+
+function ensureLoaded() {
+  let stat = null;
+  try { stat = fs.statSync(DATA_FILE); } catch (e) { stat = null; }
+  const mtime = stat ? stat.mtimeMs : -1;
+  if (byId && mtime === mtimeMs) return;
+  mtimeMs = mtime;
+  let list = [];
+  try { list = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8')); } catch (e) { list = []; }
+  byId = new Map();
+  byName = new Map();
+  for (const p of list) {
+    byId.set(Number(p.id), p);
+    if (p.name) {
+      (byName.get(p.name) || byName.set(p.name, []).get(p.name)).push(p);
+    }
+  }
+}
+
+function getPerson(id) { ensureLoaded(); return byId.get(Number(id)) || null; }
+
+function getPeopleByName(name) { ensureLoaded(); return byName.get(name) || []; }
+
+/** 沿 father_id 上溯祖先链（含自己？不含），返回 祖先(远)→近；带自引用/环保护 */
+function getAncestorList(personId, includeSelf, maxDepth) {
+  ensureLoaded();
+  const out = [];
+  let cur = byId.get(Number(personId));
+  const seen = new Set();
+  let depth = 0;
+  while (cur) {
+    if (seen.has(cur.id)) break; // 环路保护（如"万"的 father_id 指向自己）
+    seen.add(cur.id);
+    out.push(cur);
+    depth++;
+    if (maxDepth && depth >= maxDepth) break;
+    if (!cur.father_id || Number(cur.father_id) === Number(cur.id)) break;
+    cur = byId.get(Number(cur.father_id));
+  }
+  return includeSelf ? out : out.slice(1);
+}
+
+/** 后代按代 BFS（father_id 树），返回 [[第1代], [第2代], ...] */
+function getDescendantLevels(personId, depth) {
+  ensureLoaded();
+  const levels = [];
+  let frontier = [Number(personId)];
+  const visited = new Set(frontier);
+  for (let d = 0; d < depth; d++) {
+    const next = [];
+    for (const id of frontier) {
+      const p = byId.get(id);
+      if (!p) continue;
+      for (const [cid, cp] of byId) {
+        if (cp.father_id && Number(cp.father_id) === Number(id) && !visited.has(cid)) {
+          visited.add(cid);
+          next.push(cp);
+        }
+      }
+    }
+    if (!next.length) break;
+    levels.push(next);
+    frontier = next.map(p => Number(p.id));
+  }
+  return levels;
+}
+
+/** 同辈：与本人 generation_num 相同的人（有限条） */
+function getSameGeneration(personId, limit) {
+  ensureLoaded();
+  const self = byId.get(Number(personId));
+  if (!self || self.generation_num === undefined || self.generation_num === null) return { list: [] };
+  const g = self.generation_num;
+  const list = [];
+  for (const p of byId.values()) {
+    if (Number(p.id) === Number(personId)) continue;
+    if (p.generation_num === g) list.push(p);
+  }
+  return { list: list.slice(0, limit || 20), total: list.length };
+}
+
+/** a 是否为 b 的直系祖先 */
+function isAncestorOf(aId, bId) {
+  return getAncestorList(bId, false).some(p => Number(p.id) === Number(aId));
+}
+
+/** 简单的亲属关系描述 */
+function kinshipText(aId, bId) {
+  ensureLoaded();
+  const a = byId.get(Number(aId));
+  const b = byId.get(Number(bId));
+  if (!a || !b) return '未找到相关记录';
+  if (Number(a.id) === Number(b.id)) return '是同一个人';
+
+  const aAnc = getAncestorList(aId, false); // a 的祖先（远→近）
+  const bAnc = getAncestorList(bId, false);
+
+  if (aAnc.some(p => Number(p.id) === Number(b.id))) {
+    const n = aAnc.findIndex(p => Number(p.id) === Number(b.id)) + 1; // b 是 a 的第 n 代祖
+    return `${a.name} 是 ${b.name} 的第 ${n} 代直系后代`;
+  }
+  if (bAnc.some(p => Number(p.id) === Number(a.id))) {
+    const n = bAnc.findIndex(p => Number(p.id) === Number(a.id)) + 1;
+    return `${b.name} 是 ${a.name} 的第 ${n} 代直系后代`;
+  }
+  // 共同祖先
+  const aSet = new Set(aAnc.map(p => Number(p.id)));
+  const bSet = new Set(bAnc.map(p => Number(p.id)));
+  let lca = null, la = -1, lb = -1;
+  for (let i = aAnc.length - 1; i >= 0; i--) {
+    if (bSet.has(Number(aAnc[i].id))) { lca = aAnc[i]; la = i; break; }
+  }
+  if (!lca) return `${a.name} 与 ${b.name} 未查到共同祖先`;
+  lb = bAnc.findIndex(p => Number(p.id) === Number(lca.id));
+  const da = la + 1, db = lb + 1; // 各自离 LCA 的代数
+  const lcaName = lca.name || ('ID ' + lca.id);
+  if (da === 1 && db === 1) return `${a.name} 与 ${b.name} 是亲兄弟/同父关系（共同父亲：${lcaName}）`;
+  if (da === 2 && db === 2) return `${a.name} 与 ${b.name} 是堂兄弟/堂亲（共同祖父：${lcaName}）`;
+  return `${a.name} 与 ${b.name} 是共祖的族人，共同祖先为 ${lcaName}（${a.name} 距其 ${da} 代、${b.name} 距其 ${db} 代）`;
+}
+
+/** 人名字段：世次/分支（注：genealogy 的 generation 字段是 CSV 世代号，不是字辈字，故不显示） */
+function describePerson(p) {
+  const parts = [p.name];
+  if (p.generation_num !== undefined && p.generation_num !== null && p.generation_num !== '') parts.push('世次' + p.generation_num);
+  if (p.branch && p.branch !== '—' && p.branch !== '') parts.push(p.branch);
+  return parts.join(' · ');
+}
+
+/** 直系世系链排版：1世(最远) → ... → 您 */
+function formatChain(chain, selfId) {
+  const lines = [];
+  chain.forEach((p, i) => {
+    const isSelf = Number(p.id) === Number(selfId);
+    lines.push(`${i + 1}世  ${describePerson(p)}${isSelf ? '  ← 您' : ''}`);
+  });
+  return lines.join('\n');
+}
+
+/** 直系世系（含自己，向上最多 total-1 代，即共 total 世） */
+function getDirectChain(selfId, total) {
+  const anc = getAncestorList(selfId, true, total); // 含自己，最多 total 人
+  return anc.reverse(); // 最远→自己
+}
+
+/** 主回答入口：根据提问 + 本人 id 生成确定性文本 */
+function answerLineage(query, selfId) {
+  ensureLoaded();
+  const q = String(query || '').trim();
+  const self = byId.get(Number(selfId));
+  if (!self) return '未找到您的族谱记录，请重新验证身份。';
+
+  // 尝试提取问题中的指名人物
+  let target = self;
+  if (!/我/.test(q)) {
+    for (const n of byName.keys()) {
+      if (n.length >= 2 && q.includes(n)) {
+        const cand = byName.get(n)[0];
+        if (cand) { target = cand; break; }
+      }
+    }
+  }
+
+  const tid = Number(target.id);
+
+  if (/第几代|第几世/.test(q)) {
+    const genTxt = `${target.name} 世次为 ${target.generation_num === undefined ? '未知' : target.generation_num}。`;
+    // 同时问"同辈/辈分"时，一并列出同辈示例
+    if (/同辈|同一辈|辈分|排行/.test(q)) {
+      const { list, total } = getSameGeneration(tid, 30);
+      if (list.length) {
+        const names = list.slice(0, 15).map(p => p.name + (p.branch && p.branch !== '—' ? '(' + p.branch + ')' : '')).join('、');
+        return genTxt + `\n与 ${target.name} 同辈（世次 ${target.generation_num}）的族人共 ${total} 位，示例：\n${names}`;
+      }
+    }
+    return genTxt;
+  }
+
+  if (/同辈|同一辈|辈分|排行/.test(q)) {
+    const { list, total } = getSameGeneration(tid, 30);
+    if (!list.length) return `未找到与 ${describePerson(target)} 同辈的族人记录。`;
+    const names = list.slice(0, 15).map(p => p.name + (p.branch && p.branch !== '—' ? '(' + p.branch + ')' : '')).join('、');
+    return `与 ${target.name} 同辈（世次 ${target.generation_num}）的族人共 ${total} 位，示例：\n${names}`;
+  }
+
+  if (/后代|子孙|后裔|后辈|子女/.test(q)) {
+    const levels = getDescendantLevels(tid, 6);
+    if (!levels.length) return `${target.name} 未查到后代记录。`;
+    const lines = [`${target.name} 的后代（每代最多列前若干）：`];
+    levels.forEach((lv, i) => {
+      const names = lv.slice(0, 10).map(p => p.name).join('、');
+      lines.push(`第 ${i + 1} 代：${names}${lv.length > 10 ? ' 等' + lv.length + '人' : ''}`);
+    });
+    return lines.join('\n');
+  }
+
+  if (/关系/.test(q)) {
+    // 找问题中的第二个名字
+    let other = null;
+    for (const n of byName.keys()) {
+      if (n.length >= 2 && q.includes(n) && n !== target.name) { other = n; break; }
+    }
+    if (other) {
+      const otherId = Number(byName.get(other)[0].id);
+      return kinshipText(tid, otherId);
+    }
+    return '请说明想查询与谁的关系，例如「我和谢XX是什么关系」。';
+  }
+
+  // 默认：祖先/直系/世系链
+  const total = /(\d{1,2})\s*代/.test(q) ? Math.max(3, Math.min(20, parseInt(RegExp.$1, 10))) : 10;
+  const chain = getDirectChain(tid, total);
+  if (!chain.length) return '未找到相关世系记录。';
+  return `—— ${target.name} 的直系世系（共 ${chain.length} 世）——\n` + formatChain(chain, tid);
+}
+
+module.exports = {
+  ensureLoaded, getPerson, getPeopleByName,
+  getAncestorList, getDescendantLevels, getSameGeneration,
+  isAncestorOf, kinshipText, getDirectChain, describePerson, answerLineage,
+};
