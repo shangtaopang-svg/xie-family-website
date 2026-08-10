@@ -255,7 +255,7 @@
   .ai-status { color: rgba(238, 238, 238, 0.55); }
   .ai-close { background: rgba(255, 255, 255, 0.1); }
   .ai-msgs { background: var(--mb-bg, #0a0a0a); padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
-  .ai-msg.ai-user { background: var(--mb-brand, #D4FF3A); color: var(--mb-bg, #0a0a0a); }
+  .ai-msg.ai-user { background: var(--mb-brand, #D4FF3A); color: #0a0a0a; font-weight: 600; }
   .ai-msg.ai-bot { background: var(--mb-card, #141414); border: 1px solid var(--mb-border, #2a2a2a); color: #eee; }
   .ai-msg.ai-bot .ai-src { color: rgba(238, 238, 238, 0.45); }
   .ai-verify { background: var(--mb-card, #141414); border-color: var(--mb-border, #2a2a2a); }

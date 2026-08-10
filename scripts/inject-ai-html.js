@@ -6,7 +6,9 @@
  * 因此把 `<link rel="stylesheet" href="/css/ai.css">` + `<script src="/js/ai-assistant.js" defer></script>`
  * 直接写进每个 .html 的 </body> 前。
  *
- * 幂等：已包含 /js/ai-assistant.js 的文件跳过；无 </body> 的跳过；黑名单跳过。
+ * 幂等：已包含 js/ai-assistant.js?v= 的文件跳过；无 </body> 的跳过；黑名单跳过。
+ * 版本号：改样式/脚本后把 VERSION 数字 +1，强制手机端浏览器/SW 拉新资源（用户遇到旧缓存）。
+ * 迁移：旧的无版本号标签会自动升级为带版本号。
  * 用法：node scripts/inject-ai-html.js
  */
 'use strict';
@@ -14,10 +16,15 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const MARK = '/js/ai-assistant.js';
+const VERSION = 2;
+const MARK = 'js/ai-assistant.js?v=' + VERSION;
+const NEW_LINK = 'href="/css/ai.css?v=' + VERSION + '"';
+const NEW_SCRIPT = 'src="/js/ai-assistant.js?v=' + VERSION + '"';
 const INJECT =
-  '<link rel="stylesheet" href="/css/ai.css">\n' +
-  '<script src="/js/ai-assistant.js" defer></script>\n';
+  '<link rel="stylesheet" ' + NEW_LINK + '>\n' +
+  '<script ' + NEW_SCRIPT + ' defer></script>\n';
+const OLD_LINK = 'href="/css/ai.css"';
+const OLD_SCRIPT = 'src="/js/ai-assistant.js"';
 
 // 黑名单：admin / recover 后台类页面不注入
 const BLACKLIST = new Set(['admin.html', 'recover.html']);
@@ -38,13 +45,21 @@ function walk(dir, out) {
 }
 
 const files = walk(ROOT, []);
-let injected = 0, skipped = 0;
+let injected = 0, migrated = 0, skipped = 0;
 for (const fp of files) {
   const base = path.basename(fp);
   if (BLACKLIST.has(base)) { skipped++; continue; }
   let html;
   try { html = fs.readFileSync(fp, 'utf-8'); } catch (e) { skipped++; continue; }
-  if (html.indexOf(MARK) !== -1) { skipped++; continue; } // 已注入
+  if (html.indexOf(MARK) !== -1) { skipped++; continue; } // 已是当前版本
+  // 迁移：旧的无版本号标签 → 升级
+  if (html.indexOf(OLD_LINK) !== -1 || html.indexOf(OLD_SCRIPT) !== -1) {
+    html = html.split(OLD_LINK).join(NEW_LINK).split(OLD_SCRIPT).join(NEW_SCRIPT);
+    fs.writeFileSync(fp, html, 'utf-8');
+    console.log('[migrate]', path.relative(ROOT, fp));
+    migrated++;
+    continue;
+  }
   const m = html.search(/<\/body>/i);
   if (m === -1) { skipped++; continue; }
   const out = html.slice(0, m) + INJECT + '</body>' + html.slice(m + 7);
@@ -52,4 +67,4 @@ for (const fp of files) {
   console.log('[inject]', path.relative(ROOT, fp));
   injected++;
 }
-console.log(`完成：注入 ${injected} 个文件，跳过 ${skipped} 个。`);
+console.log(`完成：注入 ${injected} 个，迁移 ${migrated} 个，跳过 ${skipped} 个。`);
