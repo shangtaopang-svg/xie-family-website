@@ -314,42 +314,48 @@
 }
 
 /* ---------- 口播字幕条（电报打字感，随口播逐字揭示） ---------- */
+.ai-subtitle-layer {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 30px;
+  z-index: 2147483003;   /* 独立全屏字幕层，高于面板(3001)/世系树遮罩(3002)，不占面板位置 */
+  width: min(760px, 94vw);
+  pointer-events: none;
+}
+.ai-subtitle-layer[hidden] { display: none; }
 .ai-subtitle {
   display: flex;
   align-items: center;
-  min-height: 64px;
-  margin: 4px 10px 6px;
-  padding: 8px 14px;
-  border-radius: 10px;
-  background: rgba(24, 24, 28, 0.95);
-  border: 1.5px solid rgba(58, 167, 109, 0.7);
-  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.3);
+  height: 58px;
+  padding: 0 18px;
+  border-radius: 12px;
+  background: rgba(16, 16, 20, 0.92);
+  border: 1.5px solid rgba(58, 167, 109, 0.75);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
   font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
-  font-size: 18px;
-  line-height: 1.5;
-  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 700;
   color: #f7f2e8;
   letter-spacing: 0.5px;
-  white-space: pre-wrap;
-  word-break: break-all;
+  white-space: nowrap;
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
-  flex: none;
   box-sizing: border-box;
 }
-.ai-subtitle[hidden] { display: none; }
 .ai-sub-done { color: #ffffff; }
 .ai-sub-cur {
   color: #ffffff;
-  background: rgba(58, 167, 109, 0.45);
-  border-radius: 3px;
-  box-shadow: 0 0 10px rgba(58, 167, 109, 0.55);
+  background: rgba(58, 167, 109, 0.5);
+  border-radius: 4px;
+  box-shadow: 0 0 12px rgba(58, 167, 109, 0.6);
   padding: 0 1px;
 }
 .ai-sub-cur::after { content: '▮'; color: #5fe3a0; margin-left: 2px; animation: aiSubBlink .8s steps(1) infinite; }
-.ai-sub-rest { color: rgba(247, 242, 232, 0.18); }
-.ai-sub-prev { color: rgba(247, 242, 232, 0.45); }
+.ai-sub-rest { color: rgba(247, 242, 232, 0.25); }
+.ai-sub-prev { color: rgba(247, 242, 232, 0.5); }
 @keyframes aiSubBlink { 50% { opacity: 0.2; } }
 
 /* ---------- 手机端（黑底霓虹黄主题） ---------- */
@@ -422,19 +428,25 @@
   #ai-input::placeholder { color: rgba(238, 238, 238, 0.4); }
   #ai-input:focus { border-color: var(--mb-brand, #D4FF3A); }
   #ai-send { background: var(--mb-brand, #D4FF3A); color: var(--mb-bg, #0a0a0a); }
+  .ai-subtitle-layer {
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    width: 92vw;
+  }
   .ai-subtitle {
-    background: rgba(0, 0, 0, 0.6);
-    border-color: rgba(212, 255, 58, 0.45);
+    height: 54px;
+    font-size: 18px;
+    background: rgba(0, 0, 0, 0.72);
+    border-color: rgba(212, 255, 58, 0.5);
   }
   .ai-sub-done { color: #ffffff; }
   .ai-sub-cur {
     color: #ffffff;
     background: rgba(212, 255, 58, 0.22);
-    box-shadow: 0 0 10px rgba(212, 255, 58, 0.4);
+    box-shadow: 0 0 12px rgba(212, 255, 58, 0.4);
   }
   .ai-sub-cur::after { color: var(--mb-brand, #D4FF3A); }
-  .ai-sub-rest { color: rgba(232, 227, 216, 0.18); }
-  .ai-sub-prev { color: rgba(232, 227, 216, 0.45); }
+  .ai-sub-rest { color: rgba(232, 227, 216, 0.22); }
+  .ai-sub-prev { color: rgba(232, 227, 216, 0.5); }
 }
 
 @media (prefers-reduced-motion: reduce) {

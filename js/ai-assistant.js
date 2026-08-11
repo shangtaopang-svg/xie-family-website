@@ -34,7 +34,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v25'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v26'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -101,7 +101,6 @@
       '</div>' +
       '<div class="ai-msgs" id="ai-msgs"></div>' +
       '<div class="ai-chips" id="ai-chips"></div>' +
-      '<div class="ai-subtitle" id="ai-subtitle" hidden></div>' +
       '<div class="ai-input-row">' +
       '  <textarea id="ai-input" rows="1" placeholder="输入问题，如：谢氏家族是怎么迁徙来的？" enterkeyhint="send"></textarea>' +
       '  <button type="button" class="ai-send" id="ai-send" disabled>发送</button>' +
@@ -114,6 +113,14 @@
     document.body.appendChild(fab);
     document.body.appendChild(panel);
 
+    // 独立全屏字幕层：口播时浮在屏幕底部，不占面板位置；一行、加宽，手机端同理
+    subLayer = document.createElement('div');
+    subLayer.className = 'ai-subtitle-layer';
+    subLayer.id = 'ai-subtitle-layer';
+    subLayer.hidden = true;
+    subLayer.innerHTML = '<div class="ai-subtitle" id="ai-subtitle"></div>';
+    document.body.appendChild(subLayer);
+
     msgs = $('#ai-msgs', panel);
     chipsEl = $('#ai-chips', panel);
     input = $('#ai-input', panel);
@@ -122,7 +129,7 @@
     header = $('.ai-header', panel);
     soundBtn = $('#ai-sound', panel);
     stopBtn = $('#ai-stop', panel);
-    subEl = $('#ai-subtitle', panel);
+    subEl = $('#ai-subtitle', subLayer);
 
     // 预设问题 chips
     CHIPS.forEach(function (c) {
@@ -607,6 +614,7 @@
   var subDur = 0;          // 音频总时长（loadedmetadata 取得，无边界时兜底用）
   var subRaf = null;       // rAF 句柄
   var subHideTimer = null; // 读完后收起字幕条的定时器
+  var subLayer = null;     // 独立全屏字幕层容器（口播时浮在屏幕底部，一行加宽）
   function stopSpeak() { // 完全停止并清空（发送新问题/关窗/Esc 等沿用）
     narState = 'none';
     stopSubtitle();
@@ -651,7 +659,7 @@
   }
   /** 开始字幕条：记录全文与词级时间戳，预计算每个词结束时的累计字符数，并按标点切句 */
   function startSubtitle(text, bounds) {
-    if (!subEl) return;
+    if (!subEl || !subLayer) return;
     subText = text || '';
     subBounds = bounds || [];
     subCum = [];
@@ -663,12 +671,13 @@
     subSent = splitSentences(subText);
     subDur = 0;
     subEl.textContent = '';
-    subEl.hidden = false;
+    subEl.scrollLeft = 0;
+    subLayer.hidden = false;
     startSubLoop();
   }
   /** 启动揭示循环（幂等；playing/resume 后由事件再次拉起） */
   function startSubLoop() {
-    if (!subEl || subEl.hidden) return;
+    if (!subEl || !subLayer || subLayer.hidden) return;
     if (!subRaf) subRaf = requestAnimationFrame(subTick);
   }
   /** 字幕比声音略提前揭示（约 80ms），符合中文口播字幕惯例，感知为「跟得上」；感觉滞后/超前可微调 */
@@ -676,7 +685,7 @@
   /** 每帧：按当前播放位置精确算出已读字符数（词内逐字插值 → 连续打字感），渲染卡拉OK式字幕 */
   function subTick() {
     subRaf = requestAnimationFrame(subTick);
-    if (!subEl || subEl.hidden || !audioEl) return;
+    if (!subEl || !subLayer || subLayer.hidden || !audioEl) return;
     var ct = (audioEl.currentTime || 0) + SUB_LEAD;
     var n = 0;
     if (subBounds.length && subBounds.length === subCum.length) {
@@ -734,15 +743,23 @@
     html += '<span class="ai-sub-rest">' + esc(subText.slice(s + done + 1, e)) + '</span>';
     if (e < subText.length) html += '<span class="ai-sub-prev">…</span>';
     subEl.innerHTML = html;
+    // 单行加宽字幕：当前字超出可视区右侧一半时，平滑右滚让它保持在可视区左侧，始终能看到正在读的字
+    var curEl = subEl.querySelector('.ai-sub-cur');
+    if (curEl) {
+      var sr = subEl.getBoundingClientRect();
+      var cr = curEl.getBoundingClientRect();
+      var xIn = cr.left - sr.left;
+      if (xIn > sr.width * 0.5) subEl.scrollLeft += (xIn - sr.width * 0.3);
+    }
   }
   /** 自然读完：揭示全文，停留 2.6s 后自动收起 */
   function finishSubtitle() {
-    if (!subEl || subEl.hidden) return;
+    if (!subEl || !subLayer || subLayer.hidden) return;
     if (subRaf) { cancelAnimationFrame(subRaf); subRaf = null; }
     subEl.innerHTML = '<span class="ai-sub-done">' + esc(subText) + '</span><span class="ai-sub-cur"></span>';
     if (subHideTimer) clearTimeout(subHideTimer);
     subHideTimer = setTimeout(function () {
-      if (subEl) { subEl.hidden = true; subEl.textContent = ''; }
+      if (subLayer) { subLayer.hidden = true; subEl.textContent = ''; }
       subText = ''; subBounds = []; subCum = []; subSent = [];
     }, 2600);
   }
@@ -750,7 +767,8 @@
   function stopSubtitle() {
     if (subRaf) { cancelAnimationFrame(subRaf); subRaf = null; }
     if (subHideTimer) { clearTimeout(subHideTimer); subHideTimer = null; }
-    if (subEl) { subEl.hidden = true; subEl.textContent = ''; }
+    if (subLayer) subLayer.hidden = true;
+    if (subEl) subEl.textContent = '';
     subText = ''; subBounds = []; subCum = []; subSent = []; subDur = 0;
   }
 
