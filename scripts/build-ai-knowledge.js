@@ -104,6 +104,7 @@ function buildKnowledge() {
   const book2Text = readText('下册_竖排提取.txt');
   const extractTxt = readText('data/genealogy_book_extract.txt');
   const analysisTxt = readText('data/genealogy_analysis.txt');
+  const wenhuaTxt = readText('data/wenhua_litang.txt'); // 跃龙下枫槎文化礼堂资料（用户 2026-08-11 提供）
 
   const nameIndex = {};
   const documents = [];
@@ -150,6 +151,11 @@ function buildKnowledge() {
   if (analysisTxt) {
     chunkText(analysisTxt, MAX, OVLP).forEach((t, i) =>
       documents.push({ id: 'analysis:' + String(i).padStart(4, '0'), ref: '族谱书·解析', text: t }));
+  }
+  // 文化礼堂资料（跃龙下枫槎村综合资料）
+  if (wenhuaTxt) {
+    chunkText(wenhuaTxt, MAX, OVLP).forEach((t, i) =>
+      documents.push({ id: 'wenhua:' + String(i).padStart(4, '0'), ref: '文化礼堂资料', text: t }));
   }
 
   // 村史种子
