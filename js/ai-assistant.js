@@ -35,7 +35,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v40'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v41'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -978,7 +978,7 @@
     if (treeOverlay) { try { treeOverlay.parentNode.removeChild(treeOverlay); } catch (e) {} treeOverlay = null; }
   }
 
-  /* ---------------- 血缘最亲 N 人：亲密系数图弹层（#72） ---------------- */
+  /* ---------------- 血缘最亲 N 人：基因共享率弹层（#72；v41 改为遗传学亲等 r） ---------------- */
   var closestOverlay = null;
   function showClosestOverlay(list) {
     if (!list || !list.length) return;
@@ -999,17 +999,18 @@
     var body = ov.querySelector('.ai-closest-body');
     var frag = document.createDocumentFragment();
     list.forEach(function (r, i) {
+      var pct = Math.round((r.shared || 0) * 100);
       var row = document.createElement('div');
-      row.className = 'ai-closest-row' + (r.closeness <= 2 ? ' hot' : '');
+      row.className = 'ai-closest-row' + ((r.shared || 0) >= 0.25 ? ' hot' : '');
       var shi = (r.shi && Number(r.shi) >= 1) ? ' · 第' + esc(r.shi) + '世' : '';
       var b = (r.branch && r.branch !== '—') ? '<span class="ai-closest-branch">' + esc(r.branch) + '</span>' : '';
       row.innerHTML =
-        '<span class="ai-closest-rank">' + (i + 1) + '</span>' +
+        '<span class="ai-closest-rank">' + (r.rank || (i + 1)) + '</span>' +
         '<div class="ai-closest-info">' +
         '  <div class="ai-closest-name">' + esc(r.name) + '</div>' +
         '  <div class="ai-closest-rel">' + esc(r.rel) + shi + '</div>' +
         '</div>' +
-        '<span class="ai-closest-coef" title="亲密系数：1 最亲，数值越小越亲">' + esc(r.closeness) + '</span>' + b;
+        '<span class="ai-closest-coef" title="基因共享率：最高 50%（父母/子女/亲兄弟姐妹），越高越亲">' + pct + '%</span>' + b;
       frag.appendChild(row);
     });
     body.appendChild(frag);

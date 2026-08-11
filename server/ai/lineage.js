@@ -333,28 +333,36 @@ function answerFullLineage(query, selfId) {
   return { text: hc.formatChainText(nodes, target.name, ownerIsSelf), tree: nodes, ownerIsSelf, targetName: target.name };
 }
 
-/* ---------------- 血缘最近 N 人（亲密系数：到最近共同祖先的代数之和，1=最亲） ---------------- */
+/* ---------------- 血缘最近 N 人（基因共享率 r，遗传学亲等，最高 50%，越高越亲） ---------------- */
+/* 模型（#75，用户确认）：直系 r=2^-d（父/子/女 50%、祖父 25%、曾祖 12.5%）；
+   旁系 r=2^-(da+db-1)（共祖为一对夫妻、默认同父同母：亲兄弟/姐妹 50%、叔侄 25%、堂兄弟 12.5%）。
+   数据限制：族谱仅父系 father_id 链、无母亲字段，故「同父异母(25%)」与「同父同母(50%)」无法区分，
+   一律按同父同母计；姐妹在有记录时按同规则自动计入（当前数据无女性记录）。 */
 const CLOSE_ANCESTOR_REL = ['父亲', '祖父', '曾祖父', '高祖父'];
-const CLOSE_DESCENDANT_REL = ['儿子', '孙子', '曾孙'];
+const CLOSE_DESCENDANT_REL_M = ['儿子', '孙子', '曾孙'];
+const CLOSE_DESCENDANT_REL_F = ['女儿', '孙女', '曾孙女'];
 
 function relAncestor(n) {
   return n <= CLOSE_ANCESTOR_REL.length ? CLOSE_ANCESTOR_REL[n - 1] : '第' + n + '代祖';
 }
-function relDescendant(n) {
-  return n <= CLOSE_DESCENDANT_REL.length ? CLOSE_DESCENDANT_REL[n - 1] : '第' + n + '代孙';
+function relDescendant(n, gender) {
+  const names = gender === '女' ? CLOSE_DESCENDANT_REL_F : CLOSE_DESCENDANT_REL_M;
+  return n <= names.length ? names[n - 1] : '第' + n + '代孙';
 }
-function relCousin(da, db, lca) {
-  if (da === 1 && db === 1) return '亲兄弟';
-  if (da === 1 && db === 2) return '侄辈';
-  if (da === 2 && db === 1) return '叔伯辈';
-  if (da === 2 && db === 2) return '堂兄弟';
-  if (da === 1 && db === 3) return '侄孙辈';
-  if (da === 3 && db === 1) return '叔祖辈';
+function relCousin(da, db, lca, gender) {
+  const gs = gender === '女';
+  if (da === 1 && db === 1) return gs ? '亲姐妹' : '亲兄弟';
+  if (da === 1 && db === 2) return gs ? '侄女' : '侄子';
+  if (da === 2 && db === 1) return gs ? '姑辈' : '叔伯辈';
+  if (da === 2 && db === 2) return gs ? '堂姐妹' : '堂兄弟';
+  if (da === 1 && db === 3) return gs ? '侄孙女' : '侄孙';
+  if (da === 3 && db === 1) return gs ? '姑祖母辈' : '叔祖辈';
   return '同宗（共祖' + (lca && lca.name || '') + '）';
 }
 
 /**
- * 血缘最近的人列表：亲密系数 = 本人与该人到最近共同祖先的代数之和（父子=1、亲兄弟=2、堂兄弟=4，越小越亲）。
+ * 血缘最近的人列表：按基因共享率 r 排序（直系 2^-d；旁系 2^-(da+db-1)，同父同母假设）。
+ * 父/子/女/亲兄弟/亲姐妹 50% 同列第一档，祖父/孙/叔侄 25% 第二档，堂兄弟 12.5% 第三档。
  * 覆盖直系长辈/晚辈与父系旁系；无共同祖先（数据断链）的排除。返回 { text, list }，list 供前端弹层画图。
  */
 function answerClosest(personId, limit) {
@@ -370,13 +378,14 @@ function answerClosest(personId, limit) {
     const pid = Number(p.id);
     if (pid === selfId) continue;
     const pg = Number(p.generation_num) || 0;
-    // 直系长辈：p 是 self 的祖先（selfAnc[ai]，ai=第 ai 代祖 → 亲等 ai）
+    const g = p.gender;
+    // 直系长辈：p 是 self 的祖先（selfAnc[ai]，ai=第 ai 代祖 → r=2^-ai）
     const ai = selfAnc.findIndex(x => Number(x.id) === pid);
-    if (ai > 0) { rows.push({ id: pid, name: p.name, closeness: ai, rel: relAncestor(ai), shi: pg, branch: p.branch }); continue; }
-    // 直系晚辈：self 是 p 的祖先（pAnc[si]，si=第 si 代孙 → 亲等 si）
+    if (ai > 0) { rows.push({ id: pid, name: p.name, shared: Math.pow(0.5, ai), rel: relAncestor(ai), shi: pg, branch: p.branch }); continue; }
+    // 直系晚辈：self 是 p 的祖先（pAnc[si]，si=第 si 代孙 → r=2^-si）
     const pAnc = getAncestorList(pid, true);
     const si = pAnc.findIndex(x => Number(x.id) === selfId);
-    if (si > 0) { rows.push({ id: pid, name: p.name, closeness: si, rel: relDescendant(si), shi: pg, branch: p.branch }); continue; }
+    if (si > 0) { rows.push({ id: pid, name: p.name, shared: Math.pow(0.5, si), rel: relDescendant(si, g), shi: pg, branch: p.branch }); continue; }
     // 旁系：共祖。从【近端】扫最近公共祖先（亲兄弟勿从最远端找，见 kinshipText 修复），da=self 到 LCA 代数，db=p 到 LCA 代数
     const pAncNoSelf = pAnc.slice(1);
     const pSet = new Set(pAncNoSelf.map(x => Number(x.id)));
@@ -386,18 +395,25 @@ function answerClosest(personId, limit) {
     }
     if (!lca) continue; // 无共同祖先（数据断链），排除
     const db = pAncNoSelf.findIndex(x => Number(x.id) === Number(lca.id)) + 1;
-    rows.push({ id: pid, name: p.name, closeness: da + db, rel: relCousin(da, db, lca), shi: pg, branch: p.branch });
+    // 旁系共享一对共祖（同父同母假设）：r = 2×2^-(da+db) = 2^-(da+db-1)。亲兄弟 da=db=1 → 50%，叔侄 → 25%，堂兄弟 → 12.5%
+    rows.push({ id: pid, name: p.name, shared: Math.pow(0.5, da + db - 1), rel: relCousin(da, db, lca, g), shi: pg, branch: p.branch });
   }
-  // 排序：亲密系数升序（越亲越前）→ 与本人世代差小者优先（同辈靠前）→ 姓名
+  // 排序：基因共享率降序（越高越亲）→ 与本人世代差小者优先（同辈靠前）→ 姓名
   rows.sort(function (a, b) {
-    if (a.closeness !== b.closeness) return a.closeness - b.closeness;
+    if (a.shared !== b.shared) return b.shared - a.shared;
     const ga = Math.abs(a.shi - selfGen), gb = Math.abs(b.shi - selfGen);
     if (ga !== gb) return ga - gb;
     return String(a.name).localeCompare(String(b.name), 'zh');
   });
+  // 竞争式并列排名：共享率相同则同排名（父/亲兄弟都第1名，祖父/叔伯第N名）
+  let rank = 0;
+  rows.forEach(function (r, i) {
+    if (i === 0 || rows[i - 1].shared !== r.shared) rank = i + 1;
+    r.rank = rank;
+  });
   const list = rows.slice(0, limit);
-  const lines = list.map((r, i) => `${i + 1}. ${r.name}（${r.rel}，亲密系数 ${r.closeness}）`);
-  const text = `与您血缘最近的 ${list.length} 位族人（亲密系数越小越亲，1=最亲）：\n${lines.join('\n')}`;
+  const lines = list.map(r => `${r.rank}. ${r.name}（${r.rel}，基因共享 ${Math.round(r.shared * 100)}%）`);
+  const text = `与您血缘最近的 ${list.length} 位族人（基因共享率越高越亲，最高 50%）：\n${lines.join('\n')}`;
   return { text, list };
 }
 
