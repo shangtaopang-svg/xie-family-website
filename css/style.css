@@ -548,7 +548,6 @@ body {
 
 /* ===== Main content offset for sidebar ===== */
 .content {
-  margin-left: 220px;
   position: relative;
   z-index: 1;
   min-height: 100vh;
@@ -3230,12 +3229,6 @@ body {
   background: linear-gradient(180deg, transparent, rgba(255,255,255,0.02));
 }
 
-@media (min-width: 769px) {
-  .site-footer {
-    margin-left: 220px;
-  }
-}
-
 .footer-inner {
   max-width: 1000px;
   margin: 0 auto;
@@ -3254,12 +3247,6 @@ body {
   font-size: 12px;
   color: var(--text-tertiary);
   letter-spacing: 0.5px;
-}
-
-@media (min-width: 769px) {
-  .footer-bottom {
-    margin-left: 220px;
-  }
 }
 
 .footer-section h4 {
