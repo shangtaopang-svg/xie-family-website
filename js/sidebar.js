@@ -107,7 +107,7 @@
   var track = document.getElementById('themeTrack');
   var icon1 = document.getElementById('themeIcon');
   var icon2 = document.getElementById('themeIcon2');
-  var isDark = localStorage.getItem('theme') !== 'light';
+  var isDark = localStorage.getItem('theme') === 'dark';
 
   function applyTheme() {
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
