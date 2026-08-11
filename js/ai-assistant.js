@@ -187,28 +187,20 @@
 
   function setupBubble() {
     if (!bubble) return;
-    try { bubbleDismissed = localStorage.getItem(LS_GREET) === '1'; } catch (e) {}
-    if (bubbleDismissed) { hideBubble(); return; }
-    var collapse = function () {
-      if (isMb() && bubble) bubble.classList.add('collapsed'); // 手机端几秒后收起为小圆点
-    };
-    bubble._t = setTimeout(collapse, 4500);
+    // 旧版「永久关闭」标记作废：问候气泡每次访问都重新出现（用户反馈文字消失）
+    // 手机端常驻显示，不再 4.5s 后收起为小圆点
+    try { localStorage.removeItem(LS_GREET); } catch (e) {}
+    bubbleDismissed = false;
+    bubble.classList.remove('collapsed');
     bubble.addEventListener('click', function (e) {
       var closeBtn = document.getElementById('ai-bubble-close');
       if (e.target === closeBtn || (closeBtn && closeBtn.contains(e.target))) {
         e.stopPropagation();
         hideBubble();
-        bubbleDismissed = true;
-        try { localStorage.setItem(LS_GREET, '1'); } catch (err) {}
+        bubbleDismissed = true; // 仅本次会话收起，下次访问重新出现
         return;
       }
-      if (bubble.classList.contains('collapsed')) {
-        e.stopPropagation(); // 点小圆点先展开，不触发 FAB 打开面板
-        bubble.classList.remove('collapsed');
-        clearTimeout(bubble._t);
-        bubble._t = setTimeout(collapse, 4500);
-      }
-      // 展开状态点气泡 → 冒泡给 FAB 的 click 打开咨询面板
+      // 点气泡本体 → 冒泡给 FAB 的 click 打开咨询面板
     });
   }
 
@@ -585,6 +577,21 @@
     }).catch(noop); // 语音失败静默，不影响文字回复
   }
 
+  /* ---------------- 配色兜底：防止陈旧 CSS 缓存导致气泡配色错乱（绿底白字等） ---------------- */
+  function ensureAiColors() {
+    if (document.getElementById('ai-color-guard')) return;
+    var st = document.createElement('style');
+    st.id = 'ai-color-guard';
+    st.textContent = '@media (max-width:768px){' +
+      '.ai-msg.ai-user{background:#D4FF3A !important;color:#0a0a0a !important}' +
+      '.ai-msg.ai-bot{background:#1c1c1c !important;border:1px solid #333 !important;color:#f5f5f5 !important}' +
+      '#ai-fab .ai-bubble{background:#141414 !important;color:#eee !important;border-color:#2a2a2a !important}' +
+      '#ai-fab .ai-bubble::after{background:#141414 !important;border-color:#2a2a2a !important}' +
+      '.ai-msg.ai-bot .ai-src{color:rgba(238,238,238,.45) !important}' +
+      '}';
+    document.head.appendChild(st);
+  }
+
   /* ---------------- 事件绑定 ---------------- */
   function bindEvents() {
     fab.addEventListener('click', function () {
@@ -655,6 +662,7 @@
     setupPanelDrag();
     positionFab();
     updateStatus();
+    ensureAiColors();
     setupBubble();
     initTts();
   }

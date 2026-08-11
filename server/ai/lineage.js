@@ -160,6 +160,19 @@ function getDirectChain(selfId, total) {
   return anc.reverse(); // 最远→自己
 }
 
+/* 直接亲属称谓 → 上溯代数（长辈，如 太爷爷=曾祖=第3代祖）或下溯代数（晚辈） */
+const KINSHIP_ANCESTOR = [
+  { re: /高祖父|高祖|太太爷爷/, label: '高祖', gen: 4 },
+  { re: /曾祖父|曾祖|太爷爷/, label: '太爷爷（曾祖父）', gen: 3 },
+  { re: /爷爷|祖父|阿公/, label: '爷爷（祖父）', gen: 2 },
+  { re: /父亲|爸爸|爹爹|爹|家父/, label: '父亲', gen: 1 },
+];
+const KINSHIP_DESCENDANT = [
+  { re: /曾孙|重孙/, label: '曾孙', gen: 3 },
+  { re: /孙子|孙儿/, label: '孙子', gen: 2 },
+  { re: /儿子/, label: '儿子', gen: 1 },
+];
+
 /** 主回答入口：根据提问 + 本人 id 生成确定性文本 */
 function answerLineage(query, selfId) {
   ensureLoaded();
@@ -222,6 +235,29 @@ function answerLineage(query, selfId) {
       return kinshipText(tid, otherId);
     }
     return '请说明想查询与谁的关系，例如「我和谢XX是什么关系」。';
+  }
+
+  // 直接亲属问答：问「我的太爷爷/爷爷/父亲/儿子…是谁」→ 只答这一个，不展开其他
+  const subj = Number(target.id) === Number(self.id) ? '您' : target.name;
+  for (const k of KINSHIP_ANCESTOR) {
+    if (k.re.test(q)) {
+      const anc = getAncestorList(tid, true, k.gen + 1); // 含自己，最多 k.gen+1 人
+      if (!anc.length || anc.length <= k.gen) {
+        return `未在族谱中找到${subj === '您' ? '您的' : subj + '的'}${k.label}记录。`;
+      }
+      return `${subj}的${k.label}是：${anc[k.gen].name}。`;
+    }
+  }
+  for (const k of KINSHIP_DESCENDANT) {
+    if (k.re.test(q)) {
+      const levels = getDescendantLevels(tid, k.gen);
+      const people = levels.length >= k.gen ? levels[k.gen - 1] : [];
+      if (!people.length) {
+        return `未在族谱中找到${subj === '您' ? '您的' : subj + '的'}${k.label}记录。`;
+      }
+      const names = people.map(p => p.name).join('、');
+      return `${subj}的${k.label}是：${names}。`;
+    }
   }
 
   // 默认：祖先/直系/世系链
