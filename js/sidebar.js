@@ -107,11 +107,13 @@
   var track = document.getElementById('themeTrack');
   var icon1 = document.getElementById('themeIcon');
   var icon2 = document.getElementById('themeIcon2');
-  // v2 一次性迁移：旧版 bug 会把「从未设置过主题」的用户静默写成 dark，这里恢复为浅色一次。
-  // 之后 theme 完全由用户开关决定，不再自动覆盖。
-  if (localStorage.getItem('theme_fix_v2') !== '1') {
-    localStorage.setItem('theme_fix_v2', '1');
+  // v3 一次性迁移：清掉旧 bug 卡死的深色。v2 只清了 theme，漏了 xie_theme——
+  // main.js 靠 xie_theme 设 data-theme=dark，会让带「返回石门」的 .site-header 变深色。
+  // 这里把两个 key 都恢复为浅色一次，之后主题完全由用户开关决定，不再自动覆盖。
+  if (localStorage.getItem('theme_fix_v3') !== '1') {
+    localStorage.setItem('theme_fix_v3', '1');
     localStorage.setItem('theme', 'light');
+    localStorage.setItem('xie_theme', 'light');
   }
   var isDark = localStorage.getItem('theme') === 'dark';
 

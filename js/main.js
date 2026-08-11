@@ -163,6 +163,14 @@ document.addEventListener('DOMContentLoaded', function() {
 // ===== 深色/浅色模式 =====
 (function() {
   var themeToggle = document.getElementById('theme-toggle');
+  // v3 一次性迁移：把卡死的 theme/xie_theme 深色都恢复为浅色（与 sidebar.js 共用 theme_fix_v3 标记，
+  // 谁先跑都行）。v2 只清了 theme，漏了 xie_theme——main.js 靠它设 data-theme=dark 会让带「返回石门」
+  // 的 .site-header 变深色。之后主题完全由用户开关决定，不再自动覆盖。
+  if (localStorage.getItem('theme_fix_v3') !== '1') {
+    localStorage.setItem('theme_fix_v3', '1');
+    localStorage.setItem('theme', 'light');
+    localStorage.setItem('xie_theme', 'light');
+  }
   var currentTheme = localStorage.getItem('xie_theme') || 'light';
   if (currentTheme === 'dark') {
     document.documentElement.setAttribute('data-theme', 'dark');
