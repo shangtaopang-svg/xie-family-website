@@ -1,4 +1,4 @@
-/* 世代时间轴 v3 - HTML/CSS 横向卷轴 */
+/* 世代时间轴 v4 - HTML/CSS 横向卷轴，手机端整图压缩填满（桌面端渲染不变） */
 (function() {
   var dynInfo = [
     {min:0,max:60,label:'上古·传说',color:'#8B5CF6',text:'#C4B5FD'},
@@ -17,6 +17,12 @@
   function getDynLabel(g) {
     for (var i=0;i<dynInfo.length;i++){if(g>=dynInfo[i].min&&g<=dynInfo[i].max)return dynInfo[i];}
     return null;
+  }
+  var COL_W = 10, GAP = 1;
+  var _origWrapStyle = null; // 首次渲染时捕获 wrap 原始内联样式，桌面端原样恢复
+  function isCompact() {
+    try { return window.matchMedia && window.matchMedia('(max-width: 768px)').matches; }
+    catch(e) { return false; }
   }
   function renderTimeline() {
     var wrap = document.getElementById('timeline-wrap');
@@ -37,13 +43,11 @@
     var maxPop = 1; gens.forEach(function(g){if(genPop[g]>maxPop)maxPop=genPop[g];});
     var maxH = Math.max(maxPop, 10);
 
-    // Build dynasty legend bar
-    var legendHtml = '<div style="display:flex;gap:0;margin-bottom:10px;border-radius:6px;overflow:hidden;">';
-    dynInfo.forEach(function(d){
-      var w = ((d.max-d.min+1)/165)*100;
-      legendHtml += '<div style="flex:'+w+';height:20px;background:'+d.color+';display:flex;align-items:center;justify-content:center;"><span style="font-size:9px;color:'+d.text+';font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,0.5);">'+d.label+'</span></div>';
-    });
-    legendHtml += '</div>';
+    if (_origWrapStyle === null) _origWrapStyle = wrap.getAttribute('style') || '';
+    var compact = isCompact();
+    COL_W = compact ? 3 : 10;
+    GAP = compact ? 0 : 1;
+    var WAVE_H = 48;
 
     var keyWords = {1:'炎帝',65:'申伯',130:'小四',132:'文杲',147:'彬公'};
     function findKeyName(g, names) {
@@ -60,35 +64,105 @@
       return '';
     }
 
-    // 波形图：横轴世代，纵轴人数
-    var WAVE_H = 48, COL_W = 10;
-    var html = '<div style="position:relative;padding:4px 0 0;min-height:'+(WAVE_H+30)+'px;">';
-    // 波形区域
-    html += '<div style="display:flex;align-items:flex-end;height:'+WAVE_H+'px;padding:0 2px;gap:1px;">';
-    gens.forEach(function(g) {
-      var pop = genPop[g]||0;
-      var names = genNames[g]||[];
-      var keyName = findKeyName(g, names);
-      var dc = getDynColor(g);
-      var barH = pop > 0 ? Math.max(2, (pop / maxPop) * WAVE_H * 0.85) : 0;
-      html += '<div class="tl-g" data-g="'+g+'" style="display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative;" title="第'+g+'世 '+pop+'人">';
-      // 柱条 + 朝代色
-      html += '<div style="width:'+COL_W+'px;height:'+barH+'px;border-radius:1px 1px 0 0;background:'+(dc||'#3fb950')+';opacity:'+(pop>0?'0.9':'0.15')+';transition:opacity 0.15s;min-height:'+(pop>0?'2px':'0')+';"></div>';
-      // 世代号
-      html += '<div style="font-size:7px;color:'+(pop>0?'rgba(255,255,255,0.4)':'rgba(255,255,255,0.12)')+';line-height:1;margin-top:1px;white-space:nowrap;">'+g+'</div>';
+    var html = '', legendHtml = '';
+    if (compact) {
+      // ===== 手机端：整图压缩填满卡片宽 =====
+      // 覆盖 wrap 行内样式：flex 改列向让图例在顶部、取消 min-height/min-width
+      wrap.style.cssText = _origWrapStyle + ';flex-direction:column;min-height:auto;min-width:0px';
+      var unit = COL_W + GAP;
+
+      // 朝代图例（顶部通栏）
+      legendHtml = '<div style="display:flex;gap:0;margin-bottom:8px;border-radius:6px;overflow:hidden;">';
+      dynInfo.forEach(function(d){
+        var w = ((d.max-d.min+1)/165)*100;
+        legendHtml += '<div style="flex:'+w+';height:16px;background:'+d.color+';display:flex;align-items:center;justify-content:center;"><span style="font-size:7px;color:'+d.text+';font-weight:600;white-space:nowrap;">'+d.label+'</span></div>';
+      });
+      legendHtml += '</div>';
+
+      // 波形（84 世全部一格）
+      html += '<div data-wave style="display:flex;align-items:flex-end;height:'+WAVE_H+'px;gap:'+GAP+'px;padding:0 1px;">';
+      gens.forEach(function(g) {
+        var pop = genPop[g]||0;
+        var dc = getDynColor(g);
+        var barH = pop > 0 ? Math.max(2, (pop / maxPop) * WAVE_H * 0.85) : 0;
+        html += '<div class="tl-g" data-g="'+g+'" style="width:'+COL_W+'px;height:'+WAVE_H+'px;flex-shrink:0;cursor:pointer;" title="第'+g+'世 '+pop+'人">';
+        html += '<div style="width:100%;height:'+barH+'px;border-radius:1px 1px 0 0;background:'+(dc||'#3fb950')+';opacity:'+(pop>0?'0.9':'0.15')+';min-height:'+(pop>0?'2px':'0')+';"></div>';
+        html += '</div>';
+      });
       html += '</div>';
-    });
-    html += '</div>';
-    // 关键人物标记行
-    html += '<div style="display:flex;gap:1px;padding:0 2px;margin-top:2px;">';
-    gens.forEach(function(g) {
-      var names = genNames[g]||[];
-      var keyName = findKeyName(g, names);
-      html += '<div style="width:'+COL_W+'px;flex-shrink:0;text-align:center;font-size:6px;color:#ff6b00;font-weight:600;line-height:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(keyName||'')+'</div>';
-    });
-    html += '</div>';
-    html += '</div>';
-    wrap.innerHTML = legendHtml + html;
+
+      // 稀疏世代号（绝对定位，不撑宽格子）
+      var step = Math.max(1, Math.round(gens.length / 8));
+      html += '<div style="position:relative;height:9px;margin-top:1px;">';
+      gens.forEach(function(g, i) {
+        if (i % step !== 0 && i !== gens.length - 1 && !keyWords[g]) return;
+        var left = 1 + i * unit + COL_W / 2;
+        html += '<div style="position:absolute;left:'+left+'px;top:0;transform:translateX(-50%);font-size:7px;color:rgba(255,255,255,0.4);line-height:1;white-space:nowrap;">'+g+'</div>';
+      });
+      html += '</div>';
+
+      // 关键人名标记（重叠折行）
+      var keyPos = [];
+      gens.forEach(function(g, i) {
+        var kn = findKeyName(g, genNames[g]||[]);
+        if (!kn) return;
+        keyPos.push({name: kn, left: 1 + i * unit + COL_W / 2});
+      });
+      var lastL0 = -1e9, lastL1 = -1e9;
+      keyPos.forEach(function(k) {
+        if (lastL0 + 20 <= k.left) { k.line = 0; lastL0 = k.left; }
+        else { k.line = 1; lastL1 = Math.max(lastL1, k.left); }
+      });
+      var keyRowH = keyPos.some(function(k){return k.line===1;}) ? 20 : 9;
+      html += '<div style="position:relative;height:'+keyRowH+'px;margin-top:2px;">';
+      keyPos.forEach(function(k) {
+        html += '<div style="position:absolute;left:'+k.left+'px;top:'+(k.line===1?'10px':'0')+';transform:translateX(-50%);font-size:'+(k.line===1?'7px':'8px')+';color:#ff6b00;font-weight:600;line-height:1;white-space:nowrap;">'+k.name+'</div>';
+      });
+      html += '</div>';
+
+      wrap.innerHTML = legendHtml + html;
+    } else {
+      // ===== 桌面端：渲染不变 =====
+      // 用首次捕获的原始内联样式整体恢复（含 min-height:240px），桌面端逐字节不变
+      wrap.style.cssText = _origWrapStyle;
+
+      legendHtml = '<div style="display:flex;gap:0;margin-bottom:10px;border-radius:6px;overflow:hidden;">';
+      dynInfo.forEach(function(d){
+        var w = ((d.max-d.min+1)/165)*100;
+        legendHtml += '<div style="flex:'+w+';height:20px;background:'+d.color+';display:flex;align-items:center;justify-content:center;"><span style="font-size:9px;color:'+d.text+';font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,0.5);">'+d.label+'</span></div>';
+      });
+      legendHtml += '</div>';
+
+      // 波形图：横轴世代，纵轴人数
+      html = '<div style="position:relative;padding:4px 0 0;min-height:'+(WAVE_H+30)+'px;">';
+      // 波形区域
+      html += '<div style="display:flex;align-items:flex-end;height:'+WAVE_H+'px;padding:0 2px;gap:1px;">';
+      gens.forEach(function(g) {
+        var pop = genPop[g]||0;
+        var names = genNames[g]||[];
+        var keyName = findKeyName(g, names);
+        var dc = getDynColor(g);
+        var barH = pop > 0 ? Math.max(2, (pop / maxPop) * WAVE_H * 0.85) : 0;
+        html += '<div class="tl-g" data-g="'+g+'" style="display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative;" title="第'+g+'世 '+pop+'人">';
+        // 柱条 + 朝代色
+        html += '<div style="width:'+COL_W+'px;height:'+barH+'px;border-radius:1px 1px 0 0;background:'+(dc||'#3fb950')+';opacity:'+(pop>0?'0.9':'0.15')+';transition:opacity 0.15s;min-height:'+(pop>0?'2px':'0')+';"></div>';
+        // 世代号
+        html += '<div style="font-size:7px;color:'+(pop>0?'rgba(255,255,255,0.4)':'rgba(255,255,255,0.12)')+';line-height:1;margin-top:1px;white-space:nowrap;">'+g+'</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+      // 关键人物标记行
+      html += '<div style="display:flex;gap:1px;padding:0 2px;margin-top:2px;">';
+      gens.forEach(function(g) {
+        var names = genNames[g]||[];
+        var keyName = findKeyName(g, names);
+        html += '<div style="width:'+COL_W+'px;flex-shrink:0;text-align:center;font-size:6px;color:#ff6b00;font-weight:600;line-height:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(keyName||'')+'</div>';
+      });
+      html += '</div>';
+      html += '</div>';
+
+      wrap.innerHTML = legendHtml + html;
+    }
 
     wrap._genPop = genPop; wrap._genAlive = genAlive; wrap._genDeceased = genDeceased; wrap._genNames = genNames; wrap._genChars = genChars; wrap._genNums = gens;
   }
@@ -136,11 +210,35 @@
 
     wrap.addEventListener('click', function(e) {
       var el = e.target.closest('.tl-g');
-      if (!el) return;
-      var g = parseInt(el.getAttribute('data-g'));
-      showGenPeople(g);
+      if (el) {
+        var g = parseInt(el.getAttribute('data-g'));
+        if (!isNaN(g)) showGenPeople(g);
+        return;
+      }
+      // 手机压缩模式：点波形任意处取最近的世（柱子只有 3px，扩大命中区域）
+      if (isCompact()) {
+        var row = wrap.querySelector('[data-wave]');
+        if (!row) return;
+        var cells = row.querySelectorAll('.tl-g');
+        if (!cells.length) return;
+        var first = cells[0].getBoundingClientRect();
+        var u = cells.length > 1 ? (cells[1].getBoundingClientRect().left - first.left) : (COL_W);
+        var idx = Math.round((e.clientX - first.left) / u);
+        idx = Math.max(0, Math.min(cells.length - 1, idx));
+        var g2 = parseInt(cells[idx].getAttribute('data-g'));
+        if (!isNaN(g2)) showGenPeople(g2);
+      }
     });
   });
+
+  // 断点切换（手机↔桌面）时重渲染；仅当压缩状态变化才重建，避免桌面端被重排
+  var lastCompact = null;
+  function checkResize() {
+    var c = isCompact();
+    if (c !== lastCompact) { lastCompact = c; renderTimeline(); }
+  }
+  window.addEventListener('resize', checkResize);
+  window.addEventListener('orientationchange', function(){ setTimeout(checkResize, 200); });
 
   window.showGenPeople = function(gen) {
     var data = (typeof getGenealogyData === 'function') ? getGenealogyData() : [];
