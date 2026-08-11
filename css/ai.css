@@ -194,6 +194,14 @@
   font-style: italic;
 }
 
+/* 诊断提示：上次窗口关闭来源（仅诊断版出现，用户可见便于反馈） */
+.ai-dbg-hint {
+  background: #fff8e1 !important;
+  border: 1px solid #f0d060 !important;
+  color: #8a6d1a !important;
+  font-size: 12px;
+}
+
 /* 验证气泡 */
 .ai-verify {
   background: #fff;

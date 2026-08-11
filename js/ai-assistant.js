@@ -32,8 +32,9 @@
   var LS_PANEL_POS = 'ai_panel_pos';
   var LS_GREET = 'ai_greeting_done';
   var LS_TTS_MUTED = 'ai_tts_muted';
+  var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v10'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v11'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -213,12 +214,19 @@
     if (isOpen) return;
     isOpen = true;
     panel.hidden = false;
-    // 面板打开期间隐藏悬浮球：防止面板/FAB被拖拽移开后 FAB 露出，朗读回答时用户误点 FAB（本意是静音/暂停）却触发了面板开关
-    fab.style.visibility = 'hidden';
-    fab.style.pointerEvents = 'none';
     hideBubble(); // 打开面板时收起问候气泡
     document.body.style.overflow = 'hidden';
     renderHistory();
+    // 诊断：上次关闭若非用户显式操作（fab/✕/Esc），在消息区顶部提示原因（1 小时内），便于定位「窗口莫名消失」
+    var lastClosure = null;
+    try { lastClosure = JSON.parse(localStorage.getItem(LS_CLOSURE) || 'null'); } catch (e) {}
+    if (lastClosure && lastClosure.s && ['fab', 'close-btn', 'esc'].indexOf(lastClosure.s) === -1 && (Date.now() - lastClosure.t) < 3600000) {
+      var hintEl = document.createElement('div');
+      hintEl.className = 'ai-msg ai-bot ai-dbg-hint';
+      hintEl.textContent = '⚠️ 上次窗口关闭来源：' + lastClosure.s + '（若非您手动关闭，请告知站长此提示）。';
+      msgs.insertBefore(hintEl, msgs.firstChild);
+      try { localStorage.removeItem(LS_CLOSURE); } catch (e) {}
+    }
     updateStatus();
     positionFab();
     if (isMb()) {
@@ -239,16 +247,17 @@
     try { history.pushState({ ai: true }, ''); } catch (e) {}
   }
 
-  function closePanel(skipBack) {
+  function closePanel(skipBack, source) {
     if (!isOpen) return;
     isOpen = false;
     panel.hidden = true;
-    fab.style.visibility = '';
-    fab.style.pointerEvents = ''; // 恢复悬浮球可点可拖
+    stopSpeak(); // 关闭窗口同时停止朗读：避免出现「窗口关了但声音还在响」的诡异状态
     showBubble(); // 面板关闭后重新显示问候气泡
     document.body.style.overflow = '';
     input.blur();
     resetViewport();
+    // 记录关闭来源（诊断用）：下次打开面板时若为「非用户显式操作」会在消息区提示原因
+    try { localStorage.setItem(LS_CLOSURE, JSON.stringify({ s: source || 'unknown', t: Date.now() })); } catch (e) {}
     if (!skipBack && history.state && history.state.ai) { try { history.back(); } catch (e) {} }
   }
 
@@ -618,10 +627,16 @@
   function bindEvents() {
     fab.addEventListener('click', function () {
       if (fabMoved) { fabMoved = false; return; } // 拖拽后不触发打开
-      isOpen ? closePanel() : openPanel();
+      if (isOpen) {
+        // 朗读中点击悬浮球 → 只停语音不关面板（用户本意通常是静音/暂停，而不是关闭窗口）
+        if (audioEl && !audioEl.paused && !audioEl.ended) { stopSpeak(); return; }
+        closePanel(false, 'fab');
+      } else {
+        openPanel();
+      }
     });
 
-    $('#ai-close', panel).addEventListener('click', function () { closePanel(); });
+    $('#ai-close', panel).addEventListener('click', function () { closePanel(false, 'close-btn'); });
     if (soundBtn) soundBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleTts(); });
 
     // 发送
@@ -654,18 +669,26 @@
     });
     goBottom.addEventListener('click', function () { scrollBottom(true); });
 
+    // 页面刷新/跳转导致面板随页面销毁 → 记录来源，下次打开面板时提示「页面导航」（诊断页面级消失）
+    window.addEventListener('pagehide', function () {
+      if (isOpen) {
+        try { localStorage.setItem(LS_CLOSURE, JSON.stringify({ s: 'page-nav', t: Date.now() })); } catch (e) {}
+      }
+    });
+
     // 返回键 / Esc
-    // popstate：手机端返回键 / 桌面端浏览器后退手势(触摸板/鼠标侧键)都可能触发。朗读中误触 → 先停语音，不关面板（与 Esc 一致）
+    // popstate：仅手机端返回键用于关闭面板；桌面端直接忽略（浏览器后退手势/鼠标侧键/页面返回按钮不会再误关窗口）
     window.addEventListener('popstate', function () {
       if (!isOpen) return;
+      if (!isMb()) return;
       if (audioEl && !audioEl.paused && !audioEl.ended) { stopSpeak(); return; }
-      closePanel(true);
+      closePanel(true, 'popstate-mb');
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && isOpen) {
         // 正在朗读语音时按 Esc：先停语音，不关面板（避免用户想关声音却把窗口关了）
         if (audioEl && !audioEl.paused && !audioEl.ended) { stopSpeak(); return; }
-        closePanel();
+        closePanel(false, 'esc');
       }
     });
 
