@@ -88,6 +88,9 @@
         '<button id="musicSideBtn" onclick="toggleMusic()" title="播放/暂停">🔈</button>' +
         '<button id="musicNextBtn" onclick="(window.nextTrack?nextTrack():toggleMusic())" title="下一首">⏭</button>' +
         '<span class="sep"></span>' +
+        '<button onclick="window.changeVolume&&changeVolume(-0.2)" title="音量-">🔉</button>' +
+        '<button onclick="window.changeVolume&&changeVolume(0.2)" title="音量+">🔊</button>' +
+        '<span class="sep"></span>' +
         '<button onclick="window.toggleLanguage&&toggleLanguage()" title="English/中文">EN</button>' +
       '</div>' +
       '<a href="' + root() + 'index.html">✦ 返回首页</a>' +
@@ -137,6 +140,10 @@ window.toggleMusic = function() {
   if (typeof window.toggleBgMusic === 'function') {
     window.toggleBgMusic(); // main.js 播放器（含列表/进度/按钮状态）
   } else if (audio) {
+    if (!audio.src || audio.src === window.location.href || audio.src === '') {
+      audio.src = (window.location.pathname.indexOf('/pages/') > -1 ? '../' : '') + 'music/background.mp3';
+      audio.loop = true;
+    }
     if (wasPaused) { audio.play().catch(function(){}); } else { audio.pause(); }
   }
   var btn = document.getElementById('musicSideBtn');

@@ -260,7 +260,11 @@ function initMusicPlayer() {
   var musicNext = document.getElementById('music-next');
   var musicAudio = document.getElementById('bg-music');
   var trackName = document.getElementById('music-track-name');
-  if (!musicToggle || !musicAudio) return;
+  // sidebar 注入与首页的播放按钮（可能不存在——播放器不依赖它们也能初始化，保证全站可用）
+  var musicSideToggle = document.getElementById('musicSideBtn');
+  var musicNavToggle = document.getElementById('musicNavBtn');
+  var musicFloatToggle = document.getElementById('musicFloatBtn');
+  if (!musicAudio) return;
 
   var playlist = [];
   var currentIndex = 0;
@@ -297,6 +301,16 @@ function initMusicPlayer() {
     localStorage.setItem('xie_music_index', currentIndex);
   }
 
+  // 同步所有播放/暂停按钮（sidebar 的 musicSideBtn、首页的 musicNavBtn/musicFloatBtn、手写 music-toggle）
+  function setPlayUI(playing) {
+    var btns = [musicToggle, musicSideToggle, musicNavToggle, musicFloatToggle];
+    for (var i = 0; i < btns.length; i++) {
+      if (!btns[i]) continue;
+      btns[i].textContent = playing ? '🔊' : '🔈';
+      btns[i].classList.toggle('playing', playing);
+    }
+  }
+
   function doPlay() {
     // Lazy-load audio: set src only when user actually clicks play
     if (!musicAudio.src || musicAudio.src === window.location.href || musicAudio.src === '') {
@@ -307,8 +321,7 @@ function initMusicPlayer() {
       p.catch(function(e) {
         console.warn('Music play blocked:', e.message);
         // Autoplay likely blocked by browser — reset button state
-        musicToggle.textContent = '🔈';
-        musicToggle.classList.remove('playing');
+        setPlayUI(false);
         localStorage.setItem('xie_music_playing', 'false');
       });
     }
@@ -317,13 +330,11 @@ function initMusicPlayer() {
   function togglePlay() {
     if (musicAudio.paused) {
       doPlay();
-      musicToggle.textContent = '🔊';
-      musicToggle.classList.add('playing');
+      setPlayUI(true);
       localStorage.setItem('xie_music_playing', 'true');
     } else {
       musicAudio.pause();
-      musicToggle.textContent = '🔈';
-      musicToggle.classList.remove('playing');
+      setPlayUI(false);
       localStorage.setItem('xie_music_playing', 'false');
     }
   }
@@ -331,10 +342,15 @@ function initMusicPlayer() {
   function playNext() { setTrack(currentIndex + 1); if (playlist.length > 0) doPlay(); }
   function playPrev() { setTrack(currentIndex - 1); if (playlist.length > 0) doPlay(); }
 
-  // 暴露给侧边栏 sidebar.js：上一首 / 下一首 / 播放暂停（复用同一播放器状态）
+  // 暴露给侧边栏 sidebar.js：上一首 / 下一首 / 播放暂停 / 音量（复用同一播放器状态）
   window.prevTrack = playPrev;
   window.nextTrack = playNext;
   window.toggleBgMusic = togglePlay;
+  window.changeVolume = function(d) {
+    if (!musicAudio) return;
+    musicAudio.volume = Math.max(0, Math.min(1, musicAudio.volume + d));
+    localStorage.setItem('xie_music_volume', String(musicAudio.volume));
+  };
 
   // Init
   loadPlaylist();
@@ -346,17 +362,20 @@ function initMusicPlayer() {
   var savedTime = parseFloat(localStorage.getItem('xie_music_time')) || 0;
   var savedIndex = parseInt(localStorage.getItem('xie_music_index')) || 0;
 
+  // 恢复上次音量（默认 1）
+  var savedVol = parseFloat(localStorage.getItem('xie_music_volume'));
+  if (!isNaN(savedVol)) musicAudio.volume = savedVol;
+
   if (savedIndex < playlist.length) currentIndex = savedIndex;
   // Don't pre-load audio file — wait until user clicks play
   // setTrack(currentIndex);  (removed for performance)
   if (isPlaying && playlist.length) {
     musicAudio.currentTime = savedTime;
     doPlay();
-    musicToggle.textContent = '🔊';
-    musicToggle.classList.add('playing');
+    setPlayUI(true);
   }
 
-  musicToggle.addEventListener('click', togglePlay);
+  if (musicToggle) musicToggle.addEventListener('click', togglePlay);
   if (musicPrev) musicPrev.addEventListener('click', playPrev);
   if (musicNext) musicNext.addEventListener('click', playNext);
 
@@ -372,8 +391,7 @@ function initMusicPlayer() {
     }
     console.warn('Music audio error (' + musicAudio.src + '): ' + errMsg);
     // Reset playing state so UI isn't stuck
-    musicToggle.textContent = '🔈';
-    musicToggle.classList.remove('playing');
+    setPlayUI(false);
     localStorage.setItem('xie_music_playing', 'false');
   });
 
@@ -381,8 +399,7 @@ function initMusicPlayer() {
     if (playlist.length > 1) {
       playNext();
     } else {
-      musicToggle.textContent = '🔈';
-      musicToggle.classList.remove('playing');
+      setPlayUI(false);
       localStorage.setItem('xie_music_playing', 'false');
       localStorage.setItem('xie_music_time', '0');
     }
@@ -393,7 +410,7 @@ function initMusicPlayer() {
     loadPlaylist();
     setTrack(0);
     localStorage.setItem('xie_music_index', '0');
-    if (musicToggle.classList.contains('playing')) {
+    if (musicToggle && musicToggle.classList.contains('playing')) {
       doPlay();
     }
   };
@@ -435,7 +452,7 @@ function initMusicPlayer() {
       loadPlaylist();
       if (playlist.length !== oldLen) {
         setTrack(0);
-        if (musicToggle.classList.contains('playing')) doPlay();
+        if (musicToggle && musicToggle.classList.contains('playing')) doPlay();
       }
     }
   });
