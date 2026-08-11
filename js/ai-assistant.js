@@ -34,7 +34,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v12'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v13'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -495,7 +495,7 @@
     fab.addEventListener('pointermove', function (e) {
       if (!dragging) return;
       var dx = e.clientX - startX, dy = e.clientY - startY;
-      if (!moved && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) moved = true;
+      if (!moved && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) moved = true;
       if (!moved) return;
       var c = clampPos(startL + dx, startT + dy, 56, 56);
       fab.style.left = c.x + 'px';
@@ -503,10 +503,14 @@
       fab.style.right = 'auto';
       fab.style.bottom = 'auto';
     });
-    var endFabDrag = function () {
+    var endFabDrag = function (e) {
       if (!dragging) return;
       dragging = false;
-      if (moved) {
+      var dx = e.clientX - startX, dy = e.clientY - startY;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      // 只有「最终真的拖出一段距离(>8px)」才算拖拽；点击时的轻微抖动（移出去又回到原点）不算，
+      // 否则电脑端鼠标点击略有抖动就被误判为拖拽，导致点悬浮球永远打不开面板。
+      if (moved && dist > 8) {
         fabMoved = true;
         var r = fab.getBoundingClientRect();
         var p = { x: Math.round(r.left), y: Math.round(r.top) };
