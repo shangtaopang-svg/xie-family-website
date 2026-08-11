@@ -353,7 +353,7 @@
   .ai-hbtns { gap: 4px; }
   .ai-close, .ai-sound { background: rgba(255, 255, 255, 0.1); }
   .ai-msgs { background: var(--mb-bg, #0a0a0a); padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
-  .ai-msg.ai-user { background: var(--mb-brand, #D4FF3A) !important; color: #0a0a0a !important; font-weight: 600; }
+  .ai-msg.ai-user { background: linear-gradient(135deg, #f5a623, #d97706) !important; color: #fff !important; font-weight: 600; }
   .ai-msg.ai-bot { background: #1c1c1c !important; border: 1px solid #333 !important; color: #f5f5f5 !important; }
   .ai-msg.ai-bot .ai-src { color: rgba(238, 238, 238, 0.45) !important; }
   .ai-verify { background: var(--mb-card, #141414); border-color: var(--mb-border, #2a2a2a); }

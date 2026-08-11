@@ -33,7 +33,7 @@
   var LS_GREET = 'ai_greeting_done';
   var LS_TTS_MUTED = 'ai_tts_muted';
   var MAX_HIST = 50;
-  var APP_VERSION = 'v8'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v9'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -271,8 +271,9 @@
     // 移动端内联样式强制配色（终极兜底）：绕过任何陈旧 CSS 缓存，保证 bot 深底浅字、user 绿底黑字清晰可读
     if (IS_MOBILE) {
       if (role === 'user') {
-        el.style.setProperty('background', '#D4FF3A', 'important');
-        el.style.setProperty('color', '#0a0a0a', 'important');
+        // 提问气泡：品牌橙渐变 + 白字（区别于 AI 回答的深灰底）
+        el.style.setProperty('background', 'linear-gradient(135deg,#f5a623,#d97706)', 'important');
+        el.style.setProperty('color', '#ffffff', 'important');
         el.style.setProperty('font-weight', '600', 'important');
       } else {
         el.style.setProperty('background', '#1c1c1c', 'important');
@@ -599,7 +600,7 @@
     var st = document.createElement('style');
     st.id = 'ai-color-guard';
     st.textContent = '@media (max-width:768px){' +
-      '.ai-msg.ai-user{background:#D4FF3A !important;color:#0a0a0a !important}' +
+      '.ai-msg.ai-user{background:linear-gradient(135deg,#f5a623,#d97706) !important;color:#fff !important}' +
       '.ai-msg.ai-bot{background:#1c1c1c !important;border:1px solid #333 !important;color:#f5f5f5 !important}' +
       '#ai-fab .ai-bubble{background:#141414 !important;color:#eee !important;border-color:#2a2a2a !important}' +
       '#ai-fab .ai-bubble::after{background:#141414 !important;border-color:#2a2a2a !important}' +
