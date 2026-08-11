@@ -34,7 +34,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v34'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v35'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -777,7 +777,7 @@
     var out = [];
     var s = 0;
     for (var i = 0; i < txt.length; i++) {
-      if ('。！？；…'.indexOf(txt.charAt(i)) !== -1) {
+      if ('。！？；…，、：'.indexOf(txt.charAt(i)) !== -1) {
         out.push({ s: s, e: i + 1 });
         s = i + 1;
       }
@@ -871,6 +871,7 @@
       .replace(/[《》""]/g, '')               // 去掉书名号/引号
       .replace(/\s*\n+\s*/g, '，')           // 换行 → 逗号
       .replace(/[，、]{2,}/g, '，')           // 合并连续顿号/逗号
+      .replace(/[：:][，,]/g, '：')           // 「：，」→「：」（换行转逗号时紧跟在冒号后产生）
       .replace(/[，,]+$/g, '')
       .replace(/[。！？!?]+$/, '。')
       .trim()

@@ -467,8 +467,9 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   .ai-verify-tip { color: var(--mb-brand, #D4FF3A); }
   .ai-verify input { background: var(--mb-bg, #0a0a0a); border-color: var(--mb-border, #2a2a2a); color: #eee; }
   .ai-verify input:focus { border-color: var(--mb-brand, #D4FF3A); }
-  .ai-chips { background: var(--mb-bg, #0a0a0a); border-top: 1px solid var(--mb-border, #2a2a2a); }
-  .ai-chip { background: var(--mb-card, #141414); border-color: rgba(212, 255, 58, 0.35); color: var(--mb-brand, #D4FF3A); }
+  .ai-chips { background: var(--mb-bg, #0a0a0a); border-top: 1px solid var(--mb-border, #2a2a2a); flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .ai-chips::-webkit-scrollbar { display: none; }
+  .ai-chip { flex-shrink: 0; background: var(--mb-card, #141414); border-color: rgba(212, 255, 58, 0.35); color: var(--mb-brand, #D4FF3A); }
   .ai-chip:active { background: var(--mb-card2, #1c1c1c); }
   .ai-input-row { background: var(--mb-bg, #0a0a0a); border-top: 1px solid var(--mb-border, #2a2a2a); padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
   #ai-input { background: var(--mb-card, #141414); border-color: var(--mb-border, #2a2a2a); color: #eee; }
@@ -650,7 +651,7 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
 
 /* 手机端：全屏遮罩 */
 @media (max-width: 768px) {
-  #ai-tree-overlay { padding: 0; align-items: stretch; }
+  #ai-tree-overlay { padding: 0; align-items: stretch; background: #0a0a0e; } /* 手机端全屏遮罩不透明，彻底盖住下方页面（口播时不再透出「影像记录」等杂项） */
   .ai-tree-modal {
     width: 100%;
     max-height: 100vh;
