@@ -3219,23 +3219,35 @@ body {
 
 /* ===== Footer ===== */
 .site-footer {
+  position: relative;
   border-top: 1px solid var(--divider);
-  padding: 48px 20px 20px;
+  padding: 56px 20px 24px;
   margin-top: 80px;
-  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.02));
+  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.03));
+}
+
+.site-footer::before { /* 顶部居中品牌渐变装饰线 */
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 140px; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--accent-orange), transparent);
+  border-radius: 2px;
+  opacity: 0.75;
 }
 
 [data-theme="dark"] .site-footer {
-  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.02));
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.03));
 }
 
 .footer-inner {
   max-width: 1000px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1.8fr 1fr 1fr 1fr;
-  gap: 40px;
-  margin-bottom: 32px;
+  grid-template-columns: 1.6fr 1fr 1fr 1.2fr;
+  gap: 48px;
+  margin-bottom: 36px;
 }
 
 .footer-bottom {
@@ -3250,46 +3262,68 @@ body {
 }
 
 .footer-section h4 {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-secondary);
-  font-weight: 600;
-  margin-bottom: 14px;
+  font-weight: 700;
+  margin-bottom: 16px;
   letter-spacing: 2px;
   text-transform: uppercase;
   position: relative;
 }
 
-.footer-section h4::after {
+.footer-section h4::after { /* 渐变强调线 */
   content: '';
   display: block;
-  width: 24px;
-  height: 2px;
-  background: var(--accent-orange);
-  margin-top: 6px;
-  opacity: 0.5;
-  border-radius: 1px;
+  width: 28px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-orange), transparent);
+  margin-top: 8px;
+  opacity: 0.8;
+  border-radius: 2px;
 }
 
 .footer-section p,
 .footer-section a {
   font-size: 13px;
   color: var(--text-tertiary);
-  line-height: 2.2;
+  line-height: 2.3;
   text-decoration: none;
   display: block;
   transition: all 0.2s ease;
   padding-left: 0;
+  position: relative;
+}
+
+.footer-section a::before { /* hover 前置小箭头 */
+  content: '›';
+  position: absolute;
+  left: 2px; top: 0;
+  color: var(--accent-orange);
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: all 0.2s ease;
 }
 
 .footer-section a:hover {
   color: var(--accent-orange);
-  padding-left: 4px;
+  padding-left: 18px;
+}
+
+.footer-section a:hover::before {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.footer-section:first-child h4 { /* 品牌标题更醒目 */
+  font-size: 17px;
+  letter-spacing: 1px;
+  color: var(--accent-orange);
 }
 
 .footer-section:first-child p {
   line-height: 1.9;
-  font-size: 13px;
-  color: var(--text-tertiary);
+  font-size: 13.5px;
+  color: var(--text-secondary);
 }
 
 .footer-bottom {

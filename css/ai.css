@@ -547,6 +547,19 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   color: #fff;
 }
 .ai-tree-title { flex: 1; font-size: 14px; font-weight: 700; }
+.ai-tree-headbtns { display: flex; align-items: center; gap: 8px; }
+.ai-tree-sound {
+  border: none;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+.ai-tree-sound:hover { background: rgba(255, 255, 255, 0.3); }
 .ai-tree-close {
   border: none;
   background: rgba(255, 255, 255, 0.16);

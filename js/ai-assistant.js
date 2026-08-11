@@ -34,7 +34,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v32'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v33'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -622,14 +622,22 @@
 
   /* ---------------- 语音朗读（Edge 神经女声） ---------------- */
   function noop() {}
+  function updateTtsBtns() { // 同步主面板 + 世系图弹层两处声音按钮图标
+    var icon = ttsMuted ? '🔇' : '🔊';
+    if (soundBtn) soundBtn.textContent = icon;
+    if (treeOverlay) {
+      var tb = treeOverlay.querySelector('.ai-tree-sound');
+      if (tb) { tb.textContent = icon; tb.title = ttsMuted ? '打开声音' : '静音'; tb.setAttribute('aria-label', ttsMuted ? '打开声音' : '静音'); }
+    }
+  }
   function initTts() {
     try { ttsMuted = localStorage.getItem(LS_TTS_MUTED) !== '0'; } catch (e) { ttsMuted = true; }
-    if (soundBtn) soundBtn.textContent = ttsMuted ? '🔇' : '🔊';
+    updateTtsBtns();
   }
   function toggleTts() {
     ttsMuted = !ttsMuted;
     try { localStorage.setItem(LS_TTS_MUTED, ttsMuted ? '1' : '0'); } catch (e) {}
-    if (soundBtn) soundBtn.textContent = ttsMuted ? '🔇' : '🔊';
+    updateTtsBtns();
     if (!ttsMuted && audioEl) { try { audioEl.play().catch(noop); } catch (e) {} } // 重新打开时恢复播放
   }
   /** 口播按钮状态机：none 无 | playing 朗读中 | paused 已暂停(可继续) | ended 已读完(可重听) */
@@ -924,7 +932,10 @@
     ov.innerHTML =
       '<div class="ai-tree-modal">' +
       '  <div class="ai-tree-head"><span class="ai-tree-title">🌳 世系图 · 从炎帝神农氏到' + esc(last.name) + '</span>' +
-      '    <button type="button" class="ai-tree-close" aria-label="关闭">✕</button></div>' +
+      '    <span class="ai-tree-headbtns">' +
+      '      <button type="button" class="ai-tree-sound" aria-label="' + (ttsMuted ? '打开声音' : '静音') + '" title="' + (ttsMuted ? '打开声音' : '静音') + '">' + (ttsMuted ? '🔇' : '🔊') + '</button>' +
+      '      <button type="button" class="ai-tree-close" aria-label="关闭">✕</button>' +
+      '    </span></div>' +
       '  <div class="ai-tree-body"></div>' +
       '</div>';
     document.body.appendChild(ov);
@@ -947,6 +958,8 @@
     });
     tbody.appendChild(frag);
     ov.addEventListener('click', function (e) { if (e.target === ov) closeTreeOverlay(); });
+    var treeSoundBtn = ov.querySelector('.ai-tree-sound');
+    if (treeSoundBtn) treeSoundBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleTts(); });
     ov.querySelector('.ai-tree-close').addEventListener('click', closeTreeOverlay);
     var onKey = function (e) {
       if (e.key === 'Escape') {
