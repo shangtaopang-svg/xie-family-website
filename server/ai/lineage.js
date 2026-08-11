@@ -136,10 +136,23 @@ function kinshipText(aId, bId) {
   return `${a.name} 与 ${b.name} 是共祖的族人，共同祖先为 ${lcaName}（${a.name} 距其 ${da} 代、${b.name} 距其 ${db} 代）`;
 }
 
-/** 人名字段：世次/分支（注：genealogy 的 generation 字段是 CSV 世代号，不是字辈字，故不显示） */
+/** 代数通俗表述：正数→「第N世」（族谱通用说法）；负数（远古炎帝世系）→「远古世系」；空→「未知」 */
+function generationLabel(g) {
+  if (g === undefined || g === null || g === '') return '未知';
+  const n = Number(g);
+  if (n >= 1) return '第' + n + '世';
+  if (n < 0) return '远古世系';
+  return String(g);
+}
+
+/** 人名字段：代数/分支（注：genealogy 的 generation 字段是 CSV 世代号，不是字辈字，故不显示） */
 function describePerson(p) {
   const parts = [p.name];
-  if (p.generation_num !== undefined && p.generation_num !== null && p.generation_num !== '') parts.push('世次' + p.generation_num);
+  const g = Number(p.generation_num);
+  // 正数世次 → 「第N世」；负数（远古炎帝世系）不显示代数，branch 已标明「炎帝世系」
+  if (p.generation_num !== undefined && p.generation_num !== null && p.generation_num !== '' && g >= 1) {
+    parts.push('第' + g + '世');
+  }
   if (p.branch && p.branch !== '—' && p.branch !== '') parts.push(p.branch);
   return parts.join(' · ');
 }
@@ -194,13 +207,18 @@ function answerLineage(query, selfId) {
   const tid = Number(target.id);
 
   if (/第几代|第几世/.test(q)) {
-    const genTxt = `${target.name} 世次为 ${target.generation_num === undefined ? '未知' : target.generation_num}。`;
+    const g = target.generation_num;
+    const isAncient = g !== undefined && g !== null && g !== '' && Number(g) < 0;
+    const genTxt = isAncient
+      ? `${target.name} 属远古世系（比始祖早 ${-Number(g)} 世）。`
+      : (g === undefined || g === null || g === '' ? `${target.name} 代数未录入。` : `${target.name} ${generationLabel(g)}。`);
     // 同时问"同辈/辈分"时，一并列出同辈示例
     if (/同辈|同一辈|辈分|排行/.test(q)) {
       const { list, total } = getSameGeneration(tid, 30);
       if (list.length) {
         const names = list.slice(0, 15).map(p => p.name + (p.branch && p.branch !== '—' ? '(' + p.branch + ')' : '')).join('、');
-        return genTxt + `\n与 ${target.name} 同辈（世次 ${target.generation_num}）的族人共 ${total} 位，示例：\n${names}`;
+        const scope = isAncient ? '远古世系' : generationLabel(g);
+        return genTxt + `\n与 ${target.name} 同辈（${scope}）的族人共 ${total} 位，示例：\n${names}`;
       }
     }
     return genTxt;
@@ -209,8 +227,11 @@ function answerLineage(query, selfId) {
   if (/同辈|同一辈|辈分|排行/.test(q)) {
     const { list, total } = getSameGeneration(tid, 30);
     if (!list.length) return `未找到与 ${describePerson(target)} 同辈的族人记录。`;
+    const g = target.generation_num;
+    const isAncient = g !== undefined && g !== null && g !== '' && Number(g) < 0;
+    const scope = isAncient ? '远古世系' : generationLabel(g);
     const names = list.slice(0, 15).map(p => p.name + (p.branch && p.branch !== '—' ? '(' + p.branch + ')' : '')).join('、');
-    return `与 ${target.name} 同辈（世次 ${target.generation_num}）的族人共 ${total} 位，示例：\n${names}`;
+    return `与 ${target.name} 同辈（${scope}）的族人共 ${total} 位，示例：\n${names}`;
   }
 
   if (/后代|子孙|后裔|后辈|子女/.test(q)) {
