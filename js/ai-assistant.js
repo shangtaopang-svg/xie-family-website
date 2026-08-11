@@ -33,7 +33,7 @@
   var LS_GREET = 'ai_greeting_done';
   var LS_TTS_MUTED = 'ai_tts_muted';
   var MAX_HIST = 50;
-  var APP_VERSION = 'v7'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v8'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -202,7 +202,9 @@
         bubbleDismissed = true; // 仅本次会话收起，下次访问重新出现
         return;
       }
-      // 点气泡本体 → 冒泡给 FAB 的 click 打开咨询面板
+      // 点气泡本体 → 直接打开咨询面板（不依赖冒泡到 FAB，防止事件被拖拽/拦截吞掉导致面板不弹出）
+      openPanel();
+      e.stopPropagation();
     });
   }
 
@@ -649,7 +651,11 @@
     // 返回键 / Esc
     window.addEventListener('popstate', function () { if (isOpen) closePanel(true); });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && isOpen) closePanel();
+      if (e.key === 'Escape' && isOpen) {
+        // 正在朗读语音时按 Esc：先停语音，不关面板（避免用户想关声音却把窗口关了）
+        if (audioEl && !audioEl.paused && !audioEl.ended) { stopSpeak(); return; }
+        closePanel();
+      }
     });
 
     // 可视区域变化（键盘弹出/收起、旋转）
