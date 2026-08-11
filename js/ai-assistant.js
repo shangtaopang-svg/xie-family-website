@@ -34,7 +34,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v13'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v14'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -216,6 +216,12 @@
     isOpen = true;
     panel.hidden = false;
     hideBubble(); // 打开面板时收起问候气泡
+    // 用户点开咨询面板 = 表达已进入浏览 → 收起 entrance 欢迎验证遮罩层（若有），避免其 z-index(99999) 挡住 AI 面板交互
+    var wl = document.getElementById('wl-overlay');
+    if (wl && !wl.classList.contains('hide')) {
+      wl.classList.add('hide');
+      try { localStorage.setItem('wl_done', '1'); } catch (e) {}
+    }
     document.body.style.overflow = 'hidden';
     renderHistory();
     // 诊断：上次关闭若非用户显式操作（fab/✕/Esc），在消息区顶部提示原因（1 小时内），便于定位「窗口莫名消失」
