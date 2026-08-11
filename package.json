@@ -1,0 +1,9 @@
+{
+  "name": "xie-family-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "宁海下枫槎村谢氏家族网站",
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

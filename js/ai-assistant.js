@@ -31,12 +31,15 @@
   var LS_FAB_POS = 'ai_fab_pos';
   var LS_PANEL_POS = 'ai_panel_pos';
   var LS_GREET = 'ai_greeting_done';
+  var LS_TTS_MUTED = 'ai_tts_muted';
   var MAX_HIST = 50;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
-  var fab, panel, msgs, chipsEl, input, sendBtn, statusEl, goBottom, header, bubble;
+  var fab, panel, msgs, chipsEl, input, sendBtn, statusEl, goBottom, header, bubble, soundBtn;
   var hist = [];
   var isOpen = false;
+  var ttsMuted = false; // 语音朗读开关（用户可记忆）
+  var audioEl = null;   // 复用的 <audio> 播放器
   var queuedMsg = null;
   var composing = false;
   var forceScroll = true;
@@ -87,7 +90,10 @@
       '    <span class="ai-logo">🤖</span>' +
       '    <div><div class="ai-name">家族 AI 咨询</div><div class="ai-status" id="ai-status"></div></div>' +
       '  </div>' +
-      '  <button type="button" class="ai-close" id="ai-close" aria-label="关闭">✕</button>' +
+      '  <div class="ai-hbtns">' +
+      '    <button type="button" class="ai-sound" id="ai-sound" aria-label="语音朗读开关" title="语音朗读">🔊</button>' +
+      '    <button type="button" class="ai-close" id="ai-close" aria-label="关闭">✕</button>' +
+      '  </div>' +
       '</div>' +
       '<div class="ai-msgs" id="ai-msgs"></div>' +
       '<div class="ai-chips" id="ai-chips"></div>' +
@@ -109,6 +115,7 @@
     sendBtn = $('#ai-send', panel);
     statusEl = $('#ai-status', panel);
     header = $('.ai-header', panel);
+    soundBtn = $('#ai-sound', panel);
 
     // 预设问题 chips
     CHIPS.forEach(function (c) {
@@ -283,6 +290,7 @@
   function doSend(text) {
     var t = (text || '').trim();
     if (!t) return;
+    stopSpeak(); // 发送新问题，打断上一段朗读
     appendMessage('user', t);
     hist.push({ role: 'user', content: t });
     persist();
@@ -300,6 +308,7 @@
       if (done) return;
       done = true;
       body.textContent = answer || '（无回答）';
+      if (answer && answer !== '（无回答）') speak(answer); // 自动朗读每次回复
       if (sources && sources.length) {
         var src = document.createElement('div');
         src.className = 'ai-src';
@@ -490,7 +499,7 @@
     var startX = 0, startY = 0, startL = 0, startT = 0, dragging = false;
     header.addEventListener('pointerdown', function (e) {
       if (isMb()) return;                                            // 手机全屏不拖动
-      if (e.target && e.target.closest && e.target.closest('.ai-close')) return; // 点关闭按钮不算
+      if (e.target && e.target.closest && e.target.closest('.ai-close, .ai-sound')) return; // 点按钮不算拖动
       if (e.button !== undefined && e.button !== 0 && e.pointerType === 'mouse') return;
       dragging = true;
       startX = e.clientX; startY = e.clientY;
@@ -524,6 +533,58 @@
     header.addEventListener('pointercancel', endPanelDrag);
   }
 
+  /* ---------------- 语音朗读（Edge 神经女声） ---------------- */
+  function noop() {}
+  function initTts() {
+    try { ttsMuted = localStorage.getItem(LS_TTS_MUTED) === '1'; } catch (e) { ttsMuted = false; }
+    if (soundBtn) soundBtn.textContent = ttsMuted ? '🔇' : '🔊';
+  }
+  function toggleTts() {
+    ttsMuted = !ttsMuted;
+    try { localStorage.setItem(LS_TTS_MUTED, ttsMuted ? '1' : '0'); } catch (e) {}
+    if (soundBtn) soundBtn.textContent = ttsMuted ? '🔇' : '🔊';
+    if (!ttsMuted && audioEl) { try { audioEl.play().catch(noop); } catch (e) {} } // 重新打开时恢复播放
+  }
+  function stopSpeak() {
+    if (audioEl) { try { audioEl.pause(); audioEl.removeAttribute('src'); audioEl.load(); } catch (e) {} }
+  }
+  /** 把答案文本处理成适合朗读的流畅句子 */
+  function prepareSpoken(text) {
+    return String(text)
+      .replace(/←\s*您/g, '，是您本人')     // 世系图箭头「← 您」
+      .replace(/[→➜▶|]/g, '，')             // 各类箭头/竖线 → 逗号
+      .replace(/[●◆▪•★☆]/g, '，')           // 列表符号 → 逗号
+      .replace(/【[^】]*】/g, '')            // 去掉【…】备注括号
+      .replace(/[《》""]/g, '')               // 去掉书名号/引号
+      .replace(/\s*\n+\s*/g, '，')           // 换行 → 逗号
+      .replace(/[，、]{2,}/g, '，')           // 合并连续顿号/逗号
+      .replace(/[，,]+$/g, '')
+      .replace(/[。！？!?]+$/, '。')
+      .trim()
+      .slice(0, 600);
+  }
+  /** 朗读一段回复（自动，除非用户已静音） */
+  function speak(text) {
+    if (ttsMuted) return;
+    var spoken = prepareSpoken(text);
+    if (!spoken) return;
+    stopSpeak();
+    fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: spoken, voice: 'zh-CN-XiaoxiaoNeural' })
+    }).then(function (r) {
+      if (!r.ok) throw new Error('tts ' + r.status);
+      return r.blob();
+    }).then(function (blob) {
+      if (ttsMuted) return;
+      if (!audioEl) audioEl = new Audio();
+      audioEl.src = URL.createObjectURL(blob);
+      audioEl.onended = function () { try { URL.revokeObjectURL(audioEl.src); } catch (e) {} };
+      audioEl.play().catch(noop);
+    }).catch(noop); // 语音失败静默，不影响文字回复
+  }
+
   /* ---------------- 事件绑定 ---------------- */
   function bindEvents() {
     fab.addEventListener('click', function () {
@@ -532,6 +593,7 @@
     });
 
     $('#ai-close', panel).addEventListener('click', function () { closePanel(); });
+    if (soundBtn) soundBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleTts(); });
 
     // 发送
     sendBtn.addEventListener('click', function () { doSend(input.value); });
@@ -594,6 +656,7 @@
     positionFab();
     updateStatus();
     setupBubble();
+    initTts();
   }
 
   if (document.readyState === 'loading') {

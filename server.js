@@ -129,6 +129,18 @@ function sendJson(req, res, status, data) {
   gzipSend(req, res, status, { 'Content-Type': 'application/json' }, body);
 }
 
+// TTS 朗读限流：每 IP 滑动窗口 20 次/分钟
+const ttsHits = new Map();
+function ttsRateOk(ip) {
+  const now = Date.now();
+  const arr = (ttsHits.get(ip) || []).filter(t => now - t < 60000);
+  if (arr.length >= 20) { ttsHits.set(ip, arr); return false; }
+  arr.push(now);
+  ttsHits.set(ip, arr);
+  if (ttsHits.size > 500) { ttsHits.clear(); }
+  return true;
+}
+
 const GZIP_MIN = 1024; // only gzip responses larger than 1KB
 
 function gzipSend(req, res, status, headers, data) {
@@ -501,6 +513,48 @@ const server = http.createServer(async (req, res) => {
       await require('./server/ai/index.js').handleAiChat(req, res, req.url);
     } catch (e) {
       sendJson(req, res, 500, { ok: false, error: 'AI 服务异常' });
+    }
+    return;
+  }
+
+  // === AI 语音朗读（Edge 神经女声） ===
+  if (url === '/api/tts') {
+    const tts = require('./server/ai/tts.js');
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      });
+      res.end();
+      return;
+    }
+    if (req.method !== 'POST') {
+      sendJson(req, res, 405, { ok: false, error: 'Method Not Allowed' });
+      return;
+    }
+    try {
+      const body = JSON.parse((await collectBody(req)) || '{}');
+      const text = typeof body.text === 'string' ? body.text.trim() : '';
+      const voice = typeof body.voice === 'string' ? body.voice : '';
+      if (!text || text.length > 800) {
+        sendJson(req, res, 400, { ok: false, error: '文本长度需在 1-800 字之间' });
+        return;
+      }
+      const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').toString().split(',')[0].trim();
+      if (!ttsRateOk(ip)) {
+        sendJson(req, res, 429, { ok: false, error: '朗读太频繁，请稍后再试' });
+        return;
+      }
+      const mp3 = await tts.synthesizeCached(text, { voice });
+      res.writeHead(200, {
+        'Content-Type': 'audio/mpeg',
+        'Cache-Control': 'no-cache',
+        'Content-Length': mp3.length,
+      });
+      res.end(mp3);
+    } catch (e) {
+      sendJson(req, res, 500, { ok: false, error: e.message || '语音合成失败' });
     }
     return;
   }
