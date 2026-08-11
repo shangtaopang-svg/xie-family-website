@@ -34,11 +34,11 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v20'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v21'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
-  var fab, panel, msgs, chipsEl, input, sendBtn, statusEl, goBottom, header, bubble, soundBtn;
+  var fab, panel, msgs, chipsEl, input, sendBtn, statusEl, goBottom, header, bubble, soundBtn, stopBtn;
   var hist = [];
   var isOpen = false;
   var ttsMuted = true; // 语音朗读开关（v17 起默认关闭：回答不自动念，用户可点 🔊 开启）
@@ -95,6 +95,7 @@
       '  </div>' +
       '  <div class="ai-hbtns">' +
       '    <button type="button" class="ai-sound" id="ai-sound" aria-label="语音朗读开关" title="语音朗读">🔊</button>' +
+      '    <button type="button" class="ai-sound" id="ai-stop" aria-label="暂停口播" title="暂停口播" hidden>⏸</button>' +
       '    <button type="button" class="ai-close" id="ai-close" aria-label="关闭">✕</button>' +
       '  </div>' +
       '</div>' +
@@ -119,6 +120,7 @@
     statusEl = $('#ai-status', panel);
     header = $('.ai-header', panel);
     soundBtn = $('#ai-sound', panel);
+    stopBtn = $('#ai-stop', panel);
 
     // 预设问题 chips
     CHIPS.forEach(function (c) {
@@ -594,6 +596,20 @@
   }
   function stopSpeak() {
     if (audioEl) { try { audioEl.pause(); audioEl.removeAttribute('src'); audioEl.load(); } catch (e) {} }
+    if (stopBtn) stopBtn.hidden = true;
+  }
+  /** 暂停口播按钮与音频事件联动：只在真正出声时显示，停止/结束/出错即隐藏 */
+  var audioBound = false;
+  function bindAudioEl() {
+    if (audioBound || !audioEl) return;
+    audioBound = true;
+    audioEl.addEventListener('playing', function () { if (stopBtn) stopBtn.hidden = false; });
+    audioEl.addEventListener('pause', function () { if (stopBtn) stopBtn.hidden = true; });
+    audioEl.addEventListener('ended', function () {
+      if (stopBtn) stopBtn.hidden = true;
+      try { URL.revokeObjectURL(audioEl.src); } catch (e) {}
+    });
+    audioEl.addEventListener('error', function () { if (stopBtn) stopBtn.hidden = true; });
   }
   /** 把答案文本处理成适合朗读的流畅句子 */
   function prepareSpoken(text) {
@@ -630,9 +646,8 @@
       // closePanel 的 stopSpeak() 拦不住 —— 若继续起播就会出现「窗口消失、声音还在响」。
       // 必须在起播前确认面板仍打开；被跳过则记入诊断，便于确认竞态确实被拦截。
       if (!isOpen || panel.hidden) { diagLog('tts-skipped-panel-closed', ''); return; }
-      if (!audioEl) audioEl = new Audio();
+      if (!audioEl) { audioEl = new Audio(); bindAudioEl(); }
       audioEl.src = URL.createObjectURL(blob);
-      audioEl.onended = function () { try { URL.revokeObjectURL(audioEl.src); } catch (e) {} };
       audioEl.play().catch(noop);
     }).catch(noop); // 语音失败静默，不影响文字回复
   }
@@ -796,6 +811,7 @@
 
     $('#ai-close', panel).addEventListener('click', function () { closePanel(false, 'close-btn'); });
     if (soundBtn) soundBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleTts(); });
+    if (stopBtn) stopBtn.addEventListener('click', function (e) { e.stopPropagation(); stopSpeak(); });
 
     // 发送
     sendBtn.addEventListener('click', function () { doSend(input.value); });

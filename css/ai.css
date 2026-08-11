@@ -157,6 +157,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 .ai-sound:active { background: rgba(255, 255, 255, 0.35); }
+.ai-hbtns .ai-sound[hidden] { display: none; }
 
 .ai-msgs {
   flex: 1;
