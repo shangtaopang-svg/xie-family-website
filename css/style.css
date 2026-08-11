@@ -3316,78 +3316,6 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* ===== 右侧悬浮工具栏 ===== */
-.float-toolbar {
-  position: fixed;
-  right: 24px;
-  bottom: 80px;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 6px;
-  background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-}
-[data-theme="dark"] .float-toolbar {
-  background: rgba(30,30,40,0.92);
-  border-color: rgba(255,255,255,0.08);
-}
-.float-toolbar button {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 1px solid transparent;
-  background: transparent;
-  cursor: pointer;
-  font-size: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.25s;
-  color: var(--text-secondary);
-  line-height: 1;
-  padding: 0;
-}
-.float-toolbar button:hover {
-  background: var(--accent-orange-dim);
-  color: var(--accent-orange);
-  border-color: rgba(212,119,58,0.2);
-  transform: scale(1.1);
-}
-.float-toolbar .ft-divider {
-  width: 20px;
-  height: 1px;
-  background: var(--divider);
-  margin: 2px 0;
-}
-@media (max-width: 900px) {
-  .float-toolbar {
-    right: 12px;
-    bottom: 76px;
-    padding: 6px 4px;
-    gap: 4px;
-    border-radius: 16px;
-  }
-  .float-toolbar button {
-    width: 30px;
-    height: 30px;
-    font-size: 13px;
-  }
-}
-@media (max-width: 480px) {
-  .float-toolbar button {
-    width: 28px;
-    height: 28px;
-    font-size: 12px;
-  }
-}
-
 /* ===== Back to Top ===== */
 .back-top {
   position: fixed;
@@ -4843,7 +4771,7 @@ body {
   
   /* 隐藏桌面元素 */
   .site-header, .nav-controls, .sidebar-controls,
-  .back-page-btn, .back-top, .float-toolbar,
+  .back-page-btn, .back-top,
   .hero-marquee, .footer-bottom,
   .site-footer .footer-inner, .hero-bg-toggle,
   .main-nav, .header-actions, .nav-toggle { display: none !important; }
@@ -4942,7 +4870,7 @@ body {
 
 /* ===== 隐藏桌面端所有元素 ===== */
 .site-header, .nav-controls, .sidebar-controls,
-.back-page-btn, .back-top, .float-toolbar,
+.back-page-btn, .back-top,
 .hero-marquee, .hero-bg-toggle, .main-nav,
 .header-actions, .nav-toggle, .nav-links,
 .site-footer, .footer-inner, .footer-bottom,
@@ -5456,7 +5384,7 @@ section a[href*="audio"] {
   .mb-show-main .quote-line { background: #2a2a2a !important; }
   .mb-show-main .site-footer { display: none !important; }
   .mb-show-main .site-header, .mb-show-main .nav-controls, .mb-show-main .sidebar-controls,
-  .mb-show-main .back-page-btn, .mb-show-main .back-top, .mb-show-main .float-toolbar,
+  .mb-show-main .back-page-btn, .mb-show-main .back-top,
   .mb-show-main .hero-marquee, .mb-show-main .main-nav,
   .mb-show-main .header-actions, .mb-show-main .nav-toggle { display: none !important; }
   /* 返回开启页按钮 */
