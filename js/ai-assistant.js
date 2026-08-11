@@ -34,7 +34,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v35'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v36'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -680,10 +680,10 @@
   var lastAnswer = '';   // 最近一次回答原文，供「重新听」回放
   // —— 口播字幕条（电报打字感，跟随词边界逐渐揭示） ——
   var subText = '';        // 当前朗读全文
-  var subBounds = [];      // 词级时间戳 [{t,d,w}]
-  var subCum = [];         // 每个词结束时累计应显示的字符数
-  var subSent = [];        // 句子边界 [{s,e}]，字幕按当前句整句显示，不再横滚
-  var subDur = 0;          // 音频总时长（loadedmetadata 取得，无边界时兜底用）
+  var subCharTimes = null; // 逐字符揭示时间轴（服务端 charTimes，长度=subText.length，精确驱动逐字卡拉OK）
+  var subDur = 0;          // 音频总时长（无 charTimes 时按音频时长比例兜底）
+  var subLastN = -1;       // 已渲染的已读字符数（避免每帧重建 DOM）
+  var subDoneEl = null, subCurEl = null, subRestEl = null; // 字幕三个 span 缓存引用
   var subRaf = null;       // rAF 句柄
   var subHideTimer = null; // 读完后收起字幕条的定时器
   var subLayer = null;     // 独立全屏字幕层容器（口播时浮在屏幕底部，一行加宽）
@@ -720,28 +720,17 @@
     return new Blob([arr], { type: mime });
   }
   /** 开始字幕条：记录全文与词级时间戳，预计算每个词结束时的累计字符数，并按标点切句 */
-  function startSubtitle(text, bounds) {
+  function startSubtitle(text, charTimes) {
     if (!subEl || !subLayer) return;
     subText = text || '';
-    subBounds = bounds || [];
-    subCum = [];
-    var c = 0;
-    for (var i = 0; i < subBounds.length; i++) {
-      c += String(subBounds[i].w || '').length;
-      subCum.push(c);
-    }
-    subSent = splitSentences(subText);
-    // 权威总时长：直接用词边界时间轴的「末词结束时间」（TTS 返回即已知），
-    // 不依赖 audioEl 的 loadedmetadata/duration —— 后者对 blob 音频可能延迟、NaN 或 Infinity，
-    // 会导致 subTick 里 dur=1（字幕瞬间全亮）或 dur=Infinity（字幕永不推进），正是「口播开始字幕却没跟上」的根因。
-    if (subBounds.length) {
-      var last = subBounds[subBounds.length - 1];
-      subDur = (last.t + (last.d || 0)) || 0;
-    } else {
-      subDur = 0;
-    }
+    // 服务端 charTimes：每个字符的揭示时间（秒），长度与 subText 一致 → 逐字卡拉OK精确同步；
+    // 缺失/长度不符时退回音频时长比例（subTick 兜底），保证字幕仍能跟进。
+    subCharTimes = (Array.isArray(charTimes) && charTimes.length === subText.length) ? charTimes : null;
+    subDur = 0;
+    subLastN = -1;
+    subDoneEl = subCurEl = subRestEl = null;
     subEl.textContent = '';
-    subEl.scrollLeft = 0;
+    subEl.scrollTop = 0;
     subLayer.hidden = false;
     document.body.classList.add('ai-sub-on'); // 手机端让全屏树/面板让出底部条带，字幕不遮挡其他内容
     startSubLoop();
@@ -753,23 +742,35 @@
   }
   /** 字幕比声音略提前揭示（约 150ms），符合中文口播字幕惯例，感知为「跟得上」；感觉滞后/超前可微调 */
   var SUB_LEAD = 0.15;
-  /** 每帧：按音频播放进度精确算出已读字符数（匀速揭示，严格同步音频 → 字幕绝不落后于口播）。
-   *  注意：之前用 Edge 词边界（subCum）定位，但词边界只覆盖纯词字符（不含标点），
-   *  而 subText 含标点（世系图注释密集），subCum 最大仅约文本的 70% → 字幕越到后段越落后、末尾字幕无法揭示。
-   *  故改为音频时间比例驱动：ct/dur 严格跟随 audioEl.currentTime（暂停冻结、恢复推进、结束补全）。 */
+  /** 二分：当前时刻 ct 已揭示的字符数（charTimes[i] <= ct 的个数） */
+  function charPosAt(ct, times) {
+    var lo = 0, hi = times.length - 1, ans = 0;
+    while (lo <= hi) {
+      var mid = (lo + hi) >> 1;
+      if (times[mid] <= ct) { ans = mid + 1; lo = mid + 1; }
+      else { hi = mid - 1; }
+    }
+    return ans;
+  }
+  /** 每帧：精确算出已读字符数。
+   *  优先用服务端 charTimes（词边界对齐到含标点原文的逐字符时间轴）→ 每个字在口播念到的时刻亮起，与口播逐字贴合；
+   *  缺失时退回音频时长比例（ct/dur 跟随 currentTime），暂停冻结、恢复推进、结束补全。 */
   function subTick() {
     subRaf = requestAnimationFrame(subTick);
     if (!subEl || !subLayer || subLayer.hidden || !audioEl) return;
     var ct = (audioEl.currentTime || 0) + SUB_LEAD;
-    // 总时长：优先 startSubtitle 里用词边界算出的权威时长（已覆盖整段朗读）；
-    // 只有无边界时才退回 audioEl.duration，且必须过滤 NaN/Infinity/0（blob 音频在未加载完时 duration 可能是 NaN 或 Infinity）
-    var dur = subDur;
-    if (!(dur > 0)) {
-      var ad = audioEl.duration;
-      dur = (isFinite(ad) && ad > 0) ? ad : 1;
+    var n;
+    if (subCharTimes) {
+      n = charPosAt(ct, subCharTimes);
+    } else {
+      var dur = subDur;
+      if (!(dur > 0)) {
+        var ad = audioEl.duration;
+        dur = (isFinite(ad) && ad > 0) ? ad : 1;
+      }
+      n = subText.length * Math.max(0, Math.min(1, ct / dur));
     }
-    var n = subText.length * Math.max(0, Math.min(1, ct / dur));
-    n = Math.max(0, Math.min(n, subText.length));
+    n = Math.max(0, Math.min(Math.floor(n), subText.length));
     renderSubtitle(n);
   }
   /** 按中文标点（句号/问号/叹号/分号/省略号）切句，字幕条只显示「当前正在读的那句」，避免整段横滚 */
@@ -792,42 +793,45 @@
     }
     return subSent[subSent.length - 1] || { s: 0, e: subText.length };
   }
-  /** 渲染字幕条：已读亮色 + 当前字高亮块(光标闪烁) + 本句未读极淡；句首淡显前一句末尾字、句尾省略号示意后文，句子之间不断裂 */
+  /** 渲染字幕：全文多行换行展示（每个字都在字幕中，不漏字），已读亮色 + 当前字高亮块(光标闪烁) + 未读极淡；
+   *  当前字所在行自动滚动到字幕框可视区中部，口播念到哪行就看到哪行。 */
   function renderSubtitle(n) {
     if (!subEl) return;
-    var seg = findSeg(n);
-    var s = seg.s, e = seg.e;
-    var done = Math.max(0, Math.min(e - s, Math.floor(n) - s));
-    var html = '';
-    if (s > 0) {
-      // 前一句末尾 2 字淡显 + 省略号，衔接上一句，避免句子切换时字幕「断档」
-      html += '<span class="ai-sub-prev">' + esc(subText.slice(Math.max(0, s - 2), s)) + '…</span>';
+    if (!subDoneEl || !subDoneEl.isConnected) {
+      subEl.innerHTML = '<span class="ai-sub-done"></span><span class="ai-sub-cur"></span><span class="ai-sub-rest"></span>';
+      subDoneEl = subEl.firstChild;
+      subCurEl = subDoneEl.nextSibling;
+      subRestEl = subCurEl.nextSibling;
+      subLastN = -1;
     }
-    html += '<span class="ai-sub-done">' + esc(subText.slice(s, s + done)) + '</span>';
-    var cur = subText.charAt(s + done);
-    if (cur) html += '<span class="ai-sub-cur">' + esc(cur) + '</span>';
-    html += '<span class="ai-sub-rest">' + esc(subText.slice(s + done + 1, e)) + '</span>';
-    if (e < subText.length) html += '<span class="ai-sub-prev">…</span>';
-    subEl.innerHTML = html;
-    // 单行加宽字幕：当前字超出可视区右侧一半时，平滑右滚让它保持在可视区左侧，始终能看到正在读的字
-    var curEl = subEl.querySelector('.ai-sub-cur');
-    if (curEl) {
-      var sr = subEl.getBoundingClientRect();
-      var cr = curEl.getBoundingClientRect();
-      var xIn = cr.left - sr.left;
-      if (xIn > sr.width * 0.5) subEl.scrollLeft += (xIn - sr.width * 0.3);
+    if (subLastN !== n) {
+      subDoneEl.textContent = subText.slice(0, n);
+      subCurEl.textContent = subText.charAt(n);
+      subRestEl.textContent = subText.slice(n + 1);
+      subLastN = n;
+    }
+    if (subEl.scrollHeight > subEl.clientHeight + 4) {
+      var target = subCurEl.offsetTop - subEl.clientHeight / 2 + 10;
+      subEl.scrollTop = Math.max(0, Math.min(target, subEl.scrollHeight - subEl.clientHeight));
     }
   }
-  /** 自然读完：揭示全文，停留 2.6s 后自动收起 */
+  /** 自然读完：全文全部亮起，停留 2.6s 后自动收起 */
   function finishSubtitle() {
     if (!subEl || !subLayer || subLayer.hidden) return;
     if (subRaf) { cancelAnimationFrame(subRaf); subRaf = null; }
-    subEl.innerHTML = '<span class="ai-sub-done">' + esc(subText) + '</span><span class="ai-sub-cur"></span>';
+    if (!subDoneEl || !subDoneEl.isConnected) {
+      subEl.innerHTML = '<span class="ai-sub-done"></span><span class="ai-sub-cur"></span><span class="ai-sub-rest"></span>';
+      subDoneEl = subEl.firstChild; subCurEl = subDoneEl.nextSibling; subRestEl = subCurEl.nextSibling;
+    }
+    subDoneEl.textContent = subText;
+    subCurEl.textContent = '';
+    subRestEl.textContent = '';
+    subEl.scrollTop = 0;
     if (subHideTimer) clearTimeout(subHideTimer);
     subHideTimer = setTimeout(function () {
       if (subLayer) { subLayer.hidden = true; subEl.textContent = ''; }
       document.body.classList.remove('ai-sub-on');
-      subText = ''; subBounds = []; subCum = []; subSent = [];
+      subText = ''; subCharTimes = null; subLastN = -1; subDoneEl = subCurEl = subRestEl = null;
     }, 2600);
   }
   /** 停止并清空字幕（发送新问题/关窗/停止口播等沿用） */
@@ -837,7 +841,7 @@
     if (subLayer) subLayer.hidden = true;
     if (subEl) subEl.textContent = '';
     document.body.classList.remove('ai-sub-on');
-    subText = ''; subBounds = []; subCum = []; subSent = []; subDur = 0;
+    subText = ''; subCharTimes = null; subLastN = -1; subDoneEl = subCurEl = subRestEl = null;
   }
 
   var audioBound = false;
@@ -898,7 +902,7 @@
       if (!isOpen || panel.hidden) { diagLog('tts-skipped-panel-closed', ''); return; }
       if (!audioEl) { audioEl = new Audio(); bindAudioEl(); }
       audioEl.src = URL.createObjectURL(base64ToBlob(j.audio, 'audio/mpeg'));
-      startSubtitle(spoken, j.boundaries || []); // 字幕条开始，随口播逐字揭示
+      startSubtitle(spoken, j.charTimes); // 字幕条开始，随 charTimes 逐字卡拉OK揭示（词边界精确同步，不漏字）
       audioEl.play().catch(function (e) {
         // 播放被拦/解码失败：不能静默（否则「口播没开始、字幕也没出现」用户无感知），给出可重试提示
         diagLog('tts-play-fail', String(e && e.message || e));

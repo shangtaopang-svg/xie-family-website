@@ -547,8 +547,10 @@ const server = http.createServer(async (req, res) => {
         return;
       }
       const { buf, boundaries } = await tts.synthesizeCached(text, { voice });
-      // 返回 JSON：audio 为 base64 MP3，boundaries 为词级时间戳（驱动前端字幕条）
-      const payload = JSON.stringify({ audio: buf.toString('base64'), boundaries: boundaries || [] });
+      // 返回 JSON：audio 为 base64 MP3；charTimes 为「逐字符揭示时间轴」（服务端把词级边界对齐到含标点原文），
+      // 驱动前端多行卡拉OK字幕精确逐字同步；boundaries 保留兼容旧逻辑。
+      const charTimes = tts.buildCharTimes(text, boundaries || []);
+      const payload = JSON.stringify({ audio: buf.toString('base64'), boundaries: boundaries || [], charTimes: charTimes || [] });
       res.writeHead(200, {
         'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'no-cache',

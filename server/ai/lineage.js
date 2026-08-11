@@ -120,11 +120,12 @@ function kinshipText(aId, bId) {
     const n = bAnc.findIndex(p => Number(p.id) === Number(a.id)) + 1;
     return `${b.name} 是 ${a.name} 的第 ${n} 代直系后代`;
   }
-  // 共同祖先
+  // 共同祖先：aAnc 是 近→远（索引0=父亲），从【最近端】找第一个交集 = 最近公共祖先(LCA)。
+  // 注意：不能从远端找，否则亲兄弟会被误判为「共同祖先是最远祖」，如大四/小四共父在纲却报「共祖广，距63代」。
   const aSet = new Set(aAnc.map(p => Number(p.id)));
   const bSet = new Set(bAnc.map(p => Number(p.id)));
   let lca = null, la = -1, lb = -1;
-  for (let i = aAnc.length - 1; i >= 0; i--) {
+  for (let i = 0; i < aAnc.length; i++) {
     if (bSet.has(Number(aAnc[i].id))) { lca = aAnc[i]; la = i; break; }
   }
   if (!lca) return `${a.name} 与 ${b.name} 未查到共同祖先`;

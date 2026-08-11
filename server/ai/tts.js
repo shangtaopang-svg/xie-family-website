@@ -183,4 +183,37 @@ async function synthesizeCached(text, opts) {
   return result;
 }
 
-module.exports = { synthesize, synthesizeCached, ALLOWED_VOICES };
+/**
+ * 把 Edge 词级时间戳对齐到「逐字符揭示时间轴」（驱动前端逐字卡拉OK字幕）。
+ * Edge 的词不含标点，这里用滑动匹配把词映射回含标点的原文：
+ *   - 词内字符：词开始时间 + 词内匀速偏移（TTS 每个词内语速视为匀速）
+ *   - 词间的标点（逗号/括号/句号等）：在上一词结束时刻揭示（标点不发音，读前词时即刻亮起）
+ * 返回 times[i] = 第 i 个字符开始揭示的时刻（秒）；匹配异常时对个别词退化到顺序填充，保证数组长度恒等于 text 长度。
+ */
+function buildCharTimes(text, boundaries) {
+  var n = text.length;
+  var times = new Array(n);
+  if (!boundaries || !boundaries.length) return null;
+  var pos = 0, prevEnd = 0;
+  for (var i = 0; i < boundaries.length; i++) {
+    var b = boundaries[i];
+    var w = String(b.w || '');
+    if (!w) continue;
+    var t = (typeof b.t === 'number' ? b.t : 0);
+    var d = (typeof b.d === 'number' ? b.d : 0);
+    var start = text.indexOf(w, pos);
+    if (start < 0) start = pos; // 匹配失败：从当前游标顺序填充
+    for (var c = pos; c < start && c < n; c++) times[c] = prevEnd; // 词前标点：上一词结束时亮起
+    var per = w.length ? d / w.length : 0;
+    for (var k = 0; k < w.length; k++) {
+      var ch = start + k;
+      if (ch < n) times[ch] = t + per * k;
+    }
+    pos = start + w.length;
+    prevEnd = t + d;
+  }
+  for (var c = pos; c < n; c++) times[c] = prevEnd; // 尾部剩余（无词命中）：最后词结束时全部亮起
+  return times;
+}
+
+module.exports = { synthesize, synthesizeCached, buildCharTimes, ALLOWED_VOICES };
