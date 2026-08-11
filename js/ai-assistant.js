@@ -19,6 +19,7 @@
 
   var CHIPS = [
     { t: '请从炎帝神农氏开始，呈现我的世系图', lock: true },
+    { t: '请列出从血缘上和我最亲的10个人', lock: true },
     { t: '下枫槎谢氏的始祖是谁？族谱记载了哪些早期祖先？', lock: false },
     { t: '谢氏家族是如何迁徙到宁海下枫槎村的？', lock: false },
     { t: '我现在是第几代？和我同辈的族人有哪些？', lock: true },
@@ -34,7 +35,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v36'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v38'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -385,7 +386,7 @@
     var body = botEl.querySelector('.ai-txt') || botEl.lastChild;
     var done = false;
 
-    var finish = function (answer, sources, tree, ownerIsSelf) {
+    var finish = function (answer, sources, tree, ownerIsSelf, closest) {
       if (done) return;
       done = true;
       body.textContent = answer || '（无回答）';
@@ -397,6 +398,7 @@
         (body || botEl).appendChild(src); // 放入文本节点内，头像布局下不错位
       }
       if (tree && tree.length) showTreeOverlay(tree, ownerIsSelf); // 世系图：呈现+朗读的同时弹出树状图
+      if (closest && closest.length) showClosestOverlay(closest); // 血缘最亲：弹出亲密系数图
       hist.push({ role: 'assistant', content: answer || '' });
       persist();
       scrollBottom(true);
@@ -431,7 +433,7 @@
       var ct = resp.headers.get('content-type') || '';
       if (ct.indexOf('text/event-stream') === -1) {
         return resp.json().then(function (j) {
-          if (j.ok) finish(j.answer, j.sources || [], j.tree, j.ownerIsSelf !== false);
+          if (j.ok) finish(j.answer, j.sources || [], j.tree, j.ownerIsSelf !== false, j.closest || []);
           else fail(j);
         });
       }
@@ -453,7 +455,7 @@
         } else if (ev === 'delta') {
           if (j.t) { collect += j.t; body.textContent = collect; scrollBottom(false); }
         } else if (ev === 'done') {
-          finish(j.answer || collect, j.sources || [], j.tree, j.ownerIsSelf !== false);
+          finish(j.answer || collect, j.sources || [], j.tree, j.ownerIsSelf !== false, j.closest || []);
         } else if (ev === 'error') {
           fail(j);
         }
@@ -730,7 +732,7 @@
     subLastN = -1;
     subDoneEl = subCurEl = subRestEl = null;
     subEl.textContent = '';
-    subEl.scrollTop = 0;
+    subEl.scrollLeft = 0;
     subLayer.hidden = false;
     document.body.classList.add('ai-sub-on'); // 手机端让全屏树/面板让出底部条带，字幕不遮挡其他内容
     startSubLoop();
@@ -793,8 +795,9 @@
     }
     return subSent[subSent.length - 1] || { s: 0, e: subText.length };
   }
-  /** 渲染字幕：全文多行换行展示（每个字都在字幕中，不漏字），已读亮色 + 当前字高亮块(光标闪烁) + 未读极淡；
-   *  当前字所在行自动滚动到字幕框可视区中部，口播念到哪行就看到哪行。 */
+  /** 渲染字幕：单行横滚展示（全文在一个 <span> 里，每个字都在字幕中，不漏字），
+   *  已读亮色 + 当前字高亮块(光标闪烁) + 未读极淡；
+   *  字幕条横向滚动让「当前字」始终停在可视区中部，口播念到哪字就看到哪字。 */
   function renderSubtitle(n) {
     if (!subEl) return;
     if (!subDoneEl || !subDoneEl.isConnected) {
@@ -810,9 +813,9 @@
       subRestEl.textContent = subText.slice(n + 1);
       subLastN = n;
     }
-    if (subEl.scrollHeight > subEl.clientHeight + 4) {
-      var target = subCurEl.offsetTop - subEl.clientHeight / 2 + 10;
-      subEl.scrollTop = Math.max(0, Math.min(target, subEl.scrollHeight - subEl.clientHeight));
+    if (subEl.scrollWidth > subEl.clientWidth + 4) {
+      var target = subCurEl.offsetLeft - subEl.clientWidth / 2 + subCurEl.offsetWidth / 2;
+      subEl.scrollLeft = Math.max(0, Math.min(target, subEl.scrollWidth - subEl.clientWidth));
     }
   }
   /** 自然读完：全文全部亮起，停留 2.6s 后自动收起 */
@@ -826,7 +829,7 @@
     subDoneEl.textContent = subText;
     subCurEl.textContent = '';
     subRestEl.textContent = '';
-    subEl.scrollTop = 0;
+    subEl.scrollLeft = 0;
     if (subHideTimer) clearTimeout(subHideTimer);
     subHideTimer = setTimeout(function () {
       if (subLayer) { subLayer.hidden = true; subEl.textContent = ''; }
@@ -992,6 +995,59 @@
   }
   function closeTreeOverlay() {
     if (treeOverlay) { try { treeOverlay.parentNode.removeChild(treeOverlay); } catch (e) {} treeOverlay = null; }
+  }
+
+  /* ---------------- 血缘最亲 N 人：亲密系数图弹层（#72） ---------------- */
+  var closestOverlay = null;
+  function showClosestOverlay(list) {
+    if (!list || !list.length) return;
+    closeClosestOverlay();
+    var ov = document.createElement('div');
+    ov.id = 'ai-closest-overlay';
+    ov.innerHTML =
+      '<div class="ai-closest-modal">' +
+      '  <div class="ai-tree-head"><span class="ai-tree-title">❤️ 与您血缘最近的 ' + list.length + ' 位族人</span>' +
+      '    <span class="ai-tree-headbtns">' +
+      '      <button type="button" class="ai-closest-sound" aria-label="' + (ttsMuted ? '打开声音' : '静音') + '" title="' + (ttsMuted ? '打开声音' : '静音') + '">' + (ttsMuted ? '🔇' : '🔊') + '</button>' +
+      '      <button type="button" class="ai-closest-close" aria-label="关闭">✕</button>' +
+      '    </span></div>' +
+      '  <div class="ai-closest-body"></div>' +
+      '</div>';
+    document.body.appendChild(ov);
+    closestOverlay = ov;
+    var body = ov.querySelector('.ai-closest-body');
+    var frag = document.createDocumentFragment();
+    list.forEach(function (r, i) {
+      var row = document.createElement('div');
+      row.className = 'ai-closest-row' + (r.closeness <= 2 ? ' hot' : '');
+      var shi = (r.shi && Number(r.shi) >= 1) ? ' · 第' + esc(r.shi) + '世' : '';
+      var b = (r.branch && r.branch !== '—') ? '<span class="ai-closest-branch">' + esc(r.branch) + '</span>' : '';
+      row.innerHTML =
+        '<span class="ai-closest-rank">' + (i + 1) + '</span>' +
+        '<div class="ai-closest-info">' +
+        '  <div class="ai-closest-name">' + esc(r.name) + '</div>' +
+        '  <div class="ai-closest-rel">' + esc(r.rel) + shi + '</div>' +
+        '</div>' +
+        '<span class="ai-closest-coef" title="亲密系数：1 最亲，数值越小越亲">' + esc(r.closeness) + '</span>' + b;
+      frag.appendChild(row);
+    });
+    body.appendChild(frag);
+    ov.addEventListener('click', function (e) { if (e.target === ov) closeClosestOverlay(); });
+    var soundBtn = ov.querySelector('.ai-closest-sound');
+    if (soundBtn) soundBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleTts(); });
+    ov.querySelector('.ai-closest-close').addEventListener('click', closeClosestOverlay);
+    var onKey = function (e) {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        closeClosestOverlay();
+        document.removeEventListener('keydown', onKey, true);
+      }
+    };
+    document.addEventListener('keydown', onKey, true);
+    scrollBottom(true);
+  }
+  function closeClosestOverlay() {
+    if (closestOverlay) { try { closestOverlay.parentNode.removeChild(closestOverlay); } catch (e) {} closestOverlay = null; }
   }
 
   /* ---------------- v15 看门狗与诊断（防「窗口莫名消失、只剩声音」复发） ---------------- */

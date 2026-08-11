@@ -365,12 +365,11 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   bottom: 12px;   /* 屏幕最底部，桌面/手机一致；口播时面板/树/输入行由 body.ai-sub-on 让出条带，互不遮挡 */
   z-index: 2147483003;   /* 独立全屏字幕层，高于面板(3001)/世系树遮罩(3002)，不占面板位置 */
   width: min(760px, 94vw);
-  max-height: 42vh;   /* 多行字幕最多占屏高 42%，配合自动滚动跟随当前字 */
   pointer-events: none;
 }
 .ai-subtitle-layer[hidden] { display: none; }
 .ai-subtitle {
-  position: relative;   /* 让当前字 offsetTop 相对本容器，滚动跟随定位准确 */
+  position: relative;   /* 让当前字 offsetLeft 相对本容器，横向滚动跟随定位准确 */
   display: block;
   padding: 10px 14px;
   border-radius: 12px;
@@ -379,14 +378,14 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
   font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.4;
   font-weight: 600;
   color: #f7f2e8;
   letter-spacing: 0.5px;
-  white-space: normal;   /* 多行换行：全文完整展示，不漏字 */
-  overflow-y: auto;      /* 自动滚动跟随当前字所在行 */
+  white-space: nowrap;   /* 单行字幕：全文横向排布，随口播水平滚动跟读当前字 */
+  overflow-x: auto;      /* 水平滚动：当前字自动保持在可视区中部，不漏字 */
+  overflow-y: hidden;
   scrollbar-width: none; /* 隐藏滚动条（Firefox） */
-  max-height: 42vh;
   user-select: none;
   -webkit-user-select: none;
   box-sizing: border-box;
@@ -483,14 +482,12 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
     /* 移到屏幕最底部，避开悬浮球(FAB bottom:66px)；口播时由 body.ai-sub-on 让树/面板让出该条带 */
     bottom: calc(12px + env(safe-area-inset-bottom));
     width: 92vw;
-    max-height: 40vh;
   }
   .ai-subtitle {
     font-size: 14px;
-    line-height: 1.55;
+    line-height: 1.4;
     background: rgba(0, 0, 0, 0.72);
     border-color: rgba(212, 255, 58, 0.5);
-    max-height: 40vh;
   }
   .ai-sub-done { color: #ffffff; }
   .ai-sub-cur {
@@ -666,4 +663,81 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
 }
 @media (prefers-reduced-motion: reduce) {
   .ai-tree-modal { animation: none; }
+}
+
+/* ---------------- 血缘最亲 N 人：亲密系数图弹层（#72） ---------------- */
+#ai-closest-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483002;   /* 与树弹层同级；字幕层(2147483003)在其上，口播字幕仍可见 */
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+.ai-closest-modal {
+  width: min(460px, 100%);
+  max-height: 84vh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
+  animation: aiTreeUp .22s ease;
+}
+.ai-closest-body { padding: 6px 14px 14px; overflow-y: auto; }
+.ai-closest-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 6px;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
+}
+.ai-closest-row:last-child { border-bottom: none; }
+.ai-closest-rank {
+  flex: 0 0 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #eef1f4;
+  color: #7a8390;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ai-closest-row.hot .ai-closest-rank { background: #2f8f4a; color: #fff; }
+.ai-closest-info { flex: 1; min-width: 0; }
+.ai-closest-name { font-size: 16px; font-weight: 700; color: #1f2328; }
+.ai-closest-rel { font-size: 12.5px; color: #7a8390; margin-top: 2px; }
+.ai-closest-coef {
+  flex: 0 0 auto;
+  min-width: 34px;
+  text-align: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #e7f4ec;
+  border: 1px solid #b8e0c6;
+  color: #2f8f4a;
+  font-size: 13px;
+  font-weight: 800;
+}
+.ai-closest-row.hot .ai-closest-coef { background: #2f8f4a; border-color: #2f8f4a; color: #fff; }
+.ai-closest-branch {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: #7a8390;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: #f2f4f7;
+  white-space: nowrap;
+}
+@media (max-width: 768px) {
+  #ai-closest-overlay { padding: 0; align-items: stretch; }
+  .ai-closest-modal { max-height: 86vh; width: 100%; border-radius: 0; }
+  .ai-closest-body { padding: 6px 12px 16px; }
 }

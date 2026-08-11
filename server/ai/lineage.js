@@ -333,8 +333,76 @@ function answerFullLineage(query, selfId) {
   return { text: hc.formatChainText(nodes, target.name, ownerIsSelf), tree: nodes, ownerIsSelf, targetName: target.name };
 }
 
+/* ---------------- 血缘最近 N 人（亲密系数：到最近共同祖先的代数之和，1=最亲） ---------------- */
+const CLOSE_ANCESTOR_REL = ['父亲', '祖父', '曾祖父', '高祖父'];
+const CLOSE_DESCENDANT_REL = ['儿子', '孙子', '曾孙'];
+
+function relAncestor(n) {
+  return n <= CLOSE_ANCESTOR_REL.length ? CLOSE_ANCESTOR_REL[n - 1] : '第' + n + '代祖';
+}
+function relDescendant(n) {
+  return n <= CLOSE_DESCENDANT_REL.length ? CLOSE_DESCENDANT_REL[n - 1] : '第' + n + '代孙';
+}
+function relCousin(da, db, lca) {
+  if (da === 1 && db === 1) return '亲兄弟';
+  if (da === 1 && db === 2) return '侄辈';
+  if (da === 2 && db === 1) return '叔伯辈';
+  if (da === 2 && db === 2) return '堂兄弟';
+  if (da === 1 && db === 3) return '侄孙辈';
+  if (da === 3 && db === 1) return '叔祖辈';
+  return '同宗（共祖' + (lca && lca.name || '') + '）';
+}
+
+/**
+ * 血缘最近的人列表：亲密系数 = 本人与该人到最近共同祖先的代数之和（父子=1、亲兄弟=2、堂兄弟=4，越小越亲）。
+ * 覆盖直系长辈/晚辈与父系旁系；无共同祖先（数据断链）的排除。返回 { text, list }，list 供前端弹层画图。
+ */
+function answerClosest(personId, limit) {
+  ensureLoaded();
+  limit = Math.max(3, Math.min(20, limit || 10));
+  const self = byId.get(Number(personId));
+  if (!self) return { text: '未找到您的族谱记录，请重新验证身份。', list: null };
+  const selfId = Number(personId);
+  const selfAnc = getAncestorList(selfId, true); // 含自己，近→远
+  const selfGen = Number(self.generation_num) || 0;
+  const rows = [];
+  for (const p of byId.values()) {
+    const pid = Number(p.id);
+    if (pid === selfId) continue;
+    const pg = Number(p.generation_num) || 0;
+    // 直系长辈：p 是 self 的祖先（selfAnc[ai]，ai=第 ai 代祖 → 亲等 ai）
+    const ai = selfAnc.findIndex(x => Number(x.id) === pid);
+    if (ai > 0) { rows.push({ id: pid, name: p.name, closeness: ai, rel: relAncestor(ai), shi: pg, branch: p.branch }); continue; }
+    // 直系晚辈：self 是 p 的祖先（pAnc[si]，si=第 si 代孙 → 亲等 si）
+    const pAnc = getAncestorList(pid, true);
+    const si = pAnc.findIndex(x => Number(x.id) === selfId);
+    if (si > 0) { rows.push({ id: pid, name: p.name, closeness: si, rel: relDescendant(si), shi: pg, branch: p.branch }); continue; }
+    // 旁系：共祖。从【近端】扫最近公共祖先（亲兄弟勿从最远端找，见 kinshipText 修复），da=self 到 LCA 代数，db=p 到 LCA 代数
+    const pAncNoSelf = pAnc.slice(1);
+    const pSet = new Set(pAncNoSelf.map(x => Number(x.id)));
+    let lca = null, da = -1;
+    for (let i = 1; i < selfAnc.length; i++) {
+      if (pSet.has(Number(selfAnc[i].id))) { lca = selfAnc[i]; da = i; break; }
+    }
+    if (!lca) continue; // 无共同祖先（数据断链），排除
+    const db = pAncNoSelf.findIndex(x => Number(x.id) === Number(lca.id)) + 1;
+    rows.push({ id: pid, name: p.name, closeness: da + db, rel: relCousin(da, db, lca), shi: pg, branch: p.branch });
+  }
+  // 排序：亲密系数升序（越亲越前）→ 与本人世代差小者优先（同辈靠前）→ 姓名
+  rows.sort(function (a, b) {
+    if (a.closeness !== b.closeness) return a.closeness - b.closeness;
+    const ga = Math.abs(a.shi - selfGen), gb = Math.abs(b.shi - selfGen);
+    if (ga !== gb) return ga - gb;
+    return String(a.name).localeCompare(String(b.name), 'zh');
+  });
+  const list = rows.slice(0, limit);
+  const lines = list.map((r, i) => `${i + 1}. ${r.name}（${r.rel}，亲密系数 ${r.closeness}）`);
+  const text = `与您血缘最近的 ${list.length} 位族人（亲密系数越小越亲，1=最亲）：\n${lines.join('\n')}`;
+  return { text, list };
+}
+
 module.exports = {
   ensureLoaded, getPerson, getPeopleByName,
   getAncestorList, getDescendantLevels, getSameGeneration,
-  isAncestorOf, kinshipText, getDirectChain, describePerson, answerLineage, answerFullLineage,
+  isAncestorOf, kinshipText, getDirectChain, describePerson, answerLineage, answerFullLineage, answerClosest,
 };
