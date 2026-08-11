@@ -388,3 +388,129 @@
   #ai-panel { animation: none; }
   #ai-fab { transition: none; }
 }
+
+/* ---------- 世系树状弹出层 ---------- */
+#ai-tree-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483002;   /* 高于面板(2147483001)，呈现答案的同时覆盖全页 */
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+.ai-tree-modal {
+  width: min(440px, 100%);
+  max-height: 84vh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
+  animation: aiTreeUp .22s ease;
+}
+@keyframes aiTreeUp {
+  from { transform: translateY(20px) scale(.98); opacity: .4; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+.ai-tree-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #1a3a1a, #2f7d2f);
+  color: #fff;
+}
+.ai-tree-title { flex: 1; font-size: 14px; font-weight: 700; }
+.ai-tree-close {
+  border: none;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+.ai-tree-close:hover { background: rgba(255, 255, 255, 0.3); }
+.ai-tree-body {
+  position: relative;
+  overflow-y: auto;
+  padding: 16px 16px 18px 26px;
+  background: #f6f6ef;
+}
+.ai-tree-body::before {
+  content: '';
+  position: absolute;
+  left: 15px; top: 8px; bottom: 8px;
+  width: 2px;
+  background: rgba(0, 0, 0, 0.14);
+}
+.ai-tree-node {
+  position: relative;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: 10px;
+}
+.ai-tree-node::before {
+  content: '';
+  position: absolute;
+  left: -11px; top: 50%;
+  width: 11px; height: 2px;
+  background: rgba(0, 0, 0, 0.14);
+}
+.ai-tree-node.self {
+  border: 2px solid var(--mb-brand, #D4FF3A);
+  box-shadow: 0 0 0 1px rgba(212, 255, 58, 0.4), 0 2px 10px rgba(212, 255, 58, 0.25);
+  background: #fffff2;
+}
+.ai-tree-sh { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
+.ai-tree-shi {
+  font-size: 11px;
+  color: #7a6a1f;
+  background: #f5efc6;
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-weight: 600;
+}
+.ai-tree-you {
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--mb-brand, #D4FF3A);
+  color: var(--mb-bg, #0a0a0a);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+.ai-tree-name { font-size: 15px; font-weight: 700; color: #222; }
+.ai-tree-note { font-size: 12px; color: #777; margin-top: 2px; }
+.ai-tree-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
+.ai-tree-badge { font-size: 11px; border-radius: 999px; padding: 2px 8px; color: #fff; font-weight: 600; }
+.ai-tree-badge.adopt { background: #e8590c; }
+.ai-tree-badge.tb-ancient { background: #a15c07; }
+.ai-tree-badge.tb-shenbo { background: #0b7285; }
+.ai-tree-badge.tb-dongshan { background: #1c7ed6; }
+.ai-tree-badge.tb-linhai { background: #6741d9; }
+.ai-tree-badge.tb-shima { background: #e8590c; }
+.ai-tree-badge.tb-fengcha { background: #2f9e44; }
+.ai-tree-badge.tb-other { background: #868e96; }
+
+/* 手机端：全屏遮罩 */
+@media (max-width: 768px) {
+  #ai-tree-overlay { padding: 0; align-items: stretch; }
+  .ai-tree-modal {
+    width: 100%;
+    max-height: 100vh;
+    height: 100vh;
+    border-radius: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-tree-modal { animation: none; }
+}

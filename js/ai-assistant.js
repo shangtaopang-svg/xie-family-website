@@ -18,7 +18,7 @@
   }
 
   var CHIPS = [
-    { t: '请列出我的直系10代族谱世系图', lock: true },
+    { t: '请从炎帝神农氏开始，呈现我的世系图', lock: true },
     { t: '下枫槎谢氏的始祖是谁？族谱记载了哪些早期祖先？', lock: false },
     { t: '谢氏家族是如何迁徙到宁海下枫槎村的？', lock: false },
     { t: '我现在是第几代？和我同辈的族人有哪些？', lock: true },
@@ -34,7 +34,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v18'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v19'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -346,7 +346,7 @@
     var body = botEl.firstChild;
     var done = false;
 
-    var finish = function (answer, sources) {
+    var finish = function (answer, sources, tree) {
       if (done) return;
       done = true;
       body.textContent = answer || '（无回答）';
@@ -357,6 +357,7 @@
         src.textContent = '📚 参考：' + sources.join('、');
         botEl.appendChild(src);
       }
+      if (tree && tree.length) showTreeOverlay(tree); // 世系图：呈现+朗读的同时弹出树状图
       hist.push({ role: 'assistant', content: answer || '' });
       persist();
       scrollBottom(true);
@@ -391,7 +392,7 @@
       var ct = resp.headers.get('content-type') || '';
       if (ct.indexOf('text/event-stream') === -1) {
         return resp.json().then(function (j) {
-          if (j.ok) finish(j.answer, j.sources || []);
+          if (j.ok) finish(j.answer, j.sources || [], j.tree);
           else fail(j);
         });
       }
@@ -413,7 +414,7 @@
         } else if (ev === 'delta') {
           if (j.t) { collect += j.t; body.textContent = collect; scrollBottom(false); }
         } else if (ev === 'done') {
-          finish(j.answer || collect, j.sources || []);
+          finish(j.answer || collect, j.sources || [], j.tree);
         } else if (ev === 'error') {
           fail(j);
         }
@@ -608,7 +609,7 @@
       .replace(/[，,]+$/g, '')
       .replace(/[。！？!?]+$/, '。')
       .trim()
-      .slice(0, 600);
+      .slice(0, 1200);
   }
   /** 朗读一段回复（自动，除非用户已静音） */
   function speak(text) {
@@ -634,6 +635,70 @@
       audioEl.onended = function () { try { URL.revokeObjectURL(audioEl.src); } catch (e) {} };
       audioEl.play().catch(noop);
     }).catch(noop); // 语音失败静默，不影响文字回复
+  }
+
+  /* ---------------- 世系树状弹出层（呈现+朗读的同时弹出） ---------------- */
+  function esc(s) {
+    if (s === undefined || s === null) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  /** 迁徙阶段 → 徽标配色类 */
+  function branchCls(b) {
+    b = b || '';
+    if (b.indexOf('远古') !== -1) return 'tb-ancient';
+    if (b.indexOf('申伯') !== -1) return 'tb-shenbo';
+    if (b.indexOf('东山') !== -1) return 'tb-dongshan';
+    if (b.indexOf('临海') !== -1) return 'tb-linhai';
+    if (b.indexOf('石马') !== -1) return 'tb-shima';
+    if (b.indexOf('枫槎') !== -1) return 'tb-fengcha';
+    return 'tb-other';
+  }
+  var treeOverlay = null;
+  function showTreeOverlay(nodes) {
+    if (!nodes || !nodes.length) return;
+    closeTreeOverlay();
+    var last = nodes[nodes.length - 1];
+    var ov = document.createElement('div');
+    ov.id = 'ai-tree-overlay';
+    ov.innerHTML =
+      '<div class="ai-tree-modal">' +
+      '  <div class="ai-tree-head"><span class="ai-tree-title">🌳 世系图 · 从炎帝神农氏到' + esc(last.name) + '</span>' +
+      '    <button type="button" class="ai-tree-close" aria-label="关闭">✕</button></div>' +
+      '  <div class="ai-tree-body"></div>' +
+      '</div>';
+    document.body.appendChild(ov);
+    treeOverlay = ov;
+    var tbody = ov.querySelector('.ai-tree-body');
+    var frag = document.createDocumentFragment();
+    nodes.forEach(function (n) {
+      var row = document.createElement('div');
+      row.className = 'ai-tree-node' + (n.isSelf ? ' self' : '');
+      var badges = '';
+      if (n.adopt) badges += '<span class="ai-tree-badge adopt" title="' + esc(n.adopt) + '">⚠ ' + esc(n.adopt) + '</span>';
+      if (n.branch) badges += '<span class="ai-tree-badge ' + branchCls(n.branch) + '">' + esc(n.branch) + '</span>';
+      var note = n.adopt ? '' : (n.note ? n.note : '');
+      row.innerHTML =
+        '<div class="ai-tree-sh"><span class="ai-tree-shi">第' + esc(n.shi) + '世</span>' + (n.isSelf ? '<span class="ai-tree-you">您</span>' : '') + '</div>' +
+        '<div class="ai-tree-name">' + esc(n.name) + '</div>' +
+        (note ? '<div class="ai-tree-note">' + esc(note) + '</div>' : '') +
+        (badges ? '<div class="ai-tree-badges">' + badges + '</div>' : '');
+      frag.appendChild(row);
+    });
+    tbody.appendChild(frag);
+    ov.addEventListener('click', function (e) { if (e.target === ov) closeTreeOverlay(); });
+    ov.querySelector('.ai-tree-close').addEventListener('click', closeTreeOverlay);
+    var onKey = function (e) {
+      if (e.key === 'Escape') {
+        e.stopPropagation(); // 捕获阶段拦截，避免面板自身的 Esc 关闭逻辑一起触发
+        closeTreeOverlay();
+        document.removeEventListener('keydown', onKey, true);
+      }
+    };
+    document.addEventListener('keydown', onKey, true);
+    scrollBottom(true);
+  }
+  function closeTreeOverlay() {
+    if (treeOverlay) { try { treeOverlay.parentNode.removeChild(treeOverlay); } catch (e) {} treeOverlay = null; }
   }
 
   /* ---------------- v15 看门狗与诊断（防「窗口莫名消失、只剩声音」复发） ---------------- */
@@ -686,6 +751,8 @@
           return;
         }
         // 情形 C：面板区域被更高层级元素覆盖 → 提升层级
+        // 世系树遮罩打开时合法覆盖面板，不算异常，跳过
+        if (treeOverlay && treeOverlay.style && treeOverlay.style.zIndex) { watchPanel(); return; }
         var el = document.elementFromPoint(rect.left + Math.min(rect.width / 2, 160), rect.top + Math.min(rect.height / 2, 40));
         if (el && !panel.contains(el)) {
           var cs = (el.tagName || '') + (el.id ? '#' + el.id : '') + '.' + String(el.className || '').slice(0, 40) + ' z=' + (getComputedStyle(el).zIndex || '');
@@ -776,6 +843,8 @@
       closePanel(true, 'popstate-mb');
     });
     document.addEventListener('keydown', function (e) {
+      // 世系树遮罩打开时，Esc 只关遮罩，不关面板（遮罩用捕获阶段先拦截）
+      if (e.key === 'Escape' && treeOverlay) return;
       if (e.key === 'Escape' && isOpen) {
         // 正在朗读语音时按 Esc：先停语音，不关面板（避免用户想关声音却把窗口关了）
         if (audioEl && !audioEl.paused && !audioEl.ended) { stopSpeak(); return; }

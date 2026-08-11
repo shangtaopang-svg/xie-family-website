@@ -288,8 +288,22 @@ function answerLineage(query, selfId) {
   return `—— ${target.name} 的直系世系（共 ${chain.length} 世）——\n` + formatChain(chain, tid);
 }
 
+/**
+ * 「从炎帝神农氏开始」的完整世系：权威主链（历史段）衔接真实 father_id 链（本人段）。
+ * 返回 { text, tree }：text 用于答案+朗读，tree 是节点数组供前端画树。
+ * 懒加载 historical-chain.js 以避免顶层循环 require。
+ */
+function answerFullLineage(selfId) {
+  ensureLoaded();
+  const hc = require('./historical-chain.js');
+  const nodes = hc.buildFullChain(selfId);
+  if (!nodes) return { text: '未找到您的族谱记录，请重新验证身份。', tree: null };
+  const self = byId.get(Number(selfId));
+  return { text: hc.formatChainText(nodes, self ? self.name : ''), tree: nodes };
+}
+
 module.exports = {
   ensureLoaded, getPerson, getPeopleByName,
   getAncestorList, getDescendantLevels, getSameGeneration,
-  isAncestorOf, kinshipText, getDirectChain, describePerson, answerLineage,
+  isAncestorOf, kinshipText, getDirectChain, describePerson, answerLineage, answerFullLineage,
 };
