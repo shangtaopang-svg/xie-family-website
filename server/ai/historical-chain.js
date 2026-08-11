@@ -193,19 +193,22 @@ function buildFullChain(personId) {
   return nodes;
 }
 
-/** 把节点数组排版成可读/可朗读的文本 */
-function formatChainText(nodes, selfName) {
+/** 把节点数组排版成可读/可朗读的文本。ownerIsSelf=true 时用「您」（自己），否则用被查人名 */
+function formatChainText(nodes, selfName, ownerIsSelf) {
+  const isOwner = ownerIsSelf !== false;
+  const ownerLabel = isOwner ? '您' : (selfName || '被查询族人');
   const lines = [];
   nodes.forEach(n => {
     let line = '第' + n.shi + '世 ' + n.name;
-    if (n.isSelf) line += ' ← 您';
+    if (n.isSelf) line += ' ← ' + ownerLabel;
     const extras = [];
     if (n.adopt) extras.push(n.adopt);
     else if (n.note && n.note !== n.adopt) extras.push(n.note);
     if (extras.length) line += '（' + extras.join('；') + '）';
     lines.push(line);
   });
-  let text = '您的世系图（自炎帝神农氏起，共 ' + nodes.length + ' 世）：\n' + lines.join('\n');
+  const title = isOwner ? '您的世系图' : (selfName ? selfName + ' 的世系图' : '该族人的世系图');
+  let text = title + '（自炎帝神农氏起，共 ' + nodes.length + ' 世）：\n' + lines.join('\n');
   const adoptions = nodes.filter(n => n.adopt);
   if (adoptions.length) {
     text += '\n\n【过继/入继备注】\n' +

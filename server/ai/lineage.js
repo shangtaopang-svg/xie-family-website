@@ -290,16 +290,36 @@ function answerLineage(query, selfId) {
 
 /**
  * 「从炎帝神农氏开始」的完整世系：权威主链（历史段）衔接真实 father_id 链（本人段）。
- * 返回 { text, tree }：text 用于答案+朗读，tree 是节点数组供前端画树。
+ * 支持查询自己（「我的世系图」）或查询其他族人（「呈现XX的世系图」）。
+ * 返回 { text, tree, ownerIsSelf, targetName }：text 用于答案+朗读，tree 供前端画树。
  * 懒加载 historical-chain.js 以避免顶层循环 require。
  */
-function answerFullLineage(selfId) {
+function answerFullLineage(query, selfId) {
   ensureLoaded();
   const hc = require('./historical-chain.js');
-  const nodes = hc.buildFullChain(selfId);
-  if (!nodes) return { text: '未找到您的族谱记录，请重新验证身份。', tree: null };
-  const self = byId.get(Number(selfId));
-  return { text: hc.formatChainText(nodes, self ? self.name : ''), tree: nodes };
+  const q = String(query || '').trim();
+  // 解析被查询族人：含「我/本人」→ 查自己；否则从提问中按名字解析（跳过提问框架里的始祖名）
+  let targetId = Number(selfId);
+  let foundName = false;
+  if (!/我|本人/.test(q)) {
+    const skip = new Set(['炎帝神农氏']);
+    for (const n of byName.keys()) {
+      if (skip.has(n)) continue;
+      if (n.length >= 2 && q.includes(n)) {
+        targetId = Number(byName.get(n)[0].id);
+        foundName = true;
+        break;
+      }
+    }
+    if (!foundName) {
+      return { text: '族谱中未找到您想查询的族人，请确认姓名是否正确（例如「请从炎帝神农氏开始，呈现敬乙的世系图」）。', tree: null, ownerIsSelf: true, targetName: '' };
+    }
+  }
+  const target = byId.get(targetId);
+  const nodes = hc.buildFullChain(targetId);
+  if (!nodes || !target) return { text: '未找到该族人的族谱记录，请重新验证身份。', tree: null, ownerIsSelf: true, targetName: '' };
+  const ownerIsSelf = Number(targetId) === Number(selfId);
+  return { text: hc.formatChainText(nodes, target.name, ownerIsSelf), tree: nodes, ownerIsSelf, targetName: target.name };
 }
 
 module.exports = {

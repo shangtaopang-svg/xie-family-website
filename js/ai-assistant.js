@@ -34,7 +34,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v19'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v20'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -346,7 +346,7 @@
     var body = botEl.firstChild;
     var done = false;
 
-    var finish = function (answer, sources, tree) {
+    var finish = function (answer, sources, tree, ownerIsSelf) {
       if (done) return;
       done = true;
       body.textContent = answer || '（无回答）';
@@ -357,7 +357,7 @@
         src.textContent = '📚 参考：' + sources.join('、');
         botEl.appendChild(src);
       }
-      if (tree && tree.length) showTreeOverlay(tree); // 世系图：呈现+朗读的同时弹出树状图
+      if (tree && tree.length) showTreeOverlay(tree, ownerIsSelf); // 世系图：呈现+朗读的同时弹出树状图
       hist.push({ role: 'assistant', content: answer || '' });
       persist();
       scrollBottom(true);
@@ -392,7 +392,7 @@
       var ct = resp.headers.get('content-type') || '';
       if (ct.indexOf('text/event-stream') === -1) {
         return resp.json().then(function (j) {
-          if (j.ok) finish(j.answer, j.sources || [], j.tree);
+          if (j.ok) finish(j.answer, j.sources || [], j.tree, j.ownerIsSelf !== false);
           else fail(j);
         });
       }
@@ -414,7 +414,7 @@
         } else if (ev === 'delta') {
           if (j.t) { collect += j.t; body.textContent = collect; scrollBottom(false); }
         } else if (ev === 'done') {
-          finish(j.answer || collect, j.sources || [], j.tree);
+          finish(j.answer || collect, j.sources || [], j.tree, j.ownerIsSelf !== false);
         } else if (ev === 'error') {
           fail(j);
         }
@@ -599,7 +599,7 @@
   function prepareSpoken(text) {
     return String(text)
       .replace(/\*\*/g, '')                // 去掉 ** 加粗标记（不念出来）
-      .replace(/←\s*您/g, '，是您本人')     // 世系图箭头「← 您」
+      .replace(/←\s*([^\s，,（]+)/g, '，是$1本人') // 世系图箭头「← 您/← 被查族人」
       .replace(/[→➜▶|]/g, '，')             // 各类箭头/竖线 → 逗号
       .replace(/[●◆▪•★☆]/g, '，')           // 列表符号 → 逗号
       .replace(/【([^】]*)】/g, '$1')        // 【…】去掉括号但保留内容朗读
@@ -609,7 +609,7 @@
       .replace(/[，,]+$/g, '')
       .replace(/[。！？!?]+$/, '。')
       .trim()
-      .slice(0, 1200);
+      .slice(0, 2000);
   }
   /** 朗读一段回复（自动，除非用户已静音） */
   function speak(text) {
@@ -654,7 +654,7 @@
     return 'tb-other';
   }
   var treeOverlay = null;
-  function showTreeOverlay(nodes) {
+  function showTreeOverlay(nodes, ownerIsSelf) {
     if (!nodes || !nodes.length) return;
     closeTreeOverlay();
     var last = nodes[nodes.length - 1];
@@ -678,7 +678,7 @@
       if (n.branch) badges += '<span class="ai-tree-badge ' + branchCls(n.branch) + '">' + esc(n.branch) + '</span>';
       var note = n.adopt ? '' : (n.note ? n.note : '');
       row.innerHTML =
-        '<div class="ai-tree-sh"><span class="ai-tree-shi">第' + esc(n.shi) + '世</span>' + (n.isSelf ? '<span class="ai-tree-you">您</span>' : '') + '</div>' +
+        '<div class="ai-tree-sh"><span class="ai-tree-shi">第' + esc(n.shi) + '世</span>' + (n.isSelf ? '<span class="ai-tree-you">' + esc(ownerIsSelf ? '您' : n.name) + '</span>' : '') + '</div>' +
         '<div class="ai-tree-name">' + esc(n.name) + '</div>' +
         (note ? '<div class="ai-tree-note">' + esc(note) + '</div>' : '') +
         (badges ? '<div class="ai-tree-badges">' + badges + '</div>' : '');
