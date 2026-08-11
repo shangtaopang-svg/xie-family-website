@@ -193,14 +193,17 @@ function answerLineage(query, selfId) {
   const self = byId.get(Number(selfId));
   if (!self) return '未找到您的族谱记录，请重新验证身份。';
 
-  // 尝试提取问题中的指名人物
+  // 尝试提取问题中的指名人物（优先 ≥2 字人名，找不到再匹配单字名，如「衡」）
   let target = self;
   if (!/我/.test(q)) {
-    for (const n of byName.keys()) {
-      if (n.length >= 2 && q.includes(n)) {
-        const cand = byName.get(n)[0];
-        if (cand) { target = cand; break; }
+    for (const minLen of [2, 1]) {
+      for (const n of byName.keys()) {
+        if (n.length >= minLen && q.includes(n)) {
+          const cand = byName.get(n)[0];
+          if (cand) { target = cand; break; }
+        }
       }
+      if (target !== self) break;
     }
   }
 
@@ -246,10 +249,13 @@ function answerLineage(query, selfId) {
   }
 
   if (/关系/.test(q)) {
-    // 找问题中的第二个名字
+    // 找问题中的第二个名字（支持单字名）
     let other = null;
-    for (const n of byName.keys()) {
-      if (n.length >= 2 && q.includes(n) && n !== target.name) { other = n; break; }
+    for (const minLen of [2, 1]) {
+      for (const n of byName.keys()) {
+        if (n.length >= minLen && q.includes(n) && n !== target.name) { other = n; break; }
+      }
+      if (other) break;
     }
     if (other) {
       const otherId = Number(byName.get(other)[0].id);
@@ -303,13 +309,17 @@ function answerFullLineage(query, selfId) {
   let foundName = false;
   if (!/我|本人/.test(q)) {
     const skip = new Set(['炎帝神农氏', '炎帝']);
-    for (const n of byName.keys()) {
-      if (skip.has(n)) continue;
-      if (n.length >= 2 && q.includes(n)) {
-        targetId = Number(byName.get(n)[0].id);
-        foundName = true;
-        break;
+    // 优先匹配 ≥2 字的人名，避免单字误命中提问框架里的字；找不到再降级匹配单字名（如「衡」）
+    for (const minLen of [2, 1]) {
+      for (const n of byName.keys()) {
+        if (skip.has(n)) continue;
+        if (n.length >= minLen && q.includes(n)) {
+          targetId = Number(byName.get(n)[0].id);
+          foundName = true;
+          break;
+        }
       }
+      if (foundName) break;
     }
     if (!foundName) {
       return { text: '族谱中未找到您想查询的族人，请确认姓名是否正确（例如「请从炎帝神农氏开始，呈现敬乙的世系图」）。', tree: null, ownerIsSelf: true, targetName: '' };
