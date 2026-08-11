@@ -317,33 +317,40 @@
 .ai-subtitle {
   display: flex;
   align-items: center;
-  height: 46px;
+  min-height: 64px;
   margin: 4px 10px 6px;
-  padding: 0 12px;
-  border-radius: 8px;
-  background: #f2eee7;
-  border: 1px dashed rgba(0, 0, 0, 0.18);
-  font-family: "Courier New", "Courier", monospace;
-  font-size: 15px;
-  line-height: 1;
-  color: #2f2a20;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(24, 24, 28, 0.95);
+  border: 1.5px solid rgba(58, 167, 109, 0.7);
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.3);
+  font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  font-size: 18px;
+  line-height: 1.5;
+  font-weight: 600;
+  color: #f7f2e8;
   letter-spacing: 0.5px;
-  white-space: nowrap;
-  overflow-x: hidden;
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
   flex: none;
   box-sizing: border-box;
 }
 .ai-subtitle[hidden] { display: none; }
-.ai-subtitle::before {
-  content: '▮';
-  color: #3aa76d;
-  margin-right: 8px;
-  flex: none;
-  animation: aiSubBlink 1s steps(1) infinite;
+.ai-sub-done { color: #ffffff; }
+.ai-sub-cur {
+  color: #ffffff;
+  background: rgba(58, 167, 109, 0.45);
+  border-radius: 3px;
+  box-shadow: 0 0 10px rgba(58, 167, 109, 0.55);
+  padding: 0 1px;
 }
-@keyframes aiSubBlink { 50% { opacity: 0.25; } }
+.ai-sub-cur::after { content: '▮'; color: #5fe3a0; margin-left: 2px; animation: aiSubBlink .8s steps(1) infinite; }
+.ai-sub-rest { color: rgba(247, 242, 232, 0.18); }
+.ai-sub-prev { color: rgba(247, 242, 232, 0.45); }
+@keyframes aiSubBlink { 50% { opacity: 0.2; } }
 
 /* ---------- 手机端（黑底霓虹黄主题） ---------- */
 @media (max-width: 768px) {
@@ -416,11 +423,18 @@
   #ai-input:focus { border-color: var(--mb-brand, #D4FF3A); }
   #ai-send { background: var(--mb-brand, #D4FF3A); color: var(--mb-bg, #0a0a0a); }
   .ai-subtitle {
-    background: rgba(0, 0, 0, 0.45);
-    border-color: rgba(212, 255, 58, 0.3);
-    color: #e8e3d8;
+    background: rgba(0, 0, 0, 0.6);
+    border-color: rgba(212, 255, 58, 0.45);
   }
-  .ai-subtitle::before { color: var(--mb-brand, #D4FF3A); }
+  .ai-sub-done { color: #ffffff; }
+  .ai-sub-cur {
+    color: #ffffff;
+    background: rgba(212, 255, 58, 0.22);
+    box-shadow: 0 0 10px rgba(212, 255, 58, 0.4);
+  }
+  .ai-sub-cur::after { color: var(--mb-brand, #D4FF3A); }
+  .ai-sub-rest { color: rgba(232, 227, 216, 0.18); }
+  .ai-sub-prev { color: rgba(232, 227, 216, 0.45); }
 }
 
 @media (prefers-reduced-motion: reduce) {

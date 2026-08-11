@@ -34,7 +34,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v24'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v25'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -603,6 +603,7 @@
   var subText = '';        // 当前朗读全文
   var subBounds = [];      // 词级时间戳 [{t,d,w}]
   var subCum = [];         // 每个词结束时累计应显示的字符数
+  var subSent = [];        // 句子边界 [{s,e}]，字幕按当前句整句显示，不再横滚
   var subDur = 0;          // 音频总时长（loadedmetadata 取得，无边界时兜底用）
   var subRaf = null;       // rAF 句柄
   var subHideTimer = null; // 读完后收起字幕条的定时器
@@ -648,7 +649,7 @@
     for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
     return new Blob([arr], { type: mime });
   }
-  /** 开始字幕条：记录全文与词级时间戳，预计算每个词结束时的累计字符数 */
+  /** 开始字幕条：记录全文与词级时间戳，预计算每个词结束时的累计字符数，并按标点切句 */
   function startSubtitle(text, bounds) {
     if (!subEl) return;
     subText = text || '';
@@ -659,9 +660,9 @@
       c += String(subBounds[i].w || '').length;
       subCum.push(c);
     }
+    subSent = splitSentences(subText);
     subDur = 0;
     subEl.textContent = '';
-    subEl.scrollLeft = 0;
     subEl.hidden = false;
     startSubLoop();
   }
@@ -670,44 +671,87 @@
     if (!subEl || subEl.hidden) return;
     if (!subRaf) subRaf = requestAnimationFrame(subTick);
   }
-  /** 每帧：按当前播放位置揭示到对应字数，电报光标 ▌ 跟随 */
+  /** 字幕比声音略提前揭示（约 80ms），符合中文口播字幕惯例，感知为「跟得上」；感觉滞后/超前可微调 */
+  var SUB_LEAD = 0.08;
+  /** 每帧：按当前播放位置精确算出已读字符数（词内逐字插值 → 连续打字感），渲染卡拉OK式字幕 */
   function subTick() {
     subRaf = requestAnimationFrame(subTick);
     if (!subEl || subEl.hidden || !audioEl) return;
-    var ct = audioEl.currentTime || 0;
+    var ct = (audioEl.currentTime || 0) + SUB_LEAD;
     var n = 0;
-    if (subCum.length) {
-      // 词边界驱动：找最后一个 t<=ct 的词，显示到它结束（暂停时 currentTime 不动 → 字幕自然冻结）
-      for (var i = subCum.length - 1; i >= 0; i--) {
-        if (subBounds[i].t <= ct) { n = subCum[i]; break; }
+    if (subBounds.length && subBounds.length === subCum.length) {
+      // 词边界驱动：找当前正在读的词，再在词内按时间插值逐字推进（暂停时 currentTime 不动 → 字幕自然冻结）
+      var i = -1;
+      for (var k = subCum.length - 1; k >= 0; k--) {
+        if (subBounds[k].t <= ct) { i = k; break; }
+      }
+      if (i >= 0) {
+        var wLen = String(subBounds[i].w || '').length;
+        var t0 = subBounds[i].t;
+        var t1 = (i + 1 < subBounds.length) ? subBounds[i + 1].t : (t0 + (subBounds[i].d || 0.3));
+        var seg = (t1 - t0) > 0.005 ? Math.max(0, Math.min(1, (ct - t0) / (t1 - t0))) : 1;
+        n = (subCum[i] - wLen) + seg * wLen;
       }
     } else {
       // 无边界兜底：按音频时长匀速揭示
       var dur = subDur || audioEl.duration || 1;
-      n = Math.floor(subText.length * Math.min(1, ct / dur));
+      n = subText.length * Math.min(1, ct / dur);
     }
     n = Math.max(0, Math.min(n, subText.length));
-    subEl.textContent = subText.slice(0, n) + '▌';
-    subEl.scrollLeft = subEl.scrollWidth; // 自动横滚，光标始终可见
+    renderSubtitle(n);
+  }
+  /** 按中文标点（句号/问号/叹号/分号/省略号）切句，字幕条只显示「当前正在读的那句」，避免整段横滚 */
+  function splitSentences(txt) {
+    var out = [];
+    var s = 0;
+    for (var i = 0; i < txt.length; i++) {
+      if ('。！？；…'.indexOf(txt.charAt(i)) !== -1) {
+        out.push({ s: s, e: i + 1 });
+        s = i + 1;
+      }
+    }
+    if (s < txt.length) out.push({ s: s, e: txt.length });
+    return out;
+  }
+  /** 定位当前已读位置 n 所在的句子 */
+  function findSeg(n) {
+    for (var i = 0; i < subSent.length; i++) {
+      if (subSent[i].s <= n && n <= subSent[i].e) return subSent[i];
+    }
+    return subSent[subSent.length - 1] || { s: 0, e: subText.length };
+  }
+  /** 渲染字幕条：已读亮色 + 当前字高亮块(光标闪烁) + 本句未读极淡；句首/句尾省略号示意还有前后文 */
+  function renderSubtitle(n) {
+    if (!subEl) return;
+    var seg = findSeg(n);
+    var s = seg.s, e = seg.e;
+    var done = Math.max(0, Math.min(e - s, Math.floor(n) - s));
+    var html = '';
+    if (s > 0) html += '<span class="ai-sub-prev">…</span>';
+    html += '<span class="ai-sub-done">' + esc(subText.slice(s, s + done)) + '</span>';
+    var cur = subText.charAt(s + done);
+    if (cur) html += '<span class="ai-sub-cur">' + esc(cur) + '</span>';
+    html += '<span class="ai-sub-rest">' + esc(subText.slice(s + done + 1, e)) + '</span>';
+    if (e < subText.length) html += '<span class="ai-sub-prev">…</span>';
+    subEl.innerHTML = html;
   }
   /** 自然读完：揭示全文，停留 2.6s 后自动收起 */
   function finishSubtitle() {
     if (!subEl || subEl.hidden) return;
     if (subRaf) { cancelAnimationFrame(subRaf); subRaf = null; }
-    subEl.textContent = subText + '▌';
-    subEl.scrollLeft = subEl.scrollWidth;
+    subEl.innerHTML = '<span class="ai-sub-done">' + esc(subText) + '</span><span class="ai-sub-cur"></span>';
     if (subHideTimer) clearTimeout(subHideTimer);
     subHideTimer = setTimeout(function () {
       if (subEl) { subEl.hidden = true; subEl.textContent = ''; }
-      subText = ''; subBounds = []; subCum = [];
+      subText = ''; subBounds = []; subCum = []; subSent = [];
     }, 2600);
   }
   /** 停止并清空字幕（发送新问题/关窗/停止口播等沿用） */
   function stopSubtitle() {
     if (subRaf) { cancelAnimationFrame(subRaf); subRaf = null; }
     if (subHideTimer) { clearTimeout(subHideTimer); subHideTimer = null; }
-    if (subEl) { subEl.hidden = true; subEl.textContent = ''; subEl.scrollLeft = 0; }
-    subText = ''; subBounds = []; subCum = []; subDur = 0;
+    if (subEl) { subEl.hidden = true; subEl.textContent = ''; }
+    subText = ''; subBounds = []; subCum = []; subSent = []; subDur = 0;
   }
 
   var audioBound = false;
