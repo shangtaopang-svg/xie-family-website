@@ -34,14 +34,14 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v16'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v17'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
   var fab, panel, msgs, chipsEl, input, sendBtn, statusEl, goBottom, header, bubble, soundBtn;
   var hist = [];
   var isOpen = false;
-  var ttsMuted = false; // 语音朗读开关（用户可记忆）
+  var ttsMuted = true; // 语音朗读开关（v17 起默认关闭：回答不自动念，用户可点 🔊 开启）
   var audioEl = null;   // 复用的 <audio> 播放器
   var queuedMsg = null;
   var composing = false;
@@ -582,7 +582,7 @@
   /* ---------------- 语音朗读（Edge 神经女声） ---------------- */
   function noop() {}
   function initTts() {
-    try { ttsMuted = localStorage.getItem(LS_TTS_MUTED) === '1'; } catch (e) { ttsMuted = false; }
+    try { ttsMuted = localStorage.getItem(LS_TTS_MUTED) !== '0'; } catch (e) { ttsMuted = true; }
     if (soundBtn) soundBtn.textContent = ttsMuted ? '🔇' : '🔊';
   }
   function toggleTts() {
