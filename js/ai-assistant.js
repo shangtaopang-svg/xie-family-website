@@ -34,11 +34,11 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v23'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v24'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
-  var fab, panel, msgs, chipsEl, input, sendBtn, statusEl, goBottom, header, bubble, soundBtn, stopBtn;
+  var fab, panel, msgs, chipsEl, input, sendBtn, statusEl, goBottom, header, bubble, soundBtn, stopBtn, subEl;
   var hist = [];
   var isOpen = false;
   var ttsMuted = true; // 语音朗读开关（v17 起默认关闭：回答不自动念，用户可点 🔊 开启）
@@ -101,6 +101,7 @@
       '</div>' +
       '<div class="ai-msgs" id="ai-msgs"></div>' +
       '<div class="ai-chips" id="ai-chips"></div>' +
+      '<div class="ai-subtitle" id="ai-subtitle" hidden></div>' +
       '<div class="ai-input-row">' +
       '  <textarea id="ai-input" rows="1" placeholder="输入问题，如：谢氏家族是怎么迁徙来的？" enterkeyhint="send"></textarea>' +
       '  <button type="button" class="ai-send" id="ai-send" disabled>发送</button>' +
@@ -121,6 +122,7 @@
     header = $('.ai-header', panel);
     soundBtn = $('#ai-sound', panel);
     stopBtn = $('#ai-stop', panel);
+    subEl = $('#ai-subtitle', panel);
 
     // 预设问题 chips
     CHIPS.forEach(function (c) {
@@ -597,8 +599,16 @@
   /** 口播按钮状态机：none 无 | playing 朗读中 | paused 已暂停(可继续) | ended 已读完(可重听) */
   var narState = 'none';
   var lastAnswer = '';   // 最近一次回答原文，供「重新听」回放
+  // —— 口播字幕条（电报打字感，跟随词边界逐渐揭示） ——
+  var subText = '';        // 当前朗读全文
+  var subBounds = [];      // 词级时间戳 [{t,d,w}]
+  var subCum = [];         // 每个词结束时累计应显示的字符数
+  var subDur = 0;          // 音频总时长（loadedmetadata 取得，无边界时兜底用）
+  var subRaf = null;       // rAF 句柄
+  var subHideTimer = null; // 读完后收起字幕条的定时器
   function stopSpeak() { // 完全停止并清空（发送新问题/关窗/Esc 等沿用）
     narState = 'none';
+    stopSubtitle();
     if (audioEl) { try { audioEl.pause(); audioEl.removeAttribute('src'); audioEl.load(); } catch (e) {} }
     if (stopBtn) stopBtn.hidden = true;
   }
@@ -606,6 +616,7 @@
     if (!audioEl || narState !== 'playing') return;
     narState = 'paused';
     try { audioEl.pause(); } catch (e) {}
+    if (subRaf) { cancelAnimationFrame(subRaf); subRaf = null; } // 冻结字幕（currentTime 已停，文字停在当前处）
     if (stopBtn) {
       stopBtn.hidden = false;
       stopBtn.textContent = '▶';
@@ -628,14 +639,87 @@
     if (narState !== 'ended' || !lastAnswer) return;
     speak(lastAnswer); // 重新生成并朗读最近一次回答
   }
+
+  /* ---------------- 口播字幕条（电报打字感，跟随口播逐渐出现） ---------------- */
+  /** 把服务端返回的 base64 MP3 转成 Blob（/api/tts 改返回 JSON 后使用） */
+  function base64ToBlob(b64, mime) {
+    var bin = atob(b64);
+    var arr = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return new Blob([arr], { type: mime });
+  }
+  /** 开始字幕条：记录全文与词级时间戳，预计算每个词结束时的累计字符数 */
+  function startSubtitle(text, bounds) {
+    if (!subEl) return;
+    subText = text || '';
+    subBounds = bounds || [];
+    subCum = [];
+    var c = 0;
+    for (var i = 0; i < subBounds.length; i++) {
+      c += String(subBounds[i].w || '').length;
+      subCum.push(c);
+    }
+    subDur = 0;
+    subEl.textContent = '';
+    subEl.scrollLeft = 0;
+    subEl.hidden = false;
+    startSubLoop();
+  }
+  /** 启动揭示循环（幂等；playing/resume 后由事件再次拉起） */
+  function startSubLoop() {
+    if (!subEl || subEl.hidden) return;
+    if (!subRaf) subRaf = requestAnimationFrame(subTick);
+  }
+  /** 每帧：按当前播放位置揭示到对应字数，电报光标 ▌ 跟随 */
+  function subTick() {
+    subRaf = requestAnimationFrame(subTick);
+    if (!subEl || subEl.hidden || !audioEl) return;
+    var ct = audioEl.currentTime || 0;
+    var n = 0;
+    if (subCum.length) {
+      // 词边界驱动：找最后一个 t<=ct 的词，显示到它结束（暂停时 currentTime 不动 → 字幕自然冻结）
+      for (var i = subCum.length - 1; i >= 0; i--) {
+        if (subBounds[i].t <= ct) { n = subCum[i]; break; }
+      }
+    } else {
+      // 无边界兜底：按音频时长匀速揭示
+      var dur = subDur || audioEl.duration || 1;
+      n = Math.floor(subText.length * Math.min(1, ct / dur));
+    }
+    n = Math.max(0, Math.min(n, subText.length));
+    subEl.textContent = subText.slice(0, n) + '▌';
+    subEl.scrollLeft = subEl.scrollWidth; // 自动横滚，光标始终可见
+  }
+  /** 自然读完：揭示全文，停留 2.6s 后自动收起 */
+  function finishSubtitle() {
+    if (!subEl || subEl.hidden) return;
+    if (subRaf) { cancelAnimationFrame(subRaf); subRaf = null; }
+    subEl.textContent = subText + '▌';
+    subEl.scrollLeft = subEl.scrollWidth;
+    if (subHideTimer) clearTimeout(subHideTimer);
+    subHideTimer = setTimeout(function () {
+      if (subEl) { subEl.hidden = true; subEl.textContent = ''; }
+      subText = ''; subBounds = []; subCum = [];
+    }, 2600);
+  }
+  /** 停止并清空字幕（发送新问题/关窗/停止口播等沿用） */
+  function stopSubtitle() {
+    if (subRaf) { cancelAnimationFrame(subRaf); subRaf = null; }
+    if (subHideTimer) { clearTimeout(subHideTimer); subHideTimer = null; }
+    if (subEl) { subEl.hidden = true; subEl.textContent = ''; subEl.scrollLeft = 0; }
+    subText = ''; subBounds = []; subCum = []; subDur = 0;
+  }
+
   var audioBound = false;
   function bindAudioEl() {
     if (audioBound || !audioEl) return;
     audioBound = true;
     // 注意：自然结束时 Chromium 先触发 pause 再触发 ended；这里不监听 pause，
     // 因为 stopSpeak/pauseNarration/ended 三条路径都显式管理了状态，监听 pause 反而会把「自然读完」误判成停止清掉 🔁。
+    audioEl.addEventListener('loadedmetadata', function () { subDur = audioEl.duration || 0; });
     audioEl.addEventListener('playing', function () {
       narState = 'playing';
+      startSubLoop(); // 口播继续 → 字幕继续揭示
       if (stopBtn) {
         stopBtn.hidden = false;
         stopBtn.textContent = '⏸';
@@ -645,6 +729,7 @@
     });
     audioEl.addEventListener('ended', function () {
       narState = 'ended';
+      finishSubtitle(); // 口播读完 → 字幕补全后收起
       try { URL.revokeObjectURL(audioEl.src); } catch (e) {}
       if (stopBtn) {
         stopBtn.hidden = false;
@@ -669,7 +754,7 @@
       .replace(/[，,]+$/g, '')
       .replace(/[。！？!?]+$/, '。')
       .trim()
-      .slice(0, 2000);
+      .slice(0, 800); // 与服务器 /api/tts 的 800 字上限对齐，避免超长回答静默失败
   }
   /** 朗读一段回复（自动，除非用户已静音） */
   function speak(text) {
@@ -683,15 +768,16 @@
       body: JSON.stringify({ text: spoken, voice: 'zh-CN-XiaoxiaoNeural' })
     }).then(function (r) {
       if (!r.ok) throw new Error('tts ' + r.status);
-      return r.blob();
-    }).then(function (blob) {
+      return r.json();
+    }).then(function (j) {
       if (ttsMuted) return;
       // v15 守卫：TTS 生成期间面板可能已被关闭（Esc/✕/机器人等），此时 audioEl 还是 null，
       // closePanel 的 stopSpeak() 拦不住 —— 若继续起播就会出现「窗口消失、声音还在响」。
       // 必须在起播前确认面板仍打开；被跳过则记入诊断，便于确认竞态确实被拦截。
       if (!isOpen || panel.hidden) { diagLog('tts-skipped-panel-closed', ''); return; }
       if (!audioEl) { audioEl = new Audio(); bindAudioEl(); }
-      audioEl.src = URL.createObjectURL(blob);
+      audioEl.src = URL.createObjectURL(base64ToBlob(j.audio, 'audio/mpeg'));
+      startSubtitle(spoken, j.boundaries || []); // 字幕条开始，随口播逐字揭示
       audioEl.play().catch(noop);
     }).catch(noop); // 语音失败静默，不影响文字回复
   }

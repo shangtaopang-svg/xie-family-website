@@ -9,7 +9,7 @@
  * 唯一依赖：ws（Node 20 无原生 WebSocket）。
  *
  * 用法：const { synthesize } = require('./tts.js');
- *       const mp3 = await synthesize('你好', { voice: 'zh-CN-XiaoxiaoNeural' });
+ *       const { buf, boundaries } = await synthesize('你好', { voice: 'zh-CN-XiaoxiaoNeural' });
  */
 'use strict';
 const WebSocket = require('ws');
@@ -82,6 +82,7 @@ function synthesize(text, opts) {
     });
 
     const chunks = [];
+    const boundaries = [];   // 词级时间戳（word boundary），offset/duration 为 100ns 单位
     const timeout = setTimeout(() => { try { ws.terminate(); } catch (e) {} reject(new Error('语音合成超时')); }, 30000);
 
     ws.on('open', () => {
@@ -107,10 +108,32 @@ function synthesize(text, opts) {
         }
       } else {
         const str = data.toString('utf8');
-        if (str.indexOf('Path:turn.end') !== -1) {
+        if (str.indexOf('Path:audio.metadata') !== -1) {
+          // 词边界不在独立帧里，而是封装在 audio.metadata 的 Metadata 数组：
+          // {"Metadata":[{"Type":"WordBoundary","Data":{"Offset":…,"Duration":…,"text":{"Text":"…"}}}]}
+          // Offset/Duration 单位为 100ns（÷1e7 得秒）。头部(\r\n\r\n)后为 JSON（可能带缩进）。
+          const idx = str.indexOf('\r\n\r\n');
+          if (idx !== -1) {
+            try {
+              const meta = JSON.parse(str.slice(idx + 4));
+              if (meta && Array.isArray(meta.Metadata)) {
+                for (var mi = 0; mi < meta.Metadata.length; mi++) {
+                  const m = meta.Metadata[mi];
+                  if (m && m.Type === 'WordBoundary' && m.Data && typeof m.Data.Offset === 'number') {
+                    boundaries.push({
+                      t: m.Data.Offset / 1e7,
+                      d: (typeof m.Data.Duration === 'number' ? m.Data.Duration : 0) / 1e7,
+                      w: (m.Data.text && typeof m.Data.text.Text === 'string') ? m.Data.text.Text : ''
+                    });
+                  }
+                }
+              }
+            } catch (e) { /* 跳过无法解析的元数据帧 */ }
+          }
+        } else if (str.indexOf('Path:turn.end') !== -1) {
           clearTimeout(timeout);
           try { ws.close(); } catch (e) {}
-          resolve(Buffer.concat(chunks));
+          resolve({ buf: Buffer.concat(chunks), boundaries });
         } else if (str.indexOf('Path:turn.start') === -1 && str.indexOf('Path:response') === -1 && str.indexOf('Path:audio.metadata') === -1) {
           // 其他文本帧：忽略
         }
@@ -135,29 +158,29 @@ function getCached(text, voice) {
   const k = cacheKey(text, voice);
   if (cache.has(k)) {
     const e = cache.get(k);
-    if (Date.now() < e.exp) { e.hits = (e.hits || 0) + 1; return e.buf; }
+    if (Date.now() < e.exp) { e.hits = (e.hits || 0) + 1; return { buf: e.buf, boundaries: e.boundaries }; }
     cache.delete(k);
   }
   return null;
 }
 
-function setCache(text, voice, buf) {
+function setCache(text, voice, result) {
   const k = cacheKey(text, voice);
-  cache.set(k, { buf, exp: Date.now() + 30 * 60 * 1000 }); // 30 分钟 TTL
+  cache.set(k, { buf: result.buf, boundaries: result.boundaries, exp: Date.now() + 30 * 60 * 1000 }); // 30 分钟 TTL
   if (cache.size > CACHE_MAX) {
     const first = cache.keys().next().value;
     cache.delete(first);
   }
 }
 
-/** 带缓存的合成入口 */
+/** 带缓存的合成入口，返回 { buf, boundaries } */
 async function synthesizeCached(text, opts) {
   const voice = opts && ALLOWED_VOICES.has(opts.voice) ? opts.voice : 'zh-CN-XiaoxiaoNeural';
   const hit = getCached(text, voice);
   if (hit) return hit;
-  const buf = await synthesize(text, opts);
-  setCache(text, voice, buf);
-  return buf;
+  const result = await synthesize(text, opts);
+  setCache(text, voice, result);
+  return result;
 }
 
 module.exports = { synthesize, synthesizeCached, ALLOWED_VOICES };

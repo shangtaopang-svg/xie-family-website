@@ -313,6 +313,38 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+/* ---------- 口播字幕条（电报打字感，随口播逐字揭示） ---------- */
+.ai-subtitle {
+  display: flex;
+  align-items: center;
+  height: 46px;
+  margin: 4px 10px 6px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: #f2eee7;
+  border: 1px dashed rgba(0, 0, 0, 0.18);
+  font-family: "Courier New", "Courier", monospace;
+  font-size: 15px;
+  line-height: 1;
+  color: #2f2a20;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow-x: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  flex: none;
+  box-sizing: border-box;
+}
+.ai-subtitle[hidden] { display: none; }
+.ai-subtitle::before {
+  content: '▮';
+  color: #3aa76d;
+  margin-right: 8px;
+  flex: none;
+  animation: aiSubBlink 1s steps(1) infinite;
+}
+@keyframes aiSubBlink { 50% { opacity: 0.25; } }
+
 /* ---------- 手机端（黑底霓虹黄主题） ---------- */
 @media (max-width: 768px) {
   #ai-fab {
@@ -383,6 +415,12 @@
   #ai-input::placeholder { color: rgba(238, 238, 238, 0.4); }
   #ai-input:focus { border-color: var(--mb-brand, #D4FF3A); }
   #ai-send { background: var(--mb-brand, #D4FF3A); color: var(--mb-bg, #0a0a0a); }
+  .ai-subtitle {
+    background: rgba(0, 0, 0, 0.45);
+    border-color: rgba(212, 255, 58, 0.3);
+    color: #e8e3d8;
+  }
+  .ai-subtitle::before { color: var(--mb-brand, #D4FF3A); }
 }
 
 @media (prefers-reduced-motion: reduce) {

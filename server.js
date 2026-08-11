@@ -546,13 +546,15 @@ const server = http.createServer(async (req, res) => {
         sendJson(req, res, 429, { ok: false, error: '朗读太频繁，请稍后再试' });
         return;
       }
-      const mp3 = await tts.synthesizeCached(text, { voice });
+      const { buf, boundaries } = await tts.synthesizeCached(text, { voice });
+      // 返回 JSON：audio 为 base64 MP3，boundaries 为词级时间戳（驱动前端字幕条）
+      const payload = JSON.stringify({ audio: buf.toString('base64'), boundaries: boundaries || [] });
       res.writeHead(200, {
-        'Content-Type': 'audio/mpeg',
+        'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'no-cache',
-        'Content-Length': mp3.length,
+        'Content-Length': Buffer.byteLength(payload),
       });
-      res.end(mp3);
+      res.end(payload);
     } catch (e) {
       sendJson(req, res, 500, { ok: false, error: e.message || '语音合成失败' });
     }
