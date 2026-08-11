@@ -35,7 +35,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v41'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v42'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -855,6 +855,7 @@
       .replace(/←\s*([^\s，,（]+)/g, '，是$1本人') // 世系图箭头「← 您/← 被查族人」
       .replace(/[→➜▶|]/g, '，')             // 各类箭头/竖线 → 逗号
       .replace(/[●◆▪•★☆]/g, '，')           // 列表符号 → 逗号
+      .replace(/^\d+\.\s+/gm, '')            // 行首排名/编号「1. 2. …」不念（血缘最亲的 1/2/4/7/10 等，显示仍保留）
       .replace(/【([^】]*)】/g, '$1')        // 【…】去掉括号但保留内容朗读
       .replace(/[《》""]/g, '')               // 去掉书名号/引号
       .replace(/\s*\n+\s*/g, '，')           // 换行 → 逗号
