@@ -302,7 +302,7 @@ function answerFullLineage(query, selfId) {
   let targetId = Number(selfId);
   let foundName = false;
   if (!/我|本人/.test(q)) {
-    const skip = new Set(['炎帝神农氏']);
+    const skip = new Set(['炎帝神农氏', '炎帝']);
     for (const n of byName.keys()) {
       if (skip.has(n)) continue;
       if (n.length >= 2 && q.includes(n)) {
