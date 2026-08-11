@@ -35,7 +35,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v39'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v40'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -1081,9 +1081,10 @@
           return;
         }
         // 情形 C：面板区域被更高层级元素覆盖 → 提升层级
-        // 世系树遮罩 / 血缘最亲遮罩打开时合法覆盖面板，不算异常，跳过
-        if (treeOverlay && treeOverlay.style && treeOverlay.style.zIndex) { watchPanel(); return; }
-        if (closestOverlay && closestOverlay.style && closestOverlay.style.zIndex) { watchPanel(); return; }
+        // 世系树遮罩 / 血缘最亲遮罩打开时合法覆盖面板，不算异常，跳过。
+        // 注意：z-index 来自 CSS 类不是内联 style，故用 isConnected 判断遮罩是否存活（close*Overlay 会置空）。
+        if (treeOverlay && treeOverlay.isConnected) { watchPanel(); return; }
+        if (closestOverlay && closestOverlay.isConnected) { watchPanel(); return; }
         var el = document.elementFromPoint(rect.left + Math.min(rect.width / 2, 160), rect.top + Math.min(rect.height / 2, 40));
         if (el && !panel.contains(el)) {
           var cs = (el.tagName || '') + (el.id ? '#' + el.id : '') + '.' + String(el.className || '').slice(0, 40) + ' z=' + (getComputedStyle(el).zIndex || '');
