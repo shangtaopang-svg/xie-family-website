@@ -33,6 +33,8 @@
   var LS_GREET = 'ai_greeting_done';
   var LS_TTS_MUTED = 'ai_tts_muted';
   var MAX_HIST = 50;
+  var APP_VERSION = 'v7'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
   var fab, panel, msgs, chipsEl, input, sendBtn, statusEl, goBottom, header, bubble, soundBtn;
@@ -178,7 +180,7 @@
 
   function updateStatus() {
     var p = getPerson();
-    statusEl.textContent = (getToken() && p) ? '已验证 · ' + p.name : '未验证 · 仅公开问题';
+    statusEl.textContent = ((getToken() && p) ? '已验证 · ' + p.name : '未验证 · 仅公开问题') + ' · ' + APP_VERSION;
   }
 
   /* ---------------- 悬浮球问候气泡 ---------------- */
@@ -264,6 +266,18 @@
   function appendMessage(role, text, opts) {
     var el = document.createElement('div');
     el.className = 'ai-msg ' + (role === 'user' ? 'ai-user' : 'ai-bot');
+    // 移动端内联样式强制配色（终极兜底）：绕过任何陈旧 CSS 缓存，保证 bot 深底浅字、user 绿底黑字清晰可读
+    if (IS_MOBILE) {
+      if (role === 'user') {
+        el.style.setProperty('background', '#D4FF3A', 'important');
+        el.style.setProperty('color', '#0a0a0a', 'important');
+        el.style.setProperty('font-weight', '600', 'important');
+      } else {
+        el.style.setProperty('background', '#1c1c1c', 'important');
+        el.style.setProperty('border', '1px solid #333', 'important');
+        el.style.setProperty('color', '#f5f5f5', 'important');
+      }
+    }
     var body = document.createElement('div');
     body.textContent = text;
     el.appendChild(body);
