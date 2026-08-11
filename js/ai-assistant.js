@@ -34,7 +34,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v22'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v23'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -632,6 +632,8 @@
   function bindAudioEl() {
     if (audioBound || !audioEl) return;
     audioBound = true;
+    // 注意：自然结束时 Chromium 先触发 pause 再触发 ended；这里不监听 pause，
+    // 因为 stopSpeak/pauseNarration/ended 三条路径都显式管理了状态，监听 pause 反而会把「自然读完」误判成停止清掉 🔁。
     audioEl.addEventListener('playing', function () {
       narState = 'playing';
       if (stopBtn) {
@@ -640,10 +642,6 @@
         stopBtn.title = '暂停口播';
         stopBtn.setAttribute('aria-label', '暂停口播');
       }
-    });
-    audioEl.addEventListener('pause', function () {
-      if (narState === 'paused' || narState === 'ended') return; // 主动暂停/读完：UI 已就绪，别覆盖
-      stopSpeak();
     });
     audioEl.addEventListener('ended', function () {
       narState = 'ended';
