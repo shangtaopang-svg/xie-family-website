@@ -107,6 +107,12 @@
   var track = document.getElementById('themeTrack');
   var icon1 = document.getElementById('themeIcon');
   var icon2 = document.getElementById('themeIcon2');
+  // v2 一次性迁移：旧版 bug 会把「从未设置过主题」的用户静默写成 dark，这里恢复为浅色一次。
+  // 之后 theme 完全由用户开关决定，不再自动覆盖。
+  if (localStorage.getItem('theme_fix_v2') !== '1') {
+    localStorage.setItem('theme_fix_v2', '1');
+    localStorage.setItem('theme', 'light');
+  }
   var isDark = localStorage.getItem('theme') === 'dark';
 
   function applyTheme() {
