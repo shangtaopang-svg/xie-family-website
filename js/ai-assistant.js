@@ -34,7 +34,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v21'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v22'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -352,7 +352,7 @@
       if (done) return;
       done = true;
       body.textContent = answer || '（无回答）';
-      if (answer && answer !== '（无回答）') speak(answer); // 自动朗读每次回复
+      if (answer && answer !== '（无回答）') { lastAnswer = answer; speak(answer); } // 自动朗读每次回复
       if (sources && sources.length) {
         var src = document.createElement('div');
         src.className = 'ai-src';
@@ -594,22 +594,68 @@
     if (soundBtn) soundBtn.textContent = ttsMuted ? '🔇' : '🔊';
     if (!ttsMuted && audioEl) { try { audioEl.play().catch(noop); } catch (e) {} } // 重新打开时恢复播放
   }
-  function stopSpeak() {
+  /** 口播按钮状态机：none 无 | playing 朗读中 | paused 已暂停(可继续) | ended 已读完(可重听) */
+  var narState = 'none';
+  var lastAnswer = '';   // 最近一次回答原文，供「重新听」回放
+  function stopSpeak() { // 完全停止并清空（发送新问题/关窗/Esc 等沿用）
+    narState = 'none';
     if (audioEl) { try { audioEl.pause(); audioEl.removeAttribute('src'); audioEl.load(); } catch (e) {} }
     if (stopBtn) stopBtn.hidden = true;
   }
-  /** 暂停口播按钮与音频事件联动：只在真正出声时显示，停止/结束/出错即隐藏 */
+  function pauseNarration() { // 暂停，保留进度可继续
+    if (!audioEl || narState !== 'playing') return;
+    narState = 'paused';
+    try { audioEl.pause(); } catch (e) {}
+    if (stopBtn) {
+      stopBtn.hidden = false;
+      stopBtn.textContent = '▶';
+      stopBtn.title = '重新听（继续口播）';
+      stopBtn.setAttribute('aria-label', '重新听');
+    }
+  }
+  function resumeNarration() { // 从暂停处继续
+    if (!audioEl || narState !== 'paused') return;
+    narState = 'playing';
+    audioEl.play().catch(noop);
+    if (stopBtn) {
+      stopBtn.hidden = false;
+      stopBtn.textContent = '⏸';
+      stopBtn.title = '暂停口播';
+      stopBtn.setAttribute('aria-label', '暂停口播');
+    }
+  }
+  function replayLast() { // 整段读完后再听一遍
+    if (narState !== 'ended' || !lastAnswer) return;
+    speak(lastAnswer); // 重新生成并朗读最近一次回答
+  }
   var audioBound = false;
   function bindAudioEl() {
     if (audioBound || !audioEl) return;
     audioBound = true;
-    audioEl.addEventListener('playing', function () { if (stopBtn) stopBtn.hidden = false; });
-    audioEl.addEventListener('pause', function () { if (stopBtn) stopBtn.hidden = true; });
-    audioEl.addEventListener('ended', function () {
-      if (stopBtn) stopBtn.hidden = true;
-      try { URL.revokeObjectURL(audioEl.src); } catch (e) {}
+    audioEl.addEventListener('playing', function () {
+      narState = 'playing';
+      if (stopBtn) {
+        stopBtn.hidden = false;
+        stopBtn.textContent = '⏸';
+        stopBtn.title = '暂停口播';
+        stopBtn.setAttribute('aria-label', '暂停口播');
+      }
     });
-    audioEl.addEventListener('error', function () { if (stopBtn) stopBtn.hidden = true; });
+    audioEl.addEventListener('pause', function () {
+      if (narState === 'paused' || narState === 'ended') return; // 主动暂停/读完：UI 已就绪，别覆盖
+      stopSpeak();
+    });
+    audioEl.addEventListener('ended', function () {
+      narState = 'ended';
+      try { URL.revokeObjectURL(audioEl.src); } catch (e) {}
+      if (stopBtn) {
+        stopBtn.hidden = false;
+        stopBtn.textContent = '🔁';
+        stopBtn.title = '重新听一遍';
+        stopBtn.setAttribute('aria-label', '重新听一遍');
+      }
+    });
+    audioEl.addEventListener('error', function () { stopSpeak(); });
   }
   /** 把答案文本处理成适合朗读的流畅句子 */
   function prepareSpoken(text) {
@@ -811,7 +857,13 @@
 
     $('#ai-close', panel).addEventListener('click', function () { closePanel(false, 'close-btn'); });
     if (soundBtn) soundBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleTts(); });
-    if (stopBtn) stopBtn.addEventListener('click', function (e) { e.stopPropagation(); stopSpeak(); });
+    if (stopBtn) stopBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (narState === 'playing') pauseNarration();
+      else if (narState === 'paused') resumeNarration();
+      else if (narState === 'ended') replayLast();
+      else stopSpeak();
+    });
 
     // 发送
     sendBtn.addEventListener('click', function () { doSend(input.value); });
