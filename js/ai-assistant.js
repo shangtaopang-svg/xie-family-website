@@ -35,7 +35,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v38'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v39'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -238,27 +238,8 @@
     }
     document.body.style.overflow = 'hidden';
     renderHistory();
-    // 诊断：上次关闭若非用户显式操作（fab/✕/Esc），在消息区顶部提示原因（1 小时内），便于定位「窗口莫名消失」
-    var lastClosure = null;
-    try { lastClosure = JSON.parse(localStorage.getItem(LS_CLOSURE) || 'null'); } catch (e) {}
-    if (lastClosure && lastClosure.s && ['fab', 'close-btn', 'esc'].indexOf(lastClosure.s) === -1 && (Date.now() - lastClosure.t) < 3600000) {
-      var hintEl = document.createElement('div');
-      hintEl.className = 'ai-msg ai-bot ai-dbg-hint';
-      hintEl.textContent = '⚠️ 上次窗口关闭来源：' + lastClosure.s + '（若非您手动关闭，请告知站长此提示）。';
-      msgs.insertBefore(hintEl, msgs.firstChild);
-      try { localStorage.removeItem(LS_CLOSURE); } catch (e) {}
-    }
-    // v15 诊断：看门狗记录的面板异常（1 小时内）→ 在消息区顶部提示
-    var diags = recentDiag(3600000);
-    if (diags.length) {
-      var dEl = document.createElement('div');
-      dEl.className = 'ai-msg ai-bot ai-dbg-hint';
-      dEl.textContent = '⚠️ 诊断：近 1 小时检测到 ' + diags.length + ' 条面板异常（' +
-        diags.slice(-3).map(function (e) { return e.ev + (e.d ? ':' + e.d : ''); }).join('；') +
-        '）。若窗口曾莫名消失，请告知站长此提示。';
-      msgs.insertBefore(dEl, msgs.firstChild);
-      try { localStorage.removeItem('ai_diag'); } catch (e) {} // 显示后清空，避免每次打开重复提示
-    }
+    // （v39）移除可见诊断横幅：上次关闭来源 + 近1小时面板异常条数，均会误报（page-nav 正常跳转 / 树/血缘 overlay 合法覆盖）。
+    // 底层诊断日志（localStorage ai_last_closure / ai_diag）保留写入，供「窗口莫名消失」复发时排查。
     updateStatus();
     positionFab();
     if (isMb() || panel.classList.contains('ai-fullscreen')) {
@@ -1100,8 +1081,9 @@
           return;
         }
         // 情形 C：面板区域被更高层级元素覆盖 → 提升层级
-        // 世系树遮罩打开时合法覆盖面板，不算异常，跳过
+        // 世系树遮罩 / 血缘最亲遮罩打开时合法覆盖面板，不算异常，跳过
         if (treeOverlay && treeOverlay.style && treeOverlay.style.zIndex) { watchPanel(); return; }
+        if (closestOverlay && closestOverlay.style && closestOverlay.style.zIndex) { watchPanel(); return; }
         var el = document.elementFromPoint(rect.left + Math.min(rect.width / 2, 160), rect.top + Math.min(rect.height / 2, 40));
         if (el && !panel.contains(el)) {
           var cs = (el.tagName || '') + (el.id ? '#' + el.id : '') + '.' + String(el.className || '').slice(0, 40) + ' z=' + (getComputedStyle(el).zIndex || '');
