@@ -118,7 +118,6 @@
 })();
 </script>
 
-<canvas id="weather-canvas"></canvas>
 <!-- ===== 手机端首页 ===== -->
 <div class="mb-home">
   <div class="mbh-top">
@@ -252,10 +251,6 @@
         </ul>
       </nav>
       <div class="nav-controls" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:6px 8px;border-top:1px solid var(--divider);margin-top:auto;flex-wrap:wrap">
-        <button onclick="changeWeather('sun')" title="晴天" style="width:26px;height:26px;border-radius:50%;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:11px;display:inline-flex;align-items:center;justify-content:center;color:var(--text-secondary)">☀</button>
-        <button onclick="changeWeather('rain')" title="下雨" style="width:26px;height:26px;border-radius:50%;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:11px;display:inline-flex;align-items:center;justify-content:center;color:var(--text-secondary)">🌧</button>
-        <button onclick="changeWeather('snow')" title="下雪" style="width:26px;height:26px;border-radius:50%;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:11px;display:inline-flex;align-items:center;justify-content:center;color:var(--text-secondary)">❄</button>
-        <button onclick="window.startWeatherEffect&&startWeatherEffect('off')" title="关闭天气" style="width:26px;height:26px;border-radius:50%;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:11px;display:inline-flex;align-items:center;justify-content:center;color:var(--text-secondary)">✕</button>
         <span style="width:1px;height:14px;background:var(--divider)"></span>
         <button id="musicNavBtn" onclick="toggleMusic()" title="音乐" style="width:26px;height:26px;border-radius:50%;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:11px;display:inline-flex;align-items:center;justify-content:center;color:var(--text-secondary)">🎵</button>
         <button onclick="changeVolume(-0.2)" title="音量-" style="width:26px;height:26px;border-radius:50%;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:11px;display:inline-flex;align-items:center;justify-content:center;color:var(--text-secondary)">🔉</button>
@@ -571,7 +566,6 @@
   <!-- ===== 动态加载 ===== -->
   <script defer src="js/dynamic-content.js?v=8"></script>
 
-  <script defer src="js/weather-particle.js?v=b977c9"></script>
 
   <!-- ===== 悬浮工具栏（右侧） ===== -->
   <div class="float-toolbar">
@@ -605,7 +599,6 @@
 
 
 <script>
-window.changeWeather=function(t){var map={sun:"sunny",rain:"rain",snow:"snow"};if(window.startWeatherEffect){window.startWeatherEffect(map[t]||t);}document.querySelectorAll("button").forEach(function(b){var txt=b.textContent.trim();if(txt==="☀"||txt==="🌧"||txt==="❄")b.style.background="";if((t==="sun"&&txt==="☀")||(t==="rain"&&txt==="🌧")||(t==="snow"&&txt==="❄"))b.style.background="rgba(4,191,0,0.15)";})};
 window.toggleMusic=function(){var b=document.getElementById("musicNavBtn")||document.getElementById("musicFloatBtn"),a=document.getElementById("bg-music");if(!a)return;if(!a.src||a.src===window.location.href||a.src===""){a.src="/music/background.mp3";a.loop=true}if(a.paused){a.play().catch(function(err){console.log("Music play failed:",err)});if(b){b.textContent="⏸";b.style.background="rgba(4,191,0,0.15)";}}else{a.pause();if(b){b.textContent="🎵";b.style.background="rgba(255,255,255,0.9)";}}};
 window.changeVolume=function(d){var a=document.getElementById("bg-music");if(a)a.volume=Math.max(0,Math.min(1,a.volume+d));};
 window.toggleTheme=function(){var d=localStorage.getItem("theme")==="dark";var n=d?"light":"dark";document.documentElement.setAttribute("data-theme",n);localStorage.setItem("theme",n);var t=document.getElementById("themeTrackTop"),b=document.getElementById("themeThumbTop"),i1=document.getElementById("themeIconTop"),i2=document.getElementById("themeIcon2Top");if(t)t.style.background=n==="dark"?"#04BF00":"#ccc";if(b)b.style.left=n==="dark"?"20px":"2px";if(i1)i1.style.opacity=n==="dark"?"0.4":"1";if(i2)i2.style.opacity=n==="dark"?"1":"0.4";};
@@ -635,5 +628,5 @@ window.toggleTheme=function(){var d=localStorage.getItem("theme")==="dark";var n
 <script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();window.history.go(-1)});</script>
 <script>(function(){var b=document.createElement("div");b.id="backTopBtn";b.innerHTML="\u2191";b.style.cssText="position:fixed;bottom:80px;right:16px;z-index:9999;width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.85);color:#0a0806;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;opacity:0.9;transition:opacity 0.3s;";b.onclick=function(){window.scrollTo({top:0,behavior:"smooth"})};window.addEventListener("scroll",function(){b.style.opacity=window.scrollY>50?"0.9":"0.3"});document.body.appendChild(b);})();</script><link rel="stylesheet" href="/css/ai.css?v=20">
 <script src="/js/ai-assistant.js?v=20" defer></script>
-<script defer src="js/sidebar.js?v=5"></script>
+<script defer src="js/sidebar.js?v=6"></script>
 </body>

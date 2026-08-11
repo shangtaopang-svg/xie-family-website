@@ -16,13 +16,16 @@
     '.sidebar .s-nav a:hover{color:#04BF00;letter-spacing:0.12em}' +
     '.sidebar .s-nav a.active{color:#04BF00;letter-spacing:0.08em}' +
     '.sidebar .s-bottom{text-align:center;padding:16px 0 0;width:100%}' +
-    '.sidebar .s-bottom .s-toggle{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;cursor:pointer;user-select:none}' +
-    '.sidebar .s-bottom .s-toggle .track{width:44px;height:22px;border-radius:11px;background:var(--sb-track);position:relative;transition:background 0.3s;flex:none}' +
-    '.sidebar .s-bottom .s-toggle .track.active{background:#04BF00}' +
-    '.sidebar .s-bottom .s-toggle .track .thumb{width:18px;height:18px;border-radius:50%;background:var(--sb-thumb);position:absolute;top:2px;left:2px;transition:all 0.3s;box-shadow:0 1px 4px rgba(0,0,0,0.2)}' +
-    '.sidebar .s-bottom .s-toggle .track.active .thumb{left:24px}' +
-    '.sidebar .s-bottom .s-toggle .s-icon{font-size:13px;color:var(--sb-icon);transition:color 0.3s;line-height:1}' +
-    '.sidebar .s-bottom .s-toggle .s-icon.active{color:var(--sb-icon-act)}' +
+    '.sidebar .s-toggle{display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;user-select:none}' +
+    '.sidebar .s-toggle .track{width:44px;height:22px;border-radius:11px;background:var(--sb-track);position:relative;transition:background 0.3s;flex:none}' +
+    '.sidebar .s-toggle .track.active{background:#04BF00}' +
+    '.sidebar .s-toggle .track .thumb{width:18px;height:18px;border-radius:50%;background:var(--sb-thumb);position:absolute;top:2px;left:2px;transition:all 0.3s;box-shadow:0 1px 4px rgba(0,0,0,0.2)}' +
+    '.sidebar .s-toggle .track.active .thumb{left:24px}' +
+    '.sidebar .s-toggle .s-icon{font-size:13px;color:var(--sb-icon);transition:color 0.3s;line-height:1}' +
+    '.sidebar .s-toggle .s-icon.active{color:var(--sb-icon-act)}' +
+    '.sidebar .s-topbar{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:0 10px 16px;border-bottom:1px solid var(--sb-border)}' +
+    '.sidebar .s-topbar a{font-size:11px;color:var(--sb-bottom);text-decoration:none;padding:4px 10px;border-radius:12px;border:1px solid var(--sb-btn-bd);white-space:nowrap;transition:all 0.3s}' +
+    '.sidebar .s-topbar a:hover{color:#04BF00;border-color:rgba(4,191,0,0.3)}' +
     '.sidebar .s-controls{display:flex;align-items:center;justify-content:center;gap:3px;padding:6px 4px;flex-wrap:wrap;border-top:1px solid var(--sb-border);width:100%}' +
     '.sidebar .s-controls button{width:26px;height:26px;border-radius:50%;border:1px solid var(--sb-btn-bd);background:var(--sb-btn-bg);cursor:pointer;font-size:11px;display:inline-flex;align-items:center;justify-content:center;color:var(--sb-icon);transition:all 0.2s;padding:0;line-height:1}' +
     '.sidebar .s-controls button:hover{color:#04BF00;border-color:rgba(4,191,0,0.3)}' +
@@ -54,6 +57,14 @@
       '<div class="s-name">下枫槎谢氏</div>' +
       '<div class="s-sub">宁海 · 下枫槎村</div>' +
     '</div>' +
+    '<div class="s-topbar">' +
+      '<div class="s-toggle" id="themeToggle">' +
+        '<span class="s-icon" id="themeIcon">☀️</span>' +
+        '<div class="track" id="themeTrack"><div class="thumb"></div></div>' +
+        '<span class="s-icon" id="themeIcon2">🌙</span>' +
+      '</div>' +
+      '<a href="' + root() + 'entrance.html">⛩ 返回石门</a>' +
+    '</div>' +
     '<nav class="s-nav">' +
       '<a href="' + root() + 'index.html">🏠 首页</a>' +
       '<a href="' + p('history') + '">📜 家族历史</a>' +
@@ -73,24 +84,13 @@
     '</nav>' +
     '<div class="s-bottom">' +
       '<div class="s-controls">' +
-        '<button onclick="changeWeather(\'sun\')" title="晴天">☀</button>' +
-        '<button onclick="changeWeather(\'rain\')" title="下雨">🌧</button>' +
-        '<button onclick="changeWeather(\'snow\')" title="下雪">❄</button>' +
-        '<button onclick="window.startWeatherEffect&&startWeatherEffect(\'off\')" title="关闭天气">✕</button>' +
-        '<span class="sep"></span>' +
         '<button id="musicPrevBtn" onclick="(window.prevTrack?prevTrack():toggleMusic())" title="上一首">⏮</button>' +
         '<button id="musicSideBtn" onclick="toggleMusic()" title="播放/暂停">🔈</button>' +
         '<button id="musicNextBtn" onclick="(window.nextTrack?nextTrack():toggleMusic())" title="下一首">⏭</button>' +
         '<span class="sep"></span>' +
         '<button onclick="window.toggleLanguage&&toggleLanguage()" title="English/中文">EN</button>' +
       '</div>' +
-      '<div class="s-toggle" id="themeToggle">' +
-        '<span class="s-icon" id="themeIcon">☀️</span>' +
-        '<div class="track" id="themeTrack"><div class="thumb"></div></div>' +
-        '<span class="s-icon" id="themeIcon2">🌙</span>' +
-      '</div>' +
       '<a href="' + root() + 'index.html">✦ 返回首页</a>' +
-      '<a href="' + root() + 'entrance.html">⛩ 返回石门</a>' +
     '</div>';
 
   document.body.insertBefore(sidebar, document.body.firstChild);
@@ -129,30 +129,6 @@
   if (toggle) toggle.addEventListener('click', function() { isDark = !isDark; applyTheme(); });
   applyTheme();
 })();
-// 天气效果切换
-window.toggleWeather = function() {
-  var btn = document.getElementById('weatherBtn');
-  var canvas = document.getElementById('weather-canvas');
-  if (!canvas) return;
-  var current = canvas.style.display || '';
-  if (current === 'none') {
-    canvas.style.display = 'block';
-    if (btn) btn.style.color = '#04BF00';
-  } else {
-    canvas.style.display = 'none';
-    if (btn) btn.style.color = '';
-  }
-};
-// 切换天气类型
-window.changeWeather = function(t) {
-  var map = {sun:'sunny',rain:'rain',snow:'snow'};
-  if(window.startWeatherEffect) window.startWeatherEffect(map[t]||t);
-  document.querySelectorAll('.s-controls button, .nav-controls button').forEach(function(b){
-    var txt=b.textContent.trim();
-    if(txt==='☀'||txt==='🌧'||txt==='❄')b.style.background='';
-    if((t==='sun'&&txt==='☀')||(t==='rain'&&txt==='🌧')||(t==='snow'&&txt==='❄'))b.style.background='rgba(4,191,0,0.15)';
-  });
-};
 
 // 背景音乐切换（优先走 main.js 播放器，保持播放列表/进度状态一致）
 window.toggleMusic = function() {
