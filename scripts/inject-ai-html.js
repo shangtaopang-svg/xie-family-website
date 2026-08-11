@@ -16,7 +16,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const VERSION = 33;
+const VERSION = 34;
 const MARK = 'js/ai-assistant.js?v=' + VERSION;
 const NEW_LINK = 'href="/css/ai.css?v=' + VERSION + '"';
 const NEW_SCRIPT = 'src="/js/ai-assistant.js?v=' + VERSION + '"';

@@ -560,6 +560,19 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   cursor: pointer;
 }
 .ai-tree-sound:hover { background: rgba(255, 255, 255, 0.3); }
+.ai-tree-stop { /* 世系图弹层暂停/继续/重听按钮（与主面板 #ai-stop 同状态机） */
+  border: none;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+.ai-tree-stop:hover { background: rgba(255, 255, 255, 0.3); }
+.ai-tree-stop[hidden] { display: none; }
 .ai-tree-close {
   border: none;
   background: rgba(255, 255, 255, 0.16);

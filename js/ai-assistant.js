@@ -34,7 +34,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v33'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v34'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -640,6 +640,41 @@
     updateTtsBtns();
     if (!ttsMuted && audioEl) { try { audioEl.play().catch(noop); } catch (e) {} } // 重新打开时恢复播放
   }
+  /** 口播控制按钮（暂停/继续/重听）统一渲染：同步主面板 #ai-stop + 世系图弹层 .ai-tree-stop 两处 */
+  function renderNarBtn(icon, title, label, show, autoHide) {
+    var showBtn = show !== false;
+    if (stopBtn) {
+      stopBtn.hidden = !showBtn;
+      stopBtn.textContent = icon;
+      stopBtn.title = title;
+      stopBtn.setAttribute('aria-label', label);
+    }
+    if (treeOverlay) {
+      var tb = treeOverlay.querySelector('.ai-tree-stop');
+      if (tb) {
+        tb.hidden = !showBtn;
+        tb.textContent = icon;
+        tb.title = title;
+        tb.setAttribute('aria-label', label);
+      }
+    }
+    if (autoHide) { // TTS 失败等临时提示，超时后收起
+      setTimeout(function () {
+        if (stopBtn && narState === 'none') stopBtn.hidden = true;
+        if (treeOverlay) {
+          var t2 = treeOverlay.querySelector('.ai-tree-stop');
+          if (t2 && narState === 'none') t2.hidden = true;
+        }
+      }, autoHide);
+    }
+  }
+  /** 按当前口播状态推断按钮（供树弹层打开时初始化） */
+  function syncNarBtn() {
+    if (narState === 'paused') renderNarBtn('▶', '继续口播', '继续口播', true);
+    else if (narState === 'ended') renderNarBtn('🔁', '重新听一遍', '重新听一遍', true);
+    else if (narState === 'playing') renderNarBtn('⏸', '暂停口播', '暂停口播', true);
+    else renderNarBtn('⏸', '暂停口播', '暂停口播', false);
+  }
   /** 口播按钮状态机：none 无 | playing 朗读中 | paused 已暂停(可继续) | ended 已读完(可重听) */
   var narState = 'none';
   var lastAnswer = '';   // 最近一次回答原文，供「重新听」回放
@@ -656,30 +691,20 @@
     narState = 'none';
     stopSubtitle();
     if (audioEl) { try { audioEl.pause(); audioEl.removeAttribute('src'); audioEl.load(); } catch (e) {} }
-    if (stopBtn) stopBtn.hidden = true;
+    renderNarBtn('⏸', '暂停口播', '暂停口播', false); // 两处口播按钮都收起
   }
   function pauseNarration() { // 暂停，保留进度可继续
     if (!audioEl || narState !== 'playing') return;
     narState = 'paused';
     try { audioEl.pause(); } catch (e) {}
     if (subRaf) { cancelAnimationFrame(subRaf); subRaf = null; } // 冻结字幕（currentTime 已停，文字停在当前处）
-    if (stopBtn) {
-      stopBtn.hidden = false;
-      stopBtn.textContent = '▶';
-      stopBtn.title = '重新听（继续口播）';
-      stopBtn.setAttribute('aria-label', '重新听');
-    }
+    renderNarBtn('▶', '继续口播', '继续口播', true);
   }
   function resumeNarration() { // 从暂停处继续
     if (!audioEl || narState !== 'paused') return;
     narState = 'playing';
     audioEl.play().catch(noop);
-    if (stopBtn) {
-      stopBtn.hidden = false;
-      stopBtn.textContent = '⏸';
-      stopBtn.title = '暂停口播';
-      stopBtn.setAttribute('aria-label', '暂停口播');
-    }
+    renderNarBtn('⏸', '暂停口播', '暂停口播', true);
   }
   function replayLast() { // 整段读完后再听一遍
     if (narState !== 'ended' || !lastAnswer) return;
@@ -825,23 +850,13 @@
     audioEl.addEventListener('playing', function () {
       narState = 'playing';
       startSubLoop(); // 口播继续 → 字幕继续揭示
-      if (stopBtn) {
-        stopBtn.hidden = false;
-        stopBtn.textContent = '⏸';
-        stopBtn.title = '暂停口播';
-        stopBtn.setAttribute('aria-label', '暂停口播');
-      }
+      renderNarBtn('⏸', '暂停口播', '暂停口播', true);
     });
     audioEl.addEventListener('ended', function () {
       narState = 'ended';
       finishSubtitle(); // 口播读完 → 字幕补全后收起
       try { URL.revokeObjectURL(audioEl.src); } catch (e) {}
-      if (stopBtn) {
-        stopBtn.hidden = false;
-        stopBtn.textContent = '🔁';
-        stopBtn.title = '重新听一遍';
-        stopBtn.setAttribute('aria-label', '重新听一遍');
-      }
+      renderNarBtn('🔁', '重新听一遍', '重新听一遍', true);
     });
     audioEl.addEventListener('error', function () { stopSpeak(); });
   }
@@ -886,23 +901,12 @@
       audioEl.play().catch(function (e) {
         // 播放被拦/解码失败：不能静默（否则「口播没开始、字幕也没出现」用户无感知），给出可重试提示
         diagLog('tts-play-fail', String(e && e.message || e));
-        if (stopBtn) {
-          stopBtn.hidden = false;
-          stopBtn.textContent = '🔁';
-          stopBtn.title = '播放失败，点击重听';
-          stopBtn.setAttribute('aria-label', '播放失败，点击重听');
-        }
+        renderNarBtn('🔁', '播放失败，点击重听', '播放失败，点击重听', true);
       });
     }).catch(function (err) {
       // TTS 生成失败：不静默吞掉（口播/字幕都会没有）——口播按钮短暂提示「朗读失败」，可点击重听
       diagLog('tts-error', String(err && err.message || err));
-      if (stopBtn) {
-        stopBtn.hidden = false;
-        stopBtn.textContent = '😶';
-        stopBtn.title = '朗读失败，点击重听';
-        stopBtn.setAttribute('aria-label', '朗读失败，点击重听');
-        setTimeout(function () { if (stopBtn) stopBtn.hidden = true; }, 3500);
-      }
+      renderNarBtn('😶', '朗读失败，点击重听', '朗读失败，点击重听', true, 3500);
     });
   }
 
@@ -933,6 +937,7 @@
       '<div class="ai-tree-modal">' +
       '  <div class="ai-tree-head"><span class="ai-tree-title">🌳 世系图 · 从炎帝神农氏到' + esc(last.name) + '</span>' +
       '    <span class="ai-tree-headbtns">' +
+      '      <button type="button" class="ai-tree-stop" aria-label="暂停口播" title="暂停口播" hidden>⏸</button>' +
       '      <button type="button" class="ai-tree-sound" aria-label="' + (ttsMuted ? '打开声音' : '静音') + '" title="' + (ttsMuted ? '打开声音' : '静音') + '">' + (ttsMuted ? '🔇' : '🔊') + '</button>' +
       '      <button type="button" class="ai-tree-close" aria-label="关闭">✕</button>' +
       '    </span></div>' +
@@ -960,6 +965,14 @@
     ov.addEventListener('click', function (e) { if (e.target === ov) closeTreeOverlay(); });
     var treeSoundBtn = ov.querySelector('.ai-tree-sound');
     if (treeSoundBtn) treeSoundBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleTts(); });
+    var treeStopBtn = ov.querySelector('.ai-tree-stop');
+    if (treeStopBtn) treeStopBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (narState === 'playing') pauseNarration();
+      else if (narState === 'paused') resumeNarration();
+      else if (narState === 'ended') replayLast();
+      else if (lastAnswer) replayLast(); // TTS 失败/已停止但有最近回答 → 点击重听
+    });
     ov.querySelector('.ai-tree-close').addEventListener('click', closeTreeOverlay);
     var onKey = function (e) {
       if (e.key === 'Escape') {
@@ -969,6 +982,7 @@
       }
     };
     document.addEventListener('keydown', onKey, true);
+    syncNarBtn(); // 树弹层打开时按当前口播状态显示暂停/继续按钮
     scrollBottom(true);
   }
   function closeTreeOverlay() {
