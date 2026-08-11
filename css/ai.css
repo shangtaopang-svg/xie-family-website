@@ -13,7 +13,7 @@
   border-radius: 50%;
   border: none;
   cursor: pointer;
-  z-index: 100001;   /* 高于 entrance 欢迎/图片查看遮罩层(99999)，保证悬浮球始终可点 */
+  z-index: 2147483000;   /* 最高层级（低于面板），任何遮罩/弹层(最高 999999)都盖不住，保证悬浮球始终可点 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -94,7 +94,7 @@
   position: fixed;
   right: 24px;
   bottom: 0;
-  z-index: 100002;   /* 高于欢迎/图片查看遮罩层(99999) */
+  z-index: 2147483001;   /* 全站最高，任何元素都无法覆盖面板（杜绝「窗口莫名消失」） */
   width: 380px;
   max-width: calc(100vw - 24px);
   height: 560px;

@@ -34,7 +34,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v14'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v15'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -234,6 +234,17 @@
       msgs.insertBefore(hintEl, msgs.firstChild);
       try { localStorage.removeItem(LS_CLOSURE); } catch (e) {}
     }
+    // v15 诊断：看门狗记录的面板异常（1 小时内）→ 在消息区顶部提示
+    var diags = recentDiag(3600000);
+    if (diags.length) {
+      var dEl = document.createElement('div');
+      dEl.className = 'ai-msg ai-bot ai-dbg-hint';
+      dEl.textContent = '⚠️ 诊断：近 1 小时检测到 ' + diags.length + ' 条面板异常（' +
+        diags.slice(-3).map(function (e) { return e.ev + (e.d ? ':' + e.d : ''); }).join('；') +
+        '）。若窗口曾莫名消失，请告知站长此提示。';
+      msgs.insertBefore(dEl, msgs.firstChild);
+      try { localStorage.removeItem('ai_diag'); } catch (e) {} // 显示后清空，避免每次打开重复提示
+    }
     updateStatus();
     positionFab();
     if (isMb()) {
@@ -265,6 +276,7 @@
     resetViewport();
     // 记录关闭来源（诊断用）：下次打开面板时若为「非用户显式操作」会在消息区提示原因
     try { localStorage.setItem(LS_CLOSURE, JSON.stringify({ s: source || 'unknown', t: Date.now() })); } catch (e) {}
+    diagLog('closed-by', source || 'unknown');
     if (!skipBack && history.state && history.state.ai) { try { history.back(); } catch (e) {} }
   }
 
@@ -612,11 +624,77 @@
       return r.blob();
     }).then(function (blob) {
       if (ttsMuted) return;
+      // v15 守卫：TTS 生成期间面板可能已被关闭（Esc/✕/机器人等），此时 audioEl 还是 null，
+      // closePanel 的 stopSpeak() 拦不住 —— 若继续起播就会出现「窗口消失、声音还在响」。
+      // 必须在起播前确认面板仍打开；被跳过则记入诊断，便于确认竞态确实被拦截。
+      if (!isOpen || panel.hidden) { diagLog('tts-skipped-panel-closed', ''); return; }
       if (!audioEl) audioEl = new Audio();
       audioEl.src = URL.createObjectURL(blob);
       audioEl.onended = function () { try { URL.revokeObjectURL(audioEl.src); } catch (e) {} };
       audioEl.play().catch(noop);
     }).catch(noop); // 语音失败静默，不影响文字回复
+  }
+
+  /* ---------------- v15 看门狗与诊断（防「窗口莫名消失、只剩声音」复发） ---------------- */
+  function diagLog(ev, detail) {
+    try {
+      var arr = JSON.parse(localStorage.getItem('ai_diag') || '[]');
+      if (!Array.isArray(arr)) arr = [];
+      arr.push({ ev: ev, d: detail || '', t: Date.now(), v: APP_VERSION });
+      arr = arr.slice(-30);
+      localStorage.setItem('ai_diag', JSON.stringify(arr));
+    } catch (e) {}
+  }
+  function recentDiag(maxMs) {
+    try {
+      var arr = JSON.parse(localStorage.getItem('ai_diag') || '[]');
+      if (!Array.isArray(arr)) return [];
+      var now = Date.now();
+      var ms = maxMs || 3600000;
+      return arr.filter(function (e) { return now - e.t < ms; });
+    } catch (e) { return []; }
+  }
+
+  var watchT = null;
+  // 每 600ms 检查一次：面板处于打开状态(isOpen=true)却不可见（hidden / 移出视口 / 被更高层覆盖）
+  // → 自愈（恢复显示）+ 记录诊断原因。保证「窗口莫名消失」不会再持续，且下次打开能看到原因。
+  function watchPanel() {
+    clearTimeout(watchT);
+    watchT = setTimeout(function () {
+      try {
+        if (!isOpen || !panel) { watchPanel(); return; }
+        // 情形 A：isOpen=true 但面板被直接置 hidden（没走 closePanel → 不会停语音）
+        if (panel.hidden) {
+          diagLog('hidden-while-open', '');
+          isOpen = false;
+          openPanel(); // 自愈：重新打开
+          watchPanel();
+          return;
+        }
+        var rect = panel.getBoundingClientRect();
+        var inView = rect.width > 0 && rect.height > 0 &&
+          rect.right > 0 && rect.bottom > 0 &&
+          rect.left < window.innerWidth && rect.top < window.innerHeight;
+        if (!inView) {
+          // 情形 B：面板被移出可视区（异常定位/旧拖拽遗留）→ 复位右下角
+          diagLog('offscreen', JSON.stringify({ l: Math.round(rect.left), t: Math.round(rect.top), w: Math.round(rect.width), h: Math.round(rect.height) }));
+          panel.style.left = ''; panel.style.top = ''; panel.style.right = '24px'; panel.style.bottom = '0';
+          panelPos = null;
+          try { localStorage.removeItem(LS_PANEL_POS); } catch (e) {}
+          watchPanel();
+          return;
+        }
+        // 情形 C：面板区域被更高层级元素覆盖 → 提升层级
+        var el = document.elementFromPoint(rect.left + Math.min(rect.width / 2, 160), rect.top + Math.min(rect.height / 2, 40));
+        if (el && !panel.contains(el)) {
+          var cs = (el.tagName || '') + (el.id ? '#' + el.id : '') + '.' + String(el.className || '').slice(0, 40) + ' z=' + (getComputedStyle(el).zIndex || '');
+          diagLog('covered-by', cs);
+          panel.style.zIndex = '2147483001';
+          fab.style.zIndex = '2147483000';
+        }
+      } catch (e) {}
+      watchPanel();
+    }, 600);
   }
 
   /* ---------------- 配色兜底：防止陈旧 CSS 缓存导致气泡配色错乱（绿底白字等） ---------------- */
@@ -731,6 +809,7 @@
     ensureAiColors();
     setupBubble();
     initTts();
+    watchPanel();
   }
 
   if (document.readyState === 'loading') {
