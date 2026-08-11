@@ -33,7 +33,7 @@
   var LS_GREET = 'ai_greeting_done';
   var LS_TTS_MUTED = 'ai_tts_muted';
   var MAX_HIST = 50;
-  var APP_VERSION = 'v9'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v10'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -213,6 +213,9 @@
     if (isOpen) return;
     isOpen = true;
     panel.hidden = false;
+    // 面板打开期间隐藏悬浮球：防止面板/FAB被拖拽移开后 FAB 露出，朗读回答时用户误点 FAB（本意是静音/暂停）却触发了面板开关
+    fab.style.visibility = 'hidden';
+    fab.style.pointerEvents = 'none';
     hideBubble(); // 打开面板时收起问候气泡
     document.body.style.overflow = 'hidden';
     renderHistory();
@@ -240,6 +243,8 @@
     if (!isOpen) return;
     isOpen = false;
     panel.hidden = true;
+    fab.style.visibility = '';
+    fab.style.pointerEvents = ''; // 恢复悬浮球可点可拖
     showBubble(); // 面板关闭后重新显示问候气泡
     document.body.style.overflow = '';
     input.blur();
@@ -650,7 +655,12 @@
     goBottom.addEventListener('click', function () { scrollBottom(true); });
 
     // 返回键 / Esc
-    window.addEventListener('popstate', function () { if (isOpen) closePanel(true); });
+    // popstate：手机端返回键 / 桌面端浏览器后退手势(触摸板/鼠标侧键)都可能触发。朗读中误触 → 先停语音，不关面板（与 Esc 一致）
+    window.addEventListener('popstate', function () {
+      if (!isOpen) return;
+      if (audioEl && !audioEl.paused && !audioEl.ended) { stopSpeak(); return; }
+      closePanel(true);
+    });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && isOpen) {
         // 正在朗读语音时按 Esc：先停语音，不关面板（避免用户想关声音却把窗口关了）
