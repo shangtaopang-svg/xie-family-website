@@ -26,7 +26,9 @@
   var focusId = null; // 当前聚焦的人物ID
 
   function init() {
+    container = container || document.getElementById('tree-container');
     if (!container) return;
+    if (container.childElementCount) return; // 已有渲染内容（renderTreeSVG/renderSimpleTree 渲染完成），不再覆盖
     container.style.cssText = 'position:relative;width:100%;overflow:auto;';
     container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-tertiary);">加载世系数据...</div>';
     loadData();
@@ -92,6 +94,8 @@
   }
 
   function render(roots, totalDepth) {
+    if (!container) container = document.getElementById('tree-container');
+    if (!container) return; // 脚本预加载阶段 tree-container 尚未存在，交由后续 renderTreeSVG/renderSimpleTree 渲染
     var ROW_H = 52;
     var W = container.clientWidth || 800;
     var totalH = (totalDepth + 1) * ROW_H + 80;
@@ -182,9 +186,8 @@
     }
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', boot);
-    } else {
-      setTimeout(boot, 200);
     }
+    // 不再无限重排 init —— 真实世系树由 renderTreeSVG/renderSimpleTree 渲染，legacy 路径只负责占位
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
@@ -526,7 +529,7 @@
 
   <a id="backBtn" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
-  <script defer src="../js/main.js?v=20260806"></script>
+  <script defer src="../js/main.js?v=20260807"></script>
 
   <style>
 /* === Compact Tree (vertical, nested) === */
@@ -2824,5 +2827,6 @@ document.body.appendChild(b);
 })();
 </script><link rel="stylesheet" href="/css/ai.css?v=18">
 <script src="/js/ai-assistant.js?v=18" defer></script>
+<script defer src="../js/sidebar.js?v=1"></script>
 </body>
 </html>

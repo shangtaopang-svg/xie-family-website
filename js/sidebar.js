@@ -22,6 +22,11 @@
     '.sidebar .s-bottom .s-toggle .track.active .thumb{left:24px}' +
     '.sidebar .s-bottom .s-toggle .s-icon{font-size:13px;color:rgba(245,230,200,0.15);transition:color 0.3s;line-height:1}' +
     '.sidebar .s-bottom .s-toggle .s-icon.active{color:rgba(245,230,200,0.5)}' +
+    '.sidebar .s-controls{display:flex;align-items:center;justify-content:center;gap:3px;padding:6px 4px;flex-wrap:wrap;border-top:1px solid rgb(71,85,105);width:100%}' +
+    '.sidebar .s-controls button{width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);cursor:pointer;font-size:11px;display:inline-flex;align-items:center;justify-content:center;color:rgba(245,230,200,0.45);transition:all 0.2s;padding:0;line-height:1}' +
+    '.sidebar .s-controls button:hover{color:#04BF00;border-color:rgba(4,191,0,0.3)}' +
+    '.sidebar .s-controls button.active{color:#04BF00;background:rgba(4,191,0,0.1)}' +
+    '.sidebar .s-controls .sep{width:1px;height:14px;background:rgb(71,85,105);flex:none}' +
     '.sidebar .s-bottom a{display:block;padding:10px 0;color:rgba(245,230,200,0.2);font-size:12px;letter-spacing:0.06em;text-decoration:none;transition:all 0.3s}' +
     '.sidebar .s-bottom a:hover{color:#04BF00;letter-spacing:0.1em}' +
     '@media(min-width:901px){.sidebar{display:flex !important}}' +
@@ -66,6 +71,18 @@
       '<a href="' + p('admin') + '">🔐 管理后台</a>' +
     '</nav>' +
     '<div class="s-bottom">' +
+      '<div class="s-controls">' +
+        '<button onclick="changeWeather(\'sun\')" title="晴天">☀</button>' +
+        '<button onclick="changeWeather(\'rain\')" title="下雨">🌧</button>' +
+        '<button onclick="changeWeather(\'snow\')" title="下雪">❄</button>' +
+        '<button onclick="window.startWeatherEffect&&startWeatherEffect(\'off\')" title="关闭天气">✕</button>' +
+        '<span class="sep"></span>' +
+        '<button id="musicPrevBtn" onclick="(window.prevTrack?prevTrack():toggleMusic())" title="上一首">⏮</button>' +
+        '<button id="musicSideBtn" onclick="toggleMusic()" title="播放/暂停">🔈</button>' +
+        '<button id="musicNextBtn" onclick="(window.nextTrack?nextTrack():toggleMusic())" title="下一首">⏭</button>' +
+        '<span class="sep"></span>' +
+        '<button onclick="window.toggleLanguage&&toggleLanguage()" title="English/中文">EN</button>' +
+      '</div>' +
       '<div class="s-toggle" id="themeToggle">' +
         '<span class="s-icon" id="themeIcon">☀️</span>' +
         '<div class="track" id="themeTrack"><div class="thumb"></div></div>' +
@@ -116,17 +133,26 @@ window.toggleWeather = function() {
     if (btn) btn.style.color = '';
   }
 };
+// 切换天气类型
+window.changeWeather = function(t) {
+  var map = {sun:'sunny',rain:'rain',snow:'snow'};
+  if(window.startWeatherEffect) window.startWeatherEffect(map[t]||t);
+  document.querySelectorAll('.s-controls button, .nav-controls button').forEach(function(b){
+    var txt=b.textContent.trim();
+    if(txt==='☀'||txt==='🌧'||txt==='❄')b.style.background='';
+    if((t==='sun'&&txt==='☀')||(t==='rain'&&txt==='🌧')||(t==='snow'&&txt==='❄'))b.style.background='rgba(4,191,0,0.15)';
+  });
+};
 
-// 背景音乐切换
+// 背景音乐切换（优先走 main.js 播放器，保持播放列表/进度状态一致）
 window.toggleMusic = function() {
-  var btn = document.getElementById('musicBtn');
   var audio = document.getElementById('bg-music');
-  if (!audio) return;
-  if (audio.paused) {
-    audio.play().catch(function(){});
-    if (btn) { btn.textContent = '⏹'; btn.style.color = '#04BF00'; }
-  } else {
-    audio.pause();
-    if (btn) { btn.textContent = '🎵'; btn.style.color = ''; }
+  var wasPaused = audio ? audio.paused : true;
+  if (typeof window.toggleBgMusic === 'function') {
+    window.toggleBgMusic(); // main.js 播放器（含列表/进度/按钮状态）
+  } else if (audio) {
+    if (wasPaused) { audio.play().catch(function(){}); } else { audio.pause(); }
   }
+  var btn = document.getElementById('musicSideBtn');
+  if (btn) { btn.textContent = wasPaused ? '🔊' : '🔈'; btn.style.color = wasPaused ? '#04BF00' : ''; }
 };

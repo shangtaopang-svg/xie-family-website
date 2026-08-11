@@ -158,6 +158,67 @@ function buildKnowledge() {
       documents.push({ id: 'wenhua:' + String(i).padStart(4, '0'), ref: '文化礼堂资料', text: t }));
   }
 
+  // 全量文本资料：族人介绍 / 圆谱纪录片脚本 / 宣传片文案与方案 / 村宣传片口播稿
+  const extraTxtSources = [
+    { file: 'data/族人介绍.txt',                    prefix: 'zuren',  ref: '族人介绍' },
+    { file: 'data/脚本.txt',                        prefix: 'juben',  ref: '圆谱纪录片脚本' },
+    { file: '宣传片口播稿_圆谱版.txt',               prefix: 'koubo',  ref: '圆谱宣传片口播稿' },
+    { file: '宣传片拍摄方案_下枫槎村_4分钟.md',      prefix: 'fang4',  ref: '村宣传片方案·4分钟' },
+    { file: '宣传片拍摄制作方案_下枫槎村_详细版.md', prefix: 'fangxq', ref: '村宣传片制作方案·详细版' },
+    { file: '宣传片文案_接地气版.md',                prefix: 'jieqi',  ref: '村宣传片文案·接地气版' },
+    { file: '宣传片文案_融合版.md',                  prefix: 'ronghe', ref: '村宣传片文案·融合版' },
+  ];
+  for (const s of extraTxtSources) {
+    const t = readText(s.file);
+    if (!t) continue;
+    chunkText(t, MAX, OVLP).forEach((tx, i) =>
+      documents.push({ id: s.prefix + ':' + String(i).padStart(4, '0'), ref: s.ref, text: tx }));
+  }
+
+  // 功德/捐款名录（merit*.json，五类：修谱/外迁宗亲/族人筹款/社会助款/修祠堂）
+  const meritFiles = [
+    { file: 'data/merit.json',             prefix: 'merit',     ref: '功德名录' },
+    { file: 'data/merit-external.json',    prefix: 'merit-ext', ref: '功德名录·外迁宗亲' },
+    { file: 'data/merit-fundraising.json', prefix: 'merit-fund',ref: '功德名录·族人筹款' },
+    { file: 'data/merit-social.json',      prefix: 'merit-soc', ref: '功德名录·社会助款' },
+    { file: 'data/merit-temple.json',      prefix: 'merit-tpl', ref: '功德名录·修祠堂' },
+  ];
+  for (const mf of meritFiles) {
+    const arr = readJson(mf.file);
+    if (!Array.isArray(arr) || !arr.length) continue;
+    const lines = [];
+    for (const r of arr) {
+      const name = (r.name || r.person || '').toString().trim();
+      if (!name) continue;
+      const amt = (r.amount || r.money || r.donation || '').toString().trim();
+      const cat = (r.category || r.type || '').toString().trim();
+      const note = [r.biography, r.tribute, r.note, r.remark, r.project]
+        .filter(v => v && v.toString().trim())
+        .map(v => v.toString().replace(/\s+/g, '')).join('；');
+      let s = '功德名录（' + (cat || mf.ref) + '）：' + name;
+      if (amt) s += '，捐资' + amt;
+      if (note) s += '，' + note;
+      lines.push(s);
+    }
+    if (!lines.length) continue;
+    chunkText(lines.join('。\n'), MAX, OVLP).forEach((tx, i) =>
+      documents.push({ id: mf.prefix + ':' + String(i).padStart(4, '0'), ref: mf.ref, text: tx }));
+  }
+
+  // 村务消息（news.json）
+  const newsArr = readJson('data/news.json');
+  if (Array.isArray(newsArr)) {
+    newsArr.forEach((n, i) => {
+      const title = (n.title || '').toString().trim();
+      const date = (n.date || '').toString().trim();
+      const content = (n.content || '').toString().trim();
+      if (!content) return;
+      const text = (title ? title + '。' : '') + (date ? '（发布于' + date + '）' : '') + content;
+      chunkText(text, MAX, OVLP).forEach((tx, j) =>
+        documents.push({ id: 'news:' + String(i).padStart(3, '0') + ':' + String(j).padStart(3, '0'), ref: '村务消息', text: tx }));
+    });
+  }
+
   // 村史种子
   seeds.villageHistory.forEach((t, i) =>
     documents.push({ id: 'seed:hist' + i, ref: '村史', text: t }));

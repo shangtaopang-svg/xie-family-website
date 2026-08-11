@@ -323,6 +323,11 @@ function initMusicPlayer() {
   function playNext() { setTrack(currentIndex + 1); if (playlist.length > 0) doPlay(); }
   function playPrev() { setTrack(currentIndex - 1); if (playlist.length > 0) doPlay(); }
 
+  // 暴露给侧边栏 sidebar.js：上一首 / 下一首 / 播放暂停（复用同一播放器状态）
+  window.prevTrack = playPrev;
+  window.nextTrack = playNext;
+  window.toggleBgMusic = togglePlay;
+
   // Init
   loadPlaylist();
   // Default to playing on first visit
