@@ -34,7 +34,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v11'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v12'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -211,7 +211,8 @@
 
   /* ---------------- 打开/关闭 ---------------- */
   function openPanel() {
-    if (isOpen) return;
+    if (isOpen && !panel.hidden) return;
+    if (isOpen && panel.hidden) isOpen = false; // 状态残留修复：isOpen=true 但面板实际隐藏 → 复位后重新打开
     isOpen = true;
     panel.hidden = false;
     hideBubble(); // 打开面板时收起问候气泡
@@ -627,11 +628,12 @@
   function bindEvents() {
     fab.addEventListener('click', function () {
       if (fabMoved) { fabMoved = false; return; } // 拖拽后不触发打开
-      if (isOpen) {
-        // 朗读中点击悬浮球 → 只停语音不关面板（用户本意通常是静音/暂停，而不是关闭窗口）
+      if (isOpen && !panel.hidden) {
+        // 面板可见：朗读中点击悬浮球 → 只停语音不关面板（用户本意通常是静音/暂停，而不是关闭窗口）
         if (audioEl && !audioEl.paused && !audioEl.ended) { stopSpeak(); return; }
         closePanel(false, 'fab');
       } else {
+        // 面板隐藏/未开（含 isOpen 状态残留）→ 强制打开
         openPanel();
       }
     });
