@@ -39,7 +39,7 @@
   top: 50%;
   transform: translateY(-50%);
   background: #fff;
-  color: #333;
+  color: #b45309;   /* v16: 问候文字暖橙，比原 #333 更显眼，与橙色机器人呼应 */
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 12px;
   padding: 8px 12px;
@@ -63,6 +63,12 @@
   background: #fff;
   border-right: 1px solid rgba(0, 0, 0, 0.08);
   border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+/* 问候文字：加粗+稍大更醒目；颜色继承气泡（桌面暖橙/手机浅色） */
+#ai-fab .ai-bubble .ai-bubble-text {
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.5;
 }
 @keyframes aiBubbleIn {
   from { opacity: 0; transform: translateY(-50%) translateX(8px); }
