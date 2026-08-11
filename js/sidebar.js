@@ -90,6 +90,7 @@
         '<span class="s-icon" id="themeIcon2">🌙</span>' +
       '</div>' +
       '<a href="' + root() + 'index.html">✦ 返回首页</a>' +
+      '<a href="' + root() + 'entrance.html">⛩ 返回石门</a>' +
     '</div>';
 
   document.body.insertBefore(sidebar, document.body.firstChild);
