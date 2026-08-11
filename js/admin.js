@@ -453,6 +453,48 @@ function autoRecordVersion(desc) {
 
 // ===== Render =====
 function renderModule(mod) {
+  if (mod === 'visitors') {
+    var area = document.getElementById('admin-content-area');
+    if (!area) return;
+    area.innerHTML = '<div style="padding:20px;"><h3 style="margin-bottom:16px;">📋 访客信息</h3><div id="visitor-list"><p style="color:var(--text-tertiary);">加载中...</p></div></div>';
+    var token = localStorage.getItem('admin_token') || '';
+    fetch('/api/visitors', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if (!data || !data.length) {
+          document.getElementById('visitor-list').innerHTML = '<p style="color:var(--text-tertiary);">暂无访客记录</p>';
+          return;
+        }
+        var html = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;">';
+        html += '<thead><tr style="border-bottom:2px solid var(--divider);">';
+        html += '<th style="padding:6px 10px;text-align:left;">类型</th>';
+        html += '<th style="padding:6px 10px;text-align:left;">时间</th>';
+        html += '<th style="padding:6px 10px;text-align:left;">姓名</th>';
+        html += '<th style="padding:6px 10px;text-align:left;">联系方式</th>';
+        html += '<th style="padding:6px 10px;text-align:left;">父亲</th>';
+        html += '<th style="padding:6px 10px;text-align:left;">祖父</th>';
+        html += '<th style="padding:6px 10px;text-align:left;">目的/备注</th>';
+        html += '</tr></thead><tbody>';
+        data.reverse().forEach(function(v){
+          var typeLabel = v.type === 'clan' ? '<span style="color:#e8c97a;">✅ 族人</span>' : '<span style="color:var(--text-tertiary);">👤 访客</span>';
+          html += '<tr style="border-bottom:1px solid var(--divider);">';
+          html += '<td style="padding:6px 10px;">' + typeLabel + '</td>';
+          html += '<td style="padding:6px 10px;font-size:12px;color:var(--text-secondary);">' + (v.time || '') + '</td>';
+          html += '<td style="padding:6px 10px;font-weight:500;">' + (v.name || '') + '</td>';
+          html += '<td style="padding:6px 10px;color:var(--text-secondary);">' + (v.contact || '') + '</td>';
+          html += '<td style="padding:6px 10px;color:var(--text-secondary);">' + (v.father || '') + '</td>';
+          html += '<td style="padding:6px 10px;color:var(--text-secondary);">' + (v.grandpa || '') + '</td>';
+          html += '<td style="padding:6px 10px;color:var(--text-secondary);font-size:12px;">' + (v.purpose || '') + '</td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+        document.getElementById('visitor-list').innerHTML = html;
+      })
+      .catch(function(){
+        document.getElementById('visitor-list').innerHTML = '<p style="color:#ef4444;">加载失败</p>';
+      });
+    return;
+  }
   if (mod === 'ruzhuimarry') {
     var area = document.getElementById('admin-content-area');
     if (!area) return;
