@@ -34,11 +34,11 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v29'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v32'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
-  var fab, panel, msgs, chipsEl, input, sendBtn, statusEl, goBottom, header, bubble, soundBtn, stopBtn, subEl;
+  var fab, panel, msgs, chipsEl, input, sendBtn, statusEl, goBottom, header, bubble, soundBtn, stopBtn, maxBtn, subEl;
   var hist = [];
   var isOpen = false;
   var ttsMuted = true; // 语音朗读开关（v17 起默认关闭：回答不自动念，用户可点 🔊 开启）
@@ -94,6 +94,7 @@
       '    <div><div class="ai-name">家族 AI 咨询</div><div class="ai-status" id="ai-status"></div></div>' +
       '  </div>' +
       '  <div class="ai-hbtns">' +
+      '    <button type="button" class="ai-sound ai-max" id="ai-max" aria-label="放大到整屏" title="放大到整屏">⛶</button>' +
       '    <button type="button" class="ai-sound" id="ai-sound" aria-label="语音朗读开关" title="语音朗读">🔊</button>' +
       '    <button type="button" class="ai-sound" id="ai-stop" aria-label="暂停口播" title="暂停口播" hidden>⏸</button>' +
       '    <button type="button" class="ai-close" id="ai-close" aria-label="关闭">✕</button>' +
@@ -129,6 +130,7 @@
     header = $('.ai-header', panel);
     soundBtn = $('#ai-sound', panel);
     stopBtn = $('#ai-stop', panel);
+    maxBtn = $('#ai-max', panel);
     subEl = $('#ai-subtitle', subLayer);
 
     // 预设问题 chips
@@ -258,8 +260,8 @@
     }
     updateStatus();
     positionFab();
-    if (isMb()) {
-      // 手机全屏：清掉桌面拖拽遗留的 inline 定位，避免破坏 inset:0
+    if (isMb() || panel.classList.contains('ai-fullscreen')) {
+      // 手机全屏 / 桌面放大到整屏：清掉桌面拖拽遗留的 inline 定位，让 CSS inset:0 生效
       panel.style.left = ''; panel.style.top = ''; panel.style.right = ''; panel.style.bottom = '';
     } else if (panelPos) {
       // 用户拖拽过面板：恢复到保存的位置（至少让标题栏在可视区）
@@ -274,6 +276,25 @@
     // 桌面端自动聚焦；手机端等用户点输入框（避免自动弹键盘）
     if (!isMb()) setTimeout(function () { input.focus(); }, 120);
     try { history.pushState({ ai: true }, ''); } catch (e) {}
+  }
+
+  /** 面板放大到整屏 / 恢复小窗（桌面端；手机端面板本就全屏，按钮已隐藏） */
+  function toggleMaximize() {
+    if (!panel || !maxBtn) return;
+    var fs = panel.classList.toggle('ai-fullscreen');
+    // 清掉任何 inline 定位，避免与 CSS inset:0 冲突（拖拽/panelPos 遗留）
+    panel.style.left = ''; panel.style.top = ''; panel.style.right = ''; panel.style.bottom = '';
+    panel.style.width = ''; panel.style.height = '';
+    if (fs) {
+      maxBtn.textContent = '🗗';
+      maxBtn.title = '恢复小窗';
+      maxBtn.setAttribute('aria-label', '恢复小窗');
+    } else {
+      maxBtn.textContent = '⛶';
+      maxBtn.title = '放大到整屏';
+      maxBtn.setAttribute('aria-label', '放大到整屏');
+    }
+    diagLog('maximize', fs ? 'fullscreen' : 'window');
   }
 
   function closePanel(skipBack, source) {
@@ -325,7 +346,14 @@
         el.style.setProperty('color', '#f5f5f5', 'important');
       }
     }
+    // 头像（美化）：bot 机器人 / user 族人人形，位于气泡外侧
+    var ava = document.createElement('span');
+    ava.className = 'ai-ava';
+    ava.setAttribute('aria-hidden', 'true');
+    ava.textContent = role === 'user' ? '🙋' : '🤖';
+    el.appendChild(ava);
     var body = document.createElement('div');
+    body.className = 'ai-txt';
     body.textContent = text;
     el.appendChild(body);
     if (opts && opts.id) el.dataset.mid = opts.id;
@@ -354,7 +382,7 @@
   /* ---------------- 与后端通信（SSE） ---------------- */
   function chat(text) {
     var botEl = appendMessage('bot', '思考中…');
-    var body = botEl.firstChild;
+    var body = botEl.querySelector('.ai-txt') || botEl.lastChild;
     var done = false;
 
     var finish = function (answer, sources, tree, ownerIsSelf) {
@@ -366,7 +394,7 @@
         var src = document.createElement('div');
         src.className = 'ai-src';
         src.textContent = '📚 参考：' + sources.join('、');
-        botEl.appendChild(src);
+        (body || botEl).appendChild(src); // 放入文本节点内，头像布局下不错位
       }
       if (tree && tree.length) showTreeOverlay(tree, ownerIsSelf); // 世系图：呈现+朗读的同时弹出树状图
       hist.push({ role: 'assistant', content: answer || '' });
@@ -557,6 +585,7 @@
     var startX = 0, startY = 0, startL = 0, startT = 0, dragging = false;
     header.addEventListener('pointerdown', function (e) {
       if (isMb()) return;                                            // 手机全屏不拖动
+      if (panel.classList.contains('ai-fullscreen')) return;         // 放大到整屏时不拖动
       if (e.target && e.target.closest && e.target.closest('.ai-close, .ai-sound')) return; // 点按钮不算拖动
       if (e.button !== undefined && e.button !== 0 && e.pointerType === 'mouse') return;
       dragging = true;
@@ -669,7 +698,15 @@
       subCum.push(c);
     }
     subSent = splitSentences(subText);
-    subDur = 0;
+    // 权威总时长：直接用词边界时间轴的「末词结束时间」（TTS 返回即已知），
+    // 不依赖 audioEl 的 loadedmetadata/duration —— 后者对 blob 音频可能延迟、NaN 或 Infinity，
+    // 会导致 subTick 里 dur=1（字幕瞬间全亮）或 dur=Infinity（字幕永不推进），正是「口播开始字幕却没跟上」的根因。
+    if (subBounds.length) {
+      var last = subBounds[subBounds.length - 1];
+      subDur = (last.t + (last.d || 0)) || 0;
+    } else {
+      subDur = 0;
+    }
     subEl.textContent = '';
     subEl.scrollLeft = 0;
     subLayer.hidden = false;
@@ -691,7 +728,13 @@
     subRaf = requestAnimationFrame(subTick);
     if (!subEl || !subLayer || subLayer.hidden || !audioEl) return;
     var ct = (audioEl.currentTime || 0) + SUB_LEAD;
-    var dur = subDur || audioEl.duration || 1;
+    // 总时长：优先 startSubtitle 里用词边界算出的权威时长（已覆盖整段朗读）；
+    // 只有无边界时才退回 audioEl.duration，且必须过滤 NaN/Infinity/0（blob 音频在未加载完时 duration 可能是 NaN 或 Infinity）
+    var dur = subDur;
+    if (!(dur > 0)) {
+      var ad = audioEl.duration;
+      dur = (isFinite(ad) && ad > 0) ? ad : 1;
+    }
     var n = subText.length * Math.max(0, Math.min(1, ct / dur));
     n = Math.max(0, Math.min(n, subText.length));
     renderSubtitle(n);
@@ -716,14 +759,17 @@
     }
     return subSent[subSent.length - 1] || { s: 0, e: subText.length };
   }
-  /** 渲染字幕条：已读亮色 + 当前字高亮块(光标闪烁) + 本句未读极淡；句首/句尾省略号示意还有前后文 */
+  /** 渲染字幕条：已读亮色 + 当前字高亮块(光标闪烁) + 本句未读极淡；句首淡显前一句末尾字、句尾省略号示意后文，句子之间不断裂 */
   function renderSubtitle(n) {
     if (!subEl) return;
     var seg = findSeg(n);
     var s = seg.s, e = seg.e;
     var done = Math.max(0, Math.min(e - s, Math.floor(n) - s));
     var html = '';
-    if (s > 0) html += '<span class="ai-sub-prev">…</span>';
+    if (s > 0) {
+      // 前一句末尾 2 字淡显 + 省略号，衔接上一句，避免句子切换时字幕「断档」
+      html += '<span class="ai-sub-prev">' + esc(subText.slice(Math.max(0, s - 2), s)) + '…</span>';
+    }
     html += '<span class="ai-sub-done">' + esc(subText.slice(s, s + done)) + '</span>';
     var cur = subText.charAt(s + done);
     if (cur) html += '<span class="ai-sub-cur">' + esc(cur) + '</span>';
@@ -829,8 +875,27 @@
       if (!audioEl) { audioEl = new Audio(); bindAudioEl(); }
       audioEl.src = URL.createObjectURL(base64ToBlob(j.audio, 'audio/mpeg'));
       startSubtitle(spoken, j.boundaries || []); // 字幕条开始，随口播逐字揭示
-      audioEl.play().catch(noop);
-    }).catch(noop); // 语音失败静默，不影响文字回复
+      audioEl.play().catch(function (e) {
+        // 播放被拦/解码失败：不能静默（否则「口播没开始、字幕也没出现」用户无感知），给出可重试提示
+        diagLog('tts-play-fail', String(e && e.message || e));
+        if (stopBtn) {
+          stopBtn.hidden = false;
+          stopBtn.textContent = '🔁';
+          stopBtn.title = '播放失败，点击重听';
+          stopBtn.setAttribute('aria-label', '播放失败，点击重听');
+        }
+      });
+    }).catch(function (err) {
+      // TTS 生成失败：不静默吞掉（口播/字幕都会没有）——口播按钮短暂提示「朗读失败」，可点击重听
+      diagLog('tts-error', String(err && err.message || err));
+      if (stopBtn) {
+        stopBtn.hidden = false;
+        stopBtn.textContent = '😶';
+        stopBtn.title = '朗读失败，点击重听';
+        stopBtn.setAttribute('aria-label', '朗读失败，点击重听');
+        setTimeout(function () { if (stopBtn) stopBtn.hidden = true; }, 3500);
+      }
+    });
   }
 
   /* ---------------- 世系树状弹出层（呈现+朗读的同时弹出） ---------------- */
@@ -991,12 +1056,14 @@
     });
 
     $('#ai-close', panel).addEventListener('click', function () { closePanel(false, 'close-btn'); });
+    if (maxBtn) maxBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleMaximize(); });
     if (soundBtn) soundBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleTts(); });
     if (stopBtn) stopBtn.addEventListener('click', function (e) {
       e.stopPropagation();
       if (narState === 'playing') pauseNarration();
       else if (narState === 'paused') resumeNarration();
       else if (narState === 'ended') replayLast();
+      else if (lastAnswer) replayLast(); // TTS 失败/已停止但有最近回答 → 点击重听
       else stopSpeak();
     });
 

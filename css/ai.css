@@ -117,6 +117,23 @@
   color: #222;
   animation: aiSlideUp .22s ease;
 }
+/* 面板放大到整屏（桌面端 ⛶/🗗 按钮切换；手机端本就全屏） */
+#ai-panel.ai-fullscreen {
+  inset: 0 !important;   /* !important 覆盖拖拽/panelPos 遗留的 inline 定位 */
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  border-radius: 0;
+}
+/* 口播字幕显示时：桌面端小窗面板整体上移 64px（bottom:0→64px），输入区让出屏幕底部字幕条带，不遮输入框；全屏时输入行 padding 让位 */
+body.ai-sub-on #ai-panel:not(.ai-fullscreen) {
+  bottom: 64px;
+  max-height: calc(100vh - 64px);
+}
+body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom));
+}
 @keyframes aiSlideUp {
   from { transform: translateY(24px); opacity: .4; }
   to   { transform: translateY(0); opacity: 1; }
@@ -127,12 +144,13 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  background: linear-gradient(135deg, #f5a623, #d97706);
+  background: linear-gradient(135deg, #ffa733, #f0681c);
   color: #fff;
   flex: none;
   cursor: move;                /* 桌面端拖拽标题栏移动面板 */
   user-select: none;
   -webkit-user-select: none;
+  box-shadow: 0 1px 6px rgba(240, 104, 28, 0.28);
 }
 .ai-header .ai-title { display: flex; align-items: center; gap: 8px; }
 .ai-logo { font-size: 20px; }
@@ -146,7 +164,8 @@
   display: flex; align-items: center; justify-content: center;
   -webkit-tap-highlight-color: transparent;
 }
-.ai-close:active { background: rgba(255, 255, 255, 0.35); }
+.ai-close:hover, .ai-sound:hover { background: rgba(255, 255, 255, 0.35); }
+.ai-close:active { background: rgba(255, 255, 255, 0.45); }
 .ai-hbtns { display: flex; align-items: center; gap: 6px; flex: none; }
 .ai-sound {
   width: 32px; height: 32px;
@@ -170,25 +189,48 @@
   -webkit-overflow-scrolling: touch;
 }
 .ai-msg {
-  max-width: 86%;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 92%;
   padding: 9px 12px;
-  border-radius: 12px;
+  border-radius: 14px;
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-word;
   font-size: 14px;
 }
+.ai-msg .ai-txt { min-width: 0; }
+/* 消息头像（美化）：bot 机器人 / user 族人，位于气泡外侧 */
+.ai-ava {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin: -1px 0 0 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  line-height: 1;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14);
+}
 .ai-msg.ai-user {
   align-self: flex-end;
+  flex-direction: row-reverse;   /* 用户头像在右 */
   background: linear-gradient(135deg, #f5a623, #d97706);
   color: #fff;
   border-bottom-right-radius: 4px;
+  box-shadow: 0 2px 8px rgba(245, 166, 35, 0.22);
 }
+.ai-msg.ai-user .ai-ava { background: rgba(255, 255, 255, 0.28); }
 .ai-msg.ai-bot {
   align-self: flex-start;
   background: #fff;
   border: 1px solid rgba(0, 0, 0, 0.07);
   border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 .ai-msg.ai-bot .ai-src {
   display: block;
@@ -253,6 +295,7 @@
   -webkit-tap-highlight-color: transparent;
   line-height: 1.4;
 }
+.ai-chip:hover { border-color: rgba(124, 90, 22, 0.5); background: #f1e7d3; }
 .ai-chip:active { background: #efe6d2; }
 
 .ai-input-row {
@@ -295,6 +338,7 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
+#ai-send:not(:disabled):hover { filter: brightness(1.08); box-shadow: 0 2px 8px rgba(245, 166, 35, 0.35); }
 #ai-send:disabled { opacity: .5; cursor: default; }
 
 /* 回到最新 */
@@ -318,7 +362,7 @@
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 30px;
+  bottom: 12px;   /* 屏幕最底部，桌面/手机一致；口播时面板/树/输入行由 body.ai-sub-on 让出条带，互不遮挡 */
   z-index: 2147483003;   /* 独立全屏字幕层，高于面板(3001)/世系树遮罩(3002)，不占面板位置 */
   width: min(760px, 94vw);
   pointer-events: none;
@@ -327,14 +371,14 @@
 .ai-subtitle {
   display: flex;
   align-items: center;
-  height: 58px;
-  padding: 0 18px;
-  border-radius: 12px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
   background: rgba(16, 16, 20, 0.92);
   border: 1.5px solid rgba(58, 167, 109, 0.75);
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
   font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
-  font-size: 20px;
+  font-size: 15px;
   line-height: 1.2;
   font-weight: 700;
   color: #f7f2e8;
@@ -412,6 +456,9 @@
   .ai-status { color: rgba(238, 238, 238, 0.55); }
   .ai-hbtns { gap: 4px; }
   .ai-close, .ai-sound { background: rgba(255, 255, 255, 0.1); }
+  #ai-max { display: none; }   /* 手机端面板本就全屏，放大到整屏按钮无意义 */
+  .ai-msg .ai-ava { background: rgba(255, 255, 255, 0.12); box-shadow: none; }
+  .ai-msg.ai-user .ai-ava { background: rgba(255, 255, 255, 0.22); }
   .ai-msgs { background: var(--mb-bg, #0a0a0a); padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
   .ai-msg.ai-user { background: linear-gradient(135deg, #f5a623, #d97706) !important; color: #fff !important; font-weight: 600; }
   .ai-msg.ai-bot { background: #1c1c1c !important; border: 1px solid #333 !important; color: #f5f5f5 !important; }
@@ -434,8 +481,8 @@
     width: 92vw;
   }
   .ai-subtitle {
-    height: 54px;
-    font-size: 18px;
+    height: 40px;
+    font-size: 14px;
     background: rgba(0, 0, 0, 0.72);
     border-color: rgba(212, 255, 58, 0.5);
   }
@@ -451,11 +498,11 @@
   /* 口播字幕显示时：全屏世系树让出底部条带、面板输入行上移、悬浮球抬高 —— 字幕条只占屏幕最底部，不遮挡任何内容 */
   body.ai-sub-on #ai-tree-overlay { justify-content: flex-start; }
   body.ai-sub-on .ai-tree-modal {
-    height: calc(100vh - 76px - env(safe-area-inset-bottom));
-    max-height: calc(100vh - 76px - env(safe-area-inset-bottom));
+    height: calc(100vh - 64px - env(safe-area-inset-bottom));
+    max-height: calc(100vh - 64px - env(safe-area-inset-bottom));
   }
-  body.ai-sub-on .ai-input-row { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
-  body.ai-sub-on #ai-fab { bottom: calc(70px + env(safe-area-inset-bottom)); }
+  body.ai-sub-on .ai-input-row { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  /* FAB 保持默认 bottom:66px 即可：字幕已在屏幕最底(12px)，FAB 天然高于字幕，无需再抬高 */
 }
 
 @media (prefers-reduced-motion: reduce) {
