@@ -429,7 +429,8 @@
   #ai-input:focus { border-color: var(--mb-brand, #D4FF3A); }
   #ai-send { background: var(--mb-brand, #D4FF3A); color: var(--mb-bg, #0a0a0a); }
   .ai-subtitle-layer {
-    bottom: calc(72px + env(safe-area-inset-bottom));
+    /* 移到屏幕最底部，避开悬浮球(FAB bottom:66px)；口播时由 body.ai-sub-on 让树/面板让出该条带 */
+    bottom: calc(12px + env(safe-area-inset-bottom));
     width: 92vw;
   }
   .ai-subtitle {
@@ -447,6 +448,14 @@
   .ai-sub-cur::after { color: var(--mb-brand, #D4FF3A); }
   .ai-sub-rest { color: rgba(232, 227, 216, 0.22); }
   .ai-sub-prev { color: rgba(232, 227, 216, 0.5); }
+  /* 口播字幕显示时：全屏世系树让出底部条带、面板输入行上移、悬浮球抬高 —— 字幕条只占屏幕最底部，不遮挡任何内容 */
+  body.ai-sub-on #ai-tree-overlay { justify-content: flex-start; }
+  body.ai-sub-on .ai-tree-modal {
+    height: calc(100vh - 76px - env(safe-area-inset-bottom));
+    max-height: calc(100vh - 76px - env(safe-area-inset-bottom));
+  }
+  body.ai-sub-on .ai-input-row { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+  body.ai-sub-on #ai-fab { bottom: calc(70px + env(safe-area-inset-bottom)); }
 }
 
 @media (prefers-reduced-motion: reduce) {

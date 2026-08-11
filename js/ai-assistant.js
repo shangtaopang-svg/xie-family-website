@@ -34,7 +34,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v27'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v29'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
 
@@ -673,6 +673,7 @@
     subEl.textContent = '';
     subEl.scrollLeft = 0;
     subLayer.hidden = false;
+    document.body.classList.add('ai-sub-on'); // 手机端让全屏树/面板让出底部条带，字幕不遮挡其他内容
     startSubLoop();
   }
   /** 启动揭示循环（幂等；playing/resume 后由事件再次拉起） */
@@ -682,33 +683,16 @@
   }
   /** 字幕比声音略提前揭示（约 150ms），符合中文口播字幕惯例，感知为「跟得上」；感觉滞后/超前可微调 */
   var SUB_LEAD = 0.15;
-  /** 每帧：按当前播放位置精确算出已读字符数（词首字在词起点立即出现，词内其余字按词真实时长逐字推进 → 对齐声音、连续打字感） */
+  /** 每帧：按音频播放进度精确算出已读字符数（匀速揭示，严格同步音频 → 字幕绝不落后于口播）。
+   *  注意：之前用 Edge 词边界（subCum）定位，但词边界只覆盖纯词字符（不含标点），
+   *  而 subText 含标点（世系图注释密集），subCum 最大仅约文本的 70% → 字幕越到后段越落后、末尾字幕无法揭示。
+   *  故改为音频时间比例驱动：ct/dur 严格跟随 audioEl.currentTime（暂停冻结、恢复推进、结束补全）。 */
   function subTick() {
     subRaf = requestAnimationFrame(subTick);
     if (!subEl || !subLayer || subLayer.hidden || !audioEl) return;
     var ct = (audioEl.currentTime || 0) + SUB_LEAD;
-    var n = 0;
-    if (subBounds.length && subBounds.length === subCum.length) {
-      // 词边界驱动：找当前正在读的词（暂停时 currentTime 不动 → 字幕自然冻结）
-      var i = -1;
-      for (var k = subCum.length - 1; k >= 0; k--) {
-        if (subBounds[k].t <= ct) { i = k; break; }
-      }
-      if (i >= 0) {
-        var wLen = String(subBounds[i].w || '').length;
-        var t0 = subBounds[i].t;
-        var t1 = (i + 1 < subBounds.length) ? subBounds[i + 1].t : (t0 + (subBounds[i].d || 0.3));
-        // 词真实发音时长优先用 Edge 的 Duration；不可用时退化为相邻词起点差
-        var wDur = (subBounds[i].d > 0.02 && subBounds[i].d < 3) ? subBounds[i].d : (t1 - t0);
-        var seg = wDur > 0.01 ? Math.max(0, Math.min(1, (ct - t0) / wDur)) : 1;
-        // 词首字在词起点立即出现，词内其余字在词真实时长内逐字推进 → 每个字都对上声音
-        n = (subCum[i] - wLen) + (wLen > 0 ? (1 + seg * (wLen - 1)) : 0);
-      }
-    } else {
-      // 无边界兜底：按音频时长匀速揭示
-      var dur = subDur || audioEl.duration || 1;
-      n = subText.length * Math.min(1, ct / dur);
-    }
+    var dur = subDur || audioEl.duration || 1;
+    var n = subText.length * Math.max(0, Math.min(1, ct / dur));
     n = Math.max(0, Math.min(n, subText.length));
     renderSubtitle(n);
   }
@@ -763,6 +747,7 @@
     if (subHideTimer) clearTimeout(subHideTimer);
     subHideTimer = setTimeout(function () {
       if (subLayer) { subLayer.hidden = true; subEl.textContent = ''; }
+      document.body.classList.remove('ai-sub-on');
       subText = ''; subBounds = []; subCum = []; subSent = [];
     }, 2600);
   }
@@ -772,6 +757,7 @@
     if (subHideTimer) { clearTimeout(subHideTimer); subHideTimer = null; }
     if (subLayer) subLayer.hidden = true;
     if (subEl) subEl.textContent = '';
+    document.body.classList.remove('ai-sub-on');
     subText = ''; subBounds = []; subCum = []; subSent = []; subDur = 0;
   }
 
