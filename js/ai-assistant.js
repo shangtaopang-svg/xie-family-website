@@ -49,7 +49,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v43'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v47'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -384,7 +384,7 @@
     var body = botEl.querySelector('.ai-txt') || botEl.lastChild;
     var done = false;
 
-    var finish = function (answer, sources, tree, ownerIsSelf, closest) {
+    var finish = function (answer, sources, tree, ownerIsSelf, closest, closestTree) {
       if (done) return;
       done = true;
       body.textContent = answer || '（无回答）';
@@ -396,7 +396,7 @@
         (body || botEl).appendChild(src); // 放入文本节点内，头像布局下不错位
       }
       if (tree && tree.length) showTreeOverlay(tree, ownerIsSelf); // 世系图：呈现+朗读的同时弹出树状图
-      if (closest && closest.length) showClosestOverlay(closest); // 血缘最亲：弹出亲密系数图
+      if (closest && closest.length) showClosestOverlay(closest, closestTree); // 血缘最亲：弹出家族关系树 + 亲密系数图
       hist.push({ role: 'assistant', content: answer || '' });
       persist();
       scrollBottom(true);
@@ -431,7 +431,7 @@
       var ct = resp.headers.get('content-type') || '';
       if (ct.indexOf('text/event-stream') === -1) {
         return resp.json().then(function (j) {
-          if (j.ok) finish(j.answer, j.sources || [], j.tree, j.ownerIsSelf !== false, j.closest || []);
+          if (j.ok) finish(j.answer, j.sources || [], j.tree, j.ownerIsSelf !== false, j.closest || [], j.closestTree || null);
           else fail(j);
         });
       }
@@ -453,7 +453,7 @@
         } else if (ev === 'delta') {
           if (j.t) { collect += j.t; body.textContent = collect; scrollBottom(false); }
         } else if (ev === 'done') {
-          finish(j.answer || collect, j.sources || [], j.tree, j.ownerIsSelf !== false, j.closest || []);
+          finish(j.answer || collect, j.sources || [], j.tree, j.ownerIsSelf !== false, j.closest || [], j.closestTree || null);
         } else if (ev === 'error') {
           fail(j);
         }
@@ -998,14 +998,36 @@
 
   /* ---------------- 血缘最亲 N 人：基因共享率弹层（#72；v41 改为遗传学亲等 r） ---------------- */
   var closestOverlay = null;
-  function showClosestOverlay(list) {
-    if (!list || !list.length) return;
+  /* 血缘树节点（#82）：递归生成 <li> 结构，ul/li 经典 CSS 树连接线由 .ai-cl-tree 控制 */
+  function renderClosestNode(node) {
+    var tierCls = node.self ? ' self' : (node.tier ? ' t' + node.tier : '');
+    var shared = node.shared ? '<em>' + node.shared + '%</em>' : '';
+    var people = (node.people && node.people.length)
+      ? node.people.map(function (p) {
+          return '<span class="ai-cl-p' + (p.alive ? '' : ' dead') + '">' + esc(p.name) + '</span>';
+        }).join('')
+      : '<span class="ai-cl-p empty">暂无记录</span>';
+    var note = node.note ? '<div class="ai-cl-note">' + esc(node.note) + '</div>' : '';
+    var children = '';
+    if (node.children && node.children.length) {
+      children = '<ul>' + node.children.map(renderClosestNode).join('') + '</ul>';
+    }
+    return '<li>' +
+      '<div class="ai-cl-node' + tierCls + '">' +
+        '<div class="ai-cl-rel">' + esc(node.rel) + shared + '</div>' +
+        '<div class="ai-cl-ppl">' + people + '</div>' +
+        note +
+      '</div>' + children +
+    '</li>';
+  }
+  function showClosestOverlay(list, tree) {
+    if ((!list || !list.length) && !(tree && tree.root)) return;
     closeClosestOverlay();
     var ov = document.createElement('div');
     ov.id = 'ai-closest-overlay';
     ov.innerHTML =
       '<div class="ai-closest-modal">' +
-      '  <div class="ai-tree-head"><span class="ai-tree-title">❤️ 与您血缘最近的 ' + list.length + ' 位族人</span>' +
+      '  <div class="ai-tree-head"><span class="ai-tree-title">' + ((tree && tree.root) ? '家族血缘关系图' : ('❤️ 与您血缘最近的 ' + list.length + ' 位族人')) + '</span>' +
       '    <span class="ai-tree-headbtns">' +
       '      <button type="button" class="ai-closest-sound" aria-label="' + (ttsMuted ? '打开声音' : '静音') + '" title="' + (ttsMuted ? '打开声音' : '静音') + '">' + (ttsMuted ? '🔇' : '🔊') + '</button>' +
       '      <button type="button" class="ai-closest-close" aria-label="关闭">✕</button>' +
@@ -1015,8 +1037,22 @@
     document.body.appendChild(ov);
     closestOverlay = ov;
     var body = ov.querySelector('.ai-closest-body');
-    var frag = document.createDocumentFragment();
-    list.forEach(function (r, i) {
+    // #82 血缘树：画出家族关系树（用户 ASCII 模板：曾祖父12.5→祖父25→父亲50，旁系25，同辈50）
+    // 只画树不画排名列表（用户要求去掉下方的「按基因共享率排名」列表，树上的百分比已足够）
+    if (tree && tree.root) {
+      var treeWrap = document.createElement('div');
+      treeWrap.innerHTML =
+        '<div class="ai-cl-tree"><ul>' + renderClosestNode(tree.root) + '</ul></div>' +
+        '<div class="ai-cl-legend">' +
+        '  <span class="ai-cl-lg t1"><i></i>第一梯队（50%）</span>' +
+        '  <span class="ai-cl-lg t2"><i></i>第二梯队（25%）</span>' +
+        '  <span class="ai-cl-lg t3"><i></i>第三梯队（12.5%）</span>' +
+        '</div>';
+      body.appendChild(treeWrap);
+    } else if (list && list.length) {
+      // 兜底：无树时保留原来的排名列表
+      var frag = document.createDocumentFragment();
+      list.forEach(function (r, i) {
       var pct = Math.round((r.shared || 0) * 100);
       var row = document.createElement('div');
       row.className = 'ai-closest-row' + ((r.shared || 0) >= 0.25 ? ' hot' : '');
@@ -1029,9 +1065,10 @@
         '  <div class="ai-closest-rel">' + esc(r.rel) + shi + '</div>' +
         '</div>' +
         '<span class="ai-closest-coef" title="基因共享率：最高 50%（父母/子女/亲兄弟姐妹），越高越亲">' + pct + '%</span>' + b;
-      frag.appendChild(row);
-    });
-    body.appendChild(frag);
+        frag.appendChild(row);
+      });
+      body.appendChild(frag);
+    }
     ov.addEventListener('click', function (e) { if (e.target === ov) closeClosestOverlay(); });
     var soundBtn = ov.querySelector('.ai-closest-sound');
     if (soundBtn) soundBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleTts(); });

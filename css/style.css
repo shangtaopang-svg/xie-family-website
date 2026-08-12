@@ -2724,6 +2724,9 @@ body {
   margin-bottom: 4px;
   font-weight: 400;
 }
+/* 编辑弹窗（族谱管理等）标签改黑色：原来 var(--text-secondary) 太淡看不清（用户要求） */
+.admin-modal .form-group label { color: #000; }
+[data-theme="dark"] .admin-modal .form-group label { color: #e8e6e0; }
 .form-group input,
 .form-group textarea,
 .form-group select {
@@ -5589,4 +5592,18 @@ section a[href*="audio"] {
 }
 @media (min-width: 768px) {
   .page-wrap { padding-left: 32px !important; padding-right: 32px !important; }
+}
+
+/* ===== 人物详情/族人列表弹窗（移动端） =====
+   手机端媒体查询把 --text-primary 等文字色强制为浅色(#f5f5f5)，
+   但 --bg-primary/--glass-bg 仍是亮色主题的白底，导致「白底白字」看不清。
+   这里把弹窗底改成深色，浅色文字即可读（与全站黑底霓虹黄一致），桌面端不受影响。 */
+@media (max-width: 768px) {
+  .person-detail-modal .person-detail-box {
+    background: #141414;
+    border-color: #2a2a2a;
+    --bg-card: #1a1a1a;
+    --glass-bg: #1e1e24;
+    --glass-border: rgba(255,255,255,0.08);
+  }
 }

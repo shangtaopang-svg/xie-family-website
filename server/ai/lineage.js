@@ -360,6 +360,65 @@ function relCousin(da, db, lca, gender) {
   return '同宗（共祖' + (lca && lca.name || '') + '）';
 }
 
+/* 血缘树（#82）：固定家族结构模板 + 填入真实人名，供前端画树。
+   结构对照用户提供的 ASCII：曾祖父(12.5%)→祖父(25%)→父亲(50%)，父亲下分 亲姑妈/你/亲伯父叔父(25%)；
+   同辈 亲姐妹/你本人/亲兄弟(50%)；你本人下 儿女(50%)→孙女孙子(25%)；亲兄弟下 亲侄女亲侄子(25%)。
+   槽位按 rel 分类（relCousin 已按性别区分：姑辈=父之姐妹、叔伯辈=父之兄弟、侄女/侄子等），
+   people 为空时前端显示「暂无记录」占位；tree 用全部 rows（含排名 10 名开外的曾祖父），不只 top10。 */
+function buildClosestTree(rows, self) {
+  var slot = function (pred) {
+    return rows.filter(pred).map(function (r) {
+      var p = byId.get(r.id);
+      return { name: r.name, alive: !!(p && p.is_alive === '是') };
+    });
+  };
+  var s = {
+    zeng: slot(function (r) { return r.rel === '曾祖父'; }),
+    zu: slot(function (r) { return r.rel === '祖父'; }),
+    fu: slot(function (r) { return r.rel === '父亲'; }),
+    guma: slot(function (r) { return r.rel === '姑辈'; }),
+    boshu: slot(function (r) { return r.rel === '叔伯辈'; }),
+    jiemei: slot(function (r) { return r.rel === '亲姐妹'; }),
+    xiongdi: slot(function (r) { return r.rel === '亲兄弟'; }),
+    nver: slot(function (r) { return r.rel === '女儿'; }),
+    erzi: slot(function (r) { return r.rel === '儿子'; }),
+    sunnv: slot(function (r) { return r.rel === '孙女'; }),
+    sunzi: slot(function (r) { return r.rel === '孙子'; }),
+    zhinv: slot(function (r) { return r.rel === '侄女'; }),
+    zhizi: slot(function (r) { return r.rel === '侄子'; })
+  };
+  return {
+    selfName: self.name,
+    root: {
+      rel: '曾祖父', shared: 12.5, tier: 3, people: s.zeng,
+      children: [{
+        rel: '祖父', shared: 25, tier: 2, people: s.zu,
+        children: [
+          { rel: '亲姑妈', shared: 25, tier: 2, people: s.guma, note: '父亲的姐妹' },
+          {
+            rel: '父亲', shared: 50, tier: 1, people: s.fu,
+            children: [
+              { rel: '亲姐妹', shared: 50, tier: 1, people: s.jiemei },
+              {
+                rel: '你（本人）', tier: 0, self: true, people: [{ name: self.name, alive: true }],
+                children: [{
+                  rel: '女儿 / 儿子', shared: 50, tier: 1, people: s.nver.concat(s.erzi),
+                  children: [{ rel: '孙女 / 孙子', shared: 25, tier: 2, people: s.sunnv.concat(s.sunzi) }]
+                }]
+              },
+              {
+                rel: '亲兄弟', shared: 50, tier: 1, people: s.xiongdi,
+                children: [{ rel: '亲侄女 / 亲侄子', shared: 25, tier: 2, people: s.zhinv.concat(s.zhizi) }]
+              }
+            ]
+          },
+          { rel: '亲伯父 / 叔父', shared: 25, tier: 2, people: s.boshu, note: '父亲的兄弟' }
+        ]
+      }]
+    }
+  };
+}
+
 /**
  * 血缘最近的人列表：按基因共享率 r 排序（直系 2^-d；旁系 2^-(da+db-1)，同父同母假设）。
  * 父/子/女/亲兄弟/亲姐妹 50% 同列第一档，祖父/孙/叔侄 25% 第二档，堂兄弟 12.5% 第三档。
@@ -414,7 +473,7 @@ function answerClosest(personId, limit) {
   const list = rows.slice(0, limit);
   const lines = list.map(r => `${r.rank}. ${r.name}（${r.rel}，基因共享 ${Math.round(r.shared * 100)}%）`);
   const text = `与您血缘最近的 ${list.length} 位族人（基因共享率越高越亲，最高 50%）：\n${lines.join('\n')}`;
-  return { text, list };
+  return { text, list, tree: buildClosestTree(rows, self) };
 }
 
 module.exports = {

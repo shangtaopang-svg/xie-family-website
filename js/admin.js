@@ -1987,7 +1987,7 @@ function showForm(mod, m, item) {
 
     html += '<div style="background:var(--accent-orange-dim);border-radius:8px;padding:10px 14px;margin-bottom:16px;">';
     html += '<div style="font-size:12px;font-weight:500;color:var(--accent-orange);margin-bottom:4px;">📋 基本资料</div>';
-    html += '<div style="font-size:11px;color:var(--text-tertiary);">填写姓名、世代、父母配偶等核心信息</div>';
+    html += '<div style="font-size:11px;color:#333;">填写姓名、世代、父母配偶等核心信息</div>';
     html += '</div>';
 
     for (var bi = 0; bi < basicKeys.length; bi++) {
@@ -1995,7 +1995,7 @@ function showForm(mod, m, item) {
     }
 
     html += '<div style="margin:12px 0;">';
-    html += '<button type="button" class="btn btn-sm" id="btn-advanced-toggle" style="width:100%;padding:8px;font-size:12px;color:var(--text-tertiary);background:var(--glass-bg);border:1px dashed var(--glass-border);border-radius:8px;cursor:pointer;">📂 高级信息（生卒、支系、简介等）</button>';
+    html += '<button type="button" class="btn btn-sm" id="btn-advanced-toggle" style="width:100%;padding:8px;font-size:12px;color:#333;background:var(--glass-bg);border:1px dashed var(--glass-border);border-radius:8px;cursor:pointer;">📂 高级信息（生卒、支系、简介等）</button>';
     html += '</div>';
 
     html += '<div id="genealogy-advanced-fields" style="display:none;">';

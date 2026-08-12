@@ -741,3 +741,154 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   .ai-closest-modal { max-height: 86vh; width: 100%; border-radius: 0; }
   .ai-closest-body { padding: 6px 12px 16px; }
 }
+
+/* ---------------- 血缘最亲：家族关系树（#82，用户 ASCII：曾祖父12.5→祖父25→父亲50，旁系25，同辈50） ---------------- */
+.ai-cl-tree {
+  text-align: center;
+  padding: 14px 6px 2px;
+  overflow-x: auto;
+  background: #fbfaf5;
+  border: 1px dashed rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  margin: 2px 0 6px;
+  color: #333; /* 防御：手机端兜底白字规则，保证树内文字始终深色 */
+}
+.ai-cl-tree ul, .ai-cl-tree ul ul { list-style: none; margin: 0; padding: 0; }
+.ai-cl-tree ul {
+  padding-top: 20px;
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+  /* 兄弟 li 是 inline-table，容器窄时会被迫纵向换行（同代错位堆叠）。
+     用 max-content 让 ul 按内容固有宽度排布，同代永远在同一行；
+     树整体超过容器宽度时由 .ai-cl-tree 的 overflow-x:auto 横向滚动。 */
+  width: max-content;
+  min-width: 100%;
+}
+.ai-cl-tree li {
+  display: inline-table;
+  vertical-align: top; /* 同代 li 顶部对齐，避免高 li（含子辈子树）把后到的兄弟压下去 */
+  text-align: center;
+  list-style: none;
+  position: relative;
+  padding: 20px 6px 0 6px;
+}
+/* 子节点连接线：上半横线（::before 左半 / ::after 右半 + 右竖落线） */
+.ai-cl-tree li::before, .ai-cl-tree li::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 50%;
+  border-top: 2px solid #b9c6d1;
+  width: 50%;
+  height: 20px;
+}
+.ai-cl-tree li::after {
+  right: auto;
+  left: 50%;
+  border-left: 2px solid #b9c6d1;
+}
+.ai-cl-tree li:only-child::after, .ai-cl-tree li:only-child::before { display: none; }
+.ai-cl-tree li:only-child { padding-top: 0; }
+.ai-cl-tree li:first-child::before, .ai-cl-tree li:last-child::after { border: 0 none; }
+.ai-cl-tree li:last-child::before { border-right: 2px solid #b9c6d1; border-radius: 0 6px 0 0; }
+.ai-cl-tree li:first-child::after { border-radius: 6px 0 0 0; }
+/* 父节点到子辈的竖线 */
+.ai-cl-tree ul ul::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  border-left: 2px solid #b9c6d1;
+  width: 0;
+  height: 20px;
+}
+/* 节点卡 */
+.ai-cl-node {
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+  min-width: 84px;
+  max-width: 152px;
+  padding: 6px 9px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1.5px solid #cbd5e0;
+  line-height: 1.4;
+}
+.ai-cl-node.t1 { border-color: #7cb342; background: #eef7e8; }
+.ai-cl-node.t2 { border-color: #f0a832; background: #fff7e6; }
+.ai-cl-node.t3 { border-color: #94a8b8; background: #f2f6f8; }
+.ai-cl-node.self {
+  border: 2px solid #2f8f4a;
+  background: #e7f4ec;
+  box-shadow: 0 0 0 2px rgba(47, 143, 74, 0.16);
+}
+.ai-cl-rel { font-weight: 700; color: #333; white-space: nowrap; }
+.ai-cl-rel em { font-style: normal; font-weight: 800; color: #2f8f4a; margin-left: 2px; }
+.ai-cl-node.t2 .ai-cl-rel em { color: #b8710a; }
+.ai-cl-node.t3 .ai-cl-rel em { color: #78909c; }
+.ai-cl-node.self .ai-cl-rel { color: #2f8f4a; }
+.ai-cl-ppl { margin-top: 3px; }
+.ai-cl-ppl .ai-cl-p {
+  display: inline-block;
+  margin: 1px 1px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #dfe5ea;
+  color: #3d434a;
+  font-size: 11px;
+  font-weight: 600;
+}
+.ai-cl-ppl .ai-cl-p.dead { color: #9aa4ae; }
+.ai-cl-ppl .ai-cl-p.empty {
+  background: none;
+  border-style: dashed;
+  border-color: #d6dde2;
+  color: #b3bcc4;
+  font-weight: 400;
+}
+.ai-cl-note { margin-top: 2px; font-size: 10.5px; color: #8b949e; }
+/* 图例 */
+.ai-cl-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  padding: 2px 6px 8px;
+  font-size: 11.5px;
+  color: #5a626b;
+}
+.ai-cl-lg { display: inline-flex; align-items: center; gap: 4px; color: #5a626b; }
+/* 手机端 style.css 有「p,li,span,div…color:var(--mb-text)」兜底会把弹层无显式颜色的文字刷成白字；
+   这里对图例文字显式设深色，保证浅底上清晰可读（桌面端不变） */
+.ai-cl-lg i { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+.ai-cl-lg.t1 i { background: #7cb342; }
+.ai-cl-lg.t2 i { background: #f0a832; }
+.ai-cl-lg.t3 i { background: #94a8b8; }
+.ai-cl-sep {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 4px;
+  font-size: 11.5px;
+  color: #9aa3ad;
+}
+.ai-cl-sep::before, .ai-cl-sep::after {
+  content: '';
+  flex: 1;
+  border-top: 1px dashed rgba(0, 0, 0, 0.14);
+}
+@media (max-width: 768px) {
+  /* 手机端压窄节点：rel 允许换行、缩小字号/内边距，让三列同代尽量放进一屏，减少横向滚动 */
+  .ai-cl-node { min-width: 52px; max-width: 78px; padding: 4px 6px; }
+  .ai-cl-rel { font-size: 10.5px; white-space: normal; line-height: 1.22; }
+  .ai-cl-ppl .ai-cl-p { font-size: 10px; padding: 0 6px; }
+  .ai-cl-tree li { padding: 18px 3px 0 3px; }
+  .ai-cl-tree ul { padding-top: 18px; }
+  .ai-cl-tree li::before, .ai-cl-tree li::after { height: 18px; }
+  .ai-cl-tree ul ul::before { height: 18px; }
+  .ai-cl-tree li:only-child { padding-top: 0; }
+}
+
