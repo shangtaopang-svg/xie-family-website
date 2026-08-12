@@ -18,6 +18,16 @@
     for (var i=0;i<dynInfo.length;i++){if(g>=dynInfo[i].min&&g<=dynInfo[i].max)return dynInfo[i];}
     return null;
   }
+  // 各朝代在数据中实际出现的柱体数（图例各段宽度按此与上方柱体颜色逐列对齐）
+  function eraBarCounts(gens) {
+    var out = [];
+    for (var i=0;i<dynInfo.length;i++){
+      var d = dynInfo[i], cnt = 0;
+      for (var j=0;j<gens.length;j++){ if (gens[j]>=d.min && gens[j]<=d.max) cnt++; }
+      out.push(cnt);
+    }
+    return out;
+  }
   var COL_W = 10, GAP = 1;
   var _origWrapStyle = null; // 首次渲染时捕获 wrap 原始内联样式，桌面端原样恢复
   function isCompact() {
@@ -74,10 +84,11 @@
       var unit = COL_W + GAP;
 
       // 朝代图例（顶部通栏）
-      legendHtml = '<div style="display:flex;gap:0;margin-bottom:8px;border-radius:6px;overflow:hidden;">';
-      dynInfo.forEach(function(d){
-        var w = ((d.max-d.min+1)/165)*100;
-        legendHtml += '<div style="flex:'+w+';height:16px;background:'+d.color+';display:flex;align-items:center;justify-content:center;"><span style="font-size:7px;color:'+d.text+';font-weight:600;white-space:nowrap;">'+d.label+'</span></div>';
+      legendHtml = '<div style="display:flex;gap:'+GAP+'px;margin-bottom:8px;padding:0 1px;border-radius:6px;overflow:hidden;">';
+      eraBarCounts(gens).forEach(function(cnt, i){
+        var d = dynInfo[i];
+        var w = cnt * (COL_W + GAP) - (cnt > 0 ? GAP : 0);
+        legendHtml += '<div style="width:'+w+'px;height:16px;background:'+d.color+';display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;"><span style="font-size:7px;color:'+d.text+';font-weight:600;white-space:nowrap;">'+d.label+'</span></div>';
       });
       legendHtml += '</div>';
 
@@ -110,10 +121,11 @@
       // wrap 恢复原始内联样式（flex row，min-height:240px），但只放一个列向子容器
       wrap.style.cssText = _origWrapStyle;
 
-      legendHtml = '<div style="display:flex;gap:0;margin-top:10px;border-radius:6px;overflow:hidden;">';
-      dynInfo.forEach(function(d){
-        var w = ((d.max-d.min+1)/165)*100;
-        legendHtml += '<div style="flex:'+w+';height:20px;background:'+d.color+';display:flex;align-items:center;justify-content:center;"><span style="font-size:9px;color:'+d.text+';font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,0.5);">'+d.label+'</span></div>';
+      legendHtml = '<div style="display:flex;gap:'+GAP+'px;margin-top:10px;padding:0 2px;border-radius:6px;overflow:hidden;">';
+      eraBarCounts(gens).forEach(function(cnt, i){
+        var d = dynInfo[i];
+        var w = cnt * (COL_W + GAP) - (cnt > 0 ? GAP : 0);
+        legendHtml += '<div style="width:'+w+'px;height:20px;background:'+d.color+';display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;"><span style="font-size:9px;color:'+d.text+';font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,0.5);">'+d.label+'</span></div>';
       });
       legendHtml += '</div>';
 
@@ -189,10 +201,6 @@
     inlineContainer.scrollLeft = Math.max(0, qx * ns - cx);
     inlineContainer.scrollTop = Math.max(0, qy * ns - cy);
   }
-  function zoomAtCenter(factor) {
-    if (!inlineContainer) return;
-    zoomAt(inlineContainer.clientWidth / 2, inlineContainer.clientHeight / 2, factor);
-  }
   // 拖动平移（放大后），拖动超过阈值不算点击
   var dragState = null;
   function initInlineDrag() {
@@ -244,21 +252,7 @@
       bar.className = 'tl-ctrl-bar';
       bar.style.cssText = 'display:flex;align-items:center;gap:4px;flex-shrink:0;';
       h3.appendChild(bar);
-      function mkZoomBtn(label, title, fn) {
-        var b = document.createElement('button');
-        b.type = 'button'; b.textContent = label; b.title = title;
-        b.style.cssText = 'width:30px;height:30px;border-radius:9px;background:rgba(251,146,60,0.14);color:var(--accent-orange,#ff9a3c);border:1px solid rgba(251,146,60,0.35);cursor:pointer;font-size:15px;font-weight:700;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;flex-shrink:0;';
-        b.onclick = fn;
-        return b;
-      }
-      bar.appendChild(mkZoomBtn('−', '缩小', function(){ zoomAtCenter(1 / 1.25); }));
-      inlineVal = document.createElement('span');
-      inlineVal.className = 'tl-inline-zoom-val';
-      inlineVal.style.cssText = 'min-width:44px;text-align:center;font-size:12px;color:var(--accent-orange,#ff9a3c);font-weight:600;flex-shrink:0;';
-      inlineVal.textContent = '100%';
-      bar.appendChild(inlineVal);
-      bar.appendChild(mkZoomBtn('＋', '放大', function(){ zoomAtCenter(1.25); }));
-      bar.appendChild(mkZoomBtn('⟳', '还原 100%', function(){ applyInlineZoom(1); }));
+      // 内联缩放按钮已按用户要求移除（缩放走 Ctrl+滚轮）；控制栏只保留全屏按钮
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'tl-fs-btn';
@@ -269,13 +263,8 @@
       bar.appendChild(btn);
       initInlineDrag();
     }
-    // 手机端隐藏内联缩放控件（已有全屏缩放）；桌面端全显
-    var compact = isCompact();
+    // 控制栏只保留全屏按钮（内联缩放走 Ctrl+滚轮），手机/桌面都显示
     bar.style.display = 'flex';
-    bar.querySelectorAll('button').forEach(function(b) {
-      if (!b.classList.contains('tl-fs-btn')) b.style.display = compact ? 'none' : 'flex';
-    });
-    inlineVal.style.display = compact ? 'none' : 'block';
     h3.style.display = 'flex'; h3.style.alignItems = 'center'; h3.style.justifyContent = 'space-between';
   }
 
@@ -300,10 +289,12 @@
     head += '<button type="button" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:18px;cursor:pointer;line-height:1;flex-shrink:0;">✕</button>';
     head += '</div>';
 
-    var legend = '<div style="display:flex;gap:0;margin-top:10px;border-radius:6px;overflow:hidden;">';
-    dynInfo.forEach(function(d){
-      var w = ((d.max-d.min+1)/165)*100;
-      legend += '<div style="flex:'+w+';height:22px;background:'+d.color+';display:flex;align-items:center;justify-content:center;"><span style="font-size:11px;color:'+d.text+';font-weight:600;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,0.4);">'+d.label+'</span></div>';
+    // 图例各段宽度 = 该朝代实际柱体数 × 柱宽（与上方柱体颜色逐列对齐，而非名义世次区间）
+    var legend = '<div style="display:flex;gap:'+FS_GAP+'px;margin-top:10px;border-radius:6px;overflow:hidden;">';
+    eraBarCounts(gens).forEach(function(cnt, i){
+      var d = dynInfo[i];
+      var w = cnt * (FS_COL + FS_GAP) - (cnt > 0 ? FS_GAP : 0);
+      legend += '<div style="width:'+w+'px;height:22px;background:'+d.color+';display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;"><span style="font-size:11px;color:'+d.text+';font-weight:600;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,0.4);">'+d.label+'</span></div>';
     });
     legend += '</div>';
 
@@ -321,10 +312,10 @@
 
     var content = document.createElement('div');
     content.id = 'tl-fs-content';
-    content.style.cssText = 'position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;width:'+naturalW+'px;box-sizing:border-box;padding:14px '+pad+'px 0;';
+    content.style.cssText = 'position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;width:'+naturalW+'px;box-sizing:border-box;padding:14px '+pad+'px 0;-webkit-user-select:none;user-select:none;';
     content.innerHTML = wave + legend;
 
-    ov.innerHTML = head + '<div id="tl-fs-view" style="flex:1;position:relative;overflow:hidden;touch-action:none;cursor:grab;"></div>';
+    ov.innerHTML = head + '<div id="tl-fs-view" style="flex:1;position:relative;overflow:hidden;touch-action:none;cursor:grab;-webkit-user-select:none;user-select:none;"></div>';
     ov.querySelector('#tl-fs-view').appendChild(content);
     document.body.appendChild(ov);
 
@@ -368,13 +359,19 @@
         TY = pinch.m0.y*pinch.s0 + pinch.t0y - m.y*ns;
         S = ns; apply();
       } else if (ids.length === 1 && !pinch && lastPt) {
-        if (S > 1.01) { TX += (e.clientX - lastPt.x); TY += (e.clientY - lastPt.y); apply(); }
+        // 平移始终可用（去掉 S>1.01 限制，解决“最大化后不能平移”），并夹紧在视图内防止拖丢
+        var sw = naturalW * S, sh = naturalH * S;
+        TX = clampV(TX + (e.clientX - lastPt.x), Math.min(0, view.clientWidth - sw), Math.max(0, view.clientWidth - sw));
+        TY = clampV(TY + (e.clientY - lastPt.y), Math.min(0, view.clientHeight - sh), Math.max(0, view.clientHeight - sh));
+        apply();
+        view.style.cursor = 'grabbing';
         lastPt = {x:e.clientX, y:e.clientY};
       }
     });
     function endPointer(e){
       delete pts[e.pointerId];
       if (Object.keys(pts).length < 2) pinch = null;
+      view.style.cursor = 'grab';
     }
     view.addEventListener('pointerup', endPointer);
     view.addEventListener('pointercancel', endPointer);
@@ -398,7 +395,17 @@
     });
     view.addEventListener('click', function(e){
       if (moved > 6) return;
-      var gEl = e.target.closest('.tl-fs-g');
+      // 真实浏览器 setPointerCapture 会把 click 重定向到 view（e.target 不再是柱体），
+      // 因此用 elementFromPoint（含 transform 坐标命中）找柱体；兜底遍历 rect
+      var el = document.elementFromPoint(e.clientX, e.clientY);
+      var gEl = el && el.closest('.tl-fs-g');
+      if (!gEl) {
+        var bars = view.querySelectorAll('.tl-fs-g');
+        for (var bi = 0; bi < bars.length; bi++) {
+          var br = bars[bi].getBoundingClientRect();
+          if (e.clientX >= br.left && e.clientX <= br.right && e.clientY >= br.top && e.clientY <= br.bottom) { gEl = bars[bi]; break; }
+        }
+      }
       if (gEl) showGenPeople(parseInt(gEl.getAttribute('data-g')));
     });
 
