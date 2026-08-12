@@ -437,6 +437,7 @@
           <button class="btn btn-xs" id="filter-dongshan" onclick="filterBranch('始宁东山世系')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">始宁东山世系</button>
           <button class="btn btn-xs" id="filter-linhai" onclick="filterBranch('临海下渡世系')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">临海下渡世系</button>
           <button class="btn btn-xs" id="filter-shima" onclick="filterBranch('石马下谢分房')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">石马（下谢）分房派</button>
+          <button class="btn btn-xs" id="filter-houfengcha" onclick="filterBranch('本宗世系图（后枫槎）')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">本宗世系图（后枫槎）</button>
         </div>
         <!-- 树容器 -->
         <div class="genealogy-tree-scroll" id="tree-scroll-container">
@@ -672,6 +673,8 @@
 
   // Load full 1080 records from JSON - OVERRIDE everything
   fetch('../data/genealogy_full.json').then(function(r){return r.json()}).then(function(d){
+    // 实时 API 数据优先：若已通过 dbGetAll 加载活数据（后台增改后），旧快照不再覆盖，前端与后台保持一致
+    if (window.__liveGenealogyLoaded) { return; }
     if (d && d.length > 100) {
       // Merge ancient lineage into full JSON data
       var ancient = getAncientGenealogyData();
@@ -959,7 +962,8 @@ function filterBranch(branch) {
   var btn = document.getElementById(btnId);
   if (btn) { btn.style.background = 'var(--accent-orange)'; btn.style.color = '#fff'; btn.style.border = 'none'; }
   // Get and filter data
-  var data = getGenealogyData();
+  // 本宗世系图（后枫槎）：直接复用后台同一棵硬编码精选树（js/admin.js getHoufengchaTreeData），保证与后台显示一致
+  var data = (branch === '本宗世系图（后枫槎）') ? getHoufengchaTreeData() : getGenealogyData();
   var branchLabel = '全部';
   if (branch !== 'all') {
     data = getBranchData(data, branch);
@@ -980,8 +984,12 @@ function filterBranch(branch) {
   if (branch !== 'all') {
     setTimeout(function() {
       var rootId = null;
-      for (var i = 0; i < data.length; i++) {
-        if (data[i].name.indexOf(branch) >= 0) { rootId = data[i].id; break; }
+      if (branch === '本宗世系图（后枫槎）') {
+        rootId = 60000; // 本宗世系图精选树根节点：小四
+      } else {
+        for (var i = 0; i < data.length; i++) {
+          if (data[i].name.indexOf(branch) >= 0) { rootId = data[i].id; break; }
+        }
       }
       if (rootId) treeAutoLocate(rootId);
     }, 200);
@@ -1399,6 +1407,11 @@ function treeAutoLocate(personId) {
   var data = getGenealogyData();
   var person = null;
   for (var i = 0; i < data.length; i++) { if (data[i].id === personId) { person = data[i]; break; } }
+  // 本宗世系图精选树（id 60000+）不在常规族谱数据中，单独在其共享数据源中查找
+  if (!person && typeof getHoufengchaTreeData === 'function' && personId >= 60000 && personId < 60100) {
+    var hfData = getHoufengchaTreeData();
+    for (var j = 0; j < hfData.length; j++) { if (hfData[j].id === personId) { person = hfData[j]; break; } }
+  }
   if (!person) return;
   var statusEl = document.getElementById('tree-search-status');
 
@@ -2673,6 +2686,8 @@ function locateInTree(personId) {
       // Only use Supabase data if it has REAL names (not placeholders)
       var hasRealData = supabaseData && supabaseData.length > 5 && supabaseData.some(function(p) { return /^(小四|文杲|彬|乾|攒|撰|伯|祖|宗|道|体|开|裕|静|元|宏|孟|公|书|叔|文对)/.test(p.name); });
       if (hasRealData) {
+        // 实时 API 数据已就绪：标记后，旧快照 genealogy_full.json 不再覆盖（后台增改后前端自动同步）
+        window.__liveGenealogyLoaded = true;
         localStorage.setItem('xie_admin_genealogy', JSON.stringify(supabaseData));
         // Re-render with Supabase data
         setTimeout(renderGenealogyPageSVG, 10);
@@ -2792,7 +2807,7 @@ setTimeout(function(){var t=vp.querySelector(".apt-tree");if(!t)return;var vpr=v
 window.zoomGenealogyTree=function(factor){var vp=document.getElementById("gz-tree-viewport");if(!vp)return;var el=vp.querySelector(".apt-tree");if(!el)return;if(factor===1){_gzZoom=1;_gzPanX=0;_gzPanY=0;}else{var r=vp.getBoundingClientRect();var mx=r.width/2,my=r.height/2,nz=Math.max(0.05,Math.min(10,_gzZoom*factor));_gzPanX=mx-(mx-_gzPanX)*(nz/_gzZoom);_gzPanY=my-(my-_gzPanY)*(nz/_gzZoom);_gzZoom=nz;}el.style.transform="translate("+_gzPanX+"px,"+_gzPanY+"px) scale("+_gzZoom+")";var zl=document.getElementById("gz-zoom-level");if(zl)zl.textContent=Math.round(_gzZoom*100)+"%";};
 </script>
 
-  <script src="../js/admin.js?v=45" onload="if(window.renderTreeSVG&&window.getGenealogyData)setTimeout(function(){renderTreeSVG(getGenealogyData())},100)"></script>
+  <script src="../js/admin.js?v=59" onload="if(window.renderTreeSVG&&window.getGenealogyData)setTimeout(function(){renderTreeSVG(getGenealogyData())},100)"></script>
 
       </style>
 

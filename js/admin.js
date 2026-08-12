@@ -4173,7 +4173,8 @@ window.zoomShimaTree = function(factor) {
 };
 
 // ===== 本宗世系图（后枫槎）=====
-function buildAdminHoufengchaTree() {
+// 共享数据：后台管理页与前端族谱查询页共用同一份精选世系，保证两处显示一致
+function getHoufengchaTreeData() {
   var raw = [
     // [gen, name, desc, father]
     [1,'小四','石马第一世',null],
@@ -4269,5 +4270,9 @@ function buildAdminHoufengchaTree() {
       spouse_ids: '', is_alive: '否', biography: r[2], highlight: i === 0
     });
   }
-  return buildAdminTreeHtml(treeData, {hideGen: true});
+  return treeData;
+}
+
+function buildAdminHoufengchaTree() {
+  return buildAdminTreeHtml(getHoufengchaTreeData(), {hideGen: true});
 }
