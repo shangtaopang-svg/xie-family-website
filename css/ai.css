@@ -679,7 +679,7 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   backdrop-filter: blur(2px);
 }
 .ai-closest-modal {
-  width: min(460px, 100%);
+  width: min(640px, 96vw); /* 桌面端加宽，给血缘树更多展示空间；手机端仍 100% */
   max-height: 84vh;
   display: flex;
   flex-direction: column;
@@ -745,17 +745,18 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
 /* ---------------- 血缘最亲：家族关系树（#82，用户 ASCII：曾祖父12.5→祖父25→父亲50，旁系25，同辈50） ---------------- */
 .ai-cl-tree {
   text-align: center;
-  padding: 14px 6px 2px;
+  padding: 18px 10px 4px;
   overflow-x: auto;
-  background: #fbfaf5;
-  border: 1px dashed rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
-  margin: 2px 0 6px;
+  background: linear-gradient(180deg, #fefdf9, #f9f8f3);
+  border: 1px solid rgba(31, 35, 40, 0.08);
+  border-radius: 14px;
+  margin: 2px 0 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 1px 3px rgba(31, 35, 40, 0.04);
   color: #333; /* 防御：手机端兜底白字规则，保证树内文字始终深色 */
 }
 .ai-cl-tree ul, .ai-cl-tree ul ul { list-style: none; margin: 0; padding: 0; }
 .ai-cl-tree ul {
-  padding-top: 20px;
+  padding-top: 26px;
   position: relative;
   margin-left: auto;
   margin-right: auto;
@@ -771,7 +772,7 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   text-align: center;
   list-style: none;
   position: relative;
-  padding: 20px 6px 0 6px;
+  padding: 26px 14px 0 14px; /* 加大左右留白，让兄弟方框之间透气不拥挤 */
 }
 /* 子节点连接线：上半横线（::before 左半 / ::after 右半 + 右竖落线） */
 .ai-cl-tree li::before, .ai-cl-tree li::after {
@@ -779,66 +780,67 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   position: absolute;
   top: 0;
   right: 50%;
-  border-top: 2px solid #b9c6d1;
+  border-top: 2px solid #bcc8d3;
   width: 50%;
-  height: 20px;
+  height: 26px;
 }
 .ai-cl-tree li::after {
   right: auto;
   left: 50%;
-  border-left: 2px solid #b9c6d1;
+  border-left: 2px solid #bcc8d3;
 }
 .ai-cl-tree li:only-child::after, .ai-cl-tree li:only-child::before { display: none; }
 .ai-cl-tree li:only-child { padding-top: 0; }
 .ai-cl-tree li:first-child::before, .ai-cl-tree li:last-child::after { border: 0 none; }
-.ai-cl-tree li:last-child::before { border-right: 2px solid #b9c6d1; border-radius: 0 6px 0 0; }
-.ai-cl-tree li:first-child::after { border-radius: 6px 0 0 0; }
+.ai-cl-tree li:last-child::before { border-right: 2px solid #bcc8d3; border-radius: 0 8px 0 0; }
+.ai-cl-tree li:first-child::after { border-radius: 8px 0 0 0; }
 /* 父节点到子辈的竖线 */
 .ai-cl-tree ul ul::before {
   content: '';
   position: absolute;
   top: 0;
   left: 50%;
-  border-left: 2px solid #b9c6d1;
+  border-left: 2px solid #bcc8d3;
   width: 0;
-  height: 20px;
+  height: 26px;
 }
 /* 节点卡 */
 .ai-cl-node {
   display: inline-block;
   position: relative;
   z-index: 1;
-  min-width: 84px;
-  max-width: 152px;
-  padding: 6px 9px;
-  border-radius: 10px;
-  background: #fff;
-  border: 1.5px solid #cbd5e0;
-  line-height: 1.4;
+  min-width: 92px;
+  max-width: 176px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff, #f6f8fa);
+  border: 1.5px solid #d7dfe7;
+  box-shadow: 0 2px 8px rgba(31, 40, 55, 0.07);
+  line-height: 1.42;
 }
-.ai-cl-node.t1 { border-color: #7cb342; background: #eef7e8; }
-.ai-cl-node.t2 { border-color: #f0a832; background: #fff7e6; }
-.ai-cl-node.t3 { border-color: #94a8b8; background: #f2f6f8; }
+.ai-cl-node.t1 { border-color: #8bc34a; background: linear-gradient(180deg, #f6fbec, #e9f4da); }
+.ai-cl-node.t2 { border-color: #f3ad3c; background: linear-gradient(180deg, #fff8e9, #ffefd3); }
+.ai-cl-node.t3 { border-color: #9fb2c4; background: linear-gradient(180deg, #f5f8fb, #eaf1f6); }
 .ai-cl-node.self {
   border: 2px solid #2f8f4a;
-  background: #e7f4ec;
-  box-shadow: 0 0 0 2px rgba(47, 143, 74, 0.16);
+  background: linear-gradient(180deg, #ecf7ee, #dff0e2);
+  box-shadow: 0 0 0 3px rgba(47, 143, 74, 0.18), 0 3px 10px rgba(47, 143, 74, 0.16);
 }
-.ai-cl-rel { font-weight: 700; color: #333; white-space: nowrap; }
-.ai-cl-rel em { font-style: normal; font-weight: 800; color: #2f8f4a; margin-left: 2px; }
+.ai-cl-rel { font-size: 12.5px; font-weight: 700; color: #333; white-space: nowrap; }
+.ai-cl-rel em { font-style: normal; font-weight: 800; color: #2f8f4a; margin-left: 3px; }
 .ai-cl-node.t2 .ai-cl-rel em { color: #b8710a; }
 .ai-cl-node.t3 .ai-cl-rel em { color: #78909c; }
 .ai-cl-node.self .ai-cl-rel { color: #2f8f4a; }
-.ai-cl-ppl { margin-top: 3px; }
+.ai-cl-ppl { margin-top: 4px; }
 .ai-cl-ppl .ai-cl-p {
   display: inline-block;
-  margin: 1px 1px;
-  padding: 1px 7px;
+  margin: 2px 1px;
+  padding: 2px 9px;
   border-radius: 999px;
   background: #fff;
   border: 1px solid #dfe5ea;
   color: #3d434a;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 600;
 }
 .ai-cl-ppl .ai-cl-p.dead { color: #9aa4ae; }
@@ -849,24 +851,24 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   color: #b3bcc4;
   font-weight: 400;
 }
-.ai-cl-note { margin-top: 2px; font-size: 10.5px; color: #8b949e; }
+.ai-cl-note { margin-top: 3px; font-size: 10.5px; color: #8b949e; }
 /* 图例 */
 .ai-cl-legend {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
-  padding: 2px 6px 8px;
-  font-size: 11.5px;
+  gap: 14px;
+  padding: 4px 6px 10px;
+  font-size: 12px;
   color: #5a626b;
 }
-.ai-cl-lg { display: inline-flex; align-items: center; gap: 4px; color: #5a626b; }
+.ai-cl-lg { display: inline-flex; align-items: center; gap: 6px; color: #5a626b; }
 /* 手机端 style.css 有「p,li,span,div…color:var(--mb-text)」兜底会把弹层无显式颜色的文字刷成白字；
    这里对图例文字显式设深色，保证浅底上清晰可读（桌面端不变） */
-.ai-cl-lg i { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
-.ai-cl-lg.t1 i { background: #7cb342; }
-.ai-cl-lg.t2 i { background: #f0a832; }
-.ai-cl-lg.t3 i { background: #94a8b8; }
+.ai-cl-lg i { width: 16px; height: 16px; border-radius: 4px; display: inline-block; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08); }
+.ai-cl-lg.t1 i { background: #8bc34a; }
+.ai-cl-lg.t2 i { background: #f3ad3c; }
+.ai-cl-lg.t3 i { background: #9fb2c4; }
 .ai-cl-sep {
   display: flex;
   align-items: center;
@@ -881,14 +883,14 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   border-top: 1px dashed rgba(0, 0, 0, 0.14);
 }
 @media (max-width: 768px) {
-  /* 手机端压窄节点：rel 允许换行、缩小字号/内边距，让三列同代尽量放进一屏，减少横向滚动 */
-  .ai-cl-node { min-width: 52px; max-width: 78px; padding: 4px 6px; }
-  .ai-cl-rel { font-size: 10.5px; white-space: normal; line-height: 1.22; }
-  .ai-cl-ppl .ai-cl-p { font-size: 10px; padding: 0 6px; }
-  .ai-cl-tree li { padding: 18px 3px 0 3px; }
-  .ai-cl-tree ul { padding-top: 18px; }
-  .ai-cl-tree li::before, .ai-cl-tree li::after { height: 18px; }
-  .ai-cl-tree ul ul::before { height: 18px; }
+  /* 手机端：节点适中、rel 换行、加大左右留白，既不过分挤也不过分宽 */
+  .ai-cl-node { min-width: 60px; max-width: 86px; padding: 5px 8px; }
+  .ai-cl-rel { font-size: 11px; white-space: normal; line-height: 1.25; }
+  .ai-cl-ppl .ai-cl-p { font-size: 10px; padding: 1px 7px; }
+  .ai-cl-tree li { padding: 22px 8px 0 8px; }
+  .ai-cl-tree ul { padding-top: 22px; }
+  .ai-cl-tree li::before, .ai-cl-tree li::after { height: 22px; }
+  .ai-cl-tree ul ul::before { height: 22px; }
   .ai-cl-tree li:only-child { padding-top: 0; }
 }
 
