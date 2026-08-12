@@ -11,9 +11,9 @@
 
   <link rel="stylesheet" href="../css/style.css?v=20260858">
   <style>
-    /* 修复：窄桌面窗口(约901–1535px)下，居中的管理内容会被左侧固定导航(220px)遮住，
-       此区间内把内容左移220px避开导航；宽屏与手机布局保持不变 */
-    @media (min-width: 901px) and (max-width: 1535px) {
+    /* 修复：窄桌面窗口(约901–1639px)下，居中的管理内容会被左侧固定导航(220px)遮住，
+       此区间内把内容左移220px避开导航；宽屏与手机布局保持不变（≥1640px时居中内容已自然位于导航右侧） */
+    @media (min-width: 901px) and (max-width: 1639px) {
       .content > .page-wrap {
         margin-left: 220px;
         margin-right: auto;
