@@ -601,6 +601,20 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   flex-shrink: 0;
 }
 .ai-closest-sound:hover { background: rgba(255, 255, 255, 0.3); }
+.ai-closest-stop { /* 血缘关系图弹层暂停/继续/重听按钮（与世系图弹层 .ai-tree-stop 同状态机） */
+  border: none;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.ai-closest-stop:hover { background: rgba(255, 255, 255, 0.3); }
+.ai-closest-stop[hidden] { display: none; }
 .ai-closest-close { /* 血缘关系图弹层关闭按钮 */
   border: none;
   background: rgba(255, 255, 255, 0.16);

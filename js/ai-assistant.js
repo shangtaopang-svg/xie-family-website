@@ -51,7 +51,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v58'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v59'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -667,12 +667,25 @@
         tb.setAttribute('aria-label', label);
       }
     }
+    if (closestOverlay) { // 血缘关系图弹层暂停/继续/重听按钮同步（与世系图弹层同状态机）
+      var cb2 = closestOverlay.querySelector('.ai-closest-stop');
+      if (cb2) {
+        cb2.hidden = !showBtn;
+        cb2.textContent = icon;
+        cb2.title = title;
+        cb2.setAttribute('aria-label', label);
+      }
+    }
     if (autoHide) { // TTS 失败等临时提示，超时后收起
       setTimeout(function () {
         if (stopBtn && narState === 'none') stopBtn.hidden = true;
         if (treeOverlay) {
           var t2 = treeOverlay.querySelector('.ai-tree-stop');
           if (t2 && narState === 'none') t2.hidden = true;
+        }
+        if (closestOverlay) {
+          var c3 = closestOverlay.querySelector('.ai-closest-stop');
+          if (c3 && narState === 'none') c3.hidden = true;
         }
       }, autoHide);
     }
@@ -1177,6 +1190,7 @@
       '  <div class="ai-tree-head"><span class="ai-tree-title">' + title + '</span>' +
       '    <span class="ai-tree-headbtns">' +
       '      <button type="button" class="ai-closest-sound" aria-label="' + (ttsMuted ? '打开声音' : '静音') + '" title="' + (ttsMuted ? '打开声音' : '静音') + '">' + (ttsMuted ? '🔇' : '🔊') + '</button>' +
+      '      <button type="button" class="ai-closest-stop" aria-label="暂停口播" title="暂停口播" hidden>⏸</button>' +
       '      <button type="button" class="ai-closest-close" aria-label="关闭">✕</button>' +
       '    </span></div>' +
       '  <div class="ai-closest-body"></div>' +
@@ -1234,6 +1248,14 @@
     ov.addEventListener('click', function (e) { if (e.target === ov) closeClosestOverlay(); });
     var soundBtn = ov.querySelector('.ai-closest-sound');
     if (soundBtn) soundBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleTts(); });
+    var closestStopBtn = ov.querySelector('.ai-closest-stop');
+    if (closestStopBtn) closestStopBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (narState === 'playing') pauseNarration();
+      else if (narState === 'paused') resumeNarration();
+      else if (narState === 'ended') replayLast();
+      else if (lastAnswer) replayLast(); // TTS 失败/已停止但有最近回答 → 点击重听
+    });
     ov.querySelector('.ai-closest-close').addEventListener('click', closeClosestOverlay);
     var onKey = function (e) {
       if (e.key === 'Escape') {
@@ -1243,6 +1265,7 @@
       }
     };
     document.addEventListener('keydown', onKey, true);
+    syncNarBtn(); // 血缘关系图弹层打开时按当前口播状态显示暂停/继续/重听按钮
     scrollBottom(true);
   }
   function closeClosestOverlay() {
