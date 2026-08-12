@@ -7,14 +7,11 @@
 (function() {
       // Load hero stats counts
       function loadHeroStats() {
-        // 族人 — from genealogy (localStorage or API)
-        var membersEl = document.getElementById('stat-members');
-        try {
-          var gData = JSON.parse(localStorage.getItem('xie_admin_genealogy') || '[]');
-          var aliveCount = 0;
-          for (var gi = 0; gi < gData.length; gi++) { if (gData[gi].is_alive === '是') aliveCount++; }
-          if (membersEl) membersEl.textContent = aliveCount || gData.length;
-        } catch(e) {}
+        // 族人 — 总人数，从 /api/data/genealogy 实时读取（与族谱页/成员页同源，保证统计数据一致）
+        fetch('/api/data/genealogy').then(function(r){return r.json()}).then(function(d){
+          var el = document.getElementById('stat-members');
+          if (el && Array.isArray(d)) el.textContent = d.length;
+        }).catch(function(){});
 
         // 视频
         fetch('/api/data/videos').then(function(r){return r.json()}).then(function(d){
