@@ -49,7 +49,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v49'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v51'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -1020,6 +1020,100 @@
       '</div>' + children +
     '</li>';
   }
+  /* 血缘树缩放（#85）：transform:scale 缩放 .ai-cl-zoom-canvas 并补偿宽高，
+     .ai-cl-zoom-wrap 负责横向滚动/拖拽平移；支持按钮/Ctrl+滚轮/触控板捏合/双指捏合 */
+  function initClosestZoom(rootEl) {
+    var wrap = rootEl.querySelector('.ai-cl-zoom-wrap');
+    var canvas = rootEl.querySelector('.ai-cl-zoom-canvas');
+    var valEl = rootEl.querySelector('.ai-cl-zoom-val');
+    if (!wrap || !canvas) return;
+    var tree = canvas.querySelector('.ai-cl-tree');
+    var baseW = tree.scrollWidth, baseH = tree.scrollHeight;
+    var z = 1, MIN = 0.4, MAX = 3;
+    /* prevZ：缩放前的 z，用于缩放时保持视口中心锚定（内容点不动） */
+    function applyZoom(prevZ) {
+      var cx = wrap.clientWidth / 2, cy = wrap.clientHeight / 2;
+      var pz = prevZ || z;
+      var px = (wrap.scrollLeft + cx) / pz, py = (wrap.scrollTop + cy) / pz;
+      canvas.style.transformOrigin = 'top left';
+      canvas.style.transform = 'scale(' + z + ')';
+      canvas.style.width = Math.round(baseW * z) + 'px';
+      canvas.style.height = Math.round(baseH * z) + 'px';
+      if (valEl) valEl.textContent = Math.round(z * 100) + '%';
+      wrap.scrollLeft = Math.max(0, px * z - cx);
+      wrap.scrollTop = Math.max(0, py * z - cy);
+    }
+    applyZoom(1);
+    wrap.scrollLeft = Math.max(0, (baseW * z - wrap.clientWidth) / 2); // 初始水平居中到「你本人」附近
+    rootEl.querySelectorAll('.ai-cl-zbtn').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var prevZ = z;
+        var act = btn.getAttribute('data-z');
+        if (act === 'in') z = Math.min(MAX, z * 1.25);
+        else if (act === 'out') z = Math.max(MIN, z * 0.8);
+        else z = 1;
+        applyZoom(prevZ);
+      });
+    });
+    // Ctrl+滚轮 / 触控板捏合 → 缩放；普通滚轮 → 滚动
+    wrap.addEventListener('wheel', function (e) {
+      if (e.ctrlKey) {
+        e.preventDefault();
+        var prevZ = z;
+        z = Math.max(MIN, Math.min(MAX, z * (e.deltaY < 0 ? 1.15 : 1 / 1.15)));
+        applyZoom(prevZ);
+      }
+    }, { passive: false });
+    // 鼠标拖拽平移
+    var drag = null;
+    wrap.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse') {
+        drag = { id: e.pointerId, x: e.clientX, y: e.clientY, sx: wrap.scrollLeft, sy: wrap.scrollTop };
+        wrap.classList.add('dragging');
+      }
+    });
+    wrap.addEventListener('pointermove', function (e) {
+      if (drag && e.pointerId === drag.id) {
+        wrap.scrollLeft = drag.sx - (e.clientX - drag.x);
+        wrap.scrollTop = drag.sy - (e.clientY - drag.y);
+      }
+    });
+    wrap.addEventListener('pointerup', function (e) {
+      if (drag && e.pointerId === drag.id) drag = null;
+      wrap.classList.remove('dragging');
+    });
+    wrap.addEventListener('pointercancel', function () { drag = null; wrap.classList.remove('dragging'); });
+    // 触摸双指捏合缩放
+    var pts = {}, pinch = null;
+    function pinchDist() {
+      var ids = Object.keys(pts);
+      if (ids.length < 2) return 0;
+      var a = pts[ids[0]], b = pts[ids[1]];
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+    wrap.addEventListener('pointerdown', function (e) {
+      pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+      if (Object.keys(pts).length === 2) pinch = { d0: pinchDist(), z0: z };
+    });
+    wrap.addEventListener('pointermove', function (e) {
+      if (pts[e.pointerId]) pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+      if (pinch && Object.keys(pts).length === 2) {
+        var d = pinchDist();
+        if (d > 0) {
+          var prevZ = z;
+          var nz = Math.max(MIN, Math.min(MAX, pinch.z0 * (d / pinch.d0)));
+          if (Math.abs(nz - z) > 0.005) { z = nz; applyZoom(prevZ); }
+        }
+      }
+    });
+    var endPinch = function (e) {
+      delete pts[e.pointerId];
+      if (Object.keys(pts).length < 2) pinch = null;
+    };
+    wrap.addEventListener('pointerup', endPinch);
+    wrap.addEventListener('pointercancel', endPinch);
+  }
   function showClosestOverlay(list, tree) {
     if ((!list || !list.length) && !(tree && tree.root)) return;
     closeClosestOverlay();
@@ -1042,13 +1136,26 @@
     if (tree && tree.root) {
       var treeWrap = document.createElement('div');
       treeWrap.innerHTML =
-        '<div class="ai-cl-tree"><ul>' + renderClosestNode(tree.root) + '</ul></div>' +
+        '<div class="ai-cl-zoom">' +
+        '  <div class="ai-cl-zoom-bar">' +
+        '    <button type="button" class="ai-cl-zbtn" data-z="out" aria-label="缩小" title="缩小">−</button>' +
+        '    <span class="ai-cl-zoom-val" aria-live="polite">100%</span>' +
+        '    <button type="button" class="ai-cl-zbtn" data-z="in" aria-label="放大" title="放大">＋</button>' +
+        '    <button type="button" class="ai-cl-zbtn" data-z="reset" aria-label="还原 100%" title="还原 100%">⟳</button>' +
+        '  </div>' +
+        '  <div class="ai-cl-zoom-wrap">' +
+        '    <div class="ai-cl-zoom-canvas">' +
+        '      <div class="ai-cl-tree"><ul>' + renderClosestNode(tree.root) + '</ul></div>' +
+        '    </div>' +
+        '  </div>' +
+        '</div>' +
         '<div class="ai-cl-legend">' +
         '  <span class="ai-cl-lg t1"><i></i>第一梯队（50%）</span>' +
         '  <span class="ai-cl-lg t2"><i></i>第二梯队（25%）</span>' +
         '  <span class="ai-cl-lg t3"><i></i>第三梯队（12.5%）</span>' +
         '</div>';
       body.appendChild(treeWrap);
+      initClosestZoom(treeWrap);
     } else if (list && list.length) {
       // 兜底：无树时保留原来的排名列表
       var frag = document.createDocumentFragment();

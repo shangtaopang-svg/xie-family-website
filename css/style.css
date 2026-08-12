@@ -5607,3 +5607,48 @@ section a[href*="audio"] {
     --glass-border: rgba(255,255,255,0.08);
   }
 }
+
+/* ===== 管理弹窗（移动端）：白字白底修复 =====
+   手机端媒体查询把 --text-primary 强制为浅色(#f5f5f5)，但 .admin-modal 背景仍是
+   --bg-primary(#fff) 白底，且表单控件内联 color:var(--text-primary) 无法被普通样式覆盖，
+   导致 h3/标签/输入框/下拉/按钮全是「白字白底」看不清。
+   这里把整个管理弹窗切成深底浅字（与全站黑底一致），用 !important 压过内联变量；桌面端不受影响。 */
+@media (max-width: 768px) {
+  .admin-modal {
+    background: #141414 !important;
+    border-color: #2a2a2a !important;
+    color: #f5f5f5 !important;
+    --bg-card: #1a1a1a;
+    --glass-bg: #1e1e24;
+    --glass-border: rgba(255,255,255,0.08);
+    --glass-hover: #26262e;
+  }
+  .admin-modal h3 { color: #f5f5f5 !important; }
+  .admin-modal label,
+  .admin-modal .form-group label { color: #f5f5f5 !important; }
+  .admin-modal input,
+  .admin-modal select,
+  .admin-modal textarea {
+    background: #1a1a1a !important;
+    border-color: #2a2a2a !important;
+    color: #f5f5f5 !important;
+  }
+  .admin-modal input::placeholder,
+  .admin-modal textarea::placeholder { color: #8a8a8a !important; }
+  .admin-modal input[type="file"] { color: #b5b5b5 !important; }
+  .admin-modal .btn,
+  .admin-modal .btn-sm,
+  .admin-modal .btn-secondary {
+    background: #1e1e24 !important;
+    border-color: #2f2f36 !important;
+    color: #e8e6e0 !important;
+  }
+  .admin-modal .btn-accent {
+    background: rgba(212,121,58,0.18) !important;
+    border-color: rgba(212,121,58,0.35) !important;
+    color: #f09a4a !important;
+  }
+  /* admin.js 内联样式写的深色提示/浅橙面板，切到深底后必须改浅色，用属性选择器覆盖内联 */
+  .admin-modal div[style*="color:#333"] { color: #c9c5bf !important; }
+  .admin-modal div[style*="accent-orange-dim"] { background: rgba(212,121,58,0.15) !important; }
+}

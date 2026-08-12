@@ -745,13 +745,13 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
 /* ---------------- 血缘最亲：家族关系树（#82，用户 ASCII：曾祖父12.5→祖父25→父亲50，旁系25，同辈50） ---------------- */
 .ai-cl-tree {
   text-align: center;
-  padding: 18px 10px 4px;
-  overflow-x: auto;
-  background: linear-gradient(180deg, #fefdf9, #f9f8f3);
+  padding: 18px 12px 8px;
+  overflow: visible; /* 横向滚动交给 .ai-cl-zoom-wrap（缩放画布），树自身不再滚动 */
+  background: linear-gradient(180deg, #fdfcf7, #f6f4ec);
   border: 1px solid rgba(31, 35, 40, 0.08);
   border-radius: 14px;
-  margin: 2px 0 10px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 1px 3px rgba(31, 35, 40, 0.04);
+  margin: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 1px 3px rgba(31, 35, 40, 0.05);
   color: #333; /* 防御：手机端兜底白字规则，保证树内文字始终深色 */
 }
 .ai-cl-tree ul, .ai-cl-tree ul ul { list-style: none; margin: 0; padding: 0; }
@@ -772,7 +772,9 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   text-align: center;
   list-style: none;
   position: relative;
-  padding: 26px 14px 0 14px; /* 加大左右留白，让兄弟方框之间透气不拥挤 */
+  /* 上内边距 32px = 连接线高 26px + 6px 空隙：竖线底端停在方框上方，
+     不再压到方框边框（此前 26px=26px 竖线直插方框顶边，视觉像「线穿进框」） */
+  padding: 32px 14px 0 14px; /* 加大左右留白，让兄弟方框之间透气不拥挤 */
 }
 /* 子节点连接线：上半横线（::before 左半 / ::after 右半 + 右竖落线） */
 .ai-cl-tree li::before, .ai-cl-tree li::after {
@@ -790,10 +792,15 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   border-left: 2px solid #bcc8d3;
 }
 .ai-cl-tree li:only-child::after, .ai-cl-tree li:only-child::before { display: none; }
-.ai-cl-tree li:only-child { padding-top: 0; }
+/* only-child 没有横/竖连接线，但父辈下来的竖线仍在 ul 内；
+   给 6px 顶部空隙让竖线底端与方框保持距离（非 only-child 由 32-26=6 空隙保证） */
+.ai-cl-tree li:only-child { padding-top: 6px; }
+.ai-cl-tree > ul > li:only-child { padding-top: 0; } /* 根节点在最顶层、上方无连接线，不垫高 */
 .ai-cl-tree li:first-child::before, .ai-cl-tree li:last-child::after { border: 0 none; }
 .ai-cl-tree li:last-child::before { border-right: 2px solid #bcc8d3; border-radius: 0 8px 0 0; }
 .ai-cl-tree li:first-child::after { border-radius: 8px 0 0 0; }
+/* 父方框底部与下行竖线之间的空隙：竖线从 ul 顶部开始（即父框下缘 + 6px），不贴着父方框 */
+.ai-cl-tree ul ul { margin-top: 6px; }
 /* 父节点到子辈的竖线 */
 .ai-cl-tree ul ul::before {
   content: '';
@@ -811,16 +818,16 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   z-index: 1;
   min-width: 92px;
   max-width: 176px;
-  padding: 8px 12px;
-  border-radius: 12px;
+  padding: 9px 13px;
+  border-radius: 14px;
   background: linear-gradient(180deg, #ffffff, #f6f8fa);
-  border: 1.5px solid #d7dfe7;
-  box-shadow: 0 2px 8px rgba(31, 40, 55, 0.07);
+  border: 1px solid #dce3ea;
+  box-shadow: 0 3px 12px rgba(31, 40, 55, 0.07), 0 1px 2px rgba(31, 40, 55, 0.05);
   line-height: 1.42;
 }
-.ai-cl-node.t1 { border-color: #8bc34a; background: linear-gradient(180deg, #f6fbec, #e9f4da); }
-.ai-cl-node.t2 { border-color: #f3ad3c; background: linear-gradient(180deg, #fff8e9, #ffefd3); }
-.ai-cl-node.t3 { border-color: #9fb2c4; background: linear-gradient(180deg, #f5f8fb, #eaf1f6); }
+.ai-cl-node.t1 { border-color: #8bc34a; background: linear-gradient(180deg, #f5fbe9, #e7f4d5); }
+.ai-cl-node.t2 { border-color: #f0b94e; background: linear-gradient(180deg, #fff7e5, #ffedca); }
+.ai-cl-node.t3 { border-color: #9fb4c9; background: linear-gradient(180deg, #f4f8fb, #e9f0f7); }
 .ai-cl-node.self {
   border: 2px solid #2f8f4a;
   background: linear-gradient(180deg, #ecf7ee, #dff0e2);
@@ -858,7 +865,11 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   flex-wrap: wrap;
   justify-content: center;
   gap: 14px;
-  padding: 4px 6px 10px;
+  padding: 9px 8px;
+  margin-top: 8px;
+  background: #f6f5ef;
+  border: 1px solid rgba(31, 35, 40, 0.07);
+  border-radius: 12px;
   font-size: 12px;
   color: #5a626b;
 }
@@ -882,15 +893,60 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   flex: 1;
   border-top: 1px dashed rgba(0, 0, 0, 0.14);
 }
+/* ===== 血缘树缩放（#85 用户要求界面可缩放） =====
+   工具条 + 可滚动画布：JS 对 .ai-cl-zoom-canvas 做 transform:scale 并补偿宽高，
+   .ai-cl-zoom-wrap 负责横向滚动与拖拽平移；缩放时树内不再自己滚动 */
+.ai-cl-zoom { margin: 0 0 10px; }
+.ai-cl-zoom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  padding: 0 2px 8px;
+}
+.ai-cl-zbtn {
+  border: none;
+  background: #fff;
+  color: #44505c;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(31, 40, 55, 0.12), inset 0 0 0 1px rgba(31, 40, 55, 0.08);
+}
+.ai-cl-zbtn:hover { background: #eef1f5; color: #1f2328; }
+.ai-cl-zoom-val {
+  min-width: 44px;
+  text-align: center;
+  font-size: 12px;
+  color: #44505c;
+  font-weight: 600;
+}
+.ai-cl-zoom-wrap {
+  overflow-x: auto;
+  overflow-y: hidden;
+  cursor: grab;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: pan-x pan-y;
+}
+.ai-cl-zoom-wrap.dragging { cursor: grabbing; }
+.ai-cl-zoom-canvas { margin: 0 auto; will-change: transform; }
 @media (max-width: 768px) {
   /* 手机端：节点适中、rel 换行、加大左右留白，既不过分挤也不过分宽 */
   .ai-cl-node { min-width: 60px; max-width: 86px; padding: 5px 8px; }
   .ai-cl-rel { font-size: 11px; white-space: normal; line-height: 1.25; }
   .ai-cl-ppl .ai-cl-p { font-size: 10px; padding: 1px 7px; }
-  .ai-cl-tree li { padding: 22px 8px 0 8px; }
+  .ai-cl-tree li { padding: 28px 8px 0 8px; } /* 28px = 连接线高 22px + 6px 空隙 */
+  .ai-cl-tree ul ul { margin-top: 5px; } /* 父方框与下行竖线之间留空隙 */
   .ai-cl-tree ul { padding-top: 22px; }
   .ai-cl-tree li::before, .ai-cl-tree li::after { height: 22px; }
   .ai-cl-tree ul ul::before { height: 22px; }
-  .ai-cl-tree li:only-child { padding-top: 0; }
+  .ai-cl-tree li:only-child { padding-top: 5px; }
+  .ai-cl-tree > ul > li:only-child { padding-top: 0; }
+  .ai-cl-zoom-val { min-width: 38px; }
 }
 
