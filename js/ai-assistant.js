@@ -35,7 +35,7 @@
 
   var CHIPS = [
     { t: '请从炎帝神农氏开始，呈现我的世系图', lock: true },
-    { t: '请列出从血缘上和我最亲的10个人', lock: true },
+    { t: '请列出和我血缘最亲的人', lock: true },
     { t: '下枫槎谢氏的始祖是谁？族谱记载了哪些早期祖先？', lock: false },
     { t: '谢氏家族是如何迁徙到宁海下枫槎村的？', lock: false },
     { t: '我现在是第几代？和我同辈的族人有哪些？', lock: true },
@@ -51,7 +51,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v56'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v58'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -627,12 +627,16 @@
 
   /* ---------------- 语音朗读（Edge 神经女声） ---------------- */
   function noop() {}
-  function updateTtsBtns() { // 同步主面板 + 世系图弹层两处声音按钮图标
+  function updateTtsBtns() { // 同步主面板 + 世系图弹层 + 血缘关系图弹层三处声音按钮图标
     var icon = ttsMuted ? '🔇' : '🔊';
     if (soundBtn) soundBtn.textContent = icon;
     if (treeOverlay) {
       var tb = treeOverlay.querySelector('.ai-tree-sound');
       if (tb) { tb.textContent = icon; tb.title = ttsMuted ? '打开声音' : '静音'; tb.setAttribute('aria-label', ttsMuted ? '打开声音' : '静音'); }
+    }
+    if (closestOverlay) { // 血缘关系图弹层的播音开关
+      var cb = closestOverlay.querySelector('.ai-closest-sound');
+      if (cb) { cb.textContent = icon; cb.title = ttsMuted ? '打开声音' : '静音'; cb.setAttribute('aria-label', ttsMuted ? '打开声音' : '静音'); }
     }
   }
   function initTts() {

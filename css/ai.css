@@ -588,6 +588,32 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   cursor: pointer;
 }
 .ai-tree-close:hover { background: rgba(255, 255, 255, 0.3); }
+.ai-closest-sound { /* 血缘关系图弹层播音开关（与世系图弹层 .ai-tree-sound 同风格） */
+  border: none;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.ai-closest-sound:hover { background: rgba(255, 255, 255, 0.3); }
+.ai-closest-close { /* 血缘关系图弹层关闭按钮 */
+  border: none;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.ai-closest-close:hover { background: rgba(255, 255, 255, 0.3); }
 .ai-tree-body {
   position: relative;
   overflow-y: auto;
