@@ -49,7 +49,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v51'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v52'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -388,7 +388,10 @@
       if (done) return;
       done = true;
       body.textContent = answer || '（无回答）';
-      if (answer && answer !== '（无回答）') { lastAnswer = answer; speak(answer); } // 自动朗读每次回复
+      // 血缘最亲：口播按呈现的「家族血缘关系图」沿树朗读（closestTree 存在时），
+      // 而非照读聊天框里的排名清单（用户 2026-08-12 要求）；聊天框仍显示排名清单
+      var spokenText = (closestTree && closestTree.root) ? spokenFromClosestTree(closestTree.root) : answer;
+      if (spokenText && spokenText !== '（无回答）') { lastAnswer = spokenText; speak(spokenText); } // 自动朗读每次回复
       if (sources && sources.length) {
         var src = document.createElement('div');
         src.className = 'ai-src';
@@ -1019,6 +1022,30 @@
         note +
       '</div>' + children +
     '</li>';
+  }
+  /* 血缘树口播（用户 2026-08-12 要求）：按呈现的「家族血缘关系图」逐节点朗读——
+     沿树 DFS 顺序（先长辈、再同辈、后晚辈），与 renderClosestNode 的展示顺序一致，
+     每层念「关系（父亲/母亲的备注）+基因共享%+人名」，不再照读聊天框里的排名清单 */
+  function spokenFromClosestTree(root) {
+    if (!root) return '';
+    var parts = [];
+    (function walk(node) {
+      var names = (node.people && node.people.length)
+        ? node.people.map(function (p) { return p && p.name; }).filter(Boolean)
+        : [];
+      var label = node.self ? '您本人' : String(node.rel || '').replace(/\s*\/\s*/g, '、');
+      var note = node.note ? '，' + String(node.note).replace(/\s*\/\s*/g, '、') : '';
+      var shared = node.shared ? '，基因共享 ' + node.shared + '%' : '';
+      var namePart;
+      if (node.self) namePart = names[0] || '';
+      else if (names.length === 1) namePart = names[0];
+      else if (names.length > 1) namePart = names.slice(0, 3).join('、') + (names.length > 3 ? ' 等' + names.length + '人' : '');
+      else namePart = '暂无记录';
+      parts.push(label + note + shared + '：' + namePart);
+      if (node.children && node.children.length) node.children.forEach(walk);
+    })(root);
+    if (!parts.length) return '';
+    return '这是您的家族血缘关系图：' + parts.join('。') + '。';
   }
   /* 血缘树缩放（#85）：transform:scale 缩放 .ai-cl-zoom-canvas 并补偿宽高，
      .ai-cl-zoom-wrap 负责横向滚动/拖拽平移；支持按钮/Ctrl+滚轮/触控板捏合/双指捏合 */
