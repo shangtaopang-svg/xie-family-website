@@ -49,7 +49,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v52'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v54'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -1072,6 +1072,19 @@
     }
     applyZoom(1);
     wrap.scrollLeft = Math.max(0, (baseW * z - wrap.clientWidth) / 2); // 初始水平居中到「你本人」附近
+    function toggleFullscreen() {
+      var ov = document.getElementById('ai-closest-overlay');
+      if (!ov) return;
+      var fs = ov.classList.toggle('ai-closest-fs');
+      var btn = ov.querySelector('.ai-cl-fsbtn');
+      if (btn) { btn.textContent = fs ? '🗗' : '⛶'; btn.title = fs ? '退出全屏' : '全屏'; }
+      // 全屏/退出后视口尺寸变化，重新适配并居中到「您本人」
+      requestAnimationFrame(function () {
+        z = 1; applyZoom(1);
+        wrap.scrollLeft = Math.max(0, (baseW * z - wrap.clientWidth) / 2);
+        wrap.scrollTop = Math.max(0, (baseH * z - wrap.clientHeight) / 2);
+      });
+    }
     rootEl.querySelectorAll('.ai-cl-zbtn').forEach(function (btn) {
       btn.addEventListener('click', function (e) {
         e.stopPropagation();
@@ -1079,6 +1092,7 @@
         var act = btn.getAttribute('data-z');
         if (act === 'in') z = Math.min(MAX, z * 1.25);
         else if (act === 'out') z = Math.max(MIN, z * 0.8);
+        else if (act === 'fs') { toggleFullscreen(); return; }
         else z = 1;
         applyZoom(prevZ);
       });
@@ -1162,6 +1176,7 @@
     // 只画树不画排名列表（用户要求去掉下方的「按基因共享率排名」列表，树上的百分比已足够）
     if (tree && tree.root) {
       var treeWrap = document.createElement('div');
+      treeWrap.className = 'ai-cl-tree-wrap';
       treeWrap.innerHTML =
         '<div class="ai-cl-zoom">' +
         '  <div class="ai-cl-zoom-bar">' +
@@ -1169,6 +1184,7 @@
         '    <span class="ai-cl-zoom-val" aria-live="polite">100%</span>' +
         '    <button type="button" class="ai-cl-zbtn" data-z="in" aria-label="放大" title="放大">＋</button>' +
         '    <button type="button" class="ai-cl-zbtn" data-z="reset" aria-label="还原 100%" title="还原 100%">⟳</button>' +
+        '    <button type="button" class="ai-cl-zbtn ai-cl-fsbtn" data-z="fs" aria-label="全屏" title="全屏">⛶</button>' +
         '  </div>' +
         '  <div class="ai-cl-zoom-wrap">' +
         '    <div class="ai-cl-zoom-canvas">' +

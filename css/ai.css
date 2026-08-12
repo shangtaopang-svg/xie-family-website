@@ -950,3 +950,48 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   .ai-cl-zoom-val { min-width: 38px; }
 }
 
+
+/* 血缘树全屏（#91）：⛶ 全屏切换后 modal 铺满视口，zoom-wrap 占满剩余高度，
+   横纵均可自由缩放（Ctrl滚轮/按钮/双指捏合）与平移（鼠标拖拽/触屏滚动） */
+#ai-closest-overlay.ai-closest-fs { padding: 0; background: #0f1116; -webkit-backdrop-filter: none; backdrop-filter: none; }
+#ai-closest-overlay.ai-closest-fs .ai-closest-modal {
+  width: 100vw;
+  max-height: none;
+  height: 100vh;
+  border-radius: 0;
+  animation: none;
+  box-shadow: none;
+}
+#ai-closest-overlay.ai-closest-fs .ai-closest-body {
+  flex: 1;
+  min-height: 0;
+  padding: 6px 16px 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+#ai-closest-overlay.ai-closest-fs .ai-cl-zoom {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+}
+#ai-closest-overlay.ai-closest-fs .ai-cl-zoom-bar { padding-bottom: 10px; }
+#ai-closest-overlay.ai-closest-fs .ai-cl-zoom-wrap {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+  overflow: auto; /* 全屏下横纵滚动都交给 wrap（配合拖拽平移） */
+}
+#ai-closest-overlay.ai-closest-fs .ai-cl-legend { flex-shrink: 0; }
+@media (max-width: 768px) {
+  #ai-closest-overlay.ai-closest-fs .ai-closest-modal { height: 100vh; width: 100vw; }
+  #ai-closest-overlay.ai-closest-fs .ai-closest-body { padding: 6px 10px 12px; }
+}
+#ai-closest-overlay.ai-closest-fs .ai-cl-tree-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
