@@ -10,6 +10,16 @@
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 
   <link rel="stylesheet" href="../css/style.css?v=20260855">
+  <style>
+    /* 修复：窄桌面窗口(约901–1535px)下，居中的管理内容会被左侧固定导航(220px)遮住，
+       此区间内把内容左移220px避开导航；宽屏与手机布局保持不变 */
+    @media (min-width: 901px) and (max-width: 1535px) {
+      .content > .page-wrap {
+        margin-left: 220px;
+        margin-right: auto;
+      }
+    }
+  </style>
   <script defer src="../js/i18n.js?v=9"></script>
   <script defer src="../js/file-store.js?v=6"></script>
   <script defer src="../js/supabase.js?v=6"></script>
