@@ -2681,7 +2681,10 @@ function locateInTree(personId) {
     document.addEventListener('DOMContentLoaded', renderGenealogyPageSVG);
   }
   // Try loading from Supabase for up-to-date genealogy data across devices
-  if (window.dbGetAll) {
+  // 注意：supabase.js 为 defer 加载，本内联脚本在解析期执行时 window.dbGetAll 尚未就绪，
+  // 因此这里「立即尝试 + 轮询兜底」，确保后台增改后前端族谱查询能取到实时数据
+  function tryLoadLiveGenealogy() {
+    if (!window.dbGetAll) return false;
     dbGetAll('genealogy', { order: 'id.asc' }).then(function(supabaseData) {
       // Only use Supabase data if it has REAL names (not placeholders)
       var hasRealData = supabaseData && supabaseData.length > 5 && supabaseData.some(function(p) { return /^(小四|文杲|彬|乾|攒|撰|伯|祖|宗|道|体|开|裕|静|元|宏|孟|公|书|叔|文对)/.test(p.name); });
@@ -2696,6 +2699,19 @@ function locateInTree(personId) {
     setTimeout(function() { if (window.renderTimeline) window.renderTimeline(); }, 100); window.renderTimeline(); } }, 200);
       }
     }).catch(function() {});
+    return true;
+  }
+  if (!tryLoadLiveGenealogy()) {
+    // supabase.js（defer）会在 DOMContentLoaded 之前执行完毕，此时 dbGetAll 必然就绪；
+    // 轮询仅作为极端情况兜底（最多约 10 秒）
+    var _liveTries = 0;
+    var _liveTimer = setInterval(function() {
+      _liveTries++;
+      if (window.dbGetAll || _liveTries > 20) {
+        clearInterval(_liveTimer);
+        if (window.dbGetAll) tryLoadLiveGenealogy();
+      }
+    }, 500);
   }
   </script>
 
