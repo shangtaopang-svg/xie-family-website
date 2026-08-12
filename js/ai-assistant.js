@@ -16,6 +16,20 @@
     if (/(的后代|的子孙|的后裔|的祖先|的先祖|的世系|的谱系|的后辈)/.test(m)) return true;
     return false;
   }
+  /* 族人个人信息（隐私）镜像判定：与 server/ai/intent.js 的 isPersonPrivacyRequest 对应，
+     用于未验证时即时弹验证表单；服务端仍是最终安全边界。 */
+  var PRIV = ['生平', '简历', '简介', '介绍', '是谁', '什么来历', '来历', '情况', '资料', '信息', '生卒', '出生', '生辰', '生日', '去世', '死亡', '殁', '葬', '年纪', '年龄', '几岁', '多大', '多少岁', '配偶', '妻子', '丈夫', '夫人', '娶', '嫁', '改嫁', '续弦', '子女', '儿女', '家庭', '家属', '家人', '媳妇', '女婿', '职业', '工作', '住址', '地址', '住哪', '哪里人', '电话', '手机', '联系方式', '身份证'];
+  function looksPrivacy(m) {
+    if (!m) return false;
+    var hit = false;
+    for (var i = 0; i < PRIV.length; i++) if (m.indexOf(PRIV[i]) !== -1) { hit = true; break; }
+    if (!hit) return false;
+    // 具体指向某人：姓名词 + 的 + 隐私词（如：敬乙的生平）
+    if (/(.{2,8})的(生平|生卒|出生|生辰|生日|去世|死亡|葬|配偶|妻子|丈夫|子女|儿女|家庭|家属|家人|媳妇|女婿|职业|工作|住址|地址|电话|手机|联系方式|身份证|年纪|年龄|几岁|简历|简介|情况|资料|信息)/.test(m)) return true;
+    // 指向本人/他人（我们村、你们村不误拦）
+    if (/(我的|本人|我自己|他|她|族人|族亲|他们)/.test(m)) return true;
+    return false;
+  }
 
   var CHIPS = [
     { t: '请从炎帝神农氏开始，呈现我的世系图', lock: true },
@@ -35,9 +49,9 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v42'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v43'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
-  var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈、世系等问题。涉及个人世系的查询需要先完成族人身份验证。';
+  var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
   var fab, panel, msgs, chipsEl, input, sendBtn, statusEl, goBottom, header, bubble, soundBtn, stopBtn, maxBtn, subEl;
   var hist = [];
@@ -357,7 +371,10 @@
     appendMessage('user', t);
     hist.push({ role: 'user', content: t });
     persist();
-    if (looksLineage(t) && !getToken()) { showVerify(t, null); return; }
+    if ((looksLineage(t) || looksPrivacy(t)) && !getToken()) {
+      showVerify(t, looksLineage(t) ? null : '该问题涉及族人的个人信息（隐私），请先完成族人身份验证（与站内验证一致，填姓名、父亲、祖父）。');
+      return;
+    }
     chat(t);
   }
 

@@ -34,8 +34,32 @@ function bigramsOf(text) {
 }
 
 /**
+ * 未验证访客可见的文档前缀（白名单）：
+ * 公开村史/文化礼堂/宣传片/功德名录/村务消息。其余（bio 族谱生平、book1/2 宗谱扫描、
+ * extract/analysis 族谱整理解析、zuren 族人介绍）均含族人个人信息 → 访客一律不可见。
+ * 用白名单而非黑名单：新增文档类型默认即隐私。
+ */
+const PUBLIC_PREFIXES = ['seed', 'wenhua', 'juben', 'koubo', 'fang4', 'fangxq', 'jieqi', 'ronghe', 'merit', 'merit-ext', 'merit-fund', 'merit-soc', 'merit-tpl', 'news'];
+
+// 世系链图谱：人名-人名-人名… 连字符两侧均为汉字（含 · / （ ）等），连续 4 段以上。
+// 即使落在公开前缀里（如文化礼堂资料的「房派示意简图」wenhua:0015~0018），
+// 因是族人世系数据，访客也不可见。markdown 表格线（|---|---|）、标题分隔（---##）、
+// dB 电平（|-20~-15dB|）、英文连字符（edge-tts）两侧非汉字，不会命中。
+const LINEAGE_CHART_RE = /(?:[一-鿿·／（()）、]{1,10}[-－]){4,}[一-鿿·／（()）、]{1,10}/;
+
+/** 该文档未验证访客是否可见：公开前缀白名单内，且非世系链图谱。 */
+function isPublicForVisitor(doc) {
+  const p = String(doc.id).slice(0, String(doc.id).indexOf(':'));
+  if (!PUBLIC_PREFIXES.includes(p)) return false;
+  if (LINEAGE_CHART_RE.test(String(doc.text || '').replace(/\s/g, ''))) return false;
+  return true;
+}
+
+/**
  * @param {string} query
- * @param {{top?:number, maxChars?:number}} opts
+ * @param {{top?:number, maxChars?:number, publicOnly?:boolean}} opts
+ *   publicOnly=true：只返回访客可见文档（公开前缀白名单内，且非世系链图谱），
+ *   用于未验证访客——保证其 AI 上下文不含任何族人的个人信息（含世系脉络）。
  * @returns {{id:string, ref:string, text:string, score:number}[]}
  */
 function search(query, opts) {
@@ -44,6 +68,7 @@ function search(query, opts) {
   if (!q) return [];
   const top = (opts && opts.top) || 4;
   const maxChars = (opts && opts.maxChars) || 3000;
+  const publicOnly = !!(opts && opts.publicOnly);
 
   const qBigrams = bigramsOf(q);
   const scores = new Map(); // docId -> score
@@ -83,6 +108,7 @@ function search(query, opts) {
   const ranked = [...scores.entries()]
     .map(([id, score]) => ({ id, score, doc: byId.get(id) }))
     .filter(r => r.doc)
+    .filter(r => !publicOnly || isPublicForVisitor(r.doc))
     .sort((a, b) => b.score - a.score);
 
   const out = [];

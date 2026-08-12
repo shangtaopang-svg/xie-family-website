@@ -41,6 +41,44 @@ function isLineageRequest(msg) {
   return false;
 }
 
+// 族人个人信息（隐私）关键词：命中后再具体指向某人 → 强制身份验证。
+// 与公开村史/历史（村名由来、始祖源流、字辈、名人典故）区分开。
+const PERSONAL_KEYWORDS = [
+  '生平', '简历', '简介', '介绍', '是谁', '什么来历', '来历', '情况', '资料', '信息',
+  '生卒', '出生', '生辰', '生日', '去世', '死亡', '殁', '葬', '年纪', '年龄', '几岁', '多大', '多少岁',
+  '配偶', '妻子', '丈夫', '夫人', '娶', '嫁', '改嫁', '续弦', '子女', '儿女', '家庭',
+  '家属', '家人', '媳妇', '女婿', '职业', '工作', '住址', '地址', '住哪', '哪里人',
+  '电话', '手机', '联系方式', '身份证',
+];
+
+/**
+ * 判定是否查询某位族人的个人信息（隐私问题，需要验证身份）。
+ * 需同时满足：① 命中隐私关键词；② 具体指向某人（站内已知人名 / 本人·他人称谓）。
+ * 纯公开问题如「村史」「村名由来」「始祖源流」「字辈」「介绍村里历史」不受影响。
+ */
+function isPersonPrivacyRequest(msg, nameIndex) {
+  const m = String(msg || '').trim();
+  if (!m) return false;
+  if (!PERSONAL_KEYWORDS.some(k => m.includes(k))) return false;
+
+  // ① 具体指向某人：站内已知人名（nameIndex 键）
+  if (nameIndex && typeof nameIndex === 'object') {
+    for (const n of Object.keys(nameIndex)) {
+      if (n.length < 2 || !m.includes(n)) continue;
+      const idx = m.indexOf(n);
+      if (n.length >= 3) return true; // 3 字以上，几乎不可能嵌在普通词里
+      // 2 字名需是独立称呼：句首 / 后跟「的」/ 句末 / 标点 / 前面是查询动词
+      const after = m.charAt(idx + n.length);
+      const before = m.slice(Math.max(0, idx - 4), idx);
+      if (idx === 0) return true;
+      if (!after || after === '的' || /[\s，。？！,.?!:：、;；]/.test(after)) return true;
+      if (/(介绍|讲讲|说一说|问问|查一下|看看|关于|认识|知道|聊一聊)/.test(before)) return true;
+    }
+  }
+  // ② 指向本人/他人/某（我们村、你们村不误拦）
+  return /我的|本人|我自己|他|她|族人|族亲|他们|某/.test(m);
+}
+
 // 文献/村史类关键词
 const DOCUMENT_KEYWORDS = [
   '村史', '迁徙', '记载', '生平', '上册', '下册', '字辈', '宗谱', '家谱',
@@ -66,4 +104,4 @@ function classifyIntent(msg, nameIndex) {
   return 'general';
 }
 
-module.exports = { classifyIntent, isLineageRequest, LINEAGE_KEYWORDS, DOCUMENT_KEYWORDS };
+module.exports = { classifyIntent, isLineageRequest, isPersonPrivacyRequest, LINEAGE_KEYWORDS, PERSONAL_KEYWORDS, DOCUMENT_KEYWORDS };
