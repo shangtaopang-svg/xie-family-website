@@ -27,6 +27,8 @@
   function renderTimeline() {
     var wrap = document.getElementById('timeline-wrap');
     if (!wrap) return;
+    // 重渲染（含手机↔桌面断点切换）时重置内联缩放状态
+    INLINE_Z = 1;
     var data = (typeof getGenealogyData === 'function') ? getGenealogyData() : null;
     if (!data || data.length === 0) { wrap.innerHTML = '<div style="padding:40px;color:var(--text-tertiary);font-size:13px;">暂无数据</div>'; return; }
 
@@ -104,18 +106,18 @@
 
       wrap.innerHTML = legendHtml + html;
     } else {
-      // ===== 桌面端：渲染不变 =====
-      // 用首次捕获的原始内联样式整体恢复（含 min-height:240px），桌面端逐字节不变
+      // ===== 桌面端：柱状图在上，朝代图例移到柱状图下方（用户要求）=====
+      // wrap 恢复原始内联样式（flex row，min-height:240px），但只放一个列向子容器
       wrap.style.cssText = _origWrapStyle;
 
-      legendHtml = '<div style="display:flex;gap:0;margin-bottom:10px;border-radius:6px;overflow:hidden;">';
+      legendHtml = '<div style="display:flex;gap:0;margin-top:10px;border-radius:6px;overflow:hidden;">';
       dynInfo.forEach(function(d){
         var w = ((d.max-d.min+1)/165)*100;
         legendHtml += '<div style="flex:'+w+';height:20px;background:'+d.color+';display:flex;align-items:center;justify-content:center;"><span style="font-size:9px;color:'+d.text+';font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,0.5);">'+d.label+'</span></div>';
       });
       legendHtml += '</div>';
 
-      // 波形图：横轴世代，纵轴人数
+      // 波形图：横轴世代，纵轴人数（内容高度，图例紧贴其下）
       html = '<div style="position:relative;padding:4px 0 0;min-height:'+(WAVE_H+30)+'px;">';
       // 波形区域
       html += '<div style="display:flex;align-items:flex-end;height:'+WAVE_H+'px;padding:0 2px;gap:1px;">';
@@ -143,7 +145,8 @@
       html += '</div>';
       html += '</div>';
 
-      wrap.innerHTML = legendHtml + html;
+      // 列向子容器：图例紧贴柱状图下方，卡片剩余高度留白在底部
+      wrap.innerHTML = '<div style="display:flex;flex-direction:column;align-self:flex-start;min-width:0;">' + html + legendHtml + '</div>';
     }
 
     wrap._genPop = genPop; wrap._genAlive = genAlive; wrap._genDeceased = genDeceased; wrap._genNames = genNames; wrap._genChars = genChars; wrap._genNums = gens;
@@ -154,29 +157,126 @@
 
   // ===== 全屏查看：捏合/滚轮缩放、拖动平移、逐柱「代数/人数」 =====
   var FS_COL = 30, FS_GAP = 2, FS_WAVE = 200;
+
+  // ===== 桌面端内联缩放：放大后可以平移、可缩放大小（用户要求）=====
+  // 只用 transform 缩放：现代浏览器 scrollWidth/scrollHeight 计入 transform 后的可视范围，
+  // 滚动容器自动按缩放后尺寸产生水平/垂直滚动（平移），无需额外的宽高补偿。
+  var inlineWrap = null, inlineContainer = null, inlineVal = null;
+  var INLINE_Z = 1;
+  function applyInlineZoom(z) {
+    INLINE_Z = Math.max(1, Math.min(6, Math.round(z * 100) / 100));
+    if (!inlineWrap || !inlineContainer) return;
+    if (INLINE_Z === 1) {
+      inlineWrap.style.transform = ''; inlineWrap.style.transformOrigin = '';
+      inlineContainer.style.overflowY = 'hidden';
+      inlineContainer.style.cursor = '';
+    } else {
+      inlineWrap.style.transform = 'scale(' + INLINE_Z + ')';
+      inlineWrap.style.transformOrigin = 'top left';
+      inlineContainer.style.overflowY = 'auto';
+      inlineContainer.style.cursor = 'grab';
+    }
+    if (inlineVal) inlineVal.textContent = Math.round(INLINE_Z * 100) + '%';
+  }
+  function zoomAt(px, py, factor) {
+    if (!inlineContainer) return;
+    var ns = Math.max(1, Math.min(6, INLINE_Z * factor));
+    if (ns === INLINE_Z) return;
+    var cx = px, cy = py;
+    var qx = (inlineContainer.scrollLeft + cx) / INLINE_Z;
+    var qy = (inlineContainer.scrollTop + cy) / INLINE_Z;
+    applyInlineZoom(ns);
+    inlineContainer.scrollLeft = Math.max(0, qx * ns - cx);
+    inlineContainer.scrollTop = Math.max(0, qy * ns - cy);
+  }
+  function zoomAtCenter(factor) {
+    if (!inlineContainer) return;
+    zoomAt(inlineContainer.clientWidth / 2, inlineContainer.clientHeight / 2, factor);
+  }
+  // 拖动平移（放大后），拖动超过阈值不算点击
+  var dragState = null;
+  function initInlineDrag() {
+    if (!inlineContainer) return;
+    inlineContainer.addEventListener('pointerdown', function(e) {
+      if (INLINE_Z <= 1) return;
+      dragState = { x: e.clientX, y: e.clientY, sl: inlineContainer.scrollLeft, st: inlineContainer.scrollTop, moved: 0 };
+      try { inlineContainer.setPointerCapture(e.pointerId); } catch(err) {}
+    });
+    inlineContainer.addEventListener('pointermove', function(e) {
+      if (!dragState) return;
+      var dx = e.clientX - dragState.x, dy = e.clientY - dragState.y;
+      dragState.moved += Math.abs(dx) + Math.abs(dy);
+      if (dragState.moved > 6) {
+        inlineContainer.scrollLeft = dragState.sl - dx;
+        inlineContainer.scrollTop = dragState.st - dy;
+        inlineContainer.style.cursor = 'grabbing';
+      }
+    });
+    function endDrag(e) {
+      if (dragState && dragState.moved > 6) {
+        inlineContainer.style.cursor = INLINE_Z > 1 ? 'grab' : '';
+        inlineContainer._tlJustDragged = true;
+        setTimeout(function(){ if (inlineContainer) inlineContainer._tlJustDragged = false; }, 80);
+      }
+      dragState = null;
+    }
+    inlineContainer.addEventListener('pointerup', endDrag);
+    inlineContainer.addEventListener('pointercancel', endDrag);
+    inlineContainer.addEventListener('wheel', function(e) {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        var r = inlineContainer.getBoundingClientRect();
+        zoomAt(e.clientX - r.left, e.clientY - r.top, e.deltaY < 0 ? 1.15 : 1 / 1.15);
+      }
+    }, { passive: false });
+  }
+
   function ensureFsBtn() {
     var card = document.getElementById('genealogy-timeline');
     if (!card) return;
     var h3 = card.querySelector('h3');
     if (!h3) return;
-    var btn = h3.querySelector('.tl-fs-btn');
-    if (!btn) {
-      btn = document.createElement('button');
+    inlineWrap = document.getElementById('timeline-wrap');
+    inlineContainer = inlineWrap ? inlineWrap.parentElement : null;
+    var bar = h3.querySelector('.tl-ctrl-bar');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.className = 'tl-ctrl-bar';
+      bar.style.cssText = 'display:flex;align-items:center;gap:4px;flex-shrink:0;';
+      h3.appendChild(bar);
+      function mkZoomBtn(label, title, fn) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.textContent = label; b.title = title;
+        b.style.cssText = 'width:30px;height:30px;border-radius:9px;background:rgba(251,146,60,0.14);color:var(--accent-orange,#ff9a3c);border:1px solid rgba(251,146,60,0.35);cursor:pointer;font-size:15px;font-weight:700;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;flex-shrink:0;';
+        b.onclick = fn;
+        return b;
+      }
+      bar.appendChild(mkZoomBtn('−', '缩小', function(){ zoomAtCenter(1 / 1.25); }));
+      inlineVal = document.createElement('span');
+      inlineVal.className = 'tl-inline-zoom-val';
+      inlineVal.style.cssText = 'min-width:44px;text-align:center;font-size:12px;color:var(--accent-orange,#ff9a3c);font-weight:600;flex-shrink:0;';
+      inlineVal.textContent = '100%';
+      bar.appendChild(inlineVal);
+      bar.appendChild(mkZoomBtn('＋', '放大', function(){ zoomAtCenter(1.25); }));
+      bar.appendChild(mkZoomBtn('⟳', '还原 100%', function(){ applyInlineZoom(1); }));
+      var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'tl-fs-btn';
       btn.title = '全屏查看 · 可缩放';
       btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
-      btn.style.cssText = 'display:none;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:rgba(251,146,60,0.14);color:var(--accent-orange,#ff9a3c);border:1px solid rgba(251,146,60,0.35);cursor:pointer;flex-shrink:0;padding:0;';
+      btn.style.cssText = 'align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:rgba(251,146,60,0.14);color:var(--accent-orange,#ff9a3c);border:1px solid rgba(251,146,60,0.35);cursor:pointer;flex-shrink:0;padding:0;';
       btn.onclick = function(ev) { ev.stopPropagation(); openFullscreen(); };
-      h3.appendChild(btn);
+      bar.appendChild(btn);
+      initInlineDrag();
     }
-    if (isCompact()) {
-      btn.style.display = 'flex';
-      h3.style.display = 'flex'; h3.style.alignItems = 'center'; h3.style.justifyContent = 'space-between';
-    } else {
-      btn.style.display = 'none';
-      h3.style.display = ''; h3.style.alignItems = ''; h3.style.justifyContent = '';
-    }
+    // 手机端隐藏内联缩放控件（已有全屏缩放）；桌面端全显
+    var compact = isCompact();
+    bar.style.display = 'flex';
+    bar.querySelectorAll('button').forEach(function(b) {
+      if (!b.classList.contains('tl-fs-btn')) b.style.display = compact ? 'none' : 'flex';
+    });
+    inlineVal.style.display = compact ? 'none' : 'block';
+    h3.style.display = 'flex'; h3.style.alignItems = 'center'; h3.style.justifyContent = 'space-between';
   }
 
   function openFullscreen() {
@@ -200,7 +300,7 @@
     head += '<button type="button" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:18px;cursor:pointer;line-height:1;flex-shrink:0;">✕</button>';
     head += '</div>';
 
-    var legend = '<div style="display:flex;gap:0;margin-bottom:10px;border-radius:6px;overflow:hidden;">';
+    var legend = '<div style="display:flex;gap:0;margin-top:10px;border-radius:6px;overflow:hidden;">';
     dynInfo.forEach(function(d){
       var w = ((d.max-d.min+1)/165)*100;
       legend += '<div style="flex:'+w+';height:22px;background:'+d.color+';display:flex;align-items:center;justify-content:center;"><span style="font-size:11px;color:'+d.text+';font-weight:600;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,0.4);">'+d.label+'</span></div>';
@@ -222,7 +322,7 @@
     var content = document.createElement('div');
     content.id = 'tl-fs-content';
     content.style.cssText = 'position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;width:'+naturalW+'px;box-sizing:border-box;padding:14px '+pad+'px 0;';
-    content.innerHTML = legend + wave;
+    content.innerHTML = wave + legend;
 
     ov.innerHTML = head + '<div id="tl-fs-view" style="flex:1;position:relative;overflow:hidden;touch-action:none;cursor:grab;"></div>';
     ov.querySelector('#tl-fs-view').appendChild(content);
@@ -355,6 +455,8 @@
     });
 
     wrap.addEventListener('click', function(e) {
+      // 放大后拖动平移刚结束 → 不算点击
+      if (inlineContainer && inlineContainer._tlJustDragged) return;
       var el = e.target.closest('.tl-g');
       if (el) {
         var g = parseInt(el.getAttribute('data-g'));
@@ -375,6 +477,30 @@
         if (!isNaN(g2)) showGenPeople(g2);
       }
     });
+
+    // 放大时 pointer capture 会把 click 事件重定向到滚动容器（inlineContainer，事件不再经过 wrap），
+    // 因此在容器层再挂一个监听：只有当点击对象就是容器本身（即捕获重定向的情形）才用坐标命中柱子。
+    // 坐标基于 getBoundingClientRect（已含 scale 变换），任何缩放级别都准确。
+    if (inlineContainer) {
+      inlineContainer.addEventListener('click', function(e) {
+        if (e.target !== inlineContainer) return; // 未放大时事件从 wrap 冒泡上来，wrap 已处理，避免重复
+        if (inlineContainer._tlJustDragged) return;
+        var el = null;
+        var hit = document.elementFromPoint(e.clientX, e.clientY);
+        if (hit && !hit.closest('#timeline-tooltip')) el = hit.closest('.tl-g');
+        if (!el) {
+          var bars = wrap.querySelectorAll('.tl-g');
+          for (var bi = 0; bi < bars.length; bi++) {
+            var br = bars[bi].getBoundingClientRect();
+            if (e.clientX >= br.left && e.clientX <= br.right && e.clientY >= br.top && e.clientY <= br.bottom) { el = bars[bi]; break; }
+          }
+        }
+        if (el) {
+          var g3 = parseInt(el.getAttribute('data-g'));
+          if (!isNaN(g3)) showGenPeople(g3);
+        }
+      });
+    }
   });
 
   // 断点切换（手机↔桌面）时重渲染；仅当压缩状态变化才重建，避免桌面端被重排
