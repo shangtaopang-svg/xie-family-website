@@ -364,8 +364,10 @@ function relCousin(da, db, lca, gender) {
    结构对照用户提供的 ASCII：曾祖父(12.5%)→祖父(25%)→父亲(50%)，父亲下分 亲姑妈/你/亲伯父叔父(25%)；
    同辈 亲姐妹/你本人/亲兄弟(50%)；你本人下 儿女(50%)→孙女孙子(25%)；亲兄弟下 亲侄女亲侄子(25%)。
    槽位按 rel 分类（relCousin 已按性别区分：姑辈=父之姐妹、叔伯辈=父之兄弟、侄女/侄子等），
-   people 为空时前端显示「暂无记录」占位；tree 用全部 rows（含排名 10 名开外的曾祖父），不只 top10。 */
-function buildClosestTree(rows, self) {
+   people 为空时前端显示「暂无记录」占位；tree 用全部 rows（含排名 10 名开外的曾祖父），不只 top10。
+   targetName：本人节点标注。查自己传「您」→ 显示「你（本人）」；查他人传其姓名 → 节点直接显示该姓名。 */
+function buildClosestTree(rows, self, targetName) {
+  const selfLabel = (targetName && targetName !== '您') ? '本人' : '你（本人）';
   var slot = function (pred) {
     return rows.filter(pred).map(function (r) {
       var p = byId.get(r.id);
@@ -400,7 +402,7 @@ function buildClosestTree(rows, self) {
             children: [
               { rel: '亲姐妹', shared: 50, tier: 1, people: s.jiemei },
               {
-                rel: '你（本人）', tier: 0, self: true, people: [{ name: self.name, alive: true }],
+                rel: selfLabel, tier: 0, self: true, people: [{ name: self.name, alive: true }],
                 children: [{
                   rel: '女儿 / 儿子', shared: 50, tier: 1, people: s.nver.concat(s.erzi),
                   children: [{ rel: '孙女 / 孙子', shared: 25, tier: 2, people: s.sunnv.concat(s.sunzi) }]
@@ -420,15 +422,71 @@ function buildClosestTree(rows, self) {
 }
 
 /**
+ * 解析血缘/最亲问题中的目标族人：含「我/本人」→ 本人；否则按提问中的姓名匹配（优先 ≥2 字，再单字名如「沦」）。
+ * 找不到 → 回退本人。返回 { id, name, self }。
+ */
+function resolveClosestTarget(message, selfId) {
+  ensureLoaded();
+  const q = String(message || '');
+  if (/我|本人/.test(q)) return { id: Number(selfId), name: null, self: true };
+
+  const pick = (name) => {
+    const cand = byName.get(name) && byName.get(name)[0];
+    if (!cand) return null;
+    const id = Number(cand.id);
+    return { id, name: cand.name, self: id === Number(selfId) };
+  };
+
+  // 候选评分：名字越长越好；紧跟在「和/与」后的名字（如「和庆三最亲」→庆三 而非 和庆）额外加分
+  const BOUNDARY_AFTER = /[\s，。？！,.?!:：、;；的(（[）\]"”'']/;
+  const REL_START = /^[最血亲缘近]/; // 名字后紧跟「最亲/血缘/亲近…」也算边界
+  let bestName = null, bestScore = -1;
+  for (const n of byName.keys()) {
+    if (n.length < 2) continue; // 单字名最后兜底，避免误命中普通字
+    let idx = q.indexOf(n);
+    while (idx !== -1) {
+      const after = q.charAt(idx + n.length);
+      const boundaryOk = !after || BOUNDARY_AFTER.test(after) || REL_START.test(after);
+      if (boundaryOk) {
+        const before = q.charAt(idx - 1);
+        let score = n.length * 100;
+        if (before === '和' || before === '与') score += 50; // 紧跟连词 → 明确指向目标
+        else score += Math.max(0, 12 - idx);                 // 位置靠左略加分
+        if (score > bestScore) { bestScore = score; bestName = n; }
+      }
+      idx = q.indexOf(n, idx + 1);
+    }
+  }
+  if (bestName) return pick(bestName);
+
+  // 单字名兜底：优先紧跟「和/与」的
+  for (const n of byName.keys()) {
+    if (n.length !== 1) continue;
+    const idx = q.indexOf(n);
+    if (idx === -1) continue;
+    if (q.charAt(idx - 1) === '和' || q.charAt(idx - 1) === '与') {
+      const r = pick(n); if (r) return r;
+    }
+  }
+  for (const n of byName.keys()) {
+    if (n.length === 1 && q.includes(n)) { const r = pick(n); if (r) return r; }
+  }
+  return { id: Number(selfId), name: null, self: true };
+}
+
+/**
  * 血缘最近的人列表：按基因共享率 r 排序（直系 2^-d；旁系 2^-(da+db-1)，同父同母假设）。
  * 父/子/女/亲兄弟/亲姐妹 50% 同列第一档，祖父/孙/叔侄 25% 第二档，堂兄弟 12.5% 第三档。
- * 覆盖直系长辈/晚辈与父系旁系；无共同祖先（数据断链）的排除。返回 { text, list }，list 供前端弹层画图。
+ * 覆盖直系长辈/晚辈与父系旁系；无共同祖先（数据断链）的排除。
+ * targetName：展示用名（本人传「您」，查他人传其姓名），决定答案文本与树的「本人」节点标注。
+ * 返回 { text, list, tree }，tree.targetName 供前端标题/口播用。
  */
-function answerClosest(personId, limit) {
+function answerClosest(personId, limit, targetName) {
   ensureLoaded();
   limit = Math.max(3, Math.min(20, limit || 10));
   const self = byId.get(Number(personId));
-  if (!self) return { text: '未找到您的族谱记录，请重新验证身份。', list: null };
+  if (!self) return { text: '未找到该族人的族谱记录，请重新验证身份。', list: null };
+  const displayName = (targetName === undefined || targetName === null) ? '您' : targetName;
   const selfId = Number(personId);
   const selfAnc = getAncestorList(selfId, true); // 含自己，近→远
   const selfGen = Number(self.generation_num) || 0;
@@ -472,12 +530,15 @@ function answerClosest(personId, limit) {
   });
   const list = rows.slice(0, limit);
   const lines = list.map(r => `${r.rank}. ${r.name}（${r.rel}，基因共享 ${Math.round(r.shared * 100)}%）`);
-  const text = `与您血缘最近的 ${list.length} 位族人（基因共享率越高越亲，最高 50%）：\n${lines.join('\n')}`;
-  return { text, list, tree: buildClosestTree(rows, self) };
+  const text = `与${displayName}血缘最近的 ${list.length} 位族人（基因共享率越高越亲，最高 50%）：\n${lines.join('\n')}`;
+  const tree = buildClosestTree(rows, self, displayName);
+  tree.targetName = displayName;
+  return { text, list, tree };
 }
 
 module.exports = {
   ensureLoaded, getPerson, getPeopleByName,
   getAncestorList, getDescendantLevels, getSameGeneration,
-  isAncestorOf, kinshipText, getDirectChain, describePerson, answerLineage, answerFullLineage, answerClosest,
+  isAncestorOf, kinshipText, getDirectChain, describePerson,
+  answerLineage, answerFullLineage, answerClosest, resolveClosestTarget,
 };
