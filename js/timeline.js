@@ -532,7 +532,7 @@
     people.sort(function(a,b){return(a.name||'').localeCompare(b.name||'');});
     people.forEach(function(p){
       var pBg = p.is_alive==='是'?'rgba(220,38,38,0.06)':'rgba(0,0,0,0.1)';
-inner += '<div onclick="showPersonDetail('+p.id+',getGenealogyData())" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:'+pBg+';border:1px solid '+(p.is_alive==='是'?'rgba(220,38,38,0.15)':'rgba(255,255,255,0.05)')+';border-radius:8px;cursor:pointer;"><div><span style="font-weight:600;color:var(--text-primary);">'+escapeHtml(p.name)+'</span><span style="font-size:12px;color:var(--text-tertiary);margin-left:8px;">'+(p.gender||'')+'</span></div><div style="font-size:12px;">'+(p.is_alive==='是'?'<span style="color:#ef4444;font-weight:600;">在世</span>':'<span style="color:rgba(255,255,255,0.45);">已故</span>')+'<span style="margin-left:12px;color:var(--accent-orange);">→ 详情</span></div></div>';
+inner += '<div onclick="showPersonDetail('+p.id+',getGenealogyData())" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:'+pBg+';border:1px solid '+(p.is_alive==='是'?'rgba(220,38,38,0.15)':'rgba(255,255,255,0.05)')+';border-radius:8px;cursor:pointer;"><div><span style="font-weight:600;color:var(--text-primary);">'+escapeHtml(p.name)+'</span><span style="font-size:12px;color:var(--text-tertiary);margin-left:8px;">'+(p.gender||'')+'</span></div><div style="font-size:12px;">'+(p.is_alive==='是'?'<span style="color:#ef4444;font-weight:600;">在世</span>':'<span style="color:var(--text-secondary);">已故</span>')+'<span style="margin-left:12px;color:var(--accent-orange);">→ 详情</span></div></div>';
     });
     inner += '</div></div>';
     box.innerHTML = inner;
