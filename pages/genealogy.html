@@ -2644,10 +2644,14 @@ function locateInTree(personId) {
   function renderGenealogyPageSVG() {
     var data = getGenealogyData();
     if (!data || data.length === 0) { return; }
-    // Stats
-    var total = data.length;
+    // Stats — 统计口径统一：以 /api/data/genealogy 权威数据为准（与首页「族人」、成员页「总人数」一致，均为 1249）。
+    // 不把硬编码远古世系（178人）计入总数，避免 首页1249 vs 本页1250 的数据不一致。树/时间轴/检索仍含远古世系（完整世系展示）。
+    var statsData = null;
+    try { var st = localStorage.getItem('xie_admin_genealogy'); if (st && st.length > 100) statsData = JSON.parse(st); } catch(e) {}
+    if (!statsData || statsData.length < 5) statsData = data;
+    var total = statsData.length;
     var gens = {}, branches = {}, males = 0, females = 0, genMax = 0;
-    data.forEach(function(p) {
+    statsData.forEach(function(p) {
       var g = p.generation_num || 0; gens[g] = (gens[g]||0)+1;
       if (p.branch && p.branch !== '—') branches[p.branch] = (branches[p.branch]||0)+1;
       if (p.gender === '男') males++; else if (p.gender === '女') females++;
@@ -2874,8 +2878,8 @@ b.style.display = window.scrollY > 50 ? "flex" : "none";
 });
 document.body.appendChild(b);
 })();
-</script><link rel="stylesheet" href="/css/ai.css?v=62">
-<script src="/js/ai-assistant.js?v=62" defer></script>
+</script><link rel="stylesheet" href="/css/ai.css?v=63">
+<script src="/js/ai-assistant.js?v=63" defer></script>
 <script defer src="../js/sidebar.js?v=8"></script>
 </body>
 </html>
