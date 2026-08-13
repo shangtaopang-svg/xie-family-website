@@ -408,11 +408,31 @@
       [139,'礼','位之后','位'],[139,'管','位之后','位'],[139,'罗','位之后','位'],[140,'泰鹏','管之后','管'],
       [140,'泰颚','管之后','管'],[141,'秀廉','泰颚之后','泰颚'],[141,'秀洁','泰颚之后','泰颚'],[141,'秀驹','泰颚之后','泰颚']
     ];;
-    var nameToId = {}, result = [];
-    for (var i = 0; i < raw.length; i++) { if (!nameToId[raw[i][1]]) nameToId[raw[i][1]] = 50000 + i; }
+    var nameIds = {}, result = [];
+    for (var i = 0; i < raw.length; i++) {
+      var nm = raw[i][1];
+      if (!nameIds[nm]) nameIds[nm] = [];
+      nameIds[nm].push(50000 + i);
+    }
     for (var i = 0; i < raw.length; i++) {
       var r = raw[i], pid = 50000 + i;
-      result.push({ id: pid, name: r[1], gender: '男', generation: r[0].toString(), generation_num: r[0], branch: '古世系', father_id: r[3] ? (nameToId[r[3]] || null) : null, birth_date: '', is_alive: '否', highlight: i === 0, biography: r[2] });
+      // 父名解析：同名多记录时取世代严格小于自己且最接近的一位（父辈世代 < 子辈世代）。
+      // 古世系里「广」出现两次（67世弘之子、101世衡之子），旧代码 nameToId 后者/前者覆盖其一，
+      // 致 列宗68世 或 奕/据/安/万/淮/石/铁102世 的父连错，东山/临海/石马/后枫槎 与炎帝断开。
+      var fatherId = null;
+      if (r[3]) {
+        var cands = nameIds[r[3]] || [];
+        if (cands.length === 1) { fatherId = cands[0]; }
+        else if (cands.length > 1) {
+          var best = null, bestGen = -1;
+          for (var ci = 0; ci < cands.length; ci++) {
+            var cg = raw[cands[ci] - 50000][0];
+            if (cg < r[0] && cg > bestGen) { bestGen = cg; best = cands[ci]; }
+          }
+          fatherId = best;
+        }
+      }
+      result.push({ id: pid, name: r[1], gender: '男', generation: r[0].toString(), generation_num: r[0], branch: '古世系', father_id: fatherId, birth_date: '', is_alive: '否', highlight: i === 0, biography: r[2] });
     }
     return result;
   }

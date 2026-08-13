@@ -431,6 +431,7 @@
         <!-- 视图切换标签 -->
         <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center;padding:6px 0;">
           <span style="font-size:12px;color:var(--text-tertiary);font-weight:500;">分支：</span>
+          <button class="btn btn-xs" id="filter-continuous" onclick="filterBranch('连续完整世系')" style="background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;border:none;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;box-shadow:0 1px 4px rgba(234,88,12,0.35);">连续完整世系（炎帝→后枫槎）</button>
           <button class="btn btn-xs" id="filter-all" onclick="filterBranch('all')" style="background:var(--accent-orange);color:#fff;border:none;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;">全部世系</button>
           <button class="btn btn-xs" id="filter-yuangud" onclick="filterBranch('远古世系')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">远古世系</button>
           <button class="btn btn-xs" id="filter-shenbo" onclick="filterBranch('申伯世系')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">申伯世系</button>
@@ -621,8 +622,12 @@
   // 古世系数据（炎帝→秀驹）
   function getAncientGenealogyData() {
     var raw = [[1,'炎帝神农氏','中华民族人文始祖',null],[2,'临魁','炎帝之子','炎帝神农氏'],[10,'榆罔','临魁之后','临魁'],[11,'帝柱','榆罔之后','榆罔'],[15,'祝融','帝柱之后','帝柱'],[54,'吕尚','姜太公，周朝开国功臣','祝融'],[55,'佐','吕尚之子，申伯之父','吕尚'],[65,'申伯','谢氏鼻祖','佐'],[65,'申甫','申伯之弟，仍姓姜氏','佐'],[66,'弘','申伯之子','申伯'],[66,'猛','申伯之子','申伯'],[67,'广','弘之子','弘'],[67,'协','弘之子','弘'],[68,'列宗','广之子','广'],[68,'穆宗','广之子','广'],[69,'骘','列宗之子','列宗'],[70,'预','骘之子','骘'],[71,'昌后','预之子','预'],[72,'达','昌后之子','昌后'],[72,'守礼','昌后之子','昌后'],[73,'子民','达之子','达'],[74,'秩','子民之子','子民'],[75,'雍','秩之子','秩'],[76,'林','雍之子','雍'],[77,'涣','林之子','林'],[78,'旺','涣之子','涣'],[79,'珽','旺之子','旺'],[80,'国辉','珽之子','珽'],[81,'宁','国辉之子','国辉'],[82,'福','宁之子','宁'],[83,'杨贞','福之子','福'],[84,'平利','杨贞之子','杨贞'],[84,'平和','杨贞之子','杨贞'],[84,'平祖','杨贞之子','杨贞'],[85,'翠','平和之子','平和'],[85,'利','平和之子','平和'],[85,'文','平和之子','平和'],[86,'武','文之子','文'],[87,'秉槐','武之子','武'],[88,'堂','秉槐之子','秉槐'],[89,'瑛','堂之子','堂'],[90,'文轩','瑛之子','瑛'],[90,'文昂','瑛之子','瑛'],[91,'福郎','文轩之子','文轩'],[91,'丙郎','文轩之子','文轩'],[91,'应郎','文轩之子','文轩'],[92,'宜礼','福郎之子','福郎'],[92,'宜乐','福郎之子','福郎'],[93,'逵','宜礼之子','宜礼'],[94,'简','逵之子','逵'],[95,'瑰','简之子','简'],[96,'懿','瑰之子','瑰'],[97,'鳅','懿之子','懿'],[98,'当','鳅之后','鳅'],[98,'景秀','鳅之后','鳅'],[99,'缵','景秀之后/东山第一世','景秀'],[99,'显','景秀之后','景秀'],[99,'顼','景秀之后','景秀'],[100,'衡','会稽东山始祖','缵'],[101,'鲲','衡之子','衡'],[101,'裒','衡之子，谢安之父','衡'],[101,'广','衡之子','衡'],[102,'奕','裒之子','裒'],[102,'据','裒之子','裒'],[102,'安','字安石，东晋名相','裒'],[102,'万','裒之子','裒'],[102,'淮','裒之子','裒'],[102,'石','裒之子','裒'],[102,'铁','裒之子','裒'],[103,'瑶','安之子','安'],[103,'琰·东山','安之子','安'],[104,'肇','琰之子','琰·东山'],[104,'峻','琰之子','琰·东山'],[104,'混','琰之子','琰·东山'],[105,'密','混之子','混'],[106,'庄','密之子','密'],[107,'飏','庄之子','庄'],[107,'胜','庄之子','庄'],[107,'灏','庄之子','庄'],[107,'丛','庄之子','庄'],[107,'沦','庄之子','庄'],[108,'览','飏之子','飏'],[109,'琢','览之子','览'],[109,'侨','览之子','览'],[110,'琂','琢之子','琢'],[110,'琬','琢之子','琢'],[110,'琉','琢之子','琢'],[111,'峤','琂之子','琂'],[111,'植','琂之子','琂'],[112,'钝','植之子','植'],[112,'缪','植之子','植'],[113,'修','钝之子','钝'],[113,'豹','钝之子','钝'],[114,'恺','修之子','修'],[115,'骢','恺之子','恺'],[115,'驼','恺之子','恺'],[115,'绰','恺之子','恺'],[116,'式','绰之子','绰'],[117,'革','式之子','式'],[117,'造','式之子','式'],[118,'直','造之子','造'],[119,'是温','直之子','直'],[120,'翳','是温之子','是温'],[121,'静','翳之子','翳'],[121,'观','翳之子','翳'],[122,'闓','观之子/临海下渡第一世','观'],[123,'俨','闓之子','闓'],[124,'诜','俨之子','俨'],[125,'景之','诜之子','诜'],[125,'考之','诜之子','诜'],[126,'润甫','景之之后','景之'],[126,'深甫','景之之后','景之'],[127,'采伯','深甫之后','深甫'],[127,'渠伯','深甫之后','深甫'],[127,'棐伯','深甫之后','深甫'],[127,'彚伯','深甫之后','深甫'],[128,'奕修','采伯之后','采伯'],[128,'奕懋','采伯之后','采伯'],[128,'奕恭','采伯之后','采伯'],[128,'奕容','采伯之后','采伯'],[128,'奕信','采伯之后','采伯'],[129,'在鉴','奕信之后','奕信'],[129,'在勋','奕信之后','奕信'],[129,'在纲','奕信之后','奕信'],[129,'在机','奕信之后','奕信'],[130,'大四','在纲之后','在纲'],[130,'小四','在纲之后','在纲'],[131,'丹一','小四之子','小四'],[131,'丹二','小四之子','小四'],[131,'丹三','小四之子','小四'],[132,'文杲','丹一之后，枫槎谢氏始迁祖','丹一'],[132,'文榘','丹一之后，东门桃源陈氏之祖','丹一'],[132,'丹九','丹三之后','丹三'],[133,'廿一','丹九之后','丹九'],[133,'廿二','丹九之后','丹九'],[133,'廿四','丹九之后','丹九'],[133,'十三','文榘之后','文榘'],[133,'十七','文榘之后','文榘'],[133,'二一','文榘之后','文榘'],[134,'廿七','十三之后','十三'],[134,'廿九','十三之后','十三'],[134,'三十一','十三之后','十三'],[134,'四十','廿二之后','廿二'],[135,'百十','廿七之后','廿七'],[135,'庆三','廿七之后','廿七'],[135,'千九','四十之后','四十'],[135,'千十','四十之后','四十'],[135,'千十一','四十之后','四十'],[135,'千十三','四十之后','四十'],[136,'敬乙','庆三之后','庆三'],[136,'一廷','千十一之后','千十一'],[136,'隆','千十一之后','千十一'],[137,'琰','隆之后','隆'],[137,'琇','隆之后','隆'],[138,'位','琰之后','琰'],[138,'倍','琰之后','琰'],[138,'侍','琰之后','琰'],[138,'体','琰之后','琰'],[138,'旦','琰之后','琰'],[138,'俱生','琇之后','琇'],[139,'礼','位之后','位'],[139,'管','位之后','位'],[139,'罗','位之后','位'],[140,'泰鹏','管之后','管'],[140,'泰颚','管之后','管'],[141,'秀廉','泰颚之后','泰颚'],[141,'秀洁','泰颚之后','泰颚'],[141,'秀驹','泰颚之后','泰颚']];
-    var nameToId = {}, result = [];
-    for (var i = 0; i < raw.length; i++) { nameToId[raw[i][1]] = 50000 + i; }
+    var nameIds = {}, result = [];
+    for (var i = 0; i < raw.length; i++) {
+      var nm = raw[i][1];
+      if (!nameIds[nm]) nameIds[nm] = [];
+      nameIds[nm].push(50000 + i);
+    }
     for (var i = 0; i < raw.length; i++) {
       var r = raw[i], pid = 50000 + i;
       var gen = r[0], br = '古世系';
@@ -631,7 +636,23 @@
       else if (gen <= 121) br = '始宁东山世系';
       else if (gen <= 130 && gen >= 122) br = '临海下渡世系';
       else br = '石马下谢分房';
-      result.push({ id: pid, name: r[1], gender: '男', generation: gen.toString(), generation_num: gen, branch: br, father_id: r[3] ? (nameToId[r[3]] || null) : null, birth_date: '', is_alive: '否', highlight: i === 0, biography: r[2] });
+      // 父名解析：同名多记录时取世代严格小于自己且最接近的一位（父辈世代 < 子辈世代）。
+      // 古世系里「广」出现两次（67世弘之子、101世衡之子），旧代码 nameToId 后者覆盖前者，
+      // 致 列宗68世 的父被错误连到 衡之子广101世，东山/临海/石马/后枫槎 整条线与炎帝断开。
+      var fatherId = null;
+      if (r[3]) {
+        var cands = nameIds[r[3]] || [];
+        if (cands.length === 1) { fatherId = cands[0]; }
+        else if (cands.length > 1) {
+          var best = null, bestGen = -1;
+          for (var ci = 0; ci < cands.length; ci++) {
+            var cg = raw[cands[ci] - 50000][0];
+            if (cg < gen && cg > bestGen) { bestGen = cg; best = cands[ci]; }
+          }
+          fatherId = best;
+        }
+      }
+      result.push({ id: pid, name: r[1], gender: '男', generation: gen.toString(), generation_num: gen, branch: br, father_id: fatherId, birth_date: '', is_alive: '否', highlight: i === 0, biography: r[2] });
     }
     return result;
   }
@@ -688,6 +709,42 @@
     }
     _genealogyData = data.concat(ancient);
     return _genealogyData;
+  }
+
+  // 连续完整世系：古世系168 + 后枫槎精选树80，去重头部重叠，从炎帝(1世)一路贯通到彬公/乾公。
+  // 两个数据源均为现有权威数据（getAncientGenealogyData / getHoufengchaTreeData），不编造世系。
+  // 古世系本身就是一条完整父链：炎帝1→…→申伯65→…→缵99→…→闓122→…→小四130→丹一131→文杲132→…→秀驹141
+  // 后枫槎精选树头部（小四/丹一/文杲/文榘）与古世系完全重复→跳过，攒/撰改接到古世系文杲名下；
+  // 其世代 +129 统一为炎帝全局世次（攒=133、伯能=134、叔仅=146、彬乾=147、云先=153，已逐人对验主数据）。
+  var _continuousData = null;
+  function getContinuousLineageData() {
+    if (_continuousData && _continuousData.length > 100) return _continuousData;
+    var ancient = getAncientGenealogyData();
+    var hf = getHoufengchaTreeData();
+    var ancIdByName = {};
+    for (var i = 0; i < ancient.length; i++) ancIdByName[ancient[i].name] = ancient[i].id;
+    var hfById = {};
+    for (var i = 0; i < hf.length; i++) hfById[hf[i].id] = hf[i];
+    var skip = {'小四':1, '丹一':1, '文杲':1, '文榘':1};
+    var out = ancient.slice();
+    for (var i = 0; i < hf.length; i++) {
+      var p = hf[i];
+      if (skip[p.name]) continue;
+      var fatherId = p.father_id;
+      if (fatherId && hfById[fatherId] && skip[hfById[fatherId].name]) {
+        fatherId = ancIdByName[hfById[fatherId].name];
+      }
+      var g = (p.generation_num || 0) + 129;
+      out.push({
+        id: p.id, name: p.name, gender: p.gender || '男',
+        generation_num: g, generation: g.toString(),
+        branch: p.branch || '后枫槎', father_id: fatherId,
+        spouse_ids: p.spouse_ids || '', is_alive: p.is_alive || '否',
+        biography: p.biography || '', highlight: p.highlight
+      });
+    }
+    _continuousData = out;
+    return out;
   }
 
   // Load full 1080 records from JSON - OVERRIDE everything
@@ -976,7 +1033,7 @@ var _currentBranch = 'all';
 
 function filterBranch(branch) {
   _currentBranch = branch;
-  var btnMap = {'all':'filter-all','远古世系':'filter-yuangud','申伯世系':'filter-shenbo','始宁东山世系':'filter-dongshan','临海下渡世系':'filter-linhai','石马下谢分房':'filter-shima'};
+  var btnMap = {'all':'filter-all','连续完整世系':'filter-continuous','远古世系':'filter-yuangud','申伯世系':'filter-shenbo','始宁东山世系':'filter-dongshan','临海下渡世系':'filter-linhai','石马下谢分房':'filter-shima'};
   var btnId = btnMap[branch] || 'filter-all';
   if (branch.indexOf('后枫槎') >= 0) btnId = 'filter-houfengcha';
   else if (branch.indexOf('前枫槎') >= 0) btnId = 'filter-qianfengcha';
@@ -984,10 +1041,14 @@ function filterBranch(branch) {
   var btn = document.getElementById(btnId);
   if (btn) { btn.style.background = 'var(--accent-orange)'; btn.style.color = '#fff'; btn.style.border = 'none'; }
   // Get and filter data
+  // 连续完整世系：古世系168 + 后枫槎精选树80 合并（见 getContinuousLineageData）
   // 本宗世系图（后枫槎）：直接复用后台同一棵硬编码精选树（js/admin.js getHoufengchaTreeData），保证与后台显示一致
-  var data = (branch === '本宗世系图（后枫槎）') ? getHoufengchaTreeData() : getGenealogyData();
+  var data;
+  if (branch === '连续完整世系') { data = getContinuousLineageData(); }
+  else if (branch === '本宗世系图（后枫槎）') { data = getHoufengchaTreeData(); }
+  else { data = getGenealogyData(); }
   var branchLabel = '全部';
-  if (branch !== 'all') {
+  if (branch !== 'all' && branch !== '连续完整世系') {
     data = getBranchData(data, branch);
     // Get a human-readable label for this branch
     for (var i = 0; i < data.length; i++) {
@@ -1006,7 +1067,9 @@ function filterBranch(branch) {
   if (branch !== 'all') {
     setTimeout(function() {
       var rootId = null;
-      if (branch === '本宗世系图（后枫槎）') {
+      if (branch === '连续完整世系') {
+        rootId = 50000; // 炎帝神农氏：整条连续世系的起点
+      } else if (branch === '本宗世系图（后枫槎）') {
         rootId = 60000; // 本宗世系图精选树根节点：小四
       } else {
         for (var i = 0; i < data.length; i++) {
@@ -1055,7 +1118,7 @@ function renderTreeSVG(data) {
   if (oldMsg) oldMsg.remove();
   var oldStats = document.getElementById('branch-stats-overlay');
   if (oldStats) oldStats.remove();
-  if (_currentBranch && _currentBranch !== 'all') {
+  if (_currentBranch && _currentBranch !== 'all' && _currentBranch !== '连续完整世系') {
     var filteredData = getBranchData(data, _currentBranch);
     if (filteredData && filteredData.length > 0) data = filteredData;
   }
@@ -1100,7 +1163,7 @@ function renderTreeSVG(data) {
   var oldStats = document.getElementById('branch-stats-overlay');
   if (oldStats) oldStats.remove();
   // Apply branch filter
-  if (_currentBranch && _currentBranch !== 'all') {
+  if (_currentBranch && _currentBranch !== 'all' && _currentBranch !== '连续完整世系') {
     var filteredData = getBranchData(data, _currentBranch);
     if (filteredData && filteredData.length > 0) data = filteredData;
   }
