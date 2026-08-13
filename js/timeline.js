@@ -29,18 +29,25 @@
     }
     return out;
   }
-  // 时代标注条：等间距分段，左◀右▶箭头夹住中间朝代名（替代按柱体数量变宽的色块）
+  // 时代标注条：无底色，等间距分段，数学标注两点间距离的样式——每段一条细线 + 左◀右▶箭头 + 中间朝代名
   // totalW 与柱状图总宽对齐，每段宽度 = totalW / dynInfo.length，保证标注距离一致
-  function buildLegend(gens, unit, h, fs, gap, pad, arrowL, arrowR, mTop) {
+  // 不用 overflow:hidden：让标注条像柱状图一样随卡片横向滚动，末段不会被裁掉
+  function buildLegend(gens, unit, h, fs, gap, pad, mTop, textColor, lineColor) {
     var totalW = gens.length * unit - (gap > 0 ? gap : 0);
     var segW = totalW / dynInfo.length;
-    var html = '<div style="display:flex;margin-top:'+mTop+'px;padding:0 '+pad+'px;border-radius:6px;overflow:hidden;">';
+    var arrowFs = Math.max(fs - 2, 6);
+    var html = '<div style="display:flex;margin-top:'+mTop+'px;padding:0 '+pad+'px;">';
     for (var i=0;i<dynInfo.length;i++){
       var d = dynInfo[i];
-      html += '<div style="width:'+segW+'px;height:'+h+'px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box;padding:0 3px;background:'+d.color+'2e;overflow:hidden;">';
-      html += '<span style="font-size:'+(fs-2)+'px;color:'+d.text+';flex-shrink:0;line-height:1;opacity:0.9;">'+arrowL+'</span>';
-      html += '<span style="font-size:'+fs+'px;color:'+d.text+';font-weight:600;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,0.5);overflow:hidden;text-overflow:ellipsis;line-height:1;">'+d.label+'</span>';
-      html += '<span style="font-size:'+(fs-2)+'px;color:'+d.text+';flex-shrink:0;line-height:1;opacity:0.9;">'+arrowR+'</span>';
+      html += '<div style="width:'+segW+'px;height:'+h+'px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box;gap:1px;">';
+      // 朝代名（无底色，居中于细线上方）
+      html += '<div style="font-size:'+fs+'px;color:'+textColor+';font-weight:600;line-height:1;white-space:nowrap;">'+d.label+'</div>';
+      // 细线 + 两端箭头（标注两点间距离）
+      html += '<div style="width:100%;display:flex;align-items:center;">';
+      html += '<div style="font-size:'+arrowFs+'px;color:'+lineColor+';line-height:1;flex-shrink:0;">◀</div>';
+      html += '<div style="flex:1;height:1px;background:'+lineColor+';margin:0 1px;"></div>';
+      html += '<div style="font-size:'+arrowFs+'px;color:'+lineColor+';line-height:1;flex-shrink:0;">▶</div>';
+      html += '</div>';
       html += '</div>';
     }
     html += '</div>';
@@ -103,8 +110,8 @@
       wrap.style.cssText = _origWrapStyle + ';flex-direction:column;min-height:auto;min-width:0px;position:relative';
       var unit = COL_W + GAP;
 
-      // 时代标注条：等间距分段，左◀右▶箭头夹中间朝代名（替代按柱体数量变宽的色块）
-      legendHtml = buildLegend(gens, unit, 14, 7, GAP, 1, '◀', '▶', 4);
+      // 时代标注条：无底色，数学标注两点间距离样式（细线+两端箭头+中间朝代名）
+      legendHtml = buildLegend(gens, unit, 14, 7, GAP, 1, 4, 'var(--text-secondary)', 'var(--text-tertiary)');
 
       // 波形（84 世全部一格，柱体从底部向上生长）
       html += '<div data-wave style="display:flex;align-items:flex-end;height:'+WAVE_H+'px;gap:'+GAP+'px;padding:0 1px;">';
@@ -136,8 +143,8 @@
       // wrap 恢复原始内联样式（flex row，min-height:240px），但只放一个列向子容器
       wrap.style.cssText = _origWrapStyle;
 
-      // 时代标注条：等间距分段，左◀右▶箭头夹中间朝代名（替代按柱体数量变宽的色块）
-      legendHtml = buildLegend(gens, COL_W + GAP, 20, 9, GAP, 2, '◀', '▶', 10);
+      // 时代标注条：无底色，数学标注两点间距离样式（细线+两端箭头+中间朝代名）
+      legendHtml = buildLegend(gens, COL_W + GAP, 20, 9, GAP, 2, 10, 'var(--text-secondary)', 'var(--text-tertiary)');
 
       // 波形图：横轴世代，纵轴人数（内容高度，图例紧贴其下）
       html = '<div style="position:relative;padding:4px 0 0;min-height:'+(WAVE_H+30)+'px;">';
@@ -299,8 +306,8 @@
     head += '<button type="button" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:18px;cursor:pointer;line-height:1;flex-shrink:0;">✕</button>';
     head += '</div>';
 
-    // 时代标注条：等间距分段，左◀右▶箭头夹中间朝代名（替代按柱体数量变宽的色块）
-    var legend = buildLegend(gens, FS_COL + FS_GAP, 22, 11, FS_GAP, 0, '◀', '▶', 10);
+    // 时代标注条：无底色，数学标注两点间距离样式（全屏恒为深底，用固定浅色）
+    var legend = buildLegend(gens, FS_COL + FS_GAP, 22, 11, FS_GAP, 0, 10, 'rgba(255,255,255,0.72)', 'rgba(255,255,255,0.32)');
 
     var wave = '<div style="display:flex;align-items:flex-end;gap:'+FS_GAP+'px;">';
     gens.forEach(function(g) {
