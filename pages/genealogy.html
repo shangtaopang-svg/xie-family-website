@@ -695,7 +695,11 @@
     // 实时 API 数据优先：若已通过 dbGetAll 加载活数据（后台增改后），旧快照不再覆盖，前端与后台保持一致
     if (window.__liveGenealogyLoaded) { return; }
     if (d && d.length > 100) {
-      // Merge ancient lineage into full JSON data
+      // 统计口径与实时 API 一致（不混入远古世系）：先把全量快照 d 存 localStorage 供「总人数」统计。
+      // 旧代码此处 d.filter 缺 return true 把全量过滤成空数组，再 concat(远古168) 写入 localStorage，
+      // 导致统计一刹那闪现 168，直到 live API 覆盖才恢复 1249（已修）
+      localStorage.setItem('xie_admin_genealogy', JSON.stringify(d));
+      // Merge ancient lineage into full JSON data（去重后供树/时间轴渲染完整世系）
       var ancient = getAncientGenealogyData();
       var ancientNames = {};
       for (var ai = 0; ai < ancient.length; ai++) ancientNames[ancient[ai].name] = true;
@@ -703,6 +707,7 @@
         if (ancientNames[p.name]) return false;
         var base = p.name.replace(/\(.*\)$/, '');
         if (base !== p.name && ancientNames[base]) return false;
+        return true;
       });
       for (var ci = 0; ci < d.length; ci++) {
         if (d[ci].name === '文杲公' || d[ci].name === '文杲' || d[ci].name === '谢小四') {
@@ -712,8 +717,6 @@
         }
       }
       _genealogyData = d.concat(ancient);
-      // Force into localStorage, overriding API/Supabase data
-      localStorage.setItem('xie_admin_genealogy', JSON.stringify(_genealogyData));
       // Re-render everything
       if (typeof renderGenealogyPageSVG === 'function') {
         renderGenealogyPageSVG();
@@ -2667,7 +2670,9 @@ function locateInTree(personId) {
     // 不把硬编码远古世系（178人）计入总数，避免 首页1249 vs 本页1250 的数据不一致。树/时间轴/检索仍含远古世系（完整世系展示）。
     var statsData = null;
     try { var st = localStorage.getItem('xie_admin_genealogy'); if (st && st.length > 100) statsData = JSON.parse(st); } catch(e) {}
-    if (!statsData || statsData.length < 5) statsData = data;
+    // 权威统计守卫：仅全量数据（localStorage 快照 / live API，均 1249）才渲染统计卡片，
+    // 拦截种子回退(176)或历史残留的远古-only(168)，杜绝「一刹那 168」再出现（根因：JSON 处理器过滤缺 return true，已修）
+    if (!statsData || statsData.length < 1000) statsData = (data && data.length >= 1000) ? data : null;
     // 世代统一为炎帝全局世系（用户确认：炎帝=1世、申伯=65世），与成员页/时间轴一致：
     // 1) 名字在远古世系 → 直接用远古世次的炎帝全局世次（小四=130世、文杲=132世）
     // 2) 下枫槎族人（本地世次>0）→ +131 平移（文杲1→132、天字辈34→165）
@@ -2678,31 +2683,33 @@ function locateInTree(personId) {
       var sName = ancientStats[si].name;
       if (aMapStats[sName] === undefined || ancientStats[si].generation_num > aMapStats[sName]) aMapStats[sName] = ancientStats[si].generation_num;
     }
-    statsData.forEach(function(p) {
-      if (aMapStats[p.name] !== undefined) { p.generation_num = aMapStats[p.name]; return; }
-      var sg = parseInt(p.generation_num, 10);
-      if (sg > 0) { p.generation_num = sg + 131; return; }
-      var sgg = parseInt(p.generation, 10);
-      p.generation_num = (sgg > 0) ? sgg : 0;
-    });
-    var total = statsData.length;
-    var gens = {}, branches = {}, males = 0, females = 0, genMax = 0;
-    statsData.forEach(function(p) {
-      var g = p.generation_num || 0; gens[g] = (gens[g]||0)+1;
-      if (p.branch && p.branch !== '—') branches[p.branch] = (branches[p.branch]||0)+1;
-      if (p.gender === '男') males++; else if (p.gender === '女') females++;
-      if (parseInt(g) > genMax) genMax = parseInt(g);
-    });
-    var statsEl = document.getElementById('stats-container');
-    if (statsEl) {
-      function dg(n) { var s = String(n), r = ''; for (var i = 0; i < s.length; i++) { r += '<span style="display:inline-block;animation:digitPop 0.35s cubic-bezier(0.22,1,0.36,1) ' + (i * 0.08) + 's both;">' + s[i] + '</span>'; } return r; }
-      function sc(n, l) { return '<div class="stat-card-anim"><span class="border-line bl-top"></span><span class="border-line bl-right"></span><span class="border-line bl-bottom"></span><span class="border-line bl-left"></span><div class="stat-num">' + dg(n) + '</div><div class="stat-label">' + l + '</div></div>'; }
-      statsEl.innerHTML = ''
-        + sc(total, '总人数')
-        + sc(genMax, '世代')
-        + sc(Object.keys(branches).length, '支系')
-        + sc(males, '男')
-        + sc(females, '女');
+    if (statsData) {
+      statsData.forEach(function(p) {
+        if (aMapStats[p.name] !== undefined) { p.generation_num = aMapStats[p.name]; return; }
+        var sg = parseInt(p.generation_num, 10);
+        if (sg > 0) { p.generation_num = sg + 131; return; }
+        var sgg = parseInt(p.generation, 10);
+        p.generation_num = (sgg > 0) ? sgg : 0;
+      });
+      var total = statsData.length;
+      var gens = {}, branches = {}, males = 0, females = 0, genMax = 0;
+      statsData.forEach(function(p) {
+        var g = p.generation_num || 0; gens[g] = (gens[g]||0)+1;
+        if (p.branch && p.branch !== '—') branches[p.branch] = (branches[p.branch]||0)+1;
+        if (p.gender === '男') males++; else if (p.gender === '女') females++;
+        if (parseInt(g) > genMax) genMax = parseInt(g);
+      });
+      var statsEl = document.getElementById('stats-container');
+      if (statsEl) {
+        function dg(n) { var s = String(n), r = ''; for (var i = 0; i < s.length; i++) { r += '<span style="display:inline-block;animation:digitPop 0.35s cubic-bezier(0.22,1,0.36,1) ' + (i * 0.08) + 's both;">' + s[i] + '</span>'; } return r; }
+        function sc(n, l) { return '<div class="stat-card-anim"><span class="border-line bl-top"></span><span class="border-line bl-right"></span><span class="border-line bl-bottom"></span><span class="border-line bl-left"></span><div class="stat-num">' + dg(n) + '</div><div class="stat-label">' + l + '</div></div>'; }
+        statsEl.innerHTML = ''
+          + sc(total, '总人数')
+          + sc(genMax, '世代')
+          + sc(Object.keys(branches).length, '支系')
+          + sc(males, '男')
+          + sc(females, '女');
+      }
     }
 
     // Show loading for tree
