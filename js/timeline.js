@@ -9,6 +9,7 @@
     {min:131,max:140,label:'宋',color:'#F97316',text:'#FDBA74'},
     {min:141,max:150,label:'元明',color:'#EF4444',text:'#FCA5A5'},
     {min:151,max:165,label:'清·近代',color:'#6366F1',text:'#A5B4FC'},
+    {min:166,max:197,label:'现代',color:'#06B6D4',text:'#A5F3FC'},
   ];
   function getDynColor(g) {
     for (var i=0;i<dynInfo.length;i++){if(g>=dynInfo[i].min&&g<=dynInfo[i].max)return dynInfo[i].color;}
@@ -41,6 +42,20 @@
     INLINE_Z = 1;
     var data = (typeof getGenealogyData === 'function') ? getGenealogyData() : null;
     if (!data || data.length === 0) { wrap.innerHTML = '<div style="padding:40px;color:var(--text-tertiary);font-size:13px;">暂无数据</div>'; return; }
+    // 世代体系统一：权威数据(id<50000)的 generation_num 是「下枫槎本地世系」(文杲公=1世)，需平移到炎帝全局世系(文杲公=132世)，
+    // 与远古世系(id>=50000，炎帝神农氏=1世、申伯=65世)同轴。否则近现代族人(乾/云先/绍乾等本地16/22/28世)会排在
+    // 他们真正的祖先(申伯65世、文杲132世)左侧，时间轴子孙在左、祖先在右，完全倒挂。用户确认：炎帝=1世、申伯=65世。
+    var TL_OFFSET = 131;
+    data = data.map(function(p) {
+      if (p.id < 50000 && typeof p.generation_num === 'number' && p.generation_num > 0) {
+        var np = {};
+        for (var k in p) { if (Object.prototype.hasOwnProperty.call(p, k)) np[k] = p[k]; }
+        np.generation_num = p.generation_num + TL_OFFSET;
+        if (typeof p.generation === 'number' && p.generation > 0) np.generation = p.generation + TL_OFFSET;
+        return np;
+      }
+      return p;
+    });
 
     var genPop = {}, genAlive = {}, genDeceased = {}, genChars = {}, genNames = {};
     data.forEach(function(p) {
@@ -61,7 +76,7 @@
     GAP = compact ? 0 : 1;
     var WAVE_H = 48;
 
-    var keyWords = {1:'炎帝',65:'申伯',130:'小四',132:'文杲',147:'彬公'};
+    var keyWords = {1:'炎帝',65:'申伯',130:'小四',132:'文杲',147:'彬·乾'};
     function findKeyName(g, names) {
       var kw = keyWords[g];
       if (kw) return kw;
