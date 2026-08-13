@@ -17,7 +17,7 @@
   <link rel="manifest" href="../manifest.json">
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
 </head>
-  <script defer src="../js/timeline.js?v=14"></script>
+  <script defer src="../js/timeline.js?v=15"></script>
 <script defer src="../js/genealogy-migration.js?v=1"></script>
 <script>(function () {
   'use strict';
@@ -649,6 +649,25 @@
       } catch(e) {}
     }
     if (!data || data.length < 5) data = getFullSeedData();
+    // 世代统一为炎帝全局世系（用户确认：炎帝=1世、申伯=65世），与成员页/时间轴一致：
+    // 1) 名字在远古世系 → 直接用远古世次的炎帝全局世次（小四=130世、文杲=132世、敬乙=136世等）
+    // 2) 下枫槎族人（本地世次>0）→ +131 平移（文杲1→132、彬乾16→147、天字辈34→165）
+    // 3) 负世代（远古示意祖先）→ generation 字段的全局世次（炎帝-10→1、申伯-3→65）
+    var ancMap = {};
+    var ancList = getAncientGenealogyData();
+    for (var ai2 = 0; ai2 < ancList.length; ai2++) {
+      var ancName = ancList[ai2].name;
+      if (ancMap[ancName] === undefined || ancList[ai2].generation_num > ancMap[ancName]) ancMap[ancName] = ancList[ai2].generation_num;
+    }
+    for (var di = 0; di < data.length; di++) {
+      var per = data[di];
+      // 幂等：缓存 _genealogyData 已是换算后（本地世次>131 不重复平移），远古世系(id>=50000)名字在 ancMap 赋同值不副作用
+      if (ancMap[per.name] !== undefined) { per.generation_num = ancMap[per.name]; continue; }
+      var gv = parseInt(per.generation_num, 10);
+      if (gv > 0) { if (gv <= 131) per.generation_num = gv + 131; continue; }
+      var ggv = parseInt(per.generation, 10);
+      per.generation_num = (ggv > 0) ? ggv : 0;
+    }
     // Merge ancient lineage
     var ancient = getAncientGenealogyData();
     var ancientNames = {};
@@ -2649,6 +2668,23 @@ function locateInTree(personId) {
     var statsData = null;
     try { var st = localStorage.getItem('xie_admin_genealogy'); if (st && st.length > 100) statsData = JSON.parse(st); } catch(e) {}
     if (!statsData || statsData.length < 5) statsData = data;
+    // 世代统一为炎帝全局世系（用户确认：炎帝=1世、申伯=65世），与成员页/时间轴一致：
+    // 1) 名字在远古世系 → 直接用远古世次的炎帝全局世次（小四=130世、文杲=132世）
+    // 2) 下枫槎族人（本地世次>0）→ +131 平移（文杲1→132、天字辈34→165）
+    // 3) 负世代（远古示意祖先）→ generation 字段的全局世次（炎帝-10→1、申伯-3→65）
+    var ancientStats = getAncientGenealogyData();
+    var aMapStats = {};
+    for (var si = 0; si < ancientStats.length; si++) {
+      var sName = ancientStats[si].name;
+      if (aMapStats[sName] === undefined || ancientStats[si].generation_num > aMapStats[sName]) aMapStats[sName] = ancientStats[si].generation_num;
+    }
+    statsData.forEach(function(p) {
+      if (aMapStats[p.name] !== undefined) { p.generation_num = aMapStats[p.name]; return; }
+      var sg = parseInt(p.generation_num, 10);
+      if (sg > 0) { p.generation_num = sg + 131; return; }
+      var sgg = parseInt(p.generation, 10);
+      p.generation_num = (sgg > 0) ? sgg : 0;
+    });
     var total = statsData.length;
     var gens = {}, branches = {}, males = 0, females = 0, genMax = 0;
     statsData.forEach(function(p) {
@@ -2878,8 +2914,8 @@ b.style.display = window.scrollY > 50 ? "flex" : "none";
 });
 document.body.appendChild(b);
 })();
-</script><link rel="stylesheet" href="/css/ai.css?v=66">
-<script src="/js/ai-assistant.js?v=66" defer></script>
+</script><link rel="stylesheet" href="/css/ai.css?v=67">
+<script src="/js/ai-assistant.js?v=67" defer></script>
 <script defer src="../js/sidebar.js?v=8"></script>
 </body>
 </html>

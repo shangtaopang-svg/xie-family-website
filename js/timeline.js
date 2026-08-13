@@ -42,20 +42,8 @@
     INLINE_Z = 1;
     var data = (typeof getGenealogyData === 'function') ? getGenealogyData() : null;
     if (!data || data.length === 0) { wrap.innerHTML = '<div style="padding:40px;color:var(--text-tertiary);font-size:13px;">暂无数据</div>'; return; }
-    // 世代体系统一：权威数据(id<50000)的 generation_num 是「下枫槎本地世系」(文杲公=1世)，需平移到炎帝全局世系(文杲公=132世)，
-    // 与远古世系(id>=50000，炎帝神农氏=1世、申伯=65世)同轴。否则近现代族人(乾/云先/绍乾等本地16/22/28世)会排在
-    // 他们真正的祖先(申伯65世、文杲132世)左侧，时间轴子孙在左、祖先在右，完全倒挂。用户确认：炎帝=1世、申伯=65世。
-    var TL_OFFSET = 131;
-    data = data.map(function(p) {
-      if (p.id < 50000 && typeof p.generation_num === 'number' && p.generation_num > 0) {
-        var np = {};
-        for (var k in p) { if (Object.prototype.hasOwnProperty.call(p, k)) np[k] = p[k]; }
-        np.generation_num = p.generation_num + TL_OFFSET;
-        if (typeof p.generation === 'number' && p.generation > 0) np.generation = p.generation + TL_OFFSET;
-        return np;
-      }
-      return p;
-    });
+    // 世代体系统一：getGenealogyData() 已在数据源层完成换算（权威本地世次+131 → 炎帝全局世系，远古世系本就是全局值），
+    // 这里不再重复平移，避免双重偏移（本地16世 +131+131=278世 错误）。用户确认：炎帝=1世、申伯=65世。
 
     var genPop = {}, genAlive = {}, genDeceased = {}, genChars = {}, genNames = {};
     data.forEach(function(p) {

@@ -14,7 +14,7 @@
   <script defer src="../js/i18n.js"></script>
   <script defer src="../js/file-store.js?v=3"></script>
   <script defer src="../js/supabase.js?v=3"></script>
-  <script defer src="../js/timeline.js?v=13"></script>
+  <script defer src="../js/timeline.js?v=14"></script>
   <link rel="manifest" href="../manifest.json">
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
 </head>
@@ -133,24 +133,24 @@
         <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:12px;font-size:17px;font-weight:500;">字辈排行</h3>
         <p style="font-size:13px;color:var(--text-tertiary);margin-bottom:12px;">下枫槎谢氏字辈，自迁居始祖起，排行如下：</p>
         <div style="display:flex;flex-wrap:wrap;gap:8px;" id="generation-chars">
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">一(19)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">懋(20)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">之(21)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">嘉(22)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">永(23)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">孝(24)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">思(25)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">台(26)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">邦(27)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">令(28)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">序(29)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">善(30)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">道(31)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">开(32)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">时(33)</span>
-          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">天(34)</span>
+          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">一(150)</span>
+          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">懋(151)</span>
+          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">之(152)</span>
+          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">嘉(153)</span>
+          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">永(154)</span>
+          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">孝(155)</span>
+          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">思(156)</span>
+          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">台(157)</span>
+          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">邦(158)</span>
+          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">令(159)</span>
+          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">序(160)</span>
+          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">善(161)</span>
+          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">道(162)</span>
+          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">开(163)</span>
+          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">时(164)</span>
+          <span style="padding:6px 16px;background:var(--accent-orange-dim);border:1px solid rgba(251,146,60,0.2);border-radius:6px;font-size:15px;font-family:var(--font-title);color:var(--text-primary);">天(165)</span>
         </div>
-        <p style="font-size:13px;color:var(--text-tertiary);margin-top:12px;">目前已传至"天"字辈（第三十四世）</p>
+        <p style="font-size:13px;color:var(--text-tertiary);margin-top:12px;">目前已传至"天"字辈（第一百六十五世）</p>
       </div>
 
       <!-- 统计 -->
@@ -440,6 +440,25 @@
   var combined = [];
   try { var stored = localStorage.getItem('xie_admin_genealogy'); if (stored) combined = JSON.parse(stored); } catch(e) {}
   if (!combined.length) combined = getFullSeedData();
+  // 世代统一为炎帝全局世系（用户确认：炎帝=1世、申伯=65世），与族谱页/成员页/时间轴一致：
+  // 1) 名字在远古世系 → 直接用远古世次的炎帝全局世次（小四=130世、文杲=132世、敬乙=136世等）
+  // 2) 下枫槎族人（本地世次>0）→ +131 平移（文杲1→132、彬乾16→147、天字辈34→165）
+  // 3) 负世代（远古示意祖先）→ generation 字段的全局世次（炎帝-10→1、申伯-3→65）
+  var ancMapT = {};
+  var ancListT = getAncientGenealogyData();
+  for (var at = 0; at < ancListT.length; at++) {
+    var anT = ancListT[at].name;
+    if (ancMapT[anT] === undefined || ancListT[at].generation_num > ancMapT[anT]) ancMapT[anT] = ancListT[at].generation_num;
+  }
+  for (var dt = 0; dt < combined.length; dt++) {
+    var perT = combined[dt];
+    // 幂等：已换算（本地世次>131）不重复平移，远古世系(id>=50000)名字在 ancMapT 赋同值不副作用
+    if (ancMapT[perT.name] !== undefined) { perT.generation_num = ancMapT[perT.name]; continue; }
+    var gvT = parseInt(perT.generation_num, 10);
+    if (gvT > 0) { if (gvT <= 131) perT.generation_num = gvT + 131; continue; }
+    var ggvT = parseInt(perT.generation, 10);
+    perT.generation_num = (ggvT > 0) ? ggvT : 0;
+  }
   // Ancient lineage data (炎帝→秀驹)
   var ancient = getAncientGenealogyData();
   var ancientNames = {};
@@ -2431,7 +2450,7 @@ document.addEventListener('keydown', function(e) {
     <a href="my.html" class="mb-tab"><span class="mb-tab-icon">👤</span><span class="mb-tab-label">我的</span></a>
   </nav>
 <script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();try{var u=sessionStorage.getItem("back_to");if(u&&u!==window.location.href&&!u.includes(location.host+"/?")){location.href=u;return}}catch(ex){}if(window.history.length>1)window.history.go(-1);else location.href="../entrance.html"});</script>
-<script>(function(){var b=document.createElement("div");b.id="backTopBtn";b.innerHTML="↑";b.style.cssText="position:fixed;bottom:80px;right:16px;z-index:9999;width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.85);color:#0a0806;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;opacity:0.9;transition:opacity 0.3s;";b.onclick=function(){window.scrollTo({top:0,behavior:"smooth"})};window.addEventListener("scroll",function(){b.style.opacity=window.scrollY>50?"0.9":"0.3"});document.body.appendChild(b);})();</script><link rel="stylesheet" href="/css/ai.css?v=66">
-<script src="/js/ai-assistant.js?v=66" defer></script>
+<script>(function(){var b=document.createElement("div");b.id="backTopBtn";b.innerHTML="↑";b.style.cssText="position:fixed;bottom:80px;right:16px;z-index:9999;width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.85);color:#0a0806;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;opacity:0.9;transition:opacity 0.3s;";b.onclick=function(){window.scrollTo({top:0,behavior:"smooth"})};window.addEventListener("scroll",function(){b.style.opacity=window.scrollY>50?"0.9":"0.3"});document.body.appendChild(b);})();</script><link rel="stylesheet" href="/css/ai.css?v=67">
+<script src="/js/ai-assistant.js?v=67" defer></script>
 </body>
 </html>
