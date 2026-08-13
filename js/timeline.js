@@ -59,7 +59,40 @@
     try { return window.matchMedia && window.matchMedia('(max-width: 768px)').matches; }
     catch(e) { return false; }
   }
+
+  // ===== 动态效果：柱体升起 + 柱顶趋势连线画出（CSS 关键帧，只注入一次） =====
+  var _animInjected = false;
+  function ensureAnimStyle() {
+    if (_animInjected) return;
+    _animInjected = true;
+    try {
+      var st = document.createElement('style');
+      st.id = 'tl-anim-style';
+      st.textContent = '@keyframes tlBarIn{from{transform:scaleY(0)}to{transform:scaleY(1)}}' +
+        '@keyframes tlLineIn{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}' +
+        '@media (prefers-reduced-motion: reduce){.tl-g>div,.tl-fs-g>div,[data-wave] svg polyline{animation:none!important;stroke-dashoffset:0!important}}';
+      (document.head || document.documentElement).appendChild(st);
+    } catch(e) {}
+  }
+  // 柱顶趋势连线：SVG polyline 绝对覆盖在波形区，描过每根柱体顶部中心（用户要求「柱体和柱体之间的线条明显点」）。
+  // 几何与各渲染分支完全一致：x = padLeft + i*unit + COL_W/2，y = WAVE_H - barH，barH 用同一公式，保证线与柱体对齐。
+  function buildTrendLine(gens, popMap, maxPop, WAVE_H, COL_W, GAP, padLeft, stroke, sw, minH) {
+    var unit = COL_W + GAP;
+    var n = gens.length;
+    if (n < 2) return '';
+    var totalW = padLeft * 2 + n * unit - (GAP > 0 ? GAP : 0);
+    var pts = [];
+    for (var i = 0; i < n; i++) {
+      var pop = popMap[gens[i]] || 0;
+      var barH = pop > 0 ? Math.max(minH, (pop / maxPop) * WAVE_H * 0.85) : 0;
+      pts.push((padLeft + i * unit + COL_W / 2).toFixed(1) + ',' + (WAVE_H - barH).toFixed(1));
+    }
+    return '<svg style="position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;filter:drop-shadow(0 0 2px rgba(255,154,60,0.55));" viewBox="0 0 ' + totalW + ' ' + WAVE_H + '" preserveAspectRatio="none">' +
+      '<polyline pathLength="1" stroke="' + stroke + '" stroke-width="' + sw + '" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1" stroke-dashoffset="1" style="animation:tlLineIn .9s ease-out .25s both;" points="' + pts.join(' ') + '"/></svg>';
+  }
+
   function renderTimeline() {
+    ensureAnimStyle();
     var wrap = document.getElementById('timeline-wrap');
     if (!wrap) return;
     // 重渲染（含手机↔桌面断点切换）时重置内联缩放状态
@@ -114,15 +147,17 @@
       legendHtml = buildLegend(gens, unit, 14, 7, GAP, 1, 4, 'var(--text-secondary)', 'var(--text-tertiary)');
 
       // 波形（84 世全部一格，柱体从底部向上生长）
-      html += '<div data-wave style="display:flex;align-items:flex-end;height:'+WAVE_H+'px;gap:'+GAP+'px;padding:0 1px;">';
-      gens.forEach(function(g) {
+      html += '<div data-wave style="display:flex;align-items:flex-end;height:'+WAVE_H+'px;gap:'+GAP+'px;padding:0 1px;position:relative;">';
+      gens.forEach(function(g, i) {
         var pop = genPop[g]||0;
         var dc = getDynColor(g);
         var barH = pop > 0 ? Math.max(2, (pop / maxPop) * WAVE_H * 0.85) : 0;
         html += '<div class="tl-g" data-g="'+g+'" style="width:'+COL_W+'px;height:'+WAVE_H+'px;flex-shrink:0;cursor:pointer;display:flex;flex-direction:column;justify-content:flex-end;" title="第'+g+'世 '+pop+'人">';
-        html += '<div style="width:100%;height:'+barH+'px;border-radius:1px 1px 0 0;background:'+(dc||'#3fb950')+';opacity:'+(pop>0?'0.9':'0.15')+';min-height:'+(pop>0?'2px':'0')+';"></div>';
+        html += '<div style="width:100%;height:'+barH+'px;border-radius:1px 1px 0 0;background:'+(dc||'#3fb950')+';opacity:'+(pop>0?'0.9':'0.15')+';min-height:'+(pop>0?'2px':'0')+';transform-origin:bottom;animation:tlBarIn .45s cubic-bezier(.22,.9,.3,1) '+(i*0.008).toFixed(3)+'s both;"></div>';
         html += '</div>';
       });
+      // 柱顶趋势连线（用户要求明显点）
+      html += buildTrendLine(gens, genPop, maxPop, WAVE_H, COL_W, GAP, 1, '#ff9a3c', 1.5, 2);
       html += '</div>';
 
       // 稀疏「代数/人数」标注（绝对定位，不撑宽格子）
@@ -149,8 +184,8 @@
       // 波形图：横轴世代，纵轴人数（内容高度，图例紧贴其下）
       html = '<div style="position:relative;padding:4px 0 0;min-height:'+(WAVE_H+30)+'px;">';
       // 波形区域
-      html += '<div style="display:flex;align-items:flex-end;height:'+WAVE_H+'px;padding:0 2px;gap:1px;">';
-      gens.forEach(function(g) {
+      html += '<div style="display:flex;align-items:flex-end;height:'+WAVE_H+'px;padding:0 2px;gap:1px;position:relative;">';
+      gens.forEach(function(g, i) {
         var pop = genPop[g]||0;
         var names = genNames[g]||[];
         var keyName = findKeyName(g, names);
@@ -158,11 +193,13 @@
         var barH = pop > 0 ? Math.max(2, (pop / maxPop) * WAVE_H * 0.85) : 0;
         html += '<div class="tl-g" data-g="'+g+'" style="display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative;" title="第'+g+'世 '+pop+'人">';
         // 柱条 + 朝代色
-        html += '<div style="width:'+COL_W+'px;height:'+barH+'px;border-radius:1px 1px 0 0;background:'+(dc||'#3fb950')+';opacity:'+(pop>0?'0.9':'0.15')+';transition:opacity 0.15s;min-height:'+(pop>0?'2px':'0')+';"></div>';
+        html += '<div style="width:'+COL_W+'px;height:'+barH+'px;border-radius:1px 1px 0 0;background:'+(dc||'#3fb950')+';opacity:'+(pop>0?'0.9':'0.15')+';transition:opacity 0.15s;min-height:'+(pop>0?'2px':'0')+';transform-origin:bottom;animation:tlBarIn .45s cubic-bezier(.22,.9,.3,1) '+(i*0.008).toFixed(3)+'s both;"></div>';
         // 世代号
         html += '<div style="font-size:7px;color:'+(pop>0?'rgba(255,255,255,0.4)':'rgba(255,255,255,0.12)')+';line-height:1;margin-top:1px;white-space:nowrap;">'+g+'</div>';
         html += '</div>';
       });
+      // 柱顶趋势连线（用户要求明显点）
+      html += buildTrendLine(gens, genPop, maxPop, WAVE_H, COL_W, GAP, 2, '#ff9a3c', 2, 2);
       html += '</div>';
       // 关键人物标记行
       html += '<div style="display:flex;gap:1px;padding:0 2px;margin-top:2px;">';
@@ -309,16 +346,18 @@
     // 时代标注条：无底色，数学标注两点间距离样式（全屏恒为深底，用固定浅色）
     var legend = buildLegend(gens, FS_COL + FS_GAP, 22, 11, FS_GAP, 0, 10, 'rgba(255,255,255,0.72)', 'rgba(255,255,255,0.32)');
 
-    var wave = '<div style="display:flex;align-items:flex-end;gap:'+FS_GAP+'px;">';
-    gens.forEach(function(g) {
+    var wave = '<div style="display:flex;align-items:flex-end;gap:'+FS_GAP+'px;position:relative;">';
+    gens.forEach(function(g, i) {
       var pop = genPop[g]||0;
       var dc = getDynColor(g);
       var barH = pop > 0 ? Math.max(3, (pop / maxPop) * FS_WAVE * 0.85) : 0;
       wave += '<div class="tl-fs-g" data-g="'+g+'" style="display:flex;flex-direction:column;justify-content:flex-end;align-items:center;cursor:pointer;" title="第'+g+'世 '+pop+'人">';
-      wave += '<div style="width:'+FS_COL+'px;height:'+barH+'px;border-radius:3px 3px 0 0;background:'+(dc||'#3fb950')+';opacity:'+(pop>0?'0.95':'0.15')+';min-height:'+(pop>0?'3px':'0')+';"></div>';
+      wave += '<div style="width:'+FS_COL+'px;height:'+barH+'px;border-radius:3px 3px 0 0;background:'+(dc||'#3fb950')+';opacity:'+(pop>0?'0.95':'0.15')+';min-height:'+(pop>0?'3px':'0')+';transform-origin:bottom;animation:tlBarIn .45s cubic-bezier(.22,.9,.3,1) '+(i*0.008).toFixed(3)+'s both;"></div>';
       wave += '<div style="font-size:10px;color:rgba(255,255,255,0.55);margin-top:3px;line-height:1;white-space:nowrap;">'+g+'/'+(pop||0)+'</div>';
       wave += '</div>';
     });
+    // 柱顶趋势连线（全屏恒为深底，用更亮橙）
+    wave += buildTrendLine(gens, genPop, maxPop, FS_WAVE, FS_COL, FS_GAP, 0, '#ffb054', 2.5, 3);
     wave += '</div>';
 
     var content = document.createElement('div');
