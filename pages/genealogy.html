@@ -2708,7 +2708,15 @@ function locateInTree(personId) {
     // Show loading for tree
     var tc = document.getElementById('tree-container');
     if (tc) tc.innerHTML = '<div class="tree-loading"><span class="tree-loading-spinner"></span> 世系图加载中…</div>';
-    renderSimpleTree(data);
+    // 真实世系树（树状图）优先：admin.js 已加载（buildAdminTreeHtml 可用）时渲染卡片树，
+    // 否则退化为简单世系列表。此前无条件 renderSimpleTree 会在实时数据重载（line ~2738）
+    // 时把 admin.js onload 已渲染好的卡片树覆盖回简单列表，导致手机端/桌面端首屏只有简单列表，
+    // 必须点「全部世系」才出现树状图。
+    if (typeof window.renderTreeSVG === 'function' && typeof window.buildAdminTreeHtml === 'function') {
+      renderTreeSVG(data);
+    } else {
+      renderSimpleTree(data);
+    }
     // Fade in sections
     var sections = ['genealogy-generation-chart','genealogy-stats','genealogy-timeline','genealogy-search-section','genealogy-relation-section','genealogy-tree-section','genealogy-table-section'];
     sections.forEach(function(id) { var el = document.getElementById(id); if (el) el.style.opacity = '1'; });
