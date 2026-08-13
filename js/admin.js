@@ -771,6 +771,7 @@ function buildAdminTreeHtml(data, opts) {
     var result = [];
     for (var ci = 0; ci < data.length; ci++) {
       var child = data[ci];
+      if (child.id === person.id) continue; // 防御：自引用 father_id 时跳过自己，避免无限递归
       var fid = parseInt(child.father_id);
       var mid = parseInt(child.mother_id);
       if (fid === person.id || mid === person.id) {
@@ -780,12 +781,15 @@ function buildAdminTreeHtml(data, opts) {
     return result;
   }
 
-  // 工具：递归统计后代总数
-  function countDescendants(person) {
+  // 工具：递归统计后代总数（带访问保护，防止自引用/环形引用导致死循环）
+  function countDescendants(person, visited) {
+    if (!visited) visited = {};
+    if (visited[person.id]) return 0;
+    visited[person.id] = true;
     var count = 0;
     var direct = childrenOf(person);
     for (var i = 0; i < direct.length; i++) {
-      count += 1 + countDescendants(direct[i]);
+      count += 1 + countDescendants(direct[i], visited);
     }
     return count;
   }
@@ -804,14 +808,19 @@ function buildAdminTreeHtml(data, opts) {
   });
 
   var roots = data.filter(function(p) {
-    return !p.father_id || !existingIds[parseInt(p.father_id)];
+    // 防御：自引用 father_id（指向自己）视为无父亲，作为根节点显示
+    var fid = parseInt(p.father_id);
+    return !p.father_id || fid === p.id || !existingIds[fid];
   });
   roots = roots.filter(function(p) {
     return !spouseOf[p.id] || spouseOf[p.id] > p.id;
   });
   if (roots.length === 0 && data.length > 0) roots = [data[0]];
 
-  function renderPerson(person) {
+  function renderPerson(person, _ancestors) {
+    // 环保护：祖先链中出现自己则跳过（防自引用/互环导致无限递归）
+    if (_ancestors && _ancestors.indexOf(person.id) >= 0) return '';
+    var _path = (_ancestors ? _ancestors.concat([person.id]) : [person.id]);
     var html = '<div class="apt-person">';
     var isRuzhui = person.name.indexOf('入赘') >= 0 || person.name.indexOf('女婿') >= 0;
     var ruzhuiPartner = false;
@@ -880,7 +889,7 @@ function buildAdminTreeHtml(data, opts) {
       for (var ci2 = 0; ci2 < children.length; ci2++) {
         html += '<div class="apt-child">';
         html += '<div class="apt-vline"></div>';
-        html += renderPerson(children[ci2]);
+        html += renderPerson(children[ci2], _path);
         html += '</div>';
       }
       html += '</div>';
@@ -926,8 +935,24 @@ function buildAdminTreeHtml(data, opts) {
   }
 
   var out = '<div class="apt-tree">';
+  // 渲染主根节点
+  var renderedIds = {};
   for (var r = 0; r < roots.length; r++) {
     out += renderPerson(roots[r]);
+    // 收集渲染过程中覆盖到的所有人，用于兜底补渲染
+    collectRendered(roots[r]);
+  }
+  // 兜底：父链断链/孤立的人（father_id 指向的人不在主树中）也应显示，保证录入数据不遗漏
+  function collectRendered(p, _seen) {
+    if (_seen && _seen.indexOf(p.id) >= 0) return; // 环保护
+    _seen = (_seen || []).concat([p.id]);
+    renderedIds[p.id] = true;
+    childrenOf(p).forEach(function(c) { collectRendered(c, _seen); });
+  }
+  for (var ri = 0; ri < data.length; ri++) {
+    if (!renderedIds[data[ri].id]) {
+      out += renderPerson(data[ri]);
+    }
   }
   out += '</div>';
   return out;
@@ -1442,16 +1467,17 @@ function getGenealogyTreeCSS() {
 
 // ===== 全部世代总览 · 独立模块（完整族谱树 + 编辑管理） =====
 function renderGenealogyOverview(area) {
-  var data = getData('genealogy');
-  data.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0); });
-
-  // 全部世代总览使用5个正确世系区块的数据（炎帝→秀驹），不混合存储数据
-  var allData = getAllAncientData();
+  // ⚠️ 世代总览必须完全基于后台录入的数据（getData('genealogy')），
+  // 用户通过族谱管理录入/编辑后，树、统计、表格实时反映，不能再用硬编码世系数据。
+  var allData = getData('genealogy');
   allData.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0); });
+  var data = allData;
 
   var gens = {};
   var branchSet = {};
-  var skipBranches = ['长房', '二房', '三房', '四房', '后枫椿', '前枫椿', '临海下渡', '石马下谢', '枫椿分支', '前枫槎派', '后枫槎东房', '枫槎始祖'];
+  // ⚠️ 六大录入分区（远古/申伯/始宁东山/临海下度/石马下谢/本宗世系·后枫槎）都计入支系，
+  // 只排除细枝末节分支
+  var skipBranches = ['长房', '二房', '三房', '四房', '后枫椿', '前枫椿', '枫椿分支', '前枫槎派', '后枫槎东房', '枫槎始祖'];
   allData.forEach(function(p) {
     var g = p.generation_num || 0;
     gens[g] = (gens[g] || 0) + 1;
@@ -1485,7 +1511,9 @@ function renderGenealogyOverview(area) {
   html += '<div class="apt-left">';
   html += '<div class="apt-tree-filters">';
   html += '<select id="tree-filter-gen" onchange="renderGenealogyTree()"><option value="">世代筛选（全部）</option>';
-  for (var g = 1; g <= 150; g++) {
+  var genKeys = Object.keys(gens).map(Number).sort(function(a, b) { return a - b; });
+  for (var gk = 0; gk < genKeys.length; gk++) {
+    var g = genKeys[gk];
     if (gens[g]) html += '<option value="' + g + '">' + g + '世 (' + gens[g] + '人)</option>';
   }
   html += '</select>';
@@ -3045,7 +3073,8 @@ document.addEventListener('DOMContentLoaded', function() {
     fetch('../data/genealogy.json').then(function(r){return r.json()}).then(function(full){
       if (full && full.length > 100) {
         localStorage.setItem('xie_admin_genealogy', JSON.stringify(full));
-        if (currentModule === 'genealogy') { renderModule('genealogy'); updateStats(); }
+        // 族谱管理与世代总览都依赖这份数据，加载完成后都需刷新
+        if (currentModule === 'genealogy' || currentModule === 'genealogyOverview') { renderModule(currentModule); updateStats(); }
       }
     }).catch(function(){});
     // Also override API-loaded data: delay to run after loadFromSupabase
@@ -3053,7 +3082,7 @@ document.addEventListener('DOMContentLoaded', function() {
       fetch('../data/genealogy.json').then(function(r){return r.json()}).then(function(full){
         if (full && full.length > 100) {
           localStorage.setItem('xie_admin_genealogy', JSON.stringify(full));
-          if (currentModule === 'genealogy') { renderModule('genealogy'); updateStats(); }
+          if (currentModule === 'genealogy' || currentModule === 'genealogyOverview') { renderModule(currentModule); updateStats(); }
         }
       }).catch(function(){});
     }, 2000);
@@ -3332,7 +3361,8 @@ function toggleTreeNode(btn) {
 function renderGenealogyTree() {
   var treeEl = document.getElementById('admin-genealogy-tree');
   if (!treeEl) return;
-  var allData = getAllAncientData();
+  // ⚠️ 与世代总览一致：基于后台录入数据，用户录入/编辑后实时反映
+  var allData = getData('genealogy');
   var genFilter = document.getElementById('tree-filter-gen');
   var filtered = allData;
   if (genFilter && genFilter.value) {
