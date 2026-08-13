@@ -5166,6 +5166,25 @@ section a[href*="audio"] {
   color: #8a8a8a !important;
 }
 
+/* ===== 族谱查询页 祖先世系树（移动端）：白字白底修复 =====
+   .ancestor-tree-wrap 背景 var(--glass-bg)=#fafafa、.ancestor-card 背景 var(--bg-card)=白、
+   .ancestor-name 文字 var(--text-primary)=#f5f5f5，手机端白底白字看不清；整树切深底浅字。 */
+.ancestor-tree-wrap {
+  background: #141414 !important;
+  border-color: rgba(212,121,58,0.4) !important;
+}
+.ancestor-card {
+  background: #1a1a1a !important;
+  border-color: #2a2a2a !important;
+}
+.ancestor-self .ancestor-card {
+  background: rgba(212,121,58,0.15) !important;
+  border-color: var(--accent-orange) !important;
+}
+.ancestor-name { color: #f5f5f5 !important; }
+.ancestor-meta { color: #9a9690 !important; }
+.ancestor-gen { color: #d4793a !important; }
+
 /* ===== 家族成员页 ===== */
 #members-grid { gap: 12px !important; }
 .member-card {
