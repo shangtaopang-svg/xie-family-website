@@ -391,6 +391,22 @@ const server = http.createServer(async (req, res) => {
         const body = await collectBody(req);
         // Validate it's a valid JSON array (or object)
         const data = JSON.parse(body);
+        // 数据安全：写入前先把当前文件备份到 backups/（带时间戳），防止覆盖失败/半途出错丢失原数据
+        try {
+          if (fs.existsSync(filePath)) {
+            const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            const dst = path.join(BACKUP_DIR, `${module}_prewrite_${ts}.json`);
+            fs.copyFileSync(filePath, dst);
+            // 每个模块只保留最近 20 个 prewrite 备份，避免无限堆积
+            const files = fs.readdirSync(BACKUP_DIR)
+              .filter(f => f.startsWith(module + '_prewrite_'))
+              .sort()
+              .reverse();
+            files.slice(20).forEach(f => {
+              try { fs.unlinkSync(path.join(BACKUP_DIR, f)); } catch(e) {}
+            });
+          }
+        } catch (be) { /* 备份失败不阻断写入 */ }
         fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8', err => {
           if (err) {
             return sendJson(req, res, 500, { error: 'Write failed' });

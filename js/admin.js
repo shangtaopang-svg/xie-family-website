@@ -298,36 +298,25 @@ function syncToServer(module, data, attempt) {
   // Show sync status
   showSyncStatus(module, '同步中…');
 
-  // Batch save for large datasets
-  var batchSize = 500;
-  var totalBatches = Math.ceil(data.length / batchSize);
-  var completed = 0;
-
-  function sendBatch(start) {
-    if (start >= data.length) {
-      showSyncStatus(module, '✅ 已同步');
-      return;
+  // ⚠️ 服务端 POST 为整文件覆盖语义（server.js: fs.writeFile 直接覆盖整个文件），
+  // 因此必须一次性发送全部数据。若分批发送，文件会被最后一批覆盖，造成数据丢失。
+  fetch('/api/data/' + module, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  }).then(function(r) { return r.json(); }).then(function() {
+    showSyncStatus(module, '✅ 已同步');
+    // 同步成功后清除未同步标记
+    localStorage.removeItem('xie_unsynced_' + module);
+  }).catch(function(e) {
+    if (attempt < 3) {
+      setTimeout(function() { syncToServer(module, data, attempt + 1); }, 2000);
+    } else {
+      showSyncStatus(module, '⚠️ 同步失败，数据在本地安全');
+      // Save a localStorage backup marker
+      localStorage.setItem('xie_unsynced_' + module, 'true');
     }
-    var batch = data.slice(start, start + batchSize);
-    fetch('/api/data/' + module, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(batch)
-    }).then(function(r) { return r.json(); }).then(function() {
-      completed++;
-      showSyncStatus(module, '同步中… ' + completed + '/' + totalBatches);
-      sendBatch(start + batchSize);
-    }).catch(function(e) {
-      if (attempt < 3) {
-        setTimeout(function() { syncToServer(module, data, attempt + 1); }, 2000);
-      } else {
-        showSyncStatus(module, '⚠️ 同步失败，数据在本地安全');
-        // Save a localStorage backup marker
-        localStorage.setItem('xie_unsynced_' + module, 'true');
-      }
-    });
-  }
-  sendBatch(0);
+  });
 }
 
 // 显示同步状态
@@ -3004,8 +2993,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // 登录后从 Supabase 加载数据
     loadFromSupabase();
 
-    // 从 JSON 文件加载完整族谱数据（1080条）
-    fetch('../data/genealogy_full.json').then(function(r){return r.json()}).then(function(full){
+    // 从 JSON 文件加载完整族谱数据（后台编辑与 AI 咨询读同一份 genealogy.json，避免数据源不一致）
+    fetch('../data/genealogy.json').then(function(r){return r.json()}).then(function(full){
       if (full && full.length > 100) {
         localStorage.setItem('xie_admin_genealogy', JSON.stringify(full));
         if (currentModule === 'genealogy') { renderModule('genealogy'); updateStats(); }
@@ -3013,7 +3002,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }).catch(function(){});
     // Also override API-loaded data: delay to run after loadFromSupabase
     setTimeout(function() {
-      fetch('../data/genealogy_full.json').then(function(r){return r.json()}).then(function(full){
+      fetch('../data/genealogy.json').then(function(r){return r.json()}).then(function(full){
         if (full && full.length > 100) {
           localStorage.setItem('xie_admin_genealogy', JSON.stringify(full));
           if (currentModule === 'genealogy') { renderModule('genealogy'); updateStats(); }
