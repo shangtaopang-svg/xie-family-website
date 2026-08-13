@@ -742,8 +742,10 @@
 
 <script>
 function renderMemberCharts() {
+  // 世代统一为炎帝全局世系：与 getGenealogyData() 同一换算（远古名映射/本地+131/负值generation），
+  // 保证「各世代人口分布」图表与成员列表/时间轴/世系图一致（-10~66 旧值 → 1~165 炎帝体系）
   var data = [];
-  try { data = JSON.parse(localStorage.getItem('xie_admin_genealogy') || '[]'); } catch(e) {}
+  try { data = getGenealogyData(); } catch(e) {}
   if (!data || data.length === 0) { setTimeout(renderMemberCharts, 1000); return; }
 
   // Add animated bar glow styles
