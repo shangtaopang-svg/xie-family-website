@@ -490,6 +490,22 @@ function renderModule(mod) {
     renderRuzhuiMarriage(area);
     return;
   }
+  if (mod === 'genealogyOverview') {
+    var area = document.getElementById('admin-content-area');
+    if (!area) return;
+    renderGenealogyOverview(area);
+    // 树 pan/zoom 初始化（与族谱管理共用同一套逻辑）
+    var savedZoom = treeZoom, savedX = treePanX, savedY = treePanY;
+    setTimeout(function() {
+      initTreePanZoom();
+      treeZoom = savedZoom;
+      treePanX = savedX;
+      treePanY = savedY;
+      applyTreeTransform();
+      updateZoomLevel();
+    }, 100);
+    return;
+  }
   var m = MODULES[mod];
   if (!m) return;
   var area = document.getElementById('admin-content-area');
@@ -953,19 +969,6 @@ function renderGenealogy(area) {
   var data = getData('genealogy');
   data.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0); });
 
-  // 全部世代总览使用5个正确世系区块的数据（炎帝→秀驹），不混合存储数据
-  var allData = getAllAncientData();
-  allData.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0); });
-
-  var gens = {};
-  var branchSet = {};
-  var skipBranches = ['长房', '二房', '三房', '四房', '后枫椿', '前枫椿', '临海下渡', '石马下谢', '枫椿分支', '前枫槎派', '后枫槎东房', '枫槎始祖'];
-  allData.forEach(function(p) {
-    var g = p.generation_num || 0;
-    gens[g] = (gens[g] || 0) + 1;
-    if (p.branch && p.branch !== '—' && skipBranches.indexOf(p.branch) < 0) branchSet[p.branch] = true;
-  });
-
   var html = '<div class="admin-module">';
   html += '<div class="admin-module-header">';
   html += '<h3>📖 族谱管理</h3>';
@@ -1366,8 +1369,109 @@ function renderGenealogy(area) {
   html += '<div style="margin-top:6px;font-size:10px;color:var(--text-tertiary);text-align:right;">下枫槎谢氏 · 后枫槎攒公派世系</div>';
   html += '</div></div>';
 
+  html += '</div>'; // close admin-module
+
+  html += '<style>' + getGenealogyTreeCSS() + '</style>';
+
+  area.innerHTML = html;
+}
+
+// 后台族谱树共享 CSS（renderGenealogy 与 renderGenealogyOverview 共用）
+function getGenealogyTreeCSS() {
+  return '.apt-split{display:flex;gap:16px;min-height:600px;}' +
+    '.apt-left{flex:2;min-width:0;border:1px solid var(--glass-border);border-radius:12px;background:var(--bg-card);overflow:hidden;padding:24px 20px;}' +
+    '.apt-right{width:320px;min-width:280px;display:flex;flex-direction:column;gap:12px;}' +
+    '.apt-tree{display:flex;flex-direction:column;align-items:center;gap:0;}' +
+    '.apt-person{display:flex;flex-direction:column;align-items:center;}' +
+    '.apt-card{display:inline-flex;flex-direction:column;align-items:center;padding:14px 20px 10px 20px;border-radius:10px;cursor:pointer;border:1.5px solid var(--glass-border);background:var(--glass-bg);min-width:70px;transition:all 0.15s;position:relative;}' +
+    '.apt-card-inner{display:flex;flex-direction:column;align-items:center;width:100%;}' +
+    '.apt-card-actions{position:absolute;top:2px;right:2px;display:flex;gap:2px;opacity:0;transition:opacity 0.15s;}' +
+    '.apt-card:hover .apt-card-actions{opacity:1;}' +
+    '.apt-btn-add,.apt-btn-del{width:20px;height:20px;border:none;border-radius:50%;font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;padding:0;transition:transform 0.1s;}' +
+    '.apt-btn-add:hover,.apt-btn-del:hover{transform:scale(1.2);}' +
+    '.apt-btn-add{background:#4a9eff;color:#fff;}' +
+    '.apt-btn-del{background:#e74c3c;color:#fff;}' +
+    '.apt-card:hover{border-color:var(--accent-orange);box-shadow:0 2px 8px rgba(251,146,60,0.12);transform:translateY(-1px);}' +
+    '.apt-male{border-left:3px solid #4a9eff;}.apt-female{border-left:3px solid #ff6b9d;}' +
+    '.apt-ruzhui{border:2px solid #ef4444 !important;background:rgba(239,68,68,0.08) !important;}' +
+    '.apt-ruzhui-partner{border:2px solid #f97316 !important;background:rgba(249,115,22,0.06) !important;}' +
+    '.apt-name{font-size:15px;font-weight:600;color:var(--text-primary);white-space:nowrap;}' +
+    '.apt-adopted-badge{display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#e74c3c;border-radius:3px;padding:0 5px;margin-right:4px;vertical-align:middle;line-height:16px;}' +
+    '.apt-meta{font-size:11px;color:var(--text-tertiary);margin-top:2px;}' +
+    '.apt-branch{font-size:10px;padding:1px 6px;border-radius:3px;background:var(--accent-orange-dim);color:var(--accent-orange);margin-top:2px;}' +
+    '.apt-spouse{font-size:10px;color:var(--text-tertiary);margin-top:2px;opacity:0.7;}' +
+    '.apt-mother{font-size:10px;color:#8b5cf6;margin-top:2px;opacity:0.6;}' +
+    '.apt-connector{width:2px;height:18px;background:var(--accent-orange);opacity:0.2;margin:0 auto;}' +
+    '.apt-children{display:flex;gap:6px;position:relative;justify-content:center;}' +
+    '.apt-hline{position:absolute;top:0;left:6px;right:6px;height:2px;background:var(--accent-orange);opacity:0.15;}' +
+    '.apt-child{display:flex;flex-direction:column;align-items:center;position:relative;}' +
+    '.apt-vline{width:2px;height:12px;background:var(--accent-orange);opacity:0.15;}' +
+    '.apt-children-wrap{display:block;}' +
+    '.apt-collapsed>.apt-children-wrap{display:none;}' +
+    '.apt-btn-expand{width:18px;height:18px;border:none;border-radius:50%;font-size:10px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;background:var(--accent-orange);color:#fff;transition:transform 0.1s;}' +
+    '.apt-btn-expand:hover{transform:scale(1.2);}' +
+    '.apt-children-count{font-size:8px;color:var(--text-tertiary);margin-top:2px;opacity:0.5;}' +
+    '.apt-tree-filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}' +
+    '.apt-tree-filters select{padding:6px 10px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;}' +
+    '.apt-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}' +
+    '.apt-stat{background:var(--glass-bg);padding:10px 8px;border-radius:8px;text-align:center;border:1px solid var(--glass-border);}' +
+    '.apt-stat-nb{font-size:20px;font-weight:600;color:var(--accent-orange);}' +
+    '.apt-stat-lbl{font-size:10px;color:var(--text-tertiary);margin-top:2px;}' +
+    '.apt-search{width:100%;padding:8px 14px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:13px;box-sizing:border-box;}' +
+    '.apt-table-wrap{flex:1;overflow-y:auto;max-height:450px;}' +
+    '.apt-tree-toolbar{display:flex;gap:4px;align-items:center;margin-bottom:6px;flex-wrap:wrap;}' +
+    '.apt-zoom-btn{width:28px;height:24px;border:1px solid var(--glass-border);border-radius:4px;background:var(--bg-card);color:var(--text-primary);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;}' +
+    '.apt-zoom-btn:hover{background:var(--accent-orange-dim);border-color:var(--accent-orange);}' +
+    '.apt-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-secondary);min-height:400px;}' +
+    '.apt-tree-viewport:active{cursor:grabbing;}' +
+    '.apt-tree-viewport .apt-tree{transform-origin:0 0;transition:transform 0.05s;}' +
+    '.shenbo-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-secondary);min-height:280px;}' +
+    '.shenbo-tree-viewport:active{cursor:grabbing;}' +
+    '.shenbo-tree-viewport .apt-tree{transform-origin:0 0;transition:transform 0.05s;}' +
+    '.dongshan-tree-viewport,.linhai-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-secondary);}' +
+    '.dongshan-tree-viewport:active,.linhai-tree-viewport:active{cursor:grabbing;}' +
+    '.dongshan-tree-viewport .apt-tree,.linhai-tree-viewport .apt-tree,.shima-tree-viewport .apt-tree{transform-origin:0 0;transition:transform 0.05s;}' +
+    '.shima-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-secondary);}' +
+    '.shima-tree-viewport:active{cursor:grabbing;}' +
+    '.apt-tree-fullscreen .apt-right{display:none;}' +
+    '.apt-tree-fullscreen .apt-left{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;padding:56px 12px 12px 12px;border-radius:0;overflow:hidden;}' +
+    '.apt-tree-fullscreen .apt-tree-viewport{height:calc(100vh - 100px);min-height:0;}' +
+    '.apt-tree-fullscreen #apt-fullscreen-btn{background:var(--accent-orange);color:#fff;}' +
+    '';
+}
+
+// ===== 全部世代总览 · 独立模块（完整族谱树 + 编辑管理） =====
+function renderGenealogyOverview(area) {
+  var data = getData('genealogy');
+  data.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0); });
+
+  // 全部世代总览使用5个正确世系区块的数据（炎帝→秀驹），不混合存储数据
+  var allData = getAllAncientData();
+  allData.sort(function(a, b) { return (a.generation_num || 0) - (b.generation_num || 0); });
+
+  var gens = {};
+  var branchSet = {};
+  var skipBranches = ['长房', '二房', '三房', '四房', '后枫椿', '前枫椿', '临海下渡', '石马下谢', '枫椿分支', '前枫槎派', '后枫槎东房', '枫槎始祖'];
+  allData.forEach(function(p) {
+    var g = p.generation_num || 0;
+    gens[g] = (gens[g] || 0) + 1;
+    if (p.branch && p.branch !== '—' && skipBranches.indexOf(p.branch) < 0) branchSet[p.branch] = true;
+  });
+
+  var html = '<div class="admin-module">';
+  html += '<div class="admin-module-header">';
+  html += '<h3>🌳 世代总览</h3>';
+  html += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
+  html += '<button class="btn btn-accent btn-sm" onclick="showAddForm(\'genealogy\')">+ 新增人员</button>';
+  html += '<button class="btn btn-sm" onclick="exportGenealogyCSV()">📥 导出CSV</button>';
+  html += '<button class="btn btn-sm" onclick="document.getElementById(\'csv-import-input\').click()">📤 导入CSV</button>';
+  html += '<input type="file" id="csv-import-input" accept=".csv" style="display:none" onchange="importGenealogyCSV(this)">';
+  html += '<button class="btn btn-sm" onclick="generateGenealogyBook()">📖 生成谱书</button>';
+  html += '<button class="btn btn-sm" onclick="window.open(\'../pages/genealogy.html\', \'_blank\')" style="padding:8px 16px;">🔗 预览世系图</button>';
+  html += '</div></div>';
+
   // ===== 全部世代总览 =====
-  html += '<div style="margin-top:30px;padding:16px 18px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:10px;">';
+  html += '<div style="margin-top:16px;padding:16px 18px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:10px;">';
   html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">';
   html += '<span style="font-size:16px;">📋</span>';
   html += '<span style="font-size:14px;font-weight:600;color:var(--text-primary);">全部世代总览</span>';
@@ -1444,68 +1548,7 @@ function renderGenealogy(area) {
   html += '</div>'; // close 全部世代总览 container
   html += '</div>'; // close admin-module
 
-  // CSS for admin tree
-  html += '<style>' +
-    '.apt-split{display:flex;gap:16px;min-height:600px;}' +
-    '.apt-left{flex:2;min-width:0;border:1px solid var(--glass-border);border-radius:12px;background:var(--bg-card);overflow:hidden;padding:24px 20px;}' +
-    '.apt-right{width:320px;min-width:280px;display:flex;flex-direction:column;gap:12px;}' +
-    '.apt-tree{display:flex;flex-direction:column;align-items:center;gap:0;}' +
-    '.apt-person{display:flex;flex-direction:column;align-items:center;}' +
-    '.apt-card{display:inline-flex;flex-direction:column;align-items:center;padding:14px 20px 10px 20px;border-radius:10px;cursor:pointer;border:1.5px solid var(--glass-border);background:var(--glass-bg);min-width:70px;transition:all 0.15s;position:relative;}' +
-    '.apt-card-inner{display:flex;flex-direction:column;align-items:center;width:100%;}' +
-    '.apt-card-actions{position:absolute;top:2px;right:2px;display:flex;gap:2px;opacity:0;transition:opacity 0.15s;}' +
-    '.apt-card:hover .apt-card-actions{opacity:1;}' +
-    '.apt-btn-add,.apt-btn-del{width:20px;height:20px;border:none;border-radius:50%;font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;padding:0;transition:transform 0.1s;}' +
-    '.apt-btn-add:hover,.apt-btn-del:hover{transform:scale(1.2);}' +
-    '.apt-btn-add{background:#4a9eff;color:#fff;}' +
-    '.apt-btn-del{background:#e74c3c;color:#fff;}' +
-    '.apt-card:hover{border-color:var(--accent-orange);box-shadow:0 2px 8px rgba(251,146,60,0.12);transform:translateY(-1px);}' +
-    '.apt-male{border-left:3px solid #4a9eff;}.apt-female{border-left:3px solid #ff6b9d;}' +
-    '.apt-ruzhui{border:2px solid #ef4444 !important;background:rgba(239,68,68,0.08) !important;}' +
-    '.apt-ruzhui-partner{border:2px solid #f97316 !important;background:rgba(249,115,22,0.06) !important;}' +
-    '.apt-name{font-size:15px;font-weight:600;color:var(--text-primary);white-space:nowrap;}' +
-    '.apt-adopted-badge{display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#e74c3c;border-radius:3px;padding:0 5px;margin-right:4px;vertical-align:middle;line-height:16px;}' +
-    '.apt-meta{font-size:11px;color:var(--text-tertiary);margin-top:2px;}' +
-    '.apt-branch{font-size:10px;padding:1px 6px;border-radius:3px;background:var(--accent-orange-dim);color:var(--accent-orange);margin-top:2px;}' +
-    '.apt-spouse{font-size:10px;color:var(--text-tertiary);margin-top:2px;opacity:0.7;}' +
-    '.apt-mother{font-size:10px;color:#8b5cf6;margin-top:2px;opacity:0.6;}' +
-    '.apt-connector{width:2px;height:18px;background:var(--accent-orange);opacity:0.2;margin:0 auto;}' +
-    '.apt-children{display:flex;gap:6px;position:relative;justify-content:center;}' +
-    '.apt-hline{position:absolute;top:0;left:6px;right:6px;height:2px;background:var(--accent-orange);opacity:0.15;}' +
-    '.apt-child{display:flex;flex-direction:column;align-items:center;position:relative;}' +
-    '.apt-vline{width:2px;height:12px;background:var(--accent-orange);opacity:0.15;}' +
-    '.apt-children-wrap{display:block;}' +
-    '.apt-collapsed>.apt-children-wrap{display:none;}' +
-    '.apt-btn-expand{width:18px;height:18px;border:none;border-radius:50%;font-size:10px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;background:var(--accent-orange);color:#fff;transition:transform 0.1s;}' +
-    '.apt-btn-expand:hover{transform:scale(1.2);}' +
-    '.apt-children-count{font-size:8px;color:var(--text-tertiary);margin-top:2px;opacity:0.5;}' +
-    '.apt-tree-filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}' +
-    '.apt-tree-filters select{padding:6px 10px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;}' +
-    '.apt-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}' +
-    '.apt-stat{background:var(--glass-bg);padding:10px 8px;border-radius:8px;text-align:center;border:1px solid var(--glass-border);}' +
-    '.apt-stat-nb{font-size:20px;font-weight:600;color:var(--accent-orange);}' +
-    '.apt-stat-lbl{font-size:10px;color:var(--text-tertiary);margin-top:2px;}' +
-    '.apt-search{width:100%;padding:8px 14px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:13px;box-sizing:border-box;}' +
-    '.apt-table-wrap{flex:1;overflow-y:auto;max-height:450px;}' +
-    '.apt-tree-toolbar{display:flex;gap:4px;align-items:center;margin-bottom:6px;flex-wrap:wrap;}' +
-    '.apt-zoom-btn{width:28px;height:24px;border:1px solid var(--glass-border);border-radius:4px;background:var(--bg-card);color:var(--text-primary);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;}' +
-    '.apt-zoom-btn:hover{background:var(--accent-orange-dim);border-color:var(--accent-orange);}' +
-    '.apt-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-secondary);min-height:400px;}' +
-    '.apt-tree-viewport:active{cursor:grabbing;}' +
-    '.apt-tree-viewport .apt-tree{transform-origin:0 0;transition:transform 0.05s;}' +
-    '.shenbo-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-secondary);min-height:280px;}' +
-    '.shenbo-tree-viewport:active{cursor:grabbing;}' +
-    '.shenbo-tree-viewport .apt-tree{transform-origin:0 0;transition:transform 0.05s;}' +
-    '.dongshan-tree-viewport,.linhai-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-secondary);}' +
-    '.dongshan-tree-viewport:active,.linhai-tree-viewport:active{cursor:grabbing;}' +
-    '.dongshan-tree-viewport .apt-tree,.linhai-tree-viewport .apt-tree,.shima-tree-viewport .apt-tree{transform-origin:0 0;transition:transform 0.05s;}' +
-    '.shima-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-secondary);}' +
-    '.shima-tree-viewport:active{cursor:grabbing;}' +
-    '.apt-tree-fullscreen .apt-right{display:none;}' +
-    '.apt-tree-fullscreen .apt-left{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;padding:56px 12px 12px 12px;border-radius:0;overflow:hidden;}' +
-    '.apt-tree-fullscreen .apt-tree-viewport{height:calc(100vh - 100px);min-height:0;}' +
-    '.apt-tree-fullscreen #apt-fullscreen-btn{background:var(--accent-orange);color:#fff;}' +
-  '</style>';
+  html += '<style>' + getGenealogyTreeCSS() + '</style>';
 
   area.innerHTML = html;
 }
@@ -2425,7 +2468,10 @@ function saveForm(mod, editId, continueAdding) {
   if (overlay) overlay.remove();
   showToast('已保存');
   // Refresh data in background but don't re-render full tree
-  if (mod !== 'genealogy') {
+  if (currentModule === 'genealogyOverview') {
+    // 从世代总览打开的表单保存后，留在世代总览并刷新
+    setTimeout(function() { renderModule('genealogyOverview'); updateStats(); }, 100);
+  } else if (mod !== 'genealogy') {
     setTimeout(function() { renderModule(mod); updateStats(); }, 100);
   } else {
     setTimeout(function() { if (typeof updateStats === 'function') updateStats(); }, 100);
@@ -2450,7 +2496,9 @@ function deleteItem(mod, id) {
     var filename = deletedItem.file_url.replace('/uploads/', '');
     if (filename) deleteFromServer(filename);
   }
-  renderModule(mod);
+  // 在世代总览模块中删除时，留在世代总览
+  var targetMod = (currentModule === 'genealogyOverview') ? 'genealogyOverview' : mod;
+  renderModule(targetMod);
   updateStats();
   showToast('已删除');
 }

@@ -2932,6 +2932,23 @@ function toggleGenChart() {
 @media (min-width: 901px) {
   .genealogy-tree-scroll, .gz-tree-viewport { --tree-bg: #f0f4ef; --gz-bg: #f0f4ef; }
 }
+/* 手机端世系图谱底色改淡色（米白）：深蓝#1a1a2e → 米白#f5f0e6；
+   同时覆盖树区域内文字变量为深色，避免手机端强制浅字(#f5f5f5)导致白字白底看不清 */
+@media (max-width: 900px) {
+  .genealogy-tree-scroll, .gz-tree-viewport {
+    --tree-bg: #f5f0e6;
+    --gz-bg: #f5f0e6;
+    background: #f5f0e6;
+    --text-primary: #3a3226;
+    --text-secondary: #6b6355;
+    --text-tertiary: #8a8272;
+    --glass-bg: #fbf7ee;
+    --glass-border: rgba(120,105,60,0.25);
+    --accent-orange-dim: rgba(214,158,46,0.16);
+  }
+  .genealogy-tree-scroll .apt-card, .gz-tree-viewport .apt-card { background: #fbf7ee; }
+  .genealogy-tree-scroll .tree-html-card, .gz-tree-viewport .tree-html-card { background: #fbf7ee; }
+}
 .gz-tree-viewport:active{cursor:grabbing;}
 .gz-tree-viewport .apt-tree{transform-origin:0 0;transition:transform 0.05s;}
 .apt-zoom-btn{width:26px;height:26px;border-radius:4px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;}
@@ -2966,7 +2983,7 @@ setTimeout(function(){var t=vp.querySelector(".apt-tree");if(!t)return;var vpr=v
 window.zoomGenealogyTree=function(factor){var vp=document.getElementById("gz-tree-viewport");if(!vp)return;var el=vp.querySelector(".apt-tree");if(!el)return;if(factor===1){_gzZoom=1;_gzPanX=0;_gzPanY=0;}else{var r=vp.getBoundingClientRect();var mx=r.width/2,my=r.height/2,nz=Math.max(0.05,Math.min(10,_gzZoom*factor));_gzPanX=mx-(mx-_gzPanX)*(nz/_gzZoom);_gzPanY=my-(my-_gzPanY)*(nz/_gzZoom);_gzZoom=nz;}el.style.transform="translate("+_gzPanX+"px,"+_gzPanY+"px) scale("+_gzZoom+")";var zl=document.getElementById("gz-zoom-level");if(zl)zl.textContent=Math.round(_gzZoom*100)+"%";};
 </script>
 
-  <script src="../js/admin.js?v=60" onload="if(window.renderTreeSVG&&window.getGenealogyData)setTimeout(function(){renderTreeSVG(getGenealogyData())},100)"></script>
+  <script src="../js/admin.js?v=61" onload="if(window.renderTreeSVG&&window.getGenealogyData)setTimeout(function(){renderTreeSVG(getGenealogyData())},100)"></script>
 
       </style>
 
