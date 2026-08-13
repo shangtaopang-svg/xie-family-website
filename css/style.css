@@ -5144,6 +5144,28 @@ section a[href*="audio"] {
   font-size: 14px !important;
 }
 
+/* ===== 族谱查询页 高级搜索/亲缘关系 表单控件：白字白底修复 =====
+   手机端 .glass-card 已切深底(#141414)，但表单控件内联 background:var(--bg-card)=白底、
+   color:var(--text-primary)=#f5f5f5 浅色，导致性别/状态下拉「白字白底」看不清。
+   压成深底浅字，与黑底霓虹黄一致；桌面端不受影响。 */
+#genealogy-search-section input,
+#genealogy-search-section select,
+#genealogy-relation-section input,
+#genealogy-relation-section select {
+  background: #1c1c1c !important;
+  border: 1px solid #2a2a2a !important;
+  color: #f5f5f5 !important;
+}
+#genealogy-search-section select option,
+#genealogy-relation-section select option {
+  background: #1c1c1c;
+  color: #f5f5f5;
+}
+#genealogy-search-section input::placeholder,
+#genealogy-relation-section input::placeholder {
+  color: #8a8a8a !important;
+}
+
 /* ===== 家族成员页 ===== */
 #members-grid { gap: 12px !important; }
 .member-card {
