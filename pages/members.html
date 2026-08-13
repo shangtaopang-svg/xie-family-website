@@ -233,7 +233,19 @@
   <script defer src="../js/main.js?v=20260812"></script>
   <script>
     function getGenealogyData() {
-      try { return JSON.parse(localStorage.getItem('xie_admin_genealogy') || '[]'); } catch(e) { return []; }
+      try {
+        var data = JSON.parse(localStorage.getItem('xie_admin_genealogy') || '[]');
+        // 负世代（远古示意祖先：炎帝-10世、申伯-3世等）改用 generation 字段的炎帝全局世次
+        // （炎帝=1世、申伯=65世），与时间轴世次体系一致，消除「第-10世」这类错误显示
+        for (var i = 0; i < data.length; i++) {
+          var g = parseInt(data[i].generation_num, 10);
+          if (g <= 0) {
+            var gg = parseInt(data[i].generation, 10);
+            data[i].generation_num = (gg > 0) ? gg : 0;
+          }
+        }
+        return data;
+      } catch(e) { return []; }
     }
 
     function saveGenealogyData(data) {
@@ -853,8 +865,8 @@ b.style.opacity = window.scrollY > 50 ? "0.9" : "0.3"; if(window.scrollY > 50){b
 });
 document.body.appendChild(b);
 })();
-</script><link rel="stylesheet" href="/css/ai.css?v=64">
-<script src="/js/ai-assistant.js?v=64" defer></script>
+</script><link rel="stylesheet" href="/css/ai.css?v=65">
+<script src="/js/ai-assistant.js?v=65" defer></script>
 <script defer src="../js/sidebar.js?v=8"></script>
 </body>
 </html>
