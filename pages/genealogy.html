@@ -422,7 +422,7 @@
             <button class="btn btn-sm" onclick="treeZoomIn()" title="放大">🔍+</button>
             <button class="btn btn-sm" onclick="treeZoomOut()" title="缩小">🔍−</button>
             <button class="btn btn-sm" onclick="treeZoomReset()" title="重置缩放">1:1</button>
-            <button class="btn btn-sm" onclick="pageTreeFullscreen()" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;">⛶ 全屏</button><span id="tree-zoom-level" style="font-size:11px;color:var(--text-tertiary);min-width:32px;text-align:center;">100%</span>
+            <button class="btn btn-sm" onclick="pageTreeFullscreen()" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;"><span>⛶ 全屏</span><span class="mbl-fs-label" style="display:none;">⛶ 横屏</span></button><span id="tree-zoom-level" style="font-size:11px;color:var(--text-tertiary);min-width:32px;text-align:center;">100%</span>
             <button class="btn btn-sm" onclick="pageTreeFullscreen()" title="全屏观看" style="background:var(--accent-orange-dim);border-color:var(--accent-orange);">⛶ 全屏</button>
             <button class="btn btn-sm" id="mbl-global-btn" onclick="toggleMobileGlobal()" title="整树全貌 / 可读切换（手机端）" style="display:none;font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;">☗ 全貌</button>
             <button class="btn btn-sm" onclick="exportTreePNG()" title="导出为图片" style="background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3);">📥 导出</button>
@@ -619,9 +619,11 @@
   transform:translate(-50%,-50%) rotate(90deg) !important;
   transform-origin:center !important;
 }
-/* 全屏横屏隐藏父子连线（用户：全屏不要线条，卡片上下位置已表达层级；远古单链那根贯穿竖线一并去掉）。
-   退出全屏移除 .genealogy-tree-section-fullscreen class 后自动恢复显示。 */
-.genealogy-tree-section-fullscreen .tree-connector-layer { display:none !important; }
+/* 全屏横屏：保留人物间连接线（用户：全屏怎么没了每个人之间的连接线），
+   仅精准隐藏远古世系单链那根贯穿竖线（用户：远古那根竖向线条要去掉）。
+   远古单链首尾相接成纯垂直线（x=221），与其他分房树状连线不同——连线按父节点分房 tag(data-branch)，
+   全屏只藏「远古」tag 的连线，正常父→子连接线照常显示。退出全屏自动恢复。 */
+.genealogy-tree-section-fullscreen [data-branch="远古"] { visibility:hidden !important; }
 /* 全屏横屏字体醒目橘黄（用户：全屏字体不要灰色、明显点、橘黄色可以）——名字/元信息/世代徽章，
    压掉手机端 media query 的灰字（--text-tertiary #9a9690）；退出全屏自动恢复原色。 */
 .genealogy-tree-section-fullscreen .tree-html-card .card-name { color:#ff8c1a !important; font-weight:700; }
@@ -960,26 +962,28 @@ function buildCardSvg(person, data, hasChildren, descendantCount, childCount) {
   return card;
 }
 
-function buildConnectorPath(parentId, childIds, layout) {
+function buildConnectorPath(parentId, childIds, layout, br) {
   if (!layout[parentId] || childIds.length === 0) return '';
   var px = layout[parentId].x, py = layout[parentId].y;
   var paths = '';
+  // br：父节点分房 key（全屏精准隐藏远古单链竖线用）。桌面/无 tag 调用不附加属性，完全不变。
+  var attr = br ? ' data-branch="' + br + '"' : '';
   // Vertical from parent bottom to mid-point
   var midY = py + CARD_H/2 + V_GAP/2;
   if (childIds.length === 1) {
     var cx = layout[childIds[0]].x, cy = layout[childIds[0]].y;
-    paths += '<line class="tree-connector" x1="' + px + '" y1="' + (py + CARD_H/2) + '" x2="' + cx + '" y2="' + (cy - CARD_H/2) + '"/>';
+    paths += '<line class="tree-connector"' + attr + ' x1="' + px + '" y1="' + (py + CARD_H/2) + '" x2="' + cx + '" y2="' + (cy - CARD_H/2) + '"/>';
   } else {
     // Vertical from parent
-    paths += '<line class="tree-connector" x1="' + px + '" y1="' + (py + CARD_H/2) + '" x2="' + px + '" y2="' + midY + '"/>';
+    paths += '<line class="tree-connector"' + attr + ' x1="' + px + '" y1="' + (py + CARD_H/2) + '" x2="' + px + '" y2="' + midY + '"/>';
     // Horizontal bar
     var firstX = layout[childIds[0]].x;
     var lastX = layout[childIds[childIds.length-1]].x;
-    paths += '<line class="tree-connector-h" x1="' + firstX + '" y1="' + midY + '" x2="' + lastX + '" y2="' + midY + '"/>';
+    paths += '<line class="tree-connector-h"' + attr + ' x1="' + firstX + '" y1="' + midY + '" x2="' + lastX + '" y2="' + midY + '"/>';
     // Vertical to each child
     for (var i = 0; i < childIds.length; i++) {
       var cx = layout[childIds[i]].x;
-      paths += '<line class="tree-connector" x1="' + cx + '" y1="' + midY + '" x2="' + cx + '" y2="' + (layout[childIds[i]].y - CARD_H/2) + '"/>';
+      paths += '<line class="tree-connector"' + attr + ' x1="' + cx + '" y1="' + midY + '" x2="' + cx + '" y2="' + (layout[childIds[i]].y - CARD_H/2) + '"/>';
     }
   }
   return paths;
@@ -1335,6 +1339,11 @@ function renderMobileMap(data) {
   window._mblContent = { w: Math.max(svgW, maxX + CARD_W / 2 + 10), h: Math.max(svgH, maxY + CARD_H / 2 + 10) };
 
   // === Fast rendering: connectors (SVG) + all cards (HTML, single batch) ===
+  // 手机端预计算（放连线构建前）：环安全 子女数/后代总数 + id→分房 key（连线按父节点 tag，供全屏精准隐藏远古单链竖线）
+  _mblPC = mblPrecompute(data);
+  var _mblBranch = {};
+  for (var bi = 0; bi < data.length; bi++) _mblBranch[data[bi].id] = mblDeriveBranchKey(data[bi]);
+  window._mblBranch = _mblBranch;
   var cardIdsNum = cardIds.map(function(id) { return parseInt(id); });
   var html = '<div class="tree-viewport" style="transform-origin:0 0;transform:scale(' + treeScale + ');">';
   // SVG layer for connectors only
@@ -1348,18 +1357,12 @@ function renderMobileMap(data) {
     if (children.length > 0) {
       var childIds = [];
       for (var k = 0; k < children.length; k++) { if (treeLayout[children[k].id]) childIds.push(children[k].id); }
-      if (childIds.length > 0) html += buildConnectorPath(pid, childIds, treeLayout);
+      if (childIds.length > 0) html += buildConnectorPath(pid, childIds, treeLayout, _mblBranch[pid]);
     }
   }
   html += '</svg>';
   // HTML cards（positioned absolutely）——虚拟化：只建空卡片层，可见区卡片由卡片池动态增删（不重建）
   html += '<div class="tree-cards-layer" style="position:relative;width:' + svgW + 'px;height:' + svgH + 'px;"></div></div>';
-  // 手机端预计算：环安全的 子女数/后代总数（单次遍历全卡复用）
-  _mblPC = mblPrecompute(data);
-  // 分房色：全量预计算 id→branch key（Step3 Canvas 全貌用；可读卡片复用）
-  var _mblBranch = {};
-  for (var bi = 0; bi < data.length; bi++) _mblBranch[data[bi].id] = mblDeriveBranchKey(data[bi]);
-  window._mblBranch = _mblBranch;
   // Single innerHTML（只建 svg 连线层 + 空卡片层，卡片按可见区虚拟化）
   container.innerHTML = html;
   // 重置卡片池（重渲染/分支切换/live 更新后旧卡失效）→ 立即按当前可见区填充
@@ -3043,7 +3046,10 @@ document.addEventListener('DOMContentLoaded', function() {
     html += '<div style="text-align:center;margin-top:16px;"><button class="btn btn-accent" onclick="this.closest(\'.person-detail-modal\').remove();showAncestors(' + person.id + ');" style="font-size:15px;padding:10px 28px;">\u2B06 \u67E5\u770B\u7956\u5148\u6811</button></div>';
     box.innerHTML = html;
     overlay.appendChild(box);
-    document.body.appendChild(overlay);
+    // 全屏态（真全屏 section 在浏览器 Top Layer，盖过 body 一切 z-index）：弹层必须挂到全屏 section 内，
+    // 否则被全屏层压住、只在关闭全屏后显现（用户：全屏点任何人没详情，竖屏有）。竖屏/桌面挂 body 不变。
+    var mount = mblInFs() ? document.getElementById('genealogy-tree-section') : document.body;
+    mount.appendChild(overlay);
   }
 
   // ===== Enhanced Search =====
@@ -3469,7 +3475,9 @@ function locateInTree(personId) {
     closeBtn.onclick = function() { overlay.remove(); };
     box.appendChild(closeBtn);
     overlay.appendChild(box);
-    document.body.appendChild(overlay);
+    // 全屏态挂 section 内（同详情弹层：真全屏 Top Layer 压住 body 弹层）
+    var mount = mblInFs() ? document.getElementById('genealogy-tree-section') : document.body;
+    mount.appendChild(overlay);
     document.addEventListener('keydown', function escHandler(e) {
       if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', escHandler); }
     });
@@ -4136,6 +4144,11 @@ function toggleGenChart() {
   #genealogy-tree-section .btn-sm[onclick="exportTreePNG()"],
   #genealogy-tree-section #tree-zoom-level,
   #genealogy-tree-section .btn-sm[style*="accent-orange-dim"] { display:none; }
+  /* 全屏按钮手机端改「⛶ 横屏」橘黄（用户：全屏两个字改为横屏橘黄色）；
+     双 span 切换——桌面保持原「⛶ 全屏」逐字节不变，仅手机端换文案+橘黄 */
+  #genealogy-tree-section .btn-sm[onclick="pageTreeFullscreen()"] { border-color:#ff8c1a !important; background:rgba(255,140,26,0.12) !important; color:#ff8c1a !important; font-weight:600 !important; }
+  #genealogy-tree-section .btn-sm[onclick="pageTreeFullscreen()"] span { display:none !important; }
+  #genealogy-tree-section .btn-sm[onclick="pageTreeFullscreen()"] .mbl-fs-label { display:inline !important; color:#ff8c1a !important; }
   /* Canvas 全貌地图层：sticky 钉住视口（滚动不跑），整树分房配色地图；可读态隐藏释放手指事件 */
   /* Canvas 用 absolute 顶置而非 sticky：sticky 会占 flow 高度（≈视口高），把 tree-container 顶下
      ~506px，使 flyTo 定位的顶部卡片落到视口下方不可见。absolute 不占 flow 高度，靠 scroll 事件
