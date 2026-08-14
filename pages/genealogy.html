@@ -604,6 +604,21 @@
 .genealogy-tree-section-fullscreen { position:fixed !important; top:0 !important; left:0 !important; right:0 !important; bottom:0 !important; z-index:99999 !important; padding:20px !important; margin:0 !important; background:var(--bg-primary) !important; overflow:hidden !important; }
 .genealogy-tree-section-fullscreen .genealogy-tree-scroll { width:100% !important; height:100% !important; border:none !important; border-radius:0 !important; padding:0 !important; margin:0 !important; }
 .genealogy-tree-section-fullscreen #tree-container { width:100% !important; height:100% !important; }
+/* CSS 强制横屏：screen.orientation.lock 不可用时（iOS Safari/微信内核/自动旋转关闭）把树 rotate(90deg)
+   横过来展示。关键坑：旋转对象是 section 内部的 .genealogy-tree-scroll 子容器，而非 section 本身——
+   Chromium 的 :fullscreen UA 样式对全屏元素强制 position:fixed !important / inset:0 / width:100% /
+   height:100% 甚至 transform:none（UA important 优先级高于 author important），对 section 设尺寸/
+   变换全部被压死；而子容器不受 :fullscreen 约束，可自由旋转。
+   宽=100vh 高=100vw：竖屏视口下容器布局为 844×390（横屏形状），rotate(90deg) 后视觉 bbox 恰为
+   390×844 铺满视口，树随容器横屏展示。此 class 仅手机端 JS 动态加，桌面端永不触发。 */
+.genealogy-tree-section-fullscreen .genealogy-tree-scroll.mbl-fs-landscape {
+  position:absolute !important; top:50% !important; left:50% !important;
+  right:auto !important; bottom:auto !important; margin:0 !important;
+  min-width:0 !important; min-height:0 !important;   /* 压掉手机端 min-height:100% 的钳制 */
+  width:100vh !important; height:100vw !important;
+  transform:translate(-50%,-50%) rotate(90deg) !important;
+  transform-origin:center !important;
+}
 </style>
 
 <script>
@@ -3822,7 +3837,7 @@ function exitPageFullscreen() { try { if (document.exitFullscreen) document.exit
   if (closeBtn) closeBtn.style.display = 'none';
   if (isMobileTree()) {
     mblUnlockOrientation(); // 解锁横屏（真全屏退出）
-    mblHideRotateHint();    // 收起旋转提示
+    mblUnrotate();          // 移除 CSS 强制横屏
     // 手机端退出全屏：保持当前尺度与模式（treeZoomReset 的 1:1 会破坏手机默认可读 0.75，
     // 且手机缩放按钮已隐藏无从恢复）。退出只改变视口尺寸 → 布局落定后按恢复后的视口刷新
     // 虚拟化/全貌重绘（需双 rAF：类移除瞬间同步读 sc.clientWidth 是回退中间值 350，落定后才是 318）。
@@ -3863,17 +3878,16 @@ function mblFsRedraw() {
 function mblLockLandscape() {
   if (_mblOrientationLocked) return;
   var so = window.screen && screen.orientation;
-  if (!so || !so.lock) { mblShowRotateHint(); return; }   // iOS/微信内核无 API → 提示手动横屏
+  if (!so || !so.lock) { mblForceLandscape(); return; }   // iOS/微信内核无 API → CSS 强制横屏
   try {
     var p = so.lock('landscape');
     if (p && p.then) {
       p.then(function() {
         _mblOrientationLocked = true;
-        mblHideRotateHint();
         mblFsRedraw();                                  // 旋转落定后按横屏视口重绘 canvas/卡片
-      }).catch(function() { mblShowRotateHint(); });    // 锁失败（部分机型/系统禁止）→ 提示手动横屏
+      }).catch(function() { mblForceLandscape(); });    // 锁失败（部分机型/系统禁止）→ CSS 强制横屏
     }
-  } catch(e) { mblShowRotateHint(); }
+  } catch(e) { mblForceLandscape(); }
 }
 
 function mblUnlockOrientation() {
@@ -3883,33 +3897,44 @@ function mblUnlockOrientation() {
   if (so && so.unlock) { try { so.unlock(); } catch(e) {} }
 }
 
-/* 旋转提示浮层：screen.orientation.lock 不可用/失败时（iOS Safari、微信内核、部分安卓）告诉用户
-   手动转横屏；检测到真横屏自动消失，也可点「继续竖屏观看」关闭。 */
-var _mblRotateHintEl = null;
-function mblShowRotateHint() {
-  if (_mblRotateHintEl || !isMobileTree()) return;
-  var host = document.getElementById('genealogy-tree-section') || document.body;
-  var el = document.createElement('div');
-  el.id = 'mbl-rotate-hint';
-  el.style.cssText = 'position:fixed;inset:0;z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,0.82);color:#fff;text-align:center;padding:24px;box-sizing:border-box;font-size:16px;line-height:1.9;';
-  el.innerHTML = '<div style="font-size:46px;margin-bottom:10px">📱↻</div>'
-    + '请把手机旋转为<b style="color:#ffd75e">横屏</b>观看<br>'
-    + '<span style="opacity:.65;font-size:13px">旋转后自动隐藏本提示</span>'
-    + '<button id="mbl-rotate-ok" style="margin-top:20px;padding:9px 24px;border-radius:8px;border:1px solid #666;background:#1c1c1c;color:#eee;font-size:14px;cursor:pointer">继续竖屏观看</button>';
-  // 挂到全屏元素内部：真全屏时 section 进入浏览器 Top Layer，body 子元素被压在下面（canvas 会挡住），
-  // 只有挂在全屏元素内部才能盖住树内容。
-  host.appendChild(el);
-  _mblRotateHintEl = el;
-  el.querySelector('#mbl-rotate-ok').addEventListener('click', mblHideRotateHint);
-  // 轮询检测真横屏 → 自动隐藏
+/* CSS 强制横屏：screen.orientation.lock 不可用/失败时（iOS Safari、微信内核、部分安卓，
+   系统自动旋转未开时物理转动也无效）用 transform:rotate(90deg) 把树横过来展示——
+   不依赖系统自动旋转，任何浏览器都生效。附带「恢复竖屏」小按钮。 */
+var _mblFsRotated = false;     // CSS 强制横屏是否生效
+var _mblRotateNoteEl = null;   // 横屏提示条
+function mblForceLandscape() {
+  var sc = document.getElementById('tree-scroll-container');
+  var section = document.getElementById('genealogy-tree-section');
+  if (!sc || !section || _mblFsRotated) return;
+  // 设备本身已是横屏（系统自动旋转开着、用户已转过）→ 不叠加 CSS 旋转，否则 90°+90°=倒屏
+  if (window.matchMedia && matchMedia('(orientation:landscape)').matches) return;
+  sc.classList.add('mbl-fs-landscape');   // 旋转 scroll 容器；不能旋转 section（:fullscreen UA 压死）
+  _mblFsRotated = true;
+  if (!_mblRotateNoteEl) {
+    var note = document.createElement('div');
+    note.id = 'mbl-rotate-note';
+    // section 未被旋转，提示条直接显示为正，无需反向
+    note.style.cssText = 'position:absolute;right:10px;bottom:10px;z-index:999998;display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.72);color:#fff;padding:6px 10px;border-radius:8px;font-size:12px;';
+    note.innerHTML = '<span>横屏显示中</span>'
+      + '<button id="mbl-rotate-back" style="padding:3px 10px;border-radius:6px;border:1px solid #888;background:#2a2a2a;color:#eee;font-size:12px;cursor:pointer;">恢复竖屏</button>';
+    section.appendChild(note);
+    _mblRotateNoteEl = note;
+    note.querySelector('#mbl-rotate-back').addEventListener('click', function(e) { e.stopPropagation(); mblUnrotate(); });
+  }
+  mblFsRedraw(); // 旋转后树视口由 100vw×100vh 变为 100vh×100vw → 重绘 canvas/卡片
+  // 轮询：若用户随后系统真横屏（转动手机成功）→ 移除 CSS 旋转避免双重旋转倒屏
   (function poll() {
-    if (!_mblRotateHintEl) return;
-    if (window.matchMedia && matchMedia('(orientation:landscape)').matches) { mblHideRotateHint(); return; }
-    setTimeout(poll, 300);
+    if (!_mblFsRotated) return;
+    if (window.matchMedia && matchMedia('(orientation:landscape)').matches) { mblUnrotate(); return; }
+    setTimeout(poll, 400);
   })();
 }
-function mblHideRotateHint() {
-  if (_mblRotateHintEl) { _mblRotateHintEl.remove(); _mblRotateHintEl = null; }
+function mblUnrotate() {
+  var sc = document.getElementById('tree-scroll-container');
+  if (sc) sc.classList.remove('mbl-fs-landscape');
+  _mblFsRotated = false;
+  if (_mblRotateNoteEl) { _mblRotateNoteEl.remove(); _mblRotateNoteEl = null; }
+  if (isMobileTree()) mblFsRedraw();
 }
 
 function mblHandleFsChange() {
@@ -3926,7 +3951,7 @@ function mblHandleFsChange() {
     var closeBtn = document.getElementById('fs-close-btn');
     if (closeBtn) closeBtn.style.display = 'none';
     mblUnlockOrientation();
-    mblHideRotateHint();
+    mblUnrotate();
     mblFsRedraw();
   }
 }
