@@ -55,11 +55,25 @@ function isPublicForVisitor(doc) {
   return true;
 }
 
+// 谱书/PDF 派生文档前缀（上册/下册 PDF 及其分代整理/解析）。
+// 用户规则：世系图 / 最亲的人 / 炎帝到你世系等族人世系信息问题，唯一来源是
+// 管理后台-族谱管理数据（data/genealogy.json → bio 块、nameIndex），
+// 不得以 上册.PDF / 下册.PDF 为来源。故世系/亲属类查询在检索时剔除这些文档；
+// 公开村史等非世系查询不受影响。
+const PDF_LINEAGE_PREFIXES = ['book1', 'book2', 'extract', 'analysis'];
+
+function isPdfDerived(doc) {
+  const p = String(doc.id).slice(0, String(doc.id).indexOf(':'));
+  return PDF_LINEAGE_PREFIXES.includes(p);
+}
+
 /**
  * @param {string} query
- * @param {{top?:number, maxChars?:number, publicOnly?:boolean}} opts
+ * @param {{top?:number, maxChars?:number, publicOnly?:boolean, excludePdf?:boolean}} opts
  *   publicOnly=true：只返回访客可见文档（公开前缀白名单内，且非世系链图谱），
  *   用于未验证访客——保证其 AI 上下文不含任何族人的个人信息（含世系脉络）。
+ *   excludePdf=true：剔除 上册/下册 PDF 及其谱书派生文档（book1/book2/extract/analysis），
+ *   用于世系/亲属类查询——保证该类问题唯一来源是管理后台-族谱管理数据。
  * @returns {{id:string, ref:string, text:string, score:number}[]}
  */
 function search(query, opts) {
@@ -69,6 +83,7 @@ function search(query, opts) {
   const top = (opts && opts.top) || 4;
   const maxChars = (opts && opts.maxChars) || 3000;
   const publicOnly = !!(opts && opts.publicOnly);
+  const excludePdf = !!(opts && opts.excludePdf);
 
   const qBigrams = bigramsOf(q);
   const scores = new Map(); // docId -> score
@@ -109,6 +124,7 @@ function search(query, opts) {
     .map(([id, score]) => ({ id, score, doc: byId.get(id) }))
     .filter(r => r.doc)
     .filter(r => !publicOnly || isPublicForVisitor(r.doc))
+    .filter(r => !excludePdf || !isPdfDerived(r.doc))
     .sort((a, b) => b.score - a.score);
 
   const out = [];
@@ -122,4 +138,4 @@ function search(query, opts) {
   return out;
 }
 
-module.exports = { search, ensureLoaded };
+module.exports = { search, ensureLoaded, isPdfDerived, PDF_LINEAGE_PREFIXES };

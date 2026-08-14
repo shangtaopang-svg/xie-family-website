@@ -82,6 +82,23 @@ function isPersonPrivacyRequest(msg, nameIndex) {
   return /我的|本人|我自己|他|她|族人|族亲|他们|某/.test(m);
 }
 
+/**
+ * 判定提问是否「与世系/族人世系信息相关」——用于检索来源过滤（比 isLineageRequest 更宽，
+ * 不含身份语义，纯历史问题如「始祖源流」也会命中而剔除 PDF，由公开村史种子作答）。
+ * 命中 → document/general 检索路径须剔除 上册/下册 PDF 派生文档，
+ * 保证世系图、最亲的人、炎帝到你世系等问题的唯一来源是管理后台-族谱管理数据。
+ */
+function isLineageRelated(msg) {
+  const m = String(msg || '').trim();
+  if (!m) return false;
+  if (LINEAGE_KEYWORDS.some(k => m.includes(k))) return true;
+  // 亲属关系式："A 和 B 什么关系" / "A 和 B 的关系"
+  if (/关系/.test(m)) return true;
+  // 炎帝/神农 + 世系脉络（即使没写"世系"二字）
+  if (/炎帝|神农/.test(m) && /世系|一脉|传承|后代|直系|谱系/.test(m)) return true;
+  return false;
+}
+
 // 文献/村史类关键词
 const DOCUMENT_KEYWORDS = [
   '村史', '迁徙', '记载', '生平', '上册', '下册', '字辈', '宗谱', '家谱',
@@ -107,4 +124,4 @@ function classifyIntent(msg, nameIndex) {
   return 'general';
 }
 
-module.exports = { classifyIntent, isLineageRequest, isPersonPrivacyRequest, LINEAGE_KEYWORDS, PERSONAL_KEYWORDS, DOCUMENT_KEYWORDS };
+module.exports = { classifyIntent, isLineageRequest, isPersonPrivacyRequest, isLineageRelated, LINEAGE_KEYWORDS, PERSONAL_KEYWORDS, DOCUMENT_KEYWORDS };
