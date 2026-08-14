@@ -1440,6 +1440,7 @@ function fitMobileTree() {
 function toggleMobileGlobal() {
   // ☗ 全局 按钮：全貌（canvas 整树地图）⇄ 可读（原生滚动卡片），返回可读时恢复原滚动位置
   if (!isMobileTree()) return;
+  if (mblInFs()) return; // 全屏横屏强制可读：禁用切全貌，避免出现蓝色圆点连线（用户明确不要）
   if (_mblMode === 'overview') {
     cancelMblFly();
     // 先取全貌视口中心的世界坐标（treeScale 仍为全貌尺度），用作可读回落的兜底锚点
@@ -1454,31 +1455,7 @@ function toggleMobileGlobal() {
         sc.scrollLeft = Math.max(0, Math.min(maxL, _mblReadableScroll.l));
         sc.scrollTop = Math.max(0, Math.min(maxT, _mblReadableScroll.t));
       }
-      // 兜底：恢复位在稀疏区（可见 0 卡，如整树左上角）时，改落到离全貌视口中心最近的节点，
-      // 避免☗回可读后一片空白（整树 1250 人左上角天然稀疏，Step4 实测；1260 次遍历 <1ms）
-      var rect = mblVisibleRect();
-      var hasAny = false;
-      if (rect) {
-        for (var id in treeLayout) {
-          var p = treeLayout[id];
-          if (p && p.x >= rect.x0 && p.x <= rect.x1 && p.y >= rect.y0 && p.y <= rect.y1) { hasAny = true; break; }
-        }
-      }
-      if (!hasAny) {
-        var bestId = null, bestD = Infinity;
-        for (var id2 in treeLayout) {
-          var q = treeLayout[id2];
-          if (!q) continue;
-          var dx = q.x - ovCenter.x, dy = q.y - ovCenter.y;
-          var d = dx * dx + dy * dy;
-          if (d < bestD) { bestD = d; bestId = id2; }
-        }
-        if (bestId) {
-          var qq = treeLayout[bestId];
-          sc.scrollLeft = Math.max(0, Math.min(maxL, qq.x * treeScale - sc.clientWidth / 2));
-          sc.scrollTop = Math.max(0, Math.min(maxT, qq.y * treeScale - sc.clientHeight * 0.2));
-        }
-      }
+      mblEnsureCardsNear(ovCenter); // 兜底：恢复位在稀疏区（可见 0 卡）时贴到离全貌视口中心最近的节点
       mblVirtualize(); // 直接按最终滚动位渲染（不依赖节流 rAF，与飞入收尾同因）
     }
   } else {
@@ -1502,6 +1479,8 @@ var _mblDragMoved = false;      // 鼠标拖拽后拦截 click（避免误触卡
 var _mblPinch = null;
 var _mblReadableScroll = null;  // 进入全貌前的可读滚动位置，用于返回
 var _mblFlyId = 0;
+var _mblFsAnchorPending = false; // 全屏进入可读：布局落定后先锚到卡片密集区（空角白屏兜底）
+var _mblFsAnchor = null;         // 兜底锚点世界坐标（全貌视口中心）
 
 function mblMapEnsureCanvas() {
   var sc = document.getElementById('tree-scroll-container');
@@ -1706,9 +1685,16 @@ function setMblMode(mode) {
   updateGlobalBtnLabel();
 }
 
+function mblInFs() {
+  // 手机端「全屏态」判断：真全屏（浏览器 Top Layer）或假全屏 class（iOS/微信无 API 时仅假全屏）
+  var sec = document.getElementById('genealogy-tree-section');
+  return !!(document.fullscreenElement || (sec && sec.classList.contains('genealogy-tree-section-fullscreen')));
+}
+
 function mblAutoMode() {
-  // 手势缩放过程中按 treeScale 阈值自动切换模式（≥0.5 可读卡片 / <0.5 全貌地图）
-  var overview = treeScale < 0.5;
+  // 手势缩放过程中按 treeScale 阈值自动切换模式（≥0.5 可读卡片 / <0.5 全貌地图）。
+  // 全屏态强制保持可读卡片（用户：全屏横屏不要 canvas 蓝点+线条的全貌图，要可缩放平移的卡片树）
+  var overview = !mblInFs() && treeScale < 0.5;
   _mblMode = overview ? 'overview' : 'readable';
   var cv = document.getElementById('gz-map-canvas');
   var vp = document.querySelector('#tree-container .tree-viewport');
@@ -1738,6 +1724,67 @@ function enterMblOverview(savedScroll) {
   setMblMode('overview');
 }
 
+function mblFsLayoutOffset(sc, vx, vy) {
+  // 旋转态「绝对位置」换算：视觉坐标 (vx,vy)（相对 scroll 容器视觉 rect 的偏移）→ 布局轴坐标（滚动位单位）。
+  // CSS 强制横屏 rotate(90°) 下视觉↔布局轴：视觉水平 = 布局垂直（世界 y 堆叠）、视觉垂直 = 布局水平（世界 x 世代）。
+  // 实测映射（变换矩阵 + 居中推导，非按比例缩放）：布局x = 视觉垂直 vy、布局y = 视觉宽 − 视觉水平 vx。
+  // 非旋转态恒等（vx→布局x、vy→布局y）。仅用于绝对位置（捏合中点、滚轮光标）；增量平移用 mblFsLayoutDelta。
+  if (sc.classList.contains('mbl-fs-landscape')) {
+    var r = sc.getBoundingClientRect();
+    if (!r.width || !r.height) return { ox: vx, oy: vy };
+    return { ox: vy, oy: r.width - vx };
+  }
+  return { ox: vx, oy: vy };
+}
+
+function mblFsLayoutDelta(sc, dx, dy) {
+  // 旋转态「增量」换算：视觉拖动/横滑增量 (dx,dy) → 布局轴滚动增量（内容跟随光标）。
+  // rotate90° 后：视觉水平 dx → 布局垂直 scrollTop(+dx)、视觉垂直 dy → 布局水平 scrollLeft(−dy)。
+  // 非旋转态恒等（scrollLeft+=dx、scrollTop+=dy）。与 mblFsLayoutOffset 的绝对位置公式不同，不可混用。
+  if (sc.classList.contains('mbl-fs-landscape')) {
+    return { ox: -dy, oy: -dx };
+  }
+  return { ox: dx, oy: dy };
+}
+
+function mblEnsureCardsNear(anchor) {
+  // 可读态当前可见区若无卡片（布局空角/稀疏区）→ 滚动位贴到离 anchor 最近的节点，避免白屏。
+  // anchor 通常传全貌视口中心（内容中心）；缺省用当前视口中心。可见区有卡则不动，不打断平移。
+  var sc = document.getElementById('tree-scroll-container');
+  if (!sc || !treeLayout || !treeScale) return;
+  var rect = mblVisibleRect();
+  if (!rect) return;
+  var hasAny = false;
+  for (var id in treeLayout) {
+    var p = treeLayout[id];
+    if (p && p.x >= rect.x0 && p.x <= rect.x1 && p.y >= rect.y0 && p.y <= rect.y1) { hasAny = true; break; }
+  }
+  if (hasAny) return;
+  var ax = anchor ? anchor.x : (sc.scrollLeft + sc.clientWidth / 2) / treeScale;
+  var ay = anchor ? anchor.y : (sc.scrollTop + sc.clientHeight / 2) / treeScale;
+  var bestId = null, bestD = Infinity;
+  for (var id2 in treeLayout) {
+    var q = treeLayout[id2];
+    if (!q) continue;
+    var d = (q.x - ax) * (q.x - ax) + (q.y - ay) * (q.y - ay);
+    if (d < bestD) { bestD = d; bestId = id2; }
+  }
+  if (!bestId) return;
+  var qq = treeLayout[bestId];
+  var maxL = sc.scrollWidth - sc.clientWidth, maxT = sc.scrollHeight - sc.clientHeight;
+  if (sc.classList.contains('mbl-fs-landscape')) {
+    // 旋转态（CSS rotate90 假横屏）：布局 y 轴（堆叠）→ 视觉水平、布局 x 轴（世代）→ 视觉垂直。
+    // 实测映射 cvx=VW-(wy*s-st)、cvy=(wx*s-sl)，故居中公式取屏幕中心（VW/VH 是视觉尺寸，layout 轴 1:1）。
+    // sc.clientWidth/clientHeight 是旋转前布局尺寸（844/390），不能用于视觉居中（历史空角白屏根因之一）。
+    var VW = window.innerWidth, VH = window.innerHeight;
+    sc.scrollLeft = Math.max(0, Math.min(maxL, qq.x * treeScale - VH / 2));
+    sc.scrollTop = Math.max(0, Math.min(maxT, qq.y * treeScale - VW / 2));
+  } else {
+    sc.scrollLeft = Math.max(0, Math.min(maxL, qq.x * treeScale - sc.clientWidth / 2));
+    sc.scrollTop = Math.max(0, Math.min(maxT, qq.y * treeScale - sc.clientHeight * 0.2));
+  }
+}
+
 function mblInitPinch() {
   var sc = document.getElementById('tree-scroll-container');
   if (!sc || sc.dataset.mblPinch) return;
@@ -1746,11 +1793,13 @@ function mblInitPinch() {
     if (e.touches.length === 2) {
       var dx = e.touches[0].clientX - e.touches[1].clientX, dy = e.touches[0].clientY - e.touches[1].clientY;
       var rect = sc.getBoundingClientRect();
+      var midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+      var midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+      var lo = mblFsLayoutOffset(sc, midX, midY); // 旋转态：视觉坐标 → 布局轴偏移（布局坐标才是滚动位单位）
       _mblPinch = {
         d: Math.sqrt(dx * dx + dy * dy) || 1, s0: treeScale,
         sl: sc.scrollLeft, st: sc.scrollTop,
-        midX: (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left,
-        midY: (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top
+        midOx: lo.ox, midOy: lo.oy
       };
     }
   }, { passive: true });
@@ -1759,22 +1808,21 @@ function mblInitPinch() {
     e.preventDefault();
     var dx = e.touches[0].clientX - e.touches[1].clientX, dy = e.touches[0].clientY - e.touches[1].clientY;
     var d = Math.sqrt(dx * dx + dy * dy); if (!d) return;
-    var ns = Math.max(0.02, Math.min(2.5, _mblPinch.s0 * (d / _mblPinch.d)));
-    var rect = sc.getBoundingClientRect();
-    var midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
-    var midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+    // 全屏（强制可读）缩放下限 0.5：卡片仍可读、可见卡 ~126 张 < 密度守卫 220；低于则卡池被清空变白屏
+    var nsMin = mblInFs() ? 0.5 : 0.02;
+    var ns = Math.max(nsMin, Math.min(2.5, _mblPinch.s0 * (d / _mblPinch.d)));
     var vw = sc.clientWidth, vh = sc.clientHeight;
     treeScale = ns;
     applyTreeTransformSVG();
-    if (ns >= 0.5) {
-      // 可读态：保持捏合中点下的内容点不动
-      var cAX = (_mblPinch.sl + _mblPinch.midX) / _mblPinch.s0;
-      var cAY = (_mblPinch.st + _mblPinch.midY) / _mblPinch.s0;
-      var maxL = sc.scrollWidth - vw, maxT = sc.scrollHeight - vh;
-      sc.scrollLeft = Math.max(0, Math.min(maxL, cAX * ns - midX));
-      sc.scrollTop = Math.max(0, Math.min(maxT, cAY * ns - midY));
+    var cAX = (_mblPinch.sl + _mblPinch.midOx) / _mblPinch.s0; // 捏合中点下的世界坐标（布局轴换算，旋转态已由 touchstart 处理）
+    var cAY = (_mblPinch.st + _mblPinch.midOy) / _mblPinch.s0;
+    var maxL = sc.scrollWidth - vw, maxT = sc.scrollHeight - vh;
+    if (ns >= 0.5 || mblInFs()) {
+      // 可读态 / 全屏态（强制可读卡片，不切 canvas 全貌）：保持捏合中点下的内容点不动
+      sc.scrollLeft = Math.max(0, Math.min(maxL, cAX * ns - _mblPinch.midOx));
+      sc.scrollTop = Math.max(0, Math.min(maxT, cAY * ns - _mblPinch.midOy));
     } else {
-      sc.scrollLeft = 0; sc.scrollTop = 0; // 全貌态：canvas 整树入屏，无需锚点
+      sc.scrollLeft = 0; sc.scrollTop = 0; // 非全屏全貌态：canvas 整树入屏，无需锚点
     }
     mblAutoMode();
   }, { passive: false });
@@ -1783,7 +1831,11 @@ function mblInitPinch() {
     if (e.touches.length < 2) {
       var pinchStart = { l: _mblPinch.sl, t: _mblPinch.st }; // 捏合起点滚动位（返回可读时恢复）
       _mblPinch = null;
-      if (treeScale < 0.5) enterMblOverview(pinchStart); // 全貌态吸附整树适配 + 画 canvas
+      if (treeScale < 0.5 && !mblInFs()) enterMblOverview(pinchStart); // 非全屏：全貌吸附整树 + 画 canvas
+      else if (treeScale < 0.5) {
+        treeScale = _MBL_DEFAULT_SCALE; applyTreeTransformSVG(); setMblMode('readable');
+        mblEnsureCardsNear(); // 兜底：全屏 pinch 收起可能落在稀疏区 → 贴最近节点，避免白屏
+      }
       else setMblMode('readable');
     }
   }, { passive: true });
@@ -1805,29 +1857,34 @@ function mblInitMouse() {
     e.preventDefault();
     var content = window._mblContent;
     if (!content || !treeScale) return;
-    // 触控板横向滑动（|deltaX|>|deltaY|）→ 平移不缩放
-    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) { sc.scrollLeft += e.deltaX; return; }
+    // 触控板横向滑动（|deltaX|>|deltaY|）→ 平移不缩放（旋转态：增量换算 mblFsLayoutDelta）
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      var dlo = mblFsLayoutDelta(sc, e.deltaX, e.deltaY);
+      sc.scrollLeft += dlo.ox; sc.scrollTop += dlo.oy;
+      return;
+    }
     var f;
     if (e.ctrlKey) f = Math.exp(-e.deltaY * 0.01);          // trackpad 捏合手势
     else f = e.deltaY < 0 ? 1.2 : 1 / 1.2;
     var rect = sc.getBoundingClientRect();
-    var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    var lo = mblFsLayoutOffset(sc, e.clientX - rect.left, e.clientY - rect.top); // 旋转态：视觉坐标 → 布局轴偏移
     var s0 = treeScale;
     var fit = Math.max(0.02, Math.min(1, Math.min((sc.clientWidth - 20) / content.w, (sc.clientHeight - 20) / content.h)));
-    var ns = Math.max(fit, Math.min(2.5, s0 * f));
+    var nsMin = mblInFs() ? 0.5 : fit; // 全屏强制可读：下限 0.5，卡池不被密度守卫清空
+    var ns = Math.max(nsMin, Math.min(2.5, s0 * f));
     if (Math.abs(ns - s0) < 1e-4) return;
     // 光标下的内容点（考虑居中偏移 ox/oy）：screen = world*s + ox - scroll
     var ox0 = Math.max(0, (sc.clientWidth - content.w * s0) / 2);
     var oy0 = Math.max(0, (sc.clientHeight - content.h * s0) / 2);
-    var wx = (sc.scrollLeft + mx - ox0) / s0;
-    var wy = (sc.scrollTop + my - oy0) / s0;
+    var wx = (sc.scrollLeft + lo.ox - ox0) / s0;
+    var wy = (sc.scrollTop + lo.oy - oy0) / s0;
     treeScale = ns;
     applyTreeTransformSVG();
     var ox1 = Math.max(0, (sc.clientWidth - content.w * ns) / 2);
     var oy1 = Math.max(0, (sc.clientHeight - content.h * ns) / 2);
     var maxL = sc.scrollWidth - sc.clientWidth, maxT = sc.scrollHeight - sc.clientHeight;
-    sc.scrollLeft = Math.max(0, Math.min(maxL, wx * ns + ox1 - mx));
-    sc.scrollTop = Math.max(0, Math.min(maxT, wy * ns + oy1 - my));
+    sc.scrollLeft = Math.max(0, Math.min(maxL, wx * ns + ox1 - lo.ox));
+    sc.scrollTop = Math.max(0, Math.min(maxT, wy * ns + oy1 - lo.oy));
     mblAutoMode();
   }, { passive: false });
 
@@ -1844,9 +1901,10 @@ function mblInitMouse() {
     if (!dragging) return;
     var dx = e.clientX - mx0, dy = e.clientY - my0;
     if (Math.abs(dx) + Math.abs(dy) > 4) moved = true;
+    var lo = mblFsLayoutDelta(sc, dx, dy); // 旋转态：视觉拖动增量 → 布局轴增量（mblFsLayoutDelta，非绝对位置公式）
     var maxL = sc.scrollWidth - sc.clientWidth, maxT = sc.scrollHeight - sc.clientHeight;
-    sc.scrollLeft = Math.max(0, Math.min(maxL, sl0 - dx));
-    sc.scrollTop = Math.max(0, Math.min(maxT, st0 - dy));
+    sc.scrollLeft = Math.max(0, Math.min(maxL, sl0 - lo.ox));
+    sc.scrollTop = Math.max(0, Math.min(maxT, st0 - lo.oy));
   });
   window.addEventListener('mouseup', function() {
     if (!dragging) return;
@@ -3790,12 +3848,22 @@ function pageTreeFullscreen() {
     // 手机端：全屏只改变视口尺寸（section 由 position:fixed 盖满视口）→ 布局落定后按新视口
     // 刷新虚拟化/全貌重绘（与 exitPageFullscreen 对称，否则 canvas 停在旧 62vh 尺寸不随全屏缩放）。
     if (isMobileTree()) {
-      requestAnimationFrame(function() {
-        requestAnimationFrame(function() {
-          if (_mblMode === 'readable') mblVizThrottled();
-          else if (_mblMode === 'overview') mblMapDraw();
-        });
-      });
+      // 全屏直接给可读卡片树（用户：全屏横屏不要 canvas 蓝点+线条的全貌图，要可缩放平移的卡片树）。
+      // 初始非全屏默认是 overview 全貌，全屏进入时强制切可读：可读尺度 + 显示卡片层。
+      var fsAnchor = null;
+      if (_mblMode === 'overview') {
+        // 锚点取内容几何中心（主世系密集带所在，见 mblEnsureCardsNear）。不用 _mblContentPoint()：
+        // overview fit 尺度下它返回 y≈8166 超内容高 5452，最近卡片落在稀疏底部只显示几张卡。
+        var mbc = window._mblContent;
+        if (mbc) fsAnchor = { x: mbc.w / 2, y: mbc.h / 2 };
+        treeScale = _MBL_DEFAULT_SCALE;
+        applyTreeTransformSVG();
+        setMblMode('readable');
+      }
+      // 布局落定（含 CSS 强制横屏 rotate 生效）后：先锚到卡片密集区再渲染，避免 (0,0) 空角白屏
+      _mblFsAnchorPending = true;
+      _mblFsAnchor = fsAnchor || null;
+      mblFsRedraw();
       return;
     }
     requestAnimationFrame(function() {
@@ -3869,7 +3937,13 @@ var _mblOrientationLocked = false;
 function mblFsRedraw() {
   requestAnimationFrame(function() {
     requestAnimationFrame(function() {
-      if (_mblMode === 'readable') mblVizThrottled();
+      if (_mblMode === 'readable') {
+        if (_mblFsAnchorPending) {   // 全屏进入：先落锚点（空角白屏兜底），再按最终滚动位渲染
+          _mblFsAnchorPending = false;
+          mblEnsureCardsNear(_mblFsAnchor);
+        }
+        mblVizThrottled();
+      }
       else if (_mblMode === 'overview') mblMapDraw();
     });
   });
