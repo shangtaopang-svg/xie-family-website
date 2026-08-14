@@ -634,9 +634,9 @@
 /* 全屏横屏：详情弹层也横屏（用户：全屏点人详情页也要横屏，不需转手机）+ 白底改淡黄（用户：全部白底刺眼，改淡黄）。
    仅手机端 media 内，桌面零影响（红线）。 */
 @media (max-width:900px) {
-  /* ① 全屏整树大面白底改暖淡黄（用户：全部白底刺眼，改淡黄；卡片仍白，黄底白卡自然分层；连接线/橘字不受影响）。
-     section 用 #id 提特异性：style.css 手机端 [class*="card"]:not(.mb-tab) 会把 .glass-card 压成深底(--mb-card)，
-     全屏 20px padding 会在黄树四周露深色框，必须一并压成黄底 */
+  /* ① 全屏整树大面白底改暖淡黄（用户：全部白底刺眼，改淡黄；卡片仍白，黄底白卡自然分层；连接线保留，
+     字体改深暖棕见 ④——黄底上橙字对比弱）。section 用 #id 提特异性：style.css 手机端
+     [class*="card"]:not(.mb-tab) 会把 .glass-card 压成深底(--mb-card)，全屏 20px padding 会在黄树四周露深色框，必须一并压成黄底 */
   #genealogy-tree-section.genealogy-tree-section-fullscreen,
   .genealogy-tree-section-fullscreen .genealogy-tree-scroll { background:#f8ecd1 !important; }
   /* ② 弹层卡片（详情页 person-detail-box + 祖先树弹层）白底改淡黄；内嵌 var(--glass-bg) 信息面板暖化 */
@@ -658,6 +658,21 @@
     transform:translate(-50%,-50%) rotate(90deg) !important;
     transform-origin:center !important;
   }
+  /* ④ 黄底配套：字体改深暖棕（用户：底色是黄色，字体颜色是黄色就不合理）——黄底 #f8ecd1 上
+     #ff8c1a/#ffb24d 橙字对比弱、白卡上 #ffb24d 更淡。改深暖棕高对比：
+     卡片名 #5b3a10(白卡~8.6:1)/元信息 #8a6d3b/世代徽章 #6b4a1f+奶油底；
+     ⛶横屏按钮 深棕字+奶油底（原橙字橙边在黄底看不清）；☗全貌等 .btn-sm 文字深棕；
+     标题链接 #ff6b00 改 #7a4a12；提示语/缩放级内联 var(--text-tertiary) 灰字改深。
+     全用 #id 前缀提特异性压 631-633 全局橙字（桌面 fullscreen 仍走橙字，红线零影响）。
+     退出全屏自动恢复原色。 */
+  #genealogy-tree-section.genealogy-tree-section-fullscreen .tree-html-card .card-name { color:#5b3a10 !important; font-weight:700; }
+  #genealogy-tree-section.genealogy-tree-section-fullscreen .tree-html-card .card-meta { color:#8a6d3b !important; }
+  #genealogy-tree-section.genealogy-tree-section-fullscreen .tree-html-card .mb-hx-badge { color:#6b4a1f !important; border-color:rgba(107,74,31,.35) !important; background:rgba(255,236,181,.5) !important; }
+  #genealogy-tree-section.genealogy-tree-section-fullscreen .btn-sm { color:#5b3a10 !important; }
+  #genealogy-tree-section.genealogy-tree-section-fullscreen .btn-sm[onclick="pageTreeFullscreen()"] { color:#5b3a10 !important; border-color:#8a6d3b !important; background:rgba(255,236,181,.6) !important; }
+  #genealogy-tree-section.genealogy-tree-section-fullscreen .btn-sm[onclick="pageTreeFullscreen()"] .mbl-fs-label { color:#5b3a10 !important; }
+  #genealogy-tree-section.genealogy-tree-section-fullscreen a[href*="focus-tree"] { color:#7a4a12 !important; }
+  #genealogy-tree-section.genealogy-tree-section-fullscreen [style*="var(--text-tertiary)"] { color:#8a6d3b !important; }
 }
 </style>
 
@@ -1227,7 +1242,7 @@ function mblPrecompute(data) {
 
 function mblIsKey(p) {
   return !!(p && (p.highlight === true ||
-    /^(小四|文杲|攒|撰|彬|乾|文对|炎帝|临魁|申伯)/.test(p.name || '')));
+    /^(小四|文杲|攒|撰|彬|乾|文对|炎帝|临魁|申伯|缵|衡|闓|文榘)/.test(p.name || '')));
 }
 
 function mblHxTier(desc) {
@@ -1546,9 +1561,16 @@ function mblMapPrep() {
   _mblMapEdges = [];
   if (!window._mblContent || !_mblPC) return;
   var childOf = _mblPC.childOf || {};
+  var bm = window._mblBranch || {};
   for (var id in treeLayout) {
     var p = treeLayout[id]; if (!p) continue;
     var kids = childOf[id] || [];
+    // 远古单链：独子直连 + 非现代两房 → 全貌 canvas 也跳过这条边（与可读模式 .tree-connector-single
+    // CSS 隐藏同规则；否则「全部世系」overview 位图仍把远古单传链画成竖向贯穿线，用户反馈仍在）
+    if (kids.length === 1) {
+      var bkey = bm[id];
+      if (bkey && bkey !== '后枫槎' && bkey !== '前枫槎') continue;
+    }
     for (var i = 0; i < kids.length; i++) {
       var kp = treeLayout[kids[i].id]; if (!kp) continue;
       _mblMapEdges.push([p.x, p.y, kp.x, kp.y]);
@@ -1790,11 +1812,43 @@ function mblFsLayoutDelta(sc, dx, dy) {
   return { ox: dx, oy: dy };
 }
 
-function mblEnsureCardsNear(anchor) {
+function mblScrollToWorld(x, y) {
+  // 把世界点 (x,y) 居中到视口中心（带钳制）。旋转态（CSS rotate90 假横屏）视觉↔布局轴映射
+  // 实测 cvx=VW-(wy*s-st)、cvy=(wx*s-sl) → 居中公式取屏幕中心（VW/VH 视觉尺寸，layout 轴 1:1）；
+  // 非旋转态用容器布局尺寸。内容小于视口的轴钳到 0（自然贴齐），另一轴精确居中。
+  var sc = document.getElementById('tree-scroll-container');
+  if (!sc || !treeScale) return;
+  var maxL = sc.scrollWidth - sc.clientWidth, maxT = sc.scrollHeight - sc.clientHeight;
+  if (sc.classList.contains('mbl-fs-landscape')) {
+    var VW = window.innerWidth, VH = window.innerHeight;
+    sc.scrollLeft = Math.max(0, Math.min(maxL, x * treeScale - VH / 2));
+    sc.scrollTop = Math.max(0, Math.min(maxT, y * treeScale - VW / 2));
+  } else {
+    sc.scrollLeft = Math.max(0, Math.min(maxL, x * treeScale - sc.clientWidth / 2));
+    sc.scrollTop = Math.max(0, Math.min(maxT, y * treeScale - sc.clientHeight / 2));
+  }
+}
+
+function mblLayoutCenter() {
+  // 当前筛选内容几何中心（treeLayout 已按分支筛过，远古等小分支=分支自身 bbox 中心）
+  var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity, any = false;
+  for (var id in treeLayout) {
+    var p = treeLayout[id]; if (!p) continue;
+    any = true;
+    if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
+    if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
+  }
+  if (!any) return null;
+  return { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
+}
+
+function mblEnsureCardsNear(anchor, force) {
   // 可读态当前可见区若无卡片（布局空角/稀疏区）→ 滚动位贴到离 anchor 最近的节点，避免白屏。
   // anchor 通常传全貌视口中心（内容中心）；缺省用当前视口中心。可见区有卡则不动，不打断平移。
+  // force=true（全屏进入强制居中）：直接以 anchor（筛选内容中心）居中，不要求可见区无卡。
   var sc = document.getElementById('tree-scroll-container');
   if (!sc || !treeLayout || !treeScale) return;
+  if (force && anchor) { mblScrollToWorld(anchor.x, anchor.y); return; }
   var rect = mblVisibleRect();
   if (!rect) return;
   var hasAny = false;
@@ -1813,19 +1867,7 @@ function mblEnsureCardsNear(anchor) {
     if (d < bestD) { bestD = d; bestId = id2; }
   }
   if (!bestId) return;
-  var qq = treeLayout[bestId];
-  var maxL = sc.scrollWidth - sc.clientWidth, maxT = sc.scrollHeight - sc.clientHeight;
-  if (sc.classList.contains('mbl-fs-landscape')) {
-    // 旋转态（CSS rotate90 假横屏）：布局 y 轴（堆叠）→ 视觉水平、布局 x 轴（世代）→ 视觉垂直。
-    // 实测映射 cvx=VW-(wy*s-st)、cvy=(wx*s-sl)，故居中公式取屏幕中心（VW/VH 是视觉尺寸，layout 轴 1:1）。
-    // sc.clientWidth/clientHeight 是旋转前布局尺寸（844/390），不能用于视觉居中（历史空角白屏根因之一）。
-    var VW = window.innerWidth, VH = window.innerHeight;
-    sc.scrollLeft = Math.max(0, Math.min(maxL, qq.x * treeScale - VH / 2));
-    sc.scrollTop = Math.max(0, Math.min(maxT, qq.y * treeScale - VW / 2));
-  } else {
-    sc.scrollLeft = Math.max(0, Math.min(maxL, qq.x * treeScale - sc.clientWidth / 2));
-    sc.scrollTop = Math.max(0, Math.min(maxT, qq.y * treeScale - sc.clientHeight * 0.2));
-  }
+  mblScrollToWorld(treeLayout[bestId].x, treeLayout[bestId].y);
 }
 
 function mblInitPinch() {
@@ -2503,7 +2545,13 @@ function treeAutoLocate(personId) {
   localStorage.setItem('xie_tree_collapsed', '[]');
   if (isMobileTree()) {
     // 手机端：全貌/可读 → 平滑飞入可读并聚焦目标（flyTo 每帧 applyTreeTransformSVG + 虚拟化把目标卡拉进视口）
-    if (treeLayout[personId]) { mblMapFlyTo(personId); }
+    // 全屏内跳过飞入动画：filterBranch 的 treeAutoLocate 延迟 200ms 才启动，常在全屏锚定之后才到，
+    // 其 fly 每帧重写 scrollTop 会把全屏锚定居中滚动位覆盖回 0（远古全屏"靠左"根因）→ 改直接居中。
+    if (mblInFs()) {
+      // 用内容几何中心而非根节点坐标：远古分支根在布局顶端，以根居中会贴边(0)而非居中；
+      // 与全屏进入锚点同款 mblLayoutCenter → 分支内容真正居中。
+      mblEnsureCardsNear(mblLayoutCenter(), true);
+    } else if (treeLayout[personId]) { mblMapFlyTo(personId); }
     else { treeScale = _MBL_DEFAULT_SCALE; applyTreeTransformSVG(); mblVizThrottled(); }
   } else {
     treeScale = 0.7;
@@ -3890,7 +3938,8 @@ function pageTreeFullscreen() {
     // 比 fullscreenchange 时机可靠（后者可能已过用户激活窗口）。无真全屏 API（iOS/微信内核）fsP 为
     // null → 手机端直接走 mblLockLandscape（无锁 API 则弹旋转提示）。桌面端 isMobileTree()=false 不受影响。
     if (fsP && fsP.then) {
-      fsP.then(function() { if (isMobileTree()) mblLockLandscape(); }).catch(function() {});
+      fsP.then(function() { if (isMobileTree()) mblLockLandscape(); })
+         .catch(function() { if (isMobileTree()) mblLockLandscape(); });  // 真全屏被拒（如快速重进）→ 仍走 CSS 假横屏
     } else if (isMobileTree()) {
       mblLockLandscape();
     }
@@ -3902,6 +3951,13 @@ function pageTreeFullscreen() {
     // 手机端：全屏只改变视口尺寸（section 由 position:fixed 盖满视口）→ 布局落定后按新视口
     // 刷新虚拟化/全貌重绘（与 exitPageFullscreen 对称，否则 canvas 停在旧 62vh 尺寸不随全屏缩放）。
     if (isMobileTree()) {
+      // 先取消进行中的飞入动画（filterBranch→treeAutoLocate→mblMapFlyTo 的 step 循环每帧重写
+      // scrollLeft/scrollTop，会覆盖下面锚定居中的滚动位——远古全屏偶发停在左上/靠左的根因）。
+      // 取消后动画停、不再写 scroll；若动画停在中间尺度则回默认（可读卡片大小恒定）。
+      if (_mblFlyId) {
+        cancelMblFly();
+        if (treeScale < _MBL_DEFAULT_SCALE) { treeScale = _MBL_DEFAULT_SCALE; applyTreeTransformSVG(); }
+      }
       // 全屏直接给可读卡片树（用户：全屏横屏不要 canvas 蓝点+线条的全貌图，要可缩放平移的卡片树）。
       // 初始非全屏默认是 overview 全貌，全屏进入时强制切可读：可读尺度 + 显示卡片层。
       var fsAnchor = null;
@@ -3914,7 +3970,11 @@ function pageTreeFullscreen() {
         applyTreeTransformSVG();
         setMblMode('readable');
       }
-      // 布局落定（含 CSS 强制横屏 rotate 生效）后：先锚到卡片密集区再渲染，避免 (0,0) 空角白屏
+      // 布局落定（含 CSS 强制横屏 rotate 生效）后：先锚到内容中心再渲染。
+      // 远古等小分支全屏默认停在左上（用户：远古全屏要居中不要靠左边）→ 锚点=当前筛选内容几何中心
+      // （treeLayout 已按分支筛选），mblFsRedraw 里 force 强制居中（非仅空角兜底）。
+      var lc = mblLayoutCenter();
+      if (lc) fsAnchor = lc;
       _mblFsAnchorPending = true;
       _mblFsAnchor = fsAnchor || null;
       mblFsRedraw();
@@ -3999,9 +4059,16 @@ function mblFsRedraw() {
   requestAnimationFrame(function() {
     requestAnimationFrame(function() {
       if (_mblMode === 'readable') {
-        if (_mblFsAnchorPending) {   // 全屏进入：先落锚点（空角白屏兜底），再按最终滚动位渲染
-          _mblFsAnchorPending = false;
-          mblEnsureCardsNear(_mblFsAnchor);
+        if (_mblFsAnchorPending) {   // 全屏进入：先落锚点（空角白屏兜底 + 筛选分支强制居中），再按最终滚动位渲染
+          // 旋转未就绪时不消费：CSS 假横屏类未加且仍是竖屏 → 容器还是竖屏尺寸（内容<视口 → maxT=0），
+          // 此刻滚动会被钳成 0 且旋转后不回滚（居中出现偶发失效的根因）。保持 pending，等旋转后 mblFsRedraw 再居中。
+          var sc0 = document.getElementById('tree-scroll-container');
+          var rotPending = mblInFs() && sc0 && !sc0.classList.contains('mbl-fs-landscape') && window.innerWidth < window.innerHeight;
+          if (!rotPending) {
+            cancelMblFly();   // 锚定前再保险：残留飞入动画一律终止，防其 step 覆盖居中滚动位
+            _mblFsAnchorPending = false;
+            mblEnsureCardsNear(_mblFsAnchor, true);
+          }
         }
         mblVizThrottled();
       }
@@ -4155,13 +4222,25 @@ function toggleGenChart() {
   .genealogy-tree-section-fullscreen .genealogy-tree-scroll { overflow:auto !important; height:100% !important; min-height:100% !important; }
   /* 中和 style.css 强制卡片尺寸，对齐 JS 布局常量 CARD_W=104/CARD_H=60 */
   .tree-html-card { width:104px !important; height:60px !important; border-radius:6px; padding:3px 4px; }
+  /* 反压 style.css 4932 `[class*="card"]:not(.mb-tab)`（特异性 0,2,0）给所有 class 含 "card" 的元素
+     padding:16px!important——压过上面 0,1,0 的 3px 4px，导致卡片/名字/元信息四周 16px 内边距、
+     内容挤出 60px 卡高（用户「不能超出椭圆形大小」）。用 0,2,0 前缀 + 页面 <style> 在 style.css 之后加载
+     （同特异性 !important 后者生效）→ 反压回小内边距。 */
+  .genealogy-tree-scroll .tree-html-card, .gz-tree-viewport .tree-html-card { padding:3px 4px !important; border-radius:6px !important; }
+  .genealogy-tree-scroll .tree-cards-layer, .gz-tree-viewport .tree-cards-layer { padding:0 !important; }
+  .genealogy-tree-scroll .tree-html-card .card-name,
+  .genealogy-tree-scroll .tree-html-card .card-meta,
+  .genealogy-tree-scroll .tree-html-card .card-expand,
+  .gz-tree-viewport .tree-html-card .card-name,
+  .gz-tree-viewport .tree-html-card .card-meta,
+  .gz-tree-viewport .tree-html-card .card-expand { padding:0 !important; border:0 !important; }
   /* 紧凑字号；中和 .card-name/.card-meta 的全局 transform 偏移 */
-  .tree-html-card .card-name { transform:none; font-size:11px; line-height:1.25; }
-  .tree-html-card .card-meta { transform:none; font-size:8.5px; line-height:1.2; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
-  .tree-html-card .star { top:1px; right:2px; font-size:9px; }
+  .tree-html-card .card-name { transform:none; font-size:13px; font-weight:700; line-height:1.25; } /* 名字加大加粗（用户：看着累，加粗可以；13px 不超 104×60 卡，炎帝神农氏5字=65px<96px内容宽） */
+  .tree-html-card .card-meta { transform:none; font-size:10px; line-height:1.2; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .tree-html-card .star { top:1px; right:2px; font-size:11px; }
   /* 兴旺徽章行（无折叠箭头，保持极简） */
   .tree-html-card .mb-hx { display:flex; align-items:center; justify-content:center; gap:4px; margin-top:2px; }
-  .mb-hx-badge { font-size:8.5px; font-weight:600; line-height:14px; padding:0 5px; border-radius:7px; white-space:nowrap; border:1px solid; }
+  .mb-hx-badge { font-size:9.5px; font-weight:600; line-height:14px; padding:0 5px; border-radius:7px; white-space:nowrap; border:1px solid; }
   /* 兴旺分档配色（灰0 蓝1 绿2 橙3 红4）：仅卡片边框着色；徽章统一中性灰（内容已是「第N代」世代）。
      前缀提 specificity 反压 style.css 全局 [class*="card"]:not(.mb-tab) 的深色边框 #2a2a2a */
   .genealogy-tree-scroll .tree-html-card, .gz-tree-viewport .tree-html-card { border-color:#9a9690 !important; }
@@ -4170,6 +4249,19 @@ function toggleGenChart() {
   .tree-html-card.mb-t2 { border-color:#22c55e !important; box-shadow:inset 0 0 0 1px rgba(34,197,94,.18); }
   .tree-html-card.mb-t3 { border-color:#f59e0b !important; box-shadow:inset 0 0 0 1px rgba(245,158,11,.22); }
   .tree-html-card.mb-t4 { border-color:#ef4444 !important; box-shadow:inset 0 0 0 1px rgba(239,68,68,.22); }
+  /* 关键人物（炎帝/申伯/缵/衡/闓/小四/文杲/文榘/彬/乾/文对/攒/撰/临魁）卡片特殊标注（mblIsKey→.highlight）：
+     金色边框+光晕+星标，压过 4213 灰边框与 4215-4218 兴旺分档色；全屏黄底上仍醒目。
+     放此处（分档色之后）同特异性!important 后者生效；搜索高亮 highlight-name 在其后仍优先 */
+  .genealogy-tree-scroll .tree-html-card.highlight,
+  .gz-tree-viewport .tree-html-card.highlight {
+    border-color:#d97706 !important;
+    box-shadow:0 0 0 2px rgba(217,119,6,.35), inset 0 0 0 1px rgba(217,119,6,.25) !important;
+    z-index:5;
+  }
+  .genealogy-tree-scroll .tree-html-card.highlight .card-name,
+  .gz-tree-viewport .tree-html-card.highlight .card-name { color:#8a4b00 !important; }
+  .genealogy-tree-scroll .tree-html-card.highlight .star,
+  .gz-tree-viewport .tree-html-card.highlight .star { font-size:11px; }
   /* 搜索定位高亮盖过分档色 */
   .tree-html-card.highlight-name { border-color:#ff5555 !important; }
   /* 手机端工具栏：只留「☗ 全局 + ⛶ 全屏」，其余（缩放/导出/重复全屏/百分比）隐藏 */
