@@ -19,6 +19,48 @@
         margin-right: auto;
       }
     }
+
+    /* ===== 管理后台桌面端：左侧导航折叠（让族谱管理页面更大，方便编辑增减族人） ===== */
+    .admin-page-wrap { max-width: 1200px; }
+    .admin-nav-toggle {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--text-secondary);
+      padding: 5px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.25s;
+      font-family: var(--font-body);
+      white-space: nowrap;
+    }
+    .admin-nav-toggle:hover { background: var(--glass-hover); color: var(--accent-orange); }
+    @media (max-width: 900px) {
+      /* 折叠按钮为电脑端功能，手机端隐藏 */
+      .admin-nav-toggle { display: none; }
+    }
+    @media (min-width: 901px) {
+      /* 总导航（固定左侧220px）折叠为0 */
+      html.admin-mainnav-collapsed .site-header {
+        width: 0;
+        border-right: none;
+        overflow: hidden;
+      }
+      html.admin-mainnav-collapsed .content > .page-wrap {
+        margin-left: 0 !important;
+      }
+      html.admin-mainnav-collapsed .page-wrap.admin-page-wrap {
+        max-width: min(1600px, calc(100vw - 32px));
+      }
+      /* 后台模块导航（180px）折叠为0，内容区自动占满 */
+      html.admin-sb-collapsed .admin-sidebar {
+        width: 0;
+        overflow: hidden;
+      }
+      html.admin-sb-collapsed .admin-body {
+        gap: 0 !important;
+      }
+    }
   </style>
   <script defer src="../js/i18n.js?v=9"></script>
   <script defer src="../js/file-store.js?v=6"></script>
@@ -125,7 +167,7 @@
 
   <!-- weather moved to hero on index -->
 
-  <div class="page-wrap" style="max-width:1200px;">
+  <div class="page-wrap admin-page-wrap">
     <div class="page-title">
       <h2 data-i18n="admin.panel.title">管理后台</h2>
       <p data-i18n="page.admin">网站内容管理 · 权限验证</p>
@@ -148,7 +190,9 @@
     <div id="admin-panel" class="admin-panel">
       <div class="admin-header" style="margin-top:30px;">
         <h3 style="font-size:16px;font-weight:500;letter-spacing:1px;" data-i18n="admin.panel.title">📊 网站内容管理</h3>
-        <div style="display:flex;gap:12px;align-items:center;">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button id="admin-mainnav-toggle" class="admin-nav-toggle" title="收起/展开左侧总导航">◀ 总导航</button>
+          <button id="admin-sb-toggle" class="admin-nav-toggle" title="收起/展开后台模块导航">◀ 后台菜单</button>
           <span id="admin-login-name" data-i18n="admin.login.name" style="font-size:12px;color:var(--text-tertiary);">管理员</span>
           <button id="admin-logout" class="logout-btn" data-i18n="admin.logout">退出登录</button>
         </div>
@@ -254,6 +298,28 @@
       _hc++; if (_hc > 100) clearInterval(_ht);
     }, 100);
   }
+  </script>
+  <script>
+  // 管理后台桌面端：左侧总导航 / 后台模块导航 折叠开关（状态持久化，仅桌面端 CSS 生效）
+  (function(){
+    var K1 = 'xie_admin_mainnav_collapsed';
+    var K2 = 'xie_admin_sb_collapsed';
+    var mBtn = document.getElementById('admin-mainnav-toggle');
+    var sBtn = document.getElementById('admin-sb-toggle');
+    function is1(k){ try { return localStorage.getItem(k) === '1'; } catch(e){ return false; } }
+    function setLabel(){
+      if (mBtn) mBtn.textContent = is1(K1) ? '▶ 总导航' : '◀ 总导航';
+      if (sBtn) sBtn.textContent = is1(K2) ? '▶ 后台菜单' : '◀ 后台菜单';
+    }
+    function apply(){
+      document.documentElement.classList.toggle('admin-mainnav-collapsed', is1(K1));
+      document.documentElement.classList.toggle('admin-sb-collapsed', is1(K2));
+      setLabel();
+    }
+    if (mBtn) mBtn.addEventListener('click', function(){ localStorage.setItem(K1, is1(K1) ? '0' : '1'); apply(); });
+    if (sBtn) sBtn.addEventListener('click', function(){ localStorage.setItem(K2, is1(K2) ? '0' : '1'); apply(); });
+    apply();
+  })();
   </script>
   <script defer src="../js/main.js?v=20260812"></script>
   <script defer src="../js/admin.js?v=62"></script>
