@@ -3666,8 +3666,18 @@ function pageTreeFullscreen() {
     var closeBtn = document.getElementById('fs-close-btn');
     if (closeBtn) closeBtn.style.display = 'flex';
     // Re-fit tree after layout settles（仅桌面：桌面 gz 树用 .apt-card，.tree-html-card 仅手机虚拟化卡，
-    // 手机端此处会读取「可见子集」卡的位置改写 treeScale 破坏手机尺度，故手机端跳过）
-    if (isMobileTree()) return;
+    // 手机端此处会读取「可见子集」卡的位置改写 treeScale 破坏手机尺度，故手机端跳过 re-fit）
+    // 手机端：全屏只改变视口尺寸（section 由 position:fixed 盖满视口）→ 布局落定后按新视口
+    // 刷新虚拟化/全貌重绘（与 exitPageFullscreen 对称，否则 canvas 停在旧 62vh 尺寸不随全屏缩放）。
+    if (isMobileTree()) {
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          if (_mblMode === 'readable') mblVizThrottled();
+          else if (_mblMode === 'overview') mblMapDraw();
+        });
+      });
+      return;
+    }
     requestAnimationFrame(function() {
       requestAnimationFrame(function() {
         var container = document.getElementById('tree-scroll-container');
@@ -3707,9 +3717,14 @@ function exitPageFullscreen() { try { if (document.exitFullscreen) document.exit
   if (closeBtn) closeBtn.style.display = 'none';
   if (isMobileTree()) {
     // 手机端退出全屏：保持当前尺度与模式（treeZoomReset 的 1:1 会破坏手机默认可读 0.75，
-    // 且手机缩放按钮已隐藏无从恢复）。退出只改变视口尺寸 → 刷新虚拟化/全貌重绘。
-    if (_mblMode === 'readable') mblVizThrottled();
-    else if (_mblMode === 'overview') mblMapDraw();
+    // 且手机缩放按钮已隐藏无从恢复）。退出只改变视口尺寸 → 布局落定后按恢复后的视口刷新
+    // 虚拟化/全貌重绘（需双 rAF：类移除瞬间同步读 sc.clientWidth 是回退中间值 350，落定后才是 318）。
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        if (_mblMode === 'readable') mblVizThrottled();
+        else if (_mblMode === 'overview') mblMapDraw();
+      });
+    });
   } else {
     treeZoomReset();
   }
