@@ -1131,7 +1131,13 @@ var _MBL_DEFAULT_SCALE = 0.75; // 默认可读缩放：卡片 104px→78px 渲�
 var _mblPC = null;             // 手机端环安全预计算 {childOf, descCount}
 
 function isMobileTree() {
-  return window.matchMedia ? window.matchMedia('(max-width:900px)').matches : (window.innerWidth <= 900);
+  if (window.matchMedia ? window.matchMedia('(max-width:900px)').matches : (window.innerWidth <= 900)) return true;
+  // 真全屏横屏下仍按手机端地图处理：手机转横屏宽度可能>900px（如 iPhone Pro Max 932px），
+  // 若不判会掉回桌面 gz 布局、fullscreenchange 兜底失效。用短边高度区分手机横屏（~390-450px）
+  // 与桌面/平板全屏（高度≥650px，维持 900px 断点原样）。
+  var fs = document.fullscreenElement || document.webkitFullscreenElement;
+  if (fs && window.innerHeight < 650) return true;
+  return false;
 }
 
 function mblPrecompute(data) {
@@ -3751,7 +3757,16 @@ function pageTreeFullscreen() {
     section.classList.add('genealogy-tree-section-fullscreen');
     document.body.style.overflow = 'hidden';
     // Try native browser fullscreen for immersive view
-    try { if (section.requestFullscreen) section.requestFullscreen(); } catch(e) {}
+    var fsP = null;
+    try { if (section.requestFullscreen) fsP = section.requestFullscreen(); } catch(e) {}
+    // 真全屏就绪后锁横屏：screen.orientation.lock 需全屏态+用户手势，链在 requestFullscreen().then()
+    // 比 fullscreenchange 时机可靠（后者可能已过用户激活窗口）。无真全屏 API（iOS/微信内核）fsP 为
+    // null → 手机端直接走 mblLockLandscape（无锁 API 则弹旋转提示）。桌面端 isMobileTree()=false 不受影响。
+    if (fsP && fsP.then) {
+      fsP.then(function() { if (isMobileTree()) mblLockLandscape(); }).catch(function() {});
+    } else if (isMobileTree()) {
+      mblLockLandscape();
+    }
     // Show close button
     var closeBtn = document.getElementById('fs-close-btn');
     if (closeBtn) closeBtn.style.display = 'flex';
@@ -3807,6 +3822,7 @@ function exitPageFullscreen() { try { if (document.exitFullscreen) document.exit
   if (closeBtn) closeBtn.style.display = 'none';
   if (isMobileTree()) {
     mblUnlockOrientation(); // 解锁横屏（真全屏退出）
+    mblHideRotateHint();    // 收起旋转提示
     // 手机端退出全屏：保持当前尺度与模式（treeZoomReset 的 1:1 会破坏手机默认可读 0.75，
     // 且手机缩放按钮已隐藏无从恢复）。退出只改变视口尺寸 → 布局落定后按恢复后的视口刷新
     // 虚拟化/全貌重绘（需双 rAF：类移除瞬间同步读 sc.clientWidth 是回退中间值 350，落定后才是 318）。
@@ -3847,13 +3863,17 @@ function mblFsRedraw() {
 function mblLockLandscape() {
   if (_mblOrientationLocked) return;
   var so = window.screen && screen.orientation;
-  if (!so || !so.lock) return;                       // iOS Safari 不支持 → 保持竖屏假全屏
+  if (!so || !so.lock) { mblShowRotateHint(); return; }   // iOS/微信内核无 API → 提示手动横屏
   try {
-    so.lock('landscape').then(function() {
-      _mblOrientationLocked = true;
-      mblFsRedraw();                                  // 旋转落定后按横屏视口重绘 canvas/卡片
-    }).catch(function() {});                          // 部分机型锁失败：静默，保持竖屏
-  } catch(e) {}
+    var p = so.lock('landscape');
+    if (p && p.then) {
+      p.then(function() {
+        _mblOrientationLocked = true;
+        mblHideRotateHint();
+        mblFsRedraw();                                  // 旋转落定后按横屏视口重绘 canvas/卡片
+      }).catch(function() { mblShowRotateHint(); });    // 锁失败（部分机型/系统禁止）→ 提示手动横屏
+    }
+  } catch(e) { mblShowRotateHint(); }
 }
 
 function mblUnlockOrientation() {
@@ -3861,6 +3881,35 @@ function mblUnlockOrientation() {
   _mblOrientationLocked = false;
   var so = window.screen && screen.orientation;
   if (so && so.unlock) { try { so.unlock(); } catch(e) {} }
+}
+
+/* 旋转提示浮层：screen.orientation.lock 不可用/失败时（iOS Safari、微信内核、部分安卓）告诉用户
+   手动转横屏；检测到真横屏自动消失，也可点「继续竖屏观看」关闭。 */
+var _mblRotateHintEl = null;
+function mblShowRotateHint() {
+  if (_mblRotateHintEl || !isMobileTree()) return;
+  var host = document.getElementById('genealogy-tree-section') || document.body;
+  var el = document.createElement('div');
+  el.id = 'mbl-rotate-hint';
+  el.style.cssText = 'position:fixed;inset:0;z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,0.82);color:#fff;text-align:center;padding:24px;box-sizing:border-box;font-size:16px;line-height:1.9;';
+  el.innerHTML = '<div style="font-size:46px;margin-bottom:10px">📱↻</div>'
+    + '请把手机旋转为<b style="color:#ffd75e">横屏</b>观看<br>'
+    + '<span style="opacity:.65;font-size:13px">旋转后自动隐藏本提示</span>'
+    + '<button id="mbl-rotate-ok" style="margin-top:20px;padding:9px 24px;border-radius:8px;border:1px solid #666;background:#1c1c1c;color:#eee;font-size:14px;cursor:pointer">继续竖屏观看</button>';
+  // 挂到全屏元素内部：真全屏时 section 进入浏览器 Top Layer，body 子元素被压在下面（canvas 会挡住），
+  // 只有挂在全屏元素内部才能盖住树内容。
+  host.appendChild(el);
+  _mblRotateHintEl = el;
+  el.querySelector('#mbl-rotate-ok').addEventListener('click', mblHideRotateHint);
+  // 轮询检测真横屏 → 自动隐藏
+  (function poll() {
+    if (!_mblRotateHintEl) return;
+    if (window.matchMedia && matchMedia('(orientation:landscape)').matches) { mblHideRotateHint(); return; }
+    setTimeout(poll, 300);
+  })();
+}
+function mblHideRotateHint() {
+  if (_mblRotateHintEl) { _mblRotateHintEl.remove(); _mblRotateHintEl = null; }
 }
 
 function mblHandleFsChange() {
@@ -3877,6 +3926,7 @@ function mblHandleFsChange() {
     var closeBtn = document.getElementById('fs-close-btn');
     if (closeBtn) closeBtn.style.display = 'none';
     mblUnlockOrientation();
+    mblHideRotateHint();
     mblFsRedraw();
   }
 }
