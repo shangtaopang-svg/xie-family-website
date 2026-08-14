@@ -620,15 +620,45 @@
   transform-origin:center !important;
 }
 /* 全屏横屏：保留人物间连接线（用户：全屏怎么没了每个人之间的连接线），
-   仅精准隐藏远古世系单链那根贯穿竖线（用户：远古那根竖向线条要去掉）。
-   远古单链首尾相接成纯垂直线（x=221），与其他分房树状连线不同——连线按父节点分房 tag(data-branch)，
-   全屏只藏「远古」tag 的连线，正常父→子连接线照常显示。退出全屏自动恢复。 */
+   仅精准隐藏远古世系那条贯穿竖向线（用户：远古那根竖向线条要去掉；横屏缩放时仍在 → 补全）。
+   远古竖线=远古世系连续单传段（父→独子整段直连，父代 tag 跨 远古/申伯/东山/临海/石马，只按 [data-branch="远古"]
+   盖不全）→ 规则1 藏所有「远古」tag 连线；规则2 藏非现代两房（远古/申伯/东山/临海/石马）的
+   tree-connector-single 独子直连。多子分叉的短竖线/横杆保留（分房树状结构）。退出全屏自动恢复。 */
 .genealogy-tree-section-fullscreen [data-branch="远古"] { visibility:hidden !important; }
+.genealogy-tree-section-fullscreen .tree-connector-single[data-branch]:not([data-branch="后枫槎"]):not([data-branch="前枫槎"]) { visibility:hidden !important; }
 /* 全屏横屏字体醒目橘黄（用户：全屏字体不要灰色、明显点、橘黄色可以）——名字/元信息/世代徽章，
    压掉手机端 media query 的灰字（--text-tertiary #9a9690）；退出全屏自动恢复原色。 */
 .genealogy-tree-section-fullscreen .tree-html-card .card-name { color:#ff8c1a !important; font-weight:700; }
 .genealogy-tree-section-fullscreen .tree-html-card .card-meta { color:#ffb24d !important; }
 .genealogy-tree-section-fullscreen .tree-html-card .mb-hx-badge { color:#ff8c1a !important; border-color:rgba(255,140,26,.55) !important; background:rgba(255,140,26,.12) !important; }
+/* 全屏横屏：详情弹层也横屏（用户：全屏点人详情页也要横屏，不需转手机）+ 白底改淡黄（用户：全部白底刺眼，改淡黄）。
+   仅手机端 media 内，桌面零影响（红线）。 */
+@media (max-width:900px) {
+  /* ① 全屏整树大面白底改暖淡黄（用户：全部白底刺眼，改淡黄；卡片仍白，黄底白卡自然分层；连接线/橘字不受影响）。
+     section 用 #id 提特异性：style.css 手机端 [class*="card"]:not(.mb-tab) 会把 .glass-card 压成深底(--mb-card)，
+     全屏 20px padding 会在黄树四周露深色框，必须一并压成黄底 */
+  #genealogy-tree-section.genealogy-tree-section-fullscreen,
+  .genealogy-tree-section-fullscreen .genealogy-tree-scroll { background:#f8ecd1 !important; }
+  /* ② 弹层卡片（详情页 person-detail-box + 祖先树弹层）白底改淡黄；内嵌 var(--glass-bg) 信息面板暖化 */
+  .genealogy-tree-section-fullscreen .person-detail-box,
+  .genealogy-tree-section-fullscreen .ancestor-tree-modal-box { background:#fff9ec !important; }
+  .genealogy-tree-section-fullscreen .person-detail-box div[style*="var(--glass-bg)"],
+  .genealogy-tree-section-fullscreen .ancestor-tree-modal-box div[style*="var(--glass-bg)"] { background:#fdf1d3 !important; }
+  /* ③ CSS 假横屏（iOS/微信无 orientation.lock，scroll 容器被 rotate90）时弹层同样 rotate90 成横屏，
+     与树方向一致；真横屏锁成功的机器 section 无 .mbl-fs-section-rotated 类 → 不叠加。
+     旋转几何（必读）：竖屏视口 100vw×100vh，弹层 layout 为 宽W×高H，rotate(90deg) 后视觉
+     = 宽H × 高W。要装入视口 → H≤100vw-40（视觉宽钳到屏宽，防横溢裁切）、W≤100vh-40。
+     W=布局文本列宽（取 560 舒适阅读），H=内容高（超屏宽即内部滚动）。 */
+  .genealogy-tree-section-fullscreen.mbl-fs-section-rotated .person-detail-box,
+  .genealogy-tree-section-fullscreen.mbl-fs-section-rotated .ancestor-tree-modal-box {
+    position:absolute !important; top:50% !important; left:50% !important;
+    margin:0 !important; max-width:none !important;
+    width:min(560px, calc(100vh - 40px)) !important;
+    max-height:calc(100vw - 40px) !important;
+    transform:translate(-50%,-50%) rotate(90deg) !important;
+    transform-origin:center !important;
+  }
+}
 </style>
 
 <script>
@@ -972,7 +1002,9 @@ function buildConnectorPath(parentId, childIds, layout, br) {
   var midY = py + CARD_H/2 + V_GAP/2;
   if (childIds.length === 1) {
     var cx = layout[childIds[0]].x, cy = layout[childIds[0]].y;
-    paths += '<line class="tree-connector"' + attr + ' x1="' + px + '" y1="' + (py + CARD_H/2) + '" x2="' + cx + '" y2="' + (cy - CARD_H/2) + '"/>';
+    // tree-connector-single：独子直连（父底→子顶整段竖线）。远古世系连续单传段就靠它形成「竖向线」，
+    // 全屏按 branch tag 精准隐藏（见 CSS）；多子分叉的竖线是短段（半距）不属于单链。桌面类名无副作用。
+    paths += '<line class="tree-connector tree-connector-single"' + attr + ' x1="' + px + '" y1="' + (py + CARD_H/2) + '" x2="' + cx + '" y2="' + (cy - CARD_H/2) + '"/>';
   } else {
     // Vertical from parent
     paths += '<line class="tree-connector"' + attr + ' x1="' + px + '" y1="' + (py + CARD_H/2) + '" x2="' + px + '" y2="' + midY + '"/>';
@@ -3467,6 +3499,7 @@ function locateInTree(personId) {
     overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
     overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
     var box = document.createElement('div');
+    box.className = 'ancestor-tree-modal-box';   // 全屏横屏旋转/淡黄底色用（CSS 选择器锚点）
     box.style.cssText = 'background:var(--bg-primary);border:1px solid var(--glass-border);border-radius:14px;max-width:750px;width:100%;max-height:85vh;overflow-y:auto;padding:24px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
     box.innerHTML = html;
     var closeBtn = document.createElement('button');
@@ -4011,6 +4044,7 @@ function mblForceLandscape() {
   // 设备本身已是横屏（系统自动旋转开着、用户已转过）→ 不叠加 CSS 旋转，否则 90°+90°=倒屏
   if (window.matchMedia && matchMedia('(orientation:landscape)').matches) return;
   sc.classList.add('mbl-fs-landscape');   // 旋转 scroll 容器；不能旋转 section（:fullscreen UA 压死）
+  section.classList.add('mbl-fs-section-rotated');   // 弹层同方向横屏用（详情/祖先树弹层 rotate90 成横屏）
   _mblFsRotated = true;
   if (!_mblRotateNoteEl) {
     var note = document.createElement('div');
@@ -4034,6 +4068,8 @@ function mblForceLandscape() {
 function mblUnrotate() {
   var sc = document.getElementById('tree-scroll-container');
   if (sc) sc.classList.remove('mbl-fs-landscape');
+  var section = document.getElementById('genealogy-tree-section');
+  if (section) section.classList.remove('mbl-fs-section-rotated');   // 弹层横屏旋转态同步撤销
   _mblFsRotated = false;
   if (_mblRotateNoteEl) { _mblRotateNoteEl.remove(); _mblRotateNoteEl = null; }
   if (isMobileTree()) mblFsRedraw();
