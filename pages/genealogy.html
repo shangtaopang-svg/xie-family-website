@@ -644,6 +644,30 @@
   .genealogy-tree-section-fullscreen .ancestor-tree-modal-box { background:#fff9ec !important; }
   .genealogy-tree-section-fullscreen .person-detail-box div[style*="var(--glass-bg)"],
   .genealogy-tree-section-fullscreen .ancestor-tree-modal-box div[style*="var(--glass-bg)"] { background:#fdf1d3 !important; }
+  /* ⑤ 弹层文字改深（用户：全屏点人详情图白色文字看不清——浅底白字）：
+     全屏弹层盒被 ② 改成奶油底 #fff9ec，但文字仍继承手机 media 的 --text-* 浅色
+     (--text-primary #f5f5f5 白 / --text-secondary #c9c5bf 浅灰) → 浅字浅底。
+     覆盖弹层盒作用域内三个变量为深暖棕（盒内所有内联 var(--text-*) 自动变深），
+     + 盒 base color 供无 var 的继承元素（👤图标/普通 div）用。
+     ★坑：style.css 手机 media 另有一条直接规则 p,li,span,div,label{color:var(--mb-text)}
+     (line 4945, 特异性 0,0,1 直接命中、不走继承) + .text-secondary/tertiary{color:var(--mb-sub)!important}
+     (4946) —— 覆盖 --text-* 也拦不住 biography <p> 和 👤<div>，必须连 --mb-text/--mb-sub 一起覆盖
+     (自定义属性按最近的祖先声明解析，盒内 var(--mb-text) 自动解析为深棕)。
+     h1-h5 标题仍被 style.css 全局 #e8c97a !important 压住（金色在奶油底可读，不动）。
+     只全屏 scope：非全屏手机弹层是深底 #141414 浅字不受影响，桌面零影响（红线）。 */
+  .genealogy-tree-section-fullscreen .person-detail-box,
+  .genealogy-tree-section-fullscreen .ancestor-tree-modal-box {
+    --text-primary:#3a2f1e !important;
+    --text-secondary:#5b4632 !important;
+    --text-tertiary:#8a6d3b !important;
+    --mb-text:#5b4632 !important;
+    --mb-sub:#6b4a1f !important;
+    color:#3a2f1e !important;
+  }
+  /* ⑤b .locate-btn（详情盒内「👦 临魁」等定位按钮）原橙 #ff6b00 在奶油底对比 ~2.6:1 偏低，
+     加深为焦橙 #b45000（仍保留橙色可点语义；深底非全屏手机弹层橙字不变，桌面零影响） */
+  .genealogy-tree-section-fullscreen .person-detail-box .locate-btn,
+  .genealogy-tree-section-fullscreen .ancestor-tree-modal-box .locate-btn { color:#b45000 !important; }
   /* ③ CSS 假横屏（iOS/微信无 orientation.lock，scroll 容器被 rotate90）时弹层同样 rotate90 成横屏，
      与树方向一致；真横屏锁成功的机器 section 无 .mbl-fs-section-rotated 类 → 不叠加。
      旋转几何（必读）：竖屏视口 100vw×100vh，弹层 layout 为 宽W×高H，rotate(90deg) 后视觉
@@ -1605,8 +1629,8 @@ function mblMapDraw() {
   function Y(y) { return oy + y * s - st; }
   // 边：浅棕细线（先画，垫底）
   if (_mblMapEdges && _mblMapEdges.length) {
-    ctx.strokeStyle = 'rgba(120,110,88,0.30)';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(120,110,88,0.42)';
+    ctx.lineWidth = 2;
     ctx.beginPath();
     for (var i = 0; i < _mblMapEdges.length; i++) {
       var e = _mblMapEdges[i];
@@ -4220,6 +4244,12 @@ function toggleGenChart() {
   #tree-container { overflow:hidden !important; position:relative; }
   .genealogy-tree-scroll { overflow:auto !important; -webkit-overflow-scrolling:touch; height:62vh !important; min-height:340px !important; overscroll-behavior:contain; }
   .genealogy-tree-section-fullscreen .genealogy-tree-scroll { overflow:auto !important; height:100% !important; min-height:100% !important; }
+  /* 真横屏全屏内容居中（用户：远古全屏靠左边、右边空白）：真横屏(orientation.lock 成功、无 CSS 旋转)下
+     内容窄于视口且无横向滚动溢出(maxL=0)→无法靠 scroll 居中。用 flex+margin:auto：#tree-container
+     小于视口的轴自动摊分空白居中，溢出轴 margin=0 回退滚动（scrollTop 照常垂直居中）。
+     :not(.mbl-fs-landscape) 排除假横屏（CSS rotate 场景已有 scroll 居中，勿动）。 */
+  .genealogy-tree-section-fullscreen .genealogy-tree-scroll:not(.mbl-fs-landscape) { display:flex; }
+  .genealogy-tree-section-fullscreen .genealogy-tree-scroll:not(.mbl-fs-landscape) #tree-container { margin:auto !important; }
   /* 中和 style.css 强制卡片尺寸，对齐 JS 布局常量 CARD_W=104/CARD_H=60 */
   .tree-html-card { width:104px !important; height:60px !important; border-radius:6px; padding:3px 4px; }
   /* 反压 style.css 4932 `[class*="card"]:not(.mb-tab)`（特异性 0,2,0）给所有 class 含 "card" 的元素
@@ -4260,12 +4290,35 @@ function toggleGenChart() {
   }
   .genealogy-tree-scroll .tree-html-card.highlight .card-name,
   .gz-tree-viewport .tree-html-card.highlight .card-name { color:#8a4b00 !important; }
+  /* 关键人物五角星更明显（用户：之前加的五角星不够明显）：11px 裸 emoji → 18px 金色圆徽章
+     （径向渐变金底+描边+光晕），钉卡片右上角。星只在 isHighlight（关键人物）时挂载（line 2061/2326），
+     徽章内 ⭐ 居中；18px 徽章左缘=104-1-18=85px > 最长关键人名「炎帝神农氏」5字13px 居中右缘 84.5px → 不遮名。
+     line 4234 `.star{background:transparent!important}` 同特异性(0,3,0)！important 后者生效 → 徽章底胜出。
+     只手机 media 内，桌面零影响（红线）。 */
   .genealogy-tree-scroll .tree-html-card.highlight .star,
-  .gz-tree-viewport .tree-html-card.highlight .star { font-size:11px; }
+  .gz-tree-viewport .tree-html-card.highlight .star {
+    top:1px; right:1px;
+    width:18px; height:18px;
+    font-size:13px; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(circle at 50% 40%, #fff8d6, #ffd54a 62%, #f2b52c) !important;
+    border-radius:50%;
+    border:1px solid #dda61f;
+    box-shadow:0 0 5px rgba(255,190,30,.85), 0 1px 3px rgba(0,0,0,.4);
+    z-index:6;
+  }
   /* 搜索定位高亮盖过分档色 */
   .tree-html-card.highlight-name { border-color:#ff5555 !important; }
+  /* 连接线加粗（用户：人和人之间的线条要粗一点）：压过全局 .tree-connector 1.5/0.25 细线。
+     stroke 随 treeScale 缩放，0.75 时 3.5px≈2.6px 屏上（原 1.5px≈1.1px），略增不透明度更好认。
+     只手机端 media 内，桌面零影响（红线）。 */
+  .genealogy-tree-scroll .tree-connector,
+  .genealogy-tree-scroll .tree-connector-h { stroke-width:3.5 !important; opacity:0.45 !important; }
   /* 手机端工具栏：只留「☗ 全局 + ⛶ 全屏」，其余（缩放/导出/重复全屏/百分比）隐藏 */
-  #mbl-global-btn { display:inline-flex !important; }
+  /* ☗ 全貌 / ✕ 可读 按钮与「⛶ 横屏」同色（用户：全貌/可读颜色改为和横屏一样）——橙字+橙边+橙底 */
+  #mbl-global-btn { display:inline-flex !important; border-color:#ff8c1a !important; background:rgba(255,140,26,0.12) !important; color:#ff8c1a !important; font-weight:600 !important; }
+  /* 全屏黄底：与横屏按钮同款深棕字+奶油底（盖回橙底，全屏态也与横屏一致） */
+  #genealogy-tree-section.genealogy-tree-section-fullscreen #mbl-global-btn { color:#5b3a10 !important; border-color:#8a6d3b !important; background:rgba(255,236,181,.6) !important; }
   #genealogy-tree-section .btn-sm[onclick="treeZoomIn()"],
   #genealogy-tree-section .btn-sm[onclick="treeZoomOut()"],
   #genealogy-tree-section .btn-sm[onclick="treeZoomReset()"],
