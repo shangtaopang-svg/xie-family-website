@@ -32,6 +32,36 @@ function ensureLoaded() {
       (byName.get(p.name) || byName.set(p.name, []).get(p.name)).push(p);
     }
   }
+
+  // ===== 同名同人合并（仅内存，不改数据文件）=====
+  // 同一人在不同分支/批次被录入成两条记录时（如「在纲之子小四」=「石马始祖小四(石马)」），
+  // 特征：A 有父亲但名下无子女，同名 B 无父亲但名下子女成群 → 两个记录"咬合"成同一个人。
+  // 此时把 B 的全部子女改挂到 A 名下，使全库世系信息综合贯通（血缘/世系/炎帝到你的世系均生效）。
+  // 已对全库 1249 人扫描：仅此一例（小四 1206↔1207），其余同名者均为真不同人（都有父亲、各有子女）。
+  const peopleArr = Array.from(byId.values());
+  const baseName = (n) => String(n || '').replace(/[（(].*?[）)]/g, '').trim();
+  const groups = new Map();
+  for (const p of peopleArr) {
+    const b = baseName(p.name);
+    if (!b) continue;
+    (groups.get(b) || groups.set(b, []).get(b)).push(p);
+  }
+  for (const list of groups.values()) {
+    if (list.length < 2) continue;
+    const childOf = (id) => peopleArr.some(c => c.father_id !== undefined && c.father_id !== null && Number(c.father_id) === Number(id));
+    // A：有父亲、名下无子女（等着接子女的半条）
+    const A = list.filter(p => p.father_id && Number(p.father_id) !== Number(p.id) && !childOf(p.id));
+    // B：无父亲、名下有子女（等着接父亲的半条）
+    const B = list.filter(p => !p.father_id && childOf(p.id));
+    if (A.length !== 1 || B.length === 0) continue;
+    const target = A[0];
+    for (const bb of B) {
+      for (const c of peopleArr) {
+        if (Number(c.father_id) === Number(bb.id)) c.father_id = target.id;
+      }
+    }
+    console.log('[lineage] 同名同人合并：' + B.map(b => b.id + ' ' + b.name).join('、') + ' 的子女 → 挂到 ' + target.id + ' ' + target.name);
+  }
 }
 
 function getPerson(id) { ensureLoaded(); return byId.get(Number(id)) || null; }
@@ -187,8 +217,12 @@ const KINSHIP_DESCENDANT = [
   { re: /儿子/, label: '儿子', gen: 1 },
 ];
 
-/** 主回答入口：根据提问 + 本人 id 生成确定性文本 */
-function answerLineage(query, selfId) {
+/**
+ * 主回答入口：根据提问 + 本人 id 生成确定性文本。
+ * forcedTargetId：前端同名确认后携带的明确目标 id（已确认查哪个同名者），
+ * 提供时跳过人名解析直接定位目标。
+ */
+function answerLineage(query, selfId, forcedTargetId) {
   ensureLoaded();
   const q = String(query || '').trim();
   const self = byId.get(Number(selfId));
@@ -196,7 +230,10 @@ function answerLineage(query, selfId) {
 
   // 尝试提取问题中的指名人物（优先 ≥2 字人名，找不到再匹配单字名，如「衡」）
   let target = self;
-  if (!/我/.test(q)) {
+  if (forcedTargetId !== undefined && forcedTargetId !== null && String(forcedTargetId) !== '') {
+    const ft = byId.get(Number(forcedTargetId));
+    if (ft) target = ft;
+  } else if (!/我/.test(q)) {
     for (const minLen of [2, 1]) {
       for (const n of byName.keys()) {
         if (n.length >= minLen && q.includes(n)) {
@@ -301,14 +338,17 @@ function answerLineage(query, selfId) {
  * 返回 { text, tree, ownerIsSelf, targetName }：text 用于答案+朗读，tree 供前端画树。
  * 懒加载 historical-chain.js 以避免顶层循环 require。
  */
-function answerFullLineage(query, selfId) {
+function answerFullLineage(query, selfId, forcedTargetId) {
   ensureLoaded();
   const hc = require('./historical-chain.js');
   const q = String(query || '').trim();
   // 解析被查询族人：含「我/本人」→ 查自己；否则从提问中按名字解析（跳过提问框架里的始祖名）
   let targetId = Number(selfId);
   let foundName = false;
-  if (!/我|本人/.test(q)) {
+  if (forcedTargetId !== undefined && forcedTargetId !== null && String(forcedTargetId) !== '') {
+    targetId = Number(forcedTargetId);
+    foundName = true;
+  } else if (!/我|本人/.test(q)) {
     const skip = new Set(['炎帝神农氏', '炎帝']);
     // 优先匹配 ≥2 字的人名，避免单字误命中提问框架里的字；找不到再降级匹配单字名（如「衡」）
     for (const minLen of [2, 1]) {
@@ -425,19 +465,12 @@ function buildClosestTree(rows, self, targetName) {
  * 解析血缘/最亲问题中的目标族人：含「我/本人」→ 本人；否则按提问中的姓名匹配（优先 ≥2 字，再单字名如「沦」）。
  * 找不到 → 回退本人。返回 { id, name, self }。
  */
-function resolveClosestTarget(message, selfId) {
-  ensureLoaded();
-  const q = String(message || '');
-  if (/我|本人/.test(q)) return { id: Number(selfId), name: null, self: true };
-
-  const pick = (name) => {
-    const cand = byName.get(name) && byName.get(name)[0];
-    if (!cand) return null;
-    const id = Number(cand.id);
-    return { id, name: cand.name, self: id === Number(selfId) };
-  };
-
-  // 候选评分：名字越长越好；紧跟在「和/与」后的名字（如「和庆三最亲」→庆三 而非 和庆）额外加分
+/**
+ * 从提问中提取目标人名（不含「我/本人」的自指）。
+ * 候选评分：名字越长越好；紧跟在「和/与」后的名字（如「和庆三最亲」→庆三 而非 和庆）额外加分；
+ * 单字名最后兜底，避免误命中普通字。返回匹配的名字字符串，找不到返回 null。
+ */
+function extractTargetName(q) {
   const BOUNDARY_AFTER = /[\s，。？！,.?!:：、;；的(（[）\]"”'']/;
   const REL_START = /^[最血亲缘近]/; // 名字后紧跟「最亲/血缘/亲近…」也算边界
   let bestName = null, bestScore = -1;
@@ -457,20 +490,65 @@ function resolveClosestTarget(message, selfId) {
       idx = q.indexOf(n, idx + 1);
     }
   }
-  if (bestName) return pick(bestName);
+  if (bestName) return bestName;
 
   // 单字名兜底：优先紧跟「和/与」的
   for (const n of byName.keys()) {
     if (n.length !== 1) continue;
     const idx = q.indexOf(n);
     if (idx === -1) continue;
-    if (q.charAt(idx - 1) === '和' || q.charAt(idx - 1) === '与') {
-      const r = pick(n); if (r) return r;
-    }
+    if (q.charAt(idx - 1) === '和' || q.charAt(idx - 1) === '与') return n;
   }
   for (const n of byName.keys()) {
-    if (n.length === 1 && q.includes(n)) { const r = pick(n); if (r) return r; }
+    if (n.length === 1 && q.includes(n)) return n;
   }
+  return null;
+}
+
+/**
+ * 同名预检：解析提问中的目标人名，返回所有同名候选（含区分信息），供前端弹窗确认。
+ * 返回 { name, candidates }；查询本人/无人名 → { name:null, candidates:[] }。
+ * 前端从候选里选定后，把选中的 personId 作为 resolvedId 携带，服务端用 forcedTargetId 直查。
+ */
+function resolveNameCandidates(query, selfId) {
+  ensureLoaded();
+  const q = String(query || '').trim();
+  if (/我|本人/.test(q)) return { name: null, candidates: [] };
+  const name = extractTargetName(q);
+  if (!name) return { name: null, candidates: [] };
+  const cands = (byName.get(name) || []).map(p => {
+    const fid = Number(p.father_id);
+    const f = fid > 0 && byId.has(fid) ? byId.get(fid) : null;
+    return {
+      id: Number(p.id),
+      name: p.name,
+      desc: describePerson(p),
+      fatherName: f ? f.name : null,
+      brief: (p.biography || '').slice(0, 40),
+      isSelf: Number(p.id) === Number(selfId),
+    };
+  });
+  return { name, candidates: cands };
+}
+
+function resolveClosestTarget(message, selfId, forcedTargetId) {
+  ensureLoaded();
+  if (forcedTargetId !== undefined && forcedTargetId !== null && String(forcedTargetId) !== '') {
+    const fp = byId.get(Number(forcedTargetId));
+    if (fp) return { id: Number(fp.id), name: fp.name, self: Number(fp.id) === Number(selfId) };
+  }
+  const q = String(message || '');
+  if (/我|本人/.test(q)) return { id: Number(selfId), name: null, self: true };
+
+  const pick = (name) => {
+    const cand = byName.get(name) && byName.get(name)[0];
+    if (!cand) return null;
+    const id = Number(cand.id);
+    return { id, name: cand.name, self: id === Number(selfId) };
+  };
+
+  const name = extractTargetName(q);
+  if (name) { const r = pick(name); if (r) return r; }
   return { id: Number(selfId), name: null, self: true };
 }
 
@@ -540,5 +618,6 @@ module.exports = {
   ensureLoaded, getPerson, getPeopleByName,
   getAncestorList, getDescendantLevels, getSameGeneration,
   isAncestorOf, kinshipText, getDirectChain, describePerson,
+  resolveNameCandidates, extractTargetName,
   answerLineage, answerFullLineage, answerClosest, resolveClosestTarget,
 };
