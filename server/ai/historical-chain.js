@@ -161,6 +161,36 @@ function buildFullChain(personId) {
   }
 
   const nodes = [];
+  const adoptNote = (p) => adoptionFromBio(p.biography) || (p.branch === '入继' ? '过继入族' : '');
+
+  // 世系贯通后：真实链 root 即炎帝（ci===0 且命中主链第1世）→ 整条链逐节点按主链世次映射。
+  // 不能再用旧「叙事段+真实段续排」：那会给全链连续世次（1,2,3,4…），丢失主链权威跳变世次
+  // （1,2,10,11,15,54,55,65,66,67…99,100,101,102…）。命中主链且世次严格递增→用主链世次，
+  // 未命中（如文杲、攒、伯能…枫槎实记）→ 上一世次+1 续排（与前台 连续完整世系 的 +129 体系一致：
+  // 文杲132、攒133、伯能134、叔仅146、彬乾147、云先153，已逐人对验主数据）。
+  if (ci === 0 && mi === 0) {
+    let prevShi = 0;
+    for (let k = 0; k < real.length; k++) {
+      const p = real[k];
+      const nm = normName(p.name);
+      const mj = nm ? mlIdx.get(nm) : undefined;
+      const ad = adoptNote(p);
+      let shi;
+      if (mj !== undefined && MAIN_LINE[mj][0] > prevShi) shi = MAIN_LINE[mj][0];
+      else shi = prevShi + 1;
+      prevShi = shi;
+      let note = ad;
+      if (!note && mj !== undefined && MAIN_LINE[mj][2]) note = MAIN_LINE[mj][2];
+      nodes.push({
+        name: p.name, shi, note,
+        branch: p.branch && p.branch !== '—' ? p.branch : branchOfShi(shi),
+        isSelf: Number(p.id) === Number(personId),
+        adopt: ad,
+      });
+    }
+    return nodes;
+  }
+
   if (ci >= 0) {
     // 叙事段：主链连接点之前（用叙事世次+备注）
     for (let k = 0; k < mi; k++) {
@@ -171,7 +201,7 @@ function buildFullChain(personId) {
     const baseShi = MAIN_LINE[mi][0];
     for (let k = ci; k < real.length; k++) {
       const p = real[k];
-      const ad = adoptionFromBio(p.biography) || (p.branch === '入继' ? '过继入族' : '');
+      const ad = adoptNote(p);
       nodes.push({
         name: p.name,
         shi: baseShi + (k - ci),
@@ -186,7 +216,7 @@ function buildFullChain(personId) {
     MAIN_LINE.forEach(m => nodes.push({ name: m[1], shi: m[0], note: m[2], branch: branchOfShi(m[0]), isSelf: false, adopt: '' }));
     let base = MAIN_LINE[MAIN_LINE.length - 1][0];
     real.forEach((p, k) => {
-      const ad = adoptionFromBio(p.biography) || (p.branch === '入继' ? '过继入族' : '');
+      const ad = adoptNote(p);
       nodes.push({ name: p.name, shi: base + k + 1, note: ad, branch: p.branch, isSelf: Number(p.id) === Number(personId), adopt: ad });
     });
   }
