@@ -3806,6 +3806,7 @@ function exitPageFullscreen() { try { if (document.exitFullscreen) document.exit
   var closeBtn = document.getElementById('fs-close-btn');
   if (closeBtn) closeBtn.style.display = 'none';
   if (isMobileTree()) {
+    mblUnlockOrientation(); // 解锁横屏（真全屏退出）
     // 手机端退出全屏：保持当前尺度与模式（treeZoomReset 的 1:1 会破坏手机默认可读 0.75，
     // 且手机缩放按钮已隐藏无从恢复）。退出只改变视口尺寸 → 布局落定后按恢复后的视口刷新
     // 虚拟化/全貌重绘（需双 rAF：类移除瞬间同步读 sc.clientWidth 是回退中间值 350，落定后才是 318）。
@@ -3824,6 +3825,63 @@ function exitPageFullscreen() { try { if (document.exitFullscreen) document.exit
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') exitPageFullscreen();
 });
+
+/* ===== 真全屏横屏锁 + fullscreenchange 兜底清理（手机端） =====
+   ⛶ 全屏进入时 section.requestFullscreen()（真全屏，盖满整个屏幕不含浏览器栏）。
+   手机端退出真全屏多靠系统手势/浏览器按钮，不会触发 keydown Escape →
+   假全屏 class 残留、横屏锁未解。fullscreenchange 事件统一兜底：
+   - 进入真全屏 → 锁横屏（screen.orientation.lock 需在全屏态+用户手势内调用，
+     Android Chrome 支持；iOS Safari 不支持元素全屏/锁横屏 → 静默回退 CSS 假全屏竖屏）。
+   - 退出真全屏 → 清假全屏 class/overflow/关闭按钮 + 解锁横屏 + 按新视口重绘。 */
+var _mblOrientationLocked = false;
+
+function mblFsRedraw() {
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      if (_mblMode === 'readable') mblVizThrottled();
+      else if (_mblMode === 'overview') mblMapDraw();
+    });
+  });
+}
+
+function mblLockLandscape() {
+  if (_mblOrientationLocked) return;
+  var so = window.screen && screen.orientation;
+  if (!so || !so.lock) return;                       // iOS Safari 不支持 → 保持竖屏假全屏
+  try {
+    so.lock('landscape').then(function() {
+      _mblOrientationLocked = true;
+      mblFsRedraw();                                  // 旋转落定后按横屏视口重绘 canvas/卡片
+    }).catch(function() {});                          // 部分机型锁失败：静默，保持竖屏
+  } catch(e) {}
+}
+
+function mblUnlockOrientation() {
+  if (!_mblOrientationLocked) return;
+  _mblOrientationLocked = false;
+  var so = window.screen && screen.orientation;
+  if (so && so.unlock) { try { so.unlock(); } catch(e) {} }
+}
+
+function mblHandleFsChange() {
+  if (!isMobileTree()) return;                        // 桌面端行为保持原样（红线）
+  var fs = document.fullscreenElement || document.webkitFullscreenElement;
+  if (fs) {
+    mblLockLandscape();
+    mblFsRedraw();
+  } else {
+    // 退出真全屏（系统手势/浏览器退出）→ 同步清理假全屏态，避免 class 残留
+    var section = document.getElementById('genealogy-tree-section');
+    if (section) section.classList.remove('genealogy-tree-section-fullscreen');
+    document.body.style.overflow = '';
+    var closeBtn = document.getElementById('fs-close-btn');
+    if (closeBtn) closeBtn.style.display = 'none';
+    mblUnlockOrientation();
+    mblFsRedraw();
+  }
+}
+document.addEventListener('fullscreenchange', mblHandleFsChange);
+document.addEventListener('webkitfullscreenchange', mblHandleFsChange);
 
 function toggleGenChart() {
   var el = document.getElementById('gen-chart-content');
