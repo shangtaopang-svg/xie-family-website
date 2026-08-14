@@ -2102,6 +2102,10 @@ function showBranchEmptyMsg(container) {
   if (_currentBranch && _currentBranch !== 'all' && container) {
     var existing = document.getElementById('branch-empty-msg');
     if (existing) existing.remove();
+    // 手机端：分支用 canvas 全貌渲染、卡片按可见区虚拟化，渲染瞬间 DOM 卡数=0/1 是常态，
+    // 不能靠卡数判断「支系空」，否则误报「该支系暂无详细的世代连接数据」且浮层滞留挡视图。
+    // 分支按钮/图例本身有数据才会列出，无需此提示。
+    if (isMobileTree()) return;
     var cardCount = container.querySelectorAll('.tree-html-card').length;
     if (cardCount <= 1) {
       var msgDiv = document.createElement('div');
