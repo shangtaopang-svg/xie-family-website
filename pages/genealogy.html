@@ -424,6 +424,7 @@
             <button class="btn btn-sm" onclick="treeZoomReset()" title="重置缩放">1:1</button>
             <button class="btn btn-sm" onclick="pageTreeFullscreen()" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;">⛶ 全屏</button><span id="tree-zoom-level" style="font-size:11px;color:var(--text-tertiary);min-width:32px;text-align:center;">100%</span>
             <button class="btn btn-sm" onclick="pageTreeFullscreen()" title="全屏观看" style="background:var(--accent-orange-dim);border-color:var(--accent-orange);">⛶ 全屏</button>
+            <button class="btn btn-sm" id="mbl-global-btn" onclick="toggleMobileGlobal()" title="整树全貌 / 可读切换（手机端）" style="display:none;font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid var(--glass-border);background:var(--glass-bg);cursor:pointer;">☗ 全貌</button>
             <button class="btn btn-sm" onclick="exportTreePNG()" title="导出为图片" style="background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3);">📥 导出</button>
             <span style="width:1px;height:18px;background:var(--divider);margin:0 4px;"></span>
           </div>
@@ -963,7 +964,7 @@ function buildConnectorPath(parentId, childIds, layout) {
 
 // Branch filter: return only matching people (plus transition person from previous branch)
 function getBranchData(data, rootNamePattern) {
-  var isBranchFilter = ['远古世系','申伯世系','始宁东山世系','临海下渡世系','石马下谢分房'].indexOf(rootNamePattern) >= 0;
+  var isBranchFilter = ['远古世系','申伯世系','始宁东山世系','临海下渡世系','石马下谢分房','前枫槎'].indexOf(rootNamePattern) >= 0;
   if (isBranchFilter) {
     var result = data.filter(function(p) { return p.branch === rootNamePattern; });
     // Include the starting person of this branch (from previous branch)
@@ -1076,7 +1077,20 @@ function filterBranch(branch) {
           if (data[i].name.indexOf(branch) >= 0) { rootId = data[i].id; break; }
         }
       }
-      if (rootId) treeAutoLocate(rootId);
+      if (rootId) { treeAutoLocate(rootId); return; }
+      // 手机端「筛选+定位」：分支按钮的 branch 名（如「远古世系」）不出现在任何 name 里，
+      // 上面 name 查找必然落空；按分支锚点姓名解析该分支根节点，fit 全貌后飞入定位。
+      // 桌面端保持原样（isMobileTree() 守卫，桌面不触发任何定位）。
+      if (isMobileTree()) {
+        var bRoot = {'远古世系':'炎帝神农氏','申伯世系':'申伯','始宁东山世系':'缵','临海下渡世系':'闓','石马下谢分房':'小四','前枫槎':'撰'}[branch];
+        if (bRoot) {
+          for (var ri = 0; ri < data.length; ri++) {
+            var rn = data[ri].name;
+            if (rn === bRoot || String(rn).replace(/\(.*\)$/, '') === bRoot) { rootId = data[ri].id; break; }
+          }
+          if (rootId) treeAutoLocate(rootId);
+        }
+      }
     }, 200);
   }
   // Auto-scroll to tree section
@@ -1110,9 +1124,760 @@ function renderSimpleTree(data) {
   c.innerHTML = h;
 }
 
+/* ===== 手机端（≤900px）：地图式全景世系图 =====
+   Step1 基线 = 原生滚动·可读树（卡片紧凑、双轴原生滚动、兴旺徽章、☗全貌⇄可读）。
+   后续 Step3 加 Canvas 全貌层、Step4 加虚拟化卡片池，本区逐步增强。 */
+var _MBL_DEFAULT_SCALE = 0.75; // 默认可读缩放：卡片 104px→78px 渲染，清晰可读
+var _mblPC = null;             // 手机端环安全预计算 {childOf, descCount}
+
+function isMobileTree() {
+  return window.matchMedia ? window.matchMedia('(max-width:900px)').matches : (window.innerWidth <= 900);
+}
+
+function mblPrecompute(data) {
+  var byId = {}, childOf = {};
+  data.forEach(function(p){ byId[p.id] = p; });
+  data.forEach(function(p){
+    var fid = parseInt(p.father_id);
+    // 跳过自环引用（如古世系占位符 father_id 指向自己）——否则会形成自身子环
+    if (fid && byId[fid] && fid !== parseInt(p.id)) { (childOf[fid] = childOf[fid] || []).push(p); }
+  });
+  for (var k in childOf) childOf[k].sort(function(a,b){
+    return (parseInt(a.generation_num)||0) - (parseInt(b.generation_num)||0) ||
+      String(a.name||'').localeCompare(String(b.name||''),'zh');
+  });
+  var descCount = {}, gray = {};
+  function dc(id) {
+    if (descCount[id] !== undefined) return descCount[id];
+    if (gray[id]) return 0; // 环兜底：当前路径已含此节点 → 该枝后代按 0 计
+    gray[id] = true;
+    var c = childOf[id] || [], n = 0;
+    c.forEach(function(x){ n += 1 + dc(x.id); });
+    delete gray[id];
+    descCount[id] = n; return n;
+  }
+  data.forEach(function(p){ dc(p.id); });
+  return { byId: byId, childOf: childOf, descCount: descCount };
+}
+
+function mblIsKey(p) {
+  return !!(p && (p.highlight === true ||
+    /^(小四|文杲|攒|撰|彬|乾|文对|炎帝|临魁|申伯)/.test(p.name || '')));
+}
+
+function mblHxTier(desc) {
+  // 兴旺分档：0=灰(无后) 1-3=蓝(初兴) 4-9=绿(发展) 10-24=橙(兴旺) 25+=红(鼎盛)
+  desc = desc || 0;
+  if (desc === 0) return 0;
+  if (desc <= 3) return 1;
+  if (desc <= 9) return 2;
+  if (desc <= 24) return 3;
+  return 4;
+}
+
+/* 分房配色（「整个后台世系」可视化）：远古/申伯/东山/临海/石马/前枫槎/后枫槎 7 房 + other 灰。
+   米白底 #f5f0e6 上分离（已落日前校验）。branch 字段 1026/1249 人为空不可靠，
+   故沿父链上溯到「世代区间 + 名字锚点」派生。 */
+var _MBL_BRANCH_COLORS = {
+  '远古': '#0f766e', '申伯': '#4f46e5', '东山': '#7c3aed',
+  '临海': '#0ea5e9', '石马': '#d97706', '前枫槎': '#e11d48',
+  '后枫槎': '#15803d', 'other': '#8a8272'
+};
+
+// 名字锚点：131 世以上本地房派无法用世代区间区分，用核心先祖名判定
+// （数据已核实：攒/伯能/叔仅/彬/乾 = 后枫槎，撰 = 前枫槎，小四(石马)/丹一 = 石马）
+function mblAnchorBranch(name) {
+  if (!name) return null;
+  if (/攒|伯能|叔仅|彬|乾|后枫槎/.test(name)) return '后枫槎';
+  if (/撰|前枫槎/.test(name)) return '前枫槎';
+  if (/小四|丹一/.test(name)) return '石马';
+  if (/炎帝|临魁|榆罔|帝柱|祝融/.test(name)) return '远古';
+  if (/申伯|吕尚/.test(name)) return '申伯';
+  if (/缵|衡|裒|安石/.test(name)) return '东山';
+  if (/闓|临海/.test(name)) return '临海';
+  return null;
+}
+
+// 后台 branch 字段显式映射：管理后台录入的房派标签最权威
+// （已核实：石马(下谢)42人、申伯世系47、始宁东山48、前枫槎23、临海下渡21、
+//   后枫槎系15+西房5+东房5+枫槎分支10+枫槎始祖1+分称后西/东房+后东房+大房等）
+function mblFieldBranch(b) {
+  if (!b) return null;
+  var s = String(b).trim();
+  if (/炎帝世系|仍姓姜/.test(s)) return '远古';
+  if (/谢氏得姓|申伯世系/.test(s)) return '申伯';
+  if (/始宁东山|东山第一世/.test(s)) return '东山';
+  if (/临海下渡/.test(s)) return '临海';
+  if (/石马/.test(s)) return '石马';
+  if (/前枫槎/.test(s)) return '前枫槎';
+  if (/后枫槎|枫槎分支|枫槎始祖|分称后|后东房|大房/.test(s)) return '后枫槎';
+  return null;
+}
+
+// 沿父链上溯到分支：branch 字段 > 世代区间 > 名字锚点；
+// 兜底后枫槎——下枫槎村本地 131+ 且父链断裂者归本宗（后枫槎宗族），不归石马
+function mblDeriveBranchKey(p) {
+  if (!p) return 'other';
+  var byId = _mblPC ? _mblPC.byId : null;
+  var cur = p, guard = 0;
+  while (cur && guard++ < 100) {
+    var fb = mblFieldBranch(cur.branch);
+    if (fb) return fb;
+    var g = parseInt(cur.generation_num, 10) || 0;
+    if (g > 0 && g <= 130) {
+      if (g <= 65) return '远古';
+      if (g <= 99) return '申伯';
+      if (g <= 121) return '东山';
+      return '临海';
+    }
+    var k = mblAnchorBranch(cur.name);
+    if (k) return k;
+    var fid = parseInt(cur.father_id);
+    if (!fid || !byId) break;
+    cur = byId[fid];
+  }
+  return '后枫槎';
+}
+
+function renderMobileMap(data) {
+  var container = document.getElementById('tree-container');
+  if (!container) return;
+  // 手机紧凑卡片：更小卡片与间距，更多代一屏可见（桌面端常量保持原值）
+  CARD_W = 104; CARD_H = 60; H_GAP = 34; V_GAP = 64;
+  // Apply branch filter FIRST
+  var oldMsg = document.getElementById('branch-empty-msg');
+  if (oldMsg) oldMsg.remove();
+  var oldStats = document.getElementById('branch-stats-overlay');
+  if (oldStats) oldStats.remove();
+  if (_currentBranch && _currentBranch !== 'all' && _currentBranch !== '连续完整世系') {
+    var filteredData = getBranchData(data, _currentBranch);
+    if (filteredData && filteredData.length > 0) data = filteredData;
+  }
+  if (!data || data.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-tertiary);font-size:14px;">暂无族谱数据，请在管理后台添加</div>';
+    return;
+  }
+  // Find root nodes
+  var existingIds = {};
+  data.forEach(function(p) { existingIds[p.id] = true; });
+  var roots = data.filter(function(p) { return !p.father_id || !existingIds[parseInt(p.father_id)]; });
+  var spouseIds = {};
+  data.forEach(function(p) {
+    if (p.spouse_ids) {
+      var names = p.spouse_ids.toString().split(',').map(function(n){return n.trim();}).filter(function(n){return n;});
+      data.forEach(function(other) {
+        if (other.id !== p.id && names.indexOf(other.name) !== -1) spouseIds[other.id] = p.id;
+      });
+    }
+  });
+  roots = roots.filter(function(p) { return !spouseIds[p.id] || spouseIds[p.id] > p.id; });
+  if (roots.length === 0 && data.length > 0) roots = [data[0]];
+  // 根按世代排序（古→今从左到右）：炎帝1 → 申伯65 → 东山 → 临海 → 本地131+（未知世代排最后）
+  roots.sort(function(a, b) {
+    return (parseInt(a.generation_num, 10) || 99999) - (parseInt(b.generation_num, 10) || 99999);
+  });
+
+  // Layout all roots side by side（手机端始终整树显示，无折叠）
+  treeLayout = {};
+  var rootOffsets = [], totalRW = 0;
+  for (var i = 0; i < roots.length; i++) {
+    var rw = calcSubtreeWidth(roots[i].id, data, false);
+    rootOffsets.push({ id: roots[i].id, w: rw });
+    totalRW += rw + (i < roots.length - 1 ? H_GAP * 2 : 0);
+  }
+  var offsetX = 100;
+  for (var i = 0; i < roots.length; i++) {
+    layoutTree(rootOffsets[i].id, offsetX + rootOffsets[i].w / 2, 100, data, false, null);
+    offsetX += rootOffsets[i].w + H_GAP * 2;
+  }
+
+  // Bounds
+  var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  var cardIds = Object.keys(treeLayout);
+  if (cardIds.length === 0) { container.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-tertiary);">暂无显示数据</div>'; return; }
+  cardIds.forEach(function(id) {
+    var p = treeLayout[parseInt(id)];
+    if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
+    if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
+  });
+  var svgW = Math.max(400, maxX - minX + CARD_W + 80);
+  var svgH = Math.max(400, maxY - minY + CARD_H + 80);
+  // 内容宽高必须保证包含最右/最下卡片（svgW 公式在 minX 较大时右缘会少算，被 overflow:hidden 裁掉）
+  window._mblContent = { w: Math.max(svgW, maxX + CARD_W / 2 + 10), h: Math.max(svgH, maxY + CARD_H / 2 + 10) };
+
+  // === Fast rendering: connectors (SVG) + all cards (HTML, single batch) ===
+  var cardIdsNum = cardIds.map(function(id) { return parseInt(id); });
+  var html = '<div class="tree-viewport" style="transform-origin:0 0;transform:scale(' + treeScale + ');">';
+  // SVG layer for connectors only
+  html += '<svg class="tree-connector-layer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + svgW + ' ' + svgH + '" width="' + svgW + '" height="' + svgH + '" style="display:block;position:absolute;top:0;left:0;pointer-events:none;">';
+  for (var i = 0; i < cardIdsNum.length; i++) {
+    var pid = cardIdsNum[i];
+    var person = null;
+    for (var j = 0; j < data.length; j++) { if (data[j].id === pid) { person = data[j]; break; } }
+    if (!person) continue;
+    var children = getFilteredChildren(person, data);
+    if (children.length > 0) {
+      var childIds = [];
+      for (var k = 0; k < children.length; k++) { if (treeLayout[children[k].id]) childIds.push(children[k].id); }
+      if (childIds.length > 0) html += buildConnectorPath(pid, childIds, treeLayout);
+    }
+  }
+  html += '</svg>';
+  // HTML cards（positioned absolutely）——虚拟化：只建空卡片层，可见区卡片由卡片池动态增删（不重建）
+  html += '<div class="tree-cards-layer" style="position:relative;width:' + svgW + 'px;height:' + svgH + 'px;"></div></div>';
+  // 手机端预计算：环安全的 子女数/后代总数（单次遍历全卡复用）
+  _mblPC = mblPrecompute(data);
+  // 分房色：全量预计算 id→branch key（Step3 Canvas 全貌用；可读卡片复用）
+  var _mblBranch = {};
+  for (var bi = 0; bi < data.length; bi++) _mblBranch[data[bi].id] = mblDeriveBranchKey(data[bi]);
+  window._mblBranch = _mblBranch;
+  // Single innerHTML（只建 svg 连线层 + 空卡片层，卡片按可见区虚拟化）
+  container.innerHTML = html;
+  // 重置卡片池（重渲染/分支切换/live 更新后旧卡失效）→ 立即按当前可见区填充
+  _mblPool = null;
+  mblVirtualize();
+
+  // 显示分支无详情提示
+  showBranchEmptyMsg(container);
+
+  // Store node refs (for search)
+  allNodes = [];
+  var cards2 = container.querySelectorAll('.tree-html-card');
+  for (var i = 0; i < cards2.length; i++) {
+    allNodes.push({ id: parseInt(cards2[i].getAttribute('data-id')), el: cards2[i] });
+  }
+  // 手机端：渲染后进全貌地图（canvas）+ 绑定双指捏合缩放
+  afterMobileTreeRender();
+  mblInitPinch();
+  if (!window.__mblResizeBound) {
+    window.__mblResizeBound = true;
+    window.addEventListener('resize', function() {
+      if (!isMobileTree()) return;
+      if (_mblMode === 'overview') mblMapDraw();
+      else mblVizThrottled();
+    });
+  }
+}
+
+/* ===== 手机端交互辅助（仅 ≤900px 生效） ===== */
+function afterMobileTreeRender() {
+  // 初始进入 = Canvas 全貌地图：整树入屏、分房配色、点选放大进入可读（原生滚动卡片）
+  var sc = document.getElementById('tree-scroll-container');
+  if (!sc) return;
+  mblMapPrep();
+  enterMblOverview();
+}
+
+function _mblTreeBounds() {
+  var keys = Object.keys(treeLayout);
+  if (!keys.length) return null;
+  var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  keys.forEach(function(id) {
+    var p = treeLayout[id];
+    if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
+    if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
+  });
+  return { left: minX - CARD_W/2, top: minY - CARD_H/2, width: (maxX - minX) + CARD_W, height: (maxY - minY) + CARD_H };
+}
+
+function _mblContentPoint() {
+  // 当前视口中心对应的内容坐标（未缩放 CSS px）
+  var sc = document.getElementById('tree-scroll-container');
+  if (!sc) return { x: 0, y: 0 };
+  return { x: (sc.scrollLeft + sc.clientWidth / 2) / treeScale, y: (sc.scrollTop + sc.clientHeight / 2) / treeScale };
+}
+
+function _mblScrollToContentPoint(pt) {
+  var sc = document.getElementById('tree-scroll-container');
+  if (!sc) return;
+  var maxL = sc.scrollWidth - sc.clientWidth, maxT = sc.scrollHeight - sc.clientHeight;
+  var l = Math.max(0, Math.min(maxL, pt.x * treeScale - sc.clientWidth / 2));
+  var t = Math.max(0, Math.min(maxT, pt.y * treeScale - sc.clientHeight / 2));
+  try { sc.scrollTo({left: l, top: t, behavior: 'smooth'}); } catch(e) { sc.scrollLeft = l; sc.scrollTop = t; }
+}
+
+function focusMobileNode(id) {
+  // 点卡聚焦：可读尺度（若在全貌态先回退）+ 原生平滑滚动到该卡。零自绘手势=零卡顿
+  var sc = document.getElementById('tree-scroll-container');
+  if (!sc || !treeLayout[id]) return;
+  if (treeScale !== _MBL_DEFAULT_SCALE) { treeScale = _MBL_DEFAULT_SCALE; applyTreeTransformSVG(); }
+  mblVizThrottled(); // 缩放变化后可见区立即改变 → 虚拟化刷新
+  var x = treeLayout[id].x * treeScale;
+  var y = treeLayout[id].y * treeScale;
+  var maxL = sc.scrollWidth - sc.clientWidth, maxT = sc.scrollHeight - sc.clientHeight;
+  var l = Math.max(0, Math.min(maxL, x - sc.clientWidth / 2));
+  var t = Math.max(0, Math.min(maxT, y - sc.clientHeight * 0.2)); // 底部详情卡遮下半屏 → 卡放偏上
+  try { sc.scrollTo({left: l, top: t, behavior: 'smooth'}); } catch(e) { sc.scrollLeft = l; sc.scrollTop = t; }
+}
+
+function fitMobileTree() {
+  // 一键全貌（☗）：进入 Canvas 全貌地图
+  enterMblOverview();
+}
+
+function toggleMobileGlobal() {
+  // ☗ 全局 按钮：全貌（canvas 整树地图）⇄ 可读（原生滚动卡片），返回可读时恢复原滚动位置
+  if (!isMobileTree()) return;
+  if (_mblMode === 'overview') {
+    cancelMblFly();
+    // 先取全貌视口中心的世界坐标（treeScale 仍为全貌尺度），用作可读回落的兜底锚点
+    var ovCenter = _mblContentPoint();
+    treeScale = _MBL_DEFAULT_SCALE;
+    applyTreeTransformSVG();
+    setMblMode('readable');
+    var sc = document.getElementById('tree-scroll-container');
+    if (sc) {
+      var maxL = sc.scrollWidth - sc.clientWidth, maxT = sc.scrollHeight - sc.clientHeight;
+      if (_mblReadableScroll) {
+        sc.scrollLeft = Math.max(0, Math.min(maxL, _mblReadableScroll.l));
+        sc.scrollTop = Math.max(0, Math.min(maxT, _mblReadableScroll.t));
+      }
+      // 兜底：恢复位在稀疏区（可见 0 卡，如整树左上角）时，改落到离全貌视口中心最近的节点，
+      // 避免☗回可读后一片空白（整树 1250 人左上角天然稀疏，Step4 实测；1260 次遍历 <1ms）
+      var rect = mblVisibleRect();
+      var hasAny = false;
+      if (rect) {
+        for (var id in treeLayout) {
+          var p = treeLayout[id];
+          if (p && p.x >= rect.x0 && p.x <= rect.x1 && p.y >= rect.y0 && p.y <= rect.y1) { hasAny = true; break; }
+        }
+      }
+      if (!hasAny) {
+        var bestId = null, bestD = Infinity;
+        for (var id2 in treeLayout) {
+          var q = treeLayout[id2];
+          if (!q) continue;
+          var dx = q.x - ovCenter.x, dy = q.y - ovCenter.y;
+          var d = dx * dx + dy * dy;
+          if (d < bestD) { bestD = d; bestId = id2; }
+        }
+        if (bestId) {
+          var qq = treeLayout[bestId];
+          sc.scrollLeft = Math.max(0, Math.min(maxL, qq.x * treeScale - sc.clientWidth / 2));
+          sc.scrollTop = Math.max(0, Math.min(maxT, qq.y * treeScale - sc.clientHeight * 0.2));
+        }
+      }
+      mblVizThrottled();
+    }
+  } else {
+    enterMblOverview();
+  }
+}
+
+function updateGlobalBtnLabel() {
+  var btn = document.getElementById('mbl-global-btn');
+  if (!btn) return;
+  btn.textContent = (_mblMode === 'overview') ? '✕ 可读' : '☗ 全貌';
+}
+
+/* ===== 手机 Canvas 全貌层（地图式全景）=====
+   全貌模式：整树按分房配色画到「视口尺寸」的 canvas（sticky 钉住视口），点选最近节点→飞入可读；
+   可读模式：原生滚动卡片树（.tree-viewport），canvas 隐藏。treeScale≥0.5=可读，<0.5=全貌。 */
+var _mblMode = 'readable';
+var _mblMapEdges = null;
+var _mblMapFit = null;          // 最近一次全貌绘制的 content→canvas 屏幕px 变换 {s,ox,oy}
+var _mblPinch = null;
+var _mblReadableScroll = null;  // 进入全貌前的可读滚动位置，用于返回
+var _mblFlyId = 0;
+
+function mblMapEnsureCanvas() {
+  var sc = document.getElementById('tree-scroll-container');
+  if (!sc) return null;
+  var cv = document.getElementById('gz-map-canvas');
+  if (!cv) {
+    cv = document.createElement('canvas');
+    cv.id = 'gz-map-canvas';
+    sc.insertBefore(cv, sc.firstChild);
+    cv.addEventListener('click', function(ev) { mblMapOnTap(ev); });
+  }
+  var dpr = window.devicePixelRatio || 1;
+  var w = sc.clientWidth, h = sc.clientHeight;
+  var bw = Math.round(w * dpr), bh = Math.round(h * dpr);
+  if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; cv.style.width = w + 'px'; cv.style.height = h + 'px'; }
+  return cv;
+}
+
+function mblMapPrep() {
+  _mblMapEdges = [];
+  if (!window._mblContent || !_mblPC) return;
+  var childOf = _mblPC.childOf || {};
+  for (var id in treeLayout) {
+    var p = treeLayout[id]; if (!p) continue;
+    var kids = childOf[id] || [];
+    for (var i = 0; i < kids.length; i++) {
+      var kp = treeLayout[kids[i].id]; if (!kp) continue;
+      _mblMapEdges.push([p.x, p.y, kp.x, kp.y]);
+    }
+  }
+}
+
+function mblMapDraw() {
+  var cv = mblMapEnsureCanvas();
+  if (!cv) return;
+  var ctx = cv.getContext('2d');
+  var dpr = window.devicePixelRatio || 1;
+  var W = cv.width, H = cv.height, cw = W / dpr, ch = H / dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, cw, ch);
+  var content = window._mblContent;
+  if (!content) return;
+  // 整树适配入屏；位图恒=视口×dpr，不随放大爆炸
+  var pad = 10;
+  var s = Math.min((cw - pad * 2) / content.w, (ch - pad * 2) / content.h);
+  s = Math.max(0.005, Math.min(1, s));
+  var ox = (cw - content.w * s) / 2, oy = (ch - content.h * s) / 2;
+  _mblMapFit = { s: s, ox: ox, oy: oy };
+  function X(x) { return ox + x * s; }
+  function Y(y) { return oy + y * s; }
+  // 边：浅棕细线（先画，垫底）
+  if (_mblMapEdges && _mblMapEdges.length) {
+    ctx.strokeStyle = 'rgba(120,110,88,0.30)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (var i = 0; i < _mblMapEdges.length; i++) {
+      var e = _mblMapEdges[i];
+      ctx.moveTo(X(e[0]), Y(e[1])); ctx.lineTo(X(e[2]), Y(e[3]));
+    }
+    ctx.stroke();
+  }
+  // 节点圆点：分房配色（全貌画全部 1250，单帧 <2ms）
+  var colors = _MBL_BRANCH_COLORS, bm = window._mblBranch || {};
+  var r = Math.max(1, Math.min(2.6, s * 44));
+  for (var id in treeLayout) {
+    var p = treeLayout[id]; if (!p) continue;
+    ctx.fillStyle = colors[bm[id]] || colors['other'];
+    ctx.beginPath(); ctx.arc(X(p.x), Y(p.y), r, 0, Math.PI * 2); ctx.fill();
+  }
+  // 锚点人物标签：按内容 x 排序、≥30px 才画（白晕底防重叠成糊）
+  var byId = _mblPC.byId || {};
+  var ks = [];
+  for (var kk in byId) {
+    var p0 = byId[kk];
+    if (mblIsKey(p0) && treeLayout[p0.id]) ks.push(p0);
+  }
+  ks.sort(function(a, b) { return treeLayout[a.id].x - treeLayout[b.id].x; });
+  ctx.font = '10px sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  var lastSX = -40;
+  for (var i2 = 0; i2 < ks.length; i2++) {
+    var tp = treeLayout[ks[i2].id];
+    var sx = X(tp.x), sy = Y(tp.y);
+    if (sx - lastSX < 30) continue;
+    lastSX = sx;
+    var tw = ctx.measureText(ks[i2].name || '').width;
+    ctx.fillStyle = 'rgba(255,252,245,0.85)';
+    ctx.fillRect(sx - tw / 2 - 3, sy - 8, tw + 6, 15);
+    ctx.fillStyle = '#3a3226';
+    ctx.fillText(ks[i2].name || '', sx, sy + 1);
+  }
+}
+
+function mblMapOnTap(ev) {
+  if (_mblMode !== 'overview') return;
+  var cv = document.getElementById('gz-map-canvas');
+  if (!cv || !_mblMapFit) return;
+  var rect = cv.getBoundingClientRect();
+  var f = _mblMapFit;
+  var cx = (ev.clientX - rect.left - f.ox) / f.s;
+  var cy = (ev.clientY - rect.top - f.oy) / f.s;
+  var best = null, bestD = Infinity;
+  for (var id in treeLayout) {
+    var p = treeLayout[id];
+    var dx = p.x - cx, dy = p.y - cy, d = dx * dx + dy * dy;
+    if (d < bestD) { bestD = d; best = parseInt(id, 10); }
+  }
+  if (best === null) return;
+  var thr = 22 / f.s; // 屏幕 22px 容差（全貌下内容距离）
+  if (Math.sqrt(bestD) > thr) return; // 点到空白区
+  mblMapFlyTo(best);
+}
+
+function cancelMblFly() {
+  if (_mblFlyId) { cancelAnimationFrame(_mblFlyId); _mblFlyId = 0; }
+}
+
+function mblMapFlyTo(id) {
+  var t = treeLayout[id], sc = document.getElementById('tree-scroll-container');
+  if (!t || !sc) return;
+  cancelMblFly();
+  setMblMode('readable'); // 显示卡片，canvas 隐藏
+  var s0 = treeScale, s1 = _MBL_DEFAULT_SCALE;
+  var vw = sc.clientWidth, vh = sc.clientHeight, x = t.x, y = t.y;
+  var t0 = performance.now(), DUR = 340;
+  function step(now) {
+    var p = Math.min(1, (now - t0) / DUR);
+    var e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+    treeScale = s0 + (s1 - s0) * e;
+    applyTreeTransformSVG();
+    var maxL = sc.scrollWidth - sc.clientWidth, maxT = sc.scrollHeight - sc.clientHeight;
+    sc.scrollLeft = Math.max(0, Math.min(maxL, x * treeScale - vw / 2));
+    sc.scrollTop = Math.max(0, Math.min(maxT, y * treeScale - vh * 0.2));
+    if (p < 1) { _mblFlyId = requestAnimationFrame(step); }
+    else { _mblFlyId = 0; updateGlobalBtnLabel(); _mblReadableScroll = { l: sc.scrollLeft, t: sc.scrollTop }; }
+    mblVizThrottled(); // 动画中可见区持续变化 → 虚拟化跟手
+  }
+  _mblFlyId = requestAnimationFrame(step);
+}
+
+function mblEnsureLegend() {
+  var sc = document.getElementById('tree-scroll-container');
+  var lg = document.getElementById('mbl-map-legend');
+  if (lg || !sc) return;
+  lg = document.createElement('div');
+  lg.id = 'mbl-map-legend';
+  var order = ['远古', '申伯', '东山', '临海', '石马', '前枫槎', '后枫槎'];
+  var html = '';
+  for (var i = 0; i < order.length; i++) {
+    var b = order[i];
+    html += '<span class="mbl-lg" data-br="' + b + '" title="查看' + b + '世系"><i style="background:' + _MBL_BRANCH_COLORS[b] + '"></i>' + b + '</span>';
+  }
+  lg.innerHTML = html;
+  // 图例点击：筛选该分房并定位到根节点（事件委托，避免逐项绑定）
+  lg.onclick = function(e) {
+    var t = e.target;
+    while (t && t !== lg && !(t.classList && t.classList.contains('mbl-lg'))) t = t.parentNode;
+    if (!t || t === lg) return;
+    var k = t.getAttribute('data-br');
+    if (k) mblLegendFilter(k);
+  };
+  lg.style.display = 'none';
+  sc.appendChild(lg);
+}
+
+function mblLegendFilter(key) {
+  // 图例项点击：按分房色筛选（与分支按钮同一数据源），fit 全貌后飞入该分支根节点
+  if (!isMobileTree()) return;
+  var map = {'远古':'远古世系','申伯':'申伯世系','东山':'始宁东山世系','临海':'临海下渡世系','石马':'石马下谢分房','前枫槎':'前枫槎','后枫槎':'本宗世系图（后枫槎）'};
+  var arg = map[key];
+  if (!arg) return;
+  cancelMblFly();
+  filterBranch(arg);
+}
+
+function setMblMode(mode) {
+  _mblMode = mode;
+  var cv = document.getElementById('gz-map-canvas');
+  var vp = document.querySelector('#tree-container .tree-viewport');
+  var lg = document.getElementById('mbl-map-legend');
+  if (cv) cv.style.visibility = (mode === 'overview') ? 'visible' : 'hidden';
+  if (vp) vp.style.visibility = (mode === 'overview') ? 'hidden' : 'visible';
+  if (lg) lg.style.display = (mode === 'overview') ? 'flex' : 'none';
+  if (mode === 'overview') mblMapDraw();
+  else mblVirtualize();
+  updateGlobalBtnLabel();
+}
+
+function mblAutoMode() {
+  // 手势缩放过程中按 treeScale 阈值自动切换模式（≥0.5 可读卡片 / <0.5 全貌地图）
+  var overview = treeScale < 0.5;
+  _mblMode = overview ? 'overview' : 'readable';
+  var cv = document.getElementById('gz-map-canvas');
+  var vp = document.querySelector('#tree-container .tree-viewport');
+  var lg = document.getElementById('mbl-map-legend');
+  if (cv) cv.style.visibility = overview ? 'visible' : 'hidden';
+  if (vp) vp.style.visibility = overview ? 'hidden' : 'visible';
+  if (lg) lg.style.display = overview ? 'flex' : 'none';
+  if (overview) mblMapDraw();
+  else mblVirtualize();
+  updateGlobalBtnLabel();
+}
+
+function enterMblOverview(savedScroll) {
+  if (!isMobileTree()) return;
+  var sc = document.getElementById('tree-scroll-container');
+  var content = window._mblContent;
+  if (!sc || !content) return;
+  cancelMblFly();
+  // savedScroll 可选：捏合收拢进全貌时，捏合起点滚动位才是有意义的「返回位」
+  //（捏合 move 已把 scroll 置 0，此刻再取只会存到空角）；其他路径传 undefined → 取当前位
+  _mblReadableScroll = savedScroll || { l: sc.scrollLeft, t: sc.scrollTop };
+  // 整树适配入屏（滚动范围≈0），canvas 钉住视口画全貌
+  treeScale = Math.max(0.02, Math.min(2.5, Math.min((sc.clientWidth - 20) / content.w, (sc.clientHeight - 20) / content.h)));
+  applyTreeTransformSVG();
+  sc.scrollLeft = 0; sc.scrollTop = 0;
+  mblEnsureLegend();
+  setMblMode('overview');
+}
+
+function mblInitPinch() {
+  var sc = document.getElementById('tree-scroll-container');
+  if (!sc || sc.dataset.mblPinch) return;
+  sc.dataset.mblPinch = '1';
+  sc.addEventListener('touchstart', function(e) {
+    if (e.touches.length === 2) {
+      var dx = e.touches[0].clientX - e.touches[1].clientX, dy = e.touches[0].clientY - e.touches[1].clientY;
+      var rect = sc.getBoundingClientRect();
+      _mblPinch = {
+        d: Math.sqrt(dx * dx + dy * dy) || 1, s0: treeScale,
+        sl: sc.scrollLeft, st: sc.scrollTop,
+        midX: (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left,
+        midY: (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top
+      };
+    }
+  }, { passive: true });
+  sc.addEventListener('touchmove', function(e) {
+    if (!_mblPinch || e.touches.length !== 2) return;
+    e.preventDefault();
+    var dx = e.touches[0].clientX - e.touches[1].clientX, dy = e.touches[0].clientY - e.touches[1].clientY;
+    var d = Math.sqrt(dx * dx + dy * dy); if (!d) return;
+    var ns = Math.max(0.02, Math.min(2.5, _mblPinch.s0 * (d / _mblPinch.d)));
+    var rect = sc.getBoundingClientRect();
+    var midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+    var midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+    var vw = sc.clientWidth, vh = sc.clientHeight;
+    treeScale = ns;
+    applyTreeTransformSVG();
+    if (ns >= 0.5) {
+      // 可读态：保持捏合中点下的内容点不动
+      var cAX = (_mblPinch.sl + _mblPinch.midX) / _mblPinch.s0;
+      var cAY = (_mblPinch.st + _mblPinch.midY) / _mblPinch.s0;
+      var maxL = sc.scrollWidth - vw, maxT = sc.scrollHeight - vh;
+      sc.scrollLeft = Math.max(0, Math.min(maxL, cAX * ns - midX));
+      sc.scrollTop = Math.max(0, Math.min(maxT, cAY * ns - midY));
+    } else {
+      sc.scrollLeft = 0; sc.scrollTop = 0; // 全貌态：canvas 整树入屏，无需锚点
+    }
+    mblAutoMode();
+  }, { passive: false });
+  sc.addEventListener('touchend', function(e) {
+    if (!_mblPinch) return;
+    if (e.touches.length < 2) {
+      var pinchStart = { l: _mblPinch.sl, t: _mblPinch.st }; // 捏合起点滚动位（返回可读时恢复）
+      _mblPinch = null;
+      if (treeScale < 0.5) enterMblOverview(pinchStart); // 全貌态吸附整树适配 + 画 canvas
+      else setMblMode('readable');
+    }
+  }, { passive: true });
+  // 原生滚动 → 可见区变化 → 虚拟化卡片池（rAF 节流，滚动跟手不阻塞主线程）
+  sc.addEventListener('scroll', mblVizThrottled, { passive: true });
+}
+
+/* ===== 手机可读层虚拟化：卡片池 Map<id,el> 只增删不重建，按可见世界矩形筛选 ===== */
+var _mblPool = null;           // Map<id,el> 当前已渲染卡片
+var _mblVizRaf = 0;            // rAF 节流 id
+var _mblVizBleed = 80;         // 可见区外出血边（内容 px），滚动方向预渲染避免白屏
+var _mblDensityMax = 220;      // 密度守卫：可见卡超阈值 → 跳过卡片层（极端放缩兜底）
+
+function mblVisibleRect() {
+  // 当前视口对应的「内容世界」矩形（未缩放 CSS px），含出血边
+  var sc = document.getElementById('tree-scroll-container');
+  if (!sc || !treeScale) return null;
+  var s = treeScale, bleed = _mblVizBleed / s;
+  return {
+    x0: sc.scrollLeft / s - bleed,
+    y0: sc.scrollTop / s - bleed,
+    x1: (sc.scrollLeft + sc.clientWidth) / s + bleed,
+    y1: (sc.scrollTop + sc.clientHeight) / s + bleed
+  };
+}
+
+function mblCreateCard(id) {
+  var person = _mblPC && _mblPC.byId ? _mblPC.byId[id] : null;
+  var p = treeLayout[id];
+  var layer = document.querySelector('#tree-container .tree-cards-layer');
+  if (!person || !p || !layer) return null;
+  var isHighlight = mblIsKey(person);
+  var el = document.createElement('div');
+  el.className = 'tree-html-card' + (isHighlight ? ' highlight' : '');
+  el.setAttribute('data-id', id);
+  el.style.cssText = 'left:' + (p.x - CARD_W / 2) + 'px;top:' + (p.y - CARD_H / 2) + 'px;width:' + CARD_W + 'px;height:' + CARD_H + 'px;';
+  if (isHighlight) {
+    var star = document.createElement('span');
+    star.className = 'star';
+    star.textContent = '⭐';
+    el.appendChild(star);
+  }
+  var nm = document.createElement('div');
+  nm.className = 'card-name';
+  nm.textContent = person.name || '未知';
+  el.appendChild(nm);
+  var meta = [];
+  if (person.generation && person.generation !== '—') meta.push(person.generation + '字辈');
+  if (person.generation_num) meta.push('第' + person.generation_num + '世');
+  if (person.branch && person.branch !== '—') meta.push(person.branch);
+  if (meta.length) {
+    var mm = document.createElement('div');
+    mm.className = 'card-meta';
+    mm.textContent = meta.join(' · ');
+    el.appendChild(mm);
+  }
+  // 兴旺分档（边框染色 + 徽章 N子·M后），与 Step2 预计算一致
+  var mbKids = _mblPC.childOf[id] || [];
+  var mbDsc = _mblPC.descCount[id] || 0;
+  el.classList.add('mb-t' + mblHxTier(mbDsc));
+  var hx = document.createElement('div');
+  hx.className = 'mb-hx';
+  var badge = document.createElement('span');
+  badge.className = 'mb-hx-badge';
+  badge.textContent = mbKids.length > 0 ? (mbKids.length + '子·' + mbDsc + '后') : '无后';
+  hx.appendChild(badge);
+  el.appendChild(hx);
+  el.onclick = function(ev) { onCardClick(id, ev); };
+  layer.appendChild(el);
+  return el;
+}
+
+function mblVirtualize() {
+  if (!isMobileTree() || _mblMode !== 'readable') return;
+  if (!treeLayout) return;
+  if (!_mblPool) _mblPool = new Map();
+  var rect = mblVisibleRect();
+  if (!rect) return;
+  var layer = document.querySelector('#tree-container .tree-cards-layer');
+  if (!layer) return;
+  // 单次遍历统计可见集（treeLayout ≈1250，全扫 <0.5ms）
+  var visible = {}, n = 0;
+  for (var id in treeLayout) {
+    var p = treeLayout[id]; if (!p) continue;
+    if (p.x < rect.x0 || p.x > rect.x1 || p.y < rect.y0 || p.y > rect.y1) continue;
+    visible[id] = true;
+    if (++n > _mblDensityMax) break;
+  }
+  // 密度守卫：可见卡超阈值 → 清空卡片层跳过（极端放缩兜底，保滚动流畅）
+  if (n > _mblDensityMax) {
+    if (_mblPool.size) { _mblPool.forEach(function(e) { if (e.parentNode) e.parentNode.removeChild(e); }); _mblPool.clear(); }
+    return;
+  }
+  // 增：可见但池中无 → 创建并入池（只创建新元素，旧元素不复用）
+  for (var vid in visible) {
+    var iv = parseInt(vid, 10);
+    if (!_mblPool.has(iv)) {
+      var el = mblCreateCard(iv);
+      if (el) _mblPool.set(iv, el);
+    }
+  }
+  // 删：池中有但不可见 → 移除
+  var pool = _mblPool;
+  pool.forEach(function(el, pid) {
+    if (!visible[pid]) { el.parentNode && el.parentNode.removeChild(el); pool.delete(pid); }
+  });
+  // 维护 allNodes（搜索定位用，仅含当前 DOM 卡片）
+  allNodes = [];
+  pool.forEach(function(el, pid) { allNodes.push({ id: pid, el: el }); });
+}
+
+function mblVizThrottled() {
+  if (_mblVizRaf) return;
+  _mblVizRaf = requestAnimationFrame(function() {
+    _mblVizRaf = 0;
+    // 全貌态 canvas 钉住视口：absolute 顶置 + translate(scrollLeft,scrollTop)（滚动时跟随视口不脱离）
+    var cv = document.getElementById('gz-map-canvas');
+    if (cv) {
+      if (_mblMode === 'overview') {
+        var sc = document.getElementById('tree-scroll-container');
+        cv.style.transform = 'translate(' + (sc ? sc.scrollLeft : 0) + 'px,' + (sc ? sc.scrollTop : 0) + 'px)';
+      } else {
+        cv.style.transform = '';
+      }
+    }
+    mblVirtualize();
+  });
+}
+
 function renderTreeSVG(data) {
   var container = document.getElementById('tree-container');
   if (!container) return;
+  if (isMobileTree()) { renderMobileMap(data); return; }
   // Apply branch filter FIRST
   var oldMsg = document.getElementById('branch-empty-msg');
   if (oldMsg) oldMsg.remove();
@@ -1348,6 +2113,7 @@ function showBranchEmptyMsg(container) {
 
 function onCardClick(personId, event) {
   var data = getGenealogyData();
+  if (isMobileTree()) focusMobileNode(personId);
   showPersonDetail(personId, data);
 }
 
@@ -1400,7 +2166,19 @@ function treeZoomReset() { treeScale = 1; treePanX = 0; treePanY = 0; applyTreeT
 function applyTreeTransformSVG() {
   var vp = document.querySelector('.tree-viewport');
   if (!vp) return;
-  vp.style.transform = 'translate(' + treePanX + 'px,' + treePanY + 'px) scale(' + treeScale + ')';
+  if (isMobileTree()) {
+    // 原生滚动：容器尺寸 = 内容尺寸 × 缩放（决定双轴滚动范围），视口仅 scale，不 translate。
+    // 用 !important 内联，压过全屏基础规则 `.genealogy-tree-section-fullscreen #tree-container{width:100%!important}`
+    var tc = document.getElementById('tree-container');
+    var mbc = window._mblContent;
+    if (tc && mbc) {
+      tc.style.setProperty('width', (mbc.w * treeScale) + 'px', 'important');
+      tc.style.setProperty('height', (mbc.h * treeScale) + 'px', 'important');
+    }
+    vp.style.transform = 'scale(' + treeScale + ')';
+  } else {
+    vp.style.transform = 'translate(' + treePanX + 'px,' + treePanY + 'px) scale(' + treeScale + ')';
+  }
   var el = document.getElementById('tree-zoom-level');
   if (el) el.textContent = Math.round(treeScale * 100) + '%';
 }
@@ -1502,10 +2280,16 @@ function treeAutoLocate(personId) {
 
   // Expand tree (clear collapse state, but DON'T reset the current branch filter)
   localStorage.setItem('xie_tree_collapsed', '[]');
-  treePanX = 0;
-  treePanY = 0;
-  treeScale = 0.7;
-  applyTreeTransformSVG();
+  if (isMobileTree()) {
+    // 手机端：全貌/可读 → 平滑飞入可读并聚焦目标（flyTo 每帧 applyTreeTransformSVG + 虚拟化把目标卡拉进视口）
+    if (treeLayout[personId]) { mblMapFlyTo(personId); }
+    else { treeScale = _MBL_DEFAULT_SCALE; applyTreeTransformSVG(); mblVizThrottled(); }
+  } else {
+    treeScale = 0.7;
+    treePanX = 0;
+    treePanY = 0;
+    applyTreeTransformSVG();
+  }
 
   setTimeout(function() {
     // Dim ALL cards first
@@ -1517,7 +2301,8 @@ function treeAutoLocate(personId) {
     // Brighten the target card
     var card = document.querySelector('.tree-html-card[data-id="' + personId + '"]');
     if (card) {
-      scrollToCardSVG(card);
+      // 手机端已由 flyTo 居中定位，无需 scrollToCardSVG（其用 panX/panY，手机原生滚动不适用）
+      if (!isMobileTree()) scrollToCardSVG(card);
       card.style.opacity = '1';
       card.style.transform = 'scale(1.3)';
       card.style.transformOrigin = 'center center';
@@ -1946,6 +2731,8 @@ document.addEventListener('DOMContentLoaded', function() {
   if (tsInput) tsInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') doTreeSearch(); });
   var scrollContainer = document.getElementById('tree-scroll-container');
   if (!scrollContainer) return;
+  // 手机端：原生滚动 + 地图式全景（renderMobileMap 自带交互），不绑桌面 wheel/拖拽/捏合
+  if (isMobileTree()) return;
 
   // Wheel zoom
   scrollContainer.addEventListener('wheel', function(e) {
@@ -2871,7 +3658,9 @@ function pageTreeFullscreen() {
     // Show close button
     var closeBtn = document.getElementById('fs-close-btn');
     if (closeBtn) closeBtn.style.display = 'flex';
-    // Re-fit tree after layout settles
+    // Re-fit tree after layout settles（仅桌面：桌面 gz 树用 .apt-card，.tree-html-card 仅手机虚拟化卡，
+    // 手机端此处会读取「可见子集」卡的位置改写 treeScale 破坏手机尺度，故手机端跳过）
+    if (isMobileTree()) return;
     requestAnimationFrame(function() {
       requestAnimationFrame(function() {
         var container = document.getElementById('tree-scroll-container');
@@ -2909,7 +3698,14 @@ function exitPageFullscreen() { try { if (document.exitFullscreen) document.exit
   document.body.style.overflow = '';
   var closeBtn = document.getElementById('fs-close-btn');
   if (closeBtn) closeBtn.style.display = 'none';
-  treeZoomReset();
+  if (isMobileTree()) {
+    // 手机端退出全屏：保持当前尺度与模式（treeZoomReset 的 1:1 会破坏手机默认可读 0.75，
+    // 且手机缩放按钮已隐藏无从恢复）。退出只改变视口尺寸 → 刷新虚拟化/全貌重绘。
+    if (_mblMode === 'readable') mblVizThrottled();
+    else if (_mblMode === 'overview') mblMapDraw();
+  } else {
+    treeZoomReset();
+  }
 }
 
 // Escape key exits fullscreen
@@ -2948,6 +3744,59 @@ function toggleGenChart() {
   }
   .genealogy-tree-scroll .apt-card, .gz-tree-viewport .apt-card { background: #fbf7ee; }
   .genealogy-tree-scroll .tree-html-card, .gz-tree-viewport .tree-html-card { background: #fbf7ee; }
+}
+/* Canvas 全貌层（仅手机端创建；桌面端窗口缩小时若残留此元素，隐藏避免空白块。手机媒体查询内覆盖为 display:block） */
+#gz-map-canvas { display:none; }
+/* ===== 手机端世系图谱（≤900px）：原生滚动·可读树 + 兴旺徽章 + ☗全局切换 ===== */
+@media (max-width:900px){
+  /* 容器：原生双轴滚动（带惯性，最顺滑）。#tree-container 尺寸由 JS 以 !important 内联设为
+     「内容尺寸×缩放」（决定滚动范围，且能压过全屏 100%!important 基础规则）；必须 overflow:hidden，
+     未缩放的卡片层（宽 svgW）溢出会被裁掉而非撑大滚动范围（否则右侧留空白死区）。
+     注意：不能设 width:auto !important——那会覆盖 JS 内联尺寸，使容器塌成父级宽、横向滚动消失。 */
+  #tree-container { overflow:hidden !important; position:relative; }
+  .genealogy-tree-scroll { overflow:auto !important; -webkit-overflow-scrolling:touch; height:62vh !important; min-height:340px !important; overscroll-behavior:contain; }
+  .genealogy-tree-section-fullscreen .genealogy-tree-scroll { overflow:auto !important; height:100% !important; min-height:100% !important; }
+  /* 中和 style.css 强制卡片尺寸，对齐 JS 布局常量 CARD_W=104/CARD_H=60 */
+  .tree-html-card { width:104px !important; height:60px !important; border-radius:6px; padding:3px 4px; }
+  /* 紧凑字号；中和 .card-name/.card-meta 的全局 transform 偏移 */
+  .tree-html-card .card-name { transform:none; font-size:11px; line-height:1.25; }
+  .tree-html-card .card-meta { transform:none; font-size:8.5px; line-height:1.2; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .tree-html-card .star { top:1px; right:2px; font-size:9px; }
+  /* 兴旺徽章行（无折叠箭头，保持极简） */
+  .tree-html-card .mb-hx { display:flex; align-items:center; justify-content:center; gap:4px; margin-top:2px; }
+  .mb-hx-badge { font-size:8.5px; font-weight:600; line-height:14px; padding:0 5px; border-radius:7px; white-space:nowrap; border:1px solid; }
+  /* 兴旺分档配色（灰0 蓝1 绿2 橙3 红4）：卡片边框 + 徽章 */
+  .tree-html-card { border-color:#9a9690 !important; }
+  .tree-html-card .mb-hx-badge { color:#9a9690; border-color:rgba(154,150,144,.5); background:rgba(154,150,144,.07); }
+  .tree-html-card.mb-t1 { border-color:#3b82f6 !important; box-shadow:inset 0 0 0 1px rgba(59,130,246,.18); }
+  .tree-html-card.mb-t1 .mb-hx-badge { color:#3b82f6; border-color:rgba(59,130,246,.55); background:rgba(59,130,246,.09); }
+  .tree-html-card.mb-t2 { border-color:#22c55e !important; box-shadow:inset 0 0 0 1px rgba(34,197,94,.18); }
+  .tree-html-card.mb-t2 .mb-hx-badge { color:#22c55e; border-color:rgba(34,197,94,.55); background:rgba(34,197,94,.09); }
+  .tree-html-card.mb-t3 { border-color:#f59e0b !important; box-shadow:inset 0 0 0 1px rgba(245,158,11,.22); }
+  .tree-html-card.mb-t3 .mb-hx-badge { color:#f59e0b; border-color:rgba(245,158,11,.6); background:rgba(245,158,11,.1); }
+  .tree-html-card.mb-t4 { border-color:#ef4444 !important; box-shadow:inset 0 0 0 1px rgba(239,68,68,.22); }
+  .tree-html-card.mb-t4 .mb-hx-badge { color:#ef4444; border-color:rgba(239,68,68,.6); background:rgba(239,68,68,.1); }
+  /* 搜索定位高亮盖过分档色 */
+  .tree-html-card.highlight-name { border-color:#ff5555 !important; }
+  /* 手机端工具栏：只留「☗ 全局 + ⛶ 全屏」，其余（缩放/导出/重复全屏/百分比）隐藏 */
+  #mbl-global-btn { display:inline-flex !important; }
+  #genealogy-tree-section .btn-sm[onclick="treeZoomIn()"],
+  #genealogy-tree-section .btn-sm[onclick="treeZoomOut()"],
+  #genealogy-tree-section .btn-sm[onclick="treeZoomReset()"],
+  #genealogy-tree-section .btn-sm[onclick="exportTreePNG()"],
+  #genealogy-tree-section #tree-zoom-level,
+  #genealogy-tree-section .btn-sm[style*="accent-orange-dim"] { display:none; }
+  /* Canvas 全貌地图层：sticky 钉住视口（滚动不跑），整树分房配色地图；可读态隐藏释放手指事件 */
+  /* Canvas 用 absolute 顶置而非 sticky：sticky 会占 flow 高度（≈视口高），把 tree-container 顶下
+     ~506px，使 flyTo 定位的顶部卡片落到视口下方不可见。absolute 不占 flow 高度，靠 scroll 事件
+     translate 钉住视口（全貌态 scroll≈0，钉住等价；可读态 canvas hidden 无副作用）。 */
+  #gz-map-canvas { position:absolute; top:0; left:0; z-index:5; display:block; visibility:hidden; touch-action:pan-x pan-y; }
+  .genealogy-tree-scroll { position:relative; }
+  /* 全貌分房图例（仅全貌态显示，Step6 接入点击筛选） */
+  #mbl-map-legend { position:absolute; left:8px; bottom:8px; z-index:20; display:flex; flex-wrap:wrap; gap:6px; padding:6px 9px; border-radius:8px; background:rgba(255,252,245,0.88); box-shadow:0 1px 6px rgba(0,0,0,0.12); pointer-events:auto; max-width:80%; }
+  #mbl-map-legend .mbl-lg { display:inline-flex; align-items:center; gap:4px; font-size:9px; color:#3a3226; white-space:nowrap; cursor:pointer; padding:1px 3px; border-radius:4px; }
+  #mbl-map-legend .mbl-lg:hover { background:rgba(0,0,0,0.08); }
+  #mbl-map-legend .mbl-lg i { width:8px; height:8px; border-radius:50%; display:inline-block; }
 }
 .gz-tree-viewport:active{cursor:grabbing;}
 .gz-tree-viewport .apt-tree{transform-origin:0 0;transition:transform 0.05s;}
@@ -3010,7 +3859,7 @@ b.style.display = window.scrollY > 50 ? "flex" : "none";
 document.body.appendChild(b);
 })();
 </script><link rel="stylesheet" href="/css/ai.css?v=68">
-<script src="/js/ai-assistant.js?v=68" defer></script>
+<script src="/js/ai-assistant.js?v=69" defer></script>
 <script defer src="../js/sidebar.js?v=8"></script>
 </body>
 </html>
