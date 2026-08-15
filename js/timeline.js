@@ -70,6 +70,9 @@
       st.id = 'tl-anim-style';
       st.textContent = '@keyframes tlBarIn{from{transform:scaleY(0)}to{transform:scaleY(1)}}' +
         '@media (prefers-reduced-motion: reduce){.tl-g>div,.tl-fs-g>div{animation:none!important}}';
+      // 手机端全屏 CSS 假横屏的旋转样式不在此注入：view 的几何（宽高/位置/rotate90）由
+      // openFullscreen 内 tlTryLandscape 用 JS 行内样式设置（行内样式可压过 view 的
+      // 行内 position:relative/flex:1，避免 class 被行内样式覆盖的陷阱），.tl-fs-rotated 仅作状态标记。
       (document.head || document.documentElement).appendChild(st);
     } catch(e) {}
   }
@@ -348,17 +351,77 @@
 
     var view = ov.querySelector('#tl-fs-view');
     var S = 1, TX = 0, TY = 0;
+    var isRotated = false;   // CSS 假横屏旋转态（iOS/微信无锁 API 时 view rotate90）
     var MIN_S = 0.2, MAX_S = 6; // 下限低于初始适配比例，放大后可缩回整图
     function clampV(x,a,b){ return Math.max(a, Math.min(b, x)); }
     function apply(){ content.style.transform = 'translate('+TX.toFixed(1)+'px,'+TY.toFixed(1)+'px) scale('+S.toFixed(3)+')'; }
+    // 旋转态视觉↔布局轴映射（实测对齐世系图谱已验证公式，视口 375×667 下实测：
+    //   view rotate90 后视觉 bbox=375×614 恰落在 head(53px) 之下；布局轴 clientWidth/Height 保持旋转前=614×375）
+    //   绝对：布局x = 视觉y(相对 view 视觉 rect 顶)、布局y = 视觉宽 − 视觉x
+    //   增量：Δ布局x = +Δ视觉y、Δ布局y = −Δ视觉x（内容跟随手指，tl-test 实测：手指下移 60 → 柱体视觉下移 60）
+    function toLayoutPoint(vx, vy) {
+      if (!isRotated) return { x: vx, y: vy };
+      var r = view.getBoundingClientRect();
+      return { x: vy, y: r.width - vx };
+    }
     function fit() {
-      var vw = view.clientWidth, vh = view.clientHeight;
+      var vw, vh;
+      if (isRotated) {
+        var rr = view.getBoundingClientRect();
+        vw = rr.width; vh = rr.height;   // 视觉 bbox（宽=竖屏视口宽、高=竖屏视口高−head）
+      } else {
+        vw = view.clientWidth; vh = view.clientHeight;
+      }
       S = clampV((vw - 12) / naturalW, 0.25, 1);
       TX = (vw - naturalW*S) / 2;
       TY = Math.max(8, (vh - naturalH*S) / 2);
       apply();
     }
     fit();
+
+    // ===== 手机端：全屏自动横屏（真横屏成功→锁屏失败/无锁 API→CSS 假横屏） =====
+    function tlTryLandscape() {
+      if (!isCompact()) return;
+      // 真横屏：Android Chrome requestFullscreen + orientation.lock('landscape') 成功则浏览器真实旋转视口，
+      // 布局自然重排（无元素旋转，isRotated 保持 false）；旋转完成后触发 resize → onResize 重新 fit。
+      function useFake() {
+        if (isRotated) return;
+        isRotated = true;
+        var headEl = ov.firstElementChild;
+        var headH = headEl ? headEl.offsetHeight : 53;
+        var vw = window.innerWidth, vh = window.innerHeight;
+        // view 旋转后视觉 bbox 恰好填满 head 之下（实测 viewVisual={x:0,y:headH,w:vw,h:vh-headH}）
+        var cx = vw / 2, cy = headH + (vh - headH) / 2;
+        view.style.position = 'absolute';
+        view.style.top = cy + 'px';
+        view.style.left = cx + 'px';
+        view.style.width = (vh - headH) + 'px';
+        view.style.height = vw + 'px';
+        view.style.transform = 'translate(-50%,-50%) rotate(90deg)';
+        view.style.transformOrigin = '50% 50%';
+        view.classList.add('tl-fs-rotated');   // 仅状态标记，几何全走行内样式
+        fit();
+      }
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().then(function() {
+          if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').then(function() {}).catch(useFake);
+          } else useFake();
+        }).catch(useFake);
+      } else useFake();
+    }
+    if (isCompact()) tlTryLandscape();
+
+    // 真横屏/锁屏成功后 viewport 尺寸变化触发 resize → 重新适配（lock 异步，旋转完成时机不可靠，靠 resize 兜底）
+    var onResize = function() { fit(); };
+    window.addEventListener('resize', onResize);
+    ov._onResize = onResize;
+    // 浏览器原生手势退出全屏（Esc）→ 同步关闭弹层，避免残留旋转态
+    var onFsChange = function() {
+      if (!document.fullscreenElement && document.getElementById('tl-fs')) closeFullscreen();
+    };
+    document.addEventListener('fullscreenchange', onFsChange);
+    ov._onFsChange = onFsChange;
 
     var pts = {}, lastPt = null, pinch = null, moved = 0;
     function dist(a,b){ return Math.sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y)); }
@@ -382,14 +445,26 @@
         var d = Math.max(1, dist(a,b));
         var m = mid(a,b);
         var ns = clampV(pinch.s0 * d / pinch.d0, MIN_S, MAX_S);
-        TX = pinch.m0.x*pinch.s0 + pinch.t0x - m.x*ns;
-        TY = pinch.m0.y*pinch.s0 + pinch.t0y - m.y*ns;
+        if (isRotated) {
+          // 旋转态：两端点中点（客户端坐标）→ view 视觉 rect 相对坐标 → 布局轴坐标，再按非旋转态同式锚定
+          var pr = view.getBoundingClientRect();
+          var l0 = toLayoutPoint(pinch.m0.x - pr.left, pinch.m0.y - pr.top);
+          var lm = toLayoutPoint(m.x - pr.left, m.y - pr.top);
+          TX = l0.x*pinch.s0 + pinch.t0x - lm.x*ns;
+          TY = l0.y*pinch.s0 + pinch.t0y - lm.y*ns;
+        } else {
+          TX = pinch.m0.x*pinch.s0 + pinch.t0x - m.x*ns;
+          TY = pinch.m0.y*pinch.s0 + pinch.t0y - m.y*ns;
+        }
         S = ns; apply();
       } else if (ids.length === 1 && !pinch && lastPt) {
-        // 平移始终可用（去掉 S>1.01 限制，解决“最大化后不能平移”），并夹紧在视图内防止拖丢
+        // 平移始终可用（去掉 S>1.01 限制，解决“最大化后不能平移”），并夹紧在视图内防止拖丢。
+        // 旋转态增量：Δ布局x=+Δ视觉y、Δ布局y=−Δ视觉x（内容跟随手指，tl-test 实测验证）
         var sw = naturalW * S, sh = naturalH * S;
-        TX = clampV(TX + (e.clientX - lastPt.x), Math.min(0, view.clientWidth - sw), Math.max(0, view.clientWidth - sw));
-        TY = clampV(TY + (e.clientY - lastPt.y), Math.min(0, view.clientHeight - sh), Math.max(0, view.clientHeight - sh));
+        var dx = e.clientX - lastPt.x, dy = e.clientY - lastPt.y;
+        var incX = isRotated ? dy : dx, incY = isRotated ? -dx : dy;
+        TX = clampV(TX + incX, Math.min(0, view.clientWidth - sw), Math.max(0, view.clientWidth - sw));
+        TY = clampV(TY + incY, Math.min(0, view.clientHeight - sh), Math.max(0, view.clientHeight - sh));
         apply();
         view.style.cursor = 'grabbing';
         lastPt = {x:e.clientX, y:e.clientY};
@@ -408,16 +483,19 @@
       var ns = clampV(S*factor, MIN_S, MAX_S);
       var r = view.getBoundingClientRect();
       var vx = e.clientX - r.left, vy = e.clientY - r.top;
-      TX = vx - (vx - TX)*(ns/S);
-      TY = vy - (vy - TY)*(ns/S);
+      // 旋转态：光标视觉点 → 布局轴坐标，保持光标下的内容点不动
+      var lp = toLayoutPoint(vx, vy);
+      TX = lp.x - (lp.x - TX)*(ns/S);
+      TY = lp.y - (lp.y - TY)*(ns/S);
       S = ns; apply();
     }, {passive:false});
     view.addEventListener('dblclick', function(e){
       var ns = S > 1.5 ? 1 : 2.5;
       var r = view.getBoundingClientRect();
       var vx = e.clientX - r.left, vy = e.clientY - r.top;
-      TX = vx - (vx - TX)*(ns/S);
-      TY = vy - (vy - TY)*(ns/S);
+      var lp = toLayoutPoint(vx, vy);
+      TX = lp.x - (lp.x - TX)*(ns/S);
+      TY = lp.y - (lp.y - TY)*(ns/S);
       S = ns; apply();
     });
     view.addEventListener('click', function(e){
@@ -446,7 +524,12 @@
     var ov = document.getElementById('tl-fs');
     if (!ov) return;
     if (ov._onKey) document.removeEventListener('keydown', ov._onKey);
+    if (ov._onResize) window.removeEventListener('resize', ov._onResize);
+    if (ov._onFsChange) document.removeEventListener('fullscreenchange', ov._onFsChange);
     ov.remove();
+    // 恢复竖屏：退出真全屏 + 解锁横屏锁（CSS 假横屏的旋转样式随 view 一起移除）
+    if (document.fullscreenElement) { try { document.exitFullscreen(); } catch(e){} }
+    if (screen.orientation && screen.orientation.unlock) { try { screen.orientation.unlock(); } catch(e){} }
   }
 
   // Delegated events on the wrap container
