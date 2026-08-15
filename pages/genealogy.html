@@ -1128,6 +1128,66 @@ function getBranchData(data, rootNamePattern) {
   return data.filter(function(p) { return ids.indexOf(p.id) >= 0; });
 }
 
+// ★本宗世系图（后枫槎）大字辈后代挂接（2026-08-15 用户需求）：硬编码精选树(80人)到大字辈(第25世)即止，
+// 而完整数据(genealogy.json)里大字辈下面还有 545 个正常直系子孙（锡→明→学/台→昌→…→现代）。
+// 两套数据是同一批人，按「名字+父亲名」精确对应（含入继/出继标注），渲染时把直系子树从完整数据挂接过来。
+// 完整数据里 17 个串回主链/远古的交叉节点（协/列宗/穆宗/林/涣/旺/珽/国辉/宁/福/杨贞/平利/平和/平祖/翠/利/文）
+// 被剔除——判据：子代世代不递增（子generation_num<=父），即非正常父链。
+// 世代对齐：getGenealogyData 是炎帝全局(大字辈=154世)、getHoufengchaTreeData 是石马第一世(大字辈=25世)，
+// 挂接子孙按 delta 平移回本宗世系图世次体系，图内世次连续（25世大字辈→26世锡字辈→…）。
+function getHoufengchaEnhancedData() {
+  var base = getHoufengchaTreeData();
+  var full = getGenealogyData();
+  function cleanName(n) { return String(n || '').replace(/\(.*\)$/, ''); }
+  var fullById = {}, childrenOf = {}, byName = {};
+  for (var fi = 0; fi < full.length; fi++) {
+    var fp = full[fi];
+    fullById[fp.id] = fp;
+    if (fp.father_id) (childrenOf[fp.father_id] = childrenOf[fp.father_id] || []).push(fp);
+    var fnm = cleanName(fp.name);
+    (byName[fnm] = byName[fnm] || []).push(fp);
+  }
+  var baseById = {};
+  for (var bi = 0; bi < base.length; bi++) baseById[base[bi].id] = base[bi];
+  var out = base.slice();
+  var added = {}, skipped = [], childCount = 0;
+  var usedName = {};
+  for (var bj = 0; bj < base.length; bj++) {
+    var p = base[bj];
+    var cn = cleanName(p.name);
+    if (!/^大/.test(cn)) continue;                            // 只补「大」字辈
+    // 匹配源：精选树与完整库父链体系不同（云字辈 vs 光/延字辈），只能按名字匹配；
+    // full 同名有多个时按 base 出现顺序依次分配（大性/大文/大顺各两处→挂不同子树）
+    var cands = (byName[cn] || []).filter(function(c) { return (childrenOf[c.id] || []).length > 0; });
+    if (!cands.length) continue;
+    var idx = usedName[cn] || 0;
+    usedName[cn] = idx + 1;
+    var match = cands[idx % cands.length];
+    var delta = (parseInt(p.generation_num, 10) || 0) - (parseInt(match.generation_num, 10) || 0);
+    (function attach(fParent, newFid) {
+      var kids = childrenOf[fParent.id] || [];
+      for (var k2 = 0; k2 < kids.length; k2++) {
+        var c = kids[k2];
+        var cg = parseInt(c.generation_num, 10) || 0;
+        var pg = parseInt(fParent.generation_num, 10) || 0;
+        if (cg <= pg) { skipped.push(c.name + '(父' + fParent.name + ')'); continue; }  // 交叉异常
+        if (added[c.id]) continue;
+        var n = {};
+        for (var kk in c) { if (Object.prototype.hasOwnProperty.call(c, kk)) n[kk] = c[kk]; }
+        n.father_id = newFid;
+        n.generation_num = cg + delta;
+        n.generation = n.generation_num.toString();
+        n.branch = '后枫槎';
+        added[c.id] = true;
+        out.push(n); childCount++;
+        attach(c, c.id);
+      }
+    })(match, p.id);
+  }
+  window._mblEnhanceInfo = { base: base.length, added: childCount, skipped: skipped.length, skippedNames: skipped.slice(0, 25) };
+  return out;
+}
+
 var _currentBranch = 'all';
 
 function filterBranch(branch) {
@@ -1144,7 +1204,7 @@ function filterBranch(branch) {
   // 本宗世系图（后枫槎）：直接复用后台同一棵硬编码精选树（js/admin.js getHoufengchaTreeData），保证与后台显示一致
   var data;
   if (branch === '连续完整世系') { data = getContinuousLineageData(); }
-  else if (branch === '本宗世系图（后枫槎）') { data = getHoufengchaTreeData(); }
+  else if (branch === '本宗世系图（后枫槎）') { data = getHoufengchaEnhancedData(); }
   else { data = getGenealogyData(); }
   var branchLabel = '全部';
   if (branch !== 'all' && branch !== '连续完整世系') {
