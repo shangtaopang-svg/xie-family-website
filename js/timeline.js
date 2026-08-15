@@ -72,11 +72,14 @@
       st.textContent = '@keyframes tlBarIn{from{transform:scaleY(0)}to{transform:scaleY(1)}}' +
         '@media (prefers-reduced-motion: reduce){.tl-g>div,.tl-fs-g>div{animation:none!important}}' +
         /* 时间轴假横屏时点代详情弹层同步旋转横屏（用户：点击某一代出来的详情页也要横屏展示）。
-           竖屏视口下 rotate90 后视觉 bbox=横屏：视觉宽=布局高=100vw、视觉高=布局宽=100vh，
-           box 布局为 100vh×100vw（横屏形状），rotate90 后恰好铺满视口。 */
-        '.tl-fs-rotated-detail .person-detail-box{position:fixed!important;top:50%!important;left:50%!important;width:calc(100vh - 40px)!important;max-width:none!important;height:calc(100vw - 40px)!important;max-height:none!important;padding:0!important;margin:0!important;transform:translate(-50%,-50%) rotate(90deg)!important;transform-origin:center!important;overflow-y:auto;overflow-x:hidden;border-radius:12px}' +
-        '.tl-fs-rotated-detail .person-detail-box>div:first-child{max-height:calc(100vw - 40px)!important}' +
-        '.tl-fs-rotated-detail .ancestor-tree-modal-box{position:fixed!important;top:50%!important;left:50%!important;width:calc(100vh - 40px)!important;max-width:none!important;height:calc(100vw - 40px)!important;max-height:none!important;transform:translate(-50%,-50%) rotate(90deg)!important;transform-origin:center!important;overflow-y:auto;overflow-x:hidden}';
+           竖屏视口下 rotate90 后视觉 bbox=横屏：视觉宽=布局高=100vw、视觉高=布局宽=100vh。
+           ★滚动修复（用户：全屏详情不能上下滑动、下面信息看不到）——旋转移到 overlay 整层，
+           box 内反旋 rotate(-90deg) 净0：若 box 自身 rotate90 再 overflow-y:auto，布局Y轴
+           会映射到视觉水平方向（只能左右滚）；反旋后 box 的 overflow-y 才是视觉上下滚动。 */
+        '.tl-fs-rotated-detail{position:fixed!important;top:50%!important;left:50%!important;width:100vh!important;height:100vw!important;max-width:none!important;max-height:none!important;padding:0!important;margin:0!important;transform:translate(-50%,-50%) rotate(90deg)!important;transform-origin:center!important;display:flex;align-items:center;justify-content:center}' +
+        '.tl-fs-rotated-detail .person-detail-box{position:relative!important;top:auto!important;left:auto!important;width:calc(100vw - 40px)!important;max-width:none!important;height:calc(100vh - 40px)!important;max-height:none!important;padding:0!important;margin:0!important;transform:rotate(-90deg)!important;transform-origin:center!important;overflow-y:auto;overflow-x:hidden;border-radius:12px}' +
+        '.tl-fs-rotated-detail .person-detail-box>div:first-child{max-height:none!important;overflow:visible!important}' +
+        '.tl-fs-rotated-detail .ancestor-tree-modal-box{position:relative!important;top:auto!important;left:auto!important;width:calc(100vw - 40px)!important;max-width:none!important;height:calc(100vh - 40px)!important;max-height:none!important;margin:0!important;transform:rotate(-90deg)!important;transform-origin:center!important;overflow-y:auto;overflow-x:hidden}';
       // 手机端全屏 CSS 假横屏的旋转样式不在此注入：view 的几何（宽高/位置/rotate90）由
       // openFullscreen 内 tlTryLandscape 用 JS 行内样式设置（行内样式可压过 view 的
       // 行内 position:relative/flex:1，避免 class 被行内样式覆盖的陷阱），.tl-fs-rotated 仅作状态标记。
