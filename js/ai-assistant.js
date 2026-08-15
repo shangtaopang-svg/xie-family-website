@@ -381,10 +381,38 @@
   }
 
   /* ---------------- 与后端通信（SSE） ---------------- */
-  function chat(text) {
+  function chat(text, resolvedId) {
     var botEl = appendMessage('bot', '思考中…');
     var body = botEl.querySelector('.ai-txt') || botEl.lastChild;
     var done = false;
+
+    // 同名确认：提问中的人名有多个同名族人 → 弹候选按钮，点击后带选中 personId（resolvedId）重发
+    var showNameSelect = function (j) {
+      if (done) return;
+      done = true;
+      body.textContent = '';
+      var tip = document.createElement('div');
+      tip.className = 'ai-verify-tip';
+      tip.textContent = '⚠️ 族谱中有 ' + (j.candidates ? j.candidates.length : 0) + ' 位「' + (j.name || '') + '」，请选择您要查询的哪一位：';
+      body.appendChild(tip);
+      (j.candidates || []).forEach(function (c) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'ai-send';
+        btn.style.display = 'block';
+        btn.style.width = '100%';
+        btn.style.margin = '6px 0';
+        btn.style.textAlign = 'left';
+        btn.textContent = c.name + ' · ' + (c.desc || '') + (c.fatherName ? '（父：' + c.fatherName + '）' : '') + (c.brief ? ' · ' + c.brief : '') + (c.isSelf ? '（本人）' : '');
+        btn.addEventListener('click', function () {
+          body.textContent = '已选择「' + c.name + '（' + c.desc + '）」，正在查询…';
+          scrollBottom(true);
+          chat(text, String(c.id));
+        });
+        body.appendChild(btn);
+      });
+      scrollBottom(true);
+    };
 
     var finish = function (answer, sources, tree, ownerIsSelf, closest, closestTree) {
       if (done) return;
@@ -420,6 +448,7 @@
     };
 
     var reqBody = { message: text, stream: true };
+    if (resolvedId) reqBody.resolvedId = resolvedId;
     var tok = getToken();
     if (tok) reqBody.token = tok;
     var histBody = hist.slice(-12).filter(function (m) { return m.content; }).map(function (m) { return { role: m.role, content: m.content }; });
@@ -436,6 +465,7 @@
       var ct = resp.headers.get('content-type') || '';
       if (ct.indexOf('text/event-stream') === -1) {
         return resp.json().then(function (j) {
+          if (j.code === 'AMBIGUOUS') { showNameSelect(j); return; }
           if (j.ok) finish(j.answer, j.sources || [], j.tree, j.ownerIsSelf !== false, j.closest || [], j.closestTree || null);
           else fail(j);
         });
@@ -454,10 +484,12 @@
         var j;
         try { j = JSON.parse(data); } catch (e) { return; }
         if (ev === 'meta') {
+          if (j.code === 'AMBIGUOUS') { showNameSelect(j); return; }
           if (!j.ok) fail(j);
         } else if (ev === 'delta') {
           if (j.t) { collect += j.t; body.textContent = collect; scrollBottom(false); }
         } else if (ev === 'done') {
+          if (j.code === 'AMBIGUOUS') { showNameSelect(j); return; }
           finish(j.answer || collect, j.sources || [], j.tree, j.ownerIsSelf !== false, j.closest || [], j.closestTree || null);
         } else if (ev === 'error') {
           fail(j);
