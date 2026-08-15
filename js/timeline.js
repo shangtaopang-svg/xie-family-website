@@ -385,9 +385,20 @@
       } else {
         vw = view.clientWidth; vh = view.clientHeight;
       }
-      S = clampV((vw - 12) / naturalW, 0.25, 1);
-      TX = (vw - naturalW*S) / 2;
-      TY = Math.max(8, (vh - naturalH*S) / 2);
+      if (isRotated) {
+        // 旋转态：view rotate90 后内容布局宽 naturalW→视觉高、布局高 naturalH→视觉宽。
+        // ★TX/TY 必须换轴居中：TX 用视觉高、TY 用视觉宽。旧代码照搬非旋转态公式
+        // (TY=(vh-naturalH*S)/2) → 布局 Y（映射到视觉 X）被推到视口左缘，108 根柱全挤在
+        // 左侧 ~45px 竖带、绝大多数柱体在视口外 → 真机「全屏点某一代没反应」（点不到柱体）。
+        // 换轴后柱列横屏居中、世代沿视觉纵向分布，柱体可点。
+        S = clampV((vh - 12) / naturalW, 0.25, 1);
+        TX = (vh - naturalW * S) / 2;
+        TY = (vw - naturalH * S) / 2;
+      } else {
+        S = clampV((vw - 12) / naturalW, 0.25, 1);
+        TX = (vw - naturalW*S) / 2;
+        TY = Math.max(8, (vh - naturalH*S) / 2);
+      }
       apply();
     }
     fit();
