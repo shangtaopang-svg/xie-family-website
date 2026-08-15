@@ -448,13 +448,13 @@
     document.addEventListener('fullscreenchange', onFsChange);
     ov._onFsChange = onFsChange;
 
-    var pts = {}, lastPt = null, pinch = null, moved = 0;
+    var pts = {}, lastPt = null, pinch = null, moved = 0, downX = 0, downY = 0;
     function dist(a,b){ return Math.sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y)); }
     function mid(a,b){ return {x:(a.x+b.x)/2, y:(a.y+b.y)/2}; }
     view.addEventListener('pointerdown', function(e){
       try { view.setPointerCapture(e.pointerId); } catch(err){}
       pts[e.pointerId] = {x:e.clientX, y:e.clientY};
-      moved = 0;
+      moved = 0; downX = e.clientX; downY = e.clientY;
       var ids = Object.keys(pts);
       if (ids.length === 1) { pinch = null; lastPt = {x:e.clientX, y:e.clientY}; }
       else if (ids.length === 2) { pinch = { d0: Math.max(1, dist(pts[ids[0]], pts[ids[1]])), m0: mid(pts[ids[0]], pts[ids[1]]), s0: S, t0x: TX, t0y: TY }; }
@@ -524,7 +524,11 @@
       S = ns; apply();
     });
     view.addEventListener('click', function(e){
-      if (moved > 6) return;
+      // ★触屏点柱失效根因修复：旧 `moved > 6` 是「pointermove 累计位移」——真机手指轻点微抖
+      //   轻松累计 >6px，点击被当成拖拽吞掉（Playwright 合成 7px 微抖 tap 实测点不开详情）。
+      //   改为「按下点→抬起点净位移 >12px 才算拖拽」：轻点微抖回到起点附近净位移小 → 正常点开；
+      //   拖拽/平移净位移大 → 忽略该 click。downX/downY 在 pointerdown 记录。
+      if (Math.hypot(e.clientX - downX, e.clientY - downY) > 12) return;
       // 真实浏览器 setPointerCapture 会把 click 重定向到 view（e.target 不再是柱体），
       // 因此用 elementFromPoint（含 transform 坐标命中）找柱体；兜底遍历 rect
       var el = document.elementFromPoint(e.clientX, e.clientY);
@@ -534,6 +538,17 @@
         for (var bi = 0; bi < bars.length; bi++) {
           var br = bars[bi].getBoundingClientRect();
           if (e.clientX >= br.left && e.clientX <= br.right && e.clientY >= br.top && e.clientY <= br.bottom) { gEl = bars[bi]; break; }
+        }
+        // 最近柱容差（手机端柱宽仅 ~4px，手指微偏即点空）：距点击最近且 ≤14px 的柱也命中。
+        // 柱纵向间距 ~8px，最近柱无歧义（≤4px 垂直半距），横偏也能容。
+        if (!gEl) {
+          var bd = 1e9, bg = null;
+          for (var bj = 0; bj < bars.length; bj++) {
+            var br2 = bars[bj].getBoundingClientRect();
+            var dc = Math.hypot(e.clientX - (br2.left + br2.width / 2), e.clientY - (br2.top + br2.height / 2));
+            if (dc < bd) { bd = dc; bg = bars[bj]; }
+          }
+          if (bg && bd <= 14) gEl = bg;
         }
       }
       if (gEl) showGenPeople(parseInt(gEl.getAttribute('data-g')));
