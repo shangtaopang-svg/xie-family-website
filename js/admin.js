@@ -666,8 +666,14 @@ function buildMiniTreeHtml(allData, nameList, cardBg, displayGenMap) {
 
 // Mini genealogy tree: generations grouped, siblings side by side
 function renderMiniGenealogyTree(allData, nameList, accentColor) {
-  // Filter to only the people in nameList
-  var data = allData.filter(function(p) { return nameList.indexOf(p.name) >= 0; });
+  // 硬编码世系名 → 真实 id 映射（人物改名后仍能在小树图显示/点击，并显示最新姓名）
+  var idForName = {}, idToPos = {};
+  for (var miN = 0; miN < nameList.length; miN++) {
+    var _mid = adminLineageIdFor(nameList[miN], null);
+    if (_mid) { idForName[nameList[miN]] = _mid; idToPos[_mid] = miN + 1; }
+  }
+  // Filter to only the people in nameList（或 nameList 名映射到的真实人物）
+  var data = allData.filter(function(p) { return nameList.indexOf(p.name) >= 0 || idToPos[p.id]; });
   if (!data || data.length === 0) return '';
 
   // Build name->person map
@@ -742,8 +748,10 @@ function renderMiniGenealogyTree(allData, nameList, accentColor) {
       var p = persons[pi2];
       var isHighlight = (p.highlight || p.name === '申伯' || p.name === '缵' || p.name === '安');
       var label = '';
-      if (nameList.indexOf(p.name) >= 0) label = nameList.indexOf(p.name) + 1;
-      if (p.name === '申伯') label = '65';
+      var li = nameList.indexOf(p.name);
+      if (li < 0 && idToPos[p.id]) li = idToPos[p.id] - 1;
+      if (li >= 0) label = li + 1;
+      if (p.name === '申伯' || idForName['申伯'] === p.id) label = '65';
 
       html += '<div style="display:inline-flex;flex-direction:column;align-items:center;min-width:70px;">';
       html += '<div class="apt-mini-hover" style="position:relative;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:' + (isHighlight ? '600' : '400') + ';background:' + accentColor + '15;border:1px solid ' + accentColor + '30;color:var(--text-primary);cursor:pointer;" title="点击编辑" onclick="showEditForm(\'genealogy\',' + p.id + ')">' + p.name +
@@ -1024,7 +1032,7 @@ function renderGenealogy(area) {
   html += '<span style="font-size:13px;font-weight:600;color:var(--text-primary);">远古世系（炎帝→申伯）</span>';
   html += '<span style="font-size:11px;color:var(--text-muted);">点击展开/收起</span>';
   html += '</div>';
-  html += '<div style="display:none;">';
+  html += '<div class="apt-lineage-section" data-sec="ancient" style="display:none;">';
   html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
   html += '<thead><tr style="background:rgba(201,168,76,0.1);">';
   html += '<th style="padding:6px 10px;border:1px solid var(--glass-border);text-align:center;width:50px;">世</th>';
@@ -1064,7 +1072,7 @@ function renderGenealogy(area) {
   html += '<span style="font-size:13px;font-weight:600;color:var(--text-primary);">申伯世系（申伯→缵→衡）</span>';
   html += '<span style="font-size:11px;color:var(--text-muted);">点击展开/收起</span>';
   html += '</div>';
-  html += '<div style="display:none;">';
+  html += '<div class="apt-lineage-section" data-sec="shenbo" style="display:none;">';
   html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
   html += '<thead><tr style="background:rgba(100,60,160,0.1);">';
   html += '<th style="padding:6px 8px;border:1px solid var(--glass-border);text-align:center;width:40px;">炎帝世</th>';
@@ -1160,7 +1168,7 @@ function renderGenealogy(area) {
   html += '<span style="font-size:13px;font-weight:600;color:var(--text-primary);">始宁东山世系（缵→闓→临海下渡）</span>';
   html += '<span style="font-size:11px;color:var(--text-muted);">点击展开/收起</span>';
   html += '</div>';
-  html += '<div style="display:none;">';
+  html += '<div class="apt-lineage-section" data-sec="dongshan" style="display:none;">';
   html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
   html += '<thead><tr style="background:rgba(33,150,243,0.1);">';
   html += '<th style="padding:6px 8px;border:1px solid var(--glass-border);text-align:center;width:35px;">炎帝世</th>';
@@ -1256,7 +1264,7 @@ function renderGenealogy(area) {
   html += '<span style="font-size:13px;font-weight:600;color:var(--text-primary);">临海下渡世系（闓→小四）</span>';
   html += '<span style="font-size:11px;color:var(--text-muted);">点击展开/收起</span>';
   html += '</div>';
-  html += '<div style="display:none;">';
+  html += '<div class="apt-lineage-section" data-sec="linhai" style="display:none;">';
   html += '<p style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;line-height:1.6;">自闓公（临海下渡第一世）传至小四公（石马始祖），石马（下谢）小四公乃文杲公（枫槎始迁祖）之直系渊源。</p>';
   html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
   html += '<thead><tr style="background:rgba(100,60,160,0.1);">';
@@ -1327,7 +1335,7 @@ function renderGenealogy(area) {
   html += '<span style="font-size:13px;font-weight:600;color:var(--text-primary);">石马（下谢）分房派示意简图</span>';
   html += '<span style="font-size:11px;color:var(--text-muted);">点击展开/收起</span>';
   html += '</div>';
-  html += '<div style="display:none;">';
+  html += '<div class="apt-lineage-section" data-sec="shima" style="display:none;">';
   html += '<p style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;line-height:1.6;">小四公：炎帝第130世／申伯第66世／东山第32世／临海下渡第9世／石马（下谢）第1世。自小四公开派，衍生丹一、丹二、丹三三房，其后文杲公迁居宁海岩下为枫槎始迁祖，文榘公一派为东门桃源陈氏之祖。</p>';
   html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
   html += '<thead><tr style="background:rgba(240,180,80,0.1);">';
@@ -1391,7 +1399,7 @@ function renderGenealogy(area) {
   html += '<span style="font-size:13px;font-weight:600;color:var(--text-primary);">本宗世系图（后枫槎）</span>';
   html += '<span style="font-size:11px;color:var(--text-muted);">点击展开/收起</span>';
   html += '</div>';
-  html += '<div style="display:block;">';
+  html += '<div class="apt-lineage-section" data-sec="houfengcha" style="display:block;">';
   html += '<p style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;line-height:1.6;">小四→丹一→文杲→攒（后枫槎）/撰（前枫槎）</p>';
   html += '<div class="hfc-tree-viewport" id="hfc-tree-viewport" style="overflow:hidden;position:relative;cursor:grab;border:1px solid rgba(34,197,94,0.15);border-radius:6px;background:var(--bg-secondary);min-height:280px;">';
   html += buildAdminHoufengchaTree();
@@ -1424,9 +1432,58 @@ function adminLineageNameToId(name, branchPref) {
   return best;
 }
 
+// ===== 硬编码世系名 → 真实录入 id 的持久映射（localStorage） =====
+// 用途：人物在录入库中改名后 adminLineageNameToId 按名匹配会失败；映射记住历史对应关系，
+// 树卡片/折叠表仍能定位到已改名的真实人物（卡片显示新名字）。人物被删除导致 id 失效时自动清除重匹配。
+var _lineageIdMapCache = null;
+function getLineageIdMap() {
+  if (_lineageIdMapCache) return _lineageIdMapCache;
+  try { _lineageIdMapCache = JSON.parse(localStorage.getItem('xie_admin_lineage_id_map') || '{}'); }
+  catch (e) { _lineageIdMapCache = {}; }
+  return _lineageIdMapCache;
+}
+function adminLineageIdFor(name, branchPref) {
+  var key = (branchPref || '') + '::' + (name || '');
+  var map = getLineageIdMap();
+  if (map[key]) {
+    var data = getData('genealogy');
+    for (var i = 0; i < data.length; i++) { if (data[i].id === map[key]) return map[key]; }
+    delete map[key]; // id 已不存在（人物被删除），清除并重新匹配
+    try { localStorage.setItem('xie_admin_lineage_id_map', JSON.stringify(map)); } catch (e) {}
+  }
+  var id = adminLineageNameToId(name, branchPref);
+  if (id) { map[key] = id; try { localStorage.setItem('xie_admin_lineage_id_map', JSON.stringify(map)); } catch (e) {} }
+  return id;
+}
+
+// 按真实 id 取录入库人物（合成 id 或无记录返回 null），树卡片显示实时姓名用
+function adminLivePersonById(id) {
+  if (!id) return null;
+  var data = getData('genealogy');
+  for (var i = 0; i < data.length; i++) { if (data[i].id === id) return data[i]; }
+  return null;
+}
+
+// 族谱管理保存/删除后原地刷新：保留各世系展开/收起状态与滚动位置，
+// 避免整页重建后全部收起/跳回顶部（满足「不刷新即见修改结果」）
+function renderGenealogyKeepState() {
+  var secs = document.querySelectorAll('.apt-lineage-section');
+  var state = {};
+  for (var i = 0; i < secs.length; i++) state[secs[i].getAttribute('data-sec')] = secs[i].style.display;
+  var sy = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+  renderModule('genealogy');
+  var secs2 = document.querySelectorAll('.apt-lineage-section');
+  for (var j = 0; j < secs2.length; j++) {
+    var k = secs2[j].getAttribute('data-sec');
+    if (k && state[k]) secs2[j].style.display = state[k];
+  }
+  if (typeof updateStats === 'function') updateStats();
+  setTimeout(function() { window.scrollTo(0, sy); }, 60);
+}
+
 // 表格按姓名点击编辑（族谱管理各世系折叠表）
 function adminLineageEditByName(name, branchPref) {
-  var id = adminLineageNameToId(name, branchPref);
+  var id = adminLineageIdFor(name, branchPref);
   if (id) showEditForm('genealogy', id);
   else showToast('⚠️ 该人物不在录入数据库中，无法编辑。请先在「世代总览」新增后重试。');
 }
@@ -1451,14 +1508,14 @@ function adminLineageRowActions(name, branchPref) {
 
 // 折叠表 ＋：姓名+支系 → 真实 id，打开添加子女表单（预填父亲、自动计算下一代世代）
 function adminLineageAddChildByName(name, branchPref) {
-  var id = adminLineageNameToId(name, branchPref);
+  var id = adminLineageIdFor(name, branchPref);
   if (!id) { showToast('⚠️ 该人物不在录入数据库中，无法添加下一代。请先在「世代总览」新增后重试。'); return; }
   showAddChildForm(id);
 }
 
 // 折叠表 −：姓名+支系 → 真实 id，删除此人
 function adminLineageDeleteByName(name, branchPref) {
-  var id = adminLineageNameToId(name, branchPref);
+  var id = adminLineageIdFor(name, branchPref);
   if (!id) { showToast('⚠️ 该人物不在录入数据库中，无法删除。'); return; }
   if (confirm('确定删除 ' + name + ' 吗？')) deleteItem('genealogy', id);
 }
@@ -1470,7 +1527,7 @@ function adminResolvePersonId(personId, name, branch) {
   for (var i = 0; i < data.length; i++) { if (data[i].id === personId) return personId; }
   // 精选树人名常带附注（如 宏基(孟献祧)），去后缀再按姓名匹配（同 buildAdminHoufengchaEnhancedData 的 cleanName）
   var clean = String(name || '').replace(/\(.*\)$/, '').replace(/（.*）$/, '');
-  return adminLineageNameToId(clean, branch);
+  return adminLineageIdFor(clean, branch);
 }
 function adminAddChildFor(personId, name, branch) {
   var realId = adminResolvePersonId(personId, name, branch);
@@ -2609,6 +2666,9 @@ function saveForm(mod, editId, continueAdding) {
   if (currentModule === 'genealogyOverview') {
     // 从世代总览打开的表单保存后，留在世代总览并刷新
     setTimeout(function() { renderModule('genealogyOverview'); updateStats(); }, 100);
+  } else if (currentModule === 'genealogy' && mod === 'genealogy') {
+    // 族谱管理保存后原地刷新（保留展开状态与滚动位置），不刷新页面立即看到修改结果
+    setTimeout(function() { renderGenealogyKeepState(); }, 100);
   } else if (mod !== 'genealogy') {
     setTimeout(function() { renderModule(mod); updateStats(); }, 100);
   } else {
@@ -2636,7 +2696,8 @@ function deleteItem(mod, id) {
   }
   // 在世代总览模块中删除时，留在世代总览
   var targetMod = (currentModule === 'genealogyOverview') ? 'genealogyOverview' : mod;
-  renderModule(targetMod);
+  if (targetMod === 'genealogy') renderGenealogyKeepState(); // 族谱管理删除后原地刷新，保留展开状态
+  else renderModule(targetMod);
   updateStats();
   showToast('已删除');
 }
@@ -4020,15 +4081,16 @@ function buildAdminShenboTree() {
   var idByName = {};
   for (var i = 0; i < raw.length; i++) {
     var nm = raw[i][2];
-    idByName[nm] = adminLineageNameToId(nm, '申伯世系') || (10000 + i);
+    idByName[nm] = adminLineageIdFor(nm, '申伯世系') || (10000 + i);
   }
   // Build data array for buildAdminTreeHtml
   var treeData = [];
   for (var i = 0; i < raw.length; i++) {
     var r = raw[i];
+    var lp = adminLivePersonById(idByName[r[2]]); // 真实录入的人显示数据库最新姓名（改名后立即体现）
     treeData.push({
       id: idByName[r[2]],
-      name: r[2],
+      name: (lp && lp.name) ? lp.name : r[2],
       gender: '男',
       generation_num: r[0],
       generation: r[0].toString(),
@@ -4168,13 +4230,14 @@ function buildAdminDongshanTree() {
   var idByName = {};
   for (var i = 0; i < raw.length; i++) {
     var nm = raw[i][2];
-    idByName[nm] = adminLineageNameToId(nm, '始宁东山') || (20000 + i);
+    idByName[nm] = adminLineageIdFor(nm, '始宁东山') || (20000 + i);
   }
   var treeData = [];
   for (var i = 0; i < raw.length; i++) {
     var r = raw[i];
+    var lp = adminLivePersonById(idByName[r[2]]); // 真实录入的人显示数据库最新姓名（改名后立即体现）
     treeData.push({
-      id: idByName[r[2]], name: r[2], gender: '男', generation_num: r[0], generation: r[0].toString(),
+      id: idByName[r[2]], name: (lp && lp.name) ? lp.name : r[2], gender: '男', generation_num: r[0], generation: r[0].toString(),
       branch: '东山世系', father_id: (r[4] || r[3]) ? (idByName[r[4] || r[3]] || null) : null,
       spouse_ids: '', is_alive: '否', biography: r[3], highlight: i === 0
     });
@@ -4197,13 +4260,14 @@ function buildAdminLinhaiTree() {
   var idByName = {};
   for (var i = 0; i < raw.length; i++) {
     var nm = raw[i][2];
-    idByName[nm] = adminLineageNameToId(nm, '临海下渡') || (30000 + i);
+    idByName[nm] = adminLineageIdFor(nm, '临海下渡') || (30000 + i);
   }
   var treeData = [];
   for (var i = 0; i < raw.length; i++) {
     var r = raw[i];
+    var lp = adminLivePersonById(idByName[r[2]]); // 真实录入的人显示数据库最新姓名（改名后立即体现）
     treeData.push({
-      id: idByName[r[2]], name: r[2], gender: '男', generation_num: r[0], generation: r[0].toString(),
+      id: idByName[r[2]], name: (lp && lp.name) ? lp.name : r[2], gender: '男', generation_num: r[0], generation: r[0].toString(),
       branch: '临海下渡', father_id: (r[4] || r[3]) ? (idByName[r[4] || r[3]] || null) : null,
       spouse_ids: '', is_alive: '否', biography: r[3], highlight: i === 0
     });
@@ -4236,13 +4300,14 @@ function buildAdminShimaTree() {
   var idByName = {};
   for (var i = 0; i < raw.length; i++) {
     var nm = raw[i][1];
-    idByName[nm] = adminLineageNameToId(nm, '石马(下谢)') || (40000 + i);
+    idByName[nm] = adminLineageIdFor(nm, '石马(下谢)') || (40000 + i);
   }
   var treeData = [];
   for (var i = 0; i < raw.length; i++) {
     var r = raw[i];
+    var lp = adminLivePersonById(idByName[r[1]]); // 真实录入的人显示数据库最新姓名（改名后立即体现）
     treeData.push({
-      id: idByName[r[1]], name: r[1], gender: '男', generation_num: r[0], generation: r[0].toString(),
+      id: idByName[r[1]], name: (lp && lp.name) ? lp.name : r[1], gender: '男', generation_num: r[0], generation: r[0].toString(),
       branch: '石马分房', father_id: r[3] ? (idByName[r[3]] || null) : null,
       spouse_ids: '', is_alive: '否', biography: r[2], highlight: i === 0
     });
