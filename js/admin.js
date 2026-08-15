@@ -746,7 +746,7 @@ function renderMiniGenealogyTree(allData, nameList, accentColor) {
       if (p.name === '申伯') label = '65';
 
       html += '<div style="display:inline-flex;flex-direction:column;align-items:center;min-width:70px;">';
-      html += '<div style="padding:6px 14px;border-radius:8px;font-size:12px;font-weight:' + (isHighlight ? '600' : '400') + ';background:' + accentColor + '15;border:1px solid ' + accentColor + '30;color:var(--text-primary);">' + p.name + '</div>';
+      html += '<div style="padding:6px 14px;border-radius:8px;font-size:12px;font-weight:' + (isHighlight ? '600' : '400') + ';background:' + accentColor + '15;border:1px solid ' + accentColor + '30;color:var(--text-primary);cursor:pointer;" title="点击编辑" onclick="showEditForm(\'genealogy\',' + p.id + ')">' + p.name + '</div>';
       if (label) {
         html += '<span style="font-size:9px;color:var(--text-muted);margin-top:2px;opacity:0.5;">' + label + '世</span>';
       }
@@ -831,7 +831,7 @@ function buildAdminTreeHtml(data, opts) {
     var cClass = 'apt-card ' + (person.gender === '男' ? 'apt-male' : 'apt-female');
     if (isRuzhui) cClass += ' apt-ruzhui';
     if (ruzhuiPartner) cClass += ' apt-ruzhui-partner';
-    html += '<div class="' + cClass + '" data-pid="' + person.id + '" draggable="true" onmouseup="if(!this.dataset.dragged){showEditForm(\'genealogy\',' + person.id + ')};this.dataset.dragged=\'\'" title="点击编辑 | 拖拽到其他人建立关系" ondragstart="onCardDragStart(event, ' + person.id + ');this.dataset.dragged=\'1\'" ondrop="onCardDrop(event)" ondragover="event.preventDefault()" ondragenter="this.style.outline=\'2px solid var(--accent-orange)\'" ondragleave="this.style.outline=\'\'">';
+    html += '<div class="' + cClass + '" data-pid="' + person.id + '" draggable="true" onmouseup="if(!this.dataset.dragged){adminEditOrNotice(\'genealogy\',' + person.id + ')};this.dataset.dragged=\'\'" title="点击编辑 | 拖拽到其他人建立关系" ondragstart="onCardDragStart(event, ' + person.id + ');this.dataset.dragged=\'1\'" ondrop="onCardDrop(event)" ondragover="event.preventDefault()" ondragenter="this.style.outline=\'2px solid var(--accent-orange)\'" ondragleave="this.style.outline=\'\'">';
     html += '<div class="apt-card-inner">';
     html += '<div class="apt-card-actions" onclick="event.stopPropagation();">';
     html += '<button class="apt-btn-add" onclick="showAddChildForm(' + person.id + ')" title="添加子女">+</button>';
@@ -1042,7 +1042,8 @@ function renderGenealogy(area) {
     var row = ancient_list[ai];
     html += '<tr>';
     html += '<td style="padding:5px 10px;border:1px solid var(--glass-border);text-align:center;font-weight:600;color:var(--accent-orange);">' + row[0] + '</td>';
-    html += '<td style="padding:5px 10px;border:1px solid var(--glass-border);text-align:center;' + (row[2] === '谢氏鼻祖' ? 'font-weight:700;color:var(--accent-orange);' : '') + '">' + row[1] + '</td>';
+    var anName = row[1].replace(/^[^一-龥]+/, '').split('（')[0].trim(); // 去 emoji/号 等显示前缀后用于匹配
+    html += '<td style="padding:5px 10px;border:1px solid var(--glass-border);text-align:center;' + (row[2] === '谢氏鼻祖' ? 'font-weight:700;color:var(--accent-orange);' : '') + '"><span class="apt-link" title="点击编辑" onclick="adminLineageEditByName(\'' + anName + '\',null)">' + row[1] + '</span></td>';
     html += '<td style="padding:5px 10px;border:1px solid var(--glass-border);text-align:center;color:var(--text-tertiary);">' + row[2] + '</td>';
     html += '</tr>';
   }
@@ -1129,7 +1130,7 @@ function renderGenealogy(area) {
     html += '<tr>';
     html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;font-size:11px;color:' + (isShenBo ? 'var(--accent-orange)' : 'var(--text-tertiary)') + ';">' + yandiGen + '</td>';
     html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;font-weight:600;font-size:11px;color:' + (isShenBo ? 'var(--accent-orange)' : 'var(--text-primary)') + ';">' + shenboGen + '</td>';
-    html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;' + (isDongshan ? 'font-weight:700;color:#643ca0;' : '') + 'font-size:12px;">' + person + '</td>';
+    html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;' + (isDongshan ? 'font-weight:700;color:#643ca0;' : '') + 'font-size:12px;"><span class="apt-link" title="点击编辑" onclick="adminLineageEditByName(\'' + person + '\',\'申伯世系\')">' + person + '</span></td>';
     html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;color:var(--text-tertiary);font-size:11px;">' + desc + '</td>';
     html += '</tr>';
   }
@@ -1225,7 +1226,7 @@ function renderGenealogy(area) {
     html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;font-size:11px;color:var(--text-tertiary);">' + yandiGen + '</td>';
     html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;font-size:11px;color:var(--text-tertiary);">' + shenboGen + '</td>';
     html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;font-weight:600;font-size:11px;color:' + (isRoot?'#2196f3':'var(--text-primary)') + ';">' + dongshanGen + '</td>';
-    html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;font-weight:' + (isXieAn||isRoot||isLinhai?'700':'400') + ';color:' + (isXieAn?'#d4793a':isRoot?'#2196f3':isLinhai?'#643ca0':'') + ';font-size:12px;">' + dPerson + '</td>';
+    html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;font-weight:' + (isXieAn||isRoot||isLinhai?'700':'400') + ';color:' + (isXieAn?'#d4793a':isRoot?'#2196f3':isLinhai?'#643ca0':'') + ';font-size:12px;"><span class="apt-link" title="点击编辑" onclick="adminLineageEditByName(\'' + dPerson + '\',\'始宁东山\')">' + dPerson + '</span></td>';
     html += '<td style="padding:4px 8px;border:1px solid var(--glass-border);text-align:center;color:var(--text-tertiary);font-size:11px;">' + dDesc + '</td>';
     html += '</tr>';
   }
@@ -1295,7 +1296,7 @@ function renderGenealogy(area) {
     html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;font-size:10px;color:var(--text-tertiary);">' + row[1] + '</td>';
     html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;font-size:10px;color:var(--text-tertiary);">' + row[2] + '</td>';
     html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;font-weight:600;font-size:10px;color:#643ca0;">' + row[3] + '</td>';
-    html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;font-size:11px;' + (isXiaosi?'font-weight:700;color:var(--accent-orange);':'') + '">' + row[4] + '</td>';
+    html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;font-size:11px;' + (isXiaosi?'font-weight:700;color:var(--accent-orange);':'') + '"><span class="apt-link" title="点击编辑" onclick="adminLineageEditByName(\'' + row[4] + '\',\'临海下渡\')">' + row[4] + '</span></td>';
     html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;color:var(--text-tertiary);font-size:10px;">' + row[5] + '</td>';
     html += '</tr>';
   }
@@ -1360,7 +1361,7 @@ function renderGenealogy(area) {
     html += '<td style="padding:3px 5px;border:1px solid var(--glass-border);text-align:center;font-size:10px;color:var(--text-tertiary);">' + ds + '</td>';
     html += '<td style="padding:3px 5px;border:1px solid var(--glass-border);text-align:center;font-size:10px;color:var(--text-tertiary);">' + lx + '</td>';
     html += '<td style="padding:3px 5px;border:1px solid var(--glass-border);text-align:center;font-weight:600;font-size:10px;color:#d4a037;">' + srow[0] + '</td>';
-    html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;font-size:11px;' + (isWenGao?'font-weight:700;color:var(--accent-orange);':'') + '">' + srow[1] + '</td>';
+    html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;font-size:11px;' + (isWenGao?'font-weight:700;color:var(--accent-orange);':'') + '"><span class="apt-link" title="点击编辑" onclick="adminLineageEditByName(\'' + srow[1] + '\',\'石马(下谢)\')">' + srow[1] + '</span></td>';
     html += '<td style="padding:3px 6px;border:1px solid var(--glass-border);text-align:center;color:var(--text-tertiary);font-size:10px;">' + srow[2] + '</td>';
     html += '</tr>';
   }
@@ -1399,6 +1400,40 @@ function renderGenealogy(area) {
   html += '<style>' + getGenealogyTreeCSS() + '</style>';
 
   area.innerHTML = html;
+}
+
+// ===== 族谱管理各世系点击编辑 =====
+// 硬编码世系名 → 真实录入数据 id（族谱管理各世系树/表点击人物即编辑）。
+// name 匹配姓名；branchPref 用于同名消歧（真实数据存在重名时优先取支系匹配者，如 琰 东山/石马两个）。
+// 返回真实 id；真实数据中不存在该姓名返回 0。
+function adminLineageNameToId(name, branchPref) {
+  if (!name) return 0;
+  if (name === '廿一') name = '廿植一'; // 硬编码笔误：真实数据此人为 廿植一
+  var data = getData('genealogy');
+  var best = 0;
+  for (var i = 0; i < data.length; i++) {
+    if (data[i].name === name) {
+      if (branchPref && data[i].branch === branchPref) return data[i].id; // 支系精确匹配直接返回
+      if (!best) best = data[i].id;
+    }
+  }
+  return best;
+}
+
+// 表格按姓名点击编辑（族谱管理各世系折叠表）
+function adminLineageEditByName(name, branchPref) {
+  var id = adminLineageNameToId(name, branchPref);
+  if (id) showEditForm('genealogy', id);
+  else showToast('⚠️ 该人物不在录入数据库中，无法编辑。请先在「世代总览」新增后重试。');
+}
+
+// 树卡片点击编辑：合成 id（硬编码世系中尚未录入数据库的人）给出提示，真实 id 打开编辑表单
+function adminEditOrNotice(mod, id) {
+  var data = getData(mod);
+  for (var i = 0; i < data.length; i++) {
+    if (data[i].id === id) { showEditForm(mod, id); return; }
+  }
+  showToast('⚠️ 该人物不在录入数据库中，无法编辑。请先在「世代总览」新增后重试。');
 }
 
 // 后台族谱树共享 CSS（renderGenealogy 与 renderGenealogyOverview 共用）
@@ -1462,6 +1497,8 @@ function getGenealogyTreeCSS() {
     '.apt-tree-fullscreen .apt-left{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;padding:56px 12px 12px 12px;border-radius:0;overflow:hidden;}' +
     '.apt-tree-fullscreen .apt-tree-viewport{height:calc(100vh - 100px);min-height:0;}' +
     '.apt-tree-fullscreen #apt-fullscreen-btn{background:var(--accent-orange);color:#fff;}' +
+    '.apt-link{cursor:pointer;border-bottom:1px dashed var(--accent-orange);transition:color 0.15s;}' +
+    '.apt-link:hover{color:var(--accent-orange);}' +
     '';
 }
 
@@ -3377,6 +3414,8 @@ window.renderGenealogyTree = renderGenealogyTree;
 window.switchModule = switchModule;
 window.showAddForm = showAddForm;
 window.showEditForm = showEditForm;
+window.adminLineageEditByName = adminLineageEditByName;
+window.adminEditOrNotice = adminEditOrNotice;
 window.deleteItem = deleteItem;
 window.saveForm = saveForm;
 window.renderModule = renderModule;
@@ -3904,26 +3943,24 @@ function buildAdminShenboTree() {
     [98,34,'当','鳅之后','鳅'],[98,34,'景秀','鳅之后','鳅'],
     [99,35,'缵','景秀之后/东山第一世','景秀'],[99,35,'显','景秀之后','景秀'],[99,35,'顼','景秀之后','景秀']
   ];
-  // Build name → id map
-  var nameToId = {};
+  // Build name → edit id map：真实录入数据优先（点击卡片即编辑该人），未录入的用合成 id（点击给出提示）
+  var idByName = {};
   for (var i = 0; i < raw.length; i++) {
-    var pid = 10000 + i;
-    nameToId[raw[i][2]] = pid;
+    var nm = raw[i][2];
+    idByName[nm] = adminLineageNameToId(nm, '申伯世系') || (10000 + i);
   }
   // Build data array for buildAdminTreeHtml
   var treeData = [];
   for (var i = 0; i < raw.length; i++) {
     var r = raw[i];
-    var pid = 10000 + i;
-    var fatherId = r[4] ? (nameToId[r[4]] || null) : null;
     treeData.push({
-      id: pid,
+      id: idByName[r[2]],
       name: r[2],
       gender: '男',
       generation_num: r[0],
       generation: r[0].toString(),
       branch: '申伯世系',
-      father_id: fatherId,
+      father_id: r[4] ? (idByName[r[4]] || null) : null,
       spouse_ids: '',
       is_alive: '否',
       biography: r[3],
@@ -4055,14 +4092,17 @@ function buildAdminDongshanTree() {
     [120,57,'静','翳之子','翳'],[120,57,'观','翳之子','翳'],
     [122,58,'闓','观之子/临海下渡第一世','观']
   ];
-  var nameToId = {};
-  for (var i = 0; i < raw.length; i++) { nameToId[raw[i][2]] = 20000 + i; }
+  var idByName = {};
+  for (var i = 0; i < raw.length; i++) {
+    var nm = raw[i][2];
+    idByName[nm] = adminLineageNameToId(nm, '始宁东山') || (20000 + i);
+  }
   var treeData = [];
   for (var i = 0; i < raw.length; i++) {
-    var r = raw[i], pid = 20000 + i;
+    var r = raw[i];
     treeData.push({
-      id: pid, name: r[2], gender: '男', generation_num: r[0], generation: r[0].toString(),
-      branch: '东山世系', father_id: (r[4] || r[3]) ? (nameToId[r[4] || r[3]] || null) : null,
+      id: idByName[r[2]], name: r[2], gender: '男', generation_num: r[0], generation: r[0].toString(),
+      branch: '东山世系', father_id: (r[4] || r[3]) ? (idByName[r[4] || r[3]] || null) : null,
       spouse_ids: '', is_alive: '否', biography: r[3], highlight: i === 0
     });
   }
@@ -4081,14 +4121,17 @@ function buildAdminLinhaiTree() {
     [128,65,'在鉴','奕信之后','奕信'],[128,65,'在勋','奕信之后','奕信'],[128,65,'在纲','奕信之后','奕信'],[128,65,'在机','奕信之后','奕信'],
     [130,66,'大四','在纲之后','在纲'],[130,66,'小四','在纲之后','在纲']
   ];
-  var nameToId = {};
-  for (var i = 0; i < raw.length; i++) { nameToId[raw[i][2]] = 30000 + i; }
+  var idByName = {};
+  for (var i = 0; i < raw.length; i++) {
+    var nm = raw[i][2];
+    idByName[nm] = adminLineageNameToId(nm, '临海下渡') || (30000 + i);
+  }
   var treeData = [];
   for (var i = 0; i < raw.length; i++) {
-    var r = raw[i], pid = 30000 + i;
+    var r = raw[i];
     treeData.push({
-      id: pid, name: r[2], gender: '男', generation_num: r[0], generation: r[0].toString(),
-      branch: '临海下渡', father_id: (r[4] || r[3]) ? (nameToId[r[4] || r[3]] || null) : null,
+      id: idByName[r[2]], name: r[2], gender: '男', generation_num: r[0], generation: r[0].toString(),
+      branch: '临海下渡', father_id: (r[4] || r[3]) ? (idByName[r[4] || r[3]] || null) : null,
       spouse_ids: '', is_alive: '否', biography: r[3], highlight: i === 0
     });
   }
@@ -4117,14 +4160,17 @@ function buildAdminShimaTree() {
     [11,'泰鹏','管之后','管'],[11,'泰颚','管之后','管'],
     [12,'秀廉','泰颚之后','泰颚'],[12,'秀洁','泰颚之后','泰颚'],[12,'秀驹','泰颚之后','泰颚'],
   ];
-  var nameToId = {};
-  for (var i = 0; i < raw.length; i++) { nameToId[raw[i][1]] = 40000 + i; }
+  var idByName = {};
+  for (var i = 0; i < raw.length; i++) {
+    var nm = raw[i][1];
+    idByName[nm] = adminLineageNameToId(nm, '石马(下谢)') || (40000 + i);
+  }
   var treeData = [];
   for (var i = 0; i < raw.length; i++) {
-    var r = raw[i], pid = 40000 + i;
+    var r = raw[i];
     treeData.push({
-      id: pid, name: r[1], gender: '男', generation_num: r[0], generation: r[0].toString(),
-      branch: '石马分房', father_id: r[3] ? (nameToId[r[3]] || null) : null,
+      id: idByName[r[1]], name: r[1], gender: '男', generation_num: r[0], generation: r[0].toString(),
+      branch: '石马分房', father_id: r[3] ? (idByName[r[3]] || null) : null,
       spouse_ids: '', is_alive: '否', biography: r[2], highlight: i === 0
     });
   }
