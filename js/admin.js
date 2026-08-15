@@ -828,29 +828,18 @@ function buildAdminTreeHtml(data, opts) {
       var spN = person.spouse_ids.toString().split(',').map(function(n){return n.trim();}).filter(function(n){return n;});
       for (var si = 0; si < spN.length; si++) { if (spN[si].indexOf('入赘') >= 0 || spN[si].indexOf('女婿') >= 0) { ruzhuiPartner = true; break; } }
     }
-    var isEnhanced = !!person._enhanced; // 大字辈挂接副本：只读预览，防误编辑/误删完整库真实记录
     var cClass = 'apt-card ' + (person.gender === '男' ? 'apt-male' : 'apt-female');
     if (isRuzhui) cClass += ' apt-ruzhui';
     if (ruzhuiPartner) cClass += ' apt-ruzhui-partner';
-    if (isEnhanced) cClass += ' apt-enhanced';
-    html += '<div class="' + cClass + '" data-pid="' + person.id + '" ' + (isEnhanced
-      ? 'title="挂接预览（只读）：来自完整库的真实记录"'
-      : 'draggable="true" onmouseup="if(!this.dataset.dragged){showEditForm(\'genealogy\',' + person.id + ')};this.dataset.dragged=\'\'" title="点击编辑 | 拖拽到其他人建立关系" ondragstart="onCardDragStart(event, ' + person.id + ');this.dataset.dragged=\'1\'" ondrop="onCardDrop(event)" ondragover="event.preventDefault()" ondragenter="this.style.outline=\'2px solid var(--accent-orange)\'" ondragleave="this.style.outline=\'\'"') + '>';
+    html += '<div class="' + cClass + '" data-pid="' + person.id + '" draggable="true" onmouseup="if(!this.dataset.dragged){showEditForm(\'genealogy\',' + person.id + ')};this.dataset.dragged=\'\'" title="点击编辑 | 拖拽到其他人建立关系" ondragstart="onCardDragStart(event, ' + person.id + ');this.dataset.dragged=\'1\'" ondrop="onCardDrop(event)" ondragover="event.preventDefault()" ondragenter="this.style.outline=\'2px solid var(--accent-orange)\'" ondragleave="this.style.outline=\'\'">';
     html += '<div class="apt-card-inner">';
     html += '<div class="apt-card-actions" onclick="event.stopPropagation();">';
-    if (!isEnhanced) {
-      html += '<button class="apt-btn-add" onclick="showAddChildForm(' + person.id + ')" title="添加子女">+</button>';
-    }
+    html += '<button class="apt-btn-add" onclick="showAddChildForm(' + person.id + ')" title="添加子女">+</button>';
       if (childrenOf(person).length > 0) {
         html += '<button class="apt-btn-expand" onclick="toggleTreeNode(this)" title="展开/折叠">▶</button>';
       }
-    if (!isEnhanced) {
-      html += '<button class="apt-btn-del" onclick="if(confirm(\'确定删除 ' + escapeHtml(person.name) + ' 吗？\'))deleteItem(\'genealogy\',' + person.id + ')" title="删除此人">−</button>';
-    }
+    html += '<button class="apt-btn-del" onclick="if(confirm(\'确定删除 ' + escapeHtml(person.name) + ' 吗？\'))deleteItem(\'genealogy\',' + person.id + ')" title="删除此人">−</button>';
     html += '</div>';
-    if (isEnhanced) {
-      html += '<span style="display:inline-block;font-size:9px;font-weight:700;color:#a3e635;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:3px;padding:0 5px;margin-right:4px;line-height:16px;" title="挂接预览（只读）">挂</span>';
-    }
     html += '<div class="apt-name">';
     if (person.adopted && person.adopted !== '否') {
       if (person.adopted === '出继') html += '<span class="apt-adopted-badge" style="background:#22c55e;" title="出继">出</span>';
@@ -1431,8 +1420,6 @@ function getGenealogyTreeCSS() {
     '.apt-male{border-left:3px solid #4a9eff;}.apt-female{border-left:3px solid #ff6b9d;}' +
     '.apt-ruzhui{border:2px solid #ef4444 !important;background:rgba(239,68,68,0.08) !important;}' +
     '.apt-ruzhui-partner{border:2px solid #f97316 !important;background:rgba(249,115,22,0.06) !important;}' +
-    '.apt-enhanced{border:1px dashed rgba(163,230,53,0.5) !important;background:rgba(163,230,53,0.04) !important;cursor:default;}' +
-    '.apt-enhanced:hover{border-color:#a3e635 !important;box-shadow:0 2px 8px rgba(163,230,53,0.15) !important;transform:none !important;}' +
     '.apt-name{font-size:15px;font-weight:600;color:var(--text-primary);white-space:nowrap;}' +
     '.apt-adopted-badge{display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#e74c3c;border-radius:3px;padding:0 5px;margin-right:4px;vertical-align:middle;line-height:16px;}' +
     '.apt-meta{font-size:11px;color:var(--text-tertiary);margin-top:2px;}' +
@@ -4356,7 +4343,8 @@ function getHoufengchaTreeData() {
 // 后台本宗世系图（后枫槎）增强挂接：与前台 genealogy.html 内联 getHoufengchaEnhancedData 同逻辑，
 // 但数据源=后台完整库（getData('genealogy')，原始体系大字辈=23世，前台 getGenealogyData 有 +131 平移）。
 // delta 动态计算（base大字辈gen − full大字辈gen = +2），无需硬编码平移。
-// 副本打 _enhanced 标记 → renderPerson 只读（不可编辑/拖拽/删除/加子女），防止 father_id=60000+ 写回完整库污染数据。
+// 副本结构与其他节点完全一致（无 _enhanced 区分标记），显示/编辑行为与精选树原有节点一致（用户要求保持一样不要区分）。
+// 注意：副本 father_id 指向精选树 id(60000+)，仅用于本树内父子连线；编辑/保存走完整库真实记录（showEditForm 按 id 查 getData），不写回 60000+。
 function buildAdminHoufengchaEnhancedData(fullData) {
   var base = getHoufengchaTreeData();
   var full = fullData || [];
@@ -4394,7 +4382,6 @@ function buildAdminHoufengchaEnhancedData(fullData) {
         n.generation_num = cg + delta;
         n.generation = n.generation_num.toString();
         n.branch = '后枫槎';
-        n._enhanced = true;                                            // 只读标记：防编辑/删除污染完整库
         added[c.id] = true;
         out.push(n); childCount++;
         attach(c, c.id);
