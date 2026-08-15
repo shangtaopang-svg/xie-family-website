@@ -3336,7 +3336,7 @@ function locateInTree(personId) {
     // bg-canvas removed
 
 // ===== Fullscreen toggle (CSS position:fixed approach) =====
-function pageTreeFullscreen() {
+function pageTreeFullscreen(forceCss) {
   var section = document.getElementById('genealogy-tree-section');
   if (!section) return;
   var isFS = section.classList.contains('genealogy-tree-section-fullscreen');
@@ -3344,17 +3344,22 @@ function pageTreeFullscreen() {
     // Enter fullscreen
     section.classList.add('genealogy-tree-section-fullscreen');
     document.body.style.overflow = 'hidden';
-    // Try native browser fullscreen for immersive view
+    // forceCss=true：自动进入（lineage-tree.html 无用户手势）。requestFullscreen / screen.orientation.lock
+    // 都要求用户手势，无手势必被拒或挂起 → 手机端直接 CSS 强制横屏（任何浏览器零手势生效），
+    // 保证「一进世系图谱就是横屏」。真全屏/系统锁横屏仅在有手势的按钮路径（forceCss=false）走。
     var fsP = null;
-    try { if (section.requestFullscreen) fsP = section.requestFullscreen(); } catch(e) {}
-    // 真全屏就绪后锁横屏：screen.orientation.lock 需全屏态+用户手势，链在 requestFullscreen().then()
-    // 比 fullscreenchange 时机可靠（后者可能已过用户激活窗口）。无真全屏 API（iOS/微信内核）fsP 为
-    // null → 手机端直接走 mblLockLandscape（无锁 API 则弹旋转提示）。桌面端 isMobileTree()=false 不受影响。
-    if (fsP && fsP.then) {
-      fsP.then(function() { if (isMobileTree()) mblLockLandscape(); })
-         .catch(function() { if (isMobileTree()) mblLockLandscape(); });  // 真全屏被拒（如快速重进）→ 仍走 CSS 假横屏
-    } else if (isMobileTree()) {
-      mblLockLandscape();
+    if (!forceCss) {
+      // Try native browser fullscreen for immersive view
+      try { if (section.requestFullscreen) fsP = section.requestFullscreen(); } catch(e) {}
+      // 真全屏就绪后锁横屏：screen.orientation.lock 需全屏态+用户手势，链在 requestFullscreen().then()
+      // 比 fullscreenchange 时机可靠（后者可能已过用户激活窗口）。无真全屏 API（iOS/微信内核）fsP 为
+      // null → 手机端直接走 mblLockLandscape（无锁 API 则弹旋转提示）。桌面端 isMobileTree()=false 不受影响。
+      if (fsP && fsP.then) {
+        fsP.then(function() { if (isMobileTree()) mblLockLandscape(); })
+           .catch(function() { if (isMobileTree()) mblLockLandscape(); });  // 真全屏被拒（如快速重进）→ 仍走 CSS 假横屏
+      } else if (isMobileTree()) {
+        mblLockLandscape();
+      }
     }
     // Show close button
     var closeBtn = document.getElementById('fs-close-btn');
@@ -3390,6 +3395,9 @@ function pageTreeFullscreen() {
       if (lc) fsAnchor = lc;
       _mblFsAnchorPending = true;
       _mblFsAnchor = fsAnchor || null;
+      // 自动进入（forceCss）无手势锁不了真横屏 → 直接 CSS 强制横屏（自带 mblFsRedraw），
+      // 之后下面再 mblFsRedraw 一次，双 rAF 串行后者权威，可读卡片树 + 横屏几何一次到位。
+      if (forceCss) mblForceLandscape();
       mblFsRedraw();
       return;
     }
@@ -3424,7 +3432,15 @@ function pageTreeFullscreen() {
   }
 }
 
-function exitPageFullscreen() { try { if (document.exitFullscreen) document.exitFullscreen(); } catch(e){} 
+function exitPageFullscreen() {
+  // 真全屏退出。CSS 假横屏自动进入路径（forceCss）从未进真全屏 → document.exitFullscreen() 拒绝
+  // promise（Document not active），补 .catch 吞掉未处理拒绝，避免控制台报错掩盖真实问题。
+  try {
+    if (document.fullscreenElement && document.exitFullscreen) {
+      var ep = document.exitFullscreen();
+      if (ep && ep.then) ep.catch(function(){});
+    }
+  } catch(e){}
   var section = document.getElementById('genealogy-tree-section');
   if (section) section.classList.remove('genealogy-tree-section-fullscreen');
   document.body.style.overflow = '';
@@ -3501,6 +3517,8 @@ function mblLockLandscape() {
         _mblOrientationLocked = true;
         mblFsRedraw();                                  // 旋转落定后按横屏视口重绘 canvas/卡片
       }).catch(function() { mblForceLandscape(); });    // 锁失败（部分机型/系统禁止）→ CSS 强制横屏
+    } else {
+      mblForceLandscape();   // 部分 webview lock() 返回 undefined（无 promise）→ 直接 CSS 强制横屏，勿静默挂起
     }
   } catch(e) { mblForceLandscape(); }
 }

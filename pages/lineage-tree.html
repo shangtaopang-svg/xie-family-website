@@ -70,7 +70,7 @@
   </div>
 
   <!-- 共享世系图谱 JS（数据/渲染/全屏横屏）必须先于 admin.js onload 执行 -->
-  <script src="../js/genealogy-tree.js?v=2"></script>
+  <script src="../js/genealogy-tree.js?v=3"></script>
   <script src="../js/admin.js?v=64" onload="if(window.renderTreeSVG&&window.getGenealogyData)setTimeout(function(){renderTreeSVG(getGenealogyData())},100)"></script>
 
   <script>
@@ -88,7 +88,9 @@
         var settled = window.__liveGenealogyLoaded || tries >= 30;
         if (ready && settled && !started) {
           started = true;
-          setTimeout(function() { try { pageTreeFullscreen(); } catch(e){} }, 150);
+          // pageTreeFullscreen(true)=forceCss：无用户手势，跳过 requestFullscreen/orientation.lock 链
+          //（真机无手势必被拒或挂起），直接 CSS 强制横屏——一进世系图谱就是横屏
+          setTimeout(function() { try { pageTreeFullscreen(true); } catch(e){} }, 150);
         } else if (tries < 80) setTimeout(tryFS, 200);
       })();
     }
