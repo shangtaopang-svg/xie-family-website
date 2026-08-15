@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 世系图谱独立页：手机端从族谱查询进入，自动横屏查看（桌面端也可访问） -->
+<!-- 世系图谱独立页：手机端从族谱查询进入，正常竖屏显示（不自动横屏，可手动 ⛶ 全屏横屏，桌面端也可访问） -->
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -31,7 +31,7 @@
   <div class="lineage-back-bar">
     <a href="genealogy.html">← 返回族谱查询</a>
     <span class="sep"></span>
-    <span class="hint">进入页面自动横屏 · 点击姓名查看详情</span>
+    <span class="hint">点击姓名查看详情 · ⛶ 可全屏横屏</span>
   </div>
 
   <!-- ===== 世系图谱（与 genealogy.html 同一 section DOM，共享 JS/CSS） ===== -->
@@ -69,92 +69,10 @@
 <button id="fs-close-btn" onclick="exitPageFullscreen()" style="display:none;position:absolute;top:16px;right:16px;z-index:99999;background:rgba(0,0,0,0.7);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:14px;cursor:pointer;">✕ 退出全屏</button>
   </div>
 
-  <script>
-    // ★手机端「进入即横屏」：页面一解析完世系图谱容器就立刻加全屏+横屏类 → 首帧即横屏，
-    // 完全不依赖数据加载/共享 JS 时序（此前等树渲染+live 数据就绪才进，真机慢网/数据未就绪
-    // 会停在竖屏，用户「点世系图谱>全屏横屏查看 就直接出现横屏」）。文末自动脚本再同步内部态
-    // （_mblFsRotated/弹层旋转类）并断言可读卡片树。
-    (function(){ try {
-      if (window.matchMedia && window.matchMedia('(max-width:900px)').matches && window.innerWidth < window.innerHeight) {
-        var _s = document.getElementById('genealogy-tree-section');
-        var _sc = document.getElementById('tree-scroll-container');
-        var _cb = document.getElementById('fs-close-btn');
-        if (_s && _sc) {
-          if (!_s.classList.contains('genealogy-tree-section-fullscreen')) _s.classList.add('genealogy-tree-section-fullscreen');
-          if (!_sc.classList.contains('mbl-fs-landscape')) _sc.classList.add('mbl-fs-landscape');
-          document.body.style.overflow = 'hidden';
-        }
-        if (_cb) _cb.style.display = 'flex';
-      }
-    } catch(e){} })();
-  </script>
-
-  <!-- 共享世系图谱 JS（数据/渲染/全屏横屏）必须先于 admin.js onload 执行 -->
-  <script src="../js/genealogy-tree.js?v=4"></script>
+  <!-- 共享世系图谱 JS（数据/渲染/全屏横屏）必须先于 admin.js onload 执行。
+       ★手机端不再自动横屏（用户 2026-08-15 要求「不要直接进入横屏」）：进入页面正常竖屏显示，
+       需要横屏时手动点 ⛶ 全屏/横屏 按钮（pageTreeFullscreen）。 -->
+  <script src="../js/genealogy-tree.js?v=5"></script>
   <script src="../js/admin.js?v=64" onload="if(window.renderTreeSVG&&window.getGenealogyData)setTimeout(function(){renderTreeSVG(getGenealogyData())},100)"></script>
-
-  <script>
-    // 手机端「进入即横屏」：首帧已由页面内联脚本加全屏+横屏类（见上），共享 JS 就绪后这里只做三件事——
-    // ① 兜底补全屏/横屏类（首帧脚本未生效场景，如非手机首开宽屏）；② 同步内部态（mblForceLandscape
-    // 设置 _mblFsRotated + 弹层 mbl-fs-section-rotated 类 + 「恢复竖屏」提示）；③ 断言可读卡片树
-    // （live 数据重渲染默认回 overview 全貌，需切回可读）。
-    if (typeof isMobileTree === 'function' && isMobileTree()) {
-      var tries = 0, lsSynced = false, prevRot = false, fsApplied = false;
-      (function ensure() {
-        tries++;
-        var section = document.getElementById('genealogy-tree-section');
-        var sc = document.getElementById('tree-scroll-container');
-        // ① 兜底补全屏（仅首次：首帧脚本通常已加类）。★fsApplied 只允许补一次——用户点「✕ 退出全屏」
-        //    后 class 被 exitPageFullscreen 移除，若 ① 持续重跑会立刻再加回、顶掉用户操作。
-        if (!fsApplied && section && sc) {
-          fsApplied = true;
-          if (!section.classList.contains('genealogy-tree-section-fullscreen')) {
-            section.classList.add('genealogy-tree-section-fullscreen');
-            document.body.style.overflow = 'hidden';
-            var cb = document.getElementById('fs-close-btn');
-            if (cb) cb.style.display = 'flex';
-          }
-        }
-        // ② 同步 CSS 假横屏内部态（仅首次）：首帧脚本已直接加 mbl-fs-landscape 类，但
-        //    _mblFsRotated/mbl-fs-section-rotated（弹层旋转类）从未同步 → 详情/祖先弹层不会横屏。
-        //    mblForceLandscape 幂等（_mblFsRotated 守卫），竖屏+全屏时调用即补弹层旋转类 + 提示条。
-        //    ★lsSynced 只允许同步一次：用户点「恢复竖屏」后 _mblFsRotated 被 mblUnrotate 置 false，
-        //    若 ② 持续重跑会立刻再旋回去、顶掉用户操作 —— 首次同步后永久停用 ②。
-        if (!lsSynced && section && sc && section.classList.contains('genealogy-tree-section-fullscreen')
-            && window.innerWidth < window.innerHeight && !window._mblFsRotated) {
-          try { if (typeof mblForceLandscape === 'function') mblForceLandscape(); } catch(e){}
-          lsSynced = !!window._mblFsRotated;
-        }
-        // ③ 树渲染后切可读卡片树（防 canvas 蓝点全貌）+ 锚定内容中心（空带白屏兜底）：
-        //    scroll(0,0) 落在布局左缘空白（根子树居中，x<11000 区 y<606 无卡）→ 0 卡白屏。
-        //    与 pageTreeFullscreen 同一锚定路径（mblEnsureCardsNear(anchor,true) 强制居中）。
-        if (section && section.classList.contains('genealogy-tree-section-fullscreen')
-            && window._mblMode === 'overview' && window.treeLayout) {
-          try {
-            if (window._MBL_DEFAULT_SCALE) window.treeScale = window._MBL_DEFAULT_SCALE;
-            if (typeof applyTreeTransformSVG === 'function') applyTreeTransformSVG();
-            setMblMode('readable');
-            if (typeof mblLayoutCenter === 'function') {
-              var c = mblLayoutCenter();
-              if (c && typeof mblEnsureCardsNear === 'function') mblEnsureCardsNear(c, true);
-            }
-            if (typeof mblVizThrottled === 'function') mblVizThrottled();
-          } catch(e){}
-        }
-        // ④ 用户点「恢复竖屏」（_mblFsRotated true→false 沿变）后：横屏时滚动位在竖屏下落在稀疏区
-        //    → 0 卡白屏（共享 mblUnrotate 只移除旋转类不动滚动位）。首次沿变补一次内容中心锚定。
-        if (prevRot && !window._mblFsRotated && window.treeLayout && window._mblMode === 'readable') {
-          prevRot = false;
-          try {
-            var c2 = mblLayoutCenter();
-            if (c2 && typeof mblEnsureCardsNear === 'function') mblEnsureCardsNear(c2, true);
-            if (typeof mblVizThrottled === 'function') mblVizThrottled();
-          } catch(e){}
-        }
-        if (window._mblFsRotated) prevRot = true;
-        if (tries < 80) setTimeout(ensure, 300);   // 最长 ~24s（慢网/大数据真机）
-      })();
-    }
-  </script>
 </body>
 </html>

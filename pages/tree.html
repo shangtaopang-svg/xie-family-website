@@ -14,7 +14,7 @@
   <script defer src="../js/i18n.js"></script>
   <script defer src="../js/file-store.js?v=3"></script>
   <script defer src="../js/supabase.js?v=3"></script>
-  <script defer src="../js/timeline.js?v=24"></script>
+  <script defer src="../js/timeline.js?v=25"></script>
   <link rel="manifest" href="../manifest.json">
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
 </head>
@@ -1606,6 +1606,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var overlay = document.createElement('div');
     overlay.className = 'person-detail-modal';
+    // 时间轴全屏假横屏态：详情弹层同步旋转横屏（同 genealogy-tree.js showPersonDetail）
+    var tlFs = document.getElementById('tl-fs');
+    if (tlFs && tlFs.querySelector('#tl-fs-view.tl-fs-rotated')) overlay.classList.add('tl-fs-rotated-detail');
     overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
 
     var box = document.createElement('div');

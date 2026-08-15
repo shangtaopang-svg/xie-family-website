@@ -2543,7 +2543,20 @@ document.addEventListener('DOMContentLoaded', function() {
     overlay.appendChild(box);
     // 全屏态（真全屏 section 在浏览器 Top Layer，盖过 body 一切 z-index）：弹层必须挂到全屏 section 内，
     // 否则被全屏层压住、只在关闭全屏后显现（用户：全屏点任何人没详情，竖屏有）。竖屏/桌面挂 body 不变。
-    var mount = mblInFs() ? document.getElementById('genealogy-tree-section') : document.body;
+    // ★时间轴全屏（#tl-fs 存在）优先挂 body：时间轴全屏是 documentElement 级全屏，body 内容正常渲染、
+    //   z-index 层级生效（999999>200000 盖住 #tl-fs）；若走 mblInFs() 会误判世系图全屏、把弹层挂进
+    //   手机端 display:none 的 genealogy-tree-section → 弹层不可见（用户：时间轴全屏横屏点某人的详情
+    //   还是不出现，修了多次；旧代码此处只在世系图全屏修过，时间轴全屏没覆盖）。
+    //   假横屏（#tl-fs-view.tl-fs-rotated）下弹层同步旋转横屏。
+    var mount;
+    var tlFs = document.getElementById('tl-fs');
+    if (tlFs) {
+      var tlView = tlFs.querySelector('#tl-fs-view');
+      if (tlView && tlView.classList.contains('tl-fs-rotated')) overlay.classList.add('tl-fs-rotated-detail');
+      mount = document.body;
+    } else {
+      mount = mblInFs() ? document.getElementById('genealogy-tree-section') : document.body;
+    }
     mount.appendChild(overlay);
   }
 
@@ -2972,8 +2985,17 @@ function locateInTree(personId) {
     closeBtn.onclick = function() { overlay.remove(); };
     box.appendChild(closeBtn);
     overlay.appendChild(box);
-    // 全屏态挂 section 内（同详情弹层：真全屏 Top Layer 压住 body 弹层）
-    var mount = mblInFs() ? document.getElementById('genealogy-tree-section') : document.body;
+    // 全屏态挂 section 内（同详情弹层：真全屏 Top Layer 压住 body 弹层）。
+    // ★时间轴全屏（#tl-fs 存在）优先挂 body + 假横屏同步旋转（理由同 showPersonDetail）。
+    var mount;
+    var tlFs = document.getElementById('tl-fs');
+    if (tlFs) {
+      var tlView = tlFs.querySelector('#tl-fs-view');
+      if (tlView && tlView.classList.contains('tl-fs-rotated')) overlay.classList.add('tl-fs-rotated-detail');
+      mount = document.body;
+    } else {
+      mount = mblInFs() ? document.getElementById('genealogy-tree-section') : document.body;
+    }
     mount.appendChild(overlay);
     document.addEventListener('keydown', function escHandler(e) {
       if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', escHandler); }
