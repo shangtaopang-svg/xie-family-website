@@ -70,13 +70,18 @@
   </div>
 
   <!-- 共享世系图谱 JS（数据/渲染/全屏横屏）必须先于 admin.js onload 执行 -->
-  <script src="../js/genealogy-tree.js?v=3"></script>
+  <script src="../js/genealogy-tree.js?v=4"></script>
   <script src="../js/admin.js?v=64" onload="if(window.renderTreeSVG&&window.getGenealogyData)setTimeout(function(){renderTreeSVG(getGenealogyData())},100)"></script>
 
   <script>
-    // 手机端：树渲染 + 后台实时数据就绪后自动进入全屏横屏
+    // 手机端：树渲染 + 后台实时数据就绪后自动进入全屏横屏。
+    // pageTreeFullscreen(true)=forceCss：无用户手势，跳过 requestFullscreen/orientation.lock 手势链
+    //（真机无手势必被拒或挂起），直接 CSS 强制横屏——一进世系图谱就是横屏。
+    // 真机加固（2026-08-15 用户反馈仍是竖屏）：进入后验证 .mbl-fs-landscape 真生效，未生效
+    //（如 mblForceLandscape 的 orientation 守卫在部分 WebView 竖屏误报 true 提前 return）→ 直接补类；
+    // 兜底轮询防旋转类被意外撤销；live 数据到达较晚触发的重渲染会把模式切回 overview → 再断言回可读。
     if (typeof isMobileTree === 'function' && isMobileTree()) {
-      var tries = 0, started = false;
+      var tries = 0, entered = false;
       (function tryFS() {
         tries++;
         var tc = document.getElementById('tree-container');
@@ -86,12 +91,34 @@
         // 等 live 数据（后台同步）就绪：__liveGenealogyLoaded 由 tryLoadLiveGenealogy 置位；
         // 兜底：约 6s 内 supabase 未就绪（离线/慢）也进全屏，用本地快照
         var settled = window.__liveGenealogyLoaded || tries >= 30;
-        if (ready && settled && !started) {
-          started = true;
-          // pageTreeFullscreen(true)=forceCss：无用户手势，跳过 requestFullscreen/orientation.lock 链
-          //（真机无手势必被拒或挂起），直接 CSS 强制横屏——一进世系图谱就是横屏
-          setTimeout(function() { try { pageTreeFullscreen(true); } catch(e){} }, 150);
-        } else if (tries < 80) setTimeout(tryFS, 200);
+        if (ready && settled && !entered) {
+          entered = true;
+          setTimeout(function() { try {
+            var sect = document.getElementById('genealogy-tree-section');
+            if (sect && !sect.classList.contains('genealogy-tree-section-fullscreen')) pageTreeFullscreen(true);
+            // 验证 CSS 假横屏真生效；未生效 → 直接补类（绕过守卫）
+            var sc = document.getElementById('tree-scroll-container');
+            if (sc && !sc.classList.contains('mbl-fs-landscape') && window.innerWidth < window.innerHeight) {
+              if (typeof mblForceLandscape === 'function') mblForceLandscape();
+            }
+          } catch(e){} }, 150);
+          // 兜底轮询：旋转类意外丢失（如 poll 误撤/重渲染清态）→ 重加；全屏内被切回 overview → 再断言可读
+          var re = 0;
+          (function ensure() {
+            re++;
+            var sc2 = document.getElementById('tree-scroll-container');
+            var s2 = document.getElementById('genealogy-tree-section');
+            if (s2 && s2.classList.contains('genealogy-tree-section-fullscreen')) {
+              if (sc2 && !sc2.classList.contains('mbl-fs-landscape') && window.innerWidth < window.innerHeight) {
+                try { if (typeof mblForceLandscape === 'function') mblForceLandscape(); } catch(e){}
+              }
+              if (typeof setMblMode === 'function' && window._mblMode === 'overview') {
+                try { setMblMode('readable'); } catch(e){}
+              }
+            }
+            if (re < 20) setTimeout(ensure, 400);
+          })();
+        } else if (tries < 150) setTimeout(tryFS, 200);   // 最长 ~30s（慢网/大数据真机）
       })();
     }
   </script>

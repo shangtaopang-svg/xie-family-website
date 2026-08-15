@@ -55,6 +55,7 @@
   }
   var COL_W = 10, GAP = 1;
   var _origWrapStyle = null; // 首次渲染时捕获 wrap 原始内联样式，桌面端原样恢复
+  var _tlFakeRotated = false; // 时间轴全屏 CSS 假横屏态：点代详情弹层需同步旋转横屏（用户：详情页也要横屏展示）
   function isCompact() {
     try { return window.matchMedia && window.matchMedia('(max-width: 768px)').matches; }
     catch(e) { return false; }
@@ -69,7 +70,12 @@
       var st = document.createElement('style');
       st.id = 'tl-anim-style';
       st.textContent = '@keyframes tlBarIn{from{transform:scaleY(0)}to{transform:scaleY(1)}}' +
-        '@media (prefers-reduced-motion: reduce){.tl-g>div,.tl-fs-g>div{animation:none!important}}';
+        '@media (prefers-reduced-motion: reduce){.tl-g>div,.tl-fs-g>div{animation:none!important}}' +
+        /* 时间轴假横屏时点代详情弹层同步旋转横屏（用户：点击某一代出来的详情页也要横屏展示）。
+           竖屏视口下 rotate90 后视觉 bbox=横屏：视觉宽=布局高=100vw、视觉高=布局宽=100vh，
+           box 布局为 100vh×100vw（横屏形状），rotate90 后恰好铺满视口。 */
+        '.tl-fs-rotated-detail .person-detail-box{position:fixed!important;top:50%!important;left:50%!important;width:calc(100vh - 40px)!important;max-width:none!important;height:calc(100vw - 40px)!important;max-height:none!important;padding:0!important;margin:0!important;transform:translate(-50%,-50%) rotate(90deg)!important;transform-origin:center!important;overflow:hidden;border-radius:12px}' +
+        '.tl-fs-rotated-detail .person-detail-box>div:first-child{max-height:calc(100vw - 40px)!important}';
       // 手机端全屏 CSS 假横屏的旋转样式不在此注入：view 的几何（宽高/位置/rotate90）由
       // openFullscreen 内 tlTryLandscape 用 JS 行内样式设置（行内样式可压过 view 的
       // 行内 position:relative/flex:1，避免 class 被行内样式覆盖的陷阱），.tl-fs-rotated 仅作状态标记。
@@ -316,17 +322,24 @@
     var naturalW = pad*2 + gens.length*(FS_COL+FS_GAP);
     var naturalH = 30 + FS_WAVE + 28 + pad;
 
+    // 手机端全屏自动横屏 → 淡黄底浅色主题（用户：世代时间轴最大化横屏底色改淡黄，与世系图谱全屏一致；
+    // 桌面端非紧凑保持原深底，红线不动桌面端）
+    var LIGHT = isCompact();
     var ov = document.createElement('div');
     ov.id = 'tl-fs';
-    ov.style.cssText = 'position:fixed;inset:0;z-index:200000;background:rgba(6,8,14,0.97);display:flex;flex-direction:column;color:#fff;font-family:inherit;';
+    if (LIGHT) ov.classList.add('tl-fs-landscape');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:200000;background:' + (LIGHT ? '#f8ecd1' : 'rgba(6,8,14,0.97)') + ';display:flex;flex-direction:column;color:' + (LIGHT ? '#5b3a10' : '#fff') + ';font-family:inherit;';
 
-    var head = '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;">';
-    head += '<div style="font-size:14px;font-weight:600;">📅 世代时间轴 <span style="font-size:11px;color:rgba(255,255,255,0.45);font-weight:400;margin-left:8px;">捏合/滚轮缩放 · 拖动平移 · 点击柱子查看该世族人</span></div>';
-    head += '<button type="button" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:18px;cursor:pointer;line-height:1;flex-shrink:0;">✕</button>';
+    var C_TXT = LIGHT ? '#5b3a10' : '#fff';
+    var C_SEC = LIGHT ? '#8a6d3b' : 'rgba(255,255,255,0.45)';
+    var C_BORDER = LIGHT ? 'rgba(139,106,59,0.25)' : 'rgba(255,255,255,0.08)';
+    var head = '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid ' + C_BORDER + ';flex-shrink:0;">';
+    head += '<div style="font-size:14px;font-weight:600;color:' + C_TXT + ';">📅 世代时间轴 <span style="font-size:11px;color:' + C_SEC + ';font-weight:400;margin-left:8px;">捏合/滚轮缩放 · 拖动平移 · 点击柱子查看该世族人</span></div>';
+    head += '<button type="button" style="width:32px;height:32px;border-radius:50%;background:' + (LIGHT ? 'rgba(139,106,59,0.12)' : 'rgba(255,255,255,0.08)') + ';border:1px solid ' + (LIGHT ? 'rgba(139,106,59,0.3)' : 'rgba(255,255,255,0.2)') + ';color:' + C_TXT + ';font-size:18px;cursor:pointer;line-height:1;flex-shrink:0;">✕</button>';
     head += '</div>';
 
-    // 时代标注条：无底色，数学标注两点间距离样式（全屏恒为深底，用固定浅色）
-    var legend = buildLegend(gens, FS_COL + FS_GAP, 22, 11, FS_GAP, 0, 10, 'rgba(255,255,255,0.72)', 'rgba(255,255,255,0.32)');
+    // 时代标注条：无底色，数学标注两点间距离样式（浅色主题用深棕文字/线，深底主题用浅色）
+    var legend = buildLegend(gens, FS_COL + FS_GAP, 22, 11, FS_GAP, 0, 10, LIGHT ? '#7a5a1e' : 'rgba(255,255,255,0.72)', LIGHT ? '#c8a24a' : 'rgba(255,255,255,0.32)');
 
     var wave = '<div style="display:flex;align-items:flex-end;gap:'+FS_GAP+'px;position:relative;">';
     gens.forEach(function(g, i) {
@@ -335,7 +348,7 @@
       var barH = pop > 0 ? Math.max(3, (pop / maxPop) * FS_WAVE * 0.85) : 0;
       wave += '<div class="tl-fs-g" data-g="'+g+'" style="display:flex;flex-direction:column;justify-content:flex-end;align-items:center;cursor:pointer;" title="第'+g+'世 '+pop+'人">';
       wave += '<div style="width:'+FS_COL+'px;height:'+barH+'px;border-radius:3px 3px 0 0;background:'+(dc||'#3fb950')+';opacity:'+(pop>0?'0.95':'0.15')+';min-height:'+(pop>0?'3px':'0')+';transform-origin:bottom;animation:tlBarIn .45s cubic-bezier(.22,.9,.3,1) '+(i*0.008).toFixed(3)+'s both;"></div>';
-      wave += '<div style="font-size:10px;color:rgba(255,255,255,0.55);margin-top:3px;line-height:1;white-space:nowrap;">'+g+'/'+(pop||0)+'</div>';
+      wave += '<div style="font-size:10px;color:' + (LIGHT ? '#8a6d3b' : 'rgba(255,255,255,0.55)') + ';margin-top:3px;line-height:1;white-space:nowrap;">'+g+'/'+(pop||0)+'</div>';
       wave += '</div>';
     });
     wave += '</div>';
@@ -387,6 +400,7 @@
       function useFake() {
         if (isRotated) return;
         isRotated = true;
+        _tlFakeRotated = true;   // 标记假横屏态：点代详情弹层同步旋转横屏
         var headEl = ov.firstElementChild;
         var headH = headEl ? headEl.offsetHeight : 53;
         var vw = window.innerWidth, vh = window.innerHeight;
@@ -523,6 +537,7 @@
   function closeFullscreen() {
     var ov = document.getElementById('tl-fs');
     if (!ov) return;
+    _tlFakeRotated = false;   // 复位假横屏标志，后续详情弹层不再旋转
     if (ov._onKey) document.removeEventListener('keydown', ov._onKey);
     if (ov._onResize) window.removeEventListener('resize', ov._onResize);
     if (ov._onFsChange) document.removeEventListener('fullscreenchange', ov._onFsChange);
@@ -636,7 +651,7 @@
     var ch = people[0]&&people[0].generation;
     var gl = (ch&&ch!=='—')?'「'+ch+'」字辈·':'';
     var title = gl+'第'+gen+'世 共'+people.length+'人';
-    var overlay=document.createElement('div'); overlay.className='person-detail-modal'; overlay.onclick=function(ev){if(ev.target===overlay)overlay.remove();};
+    var overlay=document.createElement('div'); overlay.className='person-detail-modal' + (_tlFakeRotated ? ' tl-fs-rotated-detail' : ''); overlay.onclick=function(ev){if(ev.target===overlay)overlay.remove();};
     var box=document.createElement('div'); box.className='person-detail-box'; box.style.maxWidth='550px';
     var inner='<div style="padding:20px;max-height:70vh;overflow-y:auto;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><h3 style="margin:0;font-family:var(--font-title);color:var(--accent-orange);font-size:18px;font-weight:600;">'+title+'</h3></div><div style="display:grid;gap:8px;" id="tl-people-list">';
     people.sort(function(a,b){return(a.name||'').localeCompare(b.name||'');});

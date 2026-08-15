@@ -3539,8 +3539,11 @@ function mblForceLandscape() {
   var sc = document.getElementById('tree-scroll-container');
   var section = document.getElementById('genealogy-tree-section');
   if (!sc || !section || _mblFsRotated) return;
-  // 设备本身已是横屏（系统自动旋转开着、用户已转过）→ 不叠加 CSS 旋转，否则 90°+90°=倒屏
-  if (window.matchMedia && matchMedia('(orientation:landscape)').matches) return;
+  // 设备物理已是横屏（布局视口宽>高）→ 不叠加 CSS 旋转，否则 90°+90°=倒屏。
+  // ★不用 matchMedia('(orientation:landscape)')：部分安卓 WebView/微信 X5 内核在竖屏时该媒体查询
+  // 误报 true → 守卫直接 return，CSS 假横屏永不生效（真机「进入世系图谱仍是竖屏」的根因；按钮路径
+  // 走真 screen.orientation.lock 不依赖此守卫所以有效）。innerWidth/innerHeight 布局视口比较各引擎可靠。
+  if (window.innerWidth > window.innerHeight) return;
   sc.classList.add('mbl-fs-landscape');   // 旋转 scroll 容器；不能旋转 section（:fullscreen UA 压死）
   section.classList.add('mbl-fs-section-rotated');   // 弹层同方向横屏用（详情/祖先树弹层 rotate90 成横屏）
   _mblFsRotated = true;
@@ -3556,10 +3559,11 @@ function mblForceLandscape() {
     note.querySelector('#mbl-rotate-back').addEventListener('click', function(e) { e.stopPropagation(); mblUnrotate(); });
   }
   mblFsRedraw(); // 旋转后树视口由 100vw×100vh 变为 100vh×100vw → 重绘 canvas/卡片
-  // 轮询：若用户随后系统真横屏（转动手机成功）→ 移除 CSS 旋转避免双重旋转倒屏
+  // 轮询：若用户随后系统真横屏（转动手机成功）→ 移除 CSS 旋转避免双重旋转倒屏。
+  // 同守卫，用 innerWidth/innerHeight 而非 matchMedia orientation（WebView 竖屏误报 true 会误撤旋转）
   (function poll() {
     if (!_mblFsRotated) return;
-    if (window.matchMedia && matchMedia('(orientation:landscape)').matches) { mblUnrotate(); return; }
+    if (window.innerWidth > window.innerHeight) { mblUnrotate(); return; }
     setTimeout(poll, 400);
   })();
 }
