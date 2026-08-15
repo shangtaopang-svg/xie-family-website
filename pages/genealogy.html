@@ -4448,7 +4448,7 @@ setTimeout(function(){var t=vp.querySelector(".apt-tree");if(!t)return;var vpr=v
 window.zoomGenealogyTree=function(factor){var vp=document.getElementById("gz-tree-viewport");if(!vp)return;var el=vp.querySelector(".apt-tree");if(!el)return;if(factor===1){_gzZoom=1;_gzPanX=0;_gzPanY=0;}else{var r=vp.getBoundingClientRect();var mx=r.width/2,my=r.height/2,nz=Math.max(0.05,Math.min(10,_gzZoom*factor));_gzPanX=mx-(mx-_gzPanX)*(nz/_gzZoom);_gzPanY=my-(my-_gzPanY)*(nz/_gzZoom);_gzZoom=nz;}el.style.transform="translate("+_gzPanX+"px,"+_gzPanY+"px) scale("+_gzZoom+")";var zl=document.getElementById("gz-zoom-level");if(zl)zl.textContent=Math.round(_gzZoom*100)+"%";};
 </script>
 
-  <script src="../js/admin.js?v=62" onload="if(window.renderTreeSVG&&window.getGenealogyData)setTimeout(function(){renderTreeSVG(getGenealogyData())},100)"></script>
+  <script src="../js/admin.js?v=63" onload="if(window.renderTreeSVG&&window.getGenealogyData)setTimeout(function(){renderTreeSVG(getGenealogyData())},100)"></script>
 
       </style>
 
