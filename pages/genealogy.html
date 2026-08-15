@@ -1357,6 +1357,9 @@ function renderMobileMap(data) {
     var filteredData = getBranchData(data, _currentBranch);
     if (filteredData && filteredData.length > 0) data = filteredData;
   }
+  // ★存当前渲染数据源：本宗世系图 getHoufengchaTreeData(id60000+)、连续完整世系(id50000/80001+) 都不在
+  // getGenealogyData() 里，卡片点击 onCardClick 必须用这份数据才能查中弹详情（用户：本宗世系图点人弹不出详情）
+  window._mblTreeData = data;
   if (!data || data.length === 0) {
     container.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-tertiary);font-size:14px;">暂无族谱数据，请在管理后台添加</div>';
     return;
@@ -2398,8 +2401,14 @@ function showBranchEmptyMsg(container) {
   }
 }
 
+// 当前世系图数据源（★修复：本宗世系图 getHoufengchaTreeData id60000+、连续完整世系 id50000/80001+ 都不在
+// getGenealogyData() 里——卡片点击若用 getGenealogyData() 查无此人 → showPersonDetail line 3104 直接 return 弹不出详情）。
+// renderMobileMap 每次渲染存 _mblTreeData；showPersonDetail 存 _detailData 供弹窗内父亲/配偶/子女/祖先按钮复用同一份数据。
+// 桌面端 _mblTreeData 未定义 → 兜底 getGenealogyData()，行为与原来完全一致（红线零影响）。
+function curDetailData() { return window._mblTreeData || window._detailData || getGenealogyData(); }
+
 function onCardClick(personId, event) {
-  var data = getGenealogyData();
+  var data = window._mblTreeData || getGenealogyData();
   if (isMobileTree()) focusMobileNode(personId);
   showPersonDetail(personId, data);
 }
@@ -3102,6 +3111,8 @@ document.addEventListener('DOMContentLoaded', function() {
       if (data[i].id === id) { person = data[i]; break; }
     }
     if (!person) return;
+    // ★存弹窗数据源：弹窗内父亲/配偶/子女/祖先按钮 curDetailData() 复用同一份（本宗世系图 id60000+ 不在 getGenealogyData）
+    window._detailData = data;
 
     var overlay = document.createElement('div');
     overlay.className = 'person-detail-modal';
@@ -3296,7 +3307,8 @@ function locateInTree(personId) {
 
   // ===== 查上代直系祖先 =====
   function showAncestors(personId) {
-    var data = getGenealogyData();
+    // ★同数据源修复：本宗世系图 getHoufengchaTreeData(id60000+) 不在 getGenealogyData()，用弹窗/树的当前数据
+    var data = curDetailData();
     var person = null;
     for (var i = 0; i < data.length; i++) {
       if (data[i].id === personId) { person = data[i]; break; }
@@ -3775,8 +3787,8 @@ function locateInTree(personId) {
     }
     if (father || mother) {
       h += '<div style="margin-bottom:10px;"><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px;">\u2B06 父母</div><div style="display:flex;gap:8px;flex-wrap:wrap;">';
-      if (father) h += '<span class="locate-btn" onclick="showPersonDetail(' + father.id + ', getGenealogyData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC68 \u7236: ' + escapeHtml(father.name) + '</span>';
-      if (mother) h += '<span class="locate-btn" onclick="showPersonDetail(' + mother.id + ', getGenealogyData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC69 \u6BCD: ' + escapeHtml(mother.name) + '</span>';
+      if (father) h += '<span class="locate-btn" onclick="showPersonDetail(' + father.id + ', curDetailData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC68 \u7236: ' + escapeHtml(father.name) + '</span>';
+      if (mother) h += '<span class="locate-btn" onclick="showPersonDetail(' + mother.id + ', curDetailData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC69 \u6BCD: ' + escapeHtml(mother.name) + '</span>';
       h += '</div></div>';
     }
 
@@ -3784,7 +3796,7 @@ function locateInTree(personId) {
     if (spouses.length > 0) {
       h += '<div style="margin-bottom:10px;"><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px;">\uD83D\uDC91 配偶</div><div style="display:flex;gap:8px;flex-wrap:wrap;">';
       spouses.forEach(function(s) {
-        h += '<span class="locate-btn" onclick="showPersonDetail(' + s.id + ', getGenealogyData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC69 \u914D\u5076: ' + escapeHtml(s.name) + '</span>';
+        h += '<span class="locate-btn" onclick="showPersonDetail(' + s.id + ', curDetailData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC69 \u914D\u5076: ' + escapeHtml(s.name) + '</span>';
       });
       h += '</div></div>';
     }
@@ -3798,7 +3810,7 @@ function locateInTree(personId) {
     if (children.length > 0) {
       h += '<div><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px;">\u2B07 子女（' + children.length + '\u4EBA\uFF09</div><div style="display:flex;gap:6px;flex-wrap:wrap;">';
       children.forEach(function(c) {
-        h += '<span class="locate-btn" onclick="showPersonDetail(' + c.id + ', getGenealogyData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC66 ' + escapeHtml(c.name) + '</span>';
+        h += '<span class="locate-btn" onclick="showPersonDetail(' + c.id + ', curDetailData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC66 ' + escapeHtml(c.name) + '</span>';
       });
       h += '</div></div>';
     }
