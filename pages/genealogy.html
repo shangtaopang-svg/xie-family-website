@@ -496,8 +496,12 @@
         .apt-meta{font-size:10px;color:var(--text-tertiary);margin-top:2px;}
         .apt-branch{font-size:9px;padding:1px 6px;border-radius:3px;background:var(--accent-orange-dim);color:var(--accent-orange);margin-top:2px;display:inline-block;}
         .apt-children-count{font-size:8px;color:var(--text-tertiary);margin-top:2px;opacity:0.5;}
-        .apt-children{display:flex;gap:6px;position:relative;justify-content:center;}
-        .apt-child{display:flex;flex-direction:column;align-items:center;position:relative;}
+        .apt-children{position:relative;}
+        .apt-child{display:flex;flex-direction:column;align-items:center;position:relative;flex:none;}
+        .apt-cards-row{display:flex;gap:6px;position:relative;}
+        .apt-subs-row{display:block;}
+        .apt-sub{position:absolute;top:0;left:0;width:max-content;}
+        .apt-sub-bridge{position:absolute;height:2px;background:var(--accent-orange);opacity:0.18;pointer-events:none;}
         .apt-connector{width:2px;height:18px;background:var(--accent-orange);opacity:0.2;margin:0 auto;}
         .apt-vline{width:2px;height:12px;background:var(--accent-orange);opacity:0.15;}
         .apt-children-wrap{display:block;}
@@ -544,7 +548,7 @@
   <audio id="bg-music" loop></audio>
 
 
-  <script src="../js/admin.js?v=79" onload="if(window.renderTreeSVG&&window.getGenealogyData)setTimeout(function(){renderTreeSVG(getGenealogyData())},100)"></script>
+  <script src="../js/admin.js?v=80" onload="if(window.renderTreeSVG&&window.getGenealogyData)setTimeout(function(){renderTreeSVG(getGenealogyData())},100)"></script>
 
       </style>
 

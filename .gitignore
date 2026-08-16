@@ -38,3 +38,7 @@ server.log
 .env
 
 video/*.mp4
+
+# 大体积媒体文件（超 GitHub 100MB 限制，不入库）
+集萃/*.mp4
+stodownload*.mp4

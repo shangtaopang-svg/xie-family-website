@@ -945,6 +945,15 @@ function buildAdminTreeHtml(data, opts) {
           genText += '/申伯' + dsShenboGen + '世/始宁东山' + dsDongshanGen + '世'; // 鲲及以后：补全申伯+东山
         }
       }
+      // 临海下渡世次标注（用户指定）：闓(1183)=临海下渡1世，以下以此类推（N = generation_num − 121），到小四为止
+      if (opts.ancBox && linhaiIds[person.id] && person.generation_num) {
+        // 儛/俨(1186) 及以后不在申伯/始宁东山集合内，genText 只有基础「N世」，补全完整世次（闓已有完整四段，不重复）
+        if (genText.indexOf('/申伯') < 0 && genText.indexOf('/始宁东山') < 0) {
+          var lhN = parseInt(person.generation_num);
+          genText = '炎帝' + lhN + '世/申伯' + (lhN - 64) + '世/始宁东山' + (lhN - 98) + '世';
+        }
+        genText += '/临海下渡' + (parseInt(person.generation_num) - 121) + '世';
+      }
       html += '<div class="apt-meta">' + genText + genSuffix + '</div>';
     }
     if (person.branch && person.branch !== '—' && !opts.hideBranch) {
@@ -1954,19 +1963,27 @@ function drawSubBridge(sub, slot, subLeft) {
   var len = Math.sqrt(dx * dx + dy * dy);
   if (len < 2) return;
   var ang = Math.atan2(dy, dx) * 180 / Math.PI;
-  var old = sub.querySelector(':scope > .apt-sub-bridge');
-  if (old) old.remove(); // 幂等：layout 可能跑多次，先清旧线
+  // ⚠️ 树乱根因修复：桥必须挂到 .apt-children（position:relative 包含块）而不是 .apt-sub。
+  // .apt-sub 是 width:max-content，绝对定位 bridge 的 inline width 会被 Chromium 计入 max-content
+  // → sub 被桥撑大 → 下一轮 layout（DOMContentLoaded/fonts.ready/重渲染会跑多次）读到的 subW 更大
+  // → 树宽每轮放大 → 2^25 钳制爆炸（整树错乱、炎帝卡居中到 2^24）。坐标由「相对 sub」平移
+  // subLeft + subsRow.offsetTop 到「相对 .apt-children」即可，几何不变。
+  var subsRow = sub.parentElement;
+  var host = subsRow ? subsRow.parentElement : null; // .apt-children（.apt-sub 的包含块）
+  if (!host) return;
+  if (sub._aptBridge) sub._aptBridge.remove(); // 幂等：layout 可能跑多次，先清旧线
   var bridge = document.createElement('div');
   bridge.className = 'apt-sub-bridge';
-  bridge.style.left = x1 + 'px';
-  bridge.style.top = y1 + 'px';
+  bridge.style.left = (subLeft + x1) + 'px';
+  bridge.style.top = (subsRow.offsetTop + y1) + 'px';
   bridge.style.width = len + 'px';
   bridge.style.transform = 'rotate(' + ang + 'deg)';
   bridge.style.transformOrigin = '0 0';
   // 越长的线越淡（远端支系连接线，避免横贯整树成噪点）
   if (len > 2000) bridge.style.opacity = '0.08';
   else if (len > 800) bridge.style.opacity = '0.12';
-  sub.appendChild(bridge);
+  host.appendChild(bridge);
+  sub._aptBridge = bridge;
 }
 
 function scheduleAptLayout() {

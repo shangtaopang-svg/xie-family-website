@@ -25,6 +25,34 @@
     .lineage-back-bar a:hover { text-decoration: underline; }
     .lineage-back-bar .sep { flex: 1; }
     .lineage-back-bar .hint { font-size: 12px; color: var(--text-tertiary); }
+    /* Admin-style 世系树（与 pages/genealogy.html 内联 apt CSS 同步，桌面端 renderTreeSVG 走 buildAdminTreeHtml） */
+    .apt-tree{position:relative;padding:20px;display:flex;flex-direction:column;align-items:flex-start;}
+    .apt-person{display:flex;flex-direction:column;align-items:center;}
+    .apt-card{display:flex;flex-direction:column;align-items:flex-start;padding:8px 14px;border-radius:8px;border:2px solid var(--glass-border);background:var(--bg-card);cursor:pointer;transition:all 0.15s;position:relative;min-width:120px;}
+    .apt-card-inner{width:100%;}
+    .apt-card-actions{display:flex;gap:2px;margin-bottom:4px;opacity:0.5;}
+    .apt-card-actions:hover{opacity:1;}
+    .apt-btn-add,.apt-btn-del{width:20px;height:20px;border:none;border-radius:50%;font-size:12px;line-height:1;cursor:pointer;font-weight:700;padding:0;transition:transform 0.1s;}
+    .apt-btn-add{background:#4a9eff;color:#fff;}
+    .apt-btn-del{background:#e74c3c;color:#fff;}
+    .apt-card:hover{border-color:var(--accent-orange);box-shadow:0 2px 8px rgba(251,146,60,0.12);transform:translateY(-1px);}
+    .apt-male{border-left:3px solid #4a9eff;}
+    .apt-name{font-size:14px;font-weight:600;color:#ff6b00!important;white-space:nowrap;}
+    .apt-meta{font-size:10px;color:var(--text-tertiary);margin-top:2px;}
+    .apt-branch{font-size:9px;padding:1px 6px;border-radius:3px;background:var(--accent-orange-dim);color:var(--accent-orange);margin-top:2px;display:inline-block;}
+    .apt-children-count{font-size:8px;color:var(--text-tertiary);margin-top:2px;opacity:0.5;}
+    .apt-children{position:relative;}
+    .apt-child{display:flex;flex-direction:column;align-items:center;position:relative;flex:none;}
+    .apt-cards-row{display:flex;gap:6px;position:relative;}
+    .apt-subs-row{display:block;}
+    .apt-sub{position:absolute;top:0;left:0;width:max-content;}
+    .apt-sub-bridge{position:absolute;height:2px;background:var(--accent-orange);opacity:0.18;pointer-events:none;}
+    .apt-connector{width:2px;height:18px;background:var(--accent-orange);opacity:0.2;margin:0 auto;}
+    .apt-vline{width:2px;height:12px;background:var(--accent-orange);opacity:0.15;}
+    .apt-children-wrap{display:block;}
+    .apt-hline{position:absolute;top:0;left:6px;right:6px;height:2px;background:var(--accent-orange);opacity:0.15;}
+    .apt-btn-expand{width:18px;height:18px;border:none;border-radius:50%;font-size:10px;line-height:1;cursor:pointer;background:var(--accent-orange);color:#fff;transition:transform 0.1s;}
+    .apt-btn-expand:hover{transform:scale(1.2);}
   </style>
 </head>
 <body>
@@ -74,6 +102,6 @@
        ★手机端不再自动横屏（用户 2026-08-15 要求「不要直接进入横屏」）：进入页面正常竖屏显示，
        需要横屏时手动点 ⛶ 全屏/横屏 按钮（pageTreeFullscreen）。 -->
   <script src="../js/genealogy-tree.js?v=9"></script>
-  <script src="../js/admin.js?v=79" onload="if(window.renderTreeSVG&&window.getGenealogyData)setTimeout(function(){renderTreeSVG(getGenealogyData())},100)"></script>
+  <script src="../js/admin.js?v=80" onload="if(window.renderTreeSVG&&window.getGenealogyData)setTimeout(function(){renderTreeSVG(getGenealogyData())},100)"></script>
 </body>
 </html>
