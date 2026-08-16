@@ -899,7 +899,16 @@ function buildAdminTreeHtml(data, opts) {
     }
     html += escapeHtml(person.name) + '</div>';
     if (!opts.hideGen) {
-      html += '<div class="apt-meta">' + (person.generation_num || '?') + '世' + (person.generation && person.generation !== '—' ? ' · ' + escapeHtml(person.generation) : '') + '</div>';
+      var genText = (person.generation_num || '?') + '世';
+      var genSuffix = '';
+      // 申伯世系（申伯1世→衡36世）：世代总览内 申伯/申甫→衡 卡片世次按申伯起算（申伯=炎帝65世）。
+      // generation 字段为数据贯通前残留脏数据（申伯=65/弘=-1/猛=0…），对申伯世系卡不显示
+      if (opts.ancBox && shenboIds[person.id] && person.generation_num) {
+        genText = '申伯' + (parseInt(person.generation_num) - 64) + '世';
+      } else if (person.generation && person.generation !== '—') {
+        genSuffix = ' · ' + escapeHtml(person.generation);
+      }
+      html += '<div class="apt-meta">' + genText + genSuffix + '</div>';
     }
     if (person.branch && person.branch !== '—' && !opts.hideBranch) {
       html += '<div class="apt-branch">' + escapeHtml(person.branch) + '</div>';
