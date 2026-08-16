@@ -439,6 +439,7 @@
         <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center;padding:6px 0;">
           <span style="font-size:12px;color:var(--text-tertiary);font-weight:500;">分支：</span>
           <button class="btn btn-xs" id="filter-continuous" onclick="filterBranch('连续完整世系')" style="background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;border:none;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;box-shadow:0 1px 4px rgba(234,88,12,0.35);">连续完整世系（炎帝→后枫槎）</button>
+          <button class="btn btn-xs" id="filter-allsystem" onclick="filterBranch('全世系总览')" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;box-shadow:0 1px 4px rgba(16,185,129,0.35);">全世系总览（炎帝→现在）</button>
           <button class="btn btn-xs" id="filter-all" onclick="filterBranch('all')" style="background:var(--accent-orange);color:#fff;border:none;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;">全部世系</button>
           <button class="btn btn-xs" id="filter-yuangud" onclick="filterBranch('远古世系')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">远古世系</button>
           <button class="btn btn-xs" id="filter-shenbo" onclick="filterBranch('申伯世系')" style="background:var(--glass-bg);color:var(--text-secondary);border:1px solid var(--glass-border);padding:4px 12px;font-size:12px;cursor:pointer;border-radius:6px;">申伯世系</button>
@@ -538,12 +539,12 @@
   <script defer src="../js/main.js?v=20260812"></script>
 
 
-<script src="../js/genealogy-tree.js?v=5"></script>
+<script src="../js/genealogy-tree.js?v=9"></script>
 
   <audio id="bg-music" loop></audio>
 
 
-  <script src="../js/admin.js?v=67" onload="if(window.renderTreeSVG&&window.getGenealogyData)setTimeout(function(){renderTreeSVG(getGenealogyData())},100)"></script>
+  <script src="../js/admin.js?v=68" onload="if(window.renderTreeSVG&&window.getGenealogyData)setTimeout(function(){renderTreeSVG(getGenealogyData())},100)"></script>
 
       </style>
 

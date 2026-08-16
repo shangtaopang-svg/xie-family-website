@@ -667,13 +667,18 @@ function buildMiniTreeHtml(allData, nameList, cardBg, displayGenMap) {
 // Mini genealogy tree: generations grouped, siblings side by side
 function renderMiniGenealogyTree(allData, nameList, accentColor) {
   // 硬编码世系名 → 真实 id 映射（人物改名后仍能在小树图显示/点击，并显示最新姓名）
-  var idForName = {}, idToPos = {};
+  var idForName = {}, idToPos = {}, nameIdSet = {};
   for (var miN = 0; miN < nameList.length; miN++) {
     var _mid = adminLineageIdFor(nameList[miN], null);
-    if (_mid) { idForName[nameList[miN]] = _mid; idToPos[_mid] = miN + 1; }
+    if (_mid) { idForName[nameList[miN]] = _mid; idToPos[_mid] = miN + 1; nameIdSet[_mid] = true; }
   }
-  // Filter to only the people in nameList（或 nameList 名映射到的真实人物）
-  var data = allData.filter(function(p) { return nameList.indexOf(p.name) >= 0 || idToPos[p.id]; });
+  // Filter：nameList 中的人（或映射到的真实人物）＋其直系子女（「佐+」等新增后代立即在小树图可见）
+  var data = allData.filter(function(p) {
+    if (nameList.indexOf(p.name) >= 0) return true;
+    if (idToPos[p.id]) return true;
+    if (p.father_id !== null && p.father_id !== '' && nameIdSet[parseInt(p.father_id)]) return true;
+    return false;
+  });
   if (!data || data.length === 0) return '';
 
   // Build name->person map
@@ -1561,6 +1566,7 @@ function getGenealogyTreeCSS() {
     '.apt-mini-btn:hover{transform:scale(1.15);}' +
     '.apt-mini-hover .apt-mini-btn{opacity:0;}' +
     '.apt-mini-hover:hover .apt-mini-btn{opacity:1;}' +
+    '@media (max-width:767px){.apt-mini-hover .apt-mini-btn,.apt-mini-hover:hover .apt-mini-btn{opacity:1;}}' +
     '.apt-card:hover{border-color:var(--accent-orange);box-shadow:0 2px 8px rgba(251,146,60,0.12);transform:translateY(-1px);}' +
     '.apt-male{border-left:3px solid #4a9eff;}.apt-female{border-left:3px solid #ff6b9d;}' +
     '.apt-ruzhui{border:2px solid #ef4444 !important;background:rgba(239,68,68,0.08) !important;}' +

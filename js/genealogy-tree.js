@@ -49,6 +49,47 @@
     return result;
   }
 
+  // ★现代人父链重连：data 文件里的远古名记录在渲染前被过滤（换成 168 权威古世系 50000+ id），
+  // 其现代子孙的 father_id 仍指向被删的数据 id → 按「同名 + 同世次」重映射到古世系 id；
+  // 同名不同世次（如 广 67世/101世）精确命中正确那位。名字+世次都对不上时取同名且世次最近的上代。
+  function reconnectModernToAncient(d, ancient) {
+    var ancByNameGen = {}, ancientNames = {};
+    for (var ii = 0; ii < ancient.length; ii++) {
+      var an = ancient[ii];
+      ancientNames[an.name] = true;
+      if (!ancByNameGen[an.name]) ancByNameGen[an.name] = {};
+      ancByNameGen[an.name][an.generation_num] = an.id;
+    }
+    var removedById = {};
+    for (var ii = 0; ii < d.length; ii++) {
+      if (ancientNames[d[ii].name]) removedById[d[ii].id] = d[ii];
+    }
+    var remapped = 0;
+    for (var ii = 0; ii < d.length; ii++) {
+      var pr = d[ii];
+      if (ancientNames[pr.name] || !pr.father_id) continue;
+      var oldF = removedById[pr.father_id];
+      if (!oldF) continue;
+      var g = parseInt(oldF.generation_num, 10) || 0;
+      var ancId = (ancByNameGen[oldF.name] || {})[g];
+      if (ancId === undefined) {
+        // 回退：同名且世次严格小于该父、最接近的一位
+        var best = null, bestG = -1;
+        var gl = ancByNameGen[oldF.name] || {};
+        for (var kg in gl) {
+          var kgn = parseInt(kg, 10);
+          if (kgn < g && kgn > bestG) { bestG = kgn; best = gl[kg]; }
+        }
+        ancId = best;
+      }
+      if (ancId !== undefined && ancId !== null && ancId !== pr.father_id) {
+        pr.father_id = ancId;
+        remapped++;
+      }
+    }
+    return remapped;
+  }
+
   var _genealogyData = null;
 
   function getGenealogyData() {
@@ -83,6 +124,9 @@
     }
     // Merge ancient lineage
     var ancient = getAncientGenealogyData();
+    // 现代人父链重连（必须在 filter 之前：远古名记录重连完才被过滤，
+    // 其现代子孙的 father_id 由此重映射到古世系 50000+ id）
+    reconnectModernToAncient(data, ancient);
     var ancientNames = {};
     for (var ai = 0; ai < ancient.length; ai++) ancientNames[ancient[ai].name] = true;
     data = data.filter(function(p) {
@@ -91,14 +135,6 @@
       if (base !== p.name && ancientNames[base]) return false;
       return true;
     });
-    // Connect stored 文杲公 to ancient 小四
-    for (var ci = 0; ci < data.length; ci++) {
-      if (data[ci].name === '文杲公' || data[ci].name === '文杲' || data[ci].name === '谢小四') {
-        for (var ai = 0; ai < ancient.length; ai++) {
-          if (ancient[ai].name === '小四') { data[ci].father_id = ancient[ai].id; break; }
-        }
-      }
-    }
     _genealogyData = data.concat(ancient);
     return _genealogyData;
   }
@@ -140,7 +176,9 @@
   }
 
   // Load full 1080 records from JSON - OVERRIDE everything
-  fetch('../data/genealogy_full.json').then(function(r){return r.json()}).then(function(d){
+  // ★缓存坑：快照 fetch 无版本参数会被浏览器/nginx 永久缓存（部署后仍是旧数据）。
+  // ?v= 必须与 genealogy-tree.js 版本同步递增（生产数据改版后快照也换新 URL 击穿缓存）
+  fetch('../data/genealogy_full.json?v=8').then(function(r){return r.json()}).then(function(d){
     // 实时 API 数据优先：若已通过 dbGetAll 加载活数据（后台增改后），旧快照不再覆盖，前端与后台保持一致
     if (window.__liveGenealogyLoaded) { return; }
     if (d && d.length > 100) {
@@ -150,6 +188,8 @@
       localStorage.setItem('xie_admin_genealogy', JSON.stringify(d));
       // Merge ancient lineage into full JSON data（去重后供树/时间轴渲染完整世系）
       var ancient = getAncientGenealogyData();
+      // 现代人父链重连（必须在 filter 之前：远古名记录重连完才被过滤）
+      reconnectModernToAncient(d, ancient);
       var ancientNames = {};
       for (var ai = 0; ai < ancient.length; ai++) ancientNames[ancient[ai].name] = true;
       d = d.filter(function(p) {
@@ -158,13 +198,6 @@
         if (base !== p.name && ancientNames[base]) return false;
         return true;
       });
-      for (var ci = 0; ci < d.length; ci++) {
-        if (d[ci].name === '文杲公' || d[ci].name === '文杲' || d[ci].name === '谢小四') {
-          for (var ai = 0; ai < ancient.length; ai++) {
-            if (ancient[ai].name === '小四') { d[ci].father_id = ancient[ai].id; break; }
-          }
-        }
-      }
       _genealogyData = d.concat(ancient);
       // Re-render everything
       if (typeof renderGenealogyPageSVG === 'function') {
@@ -489,7 +522,7 @@ var _currentBranch = 'all';
 
 function filterBranch(branch) {
   _currentBranch = branch;
-  var btnMap = {'all':'filter-all','连续完整世系':'filter-continuous','远古世系':'filter-yuangud','申伯世系':'filter-shenbo','始宁东山世系':'filter-dongshan','临海下渡世系':'filter-linhai','石马下谢分房':'filter-shima'};
+  var btnMap = {'all':'filter-all','全世系总览':'filter-allsystem','连续完整世系':'filter-continuous','远古世系':'filter-yuangud','申伯世系':'filter-shenbo','始宁东山世系':'filter-dongshan','临海下渡世系':'filter-linhai','石马下谢分房':'filter-shima'};
   var btnId = btnMap[branch] || 'filter-all';
   if (branch.indexOf('后枫槎') >= 0) btnId = 'filter-houfengcha';
   else if (branch.indexOf('前枫槎') >= 0) btnId = 'filter-qianfengcha';
@@ -502,9 +535,11 @@ function filterBranch(branch) {
   var data;
   if (branch === '连续完整世系') { data = getContinuousLineageData(); }
   else if (branch === '本宗世系图（后枫槎）') { data = getHoufengchaEnhancedData(); }
+  // 全世系总览：真实 1249 人，数据修正后天然是从炎帝→现在的贯通树（与「全部世系」同源，入口语义更清晰）
+  else if (branch === '全世系总览') { data = getGenealogyData(); }
   else { data = getGenealogyData(); }
   var branchLabel = '全部';
-  if (branch !== 'all' && branch !== '连续完整世系') {
+  if (branch !== 'all' && branch !== '连续完整世系' && branch !== '全世系总览') {
     data = getBranchData(data, branch);
     // Get a human-readable label for this branch
     for (var i = 0; i < data.length; i++) {
@@ -523,7 +558,7 @@ function filterBranch(branch) {
   if (branch !== 'all') {
     setTimeout(function() {
       var rootId = null;
-      if (branch === '连续完整世系') {
+      if (branch === '连续完整世系' || branch === '全世系总览') {
         rootId = 50000; // 炎帝神农氏：整条连续世系的起点
       } else if (branch === '本宗世系图（后枫槎）') {
         rootId = 60000; // 本宗世系图精选树根节点：小四
