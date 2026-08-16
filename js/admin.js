@@ -794,6 +794,28 @@ function buildAdminTreeHtml(data, opts) {
     ancCollect(7); // 申甫
   }
 
+  // 申伯世系（申伯/申甫→衡）：收集 申伯/申甫 全部后代，再剔除 衡(1130) 的后代（保留衡本身），
+  // 用于咖啡色卡片 + 「申伯世系示意图」方框
+  var shenboIds = {};
+  if (opts.ancBox) {
+    function subTreeCollect(id, set, seen) {
+      if (seen[id]) return;
+      seen[id] = true;
+      set[id] = true;
+      for (var si = 0; si < data.length; si++) {
+        var cand = data[si];
+        if (cand.id === id) continue;
+        if (parseInt(cand.father_id) === id || parseInt(cand.mother_id) === id) subTreeCollect(cand.id, set, seen);
+      }
+    }
+    var sbSeen = {};
+    subTreeCollect(6, shenboIds, sbSeen);
+    subTreeCollect(7, shenboIds, sbSeen);
+    var hengSub = {}, hengSeen = {};
+    subTreeCollect(1130, hengSub, hengSeen);
+    Object.keys(hengSub).forEach(function(hi) { if (parseInt(hi) !== 1130) delete shenboIds[hi]; });
+  }
+
   var existingIds = {};
   data.forEach(function(p) { existingIds[p.id] = true; });
 
@@ -858,6 +880,7 @@ function buildAdminTreeHtml(data, opts) {
     }
     var cClass = 'apt-card ' + (person.gender === '男' ? 'apt-male' : 'apt-female');
     if (opts.ancBox && ancIds[person.id]) cClass += ' apt-card-anc'; // 远古世系墨绿
+    if (opts.ancBox && shenboIds[person.id]) cClass += ' apt-card-shenbo'; // 申伯世系咖啡
     if (isRuzhui) cClass += ' apt-ruzhui';
     if (ruzhuiPartner) cClass += ' apt-ruzhui-partner';
     var html = '<div class="' + cClass + '" data-pid="' + person.id + '" draggable="true" onmouseup="if(!this.dataset.dragged){adminEditOrNotice(\'genealogy\',' + person.id + ')};this.dataset.dragged=\'\'" title="点击编辑 | 拖拽到其他人建立关系" ondragstart="onCardDragStart(event, ' + person.id + ');this.dataset.dragged=\'1\'" ondrop="onCardDrop(event)" ondragover="event.preventDefault()" ondragenter="this.style.outline=\'2px solid var(--accent-orange)\'" ondragleave="this.style.outline=\'\'">';
@@ -1011,6 +1034,7 @@ function buildAdminTreeHtml(data, opts) {
   }
   // 远古世系方框 + 标注（仅世代总览启用的 ancBox 模式）
   if (opts.ancBox) out += '<div class="apt-anc-box"><span class="apt-anc-label">谢氏远古世系简图</span></div>';
+  if (opts.ancBox) out += '<div class="apt-shenbo-box"><span class="apt-shenbo-label">申伯世系示意图</span></div>';
   out += '</div>';
   return out;
 }
@@ -1604,6 +1628,16 @@ function getGenealogyTreeCSS() {
     '.apt-card-anc .apt-branch{background:rgba(255,255,255,0.12);color:#d9f2e4;}' +
     '.apt-card-anc .apt-btn-expand{background:#2e7d32;}' +
     '.apt-card-anc .apt-btn-add,.apt-card-anc .apt-btn-del{background:rgba(255,255,255,0.16);color:#eafff5;}' +
+    '.apt-shenbo-box{position:absolute;border:2px dashed #9a6a35;border-radius:12px;pointer-events:none;opacity:0.9;}' +
+    '.apt-shenbo-label{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--bg-secondary);padding:1px 14px;font-size:13px;font-weight:700;color:#9a6a35;letter-spacing:3px;white-space:nowrap;border:1px solid rgba(154,106,53,0.45);border-radius:7px;}' +
+    '.apt-card-shenbo{background:linear-gradient(160deg,#8b5a2b,#5f3d1d) !important;border-color:rgba(139,90,43,0.7) !important;}' +
+    '.apt-card-shenbo .apt-name{color:#fdf6ec !important;}' +
+    '.apt-card-shenbo .apt-meta,.apt-card-shenbo .apt-spouse,.apt-card-shenbo .apt-children-count{color:#e6cfa9 !important;}' +
+    '.apt-card-shenbo .apt-branch{background:rgba(255,255,255,0.12);color:#f2e2c8;}' +
+    '.apt-card-shenbo .apt-btn-expand{background:#8b5a2b;}' +
+    '.apt-card-shenbo .apt-btn-add,.apt-card-shenbo .apt-btn-del{background:rgba(255,255,255,0.16);color:#f5e6cd;}' +
+    // 申伯/申甫 卡：一半墨绿（远古）一半咖啡（申伯世系）
+    '.apt-card-anc.apt-card-shenbo{background:linear-gradient(90deg,#1e5c43 0%,#1e5c43 50%,#8b5a2b 50%,#8b5a2b 100%) !important;border-color:rgba(122,90,50,0.7) !important;}' +
     '.apt-person{display:flex;flex-direction:column;align-items:center;}' +
     // 远古世系简图：整链左对齐到盒内 x=0，避免根人（炎帝）居中撑宽盒子
     '.apt-anc-box-enabled .apt-person{align-items:flex-start;}' +
@@ -1752,6 +1786,28 @@ function layoutAdminTreePositions() {
         ancBox.style.top = ((mT - tr.top) / sc - 8) + 'px';
         ancBox.style.width = ((mR - mL) / sc + 24) + 'px';
         ancBox.style.height = ((mB - mT) / sc + 24) + 'px';
+      }
+    }
+    // 申伯世系方框：围住 申伯/申甫→衡 的咖啡色卡片并标注「申伯世系示意图」
+    var shenboBox = treeEl.querySelector(':scope > .apt-shenbo-box');
+    if (shenboBox) {
+      var sbCards = treeEl.querySelectorAll('.apt-card-shenbo');
+      var sTr = treeEl.getBoundingClientRect();
+      var sSc = (sTr.width && treeEl.offsetWidth) ? sTr.width / treeEl.offsetWidth : 1;
+      var sML = 1e9, sMT = 1e9, sMR = -1e9, sMB = -1e9;
+      for (var sb = 0; sb < sbCards.length; sb++) {
+        var sbr = sbCards[sb].getBoundingClientRect();
+        if (!sbr.width && !sbr.height) continue; // 折叠隐藏的卡片跳过
+        if (sbr.left < sML) sML = sbr.left;
+        if (sbr.top < sMT) sMT = sbr.top;
+        if (sbr.right > sMR) sMR = sbr.right;
+        if (sbr.bottom > sMB) sMB = sbr.bottom;
+      }
+      if (sML < 1e8) {
+        shenboBox.style.left = ((sML - sTr.left) / sSc - 12) + 'px';
+        shenboBox.style.top = ((sMT - sTr.top) / sSc - 8) + 'px';
+        shenboBox.style.width = ((sMR - sML) / sSc + 24) + 'px';
+        shenboBox.style.height = ((sMB - sMT) / sSc + 24) + 'px';
       }
     }
   }
