@@ -797,6 +797,9 @@ function buildAdminTreeHtml(data, opts) {
   // 申伯世系（申伯/申甫→衡）：收集 申伯/申甫 全部后代，再剔除 衡(1130) 的后代（保留衡本身），
   // 用于咖啡色卡片 + 「申伯世系示意图」方框
   var shenboIds = {};
+  // 始宁东山（缵/衡→闓）：缵(1126) + 衡(1130) 的后代，再剔除 闓(1183) 的后代（保留闓），
+  // 用于淡蓝色卡片 + 「始宁东山世系示意图」方框
+  var dongshanIds = {};
   if (opts.ancBox) {
     function subTreeCollect(id, set, seen) {
       if (seen[id]) return;
@@ -814,6 +817,14 @@ function buildAdminTreeHtml(data, opts) {
     var hengSub = {}, hengSeen = {};
     subTreeCollect(1130, hengSub, hengSeen);
     Object.keys(hengSub).forEach(function(hi) { if (parseInt(hi) !== 1130) delete shenboIds[hi]; });
+    // 始宁东山世系节点集
+    var dsSub = {}, dsSeen = {};
+    subTreeCollect(1130, dsSub, dsSeen);
+    var kaiSub = {}, kaiSeen = {};
+    subTreeCollect(1183, kaiSub, kaiSeen);
+    Object.keys(kaiSub).forEach(function(ki) { if (parseInt(ki) !== 1183) delete dsSub[ki]; }); // 剔除闓后代，保留闓(1183)
+    Object.keys(dsSub).forEach(function(di) { dongshanIds[di] = true; });
+    dongshanIds[1126] = true; // 缵
   }
 
   var existingIds = {};
@@ -881,6 +892,7 @@ function buildAdminTreeHtml(data, opts) {
     var cClass = 'apt-card ' + (person.gender === '男' ? 'apt-male' : 'apt-female');
     if (opts.ancBox && ancIds[person.id]) cClass += ' apt-card-anc'; // 远古世系墨绿
     if (opts.ancBox && shenboIds[person.id]) cClass += ' apt-card-shenbo'; // 申伯世系咖啡
+    if (opts.ancBox && dongshanIds[person.id]) cClass += ' apt-card-dongshan'; // 始宁东山淡蓝
     if (isRuzhui) cClass += ' apt-ruzhui';
     if (ruzhuiPartner) cClass += ' apt-ruzhui-partner';
     var html = '<div class="' + cClass + '" data-pid="' + person.id + '" draggable="true" onmouseup="if(!this.dataset.dragged){adminEditOrNotice(\'genealogy\',' + person.id + ')};this.dataset.dragged=\'\'" title="点击编辑 | 拖拽到其他人建立关系" ondragstart="onCardDragStart(event, ' + person.id + ');this.dataset.dragged=\'1\'" ondrop="onCardDrop(event)" ondragover="event.preventDefault()" ondragenter="this.style.outline=\'2px solid var(--accent-orange)\'" ondragleave="this.style.outline=\'\'">';
@@ -901,10 +913,13 @@ function buildAdminTreeHtml(data, opts) {
     if (!opts.hideGen) {
       var genText = (person.generation_num || '?') + '世';
       var genSuffix = '';
-      // 申伯世系（申伯1世→衡36世）：世代总览内 申伯/申甫→衡 卡片世次按申伯起算（申伯=炎帝65世）。
-      // generation 字段为数据贯通前残留脏数据（申伯=65/弘=-1/猛=0…），对申伯世系卡不显示
+      // 申伯世系（申伯/申甫→衡）：显示双世次「炎帝65世/申伯1世」，申伯=炎帝65世，弘/猛=炎帝66世/申伯2世，衡=炎帝100世/申伯36世。
+      // 始宁东山（缵/衡→闓）卡显示「炎帝N世」。
+      // generation 字段为数据贯通前残留脏数据（申伯=65/弘=-1/猛=0…），对世系链卡片不显示
       if (opts.ancBox && shenboIds[person.id] && person.generation_num) {
-        genText = '申伯' + (parseInt(person.generation_num) - 64) + '世';
+        genText = '炎帝' + parseInt(person.generation_num) + '世/申伯' + (parseInt(person.generation_num) - 64) + '世';
+      } else if (opts.ancBox && dongshanIds[person.id] && person.generation_num) {
+        genText = '炎帝' + parseInt(person.generation_num) + '世';
       } else if (person.generation && person.generation !== '—') {
         genSuffix = ' · ' + escapeHtml(person.generation);
       }
@@ -1044,6 +1059,7 @@ function buildAdminTreeHtml(data, opts) {
   // 远古世系方框 + 标注（仅世代总览启用的 ancBox 模式）
   if (opts.ancBox) out += '<div class="apt-anc-box"><span class="apt-anc-label">谢氏远古世系简图</span></div>';
   if (opts.ancBox) out += '<div class="apt-shenbo-box"><span class="apt-shenbo-label">申伯世系示意图</span></div>';
+  if (opts.ancBox) out += '<div class="apt-dongshan-box"><span class="apt-dongshan-label">始宁东山世系示意图</span></div>';
   out += '</div>';
   return out;
 }
@@ -1647,6 +1663,17 @@ function getGenealogyTreeCSS() {
     '.apt-card-shenbo .apt-btn-add,.apt-card-shenbo .apt-btn-del{background:rgba(255,255,255,0.16);color:#f5e6cd;}' +
     // 申伯/申甫 卡：一半墨绿（远古）一半咖啡（申伯世系）
     '.apt-card-anc.apt-card-shenbo{background:linear-gradient(90deg,#1e5c43 0%,#1e5c43 50%,#8b5a2b 50%,#8b5a2b 100%) !important;border-color:rgba(122,90,50,0.7) !important;}' +
+    // 始宁东山世系：淡蓝色框 + 淡蓝色卡片
+    '.apt-dongshan-box{position:absolute;border:2px dashed #5b8bb5;border-radius:12px;pointer-events:none;opacity:0.9;}' +
+    '.apt-dongshan-label{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--bg-secondary);padding:1px 14px;font-size:13px;font-weight:700;color:#4a7ba8;letter-spacing:3px;white-space:nowrap;border:1px solid rgba(91,139,181,0.5);border-radius:7px;}' +
+    '.apt-card-dongshan{background:linear-gradient(160deg,#7fb0d6,#5585ab) !important;border-color:rgba(100,155,205,0.7) !important;}' +
+    '.apt-card-dongshan .apt-name{color:#f2f8ff !important;}' +
+    '.apt-card-dongshan .apt-meta,.apt-card-dongshan .apt-spouse,.apt-card-dongshan .apt-children-count{color:#d5e6f5 !important;}' +
+    '.apt-card-dongshan .apt-branch{background:rgba(255,255,255,0.16);color:#e8f3ff;}' +
+    '.apt-card-dongshan .apt-btn-expand{background:#5585ab;}' +
+    '.apt-card-dongshan .apt-btn-add,.apt-card-dongshan .apt-btn-del{background:rgba(255,255,255,0.18);color:#eef6ff;}' +
+    // 缵/衡 卡：一半咖啡（申伯世系）一半淡蓝（始宁东山世系）
+    '.apt-card-shenbo.apt-card-dongshan{background:linear-gradient(90deg,#8b5a2b 0%,#8b5a2b 50%,#7fb0d6 50%,#7fb0d6 100%) !important;border-color:rgba(110,140,170,0.7) !important;}' +
     '.apt-person{display:flex;flex-direction:column;align-items:center;}' +
     // 远古世系简图：整链左对齐到盒内 x=0，避免根人（炎帝）居中撑宽盒子
     '.apt-anc-box-enabled .apt-person{align-items:flex-start;}' +
@@ -1817,6 +1844,28 @@ function layoutAdminTreePositions() {
         shenboBox.style.top = ((sMT - sTr.top) / sSc - 8) + 'px';
         shenboBox.style.width = ((sMR - sML) / sSc + 24) + 'px';
         shenboBox.style.height = ((sMB - sMT) / sSc + 24) + 'px';
+      }
+    }
+    // 始宁东山世系方框：围住 缵/衡→闓 的淡蓝色卡片并标注「始宁东山世系示意图」
+    var dongshanBox = treeEl.querySelector(':scope > .apt-dongshan-box');
+    if (dongshanBox) {
+      var dsCards = treeEl.querySelectorAll('.apt-card-dongshan');
+      var dTr = treeEl.getBoundingClientRect();
+      var dSc = (dTr.width && treeEl.offsetWidth) ? dTr.width / treeEl.offsetWidth : 1;
+      var dML = 1e9, dMT = 1e9, dMR = -1e9, dMB = -1e9;
+      for (var db = 0; db < dsCards.length; db++) {
+        var dbr = dsCards[db].getBoundingClientRect();
+        if (!dbr.width && !dbr.height) continue; // 折叠隐藏的卡片跳过
+        if (dbr.left < dML) dML = dbr.left;
+        if (dbr.top < dMT) dMT = dbr.top;
+        if (dbr.right > dMR) dMR = dbr.right;
+        if (dbr.bottom > dMB) dMB = dbr.bottom;
+      }
+      if (dML < 1e8) {
+        dongshanBox.style.left = ((dML - dTr.left) / dSc - 12) + 'px';
+        dongshanBox.style.top = ((dMT - dTr.top) / dSc - 8) + 'px';
+        dongshanBox.style.width = ((dMR - dML) / dSc + 24) + 'px';
+        dongshanBox.style.height = ((dMB - dMT) / dSc + 24) + 'px';
       }
     }
   }
