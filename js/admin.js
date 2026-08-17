@@ -780,14 +780,31 @@ function buildAdminTreeHtml(data, opts) {
   if (!data || data.length === 0) return '<div style="padding:20px;text-align:center;color:var(--text-tertiary);font-size:13px;">暂无数据</div>';
   opts = opts || {};
 
+  // —— 性能优化：一次性建立 id→person 与 id→children 索引。
+  // 原实现 childrenOf/getPersonName/countDescendants 每次递归都 O(n) 全量遍历，
+  // 整树递归构建 → O(n²)，1250 人时耗时十几秒（点击导航切换明显卡顿）。
+  // 索引化后查子女/查名/统计后代均 O(1)/记忆化，构建降为 O(n)。
+  var personById = {};
+  var childrenIdx = {};
+  for (var _ix = 0; _ix < data.length; _ix++) {
+    personById[data[_ix].id] = data[_ix];
+    childrenIdx[data[_ix].id] = [];
+  }
+  for (_ix = 0; _ix < data.length; _ix++) {
+    var _p = data[_ix];
+    var _f = parseInt(_p.father_id);
+    var _m = parseInt(_p.mother_id);
+    if (personById[_f] && _f !== _p.id) childrenIdx[_f].push(_p); // 跳过自引用 father_id
+    if (personById[_m] && _m !== _p.id && _m !== _f) childrenIdx[_m].push(_p);
+  }
+
   // 远古世系（炎帝→申伯/申甫）：沿 申伯/申甫 父链收集全部祖先，用于墨绿卡片 + 方框标注
   var ancIds = {};
   if (opts.ancBox) {
     function ancCollect(id) {
       if (id == null || ancIds[id]) return;
       ancIds[id] = true;
-      var p = null;
-      for (var ai = 0; ai < data.length; ai++) { if (data[ai].id === id) { p = data[ai]; break; } }
+      var p = personById[id];
       if (p && p.father_id) ancCollect(parseInt(p.father_id));
     }
     ancCollect(6); // 申伯
@@ -808,11 +825,8 @@ function buildAdminTreeHtml(data, opts) {
       if (seen[id]) return;
       seen[id] = true;
       set[id] = true;
-      for (var si = 0; si < data.length; si++) {
-        var cand = data[si];
-        if (cand.id === id) continue;
-        if (parseInt(cand.father_id) === id || parseInt(cand.mother_id) === id) subTreeCollect(cand.id, set, seen);
-      }
+      var kids = childrenIdx[id] || [];
+      for (var ki = 0; ki < kids.length; ki++) subTreeCollect(kids[ki].id, set, seen);
     }
     var sbSeen = {};
     subTreeCollect(6, shenboIds, sbSeen);
@@ -840,31 +854,24 @@ function buildAdminTreeHtml(data, opts) {
   var existingIds = {};
   data.forEach(function(p) { existingIds[p.id] = true; });
 
-  // 工具：获取某人的直接子女
+  // 工具：获取某人的直接子女（索引 O(1) 查询）
   function childrenOf(person) {
-    var result = [];
-    for (var ci = 0; ci < data.length; ci++) {
-      var child = data[ci];
-      if (child.id === person.id) continue; // 防御：自引用 father_id 时跳过自己，避免无限递归
-      var fid = parseInt(child.father_id);
-      var mid = parseInt(child.mother_id);
-      if (fid === person.id || mid === person.id) {
-        result.push(child);
-      }
-    }
-    return result;
+    return childrenIdx[person.id] || [];
   }
 
-  // 工具：递归统计后代总数（带访问保护，防止自引用/环形引用导致死循环）
+  // 工具：递归统计后代总数（带访问保护，防止自引用/环形引用导致死循环；记忆化避免重复子树遍历）
+  var descMemo = {};
   function countDescendants(person, visited) {
+    if (descMemo[person.id] != null) return descMemo[person.id];
     if (!visited) visited = {};
     if (visited[person.id]) return 0;
     visited[person.id] = true;
     var count = 0;
-    var direct = childrenOf(person);
+    var direct = childrenIdx[person.id] || [];
     for (var i = 0; i < direct.length; i++) {
       count += 1 + countDescendants(direct[i], visited);
     }
+    descMemo[person.id] = count;
     return count;
   }
 
@@ -965,7 +972,8 @@ function buildAdminTreeHtml(data, opts) {
     }
     // 显示母亲（多妻情况下区分不同母亲所出）
     if (person.mother_id) {
-      var mn = getPersonName(parseInt(person.mother_id), data);
+      var _mo = personById[parseInt(person.mother_id)];
+      var mn = _mo ? _mo.name : null;
       if (mn) html += '<div class="apt-mother">母: ' + escapeHtml(mn) + '</div>';
     }
     // 嗣子显示双 lineage：过继父 + 生父
@@ -1039,10 +1047,7 @@ function buildAdminTreeHtml(data, opts) {
       var maxGen = 20; // prevent infinite loops
       while (curBioId && maxGen > 0) {
         maxGen--;
-        var bioPerson = null;
-        for (var bi = 0; bi < data.length; bi++) {
-          if (data[bi].id === curBioId) { bioPerson = data[bi]; break; }
-        }
+        var bioPerson = personById[curBioId];
         if (!bioPerson) break;
         bioChain.push(bioPerson);
         curBioId = bioPerson.father_id ? parseInt(bioPerson.father_id) : null;
