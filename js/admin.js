@@ -494,16 +494,38 @@ function renderModule(mod) {
     var area = document.getElementById('admin-content-area');
     if (!area) return;
     renderGenealogyOverview(area);
-    // 树 pan/zoom 初始化（与族谱管理共用同一套逻辑）
-    var savedZoom = treeZoom, savedX = treePanX, savedY = treePanY;
+    // 树 pan/zoom 初始化（与族谱管理共用同一套逻辑）。注意：不要在这里做初始锚定——
+    // 首次布局要跑 layoutAdminTreePositions（1252 张卡，主线程可能被阻塞数秒），任何定时器
+    // 都会在这期间被饿死；锚定改在 scheduleAptLayout 布局完成后同步执行（见 scheduleAptLayout）。
     setTimeout(function() {
+      // 只绑定拖拽/滚轮/双击手势；不恢复 saved pan——treePanX/treePanY 是全局变量，跨模块/跨渲染
+      // 天然保留用户视角；若这里用 saved（首次打开时为 0,0）恢复，会把 scheduleAptLayout 刚锚定的
+      // 视角在 100ms 后清掉（首次布局会阻塞主线程数秒，定时器被饿死、顺序不可靠）。
       initTreePanZoom();
-      treeZoom = savedZoom;
-      treePanX = savedX;
-      treePanY = savedY;
       applyTreeTransform();
       updateZoomLevel();
     }, 100);
+    // 首次打开本模块：布局完成后把视角定位到丹一这一脉的入口（小四→丹一/丹二/丹三分叉点）。
+    // 整树镜像后丹一这脉在页面左侧、主干在右侧；默认 100% 若停在树左上角（镜像后变空白区）
+    // 用户会以为没生效。锚定分叉点则一打开就看到这脉的入口、100% 可读。
+    // 锚定由 scheduleAptLayout 布局完成后同步执行；字体加载会重排兄弟子树（换行宽度依赖文字宽度），
+    // 所以字体就绪后再触发一次布局+锚定，落到字体重排后的最终位置。
+    if (!window._aptAnchorDone) {
+      window._aptNeedAnchor = true;
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(function() {
+          // 字体就绪后布局一定重排过（换行宽度依赖文字宽度）。setTimeout(50) 让已排队的
+          // 首次布局 rAF 先跑完，避免被 _aptLayoutRaf 合并掉；再触发一次布局+锚定，
+          // 覆盖首次锚定（可能锚在字体前的位置，如 -12344 vs 字体后 -11823）。
+          setTimeout(function() {
+            if (!window._aptUserMoved) {
+              window._aptNeedAnchor = true;
+              scheduleAptLayout();
+            }
+          }, 50);
+        });
+      }
+    }
     return;
   }
   var m = MODULES[mod];
@@ -1791,6 +1813,11 @@ function getGenealogyTreeCSS() {
     '.apt-tree-fullscreen #apt-fullscreen-btn{background:var(--accent-orange);color:#fff;}' +
     '.apt-link{cursor:pointer;border-bottom:1px dashed var(--accent-orange);transition:color 0.15s;}' +
     '.apt-link:hover{color:var(--accent-orange);}' +
+    // 世系总览整树镜像后，卡片与四个示意框再 scaleX(-1) 把文字翻回正向（位置已被树镜像，宽高不变）
+    // .apt-anc-box-enabled 内层树禁用 transform 过渡：layout 清镜像→再 apply 若走 0.05s 过渡会停在恒等变换不渲染
+    '.apt-anc-box-enabled{transition:none !important;}' +
+    '.apt-anc-box-enabled .apt-card{transform:scaleX(-1);}' +
+    '.apt-anc-box-enabled .apt-anc-box,.apt-anc-box-enabled .apt-shenbo-box,.apt-anc-box-enabled .apt-dongshan-box,.apt-anc-box-enabled .apt-linhai-box{transform:scaleX(-1);}' +
     '';
 }
 
@@ -1826,22 +1853,41 @@ function layoutAdminTreePositions() {
       var W = cardsRow.offsetWidth;
       var maxH = 0;
       var cursor = -1e9; // 上一个子树右缘（相对 .apt-children 左缘）
+      // 兄弟大子树自动换行：兄弟子树并排累计宽度超过 MAX_ROW_W 时，后续子树下移一行
+      // （保持横向卡片树布局不变，仅 packing 更紧凑；避免大子树把兄弟子树推到极右，
+      //   如 攒/撰 两棵51层深子树并排撑到 32800px，把丹三子树推到最右 x≈39390）
+      // 默认 13000 → 树宽 39390→17457（配整树镜像后丹一这脉在左、宽度可控）
+      var MAX_ROW_W = window._aptMaxRowW || 13000;
+      var ROW_GAP = 100;
+      var rowTop = subsRow.offsetTop; // 当前行顶（相对 .apt-children）
+      var rowH = 0;                   // 当前行内最高子树
       for (var i = 0; i < subs.length && i < slots.length; i++) {
         var subW = subs[i].offsetWidth;
         var base = slots[i].offsetLeft; // 卡片左缘（与卡片同相对 .apt-children 坐标系）
         var subLeft = (cursor > base) ? cursor : base;
+        var wrapped = false;
+        if (subW > 0 && (subLeft + subW) > MAX_ROW_W && rowH > 0) {
+          rowTop += rowH + ROW_GAP;
+          cursor = base;
+          subLeft = base;
+          rowH = 0;
+          wrapped = true;
+        }
         subs[i].style.left = subLeft + 'px';
         // .apt-sub 绝对定位的包含块是 .apt-children（subsRow 非定位），top 须按 subsRow 偏移压到卡片行下方
-        subs[i].style.top = subsRow.offsetTop + 'px';
+        subs[i].style.top = rowTop + 'px';
         if (subW > 0) cursor = subLeft + subW;
         var ext = subLeft + subW;
         if (ext > W) W = ext;
-        if (subs[i].offsetHeight > maxH) maxH = subs[i].offsetHeight;
-        // 右移的子树：隐藏 sub 内居中 connector（它从不与卡片对齐），改画「卡片中心 → 孙代卡片行」斜线
-        if (subLeft > base + 1) drawSubBridge(subs[i], slots[i], subLeft);
+        var sh = subs[i].offsetHeight;
+        if (sh > rowH) rowH = sh;
+        if (sh > maxH) maxH = sh;
+        // 右移/换行的子树：隐藏 sub 内居中 connector（它从不与卡片对齐），改画「卡片中心 → 孙代卡片行」斜线
+        if (subLeft > base + 1 || wrapped) drawSubBridge(subs[i], slots[i], subLeft);
       }
       ch.style.width = W + 'px';
-      subsRow.style.height = maxH + 'px';
+      // 多行时高度 = 最后一行顶 + 最后一行高 - subsRow 顶（单行时即 maxH，行为不变）
+      subsRow.style.height = (rowTop + rowH - subsRow.offsetTop) + 'px';
       // 横线覆盖整个卡片行（兄弟相邻，整行即首卡→末卡范围）
       var hline = cardsRow.querySelector(':scope > .apt-hline');
       if (hline) {
@@ -1977,10 +2023,25 @@ function drawSubBridge(sub, slot, subLeft) {
   var host = subsRow ? subsRow.parentElement : null; // .apt-children（.apt-sub 的包含块）
   if (!host) return;
   if (sub._aptBridge) sub._aptBridge.remove(); // 幂等：layout 可能跑多次，先清旧线
+  // 换行的子树：sub 顶已远离卡片行，先画「卡片中心 → 子树顶」垂直线（绕过兄弟子树占位）
+  if (sub.offsetTop > subsRow.offsetTop + 1) {
+    if (sub._aptVBridge) sub._aptVBridge.remove();
+    var cardX = slot.offsetLeft + card.offsetWidth / 2;
+    var vTop = sub.offsetTop;
+    var vBridge = document.createElement('div');
+    vBridge.className = 'apt-sub-bridge';
+    vBridge.style.left = cardX + 'px';
+    vBridge.style.top = '0px';
+    vBridge.style.width = '1px';
+    vBridge.style.height = vTop + 'px';
+    vBridge.style.opacity = '0.15';
+    host.appendChild(vBridge);
+    sub._aptVBridge = vBridge;
+  }
   var bridge = document.createElement('div');
   bridge.className = 'apt-sub-bridge';
   bridge.style.left = (subLeft + x1) + 'px';
-  bridge.style.top = (subsRow.offsetTop + y1) + 'px';
+  bridge.style.top = (sub.offsetTop + y1) + 'px';
   bridge.style.width = len + 'px';
   bridge.style.transform = 'rotate(' + ang + 'deg)';
   bridge.style.transformOrigin = '0 0';
@@ -1995,7 +2056,22 @@ function scheduleAptLayout() {
   if (window._aptLayoutRaf) return;
   window._aptLayoutRaf = requestAnimationFrame(function() {
     window._aptLayoutRaf = null;
+    // 布局期间内层树不能带镜像 transform：getBoundingClientRect 算四个示意框会读到镜像坐标。
+    // 布局完再 applyTreeTransform 恢复（含镜像），同一帧内完成，不闪。外层缩放/平移保留。
+    var aptTree = document.querySelector('#apt-tree-viewport .apt-tree');
+    var inner = aptTree ? aptTree.querySelector('.apt-anc-box-enabled') : null;
+    if (inner) inner.style.transform = '';
     layoutAdminTreePositions();
+    applyTreeTransform();
+    // 世代总览首次打开：布局完成后同步锚定。此时位置是本次布局刚排好的最终坐标（镜像已恢复），
+    // applyTreeTransform 紧随其后同一同步块，不被定时器/Raf 抢占（曾致 panY 失控 -8602→-25805）。
+    // 字体加载会再次触发本函数（renderModule 里 fonts.ready → scheduleAptLayout），锚到字体重排后的位置。
+    if (window._aptNeedAnchor && !window._aptUserMoved) {
+      window._aptNeedAnchor = false;
+      window._aptAnchorDone = true;
+      anchorOverviewView();
+      applyTreeTransform();
+    }
   });
 }
 
@@ -3832,6 +3908,7 @@ function initTreePanZoom() {
 
   vp.onwheel = function(e) {
     e.preventDefault();
+    window._aptUserMoved = true;
     var rect = vp.getBoundingClientRect();
     var mx = e.clientX - rect.left;
     var my = e.clientY - rect.top;
@@ -3846,6 +3923,7 @@ function initTreePanZoom() {
 
   vp.onmousedown = function(e) {
     if (e.target.closest('.apt-zoom-btn, .apt-btn-expand, .apt-card, .apt-btn-add, .apt-btn-del, select, input, button')) return;
+    window._aptUserMoved = true;
     treeDragging = true;
     treeDragStartX = e.clientX;
     treeDragStartY = e.clientY;
@@ -3873,10 +3951,61 @@ function initTreePanZoom() {
   };
 }
 
+// 取当前外层树实际应用的平移（computed transform 的 m41/m42）。
+// 外层树在字体加载/模块重渲染期间会被整体替换成 identity transform，
+// 若用 treePanX/treePanY 变量扣减会在 identity 窗口内算出垃圾 natural 位置、
+// 导致 panY 失控（曾 -8602 → -25805）。读实际 transform 后即使 identity 也幂等。
+function getActualPan() {
+  var outer = document.querySelector('#apt-tree-viewport .apt-tree');
+  if (!outer) return { x: 0, y: 0 };
+  var cs = getComputedStyle(outer);
+  var m = new DOMMatrixReadOnly(cs.transform);
+  return { x: m.m41 || 0, y: m.m42 || 0 };
+}
+
+// 锚定到丹一这一脉入口（小四→丹一/丹二/丹三分叉点）：小四那行在视口上方、
+// 三子最左一子在视口左侧。用「实际应用平移」扣减，identity 窗口内也正确。
+// 注意视口不在页面 x=0（管理后台左侧有侧栏），横向同样要扣 vpr.left，
+// 否则 panX 会偏出 vpr.left 像素、锚点被甩出视口左侧（曾把三子锚到 -481 处不可见）。
+function anchorOverviewView() {
+  var vp = document.getElementById('apt-tree-viewport');
+  if (!vp) return;
+  var inner = vp.querySelector('.apt-anc-box-enabled');
+  if (!inner) return;
+  var vpr = vp.getBoundingClientRect();
+  var vpTop = vpr.top, vpLeft = vpr.left;
+  var act = getActualPan();
+  var xiaosi = inner.querySelector('.apt-card[data-pid="1206"]');
+  var sonRects = ['1208', '1209', '1210'].map(function(pid) {
+    var c = inner.querySelector('.apt-card[data-pid="' + pid + '"]');
+    return c ? c.getBoundingClientRect() : null;
+  }).filter(Boolean);
+  if (xiaosi) {
+    var xsR = xiaosi.getBoundingClientRect();
+    treePanY = -((xsR.top - act.y) - vpTop - 60);
+  }
+  if (sonRects.length) {
+    var minX = Math.min.apply(null, sonRects.map(function(r) { return r.left - vpLeft - act.x; }));
+    treePanX = -(minX - 40);
+  }
+}
+
 function applyTreeTransform(tree) {
   if (!tree) tree = document.querySelector('#apt-tree-viewport .apt-tree');
   if (!tree) return;
+  // 外层 #admin-genealogy-tree 只是容器（缩放/平移作用于此）
   tree.style.transform = 'translate(' + treePanX + 'px, ' + treePanY + 'px) scale(' + treeZoom + ')';
+  // 世系总览整树左右镜像：作用于内层 buildAdminTreeHtml 的真树（带 apt-anc-box-enabled），
+  // 把密集的丹一这一脉翻到页面左侧（用户要求「丹一这脉移到左侧，页面左侧都是空着的」）。
+  // translate(W/2) scaleX(-1) translate(-W/2) 绕树中心翻转，宽度不变、几何为纯镜像；
+  // 文字由 CSS .apt-anc-box-enabled .apt-card{transform:scaleX(-1)} 逐卡还原。
+  // ⚠️ 布局期间内层树必须无此 transform（layoutAdminTreePositions 用 getBoundingClientRect 算示意框，
+  //    transform 会污染坐标），scheduleAptLayout 会在布局前清掉、布局后再 apply。
+  var inner = tree.querySelector('.apt-anc-box-enabled');
+  if (inner) {
+    var W = inner.offsetWidth || inner.scrollWidth || 0;
+    if (W > 0) inner.style.transform = 'translate(' + (W / 2) + 'px,0) scaleX(-1) translate(' + (-W / 2) + 'px,0)';
+  }
 }
 
 function zoomTree(factor) {
