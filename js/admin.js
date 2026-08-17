@@ -780,21 +780,6 @@ function buildAdminTreeHtml(data, opts) {
   if (!data || data.length === 0) return '<div style="padding:20px;text-align:center;color:var(--text-tertiary);font-size:13px;">暂无数据</div>';
   opts = opts || {};
 
-  // 性能优化：一次性建 父/母 → 子女 索引，供 childrenOf / subTreeCollect / countDescendants 使用。
-  // 原先这些函数每次调用都全表扫描 data（O(n)），整树构建约 19 亿次比较（18 秒+）；
-  // 建索引后 O(1) 查找，整树构建 <100ms。
-  var childrenIdx = {};
-  data.forEach(function(p) {
-    if (p.father_id) {
-      var cFid = parseInt(p.father_id);
-      if (!isNaN(cFid)) (childrenIdx[cFid] = childrenIdx[cFid] || []).push(p);
-    }
-    if (p.mother_id) {
-      var cMid = parseInt(p.mother_id);
-      if (!isNaN(cMid)) (childrenIdx[cMid] = childrenIdx[cMid] || []).push(p);
-    }
-  });
-
   // 远古世系（炎帝→申伯/申甫）：沿 申伯/申甫 父链收集全部祖先，用于墨绿卡片 + 方框标注
   var ancIds = {};
   if (opts.ancBox) {
@@ -823,11 +808,10 @@ function buildAdminTreeHtml(data, opts) {
       if (seen[id]) return;
       seen[id] = true;
       set[id] = true;
-      var kids = childrenIdx[id];
-      if (!kids) return;
-      for (var si = 0; si < kids.length; si++) {
-        if (kids[si].id === id) continue; // 自引用防御
-        subTreeCollect(kids[si].id, set, seen);
+      for (var si = 0; si < data.length; si++) {
+        var cand = data[si];
+        if (cand.id === id) continue;
+        if (parseInt(cand.father_id) === id || parseInt(cand.mother_id) === id) subTreeCollect(cand.id, set, seen);
       }
     }
     var sbSeen = {};
@@ -856,18 +840,17 @@ function buildAdminTreeHtml(data, opts) {
   var existingIds = {};
   data.forEach(function(p) { existingIds[p.id] = true; });
 
-  // 工具：获取某人的直接子女（经索引，结果与旧全表扫描逐字节一致）
+  // 工具：获取某人的直接子女
   function childrenOf(person) {
-    var kids = childrenIdx[person.id];
-    if (!kids) return [];
     var result = [];
-    var seenCh = {};
-    for (var ci = 0; ci < kids.length; ci++) {
-      var child = kids[ci];
+    for (var ci = 0; ci < data.length; ci++) {
+      var child = data[ci];
       if (child.id === person.id) continue; // 防御：自引用 father_id 时跳过自己，避免无限递归
-      if (seenCh[child.id]) continue; // 父/母同人时去重，与旧逻辑「只 push 一次」一致
-      seenCh[child.id] = true;
-      result.push(child);
+      var fid = parseInt(child.father_id);
+      var mid = parseInt(child.mother_id);
+      if (fid === person.id || mid === person.id) {
+        result.push(child);
+      }
     }
     return result;
   }
@@ -926,7 +909,7 @@ function buildAdminTreeHtml(data, opts) {
     var html = '<div class="' + cClass + '" data-pid="' + person.id + '" draggable="true" onmouseup="if(!this.dataset.dragged){adminEditOrNotice(\'genealogy\',' + person.id + ')};this.dataset.dragged=\'\'" title="点击编辑 | 拖拽到其他人建立关系" ondragstart="onCardDragStart(event, ' + person.id + ');this.dataset.dragged=\'1\'" ondrop="onCardDrop(event)" ondragover="event.preventDefault()" ondragenter="this.style.outline=\'2px solid var(--accent-orange)\'" ondragleave="this.style.outline=\'\'">';
     html += '<div class="apt-card-inner">';
     html += '<div class="apt-card-actions" onclick="event.stopPropagation();">';
-    html += '<button class="apt-btn-add" onclick="adminQuickAddChildFor(' + person.id + ',\'' + person.name + '\',\'' + (person.branch || '') + '\')" title="快速添加子女">+</button>';
+    html += '<button class="apt-btn-add" onclick="adminAddChildFor(' + person.id + ',\'' + person.name + '\',\'' + (person.branch || '') + '\')" title="添加子女">+</button>';
       if (childrenOf(person).length > 0) {
         html += '<button class="apt-btn-expand" onclick="toggleTreeNode(this)" title="展开/折叠">▶</button>';
       }
@@ -1111,226 +1094,6 @@ function buildAdminTreeHtml(data, opts) {
   if (opts.ancBox) out += '<div class="apt-linhai-box"><span class="apt-linhai-label">临海下渡世系示意图</span></div>';
   out += '</div>';
   return out;
-}
-
-// ===== 世系总览：垂直家谱列表 =====
-// 用户要求：小四的三个儿子（丹一/丹二/丹三）三列并排垂直往下，整树不再横向排布
-// （原横向树 39390px 宽 = 丹一子树递归横向打包累计；垂直列表后宽约 800px、高约 26000px）。
-// 每行一个紧凑卡、兄弟纵向堆叠；仅世代总览使用，其余世系图仍用 buildAdminTreeHtml（横向树不受影响）。
-function buildAdminTreeVerticalHtml(data, opts) {
-  if (!data || data.length === 0) return '<div style="padding:20px;text-align:center;color:var(--text-tertiary);font-size:13px;">暂无数据</div>';
-  opts = opts || {};
-
-  // 父/母 → 子女 索引（O(1)）
-  var childrenIdx = {};
-  data.forEach(function(p) {
-    if (p.father_id) { var cf = parseInt(p.father_id); if (!isNaN(cf)) (childrenIdx[cf] = childrenIdx[cf] || []).push(p); }
-    if (p.mother_id) { var cm = parseInt(p.mother_id); if (!isNaN(cm)) (childrenIdx[cm] = childrenIdx[cm] || []).push(p); }
-  });
-
-  // 四个世系分组（与横向树 buildAdminTreeHtml 同一套集合）
-  var ancIds = {}, shenboIds = {}, dongshanIds = {}, linhaiIds = {};
-  function ancCollect(id, seen) {
-    if (id == null || seen[id]) return;
-    seen[id] = true; ancIds[id] = true;
-    var p = null;
-    for (var ai = 0; ai < data.length; ai++) { if (data[ai].id === id) { p = data[ai]; break; } }
-    if (p && p.father_id) ancCollect(parseInt(p.father_id), seen);
-  }
-  ancCollect(6, {}); ancCollect(7, {});
-  function subTreeCollect(id, set, seen) {
-    if (seen[id]) return;
-    seen[id] = true; set[id] = true;
-    var kids = childrenIdx[id];
-    if (!kids) return;
-    for (var si = 0; si < kids.length; si++) { if (kids[si].id === id) continue; subTreeCollect(kids[si].id, set, seen); }
-  }
-  var sbSeen = {}; subTreeCollect(6, shenboIds, sbSeen); subTreeCollect(7, shenboIds, sbSeen);
-  var hengSub = {}, hengSeen = {}; subTreeCollect(1130, hengSub, hengSeen);
-  Object.keys(hengSub).forEach(function(hi) { if (parseInt(hi) !== 1130) delete shenboIds[hi]; });
-  var dsSub = {}, dsSeen = {}; subTreeCollect(1130, dsSub, dsSeen);
-  var kaiSub = {}, kaiSeen = {}; subTreeCollect(1183, kaiSub, kaiSeen);
-  Object.keys(kaiSub).forEach(function(ki) { if (parseInt(ki) !== 1183) delete dsSub[ki]; });
-  Object.keys(dsSub).forEach(function(di) { dongshanIds[di] = true; });
-  dongshanIds[1126] = true;
-  var lhSub = {}, lhSeen = {}; subTreeCollect(1183, lhSub, lhSeen);
-  var xsSub = {}, xsSeen = {}; subTreeCollect(1206, xsSub, xsSeen);
-  Object.keys(xsSub).forEach(function(xi) { if (parseInt(xi) !== 1206) delete lhSub[xi]; });
-  Object.keys(lhSub).forEach(function(li) { linhaiIds[li] = true; });
-
-  var existingIds = {};
-  data.forEach(function(p) { existingIds[p.id] = true; });
-
-  function childrenOf(person) {
-    var kids = childrenIdx[person.id];
-    if (!kids) return [];
-    var out = [], seenCh = {};
-    for (var ci = 0; ci < kids.length; ci++) {
-      var child = kids[ci];
-      if (child.id === person.id) continue;
-      if (seenCh[child.id]) continue;
-      seenCh[child.id] = true;
-      out.push(child);
-    }
-    return out;
-  }
-
-  // 后代数（一次性 O(n) 记忆化，避免每行全树扫描）
-  var descMap = {};
-  (function buildDesc() {
-    function rec(p, seen) {
-      if (seen[p.id]) return 0;
-      seen[p.id] = true;
-      var kids = childrenOf(p), n = 0;
-      for (var i = 0; i < kids.length; i++) n += 1 + rec(kids[i], seen);
-      descMap[p.id] = n;
-      return n;
-    }
-    for (var i = 0; i < data.length; i++) { if (descMap[data[i].id] == null) rec(data[i], {}); }
-  })();
-
-  // 配偶反向映射（与横向一致：配偶名字在同名者间消歧）
-  var spouseOf = {};
-  data.forEach(function(p) {
-    if (p.spouse_ids) {
-      var names = p.spouse_ids.toString().split(',').map(function(n) { return n.trim(); }).filter(function(n) { return n; });
-      names.forEach(function(nm) {
-        data.forEach(function(other) { if (other.name === nm && other.id !== p.id) spouseOf[other.id] = p.id; });
-      });
-    }
-  });
-
-  var roots = data.filter(function(p) {
-    var fid = parseInt(p.father_id);
-    return !p.father_id || fid === p.id || !existingIds[fid];
-  });
-  roots = roots.filter(function(p) { return !spouseOf[p.id] || spouseOf[p.id] > p.id; });
-  if (roots.length === 0 && data.length > 0) roots = [data[0]];
-
-  // 世次文本（与横向卡 renderAptCard 逐字节一致）
-  function genTextFor(person) {
-    var t = (person.generation_num || '?') + '世';
-    var s = '';
-    if (shenboIds[person.id] && person.generation_num) {
-      t = '炎帝' + parseInt(person.generation_num) + '世/申伯' + (parseInt(person.generation_num) - 64) + '世';
-    } else if (dongshanIds[person.id] && person.generation_num) {
-      t = '炎帝' + parseInt(person.generation_num) + '世';
-    } else if (person.generation && person.generation !== '—') {
-      s = ' · ' + escapeHtml(person.generation);
-    }
-    if (dongshanIds[person.id] && person.generation_num) {
-      var dsShenboGen = parseInt(person.generation_num) - 64;
-      var dsDongshanGen = (person.id === 1130) ? 2 : (parseInt(person.generation_num) - 98);
-      if (shenboIds[person.id]) { t += '/始宁东山' + dsDongshanGen + '世'; }
-      else { t += '/申伯' + dsShenboGen + '世/始宁东山' + dsDongshanGen + '世'; }
-    }
-    if (linhaiIds[person.id] && person.generation_num) {
-      if (t.indexOf('/申伯') < 0 && t.indexOf('/始宁东山') < 0) {
-        var lhN = parseInt(person.generation_num);
-        t = '炎帝' + lhN + '世/申伯' + (lhN - 64) + '世/始宁东山' + (lhN - 98) + '世';
-      }
-      t += '/临海下渡' + (parseInt(person.generation_num) - 121) + '世';
-    }
-    return t + s;
-  }
-
-  // 单行紧凑卡（点击编辑 / 拖拽建关系 / + 快加 / − 删除 / ▶ 折叠）
-  function vRow(person) {
-    var kids = childrenOf(person);
-    var cls = 'aptv-row';
-    if (ancIds[person.id]) cls += ' aptv-row-anc';
-    else if (shenboIds[person.id]) cls += ' aptv-row-shenbo';
-    else if (dongshanIds[person.id]) cls += ' aptv-row-dongshan';
-    else if (linhaiIds[person.id]) cls += ' aptv-row-linhai';
-    if (person.gender === '女') cls += ' aptv-row-female';
-    if (person.adopted && person.adopted !== '否') cls += ' aptv-row-adopted';
-    var g = genTextFor(person);
-    var html = '<div class="' + cls + '" data-pid="' + person.id + '" draggable="true" ' +
-      'onmouseup="if(!this.dataset.dragged){adminEditOrNotice(\'genealogy\',' + person.id + ')};this.dataset.dragged=\'\'" ' +
-      'ondragstart="onCardDragStart(event, ' + person.id + ');this.dataset.dragged=\'1\'" ' +
-      'ondrop="onCardDrop(event)" ondragover="event.preventDefault()" ' +
-      'ondragenter="this.style.outline=\'2px solid var(--accent-orange)\'" ondragleave="this.style.outline=\'\'">';
-    if (kids.length) html += '<span class="aptv-caret" onmousedown="event.stopPropagation()" onmouseup="event.stopPropagation()" onclick="event.stopPropagation();aptvToggle(this)" title="展开/折叠">▼</span>';
-    else html += '<span class="aptv-caret aptv-caret-none"></span>';
-    html += '<span class="aptv-name">';
-    if (person.adopted && person.adopted !== '否') {
-      if (person.adopted === '出继') html += '<span class="apt-adopted-badge" style="background:#22c55e;" title="出继">出</span>';
-      else html += '<span class="apt-adopted-badge" title="' + escapeHtml(person.adopted) + '">嗣</span>';
-    }
-    html += escapeHtml(person.name) + '</span>';
-    if (kids.length) {
-      html += '<span class="aptv-cnt">' + kids.length + '子女' + (descMap[person.id] ? ' · ' + descMap[person.id] + '后代' : '') + '</span>';
-    }
-    html += '<span class="aptv-gen" title="' + escapeHtml(g) + '">' + escapeHtml(g) + '</span>';
-    html += '<span class="aptv-actions" onmousedown="event.stopPropagation()" onmouseup="event.stopPropagation()">';
-    html += '<button type="button" class="aptv-btn aptv-btn-add" onclick="event.stopPropagation();adminQuickAddChildFor(' + person.id + ',\'' + person.name + '\',\'' + (person.branch || '') + '\')" title="快速添加子女">+</button>';
-    html += '<button type="button" class="aptv-btn aptv-btn-del" onclick="event.stopPropagation();adminDeleteFor(' + person.id + ',\'' + person.name + '\',\'' + (person.branch || '') + '\')" title="删除此人">−</button>';
-    html += '</span>';
-    html += '</div>';
-    return html;
-  }
-
-  // 递归：父子纵向堆叠；小四三子三列并排
-  function vPerson(person, depth, _ancestors) {
-    if (_ancestors && _ancestors.indexOf(person.id) >= 0) return '';
-    var path = (_ancestors || []).concat([person.id]);
-    var kids = childrenOf(person);
-    // 缩进按「子深度」计算（父的 .aptv-children 挂 margin，其子处于 depth+1）。
-    // 只在 depth+1 < 4 累加（12/24/36），更深归零——否则 130 层主链在 flex max-content 中每层 +缩进 撑到上万 px 宽
-    var ind = depth < 3 ? (depth + 1) * 12 : 0;
-    var html = '<div class="aptv-person">';
-    html += vRow(person);
-    var kk = [];
-    for (var ki = 0; ki < kids.length; ki++) { if (path.indexOf(kids[ki].id) >= 0) continue; kk.push(kids[ki]); }
-    if (kk.length) {
-      if (person.id === 1206) {
-        // 小四 → 丹一/丹二/丹三 三列并排（每列垂直往下）
-        // 深度重置为 0：主链已 130 层，若不重置，列内所有行深度 ≥6 缩进被清零，父子层级看不清
-        html += '<div class="aptv-cols" style="margin-left:' + ind + 'px">';
-        for (var c = 0; c < kk.length; c++) html += '<div class="aptv-col">' + vPerson(kk[c], 0, path) + '</div>';
-        html += '</div>';
-      } else {
-        html += '<div class="aptv-children" style="margin-left:' + ind + 'px">';
-        for (var k = 0; k < kk.length; k++) html += vPerson(kk[k], depth + 1, path);
-        html += '</div>';
-      }
-    }
-    html += '</div>';
-    return html;
-  }
-
-  var out = '';
-  var renderedIds = {};
-  function collectRendered(p, _seen) {
-    if (_seen && _seen.indexOf(p.id) >= 0) return;
-    _seen = (_seen || []).concat([p.id]);
-    renderedIds[p.id] = true;
-    childrenOf(p).forEach(function(c) { collectRendered(c, _seen); });
-  }
-  for (var r = 0; r < roots.length; r++) { out += vPerson(roots[r], 0, []); collectRendered(roots[r]); }
-  for (var ri = 0; ri < data.length; ri++) { if (!renderedIds[data[ri].id]) out += vPerson(data[ri], 0, []); }
-
-  return '<div class="aptv-legend">' +
-    '<span class="aptv-lg aptv-lg-anc">远古世系</span>' +
-    '<span class="aptv-lg aptv-lg-shenbo">申伯世系</span>' +
-    '<span class="aptv-lg aptv-lg-dongshan">始宁东山</span>' +
-    '<span class="aptv-lg aptv-lg-linhai">临海下渡</span>' +
-    '<span class="aptv-lg aptv-lg-other">已录入族人</span>' +
-    '</div>' +
-    '<div class="aptv-root">' + out + '</div>';
-}
-
-// 垂直列表：展开/折叠节点
-function aptvToggle(btn) {
-  var row = btn.closest('.aptv-row');
-  if (!row) return;
-  var person = row.parentElement;
-  if (!person || !person.classList || !person.classList.contains('aptv-person')) return;
-  var kids = person.querySelector(':scope > .aptv-children, :scope > .aptv-cols');
-  if (!kids) return;
-  var hidden = kids.style.display === 'none';
-  kids.style.display = hidden ? '' : 'none';
-  btn.textContent = hidden ? '▼' : '▶';
 }
 
 /**
@@ -1903,110 +1666,6 @@ function adminDeleteFor(personId, name, branch) {
   if (confirm('确定删除 ' + escapeHtml(name) + ' 吗？')) deleteItem('genealogy', realId);
 }
 
-// ===== 世代总览「快速添加子女」（用户要求：点+直接添加、自动保存、不刷新立即看到新增） =====
-// 精简表单：姓名+性别+支系，父亲/世代自动带出，支系默认继承父亲
-function adminQuickAddChildFor(personId, name, branch) {
-  var realId = adminResolvePersonId(personId, name, branch);
-  if (!realId) { showToast('⚠️ 该人物不在录入数据库中，无法添加下一代。请先在「世代总览」新增后重试。'); return; }
-  var data = getData('genealogy');
-  var father = null;
-  for (var i = 0; i < data.length; i++) { if (data[i].id === realId) { father = data[i]; break; } }
-  if (!father) { showToast('⚠️ 找不到父节点数据'); return; }
-
-  // 支系列表 = 后台数据中实际存在的支系（去重排序），默认继承父亲支系
-  var branches = {};
-  data.forEach(function(p) { if (p.branch && p.branch !== '—') branches[p.branch] = true; });
-  var branchKeys = Object.keys(branches).sort();
-  var defBranch = (father.branch && father.branch !== '—') ? father.branch : '';
-  var optsHtml = '<option value="">—</option>';
-  for (var b = 0; b < branchKeys.length; b++) {
-    optsHtml += '<option value="' + escapeHtml(branchKeys[b]) + '"' + (branchKeys[b] === defBranch ? ' selected' : '') + '>' + escapeHtml(branchKeys[b]) + '</option>';
-  }
-
-  var gen = (parseInt(father.generation_num) || 0) + 1;
-  var overlay = document.createElement('div');
-  overlay.className = 'admin-modal-overlay';
-  overlay.style.display = 'flex';
-  overlay.innerHTML =
-    '<div class="admin-modal" style="max-width:420px;">' +
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">' +
-    '<h3 style="font-size:17px;font-weight:500;">👶 快速添加子女</h3>' +
-    '<button type="button" class="btn-sm" onclick="this.closest(\'.admin-modal-overlay\').remove()" style="font-size:20px;background:none;border:none;cursor:pointer;line-height:1;">✕</button></div>' +
-    '<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:14px;padding:8px 12px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:8px;">父亲：<b>' + escapeHtml(father.name) + '</b>（' + (father.generation_num || '?') + '世）&nbsp;→&nbsp;新子女世代 <b>' + gen + '世</b></div>' +
-    '<div class="form-group"><label>姓名 *</label>' +
-    '<input id="qa-name" type="text" placeholder="输入姓名" style="width:100%;padding:8px 10px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:13px;box-sizing:border-box;"></div>' +
-    '<div class="form-group"><label>性别</label>' +
-    '<div style="display:flex;gap:18px;padding:4px 0;">' +
-    '<label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="radio" name="qa-gender" value="男" checked style="accent-color:#4a9eff;"> 男</label>' +
-    '<label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="radio" name="qa-gender" value="女" style="accent-color:#ff6b9d;"> 女</label></div></div>' +
-    '<div class="form-group"><label>支系</label>' +
-    '<select id="qa-branch" style="width:100%;padding:8px 10px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:13px;">' + optsHtml + '</select></div>' +
-    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px;align-items:center;">' +
-    '<button type="button" class="btn btn-secondary" onclick="this.closest(\'.admin-modal-overlay\').remove()">取消</button>' +
-    '<button type="button" class="btn btn-sm" onclick="adminQuickSwitchFull(' + realId + ')" style="background:none;border:none;color:var(--accent-orange);cursor:pointer;font-size:12px;padding:6px 8px;">完整表单 ›</button>' +
-    '<button type="button" class="btn btn-accent" onclick="adminQuickSaveChild(' + realId + ')">✔ 添加</button></div>' +
-    '</div>';
-  document.body.appendChild(overlay);
-  var qaName = document.getElementById('qa-name');
-  if (qaName) {
-    qaName.focus();
-    qaName.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); adminQuickSaveChild(realId); } });
-  }
-}
-
-// 保存快加子女：写入数据（自动保存 localStorage + 服务器同步）→ 重渲染树 → 定位新卡中心 + 高亮闪烁
-function adminQuickSaveChild(fatherId) {
-  var nameEl = document.getElementById('qa-name');
-  var name = nameEl ? nameEl.value.trim() : '';
-  if (!name) { showToast('⚠️ 请填写姓名'); if (nameEl) nameEl.focus(); return; }
-  var genderEl = document.querySelector('input[name="qa-gender"]:checked');
-  var gender = genderEl ? genderEl.value : '男';
-  var branchEl = document.getElementById('qa-branch');
-  var branch = branchEl ? branchEl.value : '';
-
-  var data = getData('genealogy');
-  var father = null;
-  for (var i = 0; i < data.length; i++) { if (data[i].id === fatherId) { father = data[i]; break; } }
-  if (!father) { showToast('⚠️ 找不到父节点'); return; }
-
-  var newItem = {
-    id: getNextId(data),
-    generation_num: (parseInt(father.generation_num) || 0) + 1,
-    name: name,
-    gender: gender,
-    generation: (father.generation && father.generation !== '—') ? father.generation : '',
-    father_id: fatherId,
-    mother_id: '',
-    spouse_ids: '',
-    adopted: '否',
-    branch: branch,
-    birth_date: '',
-    death_date: '',
-    is_alive: '是',
-    address: '',
-    biography: ''
-  };
-  data.push(newItem);
-  saveData('genealogy', data);
-
-  var overlay = document.querySelector('.admin-modal-overlay');
-  if (overlay) overlay.remove();
-  showToast('✅ 已添加 ' + name + '（' + newItem.generation_num + '世）');
-
-  if (currentModule === 'genealogyOverview') {
-    renderModule('genealogyOverview');
-    // 等 pan/zoom 初始化 + 树布局完成后，把新卡移到视口中心并高亮闪烁
-    setTimeout(function() { focusTreeCard(newItem.id); }, 450);
-  }
-}
-
-// 从快加表单切换到完整表单（保留预填的父亲/世代）
-function adminQuickSwitchFull(fatherId) {
-  var overlay = document.querySelector('.admin-modal-overlay');
-  if (overlay) overlay.remove();
-  showAddChildForm(fatherId);
-}
-
 // 后台族谱树共享 CSS（renderGenealogy 与 renderGenealogyOverview 共用）
 function getGenealogyTreeCSS() {
   return '.apt-split{display:flex;gap:16px;min-height:600px;}' +
@@ -2098,8 +1757,6 @@ function getGenealogyTreeCSS() {
     '.apt-children-wrap{display:block;}' +
     '.apt-btn-expand{width:18px;height:18px;border:none;border-radius:50%;font-size:10px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;background:var(--accent-orange);color:#fff;transition:transform 0.1s;}' +
     '.apt-btn-expand:hover{transform:scale(1.2);}' +
-    '.apt-card-flash{animation:aptFlash 1.4s ease 3;border-color:#ff6b00 !important;z-index:5;}' +
-    '@keyframes aptFlash{0%,100%{box-shadow:0 0 0 0 rgba(255,107,0,0);}50%{box-shadow:0 0 0 12px rgba(255,107,0,0.55);}}' +
     '.apt-children-count{font-size:8px;color:var(--text-tertiary);margin-top:2px;opacity:0.5;}' +
     '.apt-tree-filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}' +
     '.apt-tree-filters select{padding:6px 10px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;}' +
@@ -2129,43 +1786,6 @@ function getGenealogyTreeCSS() {
     '.apt-tree-fullscreen #apt-fullscreen-btn{background:var(--accent-orange);color:#fff;}' +
     '.apt-link{cursor:pointer;border-bottom:1px dashed var(--accent-orange);transition:color 0.15s;}' +
     '.apt-link:hover{color:var(--accent-orange);}' +
-    // ===== 垂直家谱列表（世系总览，buildAdminTreeVerticalHtml） =====
-    '.aptv-root{display:flex;flex-direction:column;align-items:flex-start;width:max-content;padding-bottom:16px;}' +
-    '.aptv-legend{display:flex;gap:10px;flex-wrap:wrap;padding:0 0 10px 0;}' +
-    '.aptv-lg{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text-tertiary);padding:2px 8px;border:1px solid var(--glass-border);border-radius:10px;background:var(--glass-bg);}' +
-    '.aptv-lg::before{content:"";width:9px;height:9px;border-radius:2px;}' +
-    '.aptv-lg-anc::before{background:#2e7d32;}.aptv-lg-shenbo::before{background:#9a6a35;}.aptv-lg-dongshan::before{background:#5b8bb5;}.aptv-lg-linhai::before{background:#d98a3d;}.aptv-lg-other::before{background:#8a8a8a;}' +
-    '.aptv-person{display:flex;flex-direction:column;align-items:flex-start;}' +
-    '.aptv-children,.aptv-cols{display:flex;flex-direction:column;align-items:flex-start;}' +
-    '.aptv-cols{flex-direction:row;gap:22px;padding-left:8px;}' +
-    '.aptv-col{display:flex;flex-direction:column;align-items:flex-start;}' +
-    '.aptv-row{display:flex;align-items:center;gap:6px;height:22px;padding:0 8px;margin:1px 0;border-radius:6px;cursor:pointer;border:1px solid transparent;background:rgba(255,255,255,0.02);white-space:nowrap;}' +
-    '.aptv-row:hover{border-color:var(--accent-orange);background:rgba(251,146,60,0.07);}' +
-    '.aptv-row-anc{background:linear-gradient(160deg,rgba(30,92,67,0.78),rgba(21,64,47,0.88));border-color:rgba(46,125,50,0.5);}' +
-    '.aptv-row-anc .aptv-name{color:#eafff5;}' +
-    '.aptv-row-shenbo{background:linear-gradient(160deg,rgba(139,90,43,0.78),rgba(95,61,29,0.88));border-color:rgba(139,90,43,0.55);}' +
-    '.aptv-row-shenbo .aptv-name{color:#fdf6ec;}' +
-    '.aptv-row-dongshan{background:linear-gradient(160deg,rgba(127,176,214,0.82),rgba(85,133,171,0.92));border-color:rgba(100,155,205,0.6);}' +
-    '.aptv-row-dongshan .aptv-name{color:#f2f8ff;}' +
-    '.aptv-row-linhai{background:linear-gradient(160deg,rgba(232,160,78,0.82),rgba(201,122,46,0.92));border-color:rgba(217,138,61,0.6);}' +
-    '.aptv-row-linhai .aptv-name{color:#fff8ef;}' +
-    '.aptv-row-female{border-left:3px solid #ff6b9d;}' +
-    '.aptv-row-adopted{border-left:3px solid #ef4444;}' +
-    '.aptv-caret{display:inline-flex;width:15px;height:15px;align-items:center;justify-content:center;font-size:8px;color:var(--accent-orange);cursor:pointer;border-radius:3px;flex-shrink:0;line-height:1;}' +
-    '.aptv-caret:hover{background:rgba(251,146,60,0.15);}' +
-    '.aptv-caret-none{visibility:hidden;}' +
-    '.aptv-name{font-size:12px;font-weight:600;color:var(--text-primary);}' +
-    '.aptv-cnt{font-size:10px;color:var(--text-tertiary);opacity:0.8;}' +
-    '.aptv-gen{font-size:10px;color:var(--text-tertiary);max-width:300px;overflow:hidden;text-overflow:ellipsis;}' +
-    '.aptv-actions{display:flex;gap:2px;}' +
-    '.aptv-btn{width:16px;height:16px;border:none;border-radius:50%;font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;padding:0;}' +
-    '.aptv-btn-add{background:#4a9eff;color:#fff;}' +
-    '.aptv-btn-del{background:#e74c3c;color:#fff;}' +
-    '.aptv-row-anc .aptv-gen,.aptv-row-anc .aptv-cnt{color:#cfe9da;}' +
-    '.aptv-row-shenbo .aptv-gen,.aptv-row-shenbo .aptv-cnt{color:#e8d5b6;}' +
-    '.aptv-row-dongshan .aptv-gen,.aptv-row-dongshan .aptv-cnt{color:#dcebf7;}' +
-    '.aptv-row-linhai .aptv-gen,.aptv-row-linhai .aptv-cnt{color:#fbe8cd;}' +
-    '.aptv-row.apt-card-flash{animation:aptFlash 1.4s ease 3;border-color:#ff6b00 !important;z-index:5;}' +
     '';
 }
 
@@ -2201,28 +1821,17 @@ function layoutAdminTreePositions() {
       var W = cardsRow.offsetWidth;
       var maxH = 0;
       var cursor = -1e9; // 上一个子树右缘（相对 .apt-children 左缘）
-      var rowTop = subsRow.offsetTop;
-      // 性能优化：先一次性读取所有子布局度量，再统一计算写入。
-      // 旧实现每迭代「写 style.left → 读 offsetHeight/offsetWidth」都会强制整树重排，
-      // 1253 卡 × 多代嵌套 ≈ 上千次整树重排 = 6.5 秒。批量读后每个块只重排 1 次。
-      var nM = Math.min(subs.length, slots.length);
-      var mW = [], mBase = [], mH = [];
-      for (var mi = 0; mi < nM; mi++) {
-        mW.push(subs[mi].offsetWidth);
-        mBase.push(slots[mi].offsetLeft); // 卡片左缘（与卡片同相对 .apt-children 坐标系）
-        mH.push(subs[mi].offsetHeight);
-      }
-      for (var i = 0; i < nM; i++) {
-        var subW = mW[i];
-        var base = mBase[i];
+      for (var i = 0; i < subs.length && i < slots.length; i++) {
+        var subW = subs[i].offsetWidth;
+        var base = slots[i].offsetLeft; // 卡片左缘（与卡片同相对 .apt-children 坐标系）
         var subLeft = (cursor > base) ? cursor : base;
         subs[i].style.left = subLeft + 'px';
         // .apt-sub 绝对定位的包含块是 .apt-children（subsRow 非定位），top 须按 subsRow 偏移压到卡片行下方
-        subs[i].style.top = rowTop + 'px';
+        subs[i].style.top = subsRow.offsetTop + 'px';
         if (subW > 0) cursor = subLeft + subW;
         var ext = subLeft + subW;
         if (ext > W) W = ext;
-        if (mH[i] > maxH) maxH = mH[i];
+        if (subs[i].offsetHeight > maxH) maxH = subs[i].offsetHeight;
         // 右移的子树：隐藏 sub 内居中 connector（它从不与卡片对齐），改画「卡片中心 → 孙代卡片行」斜线
         if (subLeft > base + 1) drawSubBridge(subs[i], slots[i], subLeft);
       }
@@ -2325,77 +1934,56 @@ function layoutAdminTreePositions() {
       }
     }
   }
-  flushAptBridges(); // 两阶段收尾：坐标已全部读完，统一 append 全部子树斜线
 }
 
 // 右移子树斜线：从卡片中心（sub 顶=卡片底）连到孙代卡片行第一个卡片顶部。
-// sub 内原来的 .apt-connector 是 margin:0 auto 居中于 sub 内容，从不与卡片对齐，右移后更偏移 → 隐藏之。
-// 性能优化（两阶段）：本函数只负责「测量 + 入队」，不触碰 DOM；layoutAdminTreePositions 末尾
-// 统一 flush（先读完全部坐标再批量 append）。旧实现每调一次就读 offsetLeft 后立刻 appendChild
-// → DOM 变脏 → 220 次全树强制重排 ≈ 4 秒。现改为布局结束只重排 1-2 次。
-var aptBridgeQueue = [];
+// sub 内原来的 .apt-connector 是 margin:0 auto 居中于 sub 内容，从不与卡片对齐，右移后更偏离 → 隐藏之。
 function drawSubBridge(sub, slot, subLeft) {
-  aptBridgeQueue.push({ sub: sub, slot: slot, subLeft: subLeft });
-}
-function flushAptBridges() {
-  if (!aptBridgeQueue.length) return;
-  var qs = aptBridgeQueue;
-  aptBridgeQueue = [];
-  var items = [];
-  for (var qi = 0; qi < qs.length; qi++) {
-    var q = qs[qi];
-    var sub = q.sub, slot = q.slot, subLeft = q.subLeft;
-    var card = slot.querySelector('.apt-card');
-    if (!card) continue;
-    var wrap = sub.querySelector(':scope > .apt-children-wrap');
-    if (!wrap) continue;
-    var gcChildren = wrap.querySelector(':scope > .apt-children');
-    if (!gcChildren) continue;
-    var gcRow = gcChildren.querySelector(':scope > .apt-cards-row');
-    if (!gcRow) continue;
-    var firstGc = gcRow.querySelector(':scope > .apt-child');
-    if (!firstGc) continue;
-    var conn = wrap.querySelector(':scope > .apt-connector');
-    var cardCenterInSub = (slot.offsetLeft + card.offsetWidth / 2) - subLeft;
-    var x1 = cardCenterInSub, y1 = 0; // sub 顶 = 卡片底
-    // 孙代卡片行第一个卡片中心（相对 sub；gcChildren 的 offsetParent 是 sub，gcRow 的 offsetParent 是 gcChildren，firstGc 的 offsetParent 是 gcRow）
-    var gcChLeft = gcChildren.offsetLeft;
-    var gcRowLeft = gcRow.offsetLeft;
-    var firstGcLeft = firstGc.offsetLeft;
-    var x2 = gcChLeft + gcRowLeft + firstGcLeft + firstGc.offsetWidth / 2;
-    var y2 = gcChildren.offsetTop + 9; // 落在孙代 hline 附近
-    var dx = x2 - x1, dy = y2 - y1;
-    var len = Math.sqrt(dx * dx + dy * dy);
-    if (len < 2) continue;
-    var ang = Math.atan2(dy, dx) * 180 / Math.PI;
-    // ⚠️ 树乱根因修复：桥必须挂到 .apt-children（position:relative 包含块）而不是 .apt-sub。
-    // .apt-sub 是 width:max-content，绝对定位 bridge 的 inline width 会被 Chromium 计入 max-content
-    // → sub 被桥撑大 → 下一轮 layout（DOMContentLoaded/fonts.ready/重渲染会跑多次）读到的 subW 更大
-    // → 树宽每轮放大 → 2^25 钳制爆炸（整树错乱、炎帝卡居中到 2^24）。坐标由「相对 sub」平移
-    // subLeft + subsRow.offsetTop 到「相对 .apt-children」即可，几何不变。
-    var subsRow = sub.parentElement;
-    var host = subsRow ? subsRow.parentElement : null; // .apt-children（.apt-sub 的包含块）
-    if (!host) continue;
-    items.push({ sub: sub, host: host, conn: conn, subsRow: subsRow, subLeft: subLeft, x1: x1, y1: y1, len: len, ang: ang });
-  }
-  // 所有坐标已读完（此过程仅触发 1 次重排），此时统一 append（写），之后不再读坐标 → 无再重排
-  for (var fi = 0; fi < items.length; fi++) {
-    var it = items[fi];
-    if (it.conn) it.conn.style.display = 'none';
-    if (it.sub._aptBridge) it.sub._aptBridge.remove(); // 幂等：layout 可能跑多次，先清旧线
-    var bridge = document.createElement('div');
-    bridge.className = 'apt-sub-bridge';
-    bridge.style.left = (it.subLeft + it.x1) + 'px';
-    bridge.style.top = (it.subsRow.offsetTop + it.y1) + 'px';
-    bridge.style.width = it.len + 'px';
-    bridge.style.transform = 'rotate(' + it.ang + 'deg)';
-    bridge.style.transformOrigin = '0 0';
-    // 越长的线越淡（远端支系连接线，避免横贯整树成噪点）
-    if (it.len > 2000) bridge.style.opacity = '0.08';
-    else if (it.len > 800) bridge.style.opacity = '0.12';
-    it.host.appendChild(bridge);
-    it.sub._aptBridge = bridge;
-  }
+  var card = slot.querySelector('.apt-card');
+  if (!card) return;
+  var wrap = sub.querySelector(':scope > .apt-children-wrap');
+  if (!wrap) return;
+  var gcChildren = wrap.querySelector(':scope > .apt-children');
+  if (!gcChildren) return;
+  var gcRow = gcChildren.querySelector(':scope > .apt-cards-row');
+  if (!gcRow) return;
+  var firstGc = gcRow.querySelector(':scope > .apt-child');
+  if (!firstGc) return;
+  var conn = wrap.querySelector(':scope > .apt-connector');
+  if (conn) conn.style.display = 'none';
+  var cardCenterInSub = (slot.offsetLeft + card.offsetWidth / 2) - subLeft;
+  var x1 = cardCenterInSub, y1 = 0; // sub 顶 = 卡片底
+  // 孙代卡片行第一个卡片中心（相对 sub；gcChildren 的 offsetParent 是 sub，gcRow 的 offsetParent 是 gcChildren，firstGc 的 offsetParent 是 gcRow）
+  var gcChLeft = gcChildren.offsetLeft;
+  var gcRowLeft = gcRow.offsetLeft;
+  var firstGcLeft = firstGc.offsetLeft;
+  var x2 = gcChLeft + gcRowLeft + firstGcLeft + firstGc.offsetWidth / 2;
+  var y2 = gcChildren.offsetTop + 9; // 落在孙代 hline 附近
+  var dx = x2 - x1, dy = y2 - y1;
+  var len = Math.sqrt(dx * dx + dy * dy);
+  if (len < 2) return;
+  var ang = Math.atan2(dy, dx) * 180 / Math.PI;
+  // ⚠️ 树乱根因修复：桥必须挂到 .apt-children（position:relative 包含块）而不是 .apt-sub。
+  // .apt-sub 是 width:max-content，绝对定位 bridge 的 inline width 会被 Chromium 计入 max-content
+  // → sub 被桥撑大 → 下一轮 layout（DOMContentLoaded/fonts.ready/重渲染会跑多次）读到的 subW 更大
+  // → 树宽每轮放大 → 2^25 钳制爆炸（整树错乱、炎帝卡居中到 2^24）。坐标由「相对 sub」平移
+  // subLeft + subsRow.offsetTop 到「相对 .apt-children」即可，几何不变。
+  var subsRow = sub.parentElement;
+  var host = subsRow ? subsRow.parentElement : null; // .apt-children（.apt-sub 的包含块）
+  if (!host) return;
+  if (sub._aptBridge) sub._aptBridge.remove(); // 幂等：layout 可能跑多次，先清旧线
+  var bridge = document.createElement('div');
+  bridge.className = 'apt-sub-bridge';
+  bridge.style.left = (subLeft + x1) + 'px';
+  bridge.style.top = (subsRow.offsetTop + y1) + 'px';
+  bridge.style.width = len + 'px';
+  bridge.style.transform = 'rotate(' + ang + 'deg)';
+  bridge.style.transformOrigin = '0 0';
+  // 越长的线越淡（远端支系连接线，避免横贯整树成噪点）
+  if (len > 2000) bridge.style.opacity = '0.08';
+  else if (len > 800) bridge.style.opacity = '0.12';
+  host.appendChild(bridge);
+  sub._aptBridge = bridge;
 }
 
 function scheduleAptLayout() {
@@ -2503,7 +2091,7 @@ function renderGenealogyOverview(area) {
   html += '</div>';
   html += '<div class="apt-tree-viewport" id="apt-tree-viewport">';
   html += '<div class="apt-tree" id="admin-genealogy-tree">';
-  html += buildAdminTreeVerticalHtml(allData, {ancBox: true});
+  html += buildAdminTreeHtml(allData, {ancBox: true, hideBranch: true});
   html += '</div>';
   html += '</div>';
   html += '</div>';
@@ -4252,7 +3840,7 @@ function initTreePanZoom() {
   };
 
   vp.onmousedown = function(e) {
-    if (e.target.closest('.apt-zoom-btn, .apt-btn-expand, .apt-card, .apt-btn-add, .apt-btn-del, .aptv-row, .aptv-caret, .aptv-btn, select, input, button')) return;
+    if (e.target.closest('.apt-zoom-btn, .apt-btn-expand, .apt-card, .apt-btn-add, .apt-btn-del, select, input, button')) return;
     treeDragging = true;
     treeDragStartX = e.clientX;
     treeDragStartY = e.clientY;
@@ -4297,27 +3885,6 @@ function zoomTree(factor) {
   }
   applyTreeTransform(tree);
   updateZoomLevel();
-}
-
-// 快速添加后：把指定卡片移到树视口中心并高亮闪烁（树为 overflow:hidden + transform pan/zoom，非滚动）
-function focusTreeCard(id) {
-  var vp = document.getElementById('apt-tree-viewport');
-  var tree = vp ? vp.querySelector('.apt-tree') : null;
-  if (!vp || !tree) return;
-  var card = tree.querySelector('.apt-card[data-pid="' + id + '"], .aptv-row[data-pid="' + id + '"]');
-  if (!card) return;
-  // 卡片相对树左上角的屏幕距离（含当前 translate/scale），反推世界坐标后重设 pan 使其到视口中心
-  var cr = card.getBoundingClientRect();
-  var tr = tree.getBoundingClientRect();
-  var vpr = vp.getBoundingClientRect();
-  var cardCX = cr.left + cr.width / 2 - tr.left;
-  var cardCY = cr.top + cr.height / 2 - tr.top;
-  treePanX = treePanX + (vpr.width / 2 - cardCX);
-  treePanY = treePanY + (vpr.height / 2 - cardCY);
-  applyTreeTransform(tree);
-  updateZoomLevel();
-  card.classList.add('apt-card-flash');
-  setTimeout(function() { card.classList.remove('apt-card-flash'); }, 5000);
 }
 
 function fitTree() {
@@ -4394,12 +3961,11 @@ function renderGenealogyTree() {
   if (genFilter && genFilter.value) {
     filtered = filtered.filter(function(p) { return String(p.generation_num) === genFilter.value; });
   }
-  treeEl.innerHTML = buildAdminTreeVerticalHtml(filtered, {ancBox: true});
+  treeEl.innerHTML = buildAdminTreeHtml(filtered, {ancBox: true, hideBranch: true});
 }
 
 window.genealogyUpdateMother = genealogyUpdateMother;
 window.toggleTreeNode = toggleTreeNode;
-window.aptvToggle = aptvToggle;
 window.renderGenealogyTree = renderGenealogyTree;
 window.switchModule = switchModule;
 window.showAddForm = showAddForm;
@@ -4684,7 +4250,7 @@ function onCardDrop(event) {
   for (var ci = 0; ci < cards.length; ci++) cards[ci].style.outline = '';
 
   var sourceId = dragPersonId;
-  var targetCard = event.target.closest('.apt-card, .aptv-row');
+  var targetCard = event.target.closest('.apt-card');
   if (!targetCard) return;
   var targetId = parseInt(targetCard.getAttribute('data-pid'));
   if (!targetId || sourceId === targetId) return;
