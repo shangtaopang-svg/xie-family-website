@@ -906,6 +906,7 @@ function buildAdminTreeHtml(data, opts) {
       var spN = person.spouse_ids.toString().split(',').map(function(n){return n.trim();}).filter(function(n){return n;});
       for (var si = 0; si < spN.length; si++) { if (spN[si].indexOf('入赘') >= 0 || spN[si].indexOf('女婿') >= 0) { ruzhuiPartner = true; break; } }
     }
+    var isCollapsible = opts.collapsedIds && opts.collapsedIds[person.id] && childrenOf(person).length > 0;
     var cClass = 'apt-card ' + (person.gender === '男' ? 'apt-male' : 'apt-female');
     if (opts.ancBox && ancIds[person.id]) cClass += ' apt-card-anc'; // 远古世系墨绿
     if (opts.ancBox && shenboIds[person.id]) cClass += ' apt-card-shenbo'; // 申伯世系咖啡
@@ -913,12 +914,17 @@ function buildAdminTreeHtml(data, opts) {
     if (opts.ancBox && linhaiIds[person.id]) cClass += ' apt-card-linhai'; // 临海下渡橙色
     if (isRuzhui) cClass += ' apt-ruzhui';
     if (ruzhuiPartner) cClass += ' apt-ruzhui-partner';
-    var html = '<div class="' + cClass + '" data-pid="' + person.id + '" draggable="true" onmouseup="if(!this.dataset.dragged){adminEditOrNotice(\'genealogy\',' + person.id + ')};this.dataset.dragged=\'\'" title="点击编辑 | 拖拽到其他人建立关系" ondragstart="onCardDragStart(event, ' + person.id + ');this.dataset.dragged=\'1\'" ondrop="onCardDrop(event)" ondragover="event.preventDefault()" ondragenter="this.style.outline=\'2px solid var(--accent-orange)\'" ondragleave="this.style.outline=\'\'">';
+    if (isCollapsible) cClass += ' apt-collapsible'; // 大支可点击卡片收起/展开（攒/撰）
+    var clickAction = isCollapsible ? 'toggleTreeNodeByPid(this)' : 'adminEditOrNotice(\'genealogy\',' + person.id + ')';
+    var cardTitle = isCollapsible ? '点击展开/收起此支全部族人 | 拖拽到其他人建立关系' : '点击编辑 | 拖拽到其他人建立关系';
+    var html = '<div class="' + cClass + '" data-pid="' + person.id + '" draggable="true" onmouseup="if(!this.dataset.dragged){' + clickAction + '};this.dataset.dragged=\'\'" title="' + cardTitle + '" ondragstart="onCardDragStart(event, ' + person.id + ');this.dataset.dragged=\'1\'" ondrop="onCardDrop(event)" ondragover="event.preventDefault()" ondragenter="this.style.outline=\'2px solid var(--accent-orange)\'" ondragleave="this.style.outline=\'\'">';
     html += '<div class="apt-card-inner">';
     html += '<div class="apt-card-actions" onclick="event.stopPropagation();">';
     html += '<button class="apt-btn-add" onclick="adminAddChildFor(' + person.id + ',\'' + person.name + '\',\'' + (person.branch || '') + '\')" title="添加子女">+</button>';
       if (childrenOf(person).length > 0) {
-        html += '<button class="apt-btn-expand" onclick="toggleTreeNode(this)" title="展开/折叠">▶</button>';
+        // ▶=收起（默认折叠大支）/▼=展开；初始状态与实际一致
+        var _btnText = (opts.collapsedIds && opts.collapsedIds[person.id]) ? '▶' : '▼';
+        html += '<button class="apt-btn-expand" onclick="toggleTreeNode(this)" title="展开/折叠">' + _btnText + '</button>';
       }
     html += '<button class="apt-btn-del" onclick="adminDeleteFor(' + person.id + ',\'' + person.name + '\',\'' + (person.branch || '') + '\')" title="删除此人">−</button>';
     html += '</div>';
@@ -929,6 +935,8 @@ function buildAdminTreeHtml(data, opts) {
     }
     // 无后代标记（世代总览丹二：数据中确无后代记录，保留「无后」卡片不展开）
     if (opts.noDescIds && opts.noDescIds[person.id]) html += '<span class="apt-nodesc-badge" title="无后代记录">无后</span>';
+    // 后裔收进右下角框的标记（世代总览丹三：本人保留在主区域，后裔在角落框查看）
+    if (opts.cornerIds && opts.cornerIds[person.id]) html += '<span class="apt-corner-badge" title="后裔已收进右下角框，点击可缩放查看">后裔→右下角</span>';
     html += escapeHtml(person.name) + '</div>';
     if (!opts.hideGen) {
       var genText = (person.generation_num || '?') + '世';
@@ -1021,7 +1029,9 @@ function buildAdminTreeHtml(data, opts) {
     html += '</div>'; // apt-cards-row
     html += '<div class="apt-subs-row">';
     for (var ck2 = 0; ck2 < kids.length; ck2++) {
-      html += '<div class="apt-sub" data-pid="' + kids[ck2].id + '">';
+      // 默认折叠的大支（攒/撰）：sub 直接 display:none，点击卡片展开
+      var _subCollapsed = opts.collapsedIds && opts.collapsedIds[kids[ck2].id];
+      html += '<div class="apt-sub" data-pid="' + kids[ck2].id + '"' + (_subCollapsed ? ' style="display:none"' : '') + '>';
       html += renderAptChildrenBlock(kids[ck2], _path.concat([kids[ck2].id]));
       html += '</div>';
     }
@@ -1764,6 +1774,9 @@ function getGenealogyTreeCSS() {
     '.apt-children-wrap{display:block;}' +
     '.apt-btn-expand{width:18px;height:18px;border:none;border-radius:50%;font-size:10px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;background:var(--accent-orange);color:#fff;transition:transform 0.1s;}' +
     '.apt-btn-expand:hover{transform:scale(1.2);}' +
+    '.apt-collapsible{cursor:pointer;}' + // 可折叠大支（攒/撰）：点击卡片收起/展开
+    '.apt-collapsible:hover .apt-card-inner{border-color:var(--accent-orange);box-shadow:0 0 0 2px rgba(245,158,11,.22);}' +
+    '.apt-collapsible .apt-btn-expand{background:#f59e0b;}' +
     '.apt-children-count{font-size:8px;color:var(--text-tertiary);margin-top:2px;opacity:0.5;}' +
     '.apt-tree-filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}' +
     '.apt-tree-filters select{padding:6px 10px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:12px;}' +
@@ -1791,8 +1804,10 @@ function getGenealogyTreeCSS() {
     '.apt-tree-fullscreen .apt-left{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;padding:56px 12px 12px 12px;border-radius:0;overflow:hidden;}' +
     '.apt-tree-fullscreen .apt-tree-viewport{height:calc(100vh - 100px);min-height:0;}' +
     '.apt-tree-fullscreen #apt-fullscreen-btn{background:var(--accent-orange);color:#fff;}' +
-    // 丹三及后代独立角落框（迷你总览 → 点击缩放查看）；position:fixed 钉在视口角落，不随超大树面板滚动消失
-    '.apt-dsan-box{position:fixed;right:14px;bottom:14px;z-index:40;width:250px;height:168px;background:var(--bg-card);border:1px solid var(--accent-orange);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.22);overflow:hidden;display:flex;flex-direction:column;transition:width .2s ease,height .2s ease;}' +
+    // 少数支系独立角落框（迷你总览 → 点击缩放查看）；position:fixed 钉在视口角落，不随超大树面板滚动消失
+    '.apt-dsan-box{position:fixed;right:14px;z-index:40;width:250px;height:168px;background:var(--bg-card);border:1px solid var(--accent-orange);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.22);overflow:hidden;display:flex;flex-direction:column;transition:width .2s ease,height .2s ease;}' +
+    '#apt-dsan-box{bottom:14px;}' + // 丹三支系框：右下角
+    '#apt-wenju-box{bottom:192px;}' + // 文榘支系框：叠在丹三框上方（14+168+10）
     '.apt-dsan-box:hover{border-color:var(--accent-orange);}' +
     '.apt-dsan-box.dsan-expanded{width:min(820px,86%);height:min(600px,80%);z-index:60;}' +
     '.apt-dsan-header{display:flex;align-items:center;gap:6px;padding:5px 10px;font-size:12px;font-weight:600;color:var(--text-primary);background:rgba(0,0,0,.06);border-bottom:1px solid var(--glass-border);cursor:pointer;user-select:none;flex:none;}' +
@@ -1804,6 +1819,7 @@ function getGenealogyTreeCSS() {
     '.apt-dsan-box.dsan-expanded .apt-dsan-viewport{cursor:grab;}' +
     '.apt-dsan-box.dsan-expanded .apt-dsan-viewport:active{cursor:grabbing;}' +
     '.apt-nodesc-badge{display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#94a3b8;border-radius:3px;padding:0 5px;margin-right:4px;vertical-align:middle;line-height:16px;}' +
+    '.apt-corner-badge{display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#f59e0b;border-radius:3px;padding:0 5px;margin-right:4px;vertical-align:middle;line-height:16px;}' +
     '.apt-link{cursor:pointer;border-bottom:1px dashed var(--accent-orange);transition:color 0.15s;}' +
     '.apt-link:hover{color:var(--accent-orange);}' +
     '';
@@ -2056,9 +2072,18 @@ function renderGenealogyOverview(area) {
   var data = allData;
   // —— 主区域只展示丹一后代：丹三(1210)及其全部后代收进角落小框；
   // 丹二(1209)数据中无后代，保留「无后」标记；右侧统计/表格仍用全量数据。
-  var dsanIds = collectOverviewSubtree(1210, allData);
-  var mainData = allData.filter(function(p) { return !dsanIds[p.id]; });
-  var dsanData = allData.filter(function(p) { return dsanIds[p.id]; });
+  // 少数支系（丹三支 1210 / 文榘支 1211）收进独立角落框，主区域只保留主干大支，减少整体结构庞大与页面宽度。
+  // 两个支系本人（丹三/文榘）保留在主区域父辈名下（否则会以为小四只有两个儿子 / 丹一只有一个儿子）。
+  var dsanAllIds = collectOverviewSubtree(1210, allData);
+  var wenjuAllIds = collectOverviewSubtree(1211, allData);
+  var boxedIds = {};
+  [1210, 1211].forEach(function(root) {
+    var ids = (root === 1210) ? dsanAllIds : wenjuAllIds;
+    for (var dk in ids) { if (+dk !== root) boxedIds[dk] = true; }
+  });
+  var mainData = allData.filter(function(p) { return !boxedIds[p.id]; });
+  var dsanData = allData.filter(function(p) { return dsanAllIds[p.id]; });
+  var wenjuData = allData.filter(function(p) { return wenjuAllIds[p.id]; });
 
   var gens = {};
   var branchSet = {};
@@ -2116,11 +2141,12 @@ function renderGenealogyOverview(area) {
   html += '</div>';
   html += '<div class="apt-tree-viewport" id="apt-tree-viewport">';
   html += '<div class="apt-tree" id="admin-genealogy-tree">';
-  html += buildAdminTreeHtml(mainData, {ancBox: true, hideBranch: true, noDescIds: {1209: true}});
+  html += buildAdminTreeHtml(mainData, {ancBox: true, hideBranch: true, noDescIds: {1209: true}, cornerIds: {1210: true, 1211: true}, collapsedIds: {12: true, 13: true}});
   html += '</div>';
   html += '</div>';
-  // 丹三及后代独立角落框（迷你总览 → 点击缩放查看）
-  html += buildDsanCornerHtml(dsanData);
+  // 少数支系独立角落框（迷你总览 → 点击缩放查看）：丹三支 + 文榘支
+  html += buildCornerBoxHtml('apt-dsan-box', '丹三支系', dsanData);
+  html += buildCornerBoxHtml('apt-wenju-box', '文榘支系', wenjuData);
   html += '</div>';
 
   // ===== RIGHT: Stats + search + table =====
@@ -2168,8 +2194,8 @@ function renderGenealogyOverview(area) {
   html += '<style>' + getGenealogyTreeCSS() + '</style>';
 
   area.innerHTML = html;
-  // 丹三角落框：等布局算完自然尺寸后缩成迷你图；绑定缩放/平移
-  setTimeout(function() { initDsanPanZoom(); fitDsanMini(); }, 150);
+  // 各角落框：等布局算完自然尺寸后缩成迷你图；绑定缩放/平移
+  setTimeout(function() { initCornerPanZoom('apt-dsan-box'); fitCornerMini('apt-dsan-box'); initCornerPanZoom('apt-wenju-box'); fitCornerMini('apt-wenju-box'); }, 150);
 }
 
 function filterGenealogyTable() {
@@ -3950,9 +3976,8 @@ function toggleTreeFullscreen() {
   }
 }
 
-// ===== 世代总览：丹三角落框（丹三 1210 及后代独立小树，点击缩放查看） =====
-var dsanZoom = 1, dsanPanX = 0, dsanPanY = 0, dsanExpanded = false;
-var dsanDragging = false, dsanDragStartX, dsanDragStartY, dsanPanStartX, dsanPanStartY;
+// ===== 世代总览：少数支系独立角落框（通用，丹三 1210 / 文榘 1211 及各自后代独立小树，点击缩放查看） =====
+// 每框状态（zoom/pan/expanded）挂在本框 DOM 元素 _st 上，互不干扰
 
 // 收集 rootId 及其全部后代 id（父链遍历，含环保护；供主区域剔除丹三支、角落框取数）
 function collectOverviewSubtree(rootId, data) {
@@ -3975,23 +4000,30 @@ function collectOverviewSubtree(rootId, data) {
   return ids;
 }
 
-function buildDsanCornerHtml(dsanData) {
-  var n = dsanData ? dsanData.length : 0;
-  var html = '<div class="apt-dsan-box" id="apt-dsan-box">';
-  html += '<div class="apt-dsan-header" onclick="toggleDsanBox()" title="丹三支系（' + n + '人）· 点击缩放查看">';
-  html += '<span>丹三支系</span><span class="dsan-count">' + n + '人</span><span class="dsan-toggle-btn">⛶</span>';
+function buildCornerBoxHtml(boxId, title, data) {
+  var n = data ? data.length : 0;
+  var html = '<div class="apt-dsan-box" id="' + boxId + '">';
+  html += '<div class="apt-dsan-header" onclick="toggleCornerBox(\'' + boxId + '\')" title="' + title + '（' + n + '人）· 点击缩放查看">';
+  html += '<span>' + title + '</span><span class="dsan-count">' + n + '人</span><span class="dsan-toggle-btn">⛶</span>';
   html += '</div>';
   html += '<div class="apt-dsan-viewport">';
-  html += buildAdminTreeHtml(dsanData || [], {ancBox: false, hideBranch: true});
+  html += buildAdminTreeHtml(data || [], {ancBox: false, hideBranch: true});
   html += '</div>';
   html += '</div>';
   return html;
 }
 
-// 迷你模式：把整棵丹三树缩放到角落框内（layout 跑完后自然尺寸已定）
-function fitDsanMini() {
-  var box = document.getElementById('apt-dsan-box');
-  if (!box) return;
+function cornerBoxState(boxId) {
+  var box = document.getElementById(boxId);
+  if (!box) return null;
+  if (!box._st) box._st = { z: 1, px: 0, py: 0, expanded: false };
+  return box._st;
+}
+
+// 迷你模式：把整棵小树缩放到角落框内（layout 跑完后自然尺寸已定）
+function fitCornerMini(boxId) {
+  var box = document.getElementById(boxId);
+  if (!box || !box._st) return;
   var vp = box.querySelector('.apt-dsan-viewport');
   var tree = vp ? vp.querySelector('.apt-tree') : null;
   if (!vp || !tree) return;
@@ -4005,32 +4037,33 @@ function fitDsanMini() {
   tree.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + s + ')';
 }
 
-function toggleDsanBox() {
-  var box = document.getElementById('apt-dsan-box');
+function toggleCornerBox(boxId) {
+  var box = document.getElementById(boxId);
   if (!box) return;
-  dsanExpanded = !dsanExpanded;
-  box.classList.toggle('dsan-expanded', dsanExpanded);
+  var st = cornerBoxState(boxId);
+  st.expanded = !st.expanded;
+  box.classList.toggle('dsan-expanded', st.expanded);
   var btn = box.querySelector('.dsan-toggle-btn');
-  if (btn) btn.textContent = dsanExpanded ? '✕' : '⛶';
+  if (btn) btn.textContent = st.expanded ? '✕' : '⛶';
   var vp = box.querySelector('.apt-dsan-viewport');
   var tree = vp ? vp.querySelector('.apt-tree') : null;
-  if (dsanExpanded) {
+  if (st.expanded) {
     // 展开：先清 transform，等框变大后把整树适应进视口，之后可拖拽/滚轮缩放
-    dsanZoom = 1; dsanPanX = 0; dsanPanY = 0;
+    st.z = 1; st.px = 0; st.py = 0;
     if (tree) tree.style.transform = '';
-    setTimeout(function() { fitDsanExpanded(); }, 60);
-    setTimeout(function() { fitDsanExpanded(); }, 320); // 过渡(0.2s)结束后精确适应，避免小视口测得偏小
+    setTimeout(function() { fitCornerExpanded(boxId); }, 60);
+    setTimeout(function() { fitCornerExpanded(boxId); }, 320); // 过渡(0.2s)结束后精确适应，避免小视口测得偏小
   } else {
     // 收起：回到迷你缩放图（等过渡结束再测尺寸，避免框还在缩小测得视口偏大导致裁剪）
-    dsanZoom = 1; dsanPanX = 0; dsanPanY = 0;
-    setTimeout(function() { fitDsanMini(); }, 60);
-    setTimeout(function() { fitDsanMini(); }, 320);
+    st.z = 1; st.px = 0; st.py = 0;
+    setTimeout(function() { fitCornerMini(boxId); }, 60);
+    setTimeout(function() { fitCornerMini(boxId); }, 320);
   }
 }
 
-function fitDsanExpanded() {
-  var box = document.getElementById('apt-dsan-box');
-  if (!box || !dsanExpanded) return;
+function fitCornerExpanded(boxId) {
+  var box = document.getElementById(boxId);
+  if (!box || !box._st || !box._st.expanded) return;
   var vp = box.querySelector('.apt-dsan-viewport');
   var tree = vp ? vp.querySelector('.apt-tree') : null;
   if (!vp || !tree) return;
@@ -4039,55 +4072,56 @@ function fitDsanExpanded() {
   var vw = vp.clientWidth - 10, vh = vp.clientHeight - 10;
   var z = Math.min(vw / tw, vh / th);
   z = Math.max(0.05, Math.min(z, 1.5));
-  dsanZoom = z; dsanPanX = 5; dsanPanY = 5;
-  applyDsanTransform();
+  box._st.z = z; box._st.px = 5; box._st.py = 5;
+  applyCornerTransform(boxId);
 }
 
-function applyDsanTransform() {
-  var box = document.getElementById('apt-dsan-box');
-  if (!box) return;
+function applyCornerTransform(boxId) {
+  var box = document.getElementById(boxId);
+  if (!box || !box._st) return;
   var tree = box.querySelector('.apt-dsan-viewport .apt-tree');
   if (!tree) return;
-  tree.style.transform = 'translate(' + dsanPanX + 'px,' + dsanPanY + 'px) scale(' + dsanZoom + ')';
+  tree.style.transform = 'translate(' + box._st.px + 'px,' + box._st.py + 'px) scale(' + box._st.z + ')';
 }
 
-function initDsanPanZoom() {
-  var box = document.getElementById('apt-dsan-box');
-  if (!box) return;
+function initCornerPanZoom(boxId) {
+  var box = document.getElementById(boxId);
+  if (!box || !box._st) return;
   var vp = box.querySelector('.apt-dsan-viewport');
   if (!vp) return;
+  var drag = { on: false, sx: 0, sy: 0, pxs: 0, pys: 0 };
   vp.onwheel = function(e) {
-    if (!dsanExpanded) return;
+    if (!box._st.expanded) return;
     e.preventDefault();
     var rect = vp.getBoundingClientRect();
     var mx = e.clientX - rect.left, my = e.clientY - rect.top;
     var f = e.deltaY < 0 ? 1.1 : 0.9;
-    var nz = Math.max(0.05, Math.min(5, dsanZoom * f));
-    dsanPanX = mx - (mx - dsanPanX) * (nz / dsanZoom);
-    dsanPanY = my - (my - dsanPanY) * (nz / dsanZoom);
-    dsanZoom = nz;
-    applyDsanTransform();
+    var nz = Math.max(0.05, Math.min(5, box._st.z * f));
+    box._st.px = mx - (mx - box._st.px) * (nz / box._st.z);
+    box._st.py = my - (my - box._st.py) * (nz / box._st.z);
+    box._st.z = nz;
+    applyCornerTransform(boxId);
   };
   vp.onmousedown = function(e) {
-    if (!dsanExpanded) return;
+    if (!box._st.expanded) return;
     if (e.target.closest('.apt-card, button, select, input')) return;
-    dsanDragging = true;
-    dsanDragStartX = e.clientX; dsanDragStartY = e.clientY;
-    dsanPanStartX = dsanPanX; dsanPanStartY = dsanPanY;
+    drag.on = true;
+    drag.sx = e.clientX; drag.sy = e.clientY;
+    drag.pxs = box._st.px; drag.pys = box._st.py;
     vp.style.cursor = 'grabbing';
     e.preventDefault();
   };
   vp.onmousemove = function(e) {
-    if (!dsanDragging) return;
-    dsanPanX = dsanPanStartX + (e.clientX - dsanDragStartX);
-    dsanPanY = dsanPanStartY + (e.clientY - dsanDragStartY);
-    applyDsanTransform();
+    if (!drag.on) return;
+    box._st.px = drag.pxs + (e.clientX - drag.sx);
+    box._st.py = drag.pys + (e.clientY - drag.sy);
+    applyCornerTransform(boxId);
   };
   vp.onmouseup = function() {
-    if (dsanDragging) { dsanDragging = false; vp.style.cursor = 'grab'; }
+    if (drag.on) { drag.on = false; vp.style.cursor = 'grab'; }
   };
   vp.onmouseleave = function() {
-    if (dsanDragging) { dsanDragging = false; vp.style.cursor = 'grab'; }
+    if (drag.on) { drag.on = false; vp.style.cursor = 'grab'; }
   };
 }
 
@@ -4109,14 +4143,36 @@ renderGenealogyTree = function() {
 function toggleTreeNode(btn) {
   var card = btn.closest('.apt-card');
   if (!card) return;
+  toggleTreeNodeByPid(card);
+}
+
+// 点击卡片/按钮 展开/折叠某大支（攒/撰等）；展开时自动收起同树其他可折叠大支，保持页面简洁
+function toggleTreeNodeByPid(card) {
+  if (!card) return;
   var pid = card.getAttribute('data-pid');
   var root = card.closest('.apt-tree');
   if (!root || !pid) return;
   var sub = root.querySelector('.apt-sub[data-pid="' + pid + '"]');
   if (!sub) return;
+  var btn = card.querySelector('.apt-btn-expand');
   var collapsed = sub.style.display === 'none';
+  if (collapsed) {
+    // 手风琴：展开一个时，收起同树其他可折叠大支（攒/撰互斥）
+    var others = root.querySelectorAll('.apt-card.apt-collapsible[data-pid]');
+    for (var oi = 0; oi < others.length; oi++) {
+      var oc = others[oi];
+      if (oc === card) continue;
+      var opid = oc.getAttribute('data-pid');
+      var osub = root.querySelector('.apt-sub[data-pid="' + opid + '"]');
+      if (osub && osub.style.display !== 'none') {
+        osub.style.display = 'none';
+        var obtn = oc.querySelector('.apt-btn-expand');
+        if (obtn) obtn.textContent = '▶';
+      }
+    }
+  }
   sub.style.display = collapsed ? '' : 'none';
-  btn.textContent = collapsed ? '▼' : '▶';
+  if (btn) btn.textContent = collapsed ? '▼' : '▶';
   scheduleAptLayout();
 }
 
@@ -4124,28 +4180,40 @@ function toggleTreeNode(btn) {
 function renderGenealogyTree() {
   var treeEl = document.getElementById('admin-genealogy-tree');
   if (!treeEl) return;
-  // ⚠️ 与世代总览一致：基于后台录入数据；丹三支系从主区域剔除（收进角落框）
+  // ⚠️ 与世代总览一致：基于后台录入数据；丹三支/文榘支从主区域剔除（收进各自角落框）
   var allData = getData('genealogy');
-  var dsanIds = collectOverviewSubtree(1210, allData);
-  var mainData = allData.filter(function(p) { return !dsanIds[p.id]; });
+  var dsanAllIds = collectOverviewSubtree(1210, allData);
+  var wenjuAllIds = collectOverviewSubtree(1211, allData);
+  var boxedIds = {};
+  [1210, 1211].forEach(function(root) {
+    var ids = (root === 1210) ? dsanAllIds : wenjuAllIds;
+    for (var dk in ids) { if (+dk !== root) boxedIds[dk] = true; }
+  });
+  var mainData = allData.filter(function(p) { return !boxedIds[p.id]; });
   var genFilter = document.getElementById('tree-filter-gen');
   var filtered = mainData;
   if (genFilter && genFilter.value) {
     filtered = filtered.filter(function(p) { return String(p.generation_num) === genFilter.value; });
   }
-  treeEl.innerHTML = buildAdminTreeHtml(filtered, {ancBox: true, hideBranch: true, noDescIds: {1209: true}});
-  // 同步刷新丹三角落框（数据可能已变化），重新绑定并缩成迷你图
-  var box = document.getElementById('apt-dsan-box');
-  if (box) {
-    var dsanData = allData.filter(function(p) { return dsanIds[p.id]; });
-    box.outerHTML = buildDsanCornerHtml(dsanData);
+  treeEl.innerHTML = buildAdminTreeHtml(filtered, {ancBox: true, hideBranch: true, noDescIds: {1209: true}, cornerIds: {1210: true, 1211: true}, collapsedIds: {12: true, 13: true}});
+  // 同步刷新各角落框（数据可能已变化），重新绑定并缩成迷你图
+  var dsanBox = document.getElementById('apt-dsan-box');
+  if (dsanBox) {
+    var dsanData = allData.filter(function(p) { return dsanAllIds[p.id]; });
+    dsanBox.outerHTML = buildCornerBoxHtml('apt-dsan-box', '丹三支系', dsanData);
   }
-  setTimeout(function() { initDsanPanZoom(); fitDsanMini(); }, 150);
+  var wenjuBox = document.getElementById('apt-wenju-box');
+  if (wenjuBox) {
+    var wenjuData = allData.filter(function(p) { return wenjuAllIds[p.id]; });
+    wenjuBox.outerHTML = buildCornerBoxHtml('apt-wenju-box', '文榘支系', wenjuData);
+  }
+  setTimeout(function() { initCornerPanZoom('apt-dsan-box'); fitCornerMini('apt-dsan-box'); initCornerPanZoom('apt-wenju-box'); fitCornerMini('apt-wenju-box'); }, 150);
 }
 
 window.genealogyUpdateMother = genealogyUpdateMother;
 window.toggleTreeNode = toggleTreeNode;
-window.toggleDsanBox = toggleDsanBox;
+window.toggleTreeNodeByPid = toggleTreeNodeByPid;
+window.toggleCornerBox = toggleCornerBox;
 window.renderGenealogyTree = renderGenealogyTree;
 window.switchModule = switchModule;
 window.showAddForm = showAddForm;
