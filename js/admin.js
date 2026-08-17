@@ -934,11 +934,11 @@ function buildAdminTreeHtml(data, opts) {
       } else if (person.generation && person.generation !== '—') {
         genSuffix = ' · ' + escapeHtml(person.generation);
       }
-      // 始宁东山世次标注（用户指定）：缵=始宁东山1世，衡=始宁东山3世（有意的2世缺口）；
-      // 鲲/裒及以后（衡之子→闓）补全「申伯N世/始宁东山M世」，M = 申伯世次−34 = generation_num−98，衡(1130)特殊指定3世。
+      // 始宁东山世次标注（用户指定）：缵=始宁东山1世，衡=始宁东山2世；
+      // 鲲/裒及以后（衡之子→闓）补全「申伯N世/始宁东山M世」，M = 申伯世次−34 = generation_num−98，衡(1130)特殊指定2世。
       if (opts.ancBox && dongshanIds[person.id] && person.generation_num) {
         var dsShenboGen = parseInt(person.generation_num) - 64; // 申伯世次
-        var dsDongshanGen = (person.id === 1130) ? 3 : (parseInt(person.generation_num) - 98); // 始宁东山世次
+        var dsDongshanGen = (person.id === 1130) ? 2 : (parseInt(person.generation_num) - 98); // 始宁东山世次
         if (shenboIds[person.id]) {
           genText += '/始宁东山' + dsDongshanGen + '世'; // 缵/衡：申伯世次已有，只补东山
         } else {
