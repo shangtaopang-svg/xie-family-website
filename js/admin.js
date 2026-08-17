@@ -2069,8 +2069,14 @@ function scheduleAptLayout() {
     if (window._aptNeedAnchor && !window._aptUserMoved) {
       window._aptNeedAnchor = false;
       window._aptAnchorDone = true;
-      anchorOverviewView();
+      var found = anchorOverviewView();
       applyTreeTransform();
+      // 锚定没找到目标卡（生产上 supabase 数据异步加载，本次渲染可能是空树/树未渲染完）：
+      // 撤销锚定完成标记并重新武装，等数据到位后的下一次渲染（renderModule 分支再触发）再锚定。
+      if (!found) {
+        window._aptNeedAnchor = true;
+        window._aptAnchorDone = false;
+      }
     }
   });
 }
@@ -3967,11 +3973,13 @@ function getActualPan() {
 // 三子最左一子在视口左侧。用「实际应用平移」扣减，identity 窗口内也正确。
 // 注意视口不在页面 x=0（管理后台左侧有侧栏），横向同样要扣 vpr.left，
 // 否则 panX 会偏出 vpr.left 像素、锚点被甩出视口左侧（曾把三子锚到 -481 处不可见）。
+// 返回是否真正锚定成功（找到目标卡）。生产上 supabase 数据异步加载，首次渲染可能是空树，
+// 锚定找不到卡 → 返回 false，scheduleAptLayout 撤销锚定完成标记、等数据到位后的重渲染再锚定。
 function anchorOverviewView() {
   var vp = document.getElementById('apt-tree-viewport');
-  if (!vp) return;
+  if (!vp) return false;
   var inner = vp.querySelector('.apt-anc-box-enabled');
-  if (!inner) return;
+  if (!inner) return false;
   var vpr = vp.getBoundingClientRect();
   var vpTop = vpr.top, vpLeft = vpr.left;
   var act = getActualPan();
@@ -3980,14 +3988,18 @@ function anchorOverviewView() {
     var c = inner.querySelector('.apt-card[data-pid="' + pid + '"]');
     return c ? c.getBoundingClientRect() : null;
   }).filter(Boolean);
+  var found = false;
   if (xiaosi) {
     var xsR = xiaosi.getBoundingClientRect();
     treePanY = -((xsR.top - act.y) - vpTop - 60);
+    found = true;
   }
   if (sonRects.length) {
     var minX = Math.min.apply(null, sonRects.map(function(r) { return r.left - vpLeft - act.x; }));
     treePanX = -(minX - 40);
+    found = true;
   }
+  return found;
 }
 
 function applyTreeTransform(tree) {
