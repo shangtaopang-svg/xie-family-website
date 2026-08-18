@@ -924,7 +924,7 @@ function buildAdminTreeHtml(data, opts) {
       if (childrenOf(person).length > 0) {
         // ▶=收起（默认折叠大支）/▼=展开；初始状态与实际一致
         var _btnText = (opts.collapsedIds && opts.collapsedIds[person.id]) ? '▶' : '▼';
-        html += '<button class="apt-btn-expand" onclick="toggleTreeNode(this)" title="展开/折叠">' + _btnText + '</button>';
+        html += '<button class="apt-btn-expand" onmouseup="event.stopPropagation()" onclick="toggleTreeNode(this)" title="展开/折叠">' + _btnText + '</button>';
       }
     html += '<button class="apt-btn-del" onclick="adminDeleteFor(' + person.id + ',\'' + person.name + '\',\'' + (person.branch || '') + '\')" title="删除此人">−</button>';
     html += '</div>';
@@ -1810,7 +1810,8 @@ function getGenealogyTreeCSS() {
     '#apt-wenju-box{bottom:192px;}' + // 文榘支系框：叠在丹三框上方（14+168+10）
     '.apt-dsan-box:hover{border-color:var(--accent-orange);}' +
     '.apt-dsan-box.dsan-expanded{width:min(820px,86%);height:min(600px,80%);z-index:60;}' +
-    '.apt-dsan-header{display:flex;align-items:center;gap:6px;padding:5px 10px;font-size:12px;font-weight:600;color:var(--text-primary);background:rgba(0,0,0,.06);border-bottom:1px solid var(--glass-border);cursor:pointer;user-select:none;flex:none;}' +
+    '.apt-dsan-header{display:flex;align-items:center;gap:6px;padding:5px 10px;font-size:12px;font-weight:600;color:var(--text-primary);background:rgba(0,0,0,.06);border-bottom:1px solid var(--glass-border);cursor:grab;user-select:none;flex:none;touch-action:none;}' +
+    '.apt-dsan-header:active{cursor:grabbing;}' +
     '.apt-dsan-header .dsan-count{font-size:10px;font-weight:400;color:var(--text-tertiary);}' +
     '.apt-dsan-header .dsan-toggle-btn{margin-left:auto;font-size:14px;line-height:1;opacity:.8;}' +
     '.apt-dsan-viewport{flex:1;overflow:hidden;position:relative;background:var(--bg-secondary);}' +
@@ -1818,6 +1819,10 @@ function getGenealogyTreeCSS() {
     '.apt-dsan-box:not(.dsan-expanded) .apt-dsan-viewport{pointer-events:none;}' + // 迷你总览不拦截主树操作/不误开编辑
     '.apt-dsan-box.dsan-expanded .apt-dsan-viewport{cursor:grab;}' +
     '.apt-dsan-box.dsan-expanded .apt-dsan-viewport:active{cursor:grabbing;}' +
+    '.apt-dsan-resize{position:absolute;right:1px;bottom:1px;width:16px;height:16px;cursor:nwse-resize;z-index:5;display:flex;align-items:flex-end;justify-content:flex-end;touch-action:none;}' +
+    '.apt-dsan-resize::after{content:"";width:8px;height:8px;border-right:2px solid rgba(0,0,0,.4);border-bottom:2px solid rgba(0,0,0,.4);border-bottom-right-radius:2px;}' +
+    '.apt-dsan-box.cb-dragging,.apt-dsan-box.cb-resizing{transition:none!important;box-shadow:0 12px 34px rgba(0,0,0,.32);}' + // 拖拽/缩放时禁用过渡避免滞后
+    '.apt-dsan-box.cb-dragging{border-color:#f59e0b;}' +
     '.apt-nodesc-badge{display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#94a3b8;border-radius:3px;padding:0 5px;margin-right:4px;vertical-align:middle;line-height:16px;}' +
     '.apt-corner-badge{display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#f59e0b;border-radius:3px;padding:0 5px;margin-right:4px;vertical-align:middle;line-height:16px;}' +
     '.apt-link{cursor:pointer;border-bottom:1px dashed var(--accent-orange);transition:color 0.15s;}' +
@@ -2195,7 +2200,7 @@ function renderGenealogyOverview(area) {
 
   area.innerHTML = html;
   // 各角落框：等布局算完自然尺寸后缩成迷你图；绑定缩放/平移
-  setTimeout(function() { initCornerPanZoom('apt-dsan-box'); fitCornerMini('apt-dsan-box'); initCornerPanZoom('apt-wenju-box'); fitCornerMini('apt-wenju-box'); }, 150);
+  setTimeout(function() { initCornerBoxControls('apt-dsan-box'); initCornerPanZoom('apt-dsan-box'); fitCornerMini('apt-dsan-box'); initCornerBoxControls('apt-wenju-box'); initCornerPanZoom('apt-wenju-box'); fitCornerMini('apt-wenju-box'); }, 150);
 }
 
 function filterGenealogyTable() {
@@ -4003,12 +4008,13 @@ function collectOverviewSubtree(rootId, data) {
 function buildCornerBoxHtml(boxId, title, data) {
   var n = data ? data.length : 0;
   var html = '<div class="apt-dsan-box" id="' + boxId + '">';
-  html += '<div class="apt-dsan-header" onclick="toggleCornerBox(\'' + boxId + '\')" title="' + title + '（' + n + '人）· 点击缩放查看">';
+  html += '<div class="apt-dsan-header" title="' + title + '（' + n + '人）· 拖动标题栏移动位置 · 点击展开/收起">';
   html += '<span>' + title + '</span><span class="dsan-count">' + n + '人</span><span class="dsan-toggle-btn">⛶</span>';
   html += '</div>';
   html += '<div class="apt-dsan-viewport">';
   html += buildAdminTreeHtml(data || [], {ancBox: false, hideBranch: true});
   html += '</div>';
+  html += '<div class="apt-dsan-resize" title="拖动调整框大小"></div>';
   html += '</div>';
   return html;
 }
@@ -4018,6 +4024,27 @@ function cornerBoxState(boxId) {
   if (!box) return null;
   if (!box._st) box._st = { z: 1, px: 0, py: 0, expanded: false };
   return box._st;
+}
+
+// 角落框位置/尺寸偏好：跨重渲染（renderGenealogyTree 重建 outerHTML）保留，并持久化到 localStorage
+// x/y = 拖拽后的 left/top（null = 默认 right/bottom 定位）；w/h = 迷你尺寸；ew/eh = 展开尺寸（null = 默认类）
+var __cornerBoxPrefs = null;
+function loadCornerBoxPrefs() {
+  if (__cornerBoxPrefs) return __cornerBoxPrefs;
+  __cornerBoxPrefs = {};
+  try {
+    var s = localStorage.getItem('xie_admin_corner_boxes');
+    if (s) { var o = JSON.parse(s); if (o && typeof o === 'object') __cornerBoxPrefs = o; }
+  } catch (e) {}
+  return __cornerBoxPrefs;
+}
+function cornerBoxPrefs(boxId) {
+  var all = loadCornerBoxPrefs();
+  if (!all[boxId]) all[boxId] = { x: null, y: null, w: 250, h: 168, ew: null, eh: null };
+  return all[boxId];
+}
+function saveCornerBoxPrefs() {
+  try { localStorage.setItem('xie_admin_corner_boxes', JSON.stringify(__cornerBoxPrefs)); } catch (e) {}
 }
 
 // 迷你模式：把整棵小树缩放到角落框内（layout 跑完后自然尺寸已定）
@@ -4041,6 +4068,7 @@ function toggleCornerBox(boxId) {
   var box = document.getElementById(boxId);
   if (!box) return;
   var st = cornerBoxState(boxId);
+  var prefs = cornerBoxPrefs(boxId);
   st.expanded = !st.expanded;
   box.classList.toggle('dsan-expanded', st.expanded);
   var btn = box.querySelector('.dsan-toggle-btn');
@@ -4048,13 +4076,17 @@ function toggleCornerBox(boxId) {
   var vp = box.querySelector('.apt-dsan-viewport');
   var tree = vp ? vp.querySelector('.apt-tree') : null;
   if (st.expanded) {
-    // 展开：先清 transform，等框变大后把整树适应进视口，之后可拖拽/滚轮缩放
+    // 展开：应用用户自定义展开尺寸（若有），无自定义则清空 inline 让 .dsan-expanded 类生效；先清 transform
+    box.style.width = prefs.ew ? prefs.ew + 'px' : '';
+    box.style.height = prefs.eh ? prefs.eh + 'px' : '';
     st.z = 1; st.px = 0; st.py = 0;
     if (tree) tree.style.transform = '';
     setTimeout(function() { fitCornerExpanded(boxId); }, 60);
     setTimeout(function() { fitCornerExpanded(boxId); }, 320); // 过渡(0.2s)结束后精确适应，避免小视口测得偏小
   } else {
-    // 收起：回到迷你缩放图（等过渡结束再测尺寸，避免框还在缩小测得视口偏大导致裁剪）
+    // 收起：回到用户自定义迷你尺寸（过渡结束后再测尺寸，避免框还在缩小测得视口偏大导致裁剪）
+    box.style.width = (prefs.w || 250) + 'px';
+    box.style.height = (prefs.h || 168) + 'px';
     st.z = 1; st.px = 0; st.py = 0;
     setTimeout(function() { fitCornerMini(boxId); }, 60);
     setTimeout(function() { fitCornerMini(boxId); }, 320);
@@ -4125,6 +4157,98 @@ function initCornerPanZoom(boxId) {
   };
 }
 
+// 角落框自身交互：标题栏拖拽移动整个框（位移>6px 判拖拽，否则=点击展开/收起）；右下角手柄缩放框大小
+// 位置/尺寸经 cornerBoxPrefs 记忆，跨重渲染保留并持久化到 localStorage
+function initCornerBoxControls(boxId) {
+  var box = document.getElementById(boxId);
+  if (!box || box._cbInit) return;
+  box._cbInit = true;
+  var st = cornerBoxState(boxId);
+  var prefs = cornerBoxPrefs(boxId);
+  var header = box.querySelector('.apt-dsan-header');
+  var resize = box.querySelector('.apt-dsan-resize');
+  if (!header) return;
+
+  // 恢复用户拖拽位置（left/top 覆盖默认 right/bottom 定位）
+  if (prefs.x != null) {
+    box.style.left = prefs.x + 'px';
+    box.style.top = prefs.y + 'px';
+    box.style.right = 'auto';
+    box.style.bottom = 'auto';
+  }
+  // 恢复用户自定义尺寸（展开态用 ew/eh，否则用 mini 的 w/h）。
+  // ⚠️ 展开态无自定义时须清空 inline，让 .dsan-expanded 类默认尺寸生效（inline 会永久覆盖类）
+  if (st.expanded) {
+    box.style.width = prefs.ew ? prefs.ew + 'px' : '';
+    box.style.height = prefs.eh ? prefs.eh + 'px' : '';
+  } else {
+    box.style.width = (prefs.w || 250) + 'px';
+    box.style.height = (prefs.h || 168) + 'px';
+  }
+
+  var drag = { on: false, sx: 0, sy: 0, ox: 0, oy: 0, moved: false };
+  header.addEventListener('mousedown', function(e) {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    var r = box.getBoundingClientRect();
+    drag.on = true; drag.moved = false;
+    drag.sx = e.clientX; drag.sy = e.clientY;
+    drag.ox = prefs.x != null ? prefs.x : r.left;
+    drag.oy = prefs.y != null ? prefs.y : r.top;
+    box.classList.add('cb-dragging');
+  });
+  document.addEventListener('mousemove', function(e) {
+    if (!drag.on) return;
+    var dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+    if (!drag.moved && Math.abs(dx) + Math.abs(dy) > 6) drag.moved = true;
+    if (!drag.moved) return;
+    var nx = Math.max(0, Math.min(window.innerWidth - 80, drag.ox + dx));
+    var ny = Math.max(0, Math.min(window.innerHeight - 44, drag.oy + dy));
+    prefs.x = nx; prefs.y = ny;
+    box.style.left = nx + 'px'; box.style.top = ny + 'px';
+    box.style.right = 'auto'; box.style.bottom = 'auto';
+    saveCornerBoxPrefs();
+  });
+  document.addEventListener('mouseup', function() {
+    if (!drag.on) return;
+    drag.on = false;
+    box.classList.remove('cb-dragging');
+    if (!drag.moved) toggleCornerBox(boxId); // 原地点击 = 展开/收起
+  });
+
+  var rs = { on: false, sx: 0, sy: 0, w: 0, h: 0, expanded: false };
+  resize.addEventListener('mousedown', function(e) {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    rs.on = true;
+    rs.sx = e.clientX; rs.sy = e.clientY;
+    rs.w = box.offsetWidth; rs.h = box.offsetHeight;
+    rs.expanded = st.expanded;
+    box.classList.add('cb-resizing');
+  });
+  document.addEventListener('mousemove', function(e) {
+    if (!rs.on) return;
+    var nw = Math.max(160, rs.w + (e.clientX - rs.sx));
+    var nh = Math.max(110, rs.h + (e.clientY - rs.sy));
+    if (rs.expanded) {
+      prefs.ew = Math.min(nw, window.innerWidth - 20);
+      prefs.eh = Math.min(nh, window.innerHeight - 20);
+      box.style.width = prefs.ew + 'px'; box.style.height = prefs.eh + 'px';
+      fitCornerExpanded(boxId); // 整树重新适应新视口
+    } else {
+      prefs.w = Math.min(nw, window.innerWidth - 20);
+      prefs.h = Math.min(nh, window.innerHeight - 20);
+      box.style.width = prefs.w + 'px'; box.style.height = prefs.h + 'px';
+      fitCornerMini(boxId);
+    }
+    saveCornerBoxPrefs();
+  });
+  document.addEventListener('mouseup', function() {
+    if (rs.on) { rs.on = false; box.classList.remove('cb-resizing'); }
+  });
+}
+
 var origRenderGenealogyTree = renderGenealogyTree;
 renderGenealogyTree = function() {
   var savedZoom = treeZoom, savedX = treePanX, savedY = treePanY;
@@ -4149,6 +4273,10 @@ function toggleTreeNode(btn) {
 // 点击卡片/按钮 展开/折叠某大支（攒/撰等）；展开时自动收起同树其他可折叠大支，保持页面简洁
 function toggleTreeNodeByPid(card) {
   if (!card) return;
+  // 防抖：同一卡片 150ms 内只响应一次（按钮的 mouseup 冒泡 + click 双击会连触发两次）
+  var now = Date.now();
+  if (card._lastToggle && now - card._lastToggle < 150) return;
+  card._lastToggle = now;
   var pid = card.getAttribute('data-pid');
   var root = card.closest('.apt-tree');
   if (!root || !pid) return;
@@ -4207,7 +4335,7 @@ function renderGenealogyTree() {
     var wenjuData = allData.filter(function(p) { return wenjuAllIds[p.id]; });
     wenjuBox.outerHTML = buildCornerBoxHtml('apt-wenju-box', '文榘支系', wenjuData);
   }
-  setTimeout(function() { initCornerPanZoom('apt-dsan-box'); fitCornerMini('apt-dsan-box'); initCornerPanZoom('apt-wenju-box'); fitCornerMini('apt-wenju-box'); }, 150);
+  setTimeout(function() { initCornerBoxControls('apt-dsan-box'); initCornerPanZoom('apt-dsan-box'); fitCornerMini('apt-dsan-box'); initCornerBoxControls('apt-wenju-box'); initCornerPanZoom('apt-wenju-box'); fitCornerMini('apt-wenju-box'); }, 150);
 }
 
 window.genealogyUpdateMother = genealogyUpdateMother;
