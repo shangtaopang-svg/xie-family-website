@@ -1810,17 +1810,20 @@ function getGenealogyTreeCSS() {
     '#apt-wenju-box{bottom:192px;}' + // 文榘支系框：叠在丹三框上方（14+168+10）
     '.apt-dsan-box:hover{border-color:var(--accent-orange);}' +
     '.apt-dsan-box.dsan-expanded{width:min(820px,86%);height:min(600px,80%);z-index:60;}' +
+    '.apt-dsan-box:not(.dsan-expanded){cursor:move;}' + // 迷你态整框可拖（含迷你图区域）
     '.apt-dsan-header{display:flex;align-items:center;gap:6px;padding:5px 10px;font-size:12px;font-weight:600;color:var(--text-primary);background:rgba(0,0,0,.06);border-bottom:1px solid var(--glass-border);cursor:grab;user-select:none;flex:none;touch-action:none;}' +
     '.apt-dsan-header:active{cursor:grabbing;}' +
+    '.apt-dsan-header .dsan-drag-icon{color:var(--text-tertiary);font-size:12px;opacity:.75;letter-spacing:-1px;}' +
     '.apt-dsan-header .dsan-count{font-size:10px;font-weight:400;color:var(--text-tertiary);}' +
     '.apt-dsan-header .dsan-toggle-btn{margin-left:auto;font-size:14px;line-height:1;opacity:.8;}' +
     '.apt-dsan-viewport{flex:1;overflow:hidden;position:relative;background:var(--bg-secondary);}' +
     '.apt-dsan-viewport .apt-tree{width:max-content;transform-origin:0 0;}' +
-    '.apt-dsan-box:not(.dsan-expanded) .apt-dsan-viewport{pointer-events:none;}' + // 迷你总览不拦截主树操作/不误开编辑
+    '.apt-dsan-box:not(.dsan-expanded) .apt-dsan-viewport{pointer-events:none;}' + // 迷你总览不拦截主树操作/不误开编辑；事件穿透由整框拖拽处理
     '.apt-dsan-box.dsan-expanded .apt-dsan-viewport{cursor:grab;}' +
     '.apt-dsan-box.dsan-expanded .apt-dsan-viewport:active{cursor:grabbing;}' +
-    '.apt-dsan-resize{position:absolute;right:1px;bottom:1px;width:16px;height:16px;cursor:nwse-resize;z-index:5;display:flex;align-items:flex-end;justify-content:flex-end;touch-action:none;}' +
-    '.apt-dsan-resize::after{content:"";width:8px;height:8px;border-right:2px solid rgba(0,0,0,.4);border-bottom:2px solid rgba(0,0,0,.4);border-bottom-right-radius:2px;}' +
+    '.apt-dsan-resize{position:absolute;right:2px;bottom:2px;width:18px;height:18px;cursor:nwse-resize;z-index:5;display:flex;align-items:flex-end;justify-content:flex-end;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.5);border-radius:4px;touch-action:none;}' +
+    '.apt-dsan-resize::after{content:"";width:9px;height:9px;border-right:2px solid #f59e0b;border-bottom:2px solid #f59e0b;border-bottom-right-radius:2px;margin:0 2px 2px 0;}' +
+    '.apt-dsan-resize:hover{background:rgba(245,158,11,.25);}' +
     '.apt-dsan-box.cb-dragging,.apt-dsan-box.cb-resizing{transition:none!important;box-shadow:0 12px 34px rgba(0,0,0,.32);}' + // 拖拽/缩放时禁用过渡避免滞后
     '.apt-dsan-box.cb-dragging{border-color:#f59e0b;}' +
     '.apt-nodesc-badge{display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#94a3b8;border-radius:3px;padding:0 5px;margin-right:4px;vertical-align:middle;line-height:16px;}' +
@@ -4008,8 +4011,8 @@ function collectOverviewSubtree(rootId, data) {
 function buildCornerBoxHtml(boxId, title, data) {
   var n = data ? data.length : 0;
   var html = '<div class="apt-dsan-box" id="' + boxId + '">';
-  html += '<div class="apt-dsan-header" title="' + title + '（' + n + '人）· 拖动标题栏移动位置 · 点击展开/收起">';
-  html += '<span>' + title + '</span><span class="dsan-count">' + n + '人</span><span class="dsan-toggle-btn">⛶</span>';
+  html += '<div class="apt-dsan-header" title="' + title + '（' + n + '人）· 拖动移动位置 · 点击展开/收起">';
+  html += '<span class="dsan-drag-icon">⠿</span><span>' + title + '</span><span class="dsan-count">' + n + '人</span><span class="dsan-toggle-btn">⛶</span>';
   html += '</div>';
   html += '<div class="apt-dsan-viewport">';
   html += buildAdminTreeHtml(data || [], {ancBox: false, hideBranch: true});
@@ -4187,8 +4190,11 @@ function initCornerBoxControls(boxId) {
   }
 
   var drag = { on: false, sx: 0, sy: 0, ox: 0, oy: 0, moved: false };
-  header.addEventListener('mousedown', function(e) {
+  // 迷你态整框可拖（含迷你图区域，pointer-events:none 使事件穿透到框）；展开态仅标题栏可拖（树视口保留平移）
+  box.addEventListener('mousedown', function(e) {
     if (e.button !== 0) return;
+    if (st.expanded && !e.target.closest('.apt-dsan-header')) return; // 展开态：非标题栏区域归树视口平移/卡片
+    if (e.target.closest('.apt-dsan-resize')) return;
     e.preventDefault();
     var r = box.getBoundingClientRect();
     drag.on = true; drag.moved = false;
