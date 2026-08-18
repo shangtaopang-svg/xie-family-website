@@ -914,7 +914,7 @@ function buildAdminTreeHtml(data, opts) {
     if (opts.ancBox && linhaiIds[person.id]) cClass += ' apt-card-linhai'; // 临海下渡橙色
     if (isRuzhui) cClass += ' apt-ruzhui';
     if (ruzhuiPartner) cClass += ' apt-ruzhui-partner';
-    if (isCollapsible) cClass += ' apt-collapsible'; // 大支可点击卡片收起/展开（攒/撰）
+    if (isCollapsible) cClass += ' apt-collapsible'; // 大支可点击卡片收起/展开（攒/撰/彬/乾）
     var clickAction = isCollapsible ? 'toggleTreeNodeByPid(this)' : 'adminEditOrNotice(\'genealogy\',' + person.id + ')';
     var cardTitle = isCollapsible ? '点击展开/收起此支全部族人 | 拖拽到其他人建立关系' : '点击编辑 | 拖拽到其他人建立关系';
     var html = '<div class="' + cClass + '" data-pid="' + person.id + '" draggable="true" onmouseup="if(!this.dataset.dragged){' + clickAction + '};this.dataset.dragged=\'\'" title="' + cardTitle + '" ondragstart="onCardDragStart(event, ' + person.id + ');this.dataset.dragged=\'1\'" ondrop="onCardDrop(event)" ondragover="event.preventDefault()" ondragenter="this.style.outline=\'2px solid var(--accent-orange)\'" ondragleave="this.style.outline=\'\'">';
@@ -1029,7 +1029,7 @@ function buildAdminTreeHtml(data, opts) {
     html += '</div>'; // apt-cards-row
     html += '<div class="apt-subs-row">';
     for (var ck2 = 0; ck2 < kids.length; ck2++) {
-      // 默认折叠的大支（攒/撰）：sub 直接 display:none，点击卡片展开
+      // 默认折叠的大支（攒/撰/彬/乾）：sub 直接 display:none，点击卡片展开
       var _subCollapsed = opts.collapsedIds && opts.collapsedIds[kids[ck2].id];
       html += '<div class="apt-sub" data-pid="' + kids[ck2].id + '"' + (_subCollapsed ? ' style="display:none"' : '') + '>';
       html += renderAptChildrenBlock(kids[ck2], _path.concat([kids[ck2].id]));
@@ -1845,6 +1845,11 @@ function layoutAdminTreePositions() {
       for (var i = 0; i < el.children.length; i++) collect(el.children[i]);
       if (el.classList && el.classList.contains('apt-children')) list.push(el);
     })(trees[t]);
+    // ★ 修复卡片重叠（晓飞/小康/泽峰/函逸等）：折叠支（攒/撰/彬/乾）折叠时 display:none，
+    // 布局会把其内部 .apt-children 写成 0/2px 固定宽；展开后残留窄宽钳制 flex 卡片行容器
+    // → 卡片 108px 溢出但容器仍窄、offsetWidth 读到窄值 → 永久锁死 → 平行支重叠。
+    // 先释放所有残留固定宽，让 flex 回到自然宽度，再自底向上重算。
+    for (var z = 0; z < list.length; z++) { list[z].style.width = ''; }
     // collect 是后序（叶子先、根最后），正序遍历 = 自底向上，保证子块宽/高已定再算父层
     for (var k = 0; k < list.length; k++) {
       var ch = list[k];
@@ -2149,7 +2154,7 @@ function renderGenealogyOverview(area) {
   html += '</div>';
   html += '<div class="apt-tree-viewport" id="apt-tree-viewport">';
   html += '<div class="apt-tree" id="admin-genealogy-tree">';
-  html += buildAdminTreeHtml(mainData, {ancBox: true, hideBranch: true, noDescIds: {1209: true}, cornerIds: {1210: true, 1211: true}, collapsedIds: {12: true, 13: true}});
+  html += buildAdminTreeHtml(mainData, {ancBox: true, hideBranch: true, noDescIds: {1209: true}, cornerIds: {1210: true, 1211: true}, collapsedIds: {12: true, 13: true, 59: true, 60: true}});
   html += '</div>';
   html += '</div>';
   // 少数支系独立角落框（迷你总览 → 点击缩放查看）：丹三支 + 文榘支
@@ -4276,7 +4281,7 @@ function toggleTreeNode(btn) {
   toggleTreeNodeByPid(card);
 }
 
-// 点击卡片/按钮 展开/折叠某大支（攒/撰等）；展开时自动收起同树其他可折叠大支，保持页面简洁
+// 点击卡片/按钮 展开/折叠某大支（攒/撰/彬/乾等）；展开时只收起同级的其他可折叠大支，保持页面简洁
 function toggleTreeNodeByPid(card) {
   if (!card) return;
   // 防抖：同一卡片 150ms 内只响应一次（按钮的 mouseup 冒泡 + click 双击会连触发两次）
@@ -4291,11 +4296,14 @@ function toggleTreeNodeByPid(card) {
   var btn = card.querySelector('.apt-btn-expand');
   var collapsed = sub.style.display === 'none';
   if (collapsed) {
-    // 手风琴：展开一个时，收起同树其他可折叠大支（攒/撰互斥）
+    // 手风琴：展开一个时，只收起【同卡片行】的其他可折叠大支（攒/撰互斥、彬/乾互斥）。
+    // 同一 .apt-cards-row = 同一父的兄弟支；不跨层级——否则在攒大支内点彬，会把祖先攒也收起导致彬不可见
+    var cardRow = card.closest('.apt-cards-row');
     var others = root.querySelectorAll('.apt-card.apt-collapsible[data-pid]');
     for (var oi = 0; oi < others.length; oi++) {
       var oc = others[oi];
       if (oc === card) continue;
+      if (cardRow && oc.closest('.apt-cards-row') !== cardRow) continue; // 只互斥同级兄弟支
       var opid = oc.getAttribute('data-pid');
       var osub = root.querySelector('.apt-sub[data-pid="' + opid + '"]');
       if (osub && osub.style.display !== 'none') {
@@ -4329,7 +4337,7 @@ function renderGenealogyTree() {
   if (genFilter && genFilter.value) {
     filtered = filtered.filter(function(p) { return String(p.generation_num) === genFilter.value; });
   }
-  treeEl.innerHTML = buildAdminTreeHtml(filtered, {ancBox: true, hideBranch: true, noDescIds: {1209: true}, cornerIds: {1210: true, 1211: true}, collapsedIds: {12: true, 13: true}});
+  treeEl.innerHTML = buildAdminTreeHtml(filtered, {ancBox: true, hideBranch: true, noDescIds: {1209: true}, cornerIds: {1210: true, 1211: true}, collapsedIds: {12: true, 13: true, 59: true, 60: true}});
   // 同步刷新各角落框（数据可能已变化），重新绑定并缩成迷你图
   var dsanBox = document.getElementById('apt-dsan-box');
   if (dsanBox) {
