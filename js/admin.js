@@ -1691,6 +1691,56 @@ function renderGenealogyKeepState() {
   setTimeout(function() { window.scrollTo(0, sy); }, 60);
 }
 
+// 世代总览保存/删除后原地刷新：保留各支展开/收起状态 + 缩放级别 + 滚动位置，
+// 避免整模块重建后全部收起/跳回顶部/缩放重置（满足「保存后继续编辑，不用重新打开」）
+function renderGenealogyOverviewKeepState() {
+  // 1) 记录当前状态：滚动容器 #apt-tree-viewport 的 scrollLeft/scrollTop + window 滚动
+  var vp = document.getElementById('apt-tree-viewport');
+  var sx = vp ? vp.scrollLeft : 0, sy = vp ? vp.scrollTop : 0;
+  var winY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+  // 各支 .apt-sub 展开/折叠态
+  var treeEl = document.getElementById('admin-genealogy-tree');
+  var subState = {};
+  if (treeEl) {
+    var subs = treeEl.querySelectorAll('.apt-sub[data-pid]');
+    for (var i = 0; i < subs.length; i++) {
+      subState[subs[i].getAttribute('data-pid')] = (subs[i].style.display === 'none') ? 'collapsed' : 'expanded';
+    }
+  }
+  // 缩放/平移（treeZoom 等模块级变量重建后值保留，但新树未应用 transform，需重放）
+  var z = treeZoom, px = treePanX, py = treePanY;
+  // 2) 全量重建（含新数据；角落框 prefs 在 localStorage，重建后自动恢复）
+  renderModule('genealogyOverview');
+  if (typeof updateStats === 'function') updateStats();
+  // 3) 恢复各支展开/折叠态（重建后默认态按 collapsedIds，须显式恢复全部记录状态）
+  var treeEl2 = document.getElementById('admin-genealogy-tree');
+  if (treeEl2) {
+    var subs2 = treeEl2.querySelectorAll('.apt-sub[data-pid]');
+    for (var j = 0; j < subs2.length; j++) {
+      var pid2 = subs2[j].getAttribute('data-pid');
+      var st = subState[pid2];
+      if (!st) continue;
+      subs2[j].style.display = (st === 'collapsed') ? 'none' : '';
+      var card2 = treeEl2.querySelector('.apt-card[data-pid="' + pid2 + '"]');
+      var btn2 = card2 ? card2.querySelector('.apt-btn-expand') : null;
+      if (btn2) btn2.textContent = (st === 'collapsed') ? '▶' : '▼';
+    }
+  }
+  // 4) 重放缩放 + 恢复滚动位置。布局 rAF 可能阻塞主线程，单次 setTimeout 时机不可靠
+  // （展开大支时布局耗时，回调晚执行且可能与布局竞争）；用 rAF 起步 + 多轮重试兜底，确保最终归位
+  treeZoom = z; treePanX = px; treePanY = py;
+  scheduleAptLayout();
+  (function restoreView(retry) {
+    requestAnimationFrame(function() {
+      applyTreeTransform();
+      var vp2 = document.getElementById('apt-tree-viewport');
+      if (vp2) { vp2.scrollLeft = sx; vp2.scrollTop = sy; }
+      window.scrollTo(0, winY);
+      if (retry > 0) setTimeout(function() { restoreView(retry - 1); }, 200);
+    });
+  })(4);
+}
+
 // 表格按姓名点击编辑（族谱管理各世系折叠表）
 function adminLineageEditByName(name, branchPref) {
   var id = adminLineageIdFor(name, branchPref);
@@ -3242,8 +3292,8 @@ function saveForm(mod, editId, continueAdding) {
   showToast('已保存');
   // Refresh data in background but don't re-render full tree
   if (currentModule === 'genealogyOverview') {
-    // 从世代总览打开的表单保存后，留在世代总览并刷新
-    setTimeout(function() { renderModule('genealogyOverview'); updateStats(); }, 100);
+    // 从世代总览打开的表单保存后，原地刷新：保留各支展开/收起状态+缩放+滚动位置，不用重新打开
+    setTimeout(function() { renderGenealogyOverviewKeepState(); }, 100);
   } else if (currentModule === 'genealogy' && mod === 'genealogy') {
     // 族谱管理保存后原地刷新（保留展开状态与滚动位置），不刷新页面立即看到修改结果
     setTimeout(function() { renderGenealogyKeepState(); }, 100);
@@ -3272,8 +3322,9 @@ function deleteItem(mod, id) {
     var filename = deletedItem.file_url.replace('/uploads/', '');
     if (filename) deleteFromServer(filename);
   }
-  // 在世代总览模块中删除时，留在世代总览
-  var targetMod = (currentModule === 'genealogyOverview') ? 'genealogyOverview' : mod;
+  // 在世代总览模块中删除时，原地刷新（保留各支展开/收起状态+缩放+滚动位置），不用重新打开
+  if (currentModule === 'genealogyOverview') { renderGenealogyOverviewKeepState(); showToast('已删除'); return; }
+  var targetMod = mod;
   if (targetMod === 'genealogy') renderGenealogyKeepState(); // 族谱管理删除后原地刷新，保留展开状态
   else renderModule(targetMod);
   updateStats();
