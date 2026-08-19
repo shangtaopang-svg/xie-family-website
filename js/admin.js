@@ -1840,6 +1840,7 @@ function layoutAdminTreePositions() {
     // 跳过纯容器树 #admin-genealogy-tree：它带 apt-tree 类只是排版容器，内层 buildAdminTreeHtml 的树
     // 会被单独处理；容器也跑会二次布局 + 重复画 bridge（非幂等）
     if (trees[t].id === 'admin-genealogy-tree') continue;
+    var treeEl = trees[t];
     var list = [];
     (function collect(el) {
       for (var i = 0; i < el.children.length; i++) collect(el.children[i]);
@@ -1848,9 +1849,27 @@ function layoutAdminTreePositions() {
     // ★ 修复卡片重叠（晓飞/小康/泽峰/函逸等）：折叠支（攒/撰/彬/乾）折叠时 display:none，
     // 布局会把其内部 .apt-children 写成 0/2px 固定宽；展开后残留窄宽钳制 flex 卡片行容器
     // → 卡片 108px 溢出但容器仍窄、offsetWidth 读到窄值 → 永久锁死 → 平行支重叠。
-    // 先释放所有残留固定宽，让 flex 回到自然宽度，再自底向上重算。
-    for (var z = 0; z < list.length; z++) { list[z].style.width = ''; }
+    // 先释放所有残留固定宽（含 v92 紧凑布局写的卡槽宽），让 flex 回到自然宽度，再自底向上重算。
+    for (var z = 0; z < list.length; z++) {
+      list[z].style.width = '';
+      // v92 紧凑布局给 .apt-child 槽位写过 width=max(卡宽,子树宽)，折叠后子树消失，
+      // 若槽位宽残留会撑大层宽 → 一并释放回自然卡宽。
+      for (var s = 0; s < list[z].children.length; s++) {
+        var _cc2 = list[z].children[s];
+        if (!_cc2.classList || !_cc2.classList.contains('apt-cards-row')) continue;
+        for (var s2 = 0; s2 < _cc2.children.length; s2++) {
+          if (_cc2.children[s2].classList && _cc2.children[s2].classList.contains('apt-child')) _cc2.children[s2].style.width = '';
+        }
+      }
+    }
+    // 清理上一轮画出的斜线 bridge（v91 及更早版本的 drawSubBridge 产物），并恢复被它隐藏的 connector
+    treeEl.querySelectorAll('.apt-sub-bridge').forEach(function(b){ b.remove(); });
+    treeEl.querySelectorAll('.apt-connector').forEach(function(c){ c.style.display = ''; });
     // collect 是后序（叶子先、根最后），正序遍历 = 自底向上，保证子块宽/高已定再算父层
+    // ★ v92 紧凑树布局：兄弟卡槽宽度 = max(卡宽, 子树宽)，卡片在槽内居中（.apt-child 已是
+    // flex column center）→ 每张卡片居中于自己的子树列；子树垂直对齐到卡槽下方、与卡片同中心。
+    // 递归后父卡自然居中于其全部子女列之上。`.apt-connector/.apt-hline/.apt-vline` 三段在卡片与
+    // 子树对齐后天然构成直角折线（父卡↓竖线→横线→子卡↓竖线），不再需要 drawSubBridge 斜线。
     for (var k = 0; k < list.length; k++) {
       var ch = list[k];
       var cardsRow = null, subsRow = null;
@@ -1863,38 +1882,45 @@ function layoutAdminTreePositions() {
       var slots = cardsRow.querySelectorAll(':scope > .apt-child');
       var subs = subsRow.querySelectorAll(':scope > .apt-sub');
       if (!slots.length) continue;
-      // 兄弟卡片相邻（flex 自然排布，不扩大列宽）→ 横线只在卡片之间，无空段；
-      // 子树左对齐到各自卡片左缘；但相邻兄弟都带子树时其子树行会水平重叠
-      // （如 文杲第2子攒@+113 恰压在 文榘第1子十三@+0，两者同代同 y）。
-      // → 子树整体打包：若左缘已被上一棵子树占据则右移（叶子 sub 宽 0 不推进，叶子仍紧贴兄弟）
-      var W = cardsRow.offsetWidth;
+      var n = Math.min(slots.length, subs.length);
+      // 先测每个卡槽自然宽 + 对应子树宽（折叠 display:none 的 sub 宽=0 → 槽位保持卡宽）
+      var slotW = [], subW = [];
+      for (var i = 0; i < n; i++) {
+        slotW.push(slots[i].offsetWidth);
+        subW.push(subs[i].offsetWidth);
+      }
+      // 槽位扩宽到 max(卡宽, 子树宽)：卡片居中于槽位 = 居中于子树列；兄弟槽位并排不重叠
+      for (var i = 0; i < n; i++) {
+        var need = Math.max(slotW[i], subW[i]);
+        slots[i].style.width = need + 'px';
+      }
+      // 子树垂直对齐到各自卡槽下方：宽子卡左对齐槽位（sub 顶满整列），窄子卡在槽内居中，
+      // 使 sub 内 connector 的 margin:0 auto 与卡片中心对齐
       var maxH = 0;
-      var cursor = -1e9; // 上一个子树右缘（相对 .apt-children 左缘）
-      for (var i = 0; i < subs.length && i < slots.length; i++) {
-        var subW = subs[i].offsetWidth;
-        var base = slots[i].offsetLeft; // 卡片左缘（与卡片同相对 .apt-children 坐标系）
-        var subLeft = (cursor > base) ? cursor : base;
-        subs[i].style.left = subLeft + 'px';
+      for (var i = 0; i < n; i++) {
+        var left = slots[i].offsetLeft;
+        var need = Math.max(slotW[i], subW[i]);
+        subs[i].style.left = (left + (need - subW[i]) / 2) + 'px';
         // .apt-sub 绝对定位的包含块是 .apt-children（subsRow 非定位），top 须按 subsRow 偏移压到卡片行下方
         subs[i].style.top = subsRow.offsetTop + 'px';
-        if (subW > 0) cursor = subLeft + subW;
-        var ext = subLeft + subW;
-        if (ext > W) W = ext;
         if (subs[i].offsetHeight > maxH) maxH = subs[i].offsetHeight;
-        // 右移的子树：隐藏 sub 内居中 connector（它从不与卡片对齐），改画「卡片中心 → 孙代卡片行」斜线
-        if (subLeft > base + 1) drawSubBridge(subs[i], slots[i], subLeft);
       }
-      ch.style.width = W + 'px';
+      ch.style.width = cardsRow.offsetWidth + 'px';
       subsRow.style.height = maxH + 'px';
-      // 横线覆盖整个卡片行（兄弟相邻，整行即首卡→末卡范围）
+      // 横线覆盖整个卡片行（槽位已并排，整行即首卡→末卡范围）
       var hline = cardsRow.querySelector(':scope > .apt-hline');
       if (hline) {
         hline.style.left = '0px';
         hline.style.width = cardsRow.offsetWidth + 'px';
       }
     }
+    // 根 person（ancBox 树 CSS 是 align-items:flex-start）卡片在左缘、connector 居中于整列 → 错位；
+    // 改为居中，使根卡与其子树列（及 connector）同中心，与紧凑树对齐
+    var rootPersons = treeEl.querySelectorAll(':scope > .apt-person');
+    for (var rp = 0; rp < rootPersons.length; rp++) {
+      rootPersons[rp].style.alignItems = 'center';
+    }
     // 远古世系方框：围住 炎帝→申伯/申甫 的卡片并标注「谢氏远古世系简图」
-    var treeEl = trees[t];
     var ancBox = treeEl.querySelector(':scope > .apt-anc-box');
     if (ancBox) {
       var ancCards = treeEl.querySelectorAll('.apt-card-anc');
@@ -1983,56 +2009,6 @@ function layoutAdminTreePositions() {
       }
     }
   }
-}
-
-// 右移子树斜线：从卡片中心（sub 顶=卡片底）连到孙代卡片行第一个卡片顶部。
-// sub 内原来的 .apt-connector 是 margin:0 auto 居中于 sub 内容，从不与卡片对齐，右移后更偏离 → 隐藏之。
-function drawSubBridge(sub, slot, subLeft) {
-  var card = slot.querySelector('.apt-card');
-  if (!card) return;
-  var wrap = sub.querySelector(':scope > .apt-children-wrap');
-  if (!wrap) return;
-  var gcChildren = wrap.querySelector(':scope > .apt-children');
-  if (!gcChildren) return;
-  var gcRow = gcChildren.querySelector(':scope > .apt-cards-row');
-  if (!gcRow) return;
-  var firstGc = gcRow.querySelector(':scope > .apt-child');
-  if (!firstGc) return;
-  var conn = wrap.querySelector(':scope > .apt-connector');
-  if (conn) conn.style.display = 'none';
-  var cardCenterInSub = (slot.offsetLeft + card.offsetWidth / 2) - subLeft;
-  var x1 = cardCenterInSub, y1 = 0; // sub 顶 = 卡片底
-  // 孙代卡片行第一个卡片中心（相对 sub；gcChildren 的 offsetParent 是 sub，gcRow 的 offsetParent 是 gcChildren，firstGc 的 offsetParent 是 gcRow）
-  var gcChLeft = gcChildren.offsetLeft;
-  var gcRowLeft = gcRow.offsetLeft;
-  var firstGcLeft = firstGc.offsetLeft;
-  var x2 = gcChLeft + gcRowLeft + firstGcLeft + firstGc.offsetWidth / 2;
-  var y2 = gcChildren.offsetTop + 9; // 落在孙代 hline 附近
-  var dx = x2 - x1, dy = y2 - y1;
-  var len = Math.sqrt(dx * dx + dy * dy);
-  if (len < 2) return;
-  var ang = Math.atan2(dy, dx) * 180 / Math.PI;
-  // ⚠️ 树乱根因修复：桥必须挂到 .apt-children（position:relative 包含块）而不是 .apt-sub。
-  // .apt-sub 是 width:max-content，绝对定位 bridge 的 inline width 会被 Chromium 计入 max-content
-  // → sub 被桥撑大 → 下一轮 layout（DOMContentLoaded/fonts.ready/重渲染会跑多次）读到的 subW 更大
-  // → 树宽每轮放大 → 2^25 钳制爆炸（整树错乱、炎帝卡居中到 2^24）。坐标由「相对 sub」平移
-  // subLeft + subsRow.offsetTop 到「相对 .apt-children」即可，几何不变。
-  var subsRow = sub.parentElement;
-  var host = subsRow ? subsRow.parentElement : null; // .apt-children（.apt-sub 的包含块）
-  if (!host) return;
-  if (sub._aptBridge) sub._aptBridge.remove(); // 幂等：layout 可能跑多次，先清旧线
-  var bridge = document.createElement('div');
-  bridge.className = 'apt-sub-bridge';
-  bridge.style.left = (subLeft + x1) + 'px';
-  bridge.style.top = (subsRow.offsetTop + y1) + 'px';
-  bridge.style.width = len + 'px';
-  bridge.style.transform = 'rotate(' + ang + 'deg)';
-  bridge.style.transformOrigin = '0 0';
-  // 越长的线越淡（远端支系连接线，避免横贯整树成噪点）
-  if (len > 2000) bridge.style.opacity = '0.08';
-  else if (len > 800) bridge.style.opacity = '0.12';
-  host.appendChild(bridge);
-  sub._aptBridge = bridge;
 }
 
 function scheduleAptLayout() {
