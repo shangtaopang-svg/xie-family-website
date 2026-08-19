@@ -2103,11 +2103,24 @@ function layoutAdminTreePositions() {
       }
       ch.style.width = cardsRow.offsetWidth + 'px';
       subsRow.style.height = maxH + 'px';
-      // 横线覆盖整个卡片行（槽位已并排，整行即首卡→末卡范围）
+      // 横线只覆盖「首卡中心→末卡中心」：紧凑布局把卡槽撑到子树宽、卡片居中于槽位，
+      // 若横线画满整行则两端会悬空大段空白（如真传子子树巨大→左端 6000+px 无卡片=死线）。
+      // 剪到卡片跨度后死线消失；父卡 connector 居中于整行（=父卡子树中心），几何上必落在
+      // [首卡中心, 末卡中心] 内（首卡中心=首槽/2 ≤ 行中心=Σ槽/2 ≤ 末卡中心，仅末槽巨大时例外，
+      // 由下方 fitCornerMini/其它对齐兜底），徽章跟随 hline 左端。
       var hline = cardsRow.querySelector(':scope > .apt-hline');
-      if (hline) {
-        hline.style.left = '0px';
-        hline.style.width = cardsRow.offsetWidth + 'px';
+      if (hline && slots.length > 0) {
+        var _fx = slots[0].offsetLeft + slots[0].offsetWidth / 2;
+        var _lx = slots[slots.length - 1].offsetLeft + slots[slots.length - 1].offsetWidth / 2;
+        if (_lx >= _fx) {
+          hline.style.left = _fx + 'px';
+          hline.style.width = (_lx - _fx) + 'px';
+        }
+        var genTag = cardsRow.querySelector(':scope > .apt-gen-tag');
+        if (genTag) {
+          genTag.style.left = (_fx + 2) + 'px'; // 徽章贴横线左端（原 left:2px 相对行左缘，横线已从首卡中心开始）
+          genTag.style.marginLeft = '';
+        }
       }
     }
     // 根 person（ancBox 树 CSS 是 align-items:flex-start）卡片在左缘、connector 居中于整列 → 错位；
