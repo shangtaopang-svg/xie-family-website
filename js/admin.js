@@ -927,6 +927,7 @@ function buildAdminTreeHtml(data, opts) {
     if (opts.ancBox && linhaiIds[person.id]) cClass += ' apt-card-linhai'; // 临海下渡橙色
     if (opts.ancBox && zhuanIds[person.id]) cClass += ' apt-card-zhuan'; // 撰支淡绿
     if (opts.ancBox && zanIds[person.id]) cClass += ' apt-card-zan'; // 攒支淡蜜桃
+    if (opts.ancBox && shimadaiIds[person.id]) cClass += ' apt-card-shi'; // 石马下谢第一代（丹一/二/三）深红
     if (isRuzhui) cClass += ' apt-ruzhui';
     if (ruzhuiPartner) cClass += ' apt-ruzhui-partner';
     if (isCollapsible) cClass += ' apt-collapsible'; // 大支可点击卡片收起/展开（攒/撰/彬/乾）
@@ -1768,6 +1769,13 @@ function getGenealogyTreeCSS() {
     '.apt-card-zan .apt-branch{background:rgba(190,140,70,0.16);color:#7a5426;}' +
     '.apt-card-zan .apt-btn-expand{background:#d29b52;}' +
     '.apt-card-zan .apt-btn-add,.apt-card-zan .apt-btn-del{background:rgba(190,140,70,0.2);color:#7a5426;}' +
+    // 石马下谢第一代（丹一/丹二/丹三）：深红色卡片（浅色世次文字在深红上可读）
+    '.apt-card-shi{background:linear-gradient(160deg,#b03434,#7d1d1d) !important;border-color:rgba(185,70,70,0.75) !important;}' +
+    '.apt-card-shi .apt-name{color:#fff6f6 !important;}' +
+    '.apt-card-shi .apt-meta,.apt-card-shi .apt-spouse,.apt-card-shi .apt-children-count{color:#f0cfcf !important;}' +
+    '.apt-card-shi .apt-branch{background:rgba(255,255,255,0.14);color:#ffe4e4;}' +
+    '.apt-card-shi .apt-btn-expand{background:#8b2a2a;}' +
+    '.apt-card-shi .apt-btn-add,.apt-card-shi .apt-btn-del{background:rgba(255,255,255,0.16);color:#ffefef;}' +
     '.apt-person{display:flex;flex-direction:column;align-items:center;}' +
     // 远古世系简图：整链左对齐到盒内 x=0，避免根人（炎帝）居中撑宽盒子
     '.apt-anc-box-enabled .apt-person{align-items:flex-start;}' +
