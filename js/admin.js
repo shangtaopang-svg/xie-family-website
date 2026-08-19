@@ -824,6 +824,8 @@ function buildAdminTreeHtml(data, opts) {
   var zhuanIds = {};
   // 攒(13) 支：攒及全部后代，用于淡蜜桃/杏色卡片（与撰淡绿同属浅彩系、冷暖互补）
   var zanIds = {};
+  // 石马下谢第一代（丹一/丹二/丹三，小四之子，generation_num=131）：世代总览五段世次标注用
+  var shimadaiIds = {1208: true, 1209: true, 1210: true};
   if (opts.ancBox) {
     function subTreeCollect(id, set, seen) {
       if (seen[id]) return;
@@ -957,7 +959,12 @@ function buildAdminTreeHtml(data, opts) {
       // 申伯世系（申伯/申甫→衡）：显示双世次「炎帝65世/申伯1世」，申伯=炎帝65世，弘/猛=炎帝66世/申伯2世，衡=炎帝100世/申伯36世。
       // 始宁东山（缵/衡→闓）卡显示「炎帝N世」。
       // generation 字段为数据贯通前残留脏数据（申伯=65/弘=-1/猛=0…），对世系链卡片不显示
-      if (opts.ancBox && shenboIds[person.id] && person.generation_num) {
+      // 石马下谢世次标注（用户指定）：丹一(1208)/丹二(1209)/丹三(1210) = 石马下谢1世，
+      // 完整五段 = 炎帝N世/申伯(N−64)世/始宁东山(N−98)世/临海下渡(N−121)世/石马下谢(N−130)世（N=generation_num=131）
+      if (opts.ancBox && shimadaiIds[person.id] && person.generation_num) {
+        var smN = parseInt(person.generation_num);
+        genText = '炎帝' + smN + '世/申伯' + (smN - 64) + '世/始宁东山' + (smN - 98) + '世/临海下渡' + (smN - 121) + '世/石马下谢' + (smN - 130) + '世';
+      } else if (opts.ancBox && shenboIds[person.id] && person.generation_num) {
         genText = '炎帝' + parseInt(person.generation_num) + '世/申伯' + (parseInt(person.generation_num) - 64) + '世';
       } else if (opts.ancBox && dongshanIds[person.id] && person.generation_num) {
         genText = '炎帝' + parseInt(person.generation_num) + '世';
