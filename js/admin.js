@@ -957,8 +957,9 @@ function buildAdminTreeHtml(data, opts) {
     if (isRuzhui) cClass += ' apt-ruzhui';
     if (ruzhuiPartner) cClass += ' apt-ruzhui-partner';
     if (isCollapsible) cClass += ' apt-collapsible'; // 大支可点击卡片收起/展开（攒/撰/彬/乾）
-    var clickAction = isCollapsible ? 'toggleTreeNodeByPid(this)' : 'adminEditOrNotice(\'genealogy\',' + person.id + ')';
-    var cardTitle = isCollapsible ? '点击展开/收起此支全部族人 | 拖拽到其他人建立关系' : '点击编辑 | 拖拽到其他人建立关系';
+    // focusMode（世代总览主树）：点卡=聚焦支系（完整展开本人+祖先链，其余大支收起），编辑改由卡片右上角 ✎ 按钮
+    var clickAction = opts.focusMode ? 'aptFocusBranch(this)' : (isCollapsible ? 'toggleTreeNodeByPid(this)' : 'adminEditOrNotice(\'genealogy\',' + person.id + ')');
+    var cardTitle = opts.focusMode ? '点击聚焦此支系（其余大支收起） | 拖拽到其他人建立关系' : (isCollapsible ? '点击展开/收起此支全部族人 | 拖拽到其他人建立关系' : '点击编辑 | 拖拽到其他人建立关系');
     var html = '<div class="' + cClass + '" data-pid="' + person.id + '" draggable="true" onmouseup="if(!this.dataset.dragged){' + clickAction + '};this.dataset.dragged=\'\'" title="' + cardTitle + '" ondragstart="onCardDragStart(event, ' + person.id + ');this.dataset.dragged=\'1\'" ondrop="onCardDrop(event)" ondragover="event.preventDefault()" ondragenter="this.style.outline=\'2px solid var(--accent-orange)\'" ondragleave="this.style.outline=\'\'">';
     html += '<div class="apt-card-inner">';
     // 核对标记（用户人工核对）：卡片右上角小方框，点击变红色★，localStorage 持久化（刷新不丢）。
@@ -967,14 +968,15 @@ function buildAdminTreeHtml(data, opts) {
       var _v = !!getVerifyStore()[person.id];
       html += '<button class="apt-verify-btn' + (_v ? ' apt-verified' : '') + '" data-pid="' + person.id + '" title="' + (_v ? '已核对 ✓ 点击取消' : '点击标记为已核对') + '" onmouseup="event.stopPropagation()" onclick="event.stopPropagation();toggleVerifyPerson(this)">' + (_v ? '★' : '□') + '</button>';
     }
-    html += '<div class="apt-card-actions" onclick="event.stopPropagation();">';
-    html += '<button class="apt-btn-add" onclick="adminAddChildFor(' + person.id + ',\'' + person.name + '\',\'' + (person.branch || '') + '\')" title="添加子女">+</button>';
+    html += '<div class="apt-card-actions" onmouseup="event.stopPropagation()" onclick="event.stopPropagation();">';
+    html += '<button class="apt-btn-edit" onmouseup="event.stopPropagation()" onclick="event.stopPropagation();adminEditOrNotice(\'genealogy\',' + person.id + ')" title="编辑此人">✎</button>';
+    html += '<button class="apt-btn-add" onmouseup="event.stopPropagation()" onclick="adminAddChildFor(' + person.id + ',\'' + person.name + '\',\'' + (person.branch || '') + '\')" title="添加子女">+</button>';
       if (childrenOf(person).length > 0) {
         // ▶=收起（默认折叠大支）/▼=展开；初始状态与实际一致
         var _btnText = (opts.collapsedIds && opts.collapsedIds[person.id]) ? '▶' : '▼';
         html += '<button class="apt-btn-expand" onmouseup="event.stopPropagation()" onclick="toggleTreeNode(this)" title="展开/折叠">' + _btnText + '</button>';
       }
-    html += '<button class="apt-btn-del" onclick="adminDeleteFor(' + person.id + ',\'' + person.name + '\',\'' + (person.branch || '') + '\')" title="删除此人">−</button>';
+    html += '<button class="apt-btn-del" onmouseup="event.stopPropagation()" onclick="adminDeleteFor(' + person.id + ',\'' + person.name + '\',\'' + (person.branch || '') + '\')" title="删除此人">−</button>';
     html += '</div>';
     html += '<div class="apt-name">';
     if (person.adopted && person.adopted !== '否') {
@@ -1748,6 +1750,11 @@ function renderGenealogyOverviewKeepState() {
       if (btn2) btn2.textContent = (st === 'collapsed') ? '▶' : '▼';
     }
   }
+  // 聚焦态保持：若保存/删除时处于聚焦支系，subState 恢复的即聚焦展开态（快照仍在），重建后重显返回按钮
+  if (_aptFocusSnapshot) {
+    var exitBtn4 = document.getElementById('apt-exit-focus-btn');
+    if (exitBtn4) exitBtn4.style.display = '';
+  }
   // 4) 重放缩放 + 恢复滚动位置。布局 rAF 可能阻塞主线程，单次 setTimeout 时机不可靠
   // （展开大支时布局耗时，回调晚执行且可能与布局竞争）；用 rAF 起步 + 多轮重试兜底，确保最终归位
   treeZoom = z; treePanX = px; treePanY = py;
@@ -1922,10 +1929,11 @@ function getGenealogyTreeCSS() {
     '.apt-card-inner{display:flex;flex-direction:column;align-items:center;width:100%;}' +
     '.apt-card-actions{position:absolute;top:2px;right:22px;display:flex;gap:2px;opacity:0;transition:opacity 0.15s;}' +
     '.apt-card:hover .apt-card-actions{opacity:1;}' +
-    '.apt-btn-add,.apt-btn-del{width:20px;height:20px;border:none;border-radius:50%;font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;padding:0;transition:transform 0.1s;}' +
-    '.apt-btn-add:hover,.apt-btn-del:hover{transform:scale(1.2);}' +
+    '.apt-btn-add,.apt-btn-del,.apt-btn-edit{width:20px;height:20px;border:none;border-radius:50%;font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;padding:0;transition:transform 0.1s;}' +
+    '.apt-btn-add:hover,.apt-btn-del:hover,.apt-btn-edit:hover{transform:scale(1.2);}' +
     '.apt-btn-add{background:#4a9eff;color:#fff;}' +
     '.apt-btn-del{background:#e74c3c;color:#fff;}' +
+    '.apt-btn-edit{background:#16a34a;color:#fff;font-size:11px;}' +
     '.apt-mini-btn{display:inline-flex;width:16px;height:16px;align-items:center;justify-content:center;border:none;border-radius:4px;font-size:11px;line-height:1;cursor:pointer;font-weight:700;padding:0;margin-left:2px;vertical-align:middle;transition:transform 0.1s;}' +
     '.apt-mini-add{background:#4a9eff;color:#fff;}' +
     '.apt-mini-del{background:#e74c3c;color:#fff;}' +
@@ -1980,6 +1988,7 @@ function getGenealogyTreeCSS() {
     '.apt-chain-dim{opacity:0.25;}' +
     '.apt-chain-dim:hover{opacity:1;}' +
     '.apt-zoom-btn{width:28px;height:24px;border:1px solid var(--glass-border);border-radius:4px;background:var(--bg-card);color:var(--text-primary);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;}' +
+    '.apt-exit-focus{width:auto;padding:0 8px;background:rgba(240,120,40,0.12);border:1px solid rgba(240,120,40,0.45);color:#d97706;font-weight:700;}' +
     '.apt-zoom-btn:hover{background:var(--accent-orange-dim);border-color:var(--accent-orange);}' +
     '.apt-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-secondary);min-height:400px;}' +
     '.apt-tree-viewport:active{cursor:grabbing;}' +
@@ -2339,11 +2348,12 @@ function renderGenealogyOverview(area) {
   html += '<input type="text" id="apt-tree-search" class="apt-search" placeholder="🔍 搜索族人，定位世系脉络…" autocomplete="off" oninput="aptSearchOverview(this.value)" onfocus="aptSearchOverview(this.value)" style="height:26px;padding:1px 10px;font-size:12px;width:100%;box-sizing:border-box;">';
   html += '<div id="apt-tree-search-drop" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:60;background:var(--bg-card);border:1px solid var(--glass-border);border-radius:6px;max-height:280px;overflow-y:auto;box-shadow:0 8px 18px rgba(0,0,0,0.2);"></div>';
   html += '</div>';
+  html += '<button class="apt-zoom-btn apt-exit-focus" onclick="aptExitOverviewFocus()" id="apt-exit-focus-btn" title="返回全貌（恢复聚焦前整树展开态/缩放/位置）" style="display:none;">← 返回全貌</button>';
   html += '<button class="apt-zoom-btn" onclick="toggleTreeFullscreen()" title="全屏编辑" id="apt-fullscreen-btn" style="font-size:13px;">⛶</button>';
   html += '</div>';
   html += '<div class="apt-tree-viewport" id="apt-tree-viewport">';
   html += '<div class="apt-tree" id="admin-genealogy-tree">';
-  html += buildAdminTreeHtml(mainData, {ancBox: true, hideBranch: true, noDescIds: {1209: true}, cornerIds: {1210: true, 1211: true}, collapsedIds: {12: true, 59: true, 60: true}, collapsibleIds: {12: true, 13: true, 59: true, 60: true}});
+  html += buildAdminTreeHtml(mainData, {ancBox: true, hideBranch: true, focusMode: true, noDescIds: {1209: true}, cornerIds: {1210: true, 1211: true}, collapsedIds: {12: true, 59: true, 60: true}, collapsibleIds: {12: true, 13: true, 59: true, 60: true}});
   html += '</div>';
   html += '</div>';
   // 少数支系独立角落框（迷你总览 → 点击缩放查看）：丹三支 + 文榘支
@@ -4364,6 +4374,84 @@ function aptFocusOverviewPerson(id) {
   })();
 }
 
+// ===== 点卡聚焦支系（?v=110）：点任意卡 → 树聚焦该卡所在支系，其余大支收起（宽度立刻可控），顶部「← 返回全貌」恢复 =====
+// 聚焦前整树状态快照（各 sub 展开态 + 缩放/平移）；首次聚焦才记录，后续换目标不覆盖（返回全貌回到最初整树）
+var _aptFocusSnapshot = null;
+
+// 点卡聚焦支系：完整展开 祖先链∪本人全部后代 的 sub，其余所有 sub 收起，自校正居中本人。
+// 复用搜索定位的 aptAncestorChain / collectOverviewSubtree / aptCenterCard + 自校正循环模式。
+function aptFocusBranch(card) {
+  var tree = document.getElementById('admin-genealogy-tree');
+  var vp = document.getElementById('apt-tree-viewport');
+  if (!tree || !vp || !card) return;
+  var pid = card.getAttribute('data-pid');
+  if (!pid) return;
+  if (!_aptFocusSnapshot) {
+    var snap = { subs: {}, zoom: treeZoom, panX: treePanX, panY: treePanY };
+    tree.querySelectorAll('.apt-sub[data-pid]').forEach(function(s) {
+      snap.subs[s.getAttribute('data-pid')] = s.style.display;
+    });
+    _aptFocusSnapshot = snap;
+  }
+  var data = window._aptSearchData || [];
+  var keep = aptAncestorChain(pid);
+  var subIds = collectOverviewSubtree(pid, data);
+  for (var k in subIds) keep[k] = true;
+  tree.querySelectorAll('.apt-sub[data-pid]').forEach(function(s) {
+    var spid = s.getAttribute('data-pid');
+    var show = !!keep[spid];
+    s.style.display = show ? '' : 'none';
+    var scard = tree.querySelector('.apt-card[data-pid="' + spid + '"]');
+    var sbtn = scard ? scard.querySelector('.apt-btn-expand') : null;
+    if (sbtn) sbtn.textContent = show ? '▼' : '▶';
+  });
+  scheduleAptLayout();
+  var exitBtn = document.getElementById('apt-exit-focus-btn');
+  if (exitBtn) exitBtn.style.display = '';
+  // 自校正居中本人（布局 rAF 推进中位置会变，循环直到「连续两次」稳定居中或 12s 兜底）。
+  // ⚠️ 点卡聚焦时目标本就居中，第一次量到 dx≈0 可能只是布局 rAF 前的假稳定（展开子树后卡会被撑走），
+  // 必须连续两次居中才返回，否则聚焦后卡落到屏幕外（同 v107「一次稳定」陷阱）。
+  var tries = 0, stable = 0;
+  (function loop() {
+    tries++;
+    var c2 = tree.querySelector('.apt-card[data-pid="' + pid + '"]');
+    if (!c2) { if (tries < 60) setTimeout(loop, 200); return; }
+    var cr = c2.getBoundingClientRect();
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var dx = (cr.left + cr.width / 2) - vw / 2;
+    var dy = (cr.top + cr.height / 2) - vh / 2;
+    if (Math.abs(dx) <= 3 && Math.abs(dy) <= 3) {
+      if (++stable >= 2) return; // 连续两次居中 = 布局已沉降
+    } else {
+      stable = 0;
+      aptCenterCard(vp, tree, c2);
+    }
+    if (tries < 60) setTimeout(loop, 200);
+  })();
+}
+
+// ← 返回全貌：恢复聚焦前各 sub 展开态 + 缩放/平移，重算布局，隐藏按钮
+function aptExitOverviewFocus() {
+  var tree = document.getElementById('admin-genealogy-tree');
+  var vp = document.getElementById('apt-tree-viewport');
+  if (!tree || !vp || !_aptFocusSnapshot) return;
+  var snap = _aptFocusSnapshot;
+  for (var pid in snap.subs) {
+    var s = tree.querySelector('.apt-sub[data-pid="' + pid + '"]');
+    if (!s) continue;
+    s.style.display = snap.subs[pid];
+    var scard = tree.querySelector('.apt-card[data-pid="' + pid + '"]');
+    var sbtn = scard ? scard.querySelector('.apt-btn-expand') : null;
+    if (sbtn) sbtn.textContent = (snap.subs[pid] === 'none') ? '▶' : '▼';
+  }
+  treeZoom = snap.zoom; treePanX = snap.panX; treePanY = snap.panY;
+  applyTreeTransform(tree); updateZoomLevel();
+  scheduleAptLayout();
+  _aptFocusSnapshot = null;
+  var exitBtn = document.getElementById('apt-exit-focus-btn');
+  if (exitBtn) exitBtn.style.display = 'none';
+}
+
 // ===== 世代总览：少数支系独立角落框（通用，丹三 1210 / 文榘 1211 及各自后代独立小树，点击缩放查看） =====
 // 每框状态（zoom/pan/expanded）挂在本框 DOM 元素 _st 上，互不干扰
 
@@ -4719,6 +4807,10 @@ function toggleVerifyPerson(btn) {
 function renderGenealogyTree() {
   var treeEl = document.getElementById('admin-genealogy-tree');
   if (!treeEl) return;
+  // 世代筛选重建树：重置聚焦态（工具栏不重建，须手动隐藏返回按钮；快照清空防「返回全貌」回错状态）
+  _aptFocusSnapshot = null;
+  var exitBtn0 = document.getElementById('apt-exit-focus-btn');
+  if (exitBtn0) exitBtn0.style.display = 'none';
   // ⚠️ 与世代总览一致：基于后台录入数据；丹三支/文榘支从主区域剔除（收进各自角落框）
   var allData = getData('genealogy');
   var dsanAllIds = collectOverviewSubtree(1210, allData);
@@ -4734,7 +4826,7 @@ function renderGenealogyTree() {
   if (genFilter && genFilter.value) {
     filtered = filtered.filter(function(p) { return String(p.generation_num) === genFilter.value; });
   }
-  treeEl.innerHTML = buildAdminTreeHtml(filtered, {ancBox: true, hideBranch: true, noDescIds: {1209: true}, cornerIds: {1210: true, 1211: true}, collapsedIds: {12: true, 59: true, 60: true}, collapsibleIds: {12: true, 13: true, 59: true, 60: true}});
+  treeEl.innerHTML = buildAdminTreeHtml(filtered, {ancBox: true, hideBranch: true, focusMode: true, noDescIds: {1209: true}, cornerIds: {1210: true, 1211: true}, collapsedIds: {12: true, 59: true, 60: true}, collapsibleIds: {12: true, 13: true, 59: true, 60: true}});
   // 同步刷新各角落框（数据可能已变化），重新绑定并缩成迷你图
   var dsanBox = document.getElementById('apt-dsan-box');
   if (dsanBox) {
@@ -4752,6 +4844,8 @@ function renderGenealogyTree() {
 window.genealogyUpdateMother = genealogyUpdateMother;
 window.toggleTreeNode = toggleTreeNode;
 window.toggleTreeNodeByPid = toggleTreeNodeByPid;
+window.aptFocusBranch = aptFocusBranch;
+window.aptExitOverviewFocus = aptExitOverviewFocus;
 window.toggleCornerBox = toggleCornerBox;
 window.renderGenealogyTree = renderGenealogyTree;
 window.switchModule = switchModule;
