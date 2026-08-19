@@ -939,6 +939,7 @@ function buildAdminTreeHtml(data, opts) {
     if (opts.ancBox && zanIds[person.id]) cClass += ' apt-card-zan'; // 攒支淡蜜桃
     if (opts.ancBox && binqianIds[person.id]) cClass += ' apt-card-binqian'; // 彬/乾支淡紫
     if (opts.ancBox && shimadaiIds[person.id]) cClass += ' apt-card-shi'; // 石马下谢第一代（丹一/二/三）深红
+    if (opts.ancBox && fengchaiIds[person.id]) cClass += ' apt-card-fengchai'; // 枫槎第一代（文杲/文榘）深青
     if (isRuzhui) cClass += ' apt-ruzhui';
     if (ruzhuiPartner) cClass += ' apt-ruzhui-partner';
     if (isCollapsible) cClass += ' apt-collapsible'; // 大支可点击卡片收起/展开（攒/撰/彬/乾）
@@ -1802,6 +1803,13 @@ function getGenealogyTreeCSS() {
     '.apt-card-shi .apt-branch{background:rgba(255,255,255,0.14);color:#ffe4e4;}' +
     '.apt-card-shi .apt-btn-expand{background:#8b2a2a;}' +
     '.apt-card-shi .apt-btn-add,.apt-card-shi .apt-btn-del{background:rgba(255,255,255,0.16);color:#ffefef;}' +
+    // 枫槎第一代（文杲/文榘，丹一之子）：深青蓝色卡片（深红下一代，浅色文字可读）
+    '.apt-card-fengchai{background:linear-gradient(160deg,#2c6e8f,#1c4a63) !important;border-color:rgba(90,160,195,0.75) !important;}' +
+    '.apt-card-fengchai .apt-name{color:#eef7fb !important;}' +
+    '.apt-card-fengchai .apt-meta,.apt-card-fengchai .apt-spouse,.apt-card-fengchai .apt-children-count{color:#c9e2ef !important;}' +
+    '.apt-card-fengchai .apt-branch{background:rgba(120,190,220,0.16);color:#d8ecf5;}' +
+    '.apt-card-fengchai .apt-btn-expand{background:#1f5a78;}' +
+    '.apt-card-fengchai .apt-btn-add,.apt-card-fengchai .apt-btn-del{background:rgba(120,190,220,0.18);color:#d8ecf5;}' +
     '.apt-person{display:flex;flex-direction:column;align-items:center;}' +
     // 远古世系简图：整链左对齐到盒内 x=0，避免根人（炎帝）居中撑宽盒子
     '.apt-anc-box-enabled .apt-person{align-items:flex-start;}' +
