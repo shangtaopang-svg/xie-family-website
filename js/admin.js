@@ -820,6 +820,10 @@ function buildAdminTreeHtml(data, opts) {
   // 临海下渡（闓→大四/小四）：闓(1183) 的后代，再剔除 小四(1206) 的后代（保留小四本身），
   // 用于橙色卡片 + 「临海下渡世系示意图」方框
   var linhaiIds = {};
+  // 撰(12) 支：撰及全部后代，用于淡绿色卡片（世代总览主区域分支）
+  var zhuanIds = {};
+  // 攒(13) 支：攒及全部后代，用于淡蜜桃/杏色卡片（与撰淡绿同属浅彩系、冷暖互补）
+  var zanIds = {};
   if (opts.ancBox) {
     function subTreeCollect(id, set, seen) {
       if (seen[id]) return;
@@ -849,6 +853,11 @@ function buildAdminTreeHtml(data, opts) {
     subTreeCollect(1206, xsSub, xsSeen);
     Object.keys(xsSub).forEach(function(xi) { if (parseInt(xi) !== 1206) delete lhSub[xi]; }); // 剔除小四后代，保留小四(1206)
     Object.keys(lhSub).forEach(function(li) { linhaiIds[li] = true; });
+    // 撰(12)/攒(13) 支：两大主区域分支整支浅彩卡片（撰淡绿/攒蜜桃，浅底深字）
+    var zhuanSeen = {};
+    subTreeCollect(12, zhuanIds, zhuanSeen);
+    var zanSeen = {};
+    subTreeCollect(13, zanIds, zanSeen);
   }
 
   var existingIds = {};
@@ -914,6 +923,8 @@ function buildAdminTreeHtml(data, opts) {
     if (opts.ancBox && shenboIds[person.id]) cClass += ' apt-card-shenbo'; // 申伯世系咖啡
     if (opts.ancBox && dongshanIds[person.id]) cClass += ' apt-card-dongshan'; // 始宁东山淡蓝
     if (opts.ancBox && linhaiIds[person.id]) cClass += ' apt-card-linhai'; // 临海下渡橙色
+    if (opts.ancBox && zhuanIds[person.id]) cClass += ' apt-card-zhuan'; // 撰支淡绿
+    if (opts.ancBox && zanIds[person.id]) cClass += ' apt-card-zan'; // 攒支淡蜜桃
     if (isRuzhui) cClass += ' apt-ruzhui';
     if (ruzhuiPartner) cClass += ' apt-ruzhui-partner';
     if (isCollapsible) cClass += ' apt-collapsible'; // 大支可点击卡片收起/展开（攒/撰/彬/乾）
@@ -1736,6 +1747,20 @@ function getGenealogyTreeCSS() {
     '.apt-card-linhai .apt-btn-add,.apt-card-linhai .apt-btn-del{background:rgba(255,255,255,0.18);color:#fdeeda;}' +
     // 闓 卡：一半淡蓝（始宁东山世系）一半橙色（临海下渡世系）
     '.apt-card-dongshan.apt-card-linhai{background:linear-gradient(90deg,#7fb0d6 0%,#7fb0d6 50%,#e8a04e 50%,#e8a04e 100%) !important;border-color:rgba(170,140,80,0.7) !important;}' +
+    // 撰(12) 支：淡绿色卡片（浅底深字，与上方深色祖先链区分）
+    '.apt-card-zhuan{background:linear-gradient(160deg,#eaf6e4,#d3ebcb) !important;border-color:rgba(110,180,105,0.7) !important;}' +
+    '.apt-card-zhuan .apt-name{color:#2f5d36 !important;}' +
+    '.apt-card-zhuan .apt-meta,.apt-card-zhuan .apt-spouse,.apt-card-zhuan .apt-children-count{color:#4a7a4f !important;}' +
+    '.apt-card-zhuan .apt-branch{background:rgba(70,140,80,0.14);color:#33623a;}' +
+    '.apt-card-zhuan .apt-btn-expand{background:#5aa86a;}' +
+    '.apt-card-zhuan .apt-btn-add,.apt-card-zhuan .apt-btn-del{background:rgba(70,140,80,0.2);color:#2f5d36;}' +
+    // 攒(13) 支：淡蜜桃/杏色卡片（与撰淡绿同属浅彩系、冷暖互补，两兄弟大支统一又有区分）
+    '.apt-card-zan{background:linear-gradient(160deg,#fbeed7,#f2dcb2) !important;border-color:rgba(200,150,80,0.7) !important;}' +
+    '.apt-card-zan .apt-name{color:#7a5426 !important;}' +
+    '.apt-card-zan .apt-meta,.apt-card-zan .apt-spouse,.apt-card-zan .apt-children-count{color:#96724a !important;}' +
+    '.apt-card-zan .apt-branch{background:rgba(190,140,70,0.16);color:#7a5426;}' +
+    '.apt-card-zan .apt-btn-expand{background:#d29b52;}' +
+    '.apt-card-zan .apt-btn-add,.apt-card-zan .apt-btn-del{background:rgba(190,140,70,0.2);color:#7a5426;}' +
     '.apt-person{display:flex;flex-direction:column;align-items:center;}' +
     // 远古世系简图：整链左对齐到盒内 x=0，避免根人（炎帝）居中撑宽盒子
     '.apt-anc-box-enabled .apt-person{align-items:flex-start;}' +
