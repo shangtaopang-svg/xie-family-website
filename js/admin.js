@@ -1086,7 +1086,18 @@ function buildAdminTreeHtml(data, opts) {
     html += '<div class="apt-connector"></div>';
     html += '<div class="apt-children">';
     html += '<div class="apt-cards-row">';
-    if (kids.length > 1) html += '<div class="apt-hline"></div>';
+    if (kids.length > 1) {
+      html += '<div class="apt-hline"></div>';
+      // 世代徽章：横线左端标「炎帝第X世」，方便快速查询该代是炎帝第几世。
+      // 取该行第一张有 generation_num 的卡片（兄弟同代）；仅主树(ancBox)，角落框 mini 树不加。
+      if (opts.ancBox) {
+        var _tagGen = 0;
+        for (var _tg = 0; _tg < kids.length; _tg++) {
+          if (kids[_tg].generation_num) { _tagGen = parseInt(kids[_tg].generation_num); break; }
+        }
+        if (_tagGen) html += '<span class="apt-gen-tag">炎帝第' + _tagGen + '世</span>';
+      }
+    }
     for (var ck = 0; ck < kids.length; ck++) {
       html += '<div class="apt-child" data-pid="' + kids[ck].id + '">';
       html += '<div class="apt-vline"></div>';
@@ -1942,6 +1953,7 @@ function getGenealogyTreeCSS() {
     '.apt-children{position:relative;}' +
     '.apt-cards-row{display:flex;gap:6px;position:relative;}' +
     '.apt-hline{position:absolute;top:0;left:6px;right:6px;height:2px;background:var(--accent-orange);opacity:0.15;}' +
+    '.apt-gen-tag{position:absolute;left:2px;top:-18px;font-size:10px;font-weight:700;color:#7a5a00;background:linear-gradient(180deg,#fffdf0,#ffefc2);border:1px solid #f0c050;border-radius:5px;padding:1px 6px;white-space:nowrap;z-index:4;line-height:1.5;box-shadow:0 1px 3px rgba(170,120,20,0.18);}' +
     '.apt-child{display:flex;flex-direction:column;align-items:center;position:relative;flex:none;}' +
     '.apt-vline{width:2px;height:12px;background:var(--accent-orange);opacity:0.15;}' +
     '.apt-subs-row{display:block;}' +
