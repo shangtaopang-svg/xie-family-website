@@ -906,7 +906,9 @@ function buildAdminTreeHtml(data, opts) {
       var spN = person.spouse_ids.toString().split(',').map(function(n){return n.trim();}).filter(function(n){return n;});
       for (var si = 0; si < spN.length; si++) { if (spN[si].indexOf('入赘') >= 0 || spN[si].indexOf('女婿') >= 0) { ruzhuiPartner = true; break; } }
     }
-    var isCollapsible = opts.collapsedIds && opts.collapsedIds[person.id] && childrenOf(person).length > 0;
+    // 可折叠大支（攒/撰/彬/乾）＝有后代 且 ∈(collapsedIds ∪ collapsibleIds)。collapsedIds 只决定【默认折叠态】；
+    // collapsibleIds 保证攒(13)即使默认展开，也仍是可折叠大支（点卡收起/展开，且手风琴互斥时能被收起）
+    var isCollapsible = childrenOf(person).length > 0 && !!opts.collapsedIds && (opts.collapsedIds[person.id] || (opts.collapsibleIds && opts.collapsibleIds[person.id]));
     var cClass = 'apt-card ' + (person.gender === '男' ? 'apt-male' : 'apt-female');
     if (opts.ancBox && ancIds[person.id]) cClass += ' apt-card-anc'; // 远古世系墨绿
     if (opts.ancBox && shenboIds[person.id]) cClass += ' apt-card-shenbo'; // 申伯世系咖啡
@@ -2130,7 +2132,7 @@ function renderGenealogyOverview(area) {
   html += '</div>';
   html += '<div class="apt-tree-viewport" id="apt-tree-viewport">';
   html += '<div class="apt-tree" id="admin-genealogy-tree">';
-  html += buildAdminTreeHtml(mainData, {ancBox: true, hideBranch: true, noDescIds: {1209: true}, cornerIds: {1210: true, 1211: true}, collapsedIds: {12: true, 13: true, 59: true, 60: true}});
+  html += buildAdminTreeHtml(mainData, {ancBox: true, hideBranch: true, noDescIds: {1209: true}, cornerIds: {1210: true, 1211: true}, collapsedIds: {12: true, 59: true, 60: true}, collapsibleIds: {12: true, 13: true, 59: true, 60: true}});
   html += '</div>';
   html += '</div>';
   // 少数支系独立角落框（迷你总览 → 点击缩放查看）：丹三支 + 文榘支
@@ -4313,7 +4315,7 @@ function renderGenealogyTree() {
   if (genFilter && genFilter.value) {
     filtered = filtered.filter(function(p) { return String(p.generation_num) === genFilter.value; });
   }
-  treeEl.innerHTML = buildAdminTreeHtml(filtered, {ancBox: true, hideBranch: true, noDescIds: {1209: true}, cornerIds: {1210: true, 1211: true}, collapsedIds: {12: true, 13: true, 59: true, 60: true}});
+  treeEl.innerHTML = buildAdminTreeHtml(filtered, {ancBox: true, hideBranch: true, noDescIds: {1209: true}, cornerIds: {1210: true, 1211: true}, collapsedIds: {12: true, 59: true, 60: true}, collapsibleIds: {12: true, 13: true, 59: true, 60: true}});
   // 同步刷新各角落框（数据可能已变化），重新绑定并缩成迷你图
   var dsanBox = document.getElementById('apt-dsan-box');
   if (dsanBox) {
