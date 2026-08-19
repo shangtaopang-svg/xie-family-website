@@ -961,6 +961,12 @@ function buildAdminTreeHtml(data, opts) {
     var cardTitle = isCollapsible ? '点击展开/收起此支全部族人 | 拖拽到其他人建立关系' : '点击编辑 | 拖拽到其他人建立关系';
     var html = '<div class="' + cClass + '" data-pid="' + person.id + '" draggable="true" onmouseup="if(!this.dataset.dragged){' + clickAction + '};this.dataset.dragged=\'\'" title="' + cardTitle + '" ondragstart="onCardDragStart(event, ' + person.id + ');this.dataset.dragged=\'1\'" ondrop="onCardDrop(event)" ondragover="event.preventDefault()" ondragenter="this.style.outline=\'2px solid var(--accent-orange)\'" ondragleave="this.style.outline=\'\'">';
     html += '<div class="apt-card-inner">';
+    // 核对标记（用户人工核对）：卡片右上角小方框，点击变红色★，localStorage 持久化（刷新不丢）。
+    // 仅主树（ancBox）渲染，角落框 mini 卡不加；onmouseup/onclick 双 stopPropagation 防误触卡片编辑/折叠
+    if (opts.ancBox) {
+      var _v = !!getVerifyStore()[person.id];
+      html += '<button class="apt-verify-btn' + (_v ? ' apt-verified' : '') + '" data-pid="' + person.id + '" title="' + (_v ? '已核对 ✓ 点击取消' : '点击标记为已核对') + '" onmouseup="event.stopPropagation()" onclick="event.stopPropagation();toggleVerifyPerson(this)">' + (_v ? '★' : '□') + '</button>';
+    }
     html += '<div class="apt-card-actions" onclick="event.stopPropagation();">';
     html += '<button class="apt-btn-add" onclick="adminAddChildFor(' + person.id + ',\'' + person.name + '\',\'' + (person.branch || '') + '\')" title="添加子女">+</button>';
       if (childrenOf(person).length > 0) {
@@ -1842,7 +1848,7 @@ function getGenealogyTreeCSS() {
     '.apt-anc-box-enabled .apt-person{align-items:flex-start;}' +
     '.apt-card{display:inline-flex;flex-direction:column;align-items:center;padding:14px 20px 10px 20px;border-radius:10px;cursor:pointer;border:1.5px solid var(--glass-border);background:var(--glass-bg);min-width:70px;transition:all 0.15s;position:relative;}' +
     '.apt-card-inner{display:flex;flex-direction:column;align-items:center;width:100%;}' +
-    '.apt-card-actions{position:absolute;top:2px;right:2px;display:flex;gap:2px;opacity:0;transition:opacity 0.15s;}' +
+    '.apt-card-actions{position:absolute;top:2px;right:22px;display:flex;gap:2px;opacity:0;transition:opacity 0.15s;}' +
     '.apt-card:hover .apt-card-actions{opacity:1;}' +
     '.apt-btn-add,.apt-btn-del{width:20px;height:20px;border:none;border-radius:50%;font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;padding:0;transition:transform 0.1s;}' +
     '.apt-btn-add:hover,.apt-btn-del:hover{transform:scale(1.2);}' +
@@ -1939,6 +1945,10 @@ function getGenealogyTreeCSS() {
     '.apt-corner-badge{display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#f59e0b;border-radius:3px;padding:0 5px;margin-right:4px;vertical-align:middle;line-height:16px;}' +
     '.apt-link{cursor:pointer;border-bottom:1px dashed var(--accent-orange);transition:color 0.15s;}' +
     '.apt-link:hover{color:var(--accent-orange);}' +
+    // 核对标记：卡片右上角小方框（未核对□）→ 点击变红色★（已核对）；始终可见，hover 放大提示
+    '.apt-verify-btn{position:absolute;top:1px;right:1px;width:15px;height:15px;margin:0;padding:0;border:1.5px solid rgba(140,150,165,0.85);border-radius:3px;background:rgba(255,255,255,0.85);font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#9aa3ae;z-index:5;transition:all .15s;box-sizing:border-box;}' +
+    '.apt-verify-btn:hover{border-color:#e11d48;color:#e11d48;transform:scale(1.15);}' +
+    '.apt-verify-btn.apt-verified{border-color:rgba(225,29,72,0.4);background:rgba(225,29,72,0.10);color:#e11d48;font-size:13px;box-shadow:0 0 4px rgba(225,29,72,0.35);}' +
     '';
 }
 
@@ -4401,6 +4411,28 @@ function toggleTreeNodeByPid(card) {
   sub.style.display = collapsed ? '' : 'none';
   if (btn) btn.textContent = collapsed ? '▼' : '▶';
   scheduleAptLayout();
+}
+
+// ===== 卡片核对标记（世代总览，用户人工核对）：右上角小方框 → 点击变红色★ =====
+// localStorage 持久化（key: xie_admin_overview_verified，存 {id:1} 集合），刷新/重建不丢。
+// getVerifyStore 缓存 parse 结果，1252 张卡渲染时只解析一次，避免每卡重复 JSON.parse。
+var _verifyStoreCache = null;
+function getVerifyStore() {
+  if (_verifyStoreCache === null) {
+    try { _verifyStoreCache = JSON.parse(localStorage.getItem('xie_admin_overview_verified') || '{}'); }
+    catch (e) { _verifyStoreCache = {}; }
+  }
+  return _verifyStoreCache;
+}
+function toggleVerifyPerson(btn) {
+  var id = btn.getAttribute('data-pid');
+  var store = getVerifyStore();
+  if (store[id]) delete store[id]; else store[id] = 1;
+  localStorage.setItem('xie_admin_overview_verified', JSON.stringify(store));
+  var v = !!store[id];
+  btn.innerHTML = v ? '★' : '□';
+  btn.classList.toggle('apt-verified', v);
+  btn.title = v ? '已核对 ✓ 点击取消' : '点击标记为已核对';
 }
 
 // ===== 族谱树：按筛选条件重新渲染 =====
