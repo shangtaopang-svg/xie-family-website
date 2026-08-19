@@ -1694,6 +1694,9 @@ function renderGenealogyKeepState() {
 // 世代总览保存/删除后原地刷新：保留各支展开/收起状态 + 缩放级别 + 滚动位置，
 // 避免整模块重建后全部收起/跳回顶部/缩放重置（满足「保存后继续编辑，不用重新打开」）
 function renderGenealogyOverviewKeepState() {
+  // 0) 记录当前全屏态（全屏下编辑保存后保持全屏，避免「屏幕缩小」要重新按最大化/找不到人）
+  var splitEl0 = document.querySelector('.apt-split');
+  var wasFullscreen = !!(splitEl0 && splitEl0.classList.contains('apt-tree-fullscreen'));
   // 1) 记录当前状态：滚动容器 #apt-tree-viewport 的 scrollLeft/scrollTop + window 滚动
   var vp = document.getElementById('apt-tree-viewport');
   var sx = vp ? vp.scrollLeft : 0, sy = vp ? vp.scrollTop : 0;
@@ -1712,6 +1715,14 @@ function renderGenealogyOverviewKeepState() {
   // 2) 全量重建（含新数据；角落框 prefs 在 localStorage，重建后自动恢复）
   renderModule('genealogyOverview');
   if (typeof updateStats === 'function') updateStats();
+  // 2.5) 恢复全屏态（重建后 .apt-split 的 apt-tree-fullscreen 类丢失会退出全屏 → 恢复类+按钮+body overflow）
+  if (wasFullscreen) {
+    var split2 = document.querySelector('.apt-split');
+    if (split2) split2.classList.add('apt-tree-fullscreen');
+    var btn2 = document.getElementById('apt-fullscreen-btn');
+    if (btn2) btn2.textContent = '✕';
+    document.body.style.overflow = 'hidden';
+  }
   // 3) 恢复各支展开/折叠态（重建后默认态按 collapsedIds，须显式恢复全部记录状态）
   var treeEl2 = document.getElementById('admin-genealogy-tree');
   if (treeEl2) {
