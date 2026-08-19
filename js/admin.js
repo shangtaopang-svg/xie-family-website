@@ -1975,6 +1975,10 @@ function getGenealogyTreeCSS() {
     '.apt-search{width:100%;padding:8px 14px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:13px;box-sizing:border-box;}' +
     '.apt-table-wrap{flex:1;overflow-y:auto;max-height:450px;}' +
     '.apt-tree-toolbar{display:flex;gap:4px;align-items:center;margin-bottom:6px;flex-wrap:wrap;}' +
+    '.apt-search-item:hover{background:var(--accent-orange-dim);}' +
+    '.apt-chain-on{border:2.5px solid #ffd24a !important;box-shadow:0 0 0 2px rgba(255,196,0,0.45),0 0 16px 4px rgba(255,180,0,0.55) !important;z-index:5;}' +
+    '.apt-chain-dim{opacity:0.25;}' +
+    '.apt-chain-dim:hover{opacity:1;}' +
     '.apt-zoom-btn{width:28px;height:24px;border:1px solid var(--glass-border);border-radius:4px;background:var(--bg-card);color:var(--text-primary);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;}' +
     '.apt-zoom-btn:hover{background:var(--accent-orange-dim);border-color:var(--accent-orange);}' +
     '.apt-tree-viewport{overflow:hidden;position:relative;cursor:grab;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-secondary);min-height:400px;}' +
@@ -2317,7 +2321,11 @@ function renderGenealogyOverview(area) {
   html += '<button class="apt-zoom-btn" onclick="zoomTree(1)" title="重置">⟲</button>';
   html += '<button class="apt-zoom-btn" onclick="fitTree()" title="适应屏幕">⊞</button>';
   html += '<span style="font-size:11px;color:var(--text-tertiary);margin-left:4px;" id="apt-zoom-level">100%</span>';
-  html += '<span style="flex:1;"></span>';
+  // 搜索定位（方案一）：输入族人名字 → 候选下拉，选中后树定位到该人并高亮炎帝→他的整条世系脉络，其余支系变淡
+  html += '<div style="position:relative;flex:1;min-width:170px;max-width:340px;margin-left:6px;">';
+  html += '<input type="text" id="apt-tree-search" class="apt-search" placeholder="🔍 搜索族人，定位世系脉络…" autocomplete="off" oninput="aptSearchOverview(this.value)" onfocus="aptSearchOverview(this.value)" style="height:26px;padding:1px 10px;font-size:12px;width:100%;box-sizing:border-box;">';
+  html += '<div id="apt-tree-search-drop" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:60;background:var(--bg-card);border:1px solid var(--glass-border);border-radius:6px;max-height:280px;overflow-y:auto;box-shadow:0 8px 18px rgba(0,0,0,0.2);"></div>';
+  html += '</div>';
   html += '<button class="apt-zoom-btn" onclick="toggleTreeFullscreen()" title="全屏编辑" id="apt-fullscreen-btn" style="font-size:13px;">⛶</button>';
   html += '</div>';
   html += '<div class="apt-tree-viewport" id="apt-tree-viewport">';
@@ -2373,6 +2381,13 @@ function renderGenealogyOverview(area) {
   html += '</div>'; // close admin-module
 
   html += '<style>' + getGenealogyTreeCSS() + '</style>';
+
+  // 搜索定位用：全量数据 + 主树 id 集合 + 角落框归属（丹三/文榘支在主树无卡）
+  window._aptSearchData = allData;
+  window._aptMainIdSet = {};
+  for (var _mi = 0; _mi < mainData.length; _mi++) window._aptMainIdSet[mainData[_mi].id] = true;
+  window._aptDsanIds = dsanAllIds;
+  window._aptWenjuIds = wenjuAllIds;
 
   area.innerHTML = html;
   // 各角落框：等布局算完自然尺寸后缩成迷你图；绑定缩放/平移
@@ -4156,6 +4171,184 @@ function toggleTreeFullscreen() {
   } else {
     document.body.style.overflow = '';
   }
+}
+
+// ===== 世代总览：搜索定位 + 世系脉络高亮（方案一：搜名字 → 定位居中 + 炎帝→本人祖先链金色高亮，其余变淡） =====
+// 数据索引存 window._aptSearchData/_aptMainIdSet/_aptDsanIds/_aptWenjuIds（renderGenealogyOverview 末尾写入）。
+function aptSearchOverview(q) {
+  var drop = document.getElementById('apt-tree-search-drop');
+  if (!drop) return;
+  q = (q || '').trim().toLowerCase();
+  if (!q) { drop.style.display = 'none'; aptClearOverviewChain(); return; }
+  var data = window._aptSearchData || [];
+  var hits = [];
+  for (var i = 0; i < data.length && hits.length < 30; i++) {
+    if ((data[i].name || '').toLowerCase().indexOf(q) !== -1) hits.push(data[i]);
+  }
+  if (!hits.length) {
+    drop.innerHTML = '<div style="padding:8px 12px;font-size:12px;color:var(--text-tertiary);">无匹配族人</div>';
+    drop.style.display = 'block';
+    return;
+  }
+  var html = '';
+  for (var h = 0; h < hits.length; h++) {
+    var p = hits[h];
+    var inMain = window._aptMainIdSet && window._aptMainIdSet[p.id];
+    html += '<div class="apt-search-item" data-pid="' + p.id + '" onmousedown="event.preventDefault()" onclick="aptPickOverviewPerson(' + p.id + ')" style="padding:6px 12px;font-size:12px;cursor:pointer;display:flex;gap:8px;align-items:baseline;border-bottom:1px solid var(--glass-border);">';
+    html += '<span style="font-weight:600;color:var(--text-primary);white-space:nowrap;">' + escapeHtml(p.name) + '</span>';
+    html += '<span style="color:var(--text-tertiary);font-size:11px;">炎帝' + (p.generation_num || '?') + '世</span>';
+    html += (p.branch && p.branch !== '—' ? '<span style="color:var(--accent-orange);font-size:11px;margin-left:auto;">' + escapeHtml(p.branch) + '</span>' : '');
+    if (!inMain) html += '<span style="color:#e74c3c;font-size:11px;">（右下角支系框）</span>';
+    html += '</div>';
+  }
+  drop.innerHTML = html;
+  drop.style.display = 'block';
+}
+
+function aptPickOverviewPerson(id) {
+  var drop = document.getElementById('apt-tree-search-drop');
+  if (drop) drop.style.display = 'none';
+  var inp = document.getElementById('apt-tree-search');
+  if (inp) inp.blur();
+  // 主树没有此卡（在丹三/文榘角落框）：提示并展开对应框，让用户在该框里看
+  if (window._aptMainIdSet && !window._aptMainIdSet[id]) {
+    var p = aptFindById(id);
+    var boxId = (window._aptDsanIds && window._aptDsanIds[id]) ? 'apt-dsan-box' : ((window._aptWenjuIds && window._aptWenjuIds[id]) ? 'apt-wenju-box' : null);
+    if (boxId) {
+      var box = document.getElementById(boxId);
+      var st = box ? cornerBoxState(boxId) : null; // cornerBoxState 惰性初始化 _st，避免首次读取为 null 不展开
+      if (st && !st.expanded && typeof toggleCornerBox === 'function') toggleCornerBox(boxId);
+    }
+    showToast((p ? p.name : '') + ' 在右下角支系框中，已为你展开该框');
+    return;
+  }
+  aptFocusOverviewPerson(id);
+}
+
+function aptFindById(id) {
+  var data = window._aptSearchData || [];
+  for (var i = 0; i < data.length; i++) if (data[i].id == id) return data[i];
+  return null;
+}
+
+// 祖先链集合 = 本人 + 沿 father_id 一路向上到根（炎帝）。set 值为 true，key 为 id。
+function aptAncestorChain(id) {
+  var data = window._aptSearchData || [];
+  var byId = {};
+  for (var i = 0; i < data.length; i++) byId[data[i].id] = data[i];
+  var set = {};
+  set[id] = true;
+  var cur = byId[id];
+  var guard = 0;
+  while (cur && guard++ < 300) {
+    var fid = parseInt(cur.father_id != null ? cur.father_id : cur.father);
+    if (!fid || fid === cur.id) break;
+    set[fid] = true;
+    var next = byId[fid];
+    if (!next || next === cur) break;
+    cur = next;
+  }
+  return set;
+}
+
+// 把链上折叠的祖先支全部展开（跳过本人自己的后代 sub），并像用户点击一样收起同卡片行的其他可折叠大支，保持简洁
+function aptExpandChain(tree, chain, id) {
+  for (var pid in chain) {
+    if (+pid === +id) continue; // 本人卡必须可见即可，其后代 sub 无需展开（避免无谓加宽）
+    var sub = tree.querySelector('.apt-sub[data-pid="' + pid + '"]');
+    if (!sub || sub.style.display !== 'none') continue;
+    sub.style.display = '';
+    var card = tree.querySelector('.apt-card[data-pid="' + pid + '"]');
+    var btn = card ? card.querySelector('.apt-btn-expand') : null;
+    if (btn) btn.textContent = '▼';
+    var cardRow = card ? card.closest('.apt-cards-row') : null;
+    if (!cardRow) continue;
+    var siblings = cardRow.querySelectorAll(':scope > .apt-child > .apt-card.apt-collapsible');
+    for (var s = 0; s < siblings.length; s++) {
+      var sc = siblings[s];
+      if (sc === card) continue;
+      var spid = sc.getAttribute('data-pid');
+      var ssub = tree.querySelector('.apt-sub[data-pid="' + spid + '"]');
+      if (ssub && ssub.style.display !== 'none') {
+        ssub.style.display = 'none';
+        var sbtn = sc.querySelector('.apt-btn-expand');
+        if (sbtn) sbtn.textContent = '▶';
+      }
+    }
+  }
+}
+
+function aptApplyChainHighlight(tree, chain) {
+  var cards = tree.querySelectorAll('.apt-card');
+  for (var i = 0; i < cards.length; i++) {
+    var c = cards[i];
+    var pid = c.getAttribute('data-pid');
+    if (chain[pid]) {
+      c.classList.add('apt-chain-on');
+      c.classList.remove('apt-chain-dim');
+    } else {
+      c.classList.add('apt-chain-dim');
+      c.classList.remove('apt-chain-on');
+    }
+  }
+}
+
+function aptClearOverviewChain() {
+  var tree = document.getElementById('admin-genealogy-tree');
+  if (!tree) return;
+  tree.querySelectorAll('.apt-chain-on').forEach(function(c) { c.classList.remove('apt-chain-on'); });
+  tree.querySelectorAll('.apt-chain-dim').forEach(function(c) { c.classList.remove('apt-chain-dim'); });
+}
+
+// 定位：把目标卡居中到浏览器窗口中心。
+// ⚠️ 非全屏下 #apt-tree-viewport 高度会被树内容撑大（=树高），其 getBoundingClientRect 不能作定位基准，
+// 统一用 window.innerWidth/innerHeight 中心；缩放围绕目标卡中心进行（保持卡位置不动放大）。
+function aptCenterCard(vp, tree, card) {
+  var vw = window.innerWidth, vh = window.innerHeight;
+  var curZ = treeZoom || 1;
+  var cr = card.getBoundingClientRect();
+  var cx = cr.left + cr.width / 2, cy = cr.top + cr.height / 2;
+  if (curZ < 0.85) {
+    var newZ = 0.85;
+    var tx = (cx - treePanX) / curZ, ty = (cy - treePanY) / curZ;
+    treeZoom = newZ;
+    treePanX = cx - tx * newZ;
+    treePanY = cy - ty * newZ;
+    applyTreeTransform(tree);
+  }
+  var cr2 = card.getBoundingClientRect();
+  treePanX += (vw / 2) - (cr2.left + cr2.width / 2);
+  treePanY += (vh / 2) - (cr2.top + cr2.height / 2);
+  applyTreeTransform(tree);
+  updateZoomLevel();
+}
+
+// 总入口：展开祖先链 → 自校正定位 → 高亮。
+// expandChain 展开大支后 scheduleAptLayout 是 rAF 异步，卡片最终位置要等布局算完；
+// 布局推进中卡片位置会变，若只看"一次稳定"会在布局前错误居中。改为自校正循环：
+// 每 200ms 检查目标卡是否落在窗口中心，偏差 >3px 就重新定位，直到真正居中（或 12s 兜底）。
+function aptFocusOverviewPerson(id) {
+  var tree = document.getElementById('admin-genealogy-tree');
+  var vp = document.getElementById('apt-tree-viewport');
+  if (!tree || !vp) return;
+  var chain = aptAncestorChain(id);
+  if (!chain) { showToast('未找到该族人'); return; }
+  aptExpandChain(tree, chain, id);
+  scheduleAptLayout();
+  var tries = 0;
+  (function loop() {
+    tries++;
+    var card = tree.querySelector('.apt-card[data-pid="' + id + '"]');
+    if (!card) { if (tries < 60) setTimeout(loop, 200); return; }
+    aptApplyChainHighlight(tree, chain);
+    var cr = card.getBoundingClientRect();
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var dx = (cr.left + cr.width / 2) - vw / 2;
+    var dy = (cr.top + cr.height / 2) - vh / 2;
+    if (Math.abs(dx) <= 3 && Math.abs(dy) <= 3) return; // 已居中
+    aptCenterCard(vp, tree, card);
+    if (tries < 60) setTimeout(loop, 200);
+  })();
 }
 
 // ===== 世代总览：少数支系独立角落框（通用，丹三 1210 / 文榘 1211 及各自后代独立小树，点击缩放查看） =====
