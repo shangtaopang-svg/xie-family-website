@@ -833,14 +833,16 @@ function buildAdminTreeHtml(data, opts) {
   // 彬(60)/乾(59) 支：叔仅(56)二子、攒(13)后代的两个大支，分别淡紫/淡青蓝卡片（与攒蜜桃区分、兄弟互区）
   var binIds = {};
   var qianIds = {};
+  // 文杲(10)/文榘(1211) 全支（文杲=攒/撰两大支、文榘=角落框支）：六段世次标注用（枫槎 = N−131）
+  var fengchaiLineageIds = {};
+  function subTreeCollect(id, set, seen) {
+    if (seen[id]) return;
+    seen[id] = true;
+    set[id] = true;
+    var kids = childrenIdx[id] || [];
+    for (var ki = 0; ki < kids.length; ki++) subTreeCollect(kids[ki].id, set, seen);
+  }
   if (opts.ancBox) {
-    function subTreeCollect(id, set, seen) {
-      if (seen[id]) return;
-      seen[id] = true;
-      set[id] = true;
-      var kids = childrenIdx[id] || [];
-      for (var ki = 0; ki < kids.length; ki++) subTreeCollect(kids[ki].id, set, seen);
-    }
     var sbSeen = {};
     subTreeCollect(6, shenboIds, sbSeen);
     subTreeCollect(7, shenboIds, sbSeen);
@@ -872,6 +874,12 @@ function buildAdminTreeHtml(data, opts) {
     subTreeCollect(60, binIds, binSeen);
     var qianSeen = {};
     subTreeCollect(59, qianIds, qianSeen);
+  }
+  // 文杲/文榘 全支六段世次标注集合：主树(ancBox) 与 文榘角落框(fengchaiLineage) 都要收集
+  var fclSeen = {};
+  if (opts.ancBox || opts.fengchaiLineage) {
+    subTreeCollect(10, fengchaiLineageIds, fclSeen);
+    subTreeCollect(1211, fengchaiLineageIds, fclSeen);
   }
 
   var existingIds = {};
@@ -980,8 +988,8 @@ function buildAdminTreeHtml(data, opts) {
       if (opts.ancBox && shimadaiIds[person.id] && person.generation_num) {
         var smN = parseInt(person.generation_num);
         genText = '炎帝' + smN + '世/申伯' + (smN - 64) + '世/始宁东山' + (smN - 98) + '世/临海下渡' + (smN - 121) + '世/石马下谢' + (smN - 129) + '世';
-      } else if (opts.ancBox && fengchaiIds[person.id] && person.generation_num) {
-        // 枫槎第一代（文杲/文榘，generation_num=132）：完整六段 = 炎帝132世/申伯68世/始宁东山34世/临海下渡11世/石马下谢3世/枫槎1世
+      } else if ((opts.ancBox || opts.fengchaiLineage) && fengchaiLineageIds[person.id] && person.generation_num) {
+        // 文杲/文榘 全支（文杲=攒/撰两大支、文榘=角落框支）：完整六段，枫槎 = N−131（文杲文榘132=1世，以下类推）
         var fcN = parseInt(person.generation_num);
         genText = '炎帝' + fcN + '世/申伯' + (fcN - 64) + '世/始宁东山' + (fcN - 98) + '世/临海下渡' + (fcN - 121) + '世/石马下谢' + (fcN - 129) + '世/枫槎' + (fcN - 131) + '世';
       } else if (opts.ancBox && shenboIds[person.id] && person.generation_num) {
@@ -4082,7 +4090,7 @@ function buildCornerBoxHtml(boxId, title, data) {
   html += '<span class="dsan-drag-icon">⠿</span><span>' + title + '</span><span class="dsan-count">' + n + '人</span><span class="dsan-toggle-btn">⛶</span>';
   html += '</div>';
   html += '<div class="apt-dsan-viewport">';
-  html += buildAdminTreeHtml(data || [], {ancBox: false, hideBranch: true});
+  html += buildAdminTreeHtml(data || [], {ancBox: false, hideBranch: true, fengchaiLineage: true});
   html += '</div>';
   html += '<div class="apt-dsan-resize" title="拖动调整框大小"></div>';
   html += '</div>';
