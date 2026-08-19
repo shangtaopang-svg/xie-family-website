@@ -830,8 +830,9 @@ function buildAdminTreeHtml(data, opts) {
   var fengchaiIds = {10: true, 1211: true};
   // 石马下谢世次追加对象（小四 1206，generation_num=130）：在临海下渡四段后追加「石马下谢1世」
   var shimashaiAppendIds = {1206: true};
-  // 彬(60)/乾(59) 支：叔仅(56)二子、攒(13)后代的两个大支，用于淡紫/淡青紫卡片（与攒淡蜜桃区分）
-  var binqianIds = {};
+  // 彬(60)/乾(59) 支：叔仅(56)二子、攒(13)后代的两个大支，分别淡紫/淡青蓝卡片（与攒蜜桃区分、兄弟互区）
+  var binIds = {};
+  var qianIds = {};
   if (opts.ancBox) {
     function subTreeCollect(id, set, seen) {
       if (seen[id]) return;
@@ -866,10 +867,11 @@ function buildAdminTreeHtml(data, opts) {
     subTreeCollect(12, zhuanIds, zhuanSeen);
     var zanSeen = {};
     subTreeCollect(13, zanIds, zanSeen);
-    // 彬(60)/乾(59) 支：攒后代两个大支整支淡紫卡片（与攒淡蜜桃区分）
+    // 彬(60)/乾(59) 支：攒后代两个大支整支分别淡紫/淡青蓝卡片（与攒蜜桃区分、兄弟互区）
     var binSeen = {};
-    subTreeCollect(60, binqianIds, binSeen);
-    subTreeCollect(59, binqianIds, binSeen);
+    subTreeCollect(60, binIds, binSeen);
+    var qianSeen = {};
+    subTreeCollect(59, qianIds, qianSeen);
   }
 
   var existingIds = {};
@@ -937,7 +939,8 @@ function buildAdminTreeHtml(data, opts) {
     if (opts.ancBox && linhaiIds[person.id]) cClass += ' apt-card-linhai'; // 临海下渡橙色
     if (opts.ancBox && zhuanIds[person.id]) cClass += ' apt-card-zhuan'; // 撰支淡绿
     if (opts.ancBox && zanIds[person.id]) cClass += ' apt-card-zan'; // 攒支淡蜜桃
-    if (opts.ancBox && binqianIds[person.id]) cClass += ' apt-card-binqian'; // 彬/乾支淡紫
+    if (opts.ancBox && binIds[person.id]) cClass += ' apt-card-bin'; // 彬支淡紫
+    if (opts.ancBox && qianIds[person.id]) cClass += ' apt-card-qian'; // 乾支淡青蓝
     if (opts.ancBox && shimadaiIds[person.id]) cClass += ' apt-card-shi'; // 石马下谢第一代（丹一/二/三）深红
     if (opts.ancBox && fengchaiIds[person.id]) cClass += ' apt-card-fengchai'; // 枫槎第一代（文杲/文榘）深青
     if (isRuzhui) cClass += ' apt-ruzhui';
@@ -1789,13 +1792,20 @@ function getGenealogyTreeCSS() {
     '.apt-card-zan .apt-branch{background:rgba(190,140,70,0.16);color:#7a5426;}' +
     '.apt-card-zan .apt-btn-expand{background:#d29b52;}' +
     '.apt-card-zan .apt-btn-add,.apt-card-zan .apt-btn-del{background:rgba(190,140,70,0.2);color:#7a5426;}' +
-    // 彬(60)/乾(59) 支：淡紫/淡青紫卡片（与攒淡蜜桃区分，浅底深字）
-    '.apt-card-binqian{background:linear-gradient(160deg,#efe9fb,#ddd1f0) !important;border-color:rgba(150,120,205,0.6) !important;}' +
-    '.apt-card-binqian .apt-name{color:#4a3a75 !important;}' +
-    '.apt-card-binqian .apt-meta,.apt-card-binqian .apt-spouse,.apt-card-binqian .apt-children-count{color:#5b4a80 !important;}' +
-    '.apt-card-binqian .apt-branch{background:rgba(120,95,170,0.14);color:#55407a;}' +
-    '.apt-card-binqian .apt-btn-expand{background:#8d79c4;}' +
-    '.apt-card-binqian .apt-btn-add,.apt-card-binqian .apt-btn-del{background:rgba(120,95,170,0.18);color:#4a3a75;}' +
+    // 彬(60) 支：淡紫卡片（与攒蜜桃、乾淡青蓝区分，浅底深字）
+    '.apt-card-bin{background:linear-gradient(160deg,#efe9fb,#ddd1f0) !important;border-color:rgba(150,120,205,0.6) !important;}' +
+    '.apt-card-bin .apt-name{color:#4a3a75 !important;}' +
+    '.apt-card-bin .apt-meta,.apt-card-bin .apt-spouse,.apt-card-bin .apt-children-count{color:#5b4a80 !important;}' +
+    '.apt-card-bin .apt-branch{background:rgba(120,95,170,0.14);color:#55407a;}' +
+    '.apt-card-bin .apt-btn-expand{background:#8d79c4;}' +
+    '.apt-card-bin .apt-btn-add,.apt-card-bin .apt-btn-del{background:rgba(120,95,170,0.18);color:#4a3a75;}' +
+    // 乾(59) 支：淡青蓝卡片（与攒蜜桃、彬淡紫区分，浅底深字）
+    '.apt-card-qian{background:linear-gradient(160deg,#e3f0f8,#c8dfee) !important;border-color:rgba(110,160,200,0.6) !important;}' +
+    '.apt-card-qian .apt-name{color:#2c5f7a !important;}' +
+    '.apt-card-qian .apt-meta,.apt-card-qian .apt-spouse,.apt-card-qian .apt-children-count{color:#3d6f8c !important;}' +
+    '.apt-card-qian .apt-branch{background:rgba(100,160,200,0.14);color:#2f6380;}' +
+    '.apt-card-qian .apt-btn-expand{background:#6f9fc0;}' +
+    '.apt-card-qian .apt-btn-add,.apt-card-qian .apt-btn-del{background:rgba(100,160,200,0.18);color:#2c5f7a;}' +
     // 石马下谢第一代（丹一/丹二/丹三）：深红色卡片（浅色世次文字在深红上可读）
     '.apt-card-shi{background:linear-gradient(160deg,#b03434,#7d1d1d) !important;border-color:rgba(185,70,70,0.75) !important;}' +
     '.apt-card-shi .apt-name{color:#fff6f6 !important;}' +
