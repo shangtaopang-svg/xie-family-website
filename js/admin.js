@@ -4083,7 +4083,7 @@ function initTreePanZoom() {
     var mx = e.clientX - rect.left;
     var my = e.clientY - rect.top;
     var factor = e.deltaY < 0 ? 1.1 : 0.9;
-    var newZoom = Math.max(0.1, Math.min(5, treeZoom * factor));
+    var newZoom = Math.max(0.02, Math.min(5, treeZoom * factor));
     treePanX = mx - (mx - treePanX) * (newZoom / treeZoom);
     treePanY = my - (my - treePanY) * (newZoom / treeZoom);
     treeZoom = newZoom;
@@ -4133,7 +4133,7 @@ function zoomTree(factor) {
   if (factor === 1) {
     treeZoom = 1; treePanX = 0; treePanY = 0;
   } else {
-    treeZoom = Math.max(0.1, Math.min(5, treeZoom * factor));
+    treeZoom = Math.max(0.02, Math.min(5, treeZoom * factor));
   }
   applyTreeTransform(tree);
   updateZoomLevel();
@@ -4147,7 +4147,7 @@ function fitTree() {
   var tw = tree.scrollWidth || 800, th = tree.scrollHeight || 600;
   var sx = vpw / tw, sy = vph / th;
   treeZoom = Math.min(sx, sy, 1.5);
-  treeZoom = Math.max(0.1, treeZoom);
+  treeZoom = Math.max(0.02, treeZoom);
   treePanX = 20;
   treePanY = 20;
   applyTreeTransform(tree);
