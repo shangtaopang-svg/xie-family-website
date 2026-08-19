@@ -833,6 +833,8 @@ function buildAdminTreeHtml(data, opts) {
   // 彬(60)/乾(59) 支：叔仅(56)二子、攒(13)后代的两个大支，分别淡紫/淡青蓝卡片（与攒蜜桃区分、兄弟互区）
   var binIds = {};
   var qianIds = {};
+  // 关键人物（彬60/乾59/文对61，gen=147 三房祖）：高亮卡片（金色发光描边 + ★ 徽标），要很明显
+  var keyIds = {59: true, 60: true, 61: true};
   // 文杲(10)/文榘(1211) 全支（文杲=攒/撰两大支、文榘=角落框支）：六段世次标注用（枫槎 = N−131）
   var fengchaiLineageIds = {};
   function subTreeCollect(id, set, seen) {
@@ -951,6 +953,7 @@ function buildAdminTreeHtml(data, opts) {
     if (opts.ancBox && qianIds[person.id]) cClass += ' apt-card-qian'; // 乾支淡青蓝
     if (opts.ancBox && shimadaiIds[person.id]) cClass += ' apt-card-shi'; // 石马下谢第一代（丹一/二/三）深红
     if (opts.ancBox && fengchaiIds[person.id]) cClass += ' apt-card-fengchai'; // 枫槎第一代（文杲/文榘）深青
+    if (opts.ancBox && keyIds[person.id]) cClass += ' apt-card-key'; // 关键人物（彬/乾/文对）高亮，排在最后保证优先
     if (isRuzhui) cClass += ' apt-ruzhui';
     if (ruzhuiPartner) cClass += ' apt-ruzhui-partner';
     if (isCollapsible) cClass += ' apt-collapsible'; // 大支可点击卡片收起/展开（攒/撰/彬/乾）
@@ -976,6 +979,8 @@ function buildAdminTreeHtml(data, opts) {
     if (opts.noDescIds && opts.noDescIds[person.id]) html += '<span class="apt-nodesc-badge" title="无后代记录">无后</span>';
     // 后裔收进右下角框的标记（世代总览丹三：本人保留在主区域，后裔在角落框查看）
     if (opts.cornerIds && opts.cornerIds[person.id]) html += '<span class="apt-corner-badge" title="后裔已收进右下角框，点击可缩放查看">后裔→右下角</span>';
+    // 关键人物（彬/乾/文对）名字前加 ★ 徽标，醒目高亮
+    if (opts.ancBox && keyIds[person.id]) html += '<span class="apt-key-badge">★</span>';
     html += escapeHtml(person.name) + '</div>';
     if (!opts.hideGen) {
       var genText = (person.generation_num || '?') + '世';
@@ -1024,6 +1029,10 @@ function buildAdminTreeHtml(data, opts) {
         genText += '/石马下谢' + (parseInt(person.generation_num) - 129) + '世';
       }
       html += '<div class="apt-meta">' + genText + genSuffix + '</div>';
+    }
+    // 过继/出继标注（生父侧显示「过继给X为嗣」，hideBranch 模式下也显示）
+    if (person.adopt_note) {
+      html += '<div class="apt-adopt-note">' + escapeHtml(person.adopt_note) + '</div>';
     }
     if (person.branch && person.branch !== '—' && !opts.hideBranch) {
       html += '<div class="apt-branch">' + escapeHtml(person.branch) + '</div>';
@@ -1847,6 +1856,11 @@ function getGenealogyTreeCSS() {
     '.apt-mini-hover:hover .apt-mini-btn{opacity:1;}' +
     '@media (max-width:767px){.apt-mini-hover .apt-mini-btn,.apt-mini-hover:hover .apt-mini-btn{opacity:1;}}' +
     '.apt-card:hover{border-color:var(--accent-orange);box-shadow:0 2px 8px rgba(251,146,60,0.12);transform:translateY(-1px);}' +
+    // 关键人物高亮（彬60/乾59/文对61）：金色发光描边 + 名字加粗，压过一切卡片底色/悬停态，要很明显
+    '.apt-card-key{border:2.5px solid #ffd24a !important;box-shadow:0 0 0 2px rgba(255,196,0,0.45),0 0 16px 4px rgba(255,180,0,0.55) !important;}' +
+    '.apt-card-key .apt-name{font-weight:800;text-shadow:0 0 6px rgba(255,196,0,0.35);}' +
+    '.apt-key-badge{display:inline-block;color:#fff;background:linear-gradient(160deg,#ffb300,#ff8f00);border-radius:4px;padding:0 4px;margin-right:3px;font-size:10px;font-weight:900;line-height:15px;vertical-align:middle;box-shadow:0 0 6px rgba(255,150,0,0.8);}' +
+    '.apt-card-key .apt-meta{color:#5b4a00 !important;font-weight:700;}' +
     '.apt-male{border-left:3px solid #4a9eff;}.apt-female{border-left:3px solid #ff6b9d;}' +
     '.apt-ruzhui{border:2px solid #ef4444 !important;background:rgba(239,68,68,0.08) !important;}' +
     '.apt-ruzhui-partner{border:2px solid #f97316 !important;background:rgba(249,115,22,0.06) !important;}' +
@@ -1854,6 +1868,7 @@ function getGenealogyTreeCSS() {
     '.apt-adopted-badge{display:inline-block;font-size:9px;font-weight:700;color:#fff;background:#e74c3c;border-radius:3px;padding:0 5px;margin-right:4px;vertical-align:middle;line-height:16px;}' +
     '.apt-meta{font-size:11px;color:var(--text-tertiary);margin-top:2px;}' +
     '.apt-branch{font-size:10px;padding:1px 6px;border-radius:3px;background:var(--accent-orange-dim);color:var(--accent-orange);margin-top:2px;}' +
+    '.apt-adopt-note{font-size:10px;padding:1px 6px;border-radius:3px;background:rgba(139,92,246,0.14);color:#7c4ad1;border:1px dashed rgba(139,92,246,0.35);margin-top:2px;}' +
     '.apt-spouse{font-size:10px;color:var(--text-tertiary);margin-top:2px;opacity:0.7;}' +
     '.apt-mother{font-size:10px;color:#8b5cf6;margin-top:2px;opacity:0.6;}' +
     '.apt-connector{width:2px;height:18px;background:var(--accent-orange);opacity:0.2;margin:0 auto;}' +
