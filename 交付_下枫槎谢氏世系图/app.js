@@ -632,6 +632,10 @@
       });
     }
     registerExplicitPair(673, 674, 481, '绍基之子世禄，出继绍享为嗣', true);
+    // 上册第101页：明才、学护各保留亲生记录与入继记录；补齐两张亲生侧出继卡，
+    // 使“明才（出继）→明才（入继）”和“学护（出继）→学护（入继）”都能闭合统计。
+    registerExplicitPair(260, 261, 230, '锡铨之子明才，出继锡龄为嗣', true);
+    registerExplicitPair(333, 332, 261, '明秀之子学护，出继明才为嗣', true);
     // 善鸿是序缎之子：序缎的入继记录仍显示在令水名下，但善鸿应接在入继序缎卡片之后，不能直接跳到令水下面。
     const adoptedXuDuanRecord = getPerson(678);
     if (adoptedXuDuanRecord && text(adoptedXuDuanRecord.name).trim() === '序缎') {
