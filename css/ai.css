@@ -350,6 +350,9 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
 }
 #ai-send:not(:disabled):hover { filter: brightness(1.08); box-shadow: 0 2px 8px rgba(245, 166, 35, 0.35); }
 #ai-send:disabled { opacity: .5; cursor: default; }
+.ai-adoption-full-btn { display: grid; gap: 4px; width: 100%; margin: 12px 0 2px; padding: 12px 14px; border: 1px solid #b8795d; border-radius: 9px; background: #fff3ed; color: #8f4936; text-align: left; cursor: pointer; }
+.ai-adoption-full-btn:hover { filter: brightness(.98); box-shadow: 0 3px 10px rgba(143,73,54,.14); }
+.ai-adoption-full-btn small { color: #8a756e; font-size: 11px; }
 
 /* 回到最新 */
 .ai-gobottom {

@@ -432,6 +432,21 @@
         });
         body.appendChild(btn);
       });
+      // 出继/入继人物提供第三种视图：不选择单一父系，直接查看两条父系及关系线。
+      if (hasAdoptionChoice) {
+        var fullBtn = document.createElement('button');
+        fullBtn.type = 'button';
+        fullBtn.className = 'ai-adoption-full-btn';
+        fullBtn.innerHTML = '🔗 <b>全面展示出继 / 入继关系</b><small>同时显示亲生父亲、继父及两条世系关系线</small>';
+        fullBtn.addEventListener('click', function () {
+          body.textContent = '正在生成完整的出继 / 入继关系图…';
+          scrollBottom(true);
+          // 以任一同名记录作为目标即可；服务端会从双记录关系索引中补全另一条父系。
+          var choice = (j.candidates || []).find(function (x) { return x.adoptionRole === 'biological'; }) || j.candidates[0];
+          chat('请从炎帝神农氏开始，呈现' + (j.name || '') + '的世系图，并全面展示出继和入继关系', String(choice.id), true);
+        });
+        body.appendChild(fullBtn);
+      }
       scrollBottom(true);
     };
 
