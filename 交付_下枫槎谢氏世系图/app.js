@@ -2621,6 +2621,15 @@
         changed = true;
       }
     };
+    // 管理后台可能保留着旧版浏览器数据；服务器交付源新增人物时，
+    // 将新增的源记录迁入旧缓存，避免“源数据已有、后台树图却看不到”。
+    const syncNewDeliveryRecord = (id) => {
+      const source = state.original.find((item) => String(personId(item)) === String(id));
+      if (!source || getPerson(id)) return;
+      ensureRecord(source);
+      changed = true;
+    };
+    syncNewDeliveryRecord(1285); // 四十之子千十二
     // 小四（石马）是石马分房的第130世节点，与临海下渡的小四处于同一世次。
     // 旧版本地缓存曾把这张卡片保留为132世，必须在启动时自动纠正，避免查询页继续显示旧值。
     const stoneHorseXiaoSi = getPerson(1207);
