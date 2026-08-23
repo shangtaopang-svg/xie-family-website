@@ -51,7 +51,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v85'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v86'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -1200,6 +1200,8 @@
     showTreeOverlay(nodes, ownerIsSelf);
     var target = nodes.find(function (n) { return n && n.adoptionDetail; });
     if (!target || !treeOverlay) return;
+    var fullTitle = treeOverlay.querySelector('.ai-tree-title');
+    if (fullTitle) fullTitle.textContent = '🌳 世系图 · 从炎帝神农氏到' + target.name + '（完整出继 / 入继关系）';
     var d = target.adoptionDetail || {};
     var ctx = d.context || {
       person: { name: target.name, shi: target.shi },
@@ -1216,11 +1218,11 @@
       var cls = ctx.biologicalParent && p.name === ctx.biologicalParent.name ? ' biological' :
         (ctx.adoptiveParent && p.name === ctx.adoptiveParent.name ? ' adoptive' : '');
       return '<div class="ai-adopt-node' + cls + '"><small>第' + esc(p.shi) + '世</small><strong>' + esc(p.name) + '</strong>' +
-        (cls === ' biological' ? '<em>亲生父亲</em>' : (cls === ' adoptive' ? '<em>继父（承嗣父）</em>' : '')) + '</div>';
+        (cls === ' biological' ? '<em>亲生父亲 · 血缘50%</em>' : (cls === ' adoptive' ? '<em>继父（承嗣父） · 血缘0%</em>' : '')) + '</div>';
     }).join('');
     if (!siblingNodes) {
-      siblingNodes = (ctx.biologicalParent ? '<div class="ai-adopt-node biological"><small>第' + esc(ctx.biologicalParent.shi) + '世</small><strong>' + esc(ctx.biologicalParent.name) + '</strong><em>亲生父亲</em></div>' : '') +
-        (ctx.adoptiveParent ? '<div class="ai-adopt-node adoptive"><small>第' + esc(ctx.adoptiveParent.shi) + '世</small><strong>' + esc(ctx.adoptiveParent.name) + '</strong><em>继父（承嗣父）</em></div>' : '');
+      siblingNodes = (ctx.biologicalParent ? '<div class="ai-adopt-node biological"><small>第' + esc(ctx.biologicalParent.shi) + '世</small><strong>' + esc(ctx.biologicalParent.name) + '</strong><em>亲生父亲 · 血缘50%</em></div>' : '') +
+        (ctx.adoptiveParent ? '<div class="ai-adopt-node adoptive"><small>第' + esc(ctx.adoptiveParent.shi) + '世</small><strong>' + esc(ctx.adoptiveParent.name) + '</strong><em>继父（承嗣父） · 血缘0%</em></div>' : '');
     }
     map.innerHTML =
       '<div class="ai-adoption-title"><b>出继 / 入继关系详图</b><span>完整直线世系末端关系</span></div>' +
@@ -1231,7 +1233,9 @@
       (ctx.target ? '<div class="ai-adopt-down"></div><div class="ai-adopt-target ai-adopt-node"><small>第' + esc(ctx.target.shi) + '世</small><strong>' + esc(ctx.target.name) + '</strong></div>' : '') +
       '<div class="ai-adoption-source">' + esc(ctx.source || '') + '</div>';
     var body = treeOverlay.querySelector('.ai-tree-body');
-    if (body) body.appendChild(map);
+    // 关系图先呈现，打开后立即看到类似参考图一的出继/入继分叉；
+    // 下方继续保留炎帝→目标人物的完整直线世系，避免用户还要翻到页面底部才看到关系图。
+    if (body) body.insertBefore(map, body.firstChild);
     scrollBottom(true);
   }
 
