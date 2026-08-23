@@ -51,7 +51,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v68'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v70'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -427,6 +427,23 @@
         src.className = 'ai-src';
         src.textContent = '📚 参考：' + sources.join('、');
         (body || botEl).appendChild(src); // 放入文本节点内，头像布局下不错位
+      }
+      // 树图不能只依赖“自动弹出”：在回答正文中保留永久入口，关闭弹层后仍可再次查看。
+      if (tree && tree.length) {
+        var treeBtn = document.createElement('button');
+        treeBtn.type = 'button';
+        treeBtn.className = 'ai-result-visual';
+        treeBtn.innerHTML = '<span>🌳</span><b>查看树状世系图</b><small>炎帝神农氏 → ' + esc(tree[tree.length - 1].name) + '</small>';
+        treeBtn.addEventListener('click', function () { showTreeOverlay(tree, ownerIsSelf); });
+        body.appendChild(treeBtn);
+      }
+      if (closestTree && closestTree.adoptions && closestTree.adoptions.length) {
+        var adoptBtn = document.createElement('button');
+        adoptBtn.type = 'button';
+        adoptBtn.className = 'ai-result-visual adoption';
+        adoptBtn.innerHTML = '<span>🔗</span><b>查看出继 / 入继详情图</b><small>亲生父系与承嗣父系同时呈现</small>';
+        adoptBtn.addEventListener('click', function () { showClosestOverlay(closest || [], closestTree); });
+        body.appendChild(adoptBtn);
       }
       if (tree && tree.length) showTreeOverlay(tree, ownerIsSelf); // 世系图：呈现+朗读的同时弹出树状图
       if (closest && closest.length) showClosestOverlay(closest, closestTree); // 血缘最亲：弹出家族关系树 + 亲密系数图
@@ -1230,6 +1247,30 @@
     document.body.appendChild(ov);
     closestOverlay = ov;
     var body = ov.querySelector('.ai-closest-body');
+    if (tree && tree.adoptions && tree.adoptions.length) {
+      tree.adoptions.forEach(function (ctx) {
+        var card = document.createElement('section');
+        card.className = 'ai-adoption-map';
+        var siblingNodes = (ctx.siblings || []).map(function (p) {
+          var cls = ctx.biologicalParent && p.name === ctx.biologicalParent.name ? ' biological' :
+            (ctx.adoptiveParent && p.name === ctx.adoptiveParent.name ? ' adoptive' : '');
+          return '<div class="ai-adopt-node' + cls + '"><small>第' + esc(p.shi) + '世</small><strong>' + esc(p.name) + '</strong>' +
+            (cls === ' biological' ? '<em>亲生父亲</em>' : (cls === ' adoptive' ? '<em>继父（承嗣父）</em>' : '')) + '</div>';
+        }).join('');
+        if (!siblingNodes) {
+          siblingNodes = (ctx.biologicalParent ? '<div class="ai-adopt-node biological"><small>第' + esc(ctx.biologicalParent.shi) + '世</small><strong>' + esc(ctx.biologicalParent.name) + '</strong><em>亲生父亲</em></div>' : '') +
+            '<div class="ai-adopt-node adoptive"><small>第' + esc(ctx.adoptiveParent.shi) + '世</small><strong>' + esc(ctx.adoptiveParent.name) + '</strong><em>继父（承嗣父）</em></div>';
+        }
+        card.innerHTML =
+          '<div class="ai-adoption-title"><b>出继 / 入继关系详图</b><span>' + esc(ctx.source || '') + '</span></div>' +
+          (ctx.commonAncestor ? '<div class="ai-adopt-root ai-adopt-node"><small>第' + esc(ctx.commonAncestor.shi) + '世</small><strong>' + esc(ctx.commonAncestor.name) + '</strong></div>' : '') +
+          '<div class="ai-adopt-parent-row">' + siblingNodes + '</div>' +
+          '<div class="ai-adopt-links"><i class="bio"></i><span>亲生父子</span><i class="adopt"></i><span>出继入嗣</span></div>' +
+          '<div class="ai-adopt-person ai-adopt-node"><small>第' + esc(ctx.person.shi) + '世</small><strong>' + esc(ctx.person.name) + '</strong><em>出继 / 入继</em></div>' +
+          (ctx.target ? '<div class="ai-adopt-down"></div><div class="ai-adopt-target ai-adopt-node"><small>第' + esc(ctx.target.shi) + '世</small><strong>' + esc(ctx.target.name) + '</strong></div>' : '');
+        body.appendChild(card);
+      });
+    }
     // #82 血缘树：画出家族关系树（用户 ASCII 模板：曾祖父12.5→祖父25→父亲50，旁系25，同辈50）
     // 只画树不画排名列表（用户要求去掉下方的「按基因共享率排名」列表，树上的百分比已足够）
     if (tree && tree.root) {

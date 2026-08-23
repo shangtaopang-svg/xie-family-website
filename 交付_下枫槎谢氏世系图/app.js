@@ -351,6 +351,61 @@
     return String(value);
   }
 
+  const ERA_YEAR_RANGES = {
+    宣和: [1119, 1125], 建文: [1399, 1402], 正德: [1506, 1521], 隆庆: [1567, 1572],
+    万历: [1573, 1620], 泰昌: [1620, 1620], 天启: [1621, 1627], 崇祯: [1628, 1644],
+    顺治: [1644, 1661], 康熙: [1662, 1722], 雍正: [1723, 1735], 乾隆: [1736, 1795],
+    嘉庆: [1796, 1820], 道光: [1821, 1850], 咸丰: [1851, 1861], 同治: [1862, 1874],
+    光绪: [1875, 1908], 宣统: [1909, 1911]
+  };
+  const ERA_NAMES = Object.keys(ERA_YEAR_RANGES).join('|');
+  const HEAVENLY_STEMS = '甲乙丙丁戊己庚辛壬癸';
+  const EARTHLY_BRANCHES = '子丑寅卯辰巳午未申酉戌亥';
+
+  function chineseYearNumber(value) {
+    const source = text(value).trim();
+    if (source === '元') return 1;
+    const digit = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9 };
+    if (/^廿[一二三四五六七八九]?$/.test(source)) return 20 + (digit[source[1]] || 0);
+    if (/^卅[一二三四五六七八九]?$/.test(source)) return 30 + (digit[source[1]] || 0);
+    if (/^十[一二三四五六七八九]?$/.test(source)) return 10 + (digit[source[1]] || 0);
+    if (/^[一二三四五六七八九]十[一二三四五六七八九]?$/.test(source)) return digit[source[0]] * 10 + (digit[source[2]] || 0);
+    if (/^[一二三四五六七八九]$/.test(source)) return digit[source];
+    return null;
+  }
+
+  function ganzhiOfYear(year) {
+    const index = ((Number(year) - 4) % 60 + 60) % 60;
+    return `${HEAVENLY_STEMS[index % 10]}${EARTHLY_BRANCHES[index % 12]}`;
+  }
+
+  function annotateGregorianYears(value) {
+    let result = text(value).trim();
+    if (!result) return result;
+    const numericEraPattern = new RegExp(`(${ERA_NAMES})(元|[一二三四五六七八九十廿卅]{1,4})年(?!（公元)`, 'g');
+    result = result.replace(numericEraPattern, (original, era, eraYearText) => {
+      const eraYear = chineseYearNumber(eraYearText);
+      const range = ERA_YEAR_RANGES[era];
+      if (!eraYear || !range) return original;
+      const gregorian = range[0] + eraYear - 1;
+      return gregorian <= range[1] ? `${original}（公元${gregorian}年）` : original;
+    });
+    const ganzhiEraPattern = new RegExp(`(${ERA_NAMES})([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])年(?!（公元)`, 'g');
+    result = result.replace(ganzhiEraPattern, (original, era, ganzhi) => {
+      const range = ERA_YEAR_RANGES[era];
+      if (!range) return original;
+      const matches = [];
+      for (let year = range[0]; year <= range[1]; year += 1) if (ganzhiOfYear(year) === ganzhi) matches.push(year);
+      return matches.length === 1 ? `${original}（公元${matches[0]}年）` : original;
+    });
+    const chineseDigits = { 一: '1', 二: '2', 三: '3', 四: '4', 五: '5', 六: '6', 七: '7', 八: '8', 九: '9', 〇: '0', 零: '0', '○': '0' };
+    result = result.replace(/([一二][一二三四五六七八九〇零○]{3})年(?!（公元)/g, (original, yearText) => {
+      const year = Number(Array.from(yearText).map((char) => chineseDigits[char]).join(''));
+      return year >= 1000 && year <= 2099 ? `${original}（公元${year}年）` : original;
+    });
+    return result;
+  }
+
   function escapeHtml(value) {
     return text(value)
       .replace(/&/g, '&amp;')
@@ -4074,6 +4129,18 @@
     // 卒、殁、早逝、享年或葬载时才确认已故；无证据的字符串默认值恢复为未标注。
     // 后台人工保存的布尔值不覆盖，避免冲掉后续人工核定结论。
     state.data.forEach((person) => {
+      const vital = window.GENEALOGY_VITALS && window.GENEALOGY_VITALS[String(personId(person))];
+      if (vital && text(vital.name).trim() === text(person.name).trim() &&
+          (!vital.father_id || String(toId(vital.father_id)) === String(toId(person.father_id)))) {
+        if (!text(person.birth_date).trim() && text(vital.birth_date).trim()) {
+          person.birth_date = vital.birth_date;
+          changed = true;
+        }
+        if (!text(person.death_date).trim() && text(vital.death_date).trim()) {
+          person.death_date = vital.death_date;
+          changed = true;
+        }
+      }
       const birthText = text(person.birth_date).trim();
       const bioText = text(person.biography).trim();
       const sourceText = `${birthText} ${bioText}`;
@@ -4125,6 +4192,16 @@
           person.residence = residenceMatch[1].trim();
           changed = true;
         }
+      }
+      const annotatedBirth = annotateGregorianYears(person.birth_date);
+      if (annotatedBirth && annotatedBirth !== text(person.birth_date).trim()) {
+        person.birth_date = annotatedBirth;
+        changed = true;
+      }
+      const annotatedDeath = annotateGregorianYears(person.death_date);
+      if (annotatedDeath && annotatedDeath !== text(person.death_date).trim()) {
+        person.death_date = annotatedDeath;
+        changed = true;
       }
       if (hasExplicitDeath || birthText || bioText) {
         const vitalSource = historicalAncestor && !birthText && !bioText

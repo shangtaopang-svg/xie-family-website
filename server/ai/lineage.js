@@ -17,6 +17,19 @@ let byId = null;
 let byName = null;
 let mtimeMs = -1;
 let loadedSource = '';
+let adoptionPairs = [];
+
+function loadAdoptionPairs() {
+  adoptionPairs = [];
+  const appFile = path.join(__dirname, '..', '..', '交付_下枫槎谢氏世系图', 'app.js');
+  let src = '';
+  try { src = fs.readFileSync(appFile, 'utf-8'); } catch (e) { return; }
+  const re = /registerExplicitPair\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(['"])(.*?)\4\s*,\s*(?:true|false)\s*\)/g;
+  let m;
+  while ((m = re.exec(src))) {
+    adoptionPairs.push({ outId: Number(m[1]), adoptiveId: Number(m[2]), adoptiveParentId: Number(m[3]), source: m[5] });
+  }
+}
 
 function ensureLoaded() {
   const deliveryList = deliverySource.ensureLoaded();
@@ -42,6 +55,7 @@ function ensureLoaded() {
       (byName.get(p.name) || byName.set(p.name, []).get(p.name)).push(p);
     }
   }
+  loadAdoptionPairs();
 
   // 交付版数据已经包含当前核对后的父子关系和人工修正，必须原样使用；
   // 下方旧版后台数据的内存修补只作为缺少交付数据时的兼容回退。
@@ -166,6 +180,49 @@ function ensureLoaded() {
     }
     console.log('[lineage] 世系贯通：注入申伯中段合成记录 ' + SYN_GAP.length + ' 条，重指远古/东山错链 ' + ANCIENT_REPOINT.length + ' 条');
   }
+}
+
+function adoptionContextsFor(personId) {
+  ensureLoaded();
+  const chainIds = new Set(getAncestorList(personId, true).map(p => Number(p.id)));
+  const contexts = [];
+  for (const rel of adoptionPairs) {
+    if (!chainIds.has(rel.outId) && !chainIds.has(rel.adoptiveId)) continue;
+    const outPerson = byId.get(rel.outId);
+    const adoptedPerson = byId.get(rel.adoptiveId);
+    const adoptiveParent = byId.get(rel.adoptiveParentId);
+    if (!outPerson || !adoptedPerson || !adoptiveParent) continue;
+
+    let biologicalParent = outPerson.father_id ? byId.get(Number(outPerson.father_id)) : null;
+    const sourceFather = String(rel.source || '').match(/^(.+?)之(?:子|女)/);
+    if (sourceFather) {
+      const candidates = byName.get(sourceFather[1]) || [];
+      biologicalParent = candidates.find(p => Number(p.generation_num) === Number(outPerson.generation_num) - 1) || candidates[0] || biologicalParent;
+    }
+    const bpGrand = biologicalParent && biologicalParent.father_id ? byId.get(Number(biologicalParent.father_id)) : null;
+    const apGrand = adoptiveParent.father_id ? byId.get(Number(adoptiveParent.father_id)) : null;
+    const commonAncestorName = bpGrand && apGrand && bpGrand.name === apGrand.name ? bpGrand.name : '';
+    const parentGen = Number(adoptiveParent.generation_num) || Number(biologicalParent && biologicalParent.generation_num) || 0;
+    const siblings = [];
+    if (commonAncestorName) {
+      const grandRecords = byName.get(commonAncestorName) || [];
+      const grandIds = new Set(grandRecords.map(p => Number(p.id)));
+      for (const p of byId.values()) {
+        if (grandIds.has(Number(p.father_id)) && Number(p.generation_num) === parentGen &&
+            !siblings.some(x => x.name === p.name)) siblings.push({ id: Number(p.id), name: p.name, shi: Number(p.generation_num) || '' });
+      }
+    }
+    contexts.push({
+      source: rel.source,
+      commonAncestor: commonAncestorName ? { name: commonAncestorName, shi: Number(bpGrand.generation_num) || Number(apGrand.generation_num) || '' } : null,
+      siblings,
+      biologicalParent: biologicalParent ? { id: Number(biologicalParent.id), name: biologicalParent.name, shi: Number(biologicalParent.generation_num) || '' } : null,
+      adoptiveParent: { id: Number(adoptiveParent.id), name: adoptiveParent.name, shi: Number(adoptiveParent.generation_num) || '' },
+      person: { id: Number(adoptedPerson.id), name: adoptedPerson.name, shi: Number(adoptedPerson.generation_num) || '', outId: rel.outId },
+      target: Number(adoptedPerson.id) === Number(personId) ? null : (byId.get(Number(personId)) ? { id: Number(personId), name: byId.get(Number(personId)).name, shi: Number(byId.get(Number(personId)).generation_num) || '' } : null)
+    });
+  }
+  return contexts;
 }
 
 function getPerson(id) { ensureLoaded(); return byId.get(Number(id)) || null; }
@@ -715,6 +772,7 @@ function answerClosest(personId, limit, targetName) {
   const text = `与${displayName}血缘最近的 ${list.length} 位族人（基因共享率越高越亲，最高 50%）：\n${lines.join('\n')}`;
   const tree = buildClosestTree(rows, self, displayName);
   tree.targetName = displayName;
+  tree.adoptions = adoptionContextsFor(personId);
   return { text, list, tree };
 }
 
@@ -723,5 +781,5 @@ module.exports = {
   getAncestorList, getDescendantLevels, getSameGeneration,
   isAncestorOf, kinshipText, getDirectChain, describePerson,
   resolveNameCandidates, extractTargetName,
-  answerLineage, answerFullLineage, answerClosest, resolveClosestTarget,
+  answerLineage, answerFullLineage, answerClosest, resolveClosestTarget, adoptionContextsFor,
 };

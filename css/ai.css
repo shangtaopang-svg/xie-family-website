@@ -683,6 +683,33 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
 .ai-tree-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
 .ai-tree-badge { font-size: 11px; border-radius: 999px; padding: 2px 8px; color: #fff; font-weight: 600; }
 .ai-tree-badge.adopt { background: #e8590c; }
+
+.ai-result-visual {
+  width: 100%; margin: 10px 0 2px; padding: 10px 12px; border: 1px solid #9db9aa;
+  border-radius: 10px; background: linear-gradient(135deg, #f5faf6, #edf5f0); color: #28483b;
+  display: grid; grid-template-columns: 30px 1fr; text-align: left; cursor: pointer; gap: 1px 8px;
+}
+.ai-result-visual > span { grid-row: 1 / 3; font-size: 21px; align-self: center; }
+.ai-result-visual b { font-size: 14px; }
+.ai-result-visual small { color: #6b7f76; }
+.ai-result-visual:hover { border-color: #4f8069; box-shadow: 0 5px 14px rgba(41, 76, 61, .12); }
+.ai-result-visual.adoption { border-color: #d6a18e; background: linear-gradient(135deg, #fff9f5, #fff1eb); color: #8c3d2d; }
+
+.ai-adoption-map { margin: 0 0 18px; padding: 18px; border: 1px solid #dfb09f; border-radius: 14px; background: #fffaf6; overflow-x: auto; }
+.ai-adoption-title { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; color: #9e402e; }
+.ai-adoption-title b { font-size: 17px; }
+.ai-adoption-title span { font-size: 12px; color: #8b7068; }
+.ai-adopt-node { min-width: 120px; padding: 10px 14px; border: 1px solid #8aa899; border-left: 5px solid #567e6b; border-radius: 10px; background: #fff; display: inline-flex; flex-direction: column; gap: 3px; }
+.ai-adopt-node small { color: #76837c; }.ai-adopt-node strong { font-size: 19px; color: #27483a; }.ai-adopt-node em { font-size: 11px; font-style: normal; color: #a64a36; }
+.ai-adopt-root { display: flex; width: fit-content; margin: 0 auto 28px; position: relative; }
+.ai-adopt-root::after { content: ''; position: absolute; left: 50%; top: 100%; height: 28px; border-left: 2px solid #789688; }
+.ai-adopt-parent-row { min-width: max-content; display: flex; justify-content: center; gap: 18px; padding: 14px 12px; border-top: 2px solid #789688; }
+.ai-adopt-node.biological { border-color: #cc765d; background: #fff4ee; }.ai-adopt-node.adoptive { background: #eef7f2; }
+.ai-adopt-links { display: flex; justify-content: center; align-items: center; gap: 6px; margin: 12px auto; color: #76665f; font-size: 11px; }
+.ai-adopt-links i { width: 38px; border-top: 2px solid #668b79; }.ai-adopt-links i.adopt { border-top: 2px dashed #bd5843; }
+.ai-adopt-person, .ai-adopt-target { display: flex; width: fit-content; margin: 0 auto; }.ai-adopt-person { border-color: #bd5843; background: #fff5f0; }
+.ai-adopt-down { height: 26px; width: 1px; border-left: 2px solid #668b79; margin: 0 auto; }
+@media (max-width: 640px) { .ai-adoption-map { padding: 12px 8px; }.ai-adoption-title { align-items: flex-start; flex-direction: column; }.ai-adopt-parent-row { justify-content: flex-start; }.ai-adopt-node { min-width: 105px; } }
 .ai-tree-badge.tb-ancient { background: #a15c07; }
 .ai-tree-badge.tb-shenbo { background: #0b7285; }
 .ai-tree-badge.tb-dongshan { background: #1c7ed6; }
