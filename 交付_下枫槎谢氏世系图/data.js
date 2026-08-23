@@ -16807,7 +16807,7 @@ window.GENEALOGY_DATA = [
   {
     "id": 1207,
     "name": "小四(石马)",
-    "generation_num": 132,
+    "generation_num": 130,
     "generation": "1",
     "gender": "男",
     "branch": "石马(下谢)",
