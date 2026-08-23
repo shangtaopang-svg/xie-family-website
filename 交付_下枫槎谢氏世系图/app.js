@@ -4362,7 +4362,18 @@
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
       if (Array.isArray(saved) && saved.every((item) => item && item.name !== undefined)) {
-        state.data = saved;
+        // 本地缓存优先保留人工修订，但不能把服务器后来补入的谱载字段吞掉。
+        // 只对“旧缓存中完全没有该字段”的情况从交付源补齐；用户主动清空的字段仍保持为空。
+        const sourceById = new Map(state.original.map((item) => [String(personId(item)), item]));
+        state.data = saved.map((item) => {
+          const source = sourceById.get(String(personId(item)));
+          if (!source) return item;
+          const merged = { ...item };
+          Object.keys(source).forEach((key) => {
+            if (!Object.prototype.hasOwnProperty.call(item, key)) merged[key] = clone(source[key]);
+          });
+          return merged;
+        });
         loaded = true;
       }
     } catch (error) { /* 主数据损坏时尝试自动备份 */ }
