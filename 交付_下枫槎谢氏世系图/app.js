@@ -4078,7 +4078,10 @@
       const bioText = text(person.biography).trim();
       const sourceText = `${birthText} ${bioText}`;
       const lostVitalMatch = sourceText.match(/生(?:娶)?卒(?:葬)?(?:均|俱|均俱)?(?:失考|失|不详)/);
-      const hasExplicitDeath = Boolean(lostVitalMatch) || /(?:卒|殁|早逝|夭折|亡故|享年|墓葬|葬于|葬在|合葬|公葬)/.test(sourceText);
+      // 炎帝远古世系至明字辈（总谱第156世）均属确定的历史先人；第157世起
+      // 已进入近现代可能在世区间，必须继续依谱载或后台人工核定，不能按世次猜测。
+      const historicalAncestor = Number(generationOf(person) || 0) > 0 && Number(generationOf(person)) <= 156;
+      const hasExplicitDeath = historicalAncestor || Boolean(lostVitalMatch) || /(?:卒|殁|早逝|夭折|亡故|享年|墓葬|葬于|葬在|合葬|公葬)/.test(sourceText);
       const currentAlive = person.is_alive;
       if (hasExplicitDeath) {
         if (currentAlive !== false) {
@@ -4124,8 +4127,11 @@
         }
       }
       if (hasExplicitDeath || birthText || bioText) {
-        if (text(person.vital_source).trim() !== '枫槎谢氏宗谱上册/下册谱文') {
-          person.vital_source = '枫槎谢氏宗谱上册/下册谱文';
+        const vitalSource = historicalAncestor && !birthText && !bioText
+          ? '枫槎谢氏宗谱世次年代校核'
+          : '枫槎谢氏宗谱上册/下册谱文';
+        if (text(person.vital_source).trim() !== vitalSource) {
+          person.vital_source = vitalSource;
           changed = true;
         }
       }
