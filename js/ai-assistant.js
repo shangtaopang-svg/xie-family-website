@@ -51,7 +51,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v80'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v81'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -310,6 +310,7 @@
     if (!isOpen) return;
     isOpen = false;
     panel.hidden = true;
+    panel.classList.remove('ai-selection-mode');
     stopSpeak(); // 关闭窗口同时停止朗读：避免出现「窗口关了但声音还在响」的诡异状态
     showBubble(); // 面板关闭后重新显示问候气泡
     document.body.style.overflow = '';
@@ -405,6 +406,7 @@
     // 同名确认：提问中的人名有多个同名族人 → 弹候选按钮，点击后带选中 personId（resolvedId）重发
     var showNameSelect = function (j) {
       if (done) return;
+      panel.classList.add('ai-selection-mode');
       done = true;
       body.textContent = '';
       var tip = document.createElement('div');
@@ -428,6 +430,7 @@
           : (c.fatherName ? '父亲：' + c.fatherName : '父亲未详');
         btn.innerHTML = (role ? '<b>' + esc(role) + '</b><br>' : '') + '<strong>' + esc(c.name) + '</strong> · ' + esc(c.desc || '') + '<br><small>' + esc(parentInfo) + (c.relationSource ? '；' + esc(c.relationSource) : '') + (c.brief ? ' · ' + esc(c.brief) : '') + (c.isSelf ? '（本人）' : '') + '</small>';
         btn.addEventListener('click', function () {
+          panel.classList.remove('ai-selection-mode');
           body.textContent = '已选择「' + c.name + '（' + c.desc + '）」，正在查询…';
           scrollBottom(true);
           chat(text, String(c.id), !!visualMode);
@@ -441,6 +444,7 @@
         fullBtn.className = 'ai-adoption-full-btn';
         fullBtn.innerHTML = '🔗 <b>全面展示出继 / 入继关系</b><small>同时显示亲生父亲、继父及两条世系关系线</small>';
         fullBtn.addEventListener('click', function () {
+          panel.classList.remove('ai-selection-mode');
           body.textContent = '正在生成完整的出继 / 入继关系图…';
           scrollBottom(true);
           // 以任一同名记录作为目标即可；服务端会从双记录关系索引中补全另一条父系。
@@ -450,6 +454,11 @@
         body.appendChild(fullBtn);
       }
       scrollBottom(true);
+      requestAnimationFrame(function () {
+        scrollBottom(true);
+        var last = body.lastElementChild;
+        if (last && last.scrollIntoView) last.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      });
     };
 
     var finish = function (answer, sources, tree, ownerIsSelf, closest, closestTree) {

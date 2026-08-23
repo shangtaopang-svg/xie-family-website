@@ -126,6 +126,21 @@
   max-height: none;
   border-radius: 0;
 }
+/* 同名/出继入继候选选择：扩大为专用选择面板，隐藏底部输入区，保证候选卡片完整可见 */
+#ai-panel.ai-selection-mode {
+  width: min(520px, calc(100vw - 24px));
+  height: min(720px, 86vh);
+  max-height: 86vh;
+}
+#ai-panel.ai-selection-mode .ai-msgs { padding: 18px; gap: 12px; }
+#ai-panel.ai-selection-mode .ai-chips,
+#ai-panel.ai-selection-mode .ai-quick-query,
+#ai-panel.ai-selection-mode .ai-input-row { display: none; }
+#ai-panel.ai-selection-mode .ai-msg.ai-bot { max-width: 100%; }
+#ai-panel.ai-selection-mode .ai-verify-tip { font-size: 14px; font-weight: 700; color: #7c4b18; }
+#ai-panel.ai-selection-mode .ai-send { min-height: 62px; padding: 12px 14px; font-size: 14px; line-height: 1.5; }
+#ai-panel.ai-selection-mode .ai-adoption-full-btn { margin-top: 16px; padding: 15px 16px; font-size: 14px; }
+#ai-panel.ai-selection-mode .ai-adoption-full-btn small { font-size: 12px; }
 /* 口播字幕显示时：桌面端小窗面板整体上移 64px（bottom:0→64px），输入区让出屏幕底部字幕条带，不遮输入框；全屏时输入行 padding 让位 */
 body.ai-sub-on #ai-panel:not(.ai-fullscreen) {
   bottom: 64px;
