@@ -1264,13 +1264,25 @@ button, input, select, textarea { color-scheme: light; }
 .generation-detail-head { display: flex; align-items: start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .generation-detail-head h4 { margin: 4px 0 3px; color: var(--ink-strong); font-family: "Noto Serif SC", "Source Han Serif SC", serif; font-size: 17px; }
 .generation-detail-head p { margin: 0; color: #7c8781; font-size: 11px; line-height: 1.55; }
-.generation-detail-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 10px; max-height: 690px; overflow: auto; padding-right: 3px; }
-.generation-person-card { padding: 13px; border: 1px solid #d8d5cc; border-top: 3px solid #6d8b7d; background: #fff; box-shadow: 0 3px 10px rgba(58,67,62,.06); }
+.generation-detail-list { display: flex; flex-direction: column; gap: 0; max-height: 690px; overflow: auto; padding-right: 3px; border-top: 1px solid #d8d5cc; }
+.generation-person-card { padding: 0; border: 0; border-bottom: 1px solid #d8d5cc; background: #fff; box-shadow: none; }
+.generation-person-row { display: grid; grid-template-columns: minmax(150px, .85fr) minmax(145px, .7fr) minmax(330px, 2fr); gap: 12px; align-items: center; padding: 11px 13px; }
+.generation-row-primary { min-width: 0; }
+.generation-row-primary .generation-person-name { max-width: 100%; }
+.generation-row-branch { display: block; margin-top: 3px; color: #87918a; font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.generation-row-status { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 4px; }
+.generation-row-summary { display: flex; flex-wrap: wrap; gap: 5px 16px; color: #627169; font-size: 11px; line-height: 1.5; }
+.generation-row-summary span { min-width: 110px; }
+.generation-row-summary b { margin-right: 4px; color: #a05d47; font-size: 10px; font-weight: 600; }
 .generation-person-card header { display: flex; align-items: start; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
 .generation-person-gen { display: block; color: #8a948e; font-size: 10px; }
 .generation-person-name { display: block; margin-top: 2px; padding: 0; border: 0; background: transparent; color: #8d523f; cursor: pointer; font-family: "Noto Serif SC", "Source Han Serif SC", serif; font-size: 19px; font-weight: 700; text-align: left; }
 .generation-person-name:hover { text-decoration: underline; }
 .generation-person-tags { display: flex; flex-wrap: wrap; justify-content: end; gap: 4px; }
+.generation-row-details { grid-column: 1 / -1; margin-top: 2px; border-top: 1px dashed #e3ddd2; }
+.generation-row-details summary { padding: 7px 0 1px; color: #8d523f; cursor: pointer; font-size: 11px; list-style-position: inside; }
+.generation-row-details[open] summary { margin-bottom: 3px; }
+.generation-row-details .generation-person-grid { padding-bottom: 3px; }
 .generation-tag { padding: 3px 6px; border: 1px solid #c9c7bd; border-radius: 10px; color: #68766f; font-size: 10px; white-space: nowrap; }
 .generation-tag.is-female { border-color: #9b514e; color: #8f2d2c; background: #fff2f1; }.generation-tag.is-adoption { border-color: #b97858; color: #965336; background: #fff6ef; }
 .generation-person-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px 10px; }
@@ -1288,10 +1300,13 @@ button, input, select, textarea { color-scheme: light; }
 @media (max-width: 680px) {
   .generation-detail-head { display: block; }
   .generation-detail-head .query-secondary { margin-top: 9px; }
-  .generation-detail-list { grid-template-columns: 1fr; max-height: 560px; }
-  .generation-person-card { padding: 11px; }
+  .generation-detail-list { max-height: 560px; }
+  .generation-person-card { padding: 0; }
+  .generation-person-row { display: grid; grid-template-columns: 1fr; gap: 5px; padding: 10px 11px; }
   .generation-person-card header { display: block; }
-  .generation-person-tags { justify-content: start; margin-top: 6px; }
+  .generation-person-tags, .generation-row-status { justify-content: start; margin-top: 3px; }
+  .generation-row-summary { gap: 3px 10px; }
+  .generation-row-summary span { min-width: 0; }
 }
 
 @media (max-width: 680px) {
