@@ -51,11 +51,11 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v71'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v72'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
-  var fab, panel, msgs, chipsEl, input, sendBtn, statusEl, goBottom, header, bubble, soundBtn, stopBtn, maxBtn, subEl;
+  var fab, panel, msgs, chipsEl, input, sendBtn, statusEl, goBottom, header, bubble, soundBtn, stopBtn, maxBtn, subEl, quickName;
   var hist = [];
   var isOpen = false;
   var ttsMuted = true; // 语音朗读开关（v17 起默认关闭：回答不自动念，用户可点 🔊 开启）
@@ -119,6 +119,15 @@
       '</div>' +
       '<div class="ai-msgs" id="ai-msgs"></div>' +
       '<div class="ai-chips" id="ai-chips"></div>' +
+      '<div class="ai-quick-query" aria-label="快捷族谱查询">' +
+      '  <div class="ai-quick-label"><b>快捷族谱查询</b><span>只填姓名即可</span></div>' +
+      '  <div class="ai-quick-main">' +
+      '    <input id="ai-quick-name" maxlength="12" placeholder="输入族人姓名，如：伟中" autocomplete="off">' +
+      '    <button type="button" class="ai-quick-btn lineage" data-quick="lineage">🌳 炎帝至此人</button>' +
+      '    <button type="button" class="ai-quick-btn closest" data-quick="closest">🔗 与此人最亲</button>' +
+      '  </div>' +
+      '  <div class="ai-quick-error" id="ai-quick-error" aria-live="polite"></div>' +
+      '</div>' +
       '<div class="ai-input-row">' +
       '  <textarea id="ai-input" rows="1" placeholder="输入问题，如：谢氏家族是怎么迁徙来的？" enterkeyhint="send"></textarea>' +
       '  <button type="button" class="ai-send" id="ai-send" disabled>发送</button>' +
@@ -142,6 +151,7 @@
     msgs = $('#ai-msgs', panel);
     chipsEl = $('#ai-chips', panel);
     input = $('#ai-input', panel);
+    quickName = $('#ai-quick-name', panel);
     sendBtn = $('#ai-send', panel);
     statusEl = $('#ai-status', panel);
     header = $('.ai-header', panel);
@@ -1458,6 +1468,29 @@
       else if (lastAnswer) replayLast(); // TTS 失败/已停止但有最近回答 → 点击重听
       else stopSpeak();
     });
+
+    // 快捷查询：用户只填写姓名，按钮负责生成完整、稳定的标准问题。
+    var runQuick = function (kind) {
+      var name = String(quickName && quickName.value || '').trim();
+      var err = $('#ai-quick-error', panel);
+      if (!name) {
+        if (err) err.textContent = '请先填写要查询的族人姓名';
+        if (quickName) quickName.focus();
+        return;
+      }
+      if (err) err.textContent = '';
+      var question = kind === 'closest'
+        ? '请列出和' + name + '血缘最亲的人'
+        : '请从炎帝神农氏开始，呈现' + name + '的世系图';
+      doSend(question);
+    };
+    panel.querySelectorAll('[data-quick]').forEach(function (btn) {
+      btn.addEventListener('click', function () { runQuick(btn.getAttribute('data-quick')); });
+    });
+    if (quickName) {
+      quickName.addEventListener('input', function () { var err = $('#ai-quick-error', panel); if (err) err.textContent = ''; });
+      quickName.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !composing) { e.preventDefault(); runQuick('lineage'); } });
+    }
 
     // 发送
     sendBtn.addEventListener('click', function () { doSend(input.value); });
