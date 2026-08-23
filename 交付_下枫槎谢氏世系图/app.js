@@ -1323,7 +1323,8 @@
       const count = counts.get(generation) || 0;
       const active = generation >= from && generation <= to && (from || to < 9999);
       const height = Math.max(8, Math.round((count / max) * 92));
-      return `<button class="query-generation-bar${active ? ' is-active' : ''}" data-action="query-generation" data-generation="${generation}" title="第${generation}世 · ${count}人"><i style="height:${height}px"></i><b>${generation}</b><small>${count}</small></button>`;
+      const ancient = generation >= 1 && generation <= 65;
+      return `<button class="query-generation-bar${active ? ' is-active' : ''}${ancient ? ' is-ancient' : ''}" data-action="query-generation" data-generation="${generation}" title="第${generation}世 · ${count}人${ancient ? ' · 炎帝远古世系' : ''}"><i style="height:${height}px"></i><b>${generation}</b><small>${count}</small></button>`;
     }).join('');
     renderQueryGenerationDetail();
   }
