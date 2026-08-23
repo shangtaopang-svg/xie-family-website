@@ -370,6 +370,20 @@ button, input, select, textarea { color-scheme: light; }
 .mobile-genealogy-back { display: none; }
 .root-trace-modal { position: fixed; inset: 0; z-index: 300; overflow: auto; padding: 24px; background: rgba(22,33,29,.62); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 .root-trace-modal[hidden] { display: none; }.is-root-trace-open { overflow: hidden; }
+.person-disambiguation-modal { position: fixed; inset: 0; z-index: 420; display: grid; place-items: center; padding: 20px; background: rgba(24,34,30,.68); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.person-disambiguation-modal[hidden] { display: none; }
+.is-person-disambiguation-open { overflow: hidden; }
+.person-disambiguation-shell { width: min(680px, 100%); max-height: min(760px, 90vh); overflow: hidden; border: 1px solid #c9c1b2; border-radius: 14px; background: #f8f5ed; box-shadow: 0 24px 70px rgba(20,31,27,.28); }
+.person-disambiguation-shell > header { display: flex; justify-content: space-between; gap: 18px; padding: 24px 26px 18px; border-bottom: 1px solid #ddd5c8; }
+.person-disambiguation-shell h3 { margin: 4px 0 5px; color: #203b33; font-size: 25px; }
+.person-disambiguation-shell p { margin: 0; color: #6e7974; line-height: 1.65; }
+.person-disambiguation-shell > header button { width: 42px; height: 42px; flex: 0 0 auto; border: 1px solid #ccc4b7; border-radius: 50%; background: #fffdf8; color: #68736e; font-size: 25px; cursor: pointer; }
+.person-disambiguation-list { display: grid; gap: 10px; max-height: 560px; overflow: auto; padding: 18px 22px 24px; }
+.person-disambiguation-list button { display: grid; gap: 7px; width: 100%; padding: 16px 18px; border: 1px solid #cfc8bc; border-left: 5px solid #527064; border-radius: 9px; background: #fffdf8; color: #233b34; text-align: left; cursor: pointer; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
+.person-disambiguation-list button:hover, .person-disambiguation-list button:focus-visible { transform: translateY(-1px); border-color: #9a5b45; box-shadow: 0 8px 22px rgba(50,67,60,.12); outline: none; }
+.person-disambiguation-list strong { font-size: 20px; }
+.person-disambiguation-list span { color: #707a75; font-size: 13px; line-height: 1.55; }
+@media (max-width: 640px) { .person-disambiguation-modal { padding: 10px; } .person-disambiguation-shell > header { padding: 19px 18px 15px; } .person-disambiguation-shell h3 { font-size: 21px; } .person-disambiguation-list { padding: 14px; } }
 .root-trace-shell { width: min(860px,100%); margin: 0 auto; border: 1px solid #c9c4b8; background: #f8f5ed; box-shadow: 0 24px 70px rgba(12,26,21,.32); }
 .root-trace-head { position: sticky; top: -24px; z-index: 2; display: flex; justify-content: space-between; gap: 18px; padding: 20px 24px 17px; border-bottom: 1px solid #d6d0c4; background: rgba(248,245,237,.96); backdrop-filter: blur(10px); }
 .root-trace-head h3 { margin: 5px 0 3px; color: #243d34; font-family: "Noto Serif SC","Source Han Serif SC",serif; font-size: 24px; }.root-trace-head p { margin: 0; color: #758078; font-size: 12px; }.root-trace-close { flex: 0 0 38px; width: 38px; height: 38px; border: 1px solid #c9c4b8; border-radius: 50%; background: #fffdf7; color: #6d766f; font-size: 24px; }

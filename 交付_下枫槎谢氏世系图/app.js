@@ -102,6 +102,7 @@
   let draftAutoSaveTimer = null;
   let searchLocateTimer = null;
   let searchComposing = false;
+  let disambiguationCallback = null;
   let fullExpandBusy = false;
   let domSelectedId = null;
 
@@ -1349,6 +1350,71 @@
       return `<div class="query-result-row"><span>${escapeHtml(generationOf(person) || '—')}</span><button data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}${adoption ? ` <em class="query-result-tag adopt">${escapeHtml(adoption)}</em>` : ''}</button><span class="query-result-tag${gender === '女' ? ' female' : ''}">${escapeHtml(gender)}</span><span>${escapeHtml(text(person.branch) || '未标注')}</span><span>${escapeHtml(boolLabel(person.is_alive))}</span><span class="query-result-actions"><button data-action="query-locate" data-id="${escapeHtml(personId(person))}">定位</button><button class="root-trace-trigger" data-action="root-trace" data-id="${escapeHtml(personId(person))}">寻根</button></span></div>`;
     }).join('');
     container.innerHTML = head + rows;
+  }
+
+  function personChoiceDescription(person) {
+    const father = rawFatherOf(person);
+    const adoption = queryAdoptionLabel(person);
+    return [
+      viewGenerationLabel(person),
+      text(person.branch) || '未标注支系',
+      father ? `父亲：${text(father.name)}` : '父亲未详',
+      adoption || '',
+      `ID ${personId(person)}`
+    ].filter(Boolean).join(' · ');
+  }
+
+  function ensureDisambiguationModal() {
+    if ($('#person-disambiguation-modal')) return;
+    const modal = document.createElement('section');
+    modal.id = 'person-disambiguation-modal';
+    modal.className = 'person-disambiguation-modal';
+    modal.hidden = true;
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'person-disambiguation-title');
+    modal.innerHTML = `<div class="person-disambiguation-shell"><header><div><span class="eyebrow">SAME NAME CHECK</span><h3 id="person-disambiguation-title">请选择具体族人</h3><p id="person-disambiguation-summary"></p></div><button data-action="close-person-disambiguation" aria-label="关闭">×</button></header><div id="person-disambiguation-list" class="person-disambiguation-list"></div></div>`;
+    document.body.appendChild(modal);
+  }
+
+  function closePersonDisambiguation() {
+    const modal = $('#person-disambiguation-modal');
+    if (modal) modal.hidden = true;
+    disambiguationCallback = null;
+    document.documentElement.classList.remove('is-person-disambiguation-open');
+  }
+
+  function showPersonDisambiguation(name, candidates, callback) {
+    ensureDisambiguationModal();
+    const modal = $('#person-disambiguation-modal');
+    const list = $('#person-disambiguation-list');
+    const summary = $('#person-disambiguation-summary');
+    if (!modal || !list || !candidates || candidates.length < 2) return false;
+    disambiguationCallback = callback;
+    summary.textContent = `族谱中有 ${candidates.length} 位“${name}”。系统不会自动猜测，请根据父亲、世次和支系选择。`;
+    list.innerHTML = candidates.map((person) => `<button data-action="pick-person-disambiguation" data-id="${escapeHtml(personId(person))}"><strong>${escapeHtml(text(person.name))}</strong><span>${escapeHtml(personChoiceDescription(person))}</span></button>`).join('');
+    modal.hidden = false;
+    document.documentElement.classList.add('is-person-disambiguation-open');
+    const first = list.querySelector('button');
+    if (first) first.focus();
+    return true;
+  }
+
+  function choosePersonDisambiguation(id) {
+    const callback = disambiguationCallback;
+    const person = getPerson(id);
+    closePersonDisambiguation();
+    if (callback && person) callback(person);
+  }
+
+  function runQuerySearch() {
+    renderQuerySearchResults();
+    const keyword = text(state.query.keyword).trim();
+    if (!keyword) return;
+    const exact = queryPeople().filter((person) => text(person.name).trim() === keyword);
+    if (exact.length > 1) {
+      showPersonDisambiguation(keyword, exact, (person) => selectPerson(personId(person), { forceRender: true }));
+    }
   }
 
   function queryCandidates(value) {
@@ -4541,7 +4607,15 @@
       renderDetail();
       return;
     }
-    const match = state.data.find((person) => viewIncludes(person) && !isHiddenAdoptionRecord(person) && matchesSearch(person));
+    const exact = state.data.filter((person) => viewIncludes(person) && !isHiddenAdoptionRecord(person) && text(person.name).trim() === query);
+    if (exact.length > 1) {
+      showPersonDisambiguation(query, exact, (person) => {
+        selectPerson(personId(person), { forceRender: true });
+        showToast(`已选择并定位：${text(person.name)} · ${personChoiceDescription(person)}`);
+      });
+      return;
+    }
+    const match = exact[0] || state.data.find((person) => viewIncludes(person) && !isHiddenAdoptionRecord(person) && matchesSearch(person));
     if (match) {
       selectPerson(personId(match), { forceRender: true });
       showToast(`已定位并高亮：${text(match.name)}`);
@@ -4757,12 +4831,14 @@
       case 'toggle-compact': toggleCompact(); break;
       case 'toggle-query-drawer': toggleQueryDrawer(); break;
       case 'mobile-back': mobileBackOneLevel(); break;
-      case 'query-run': renderQuerySearchResults(); break;
+      case 'query-run': runQuerySearch(); break;
       case 'query-clear': clearQuery(); break;
       case 'query-relation': renderQueryRelation(); break;
       case 'query-locate': selectPerson(id, { forceRender: true }); break;
       case 'root-trace': openRootTrace(id); break;
       case 'close-root-trace': closeRootTrace(); break;
+      case 'close-person-disambiguation': closePersonDisambiguation(); break;
+      case 'pick-person-disambiguation': choosePersonDisambiguation(id); break;
       case 'query-generation': selectQueryGeneration(element.dataset.generation); break;
       case 'query-pick-relation': pickQueryRelation(element.dataset.side, id); break;
       case 'zoom-in': stepZoom(1); break;
