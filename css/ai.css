@@ -774,6 +774,9 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
 .ai-adopt-down { height: 26px; width: 1px; border-left: 2px solid #668b79; margin: 0 auto; }
 .ai-tree-full-adoption-map { margin: 22px auto 8px; max-width: 860px; }
 .ai-adoption-source { margin-top: 12px; padding-top: 9px; border-top: 1px dashed #dfb5a6; color: #845f52; font-size: 12px; line-height: 1.5; }
+.ai-inline-adoption-graph { margin: 18px auto 24px; max-width: 860px; box-shadow: 0 8px 24px rgba(125, 78, 55, .08); }
+.ai-inline-adoption-graph .ai-adopt-parent-row { border-top-width: 2px; }
+.ai-inline-adoption-graph .ai-adopt-person { margin-top: 2px; }
 @media (max-width: 640px) { .ai-adoption-map { padding: 12px 8px; }.ai-adoption-title { align-items: flex-start; flex-direction: column; }.ai-adopt-parent-row { justify-content: flex-start; }.ai-adopt-node { min-width: 105px; } }
 .ai-tree-badge.tb-ancient { background: #a15c07; }
 .ai-tree-badge.tb-shenbo { background: #0b7285; }

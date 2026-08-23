@@ -51,7 +51,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v87'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v88'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -1103,7 +1103,48 @@
     return 'tb-other';
   }
   var treeOverlay = null;
-  function showTreeOverlay(nodes, ownerIsSelf) {
+
+  // 将出继/入继节点渲染成“共同上代 → 双亲分支 → 目标人物”的关系图。
+  // 直线世系仍然保留到关系节点之前，避免把承嗣关系误读成普通父子线。
+  function renderInlineAdoptionGraph(n) {
+    var d = n && n.adoptionDetail;
+    if (!d) return null;
+    var ctx = d.context || {
+      person: { name: n.name, shi: n.shi },
+      biologicalParent: d.biologicalParent || null,
+      adoptiveParent: d.adoptiveParent || null,
+      source: d.source || n.adopt || '出继 / 入继关系',
+      commonAncestor: d.commonAncestor || null,
+      siblings: d.siblings || [],
+      target: d.target || null
+    };
+    var parentCards = (ctx.siblings || []).map(function (p) {
+      var cls = ctx.biologicalParent && Number(p.id) === Number(ctx.biologicalParent.id) ? ' biological' :
+        (ctx.adoptiveParent && Number(p.id) === Number(ctx.adoptiveParent.id) ? ' adoptive' : '');
+      return '<div class="ai-adopt-node' + cls + '"><small>第' + esc(p.shi) + '世</small><strong>' + esc(p.name) + '</strong>' +
+        (cls === ' biological' ? '<em>亲生父亲 · 血缘50%</em>' : (cls === ' adoptive' ? '<em>继父（承嗣父） · 血缘0%</em>' : '')) + '</div>';
+    }).join('');
+    if (!parentCards) {
+      parentCards = (ctx.biologicalParent ? '<div class="ai-adopt-node biological"><small>第' + esc(ctx.biologicalParent.shi) + '世</small><strong>' + esc(ctx.biologicalParent.name) + '</strong><em>亲生父亲 · 血缘50%</em></div>' : '') +
+        (ctx.adoptiveParent ? '<div class="ai-adopt-node adoptive"><small>第' + esc(ctx.adoptiveParent.shi) + '世</small><strong>' + esc(ctx.adoptiveParent.name) + '</strong><em>继父（承嗣父） · 血缘0%</em></div>' : '');
+    }
+    var section = document.createElement('section');
+    section.className = 'ai-adoption-map ai-inline-adoption-graph';
+    section.innerHTML =
+      '<div class="ai-adoption-title"><b>出继 / 入继关系</b><span>以下为该人物实际承嗣关系</span></div>' +
+      (ctx.commonAncestor ? '<div class="ai-adopt-root ai-adopt-node"><small>第' + esc(ctx.commonAncestor.shi) + '世</small><strong>' + esc(ctx.commonAncestor.name) + '</strong></div>' : '') +
+      '<div class="ai-adopt-parent-row">' + parentCards + '</div>' +
+      '<div class="ai-adopt-connection-grid">' +
+      '  <div class="ai-adopt-connection biological"><i></i><span>亲生父子 · 血缘50%</span></div>' +
+      '  <div class="ai-adopt-connection adoptive"><i></i><span>出继给 / 入继为嗣 · 血缘0%</span></div>' +
+      '</div>' +
+      '<div class="ai-adopt-person ai-adopt-node"><small>第' + esc(ctx.person && ctx.person.shi || n.shi) + '世</small><strong>' + esc(ctx.person && ctx.person.name || n.name) + '</strong><em>出继 / 入继</em></div>' +
+      (ctx.target ? '<div class="ai-adopt-down"></div><div class="ai-adopt-target ai-adopt-node"><small>第' + esc(ctx.target.shi) + '世</small><strong>' + esc(ctx.target.name) + '</strong></div>' : '') +
+      '<div class="ai-adoption-source">' + esc(ctx.source || '') + '</div>';
+    return section;
+  }
+
+  function showTreeOverlay(nodes, ownerIsSelf, inlineAdoptionGraph) {
     if (!nodes || !nodes.length) return;
     closeTreeOverlay();
     var last = nodes[nodes.length - 1];
@@ -1135,15 +1176,13 @@
         '<div class="ai-tree-sh"><span class="ai-tree-shi">第' + esc(n.shi) + '世</span>' + (n.isSelf ? '<span class="ai-tree-you">' + esc(ownerIsSelf ? '您' : n.name) + '</span>' : '') + '</div>' +
         '<div class="ai-tree-name">' + esc(n.name) + '</div>' +
         (note ? '<div class="ai-tree-note">' + esc(note) + '</div>' : '') +
-        (badges ? '<div class="ai-tree-badges">' + badges + '</div>' : '') +
-        (n.adoptionDetail ?
-          '<div class="ai-tree-adoption-detail">' +
-          '  <div><span>亲生父亲</span><b>' + esc(n.adoptionDetail.biologicalParent && n.adoptionDetail.biologicalParent.name || '未详') + '</b></div>' +
-          '  <i aria-hidden="true">⇢</i>' +
-          '  <div><span>继父（承嗣父）</span><b>' + esc(n.adoptionDetail.adoptiveParent && n.adoptionDetail.adoptiveParent.name || '未详') + '</b></div>' +
-          '  <p>' + esc(n.adoptionDetail.source || '') + '</p>' +
-          '</div>' : '');
-      frag.appendChild(row);
+        (badges ? '<div class="ai-tree-badges">' + badges + '</div>' : '');
+      // 第三项已在弹层顶部单独展示完整关系图；其他直线世系则在关系节点处直接展开图二式分支。
+      if (inlineAdoptionGraph !== false && n.adoptionDetail) {
+        frag.appendChild(renderInlineAdoptionGraph(n));
+      } else {
+        frag.appendChild(row);
+      }
     });
     tbody.appendChild(frag);
     ov.addEventListener('click', function (e) { if (e.target === ov) closeTreeOverlay(); });
@@ -1197,7 +1236,7 @@
   // 并在同一张图的末端追加图示化的亲生父亲/继父分叉关系。
   function showFullLineageAdoptionOverlay(nodes, ownerIsSelf) {
     if (!nodes || !nodes.length) return;
-    showTreeOverlay(nodes, ownerIsSelf);
+    showTreeOverlay(nodes, ownerIsSelf, false);
     var target = nodes.find(function (n) { return n && n.adoptionDetail; });
     if (!target || !treeOverlay) return;
     var fullTitle = treeOverlay.querySelector('.ai-tree-title');
