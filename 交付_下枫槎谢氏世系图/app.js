@@ -51,10 +51,8 @@
     draftParentId: null,
     mainFocusId: null,
     layout: {
-      siteNavWidth: 218,
       leftWidth: 230,
       detailWidth: 365,
-      siteNavHidden: false,
       leftHidden: false,
       detailHidden: false,
       resizing: false,
@@ -1039,10 +1037,8 @@
     try {
       const saved = JSON.parse(localStorage.getItem(LAYOUT_KEY) || 'null');
       if (!saved || typeof saved !== 'object') return;
-      state.layout.siteNavWidth = clamp(saved.siteNavWidth, 170, 340);
       state.layout.leftWidth = clamp(saved.leftWidth, 180, 420);
       state.layout.detailWidth = clamp(saved.detailWidth, 280, 520);
-      state.layout.siteNavHidden = Boolean(saved.siteNavHidden);
       state.layout.leftHidden = Boolean(saved.leftHidden);
       state.layout.detailHidden = Boolean(saved.detailHidden);
     } catch (error) {
@@ -1053,10 +1049,8 @@
   function persistLayout() {
     try {
       localStorage.setItem(LAYOUT_KEY, JSON.stringify({
-        siteNavWidth: state.layout.siteNavWidth,
         leftWidth: state.layout.leftWidth,
         detailWidth: state.layout.detailWidth,
-        siteNavHidden: state.layout.siteNavHidden,
         leftHidden: state.layout.leftHidden,
         detailHidden: state.layout.detailHidden
       }));
@@ -1069,20 +1063,12 @@
     const shell = $('#app');
     const workspace = document.querySelector('.workspace');
     if (!shell || !workspace) return;
-    workspace.style.setProperty('--site-nav-w', `${state.layout.siteNavWidth}px`);
     workspace.style.setProperty('--left-rail-w', `${state.layout.leftWidth}px`);
     workspace.style.setProperty('--detail-panel-w', `${state.layout.detailWidth}px`);
-    shell.classList.toggle('is-site-nav-hidden', state.layout.siteNavHidden);
     shell.classList.toggle('is-left-hidden', state.layout.leftHidden);
     shell.classList.toggle('is-detail-hidden', state.layout.detailHidden);
-    const siteNavToggle = $('#site-nav-toggle');
     const leftToggle = $('#left-rail-toggle');
     const detailToggle = $('#detail-toggle');
-    if (siteNavToggle) {
-      siteNavToggle.textContent = state.layout.siteNavHidden ? '显示主导航' : '隐藏主导航';
-      siteNavToggle.title = state.layout.siteNavHidden ? '显示网站主导航栏' : '隐藏网站主导航栏';
-      siteNavToggle.setAttribute('aria-pressed', String(state.layout.siteNavHidden));
-    }
     if (leftToggle) {
       leftToggle.textContent = state.layout.leftHidden ? '显示左栏' : '隐藏左栏';
       leftToggle.title = state.layout.leftHidden ? '显示左侧控制栏' : '隐藏左侧控制栏';
@@ -1139,13 +1125,6 @@
     showToast(panel === 'left'
       ? (state.layout.leftHidden ? '已隐藏左侧控制栏，中央世系图空间已扩大' : '已显示左侧控制栏')
       : (state.layout.detailHidden ? '已隐藏右侧详情栏，中央世系图空间已扩大' : '已显示右侧详情栏'));
-  }
-
-  function toggleSiteNav() {
-    state.layout.siteNavHidden = !state.layout.siteNavHidden;
-    applyLayout(true);
-    setTimeout(() => fitOverview(), 220);
-    showToast(state.layout.siteNavHidden ? '已隐藏网站主导航栏，中央世系图空间已扩大' : '已显示网站主导航栏');
   }
 
   function renderStats() {
@@ -4424,7 +4403,6 @@
       case 'focus-main-branch': focusMainBranch(element.dataset.focusId); break;
       case 'expand-depth': expandToDepth(element.dataset.depth); break;
       case 'toggle-left-rail': togglePanel('left'); break;
-      case 'toggle-site-nav': toggleSiteNav(); break;
       case 'toggle-detail-panel': togglePanel('right'); break;
       case 'toggle-immersive': toggleImmersive(); break;
       case 'fit-overview': fitOverview(); break;
@@ -4586,8 +4564,7 @@
     document.addEventListener('pointermove', (event) => {
       if (!state.layout.resizing || event.pointerId !== state.layout.resizePointerId) return;
       const rect = workspace.getBoundingClientRect();
-      if (state.layout.resizeSide === 'site-nav') state.layout.siteNavWidth = clamp(event.clientX - rect.left, 170, 340);
-      if (state.layout.resizeSide === 'left') state.layout.leftWidth = clamp(event.clientX - rect.left - state.layout.siteNavWidth, 180, 420);
+      if (state.layout.resizeSide === 'left') state.layout.leftWidth = clamp(event.clientX - rect.left, 180, 420);
       if (state.layout.resizeSide === 'right') state.layout.detailWidth = clamp(rect.right - event.clientX, 280, 520);
       applyLayout(false);
       event.preventDefault();
