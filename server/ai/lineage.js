@@ -737,7 +737,10 @@ function resolveClosestTarget(message, selfId, forcedTargetId) {
   if (/我|本人/.test(q)) return { id: Number(selfId), name: null, self: true };
 
   const pick = (name) => {
-    const cand = byName.get(name) && byName.get(name)[0];
+    const candidates = byName.get(name) || [];
+    // 同一出继/入继人物可能有两条同名记录；最亲查询按亲生记录计算血缘，
+    // adoptionContextsFor 会同时把承嗣父及 0% 关系补到结果图中。
+    const cand = candidates.find((p) => adoptionPairs.some((rel) => Number(rel.outId) === Number(p.id))) || candidates[0];
     if (!cand) return null;
     const id = Number(cand.id);
     return { id, name: cand.name, self: id === Number(selfId) };
