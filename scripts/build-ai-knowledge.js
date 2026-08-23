@@ -5,7 +5,8 @@
  * 亦可被 server.js 启动时调用（knowledge.json 缺失或过期则自动重建）。
  *
  * 输入：
- *   data/genealogy.json                → nameIndex + 生平检索块
+ *   交付_下枫槎谢氏世系图/data.js      → nameIndex + 结构化世系/生平检索块（首选）
+ *   data/genealogy.json                → 交付数据缺失时的兼容回退
  *   上册_竖排提取.txt / 下册_竖排提取.txt → 按"第N页"分块
  *   data/parsed_entries.json           → 谱名条目索引（出继/入赘/分支）
  *   data/genealogy_book_extract.txt、data/genealogy_analysis.txt → 附加文献块
@@ -15,6 +16,7 @@
 const fs = require('fs');
 const path = require('path');
 const seeds = require('./ai-seeds.js');
+const deliverySource = require('../server/ai/delivery-source.js');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -98,7 +100,9 @@ function bigramsOf(text) {
 
 /** 构建知识库；返回统计信息 */
 function buildKnowledge() {
-  const genealogy = readJson('data/genealogy.json') || [];
+  const deliveryGenealogy = deliverySource.ensureLoaded();
+  const legacyGenealogy = readJson('data/genealogy.json') || [];
+  const genealogy = deliveryGenealogy.length ? deliveryGenealogy : legacyGenealogy;
   const parsedEntries = readJson('data/parsed_entries.json') || [];
   const book1Text = readText('上册_竖排提取.txt');
   const book2Text = readText('下册_竖排提取.txt');
@@ -110,14 +114,26 @@ function buildKnowledge() {
   const documents = [];
   let bioCount = 0;
 
+  const byId = new Map(genealogy.map(p => [String(p.id), p]));
   for (const p of genealogy) {
     if (!p.name) continue;
     (nameIndex[p.name] = nameIndex[p.name] || []).push({
-      id: p.id, branch: p.branch, generation: p.generation, generation_num: p.generation_num
+      id: p.id, branch: p.branch, generation: p.generation, generation_num: p.generation_num,
+      source: deliveryGenealogy.length ? 'delivery' : 'legacy'
     });
-    if (p.biography && String(p.biography).trim()) {
+    const father = p.father_id !== undefined && p.father_id !== null
+      ? byId.get(String(p.father_id))
+      : null;
+    const details = [
+      '人物：' + p.name,
+      p.generation_num !== undefined && p.generation_num !== null && p.generation_num !== '' ? '世次：第' + p.generation_num + '世' : '',
+      p.branch ? '支系：' + p.branch : '',
+      father ? '父亲：' + father.name : '',
+      p.biography ? '谱注：' + String(p.biography).trim() : ''
+    ].filter(Boolean).join('；');
+    if (details) {
       bioCount++;
-      documents.push({ id: 'bio:' + p.id, ref: '族谱·' + p.name, text: String(p.biography).trim() });
+      documents.push({ id: 'bio:' + p.id, ref: '交付版独立世系图·' + p.name, text: details });
     }
   }
 
@@ -247,6 +263,8 @@ function buildKnowledge() {
     builtAt: new Date().toISOString(),
     source: {
       genealogyCount: genealogy.length,
+      deliveryGenealogyCount: deliveryGenealogy.length,
+      structuredSource: deliveryGenealogy.length ? '交付_下枫槎谢氏世系图/data.js' : 'data/genealogy.json（兼容回退）',
       bioCount,
       entryCount,
       book1Chars: book1Text ? book1Text.length : 0,
@@ -268,6 +286,7 @@ function buildKnowledge() {
     written: true,
     stats: {
       persons: genealogy.length,
+      deliveryPersons: deliveryGenealogy.length,
       bioCount,
       entryCount,
       documents: documents.length,

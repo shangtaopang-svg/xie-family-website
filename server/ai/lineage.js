@@ -1,7 +1,7 @@
 /**
  * server/ai/lineage.js
- * 确定性世系引擎：所有世系/辈分/亲属结论完全由 data/genealogy.json 的 father_id 链计算得出，
- * 不经过大模型 —— 从根上杜绝"编造族谱数据"。
+ * 确定性世系引擎：所有世系/辈分/亲属结论优先由交付版独立世系图 data.js 的 father_id 链计算，
+ * 不经过大模型 —— 从根上杜绝"编造族谱数据"。上册/下册作为同等级文献依据进入 AI 检索上下文。
  *
  * 数据常驻内存（Map<id,Person> + Map<name,id[]>），每次查询前按 mtime 检测，
  * 管理后台修改族谱后即时生效。
@@ -9,21 +9,31 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const deliverySource = require('./delivery-source.js');
 
-const DATA_FILE = path.join(__dirname, '..', '..', 'data', 'genealogy.json');
+const LEGACY_DATA_FILE = path.join(__dirname, '..', '..', 'data', 'genealogy.json');
 
 let byId = null;
 let byName = null;
 let mtimeMs = -1;
+let loadedSource = '';
 
 function ensureLoaded() {
+  const deliveryList = deliverySource.ensureLoaded();
+  const usingDelivery = Array.isArray(deliveryList) && deliveryList.length > 0;
+  const sourceFile = usingDelivery ? deliverySource.getFilePath() : LEGACY_DATA_FILE;
   let stat = null;
-  try { stat = fs.statSync(DATA_FILE); } catch (e) { stat = null; }
+  try { stat = fs.statSync(sourceFile); } catch (e) { stat = null; }
   const mtime = stat ? stat.mtimeMs : -1;
-  if (byId && mtime === mtimeMs) return;
+  if (byId && mtime === mtimeMs && sourceFile === loadedSource) return;
   mtimeMs = mtime;
+  loadedSource = sourceFile;
   let list = [];
-  try { list = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8')); } catch (e) { list = []; }
+  if (usingDelivery) {
+    list = deliveryList;
+  } else {
+    try { list = JSON.parse(fs.readFileSync(LEGACY_DATA_FILE, 'utf-8')); } catch (e) { list = []; }
+  }
   byId = new Map();
   byName = new Map();
   for (const p of list) {
@@ -32,6 +42,10 @@ function ensureLoaded() {
       (byName.get(p.name) || byName.set(p.name, []).get(p.name)).push(p);
     }
   }
+
+  // 交付版数据已经包含当前核对后的父子关系和人工修正，必须原样使用；
+  // 下方旧版后台数据的内存修补只作为缺少交付数据时的兼容回退。
+  if (usingDelivery) return;
 
   // ===== 同名同人合并（仅内存，不改数据文件）=====
   // 同一人在不同分支/批次被录入成两条记录时（如「在纲之子小四」=「石马始祖小四(石马)」），

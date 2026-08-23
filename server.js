@@ -31,6 +31,7 @@ setTimeout(() => {
     const kbPath = path.join(DATA_DIR, 'ai', 'knowledge.json');
     const sources = [
       path.join(DATA_DIR, 'genealogy.json'),
+      path.join(__dirname, '交付_下枫槎谢氏世系图', 'data.js'),
       path.join(DATA_DIR, 'parsed_entries.json'),
       path.join(DATA_DIR, 'genealogy_book_extract.txt'),
       path.join(DATA_DIR, 'genealogy_analysis.txt'),
