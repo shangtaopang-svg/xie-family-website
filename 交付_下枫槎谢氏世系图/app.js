@@ -1189,7 +1189,7 @@
         .map(text).join(' ').toLowerCase();
       const generation = generationOf(person) || 0;
       const normalizedGender = genderLabel(person);
-      const normalizedAlive = text(person.is_alive).trim() || '未知';
+      const normalizedAlive = boolLabel(person.is_alive) === '在世' ? '是' : boolLabel(person.is_alive) === '已故' ? '否' : '未知';
       if (q && !haystack.includes(q)) return false;
       if (from && generation < from) return false;
       if (to < 9999 && generation > to) return false;
@@ -2244,8 +2244,9 @@
   }
 
   function boolLabel(value) {
-    if (value === true || value === 1 || String(value).toLowerCase() === 'true') return '在世';
-    if (value === false || value === 0 || String(value).toLowerCase() === 'false') return '已故';
+    const normalized = text(value).trim().toLowerCase();
+    if (value === true || value === 1 || normalized === 'true' || normalized === '是' || normalized === '在世') return '在世';
+    if (value === false || value === 0 || normalized === 'false' || normalized === '否' || normalized === '已故') return '已故';
     return '未标注';
   }
 
@@ -2299,7 +2300,7 @@
     panel.innerHTML = `<div class="detail-head"><div><h3>${escapeHtml(person.name || '未命名人物')}</h3><p>${escapeHtml(viewGenerationLabel(person))} · 总谱第${generationOf(person) || '未详'}世 · ${escapeHtml(text(person.branch) || '未标注支系')} · ID ${escapeHtml(personId(person))}</p></div><button class="detail-close" data-action="close-detail" aria-label="关闭详情">×</button></div>
       ${IS_ADMIN ? '<div class="detail-actions"><button class="detail-btn primary" data-action="edit-person">直接编辑（实时保存）</button><button class="detail-btn" data-action="new-child">新增子女</button><button class="detail-btn" data-action="export-person">导出人物</button><button class="detail-btn danger" data-action="delete-person">删除</button></div>' : ''}
       <section class="detail-section"><h4>基本资料</h4><dl class="detail-grid">${detailField('姓名', person.name)}${detailField('性别', person.gender)}${detailField('本图世次', viewGenerationLabel(person))}${detailField('总谱世代', generationOf(person) ? `第${generationOf(person)}世` : person.generation)}${detailField('支系', person.branch)}${detailField('状态', boolLabel(person.is_alive))}${detailField('重点标记', person.highlight ? '是' : '否')}</dl></section>
-      <section class="detail-section"><h4>时间与地点</h4><dl class="detail-grid">${detailField('出生信息', person.birth_date)}${detailField('卒年 / 卒葬', person.death_date)}${detailField('籍贯', person.native_place)}${detailField('居住地', person.residence)}${detailField('葬地', person.burial_place)}</dl></section>
+      <section class="detail-section"><h4>时间与地点</h4><dl class="detail-grid">${detailField('出生信息', person.birth_date)}${detailField('卒年 / 卒葬', person.death_date)}${detailField('籍贯', person.native_place)}${detailField('居住地', person.residence)}${detailField('葬地', person.burial_place)}${detailField('资料依据', person.vital_source)}</dl></section>
       <section class="detail-section"><h4>亲属关系</h4><dl class="detail-grid"><div class="detail-field full"><dt>父母（原始谱系）</dt><dd class="relation-list">${relationChipList(parents, '父母未详')}</dd></div><div class="detail-field full"><dt>配偶</dt><dd class="relation-list">${relationChipList(spouses, '配偶未详')}</dd></div><div class="detail-field full"><dt>子女（原始关联 ${children.length}）</dt><dd class="relation-list">${relationChipList(children, '暂无已关联子女')}</dd></div><div class="detail-field full"><dt>子女（本图归属 ${displayChildren.length}）</dt><dd class="relation-list">${relationChipList(displayChildren, '暂无本图归属子女')}</dd></div></dl></section>
       ${adoptionDetailHtml(person)}
       <section class="detail-section"><h4>祖先路径</h4><div class="path-line">${ancestors.map((item, index) => `${index ? '<span class="path-arrow">›</span>' : ''}<span>${escapeHtml(item.name)}</span>`).join('')}</div></section>
@@ -4067,6 +4068,65 @@
       if (person && text(person.gender).trim() !== '女') {
         person.gender = '女';
         changed = true;
+      }
+    });
+    // 谱文生卒审校：旧转换数据把绝大多数人物默认写成“否”。只有谱文存在明确
+    // 卒、殁、早逝、享年或葬载时才确认已故；无证据的字符串默认值恢复为未标注。
+    // 后台人工保存的布尔值不覆盖，避免冲掉后续人工核定结论。
+    state.data.forEach((person) => {
+      const birthText = text(person.birth_date).trim();
+      const bioText = text(person.biography).trim();
+      const sourceText = `${birthText} ${bioText}`;
+      const hasExplicitDeath = /(?:卒|殁|早逝|夭折|亡故|享年|墓葬|葬于|葬在|合葬|公葬)/.test(sourceText);
+      const currentAlive = person.is_alive;
+      if (hasExplicitDeath) {
+        if (currentAlive !== false) {
+          person.is_alive = false;
+          changed = true;
+        }
+      } else if (text(currentAlive).trim() === '否') {
+        person.is_alive = null;
+        changed = true;
+      } else if (text(currentAlive).trim() === '是') {
+        person.is_alive = true;
+        changed = true;
+      }
+      if (!text(person.death_date).trim()) {
+        let deathRecord = '';
+        if (/生卒俱失/.test(sourceText)) {
+          deathRecord = '生卒俱失（谱载）';
+        } else {
+          const deathMatch = sourceText.match(/(?:公)?卒.{0,86}|(?:早逝|夭折|亡故).{0,28}/);
+          if (deathMatch) {
+            deathRecord = deathMatch[0]
+              .split(/(?:合葬|墓葬|葬于|葬在|公葬|子[一二三四五六七八九十]|女[一二三四五六七八九十]|配)/)[0]
+              .trim();
+          }
+        }
+        if (deathRecord) {
+          person.death_date = deathRecord;
+          changed = true;
+        }
+      }
+      if (!text(person.burial_place).trim()) {
+        const burialMatch = bioText.match(/((?:合葬|(?:公)?墓葬|葬于|葬在|公葬|葬)[^子女继]{1,58})/);
+        if (burialMatch) {
+          person.burial_place = burialMatch[1].trim();
+          changed = true;
+        }
+      }
+      if (!text(person.residence).trim()) {
+        const residenceMatch = bioText.match(/(?:迁居|卜宅而居于|居于)([^子女配墓葬]{1,28})/);
+        if (residenceMatch) {
+          person.residence = residenceMatch[1].trim();
+          changed = true;
+        }
+      }
+      if (hasExplicitDeath || birthText || bioText) {
+        if (text(person.vital_source).trim() !== '枫槎谢氏宗谱上册/下册谱文') {
+          person.vital_source = '枫槎谢氏宗谱上册/下册谱文';
+          changed = true;
+        }
       }
     });
     return changed;
