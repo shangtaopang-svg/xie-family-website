@@ -2716,26 +2716,8 @@
         changed = true;
       }
     }
-    // 删除截图中明才名下的错误重复卡片“学护”（ID 333），保留明秀名下的正确记录（ID 332）。
-    const wrongXueHu = getPerson(333);
-    if (wrongXueHu && text(wrongXueHu.name).trim() === '学护') {
-      const replacementFatherId = toId(wrongXueHu.father_id);
-      state.data.forEach((person) => {
-        if (String(toId(person.father_id)) === '333') person.father_id = replacementFatherId || null;
-        if (String(toId(person.mother_id)) === '333') person.mother_id = replacementFatherId || null;
-      });
-      state.data = state.data.filter((person) => String(personId(person)) !== '333');
-      state.verified.delete('333');
-      state.expanded.delete('333');
-      if (String(state.selectedId) === '333') state.selectedId = replacementFatherId || null;
-      if (String(state.draftId) === '333') {
-        state.mode = 'view';
-        state.draftId = null;
-        state.draftParentId = null;
-      }
-      state.dataIndexReady = false;
-      changed = true;
-    }
+    // 上册第101页明确记载：明秀次子学护出继明才为嗣；ID 333 是亲生侧出继记录，
+    // 不能按同名重复卡片删除，需与 ID 332 的入继记录配对保留。
     // 用户最新核对确认：行安只有一个儿子孝通；清理旧版本误生成的“行安之子开通”（ID 991）。
     const wrongXingAnKaiTong = getPerson(991);
     if (wrongXingAnKaiTong && text(wrongXingAnKaiTong.name).trim() === '开通') {
