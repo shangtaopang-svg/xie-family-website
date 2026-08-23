@@ -105,6 +105,29 @@ function applyAppFatherCorrections(list, appText) {
     }
   }
 
+  // 同步 app.js 中对已定位人物的静态字段修正。此前服务端只同步 father_id，
+  // 会导致前台已经显示“孝品/道清”等修正，而 AI 仍读取旧姓名或旧世次。
+  // 这里只接受字面量右值，动态表单表达式一律跳过，避免执行用户输入或猜测。
+  const staticFields = ['name', 'generation_num', 'generation', 'biography', 'gender', 'is_alive'];
+  for (const [varName, id] of variableIds) {
+    const person = map.get(id);
+    if (!person) continue;
+    const safeVar = varName.replace(/[$]/g, '\\$&');
+    for (const field of staticFields) {
+      const assignRe = new RegExp('\\b' + safeVar + '\\.' + field + '\\s*=\\s*([^;\\n]+)', 'g');
+      let am;
+      while ((am = assignRe.exec(source))) {
+        const rhs = String(am[1]).trim();
+        try {
+          const value = vm.runInNewContext('(' + rhs + ')', Object.create(null), { timeout: 50 });
+          if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null) {
+            person[field] = value;
+          }
+        } catch (e) { /* 动态表达式不纳入服务端同步 */ }
+      }
+    }
+  }
+
   // 同步“把所有仍挂在旧重复卡片下的孩子转接到新卡片”的批量修正。
   const reparentRe = /String\(toId\(person\.father_id\)\)\s*===\s*['"](\d+)['"][\s\S]{0,90}?person\.father_id\s*=\s*(\d+)/g;
   while ((m = reparentRe.exec(source))) {

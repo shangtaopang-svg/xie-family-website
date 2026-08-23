@@ -89,6 +89,7 @@ function detectParentIssues(people) {
   const missingParent = [];
   const backwards = [];
   const gaps = [];
+  const historicalGaps = [];
   const cycles = [];
   for (const p of people) {
     if (!nonEmpty(p.father_id)) continue;
@@ -97,7 +98,8 @@ function detectParentIssues(people) {
     const g = Number(p.generation_num), pg = Number(parent.generation_num);
     if (Number.isFinite(g) && Number.isFinite(pg)) {
       if (g < pg) backwards.push(`${recordLabel(p)} → ${recordLabel(parent)}（子代世次低于父代）`);
-      if (g - pg !== 1 && g >= 60) gaps.push(`${parent.name}（第${pg}世）→${p.name}（第${g}世），相差${g - pg}世`);
+      if (g - pg !== 1 && g >= 133 && pg >= 133) gaps.push(`${parent.name}（第${pg}世）→${p.name}（第${g}世），相差${g - pg}世`);
+      else if (g - pg !== 1 && g >= 60) historicalGaps.push(`${parent.name}（第${pg}世）→${p.name}（第${g}世），相差${g - pg}世；远古/历史段资料存在缺段，不自动补造`);
     }
     const seen = new Set([String(p.id)]);
     let cur = parent;
@@ -107,7 +109,7 @@ function detectParentIssues(people) {
       seen.add(id); cur = byId.get(String(cur.father_id));
     }
   }
-  return { missingParent, backwards, gaps, cycles };
+  return { missingParent, backwards, gaps, historicalGaps, cycles };
 }
 
 function adoptionAudit(people) {
@@ -200,10 +202,12 @@ function buildReport() {
   add(`- 父ID不存在：${parent.missingParent.length}`);
   add(`- 世次倒挂：${parent.backwards.length}`);
   add(`- 现代世次非相邻连接：${parent.gaps.length}`);
+  add(`- 远古/历史世次跨段提示（不判定为现代父子错误）：${parent.historicalGaps.length}`);
   add(`- 父系环路：${parent.cycles.length}`);
   if (parent.missingParent.length) parent.missingParent.forEach((x) => add(`  - ${x}`));
   if (parent.backwards.length) parent.backwards.forEach((x) => add(`  - ${x}`));
   if (parent.gaps.length) parent.gaps.forEach((x) => add(`  - ${x}`));
+  if (parent.historicalGaps.length) parent.historicalGaps.forEach((x) => add(`  - ${x}`));
   add('');
   add('## 4. 出继、入继、入赘核对');
   add(`- 已登记成对关系：${adoption.pairs.length} 对；出继端 ${adoption.outIds.size} 条，入继端 ${adoption.inIds.size} 条。`);
