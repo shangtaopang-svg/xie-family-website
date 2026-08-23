@@ -51,7 +51,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v75'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v76'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -61,6 +61,7 @@
   var ttsMuted = true; // 语音朗读开关（v17 起默认关闭：回答不自动念，用户可点 🔊 开启）
   var audioEl = null;   // 复用的 <audio> 播放器
   var queuedMsg = null;
+  var queuedVisualMode = false;
   var composing = false;
   var forceScroll = true;
   var fabPos = null;    // 用户拖拽后悬浮球的位置 {x,y}(left/top)
@@ -376,7 +377,7 @@
     msgs.scrollTop = msgs.scrollHeight;
   }
 
-  function doSend(text) {
+  function doSend(text, visualMode) {
     var t = (text || '').trim();
     if (!t) return;
     stopSpeak(); // 发送新问题，打断上一段朗读
@@ -384,14 +385,15 @@
     hist.push({ role: 'user', content: t });
     persist();
     if ((looksLineage(t) || looksPrivacy(t)) && !getToken()) {
+      queuedVisualMode = !!visualMode;
       showVerify(t, looksLineage(t) ? null : '该问题涉及族人的个人信息（隐私），请先完成族人身份验证（与站内验证一致，填姓名、父亲、祖父）。');
       return;
     }
-    chat(t);
+    chat(t, null, !!visualMode);
   }
 
   /* ---------------- 与后端通信（SSE） ---------------- */
-  function chat(text, resolvedId) {
+  function chat(text, resolvedId, visualMode) {
     var botEl = appendMessage('bot', '思考中…');
     var body = botEl.querySelector('.ai-txt') || botEl.lastChild;
     var done = false;
@@ -426,7 +428,7 @@
         btn.addEventListener('click', function () {
           body.textContent = '已选择「' + c.name + '（' + c.desc + '）」，正在查询…';
           scrollBottom(true);
-          chat(text, String(c.id));
+          chat(text, String(c.id), !!visualMode);
         });
         body.appendChild(btn);
       });
@@ -483,7 +485,9 @@
       scrollBottom(true);
     };
 
-    var reqBody = { message: text, stream: true };
+    // 快捷图形查询在电脑端使用一次性 JSON，避免部分浏览器或代理漏掉 SSE 的最后一个图形包。
+    // 普通聊天仍使用流式响应，保留逐字输出体验。
+    var reqBody = { message: text, stream: !visualMode };
     if (resolvedId) reqBody.resolvedId = resolvedId;
     var tok = getToken();
     if (tok) reqBody.token = tok;
@@ -600,7 +604,8 @@
           wrap.remove();
           updateStatus();
           var q = queuedMsg; queuedMsg = null;
-          if (q) chat(q);
+          var qVisual = queuedVisualMode; queuedVisualMode = false;
+          if (q) chat(q, null, qVisual);
           else appendMessage('bot', '✅ 身份验证通过，现在可以查询您的个人世系了。');
         } else {
           errEl.textContent = res.message || '信息不符，请核对';
@@ -1501,7 +1506,7 @@
       var question = kind === 'closest'
         ? '请列出和' + name + '血缘最亲的人'
         : '请从炎帝神农氏开始，呈现' + name + '的世系图';
-      doSend(question);
+      doSend(question, true);
     };
     panel.querySelectorAll('[data-quick]').forEach(function (btn) {
       btn.addEventListener('click', function () { runQuick(btn.getAttribute('data-quick')); });
