@@ -1251,6 +1251,9 @@ button, input, select, textarea { color-scheme: light; }
 .query-stat.is-female { border-top-color: #8f2d2c; }.query-stat.is-audit { border-top-color: #b97858; }
 .query-section { margin-top: 14px; padding: 15px 16px 17px; border: 1px solid #d9d5cc; background: #fbf9f3; }
 .query-section-head { display: flex; justify-content: space-between; align-items: end; gap: 12px; margin-bottom: 12px; }
+.query-era-label { display: flex; align-items: baseline; gap: 10px; margin: -2px 0 8px; padding: 7px 10px; border-left: 3px solid #ae684f; background: #f5eee7; color: #7e6258; }
+.query-era-label span { font-size: 10px; letter-spacing: .08em; color: #ae684f; }
+.query-era-label strong { font-size: 13px; font-weight: 700; color: #42584f; }
 .query-section-head h4 { margin: 3px 0 0; color: var(--ink-strong); font-family: "Noto Serif SC", "Source Han Serif SC", serif; font-size: 15px; letter-spacing: .08em; }
 .query-section-head a { color: #8d523f; font-size: 11px; text-decoration: none; }.query-section-head a:hover { text-decoration: underline; }
 .query-kicker { color: var(--accent); font-size: 8px; letter-spacing: .18em; }.query-muted { color: #89928d; font-size: 11px; line-height: 1.5; }
