@@ -83,8 +83,7 @@
       '<a href="' + p('xie-collection') + '">📚 谢氏集萃</a>' +
       '<a href="' + p('contact') + '">✉️ 联系我们</a>' +
       '<span class="s-nav-section">管理入口</span>' +
-      '<a class="s-admin-link" id="site-content-admin-link" href="' + root() + 'pages/admin.html">🔐 网站内容管理后台</a>' +
-      '<a class="s-admin-link" id="genealogy-admin-link" href="' + root() + '交付_下枫槎谢氏世系图/管理后台.html">📖 族谱管理后台</a>' +
+      '<a class="s-admin-link" id="site-content-admin-link" href="' + root() + 'pages/admin.html">🔐 管理后台</a>' +
     '</nav>' +
     '<div class="s-bottom">' +
       '<div class="s-controls">' +
