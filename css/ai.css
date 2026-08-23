@@ -767,6 +767,8 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
 .ai-adopt-links i { width: 38px; border-top: 2px solid #668b79; }.ai-adopt-links i.adopt { border-top: 2px dashed #bd5843; }
 .ai-adopt-person, .ai-adopt-target { display: flex; width: fit-content; margin: 0 auto; }.ai-adopt-person { border-color: #bd5843; background: #fff5f0; }
 .ai-adopt-down { height: 26px; width: 1px; border-left: 2px solid #668b79; margin: 0 auto; }
+.ai-tree-full-adoption-map { margin: 22px auto 8px; max-width: 860px; }
+.ai-adoption-source { margin-top: 12px; padding-top: 9px; border-top: 1px dashed #dfb5a6; color: #845f52; font-size: 12px; line-height: 1.5; }
 @media (max-width: 640px) { .ai-adoption-map { padding: 12px 8px; }.ai-adoption-title { align-items: flex-start; flex-direction: column; }.ai-adopt-parent-row { justify-content: flex-start; }.ai-adopt-node { min-width: 105px; } }
 .ai-tree-badge.tb-ancient { background: #a15c07; }
 .ai-tree-badge.tb-shenbo { background: #0b7285; }
