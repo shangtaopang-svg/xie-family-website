@@ -1129,19 +1129,21 @@
 
   function setGlobalNav(open) {
     const overlay = $('#global-nav-overlay');
-    const toggle = $('#global-nav-toggle');
+    const toggles = $$('#global-nav-toggle, #admin-global-nav-toggle');
     if (!overlay) return;
+    if (open && document.activeElement && document.activeElement.id) overlay.dataset.returnFocusId = document.activeElement.id;
     overlay.hidden = !open;
     document.body.classList.toggle('is-global-nav-open', open);
-    if (toggle) {
+    toggles.forEach((toggle) => {
       toggle.setAttribute('aria-expanded', String(open));
       toggle.classList.toggle('is-active', open);
-    }
+    });
     if (open) {
       const close = overlay.querySelector('.global-nav-close');
       if (close) setTimeout(() => close.focus(), 0);
-    } else if (toggle) {
-      toggle.focus();
+    } else {
+      const returnTarget = overlay.dataset.returnFocusId ? document.getElementById(overlay.dataset.returnFocusId) : toggles[0];
+      if (returnTarget) returnTarget.focus();
     }
   }
 
