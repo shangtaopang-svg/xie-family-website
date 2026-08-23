@@ -765,6 +765,11 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
 .ai-adopt-node.biological { border-color: #cc765d; background: #fff4ee; }.ai-adopt-node.adoptive { background: #eef7f2; }
 .ai-adopt-links { display: flex; justify-content: center; align-items: center; gap: 6px; margin: 12px auto; color: #76665f; font-size: 11px; }
 .ai-adopt-links i { width: 38px; border-top: 2px solid #668b79; }.ai-adopt-links i.adopt { border-top: 2px dashed #bd5843; }
+.ai-adopt-connection-grid { display: grid; grid-template-columns: repeat(2, minmax(135px, 1fr)); gap: 18px; margin: 0 auto; max-width: 520px; }
+.ai-adopt-connection { position: relative; min-height: 42px; padding-top: 18px; text-align: center; color: #76665f; font-size: 11px; }
+.ai-adopt-connection i { display: block; width: 2px; height: 18px; margin: 0 auto 4px; background: #668b79; }
+.ai-adopt-connection.adoptive i { height: 18px; background: repeating-linear-gradient(to bottom, #bd5843 0 5px, transparent 5px 9px); }
+.ai-adopt-connection.biological span { color: #688577; }.ai-adopt-connection.adoptive span { color: #a64a36; }
 .ai-adopt-person, .ai-adopt-target { display: flex; width: fit-content; margin: 0 auto; }.ai-adopt-person { border-color: #bd5843; background: #fff5f0; }
 .ai-adopt-down { height: 26px; width: 1px; border-left: 2px solid #668b79; margin: 0 auto; }
 .ai-tree-full-adoption-map { margin: 22px auto 8px; max-width: 860px; }

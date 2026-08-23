@@ -51,7 +51,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v86'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v87'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -1228,7 +1228,10 @@
       '<div class="ai-adoption-title"><b>出继 / 入继关系详图</b><span>完整直线世系末端关系</span></div>' +
       (ctx.commonAncestor ? '<div class="ai-adopt-root ai-adopt-node"><small>第' + esc(ctx.commonAncestor.shi) + '世</small><strong>' + esc(ctx.commonAncestor.name) + '</strong></div>' : '') +
       '<div class="ai-adopt-parent-row">' + siblingNodes + '</div>' +
-      '<div class="ai-adopt-links"><i class="bio"></i><span>亲生父子</span><i class="adopt"></i><span>出继入嗣</span></div>' +
+      '<div class="ai-adopt-connection-grid">' +
+      '  <div class="ai-adopt-connection biological"><i></i><span>亲生父子 · 血缘50%</span></div>' +
+      '  <div class="ai-adopt-connection adoptive"><i></i><span>出继给 / 入继为嗣 · 血缘0%</span></div>' +
+      '</div>' +
       '<div class="ai-adopt-person ai-adopt-node"><small>第' + esc(ctx.person && ctx.person.shi || target.shi) + '世</small><strong>' + esc(ctx.person && ctx.person.name || target.name) + '</strong><em>出继 / 入继</em></div>' +
       (ctx.target ? '<div class="ai-adopt-down"></div><div class="ai-adopt-target ai-adopt-node"><small>第' + esc(ctx.target.shi) + '世</small><strong>' + esc(ctx.target.name) + '</strong></div>' : '') +
       '<div class="ai-adoption-source">' + esc(ctx.source || '') + '</div>';
