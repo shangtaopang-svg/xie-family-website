@@ -51,7 +51,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v78'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v79'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -467,6 +467,7 @@
         (body || botEl).appendChild(src); // 放入文本节点内，头像布局下不错位
       }
       // 树图不能只依赖“自动弹出”：在回答正文中保留永久入口，关闭弹层后仍可再次查看。
+      var adoptionNode = tree && tree.length ? tree.find(function (n) { return n && n.adoptionDetail; }) : null;
       if (tree && tree.length) {
         var treeBtn = document.createElement('button');
         treeBtn.type = 'button';
@@ -474,6 +475,14 @@
         treeBtn.innerHTML = '<span>🌳</span><b>查看树状世系图</b><small>炎帝神农氏 → ' + esc(tree[tree.length - 1].name) + '</small>';
         treeBtn.addEventListener('click', function () { showTreeOverlay(tree, ownerIsSelf); });
         body.appendChild(treeBtn);
+      }
+      if (visualMode && adoptionNode) {
+        var fullAdoptBtn = document.createElement('button');
+        fullAdoptBtn.type = 'button';
+        fullAdoptBtn.className = 'ai-result-visual adoption';
+        fullAdoptBtn.innerHTML = '<span>🔗</span><b>全面展示出继 / 入继关系图</b><small>亲生父亲、继父及关系线同时呈现</small>';
+        fullAdoptBtn.addEventListener('click', function () { showAdoptionRelationOverlay(tree); });
+        body.appendChild(fullAdoptBtn);
       }
       if (closestTree && closestTree.adoptions && closestTree.adoptions.length) {
         var adoptBtn = document.createElement('button');
@@ -483,7 +492,8 @@
         adoptBtn.addEventListener('click', function () { showClosestOverlay(closest || [], closestTree); });
         body.appendChild(adoptBtn);
       }
-      if (!visualShown && tree && tree.length) { showTreeOverlay(tree, ownerIsSelf); visualShown = true; }
+      if (!visualShown && visualMode && adoptionNode) { showAdoptionRelationOverlay(tree); visualShown = true; }
+      else if (!visualShown && tree && tree.length) { showTreeOverlay(tree, ownerIsSelf); visualShown = true; }
       if (!visualShown && ((closest && closest.length) || (closestTree && closestTree.root))) { showClosestOverlay(closest || [], closestTree); visualShown = true; }
       hist.push({ role: 'assistant', content: answer || '' });
       persist();
@@ -546,7 +556,12 @@
           else {
             metaVisual = j;
             // 不等待长篇文字结束，图形数据一到就立即呈现。
-            if (j.tree && j.tree.length) { showTreeOverlay(j.tree, j.ownerIsSelf !== false); visualShown = true; }
+            if (j.tree && j.tree.length) {
+              var metaAdoptionNode = j.tree.find(function (n) { return n && n.adoptionDetail; });
+              if (visualMode && metaAdoptionNode) showAdoptionRelationOverlay(j.tree);
+              else showTreeOverlay(j.tree, j.ownerIsSelf !== false);
+              visualShown = true;
+            }
             else if ((j.closest && j.closest.length) || (j.closestTree && j.closestTree.root)) { showClosestOverlay(j.closest || [], j.closestTree || null); visualShown = true; }
           }
         } else if (ev === 'delta') {
@@ -1125,6 +1140,22 @@
     if (treeOverlay) { try { treeOverlay.parentNode.removeChild(treeOverlay); } catch (e) {} treeOverlay = null; }
   }
 
+  // 完整世系快捷项的出继/入继关系图：将服务端附在目标节点上的双亲资料
+  // 转成与“最亲关系图”一致的双路线卡片，避免只在纵向世系卡片里显示一行文字。
+  function showAdoptionRelationOverlay(nodes) {
+    var target = (nodes || []).find(function (n) { return n && n.adoptionDetail; });
+    if (!target || !target.adoptionDetail) return;
+    var d = target.adoptionDetail;
+    var ctx = {
+      person: { name: target.name, shi: target.shi },
+      biologicalParent: d.biologicalParent || null,
+      adoptiveParent: d.adoptiveParent || null,
+      source: d.source || target.adopt || '出继 / 入继关系',
+      siblings: []
+    };
+    showClosestOverlay([], { targetName: target.name, adoptions: [ctx] });
+  }
+
   /* ---------------- 血缘最亲 N 人：基因共享率弹层（#72；v41 改为遗传学亲等 r） ---------------- */
   var closestOverlay = null;
   /* 血缘树节点（#82）：递归生成 <li> 结构，ul/li 经典 CSS 树连接线由 .ai-cl-tree 控制 */
@@ -1289,7 +1320,9 @@
     ov.id = 'ai-closest-overlay';
     // 查任意族人时（如「和沦最亲的10个人」），标题带上被查者姓名
     var tName = (tree && tree.targetName) || '';
-    var title = (tree && tree.root)
+    var title = (tree && tree.adoptions && tree.adoptions.length && !(tree && tree.root))
+      ? '出继 / 入继关系图' + (tName ? ' · ' + tName : '')
+      : (tree && tree.root)
       ? '家族血缘关系图' + (tName && tName !== '您' ? ' · ' + tName : '')
       : ('❤️ 与您血缘最近的 ' + list.length + ' 位族人');
     ov.innerHTML =
