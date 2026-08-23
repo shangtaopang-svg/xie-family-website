@@ -51,7 +51,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v77'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v78'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -384,7 +384,9 @@
     appendMessage('user', t);
     hist.push({ role: 'user', content: t });
     persist();
-    if ((looksLineage(t) || looksPrivacy(t)) && !getToken()) {
+    // 快捷图形查询是只读公开展示：用户只填写姓名即可查看树图；
+    // 普通个人隐私问答仍需身份验证，编辑功能也只在后台提供。
+    if (looksPrivacy(t) && !looksLineage(t) && !getToken()) {
       queuedVisualMode = !!visualMode;
       showVerify(t, looksLineage(t) ? null : '该问题涉及族人的个人信息（隐私），请先完成族人身份验证（与站内验证一致，填姓名、父亲、祖父）。');
       return;
@@ -502,7 +504,7 @@
 
     // 快捷图形查询在电脑端使用一次性 JSON，避免部分浏览器或代理漏掉 SSE 的最后一个图形包。
     // 普通聊天仍使用流式响应，保留逐字输出体验。
-    var reqBody = { message: text, stream: !visualMode };
+    var reqBody = { message: text, stream: !visualMode, visual: !!visualMode };
     if (resolvedId) reqBody.resolvedId = resolvedId;
     var tok = getToken();
     if (tok) reqBody.token = tok;
