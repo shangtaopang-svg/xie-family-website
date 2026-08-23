@@ -1287,11 +1287,11 @@
       container.innerHTML = '<div class="query-muted" style="padding:16px 4px">未找到匹配记录。可放宽姓名、世代或性别条件。</div>';
       return;
     }
-    const head = '<div class="query-result-row query-result-head"><span>世代</span><span>姓名</span><span>性别</span><span>支系</span><span>状态</span><span>定位</span></div>';
+    const head = '<div class="query-result-row query-result-head"><span>世代</span><span>姓名</span><span>性别</span><span>支系</span><span>状态</span><span>操作</span></div>';
     const rows = visible.map((person) => {
       const gender = genderLabel(person);
       const adoption = queryAdoptionLabel(person);
-      return `<div class="query-result-row"><span>${escapeHtml(generationOf(person) || '—')}</span><button data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}${adoption ? ` <em class="query-result-tag adopt">${escapeHtml(adoption)}</em>` : ''}</button><span class="query-result-tag${gender === '女' ? ' female' : ''}">${escapeHtml(gender)}</span><span>${escapeHtml(text(person.branch) || '未标注')}</span><span>${escapeHtml(text(person.is_alive).trim() === '是' ? '在世' : text(person.is_alive).trim() === '否' ? '已故' : '未标注')}</span><button data-action="query-locate" data-id="${escapeHtml(personId(person))}">定位</button></div>`;
+      return `<div class="query-result-row"><span>${escapeHtml(generationOf(person) || '—')}</span><button data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}${adoption ? ` <em class="query-result-tag adopt">${escapeHtml(adoption)}</em>` : ''}</button><span class="query-result-tag${gender === '女' ? ' female' : ''}">${escapeHtml(gender)}</span><span>${escapeHtml(text(person.branch) || '未标注')}</span><span>${escapeHtml(text(person.is_alive).trim() === '是' ? '在世' : text(person.is_alive).trim() === '否' ? '已故' : '未标注')}</span><span class="query-result-actions"><button data-action="query-locate" data-id="${escapeHtml(personId(person))}">定位</button><button class="root-trace-trigger" data-action="root-trace" data-id="${escapeHtml(personId(person))}">寻根</button></span></div>`;
     }).join('');
     container.innerHTML = head + rows;
   }
@@ -1328,6 +1328,57 @@
       current = displayParent ? getPerson(displayParent) : rawFatherOf(current);
     }
     return chain;
+  }
+
+  function ensureRootTraceModal() {
+    if ($('#root-trace-modal')) return;
+    const modal = document.createElement('section');
+    modal.id = 'root-trace-modal';
+    modal.className = 'root-trace-modal';
+    modal.hidden = true;
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'root-trace-title');
+    modal.innerHTML = `<div class="root-trace-shell"><header class="root-trace-head"><div><span class="eyebrow">ROOT LINEAGE</span><h3 id="root-trace-title">寻根直线世系</h3><p id="root-trace-summary"></p></div><button class="root-trace-close" data-action="close-root-trace" aria-label="关闭寻根世系">×</button></header><div id="root-trace-content" class="root-trace-content"></div></div>`;
+    document.body.appendChild(modal);
+  }
+
+  function closeRootTrace() {
+    const modal = $('#root-trace-modal');
+    if (!modal) return;
+    modal.hidden = true;
+    document.body.classList.remove('is-root-trace-open');
+  }
+
+  function rootTraceRelationHtml(person) {
+    const key = String(personId(person));
+    const relation = state.adoption.outById.get(key) || state.adoption.inById.get(key) || null;
+    const rawFather = rawFatherOf(person);
+    const displayParentId = state.adoption.displayParentById.get(key);
+    const displayParent = displayParentId !== undefined ? getPerson(displayParentId) : rawFather;
+    if (!relation && (!rawFather || !displayParent || String(personId(rawFather)) === String(personId(displayParent)))) return '';
+    const biological = relation ? relation.biologicalParent : rawFather;
+    const adoptive = relation ? relation.adoptiveParent : displayParent;
+    return `<aside class="root-trace-adoption"><strong>出继 / 入继关系</strong><span>亲生父亲：${escapeHtml(biological ? text(biological.name) : '未详')}${biological ? `（ID ${escapeHtml(personId(biological))}）` : ''}</span><span>继父（承嗣父）：${escapeHtml(adoptive ? text(adoptive.name) : '未详')}${adoptive ? `（ID ${escapeHtml(personId(adoptive))}）` : ''}</span>${relation && relation.source ? `<small>谱载：${escapeHtml(relation.source)}</small>` : ''}</aside>`;
+  }
+
+  function openRootTrace(id) {
+    ensureRootTraceModal();
+    const person = getPerson(id);
+    const modal = $('#root-trace-modal');
+    const content = $('#root-trace-content');
+    const summary = $('#root-trace-summary');
+    if (!person || !modal || !content) return;
+    const chain = queryAncestorChain(person).reverse();
+    const startsAtYandi = chain.length && text(chain[0].name).trim().includes('炎帝');
+    if (summary) summary.textContent = `${startsAtYandi ? '炎帝始祖' : '当前数据可追溯始祖'} → ${text(person.name)} · 共 ${chain.length} 代节点`;
+    content.innerHTML = `${!startsAtYandi ? '<div class="root-trace-warning">当前数据链未直接抵达“炎帝”记录，以下展示现有数据能够完整追溯的最早世系。</div>' : ''}<div class="root-trace-line">${chain.map((member, index) => {
+      const tags = adoptionTags(member).map((tag) => tag.label).join(' / ');
+      return `<article class="root-trace-node${index === 0 ? ' is-root' : ''}${index === chain.length - 1 ? ' is-target' : ''}"><div class="root-trace-card"><span>第${escapeHtml(generationOf(member) || '—')}世</span><strong>${escapeHtml(text(member.name) || '未命名')}</strong>${tags ? `<em>${escapeHtml(tags)}</em>` : ''}<small>${escapeHtml(text(member.branch) || '')}</small></div>${rootTraceRelationHtml(member)}</article>`;
+    }).join('')}</div>`;
+    modal.hidden = false;
+    document.body.classList.add('is-root-trace-open');
+    modal.scrollTop = 0;
   }
 
   function queryRelationText(p1, p2, path1, path2, common, d1, d2) {
@@ -1402,6 +1453,11 @@
   }
 
   function mobileBackOneLevel() {
+    const rootTrace = $('#root-trace-modal');
+    if (rootTrace && !rootTrace.hidden) {
+      closeRootTrace();
+      return;
+    }
     const globalNav = $('#global-nav-overlay');
     if (globalNav && !globalNav.hidden) {
       setGlobalNav(false);
@@ -4499,6 +4555,8 @@
       case 'query-clear': clearQuery(); break;
       case 'query-relation': renderQueryRelation(); break;
       case 'query-locate': selectPerson(id, { forceRender: true }); break;
+      case 'root-trace': openRootTrace(id); break;
+      case 'close-root-trace': closeRootTrace(); break;
       case 'query-generation': selectQueryGeneration(element.dataset.generation); break;
       case 'query-pick-relation': pickQueryRelation(element.dataset.side, id); break;
       case 'zoom-in': stepZoom(1); break;
@@ -4758,6 +4816,12 @@
       handleAction(target.dataset.action, target);
     });
     document.addEventListener('keydown', (event) => {
+      const rootTrace = $('#root-trace-modal');
+      if (event.key === 'Escape' && rootTrace && !rootTrace.hidden) {
+        event.preventDefault();
+        closeRootTrace();
+        return;
+      }
       const globalNav = $('#global-nav-overlay');
       if (event.key === 'Escape' && globalNav && !globalNav.hidden) {
         event.preventDefault();
@@ -4890,6 +4954,7 @@
 
   function init() {
     ensureMobileBackButton();
+    ensureRootTraceModal();
     loadSaved();
     loadLayout();
     buildAdoptionIndex();

@@ -368,6 +368,12 @@ html, body {
 
 button, input, select, textarea { color-scheme: light; }
 .mobile-genealogy-back { display: none; }
+.root-trace-modal { position: fixed; inset: 0; z-index: 300; overflow: auto; padding: 24px; background: rgba(22,33,29,.62); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.root-trace-modal[hidden] { display: none; }.is-root-trace-open { overflow: hidden; }
+.root-trace-shell { width: min(860px,100%); margin: 0 auto; border: 1px solid #c9c4b8; background: #f8f5ed; box-shadow: 0 24px 70px rgba(12,26,21,.32); }
+.root-trace-head { position: sticky; top: -24px; z-index: 2; display: flex; justify-content: space-between; gap: 18px; padding: 20px 24px 17px; border-bottom: 1px solid #d6d0c4; background: rgba(248,245,237,.96); backdrop-filter: blur(10px); }
+.root-trace-head h3 { margin: 5px 0 3px; color: #243d34; font-family: "Noto Serif SC","Source Han Serif SC",serif; font-size: 24px; }.root-trace-head p { margin: 0; color: #758078; font-size: 12px; }.root-trace-close { flex: 0 0 38px; width: 38px; height: 38px; border: 1px solid #c9c4b8; border-radius: 50%; background: #fffdf7; color: #6d766f; font-size: 24px; }
+.root-trace-content { padding: 24px 26px 42px; }.root-trace-warning { margin-bottom: 16px; padding: 10px 12px; border-left: 3px solid #b77859; background: #f3e8dd; color: #82513d; font-size: 12px; }.root-trace-line { position: relative; display: grid; justify-items: center; }.root-trace-line::before { content: ""; position: absolute; top: 20px; bottom: 20px; left: 50%; width: 2px; background: #789487; transform: translateX(-50%); }.root-trace-node { position: relative; z-index: 1; width: min(680px,100%); display: grid; grid-template-columns: minmax(180px,250px) minmax(0,1fr); align-items: center; gap: 18px; margin-bottom: 16px; }.root-trace-card { justify-self: end; width: 220px; min-height: 72px; box-sizing: border-box; padding: 10px 13px; border: 1px solid #9bad9f; border-left: 5px solid #527366; border-radius: 7px; background: #fffdf7; box-shadow: 0 4px 12px rgba(43,65,56,.08); }.root-trace-card span,.root-trace-card small { display: block; color: #7c8780; font-size: 10px; }.root-trace-card strong { display: inline-block; margin: 3px 7px 2px 0; color: #263e35; font-family: "Noto Serif SC","Source Han Serif SC",serif; font-size: 18px; }.root-trace-card em { display: inline-block; padding: 2px 5px; border-radius: 3px; background: #e9d4cc; color: #8d453b; font-size: 9px; font-style: normal; }.root-trace-node.is-root .root-trace-card { border-left-color: #b16b46; background: #fff5e9; }.root-trace-node.is-target .root-trace-card { border-color: #a85a3e; border-left-color: #a33e2f; box-shadow: 0 0 0 3px rgba(163,62,47,.12); }.root-trace-adoption { padding: 10px 12px; border: 1px solid #d9b5a8; border-radius: 5px; background: #fff4ef; color: #68463b; font-size: 11px; line-height: 1.55; }.root-trace-adoption strong,.root-trace-adoption span,.root-trace-adoption small { display: block; }.root-trace-adoption strong { color: #9a4135; }.root-trace-adoption small { margin-top: 4px; color: #8c6c62; }
 
 .app-header {
   min-height: 84px;
@@ -1224,7 +1230,7 @@ button, input, select, textarea { color-scheme: light; }
 .query-two-column { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(320px, .75fr); gap: 14px; }.query-two-column .query-section { min-width: 0; }
 .query-form-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }.query-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }.query-field span { color: #707d76; font-size: 10px; font-weight: 600; }.query-field-wide { grid-column: span 2; }.query-field input, .query-field select { box-sizing: border-box; width: 100%; min-width: 0; min-height: 38px; padding: 8px 30px 8px 10px; border: 1px solid #c9c7bd; border-radius: 5px; outline: 0; background-color: #fcfaf4; color: var(--ink); font-size: 12px; white-space: nowrap; text-overflow: ellipsis; }.query-field input { padding-right: 10px; }.query-field input:focus, .query-field select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(82,111,102,.12); }
 .query-form-actions { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-top: 11px; }.query-primary, .query-secondary { min-height: 31px; padding: 6px 13px; border: 1px solid #78998b; border-radius: 3px; cursor: pointer; font-size: 11px; }.query-primary { background: #466b5d; border-color: #466b5d; color: #fff; }.query-secondary { background: #f8f6ef; color: #4b645a; border-color: #c9c7bd; }.query-primary:hover, .query-secondary:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(53,67,61,.12); }
-.query-results { max-height: 260px; margin-top: 12px; overflow: auto; border-top: 1px solid #e0ddd5; }.query-result-row { display: grid; grid-template-columns: 55px minmax(90px, 1fr) 52px minmax(0, 1.5fr) 64px 54px; gap: 7px; align-items: center; padding: 8px 4px; border-bottom: 1px solid #ebe7de; color: #4d6158; font-size: 11px; }.query-result-row:hover { background: #f1eee7; }.query-result-row button, .query-candidate { border: 0; background: transparent; color: #8d523f; text-align: left; cursor: pointer; font-size: 11px; }.query-result-row button:hover, .query-candidate:hover { text-decoration: underline; }.query-result-head { color: #8a948e; font-size: 10px; font-weight: 700; }.query-result-tag { padding: 2px 5px; border: 1px solid #c9c7bd; color: #68766f; text-align: center; }.query-result-tag.female { border-color: #9b514e; color: #8f2d2c; }.query-result-tag.adopt { border-color: #79a58f; color: #2f6b55; }
+.query-results { max-height: 260px; margin-top: 12px; overflow: auto; border-top: 1px solid #e0ddd5; }.query-result-row { display: grid; grid-template-columns: 55px minmax(90px, 1fr) 52px minmax(0, 1.5fr) 64px 94px; gap: 7px; align-items: center; padding: 8px 4px; border-bottom: 1px solid #ebe7de; color: #4d6158; font-size: 11px; }.query-result-row:hover { background: #f1eee7; }.query-result-row button, .query-candidate { border: 0; background: transparent; color: #8d523f; text-align: left; cursor: pointer; font-size: 11px; }.query-result-row button:hover, .query-candidate:hover { text-decoration: underline; }.query-result-head { color: #8a948e; font-size: 10px; font-weight: 700; }.query-result-tag { padding: 2px 5px; border: 1px solid #c9c7bd; color: #68766f; text-align: center; }.query-result-tag.female { border-color: #9b514e; color: #8f2d2c; }.query-result-tag.adopt { border-color: #79a58f; color: #2f6b55; }.query-result-actions { display: flex; align-items: center; gap: 5px; }.query-result-actions .root-trace-trigger { padding: 3px 7px; border: 1px solid #b77859; border-radius: 3px; background: #fff6ef; color: #965336; font-weight: 700; }.query-result-actions .root-trace-trigger:hover { background: #965336; color: #fff; text-decoration: none; }
 .query-relation-form { display: grid; grid-template-columns: minmax(0,1fr) 26px minmax(0,1fr); gap: 8px; align-items: end; }.query-relation-mark { padding-bottom: 8px; color: #ae684f; text-align: center; font-size: 18px; }.query-candidates { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }.query-candidate { padding: 5px 7px; border: 1px solid #c9d0c9; background: #edf2ee; color: #466b5d; }.query-relation-result { margin-top: 12px; padding: 12px; border-left: 3px solid #ae684f; background: #f3eee6; color: #4d6158; font-size: 12px; line-height: 1.7; }.query-relation-result strong { display: block; margin-bottom: 4px; color: #8d523f; font-family: "Noto Serif SC", "Source Han Serif SC", serif; font-size: 16px; }.query-path { color: #5b7569; word-break: break-all; }
 .app-shell.is-query-open .query-toggle { background: #e7eee9; border-color: #6f8d7f; color: #3d6254; }.app-shell.is-immersive .query-drawer { display: none; }
 @media (max-width: 1100px) { .query-stat-grid { grid-template-columns: repeat(auto-fit, minmax(108px,1fr)); }.query-two-column { grid-template-columns: 1fr; } }
@@ -1254,6 +1260,14 @@ button, input, select, textarea { color-scheme: light; }
   .mobile-genealogy-back span { font-size: 27px; font-weight: 300; line-height: .7; transform: translateY(-1px); }
   .mobile-genealogy-back strong { font-weight: 700; letter-spacing: .03em; white-space: nowrap; }
   .mobile-genealogy-back:active { transform: scale(.96); background: #173f32; }
+  .root-trace-modal { padding: 0; background: #f8f5ed; }
+  .root-trace-shell { min-height: 100vh; border: 0; box-shadow: none; }
+  .root-trace-head { top: 0; padding: 16px 15px 13px; }
+  .root-trace-head h3 { font-size: 20px; }
+  .root-trace-content { padding: 18px 14px 88px; }
+  .root-trace-node { width: 100%; grid-template-columns: minmax(0,1fr); gap: 7px; margin-bottom: 18px; }
+  .root-trace-card { justify-self: center; width: min(260px,82vw); }
+  .root-trace-adoption { width: min(300px,88vw); box-sizing: border-box; justify-self: center; }
 }
 
 @container genealogy-main (max-width: 960px) {
@@ -1296,8 +1310,10 @@ button, input, select, textarea { color-scheme: light; }
   .query-section { padding: 13px 11px 15px; }
   .query-form-grid { grid-template-columns: minmax(0,1fr); }
   .query-field-wide { grid-column: auto; }
-  .query-result-row { grid-template-columns: 40px minmax(0,1fr) 42px; }
-  .query-result-row > :nth-child(4), .query-result-row > :nth-child(5), .query-result-row > :nth-child(6) { display: none; }
+  .query-result-row { grid-template-columns: 40px minmax(0,1fr) 42px 78px; }
+  .query-result-row > :nth-child(4), .query-result-row > :nth-child(5) { display: none; }
+  .query-result-actions { gap: 3px; }
+  .query-result-actions .root-trace-trigger { padding: 3px 5px; }
 }
 
 /* 女性人物统一使用大红色卡片，保留支系、出继/入继等边框与标签信息。 */
