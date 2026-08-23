@@ -1320,8 +1320,8 @@
     const from = Number(state.query.genFrom) || 0;
     const to = Number(state.query.genTo) || 9999;
     const eraDefinitions = [
-      { from: 1, to: 65, label: '炎帝远古世系', startLabel: '炎帝', endLabel: '申伯', className: 'is-ancient' },
-      { from: 65, to: 99, label: '申伯世系', startLabel: '申伯', endLabel: '缵', className: 'is-shenbo' }
+      { from: 1, to: 65, label: '炎帝远古世系', startLabel: '炎帝（炎帝第1代）', endLabel: '申伯（炎帝第65代）', className: 'is-ancient' },
+      { from: 65, to: 99, label: '申伯世系', startLabel: '申伯（炎帝第65代）', endLabel: '缵（炎帝第99代）', className: 'is-shenbo' }
     ];
     const eraBracket = eraDefinitions.map((era, index) => {
       const eraGenerations = generations.filter((generation) => generation >= era.from && generation <= era.to);
