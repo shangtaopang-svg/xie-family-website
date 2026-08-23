@@ -4365,12 +4365,15 @@
         // 本地缓存优先保留人工修订，但不能把服务器后来补入的谱载字段吞掉。
         // 只对“旧缓存中完全没有该字段”的情况从交付源补齐；用户主动清空的字段仍保持为空。
         const sourceById = new Map(state.original.map((item) => [String(personId(item)), item]));
+        const sourceEnrichmentKeys = new Set(['courtesy_name', 'title', 'source_pages', 'vital_source', 'spouse_record', 'book_record']);
         state.data = saved.map((item) => {
           const source = sourceById.get(String(personId(item)));
           if (!source) return item;
           const merged = { ...item };
           Object.keys(source).forEach((key) => {
-            if (!Object.prototype.hasOwnProperty.call(item, key)) merged[key] = clone(source[key]);
+            const missing = !Object.prototype.hasOwnProperty.call(item, key);
+            const sourceEnrichment = sourceEnrichmentKeys.has(key) && text(source[key]).trim() && !text(item[key]).trim();
+            if (missing || sourceEnrichment) merged[key] = clone(source[key]);
           });
           return merged;
         });
