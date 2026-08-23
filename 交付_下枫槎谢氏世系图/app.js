@@ -4077,7 +4077,8 @@
       const birthText = text(person.birth_date).trim();
       const bioText = text(person.biography).trim();
       const sourceText = `${birthText} ${bioText}`;
-      const hasExplicitDeath = /(?:卒|殁|早逝|夭折|亡故|享年|墓葬|葬于|葬在|合葬|公葬)/.test(sourceText);
+      const lostVitalMatch = sourceText.match(/生(?:娶)?卒(?:葬)?(?:均|俱|均俱)?(?:失考|失|不详)/);
+      const hasExplicitDeath = Boolean(lostVitalMatch) || /(?:卒|殁|早逝|夭折|亡故|享年|墓葬|葬于|葬在|合葬|公葬)/.test(sourceText);
       const currentAlive = person.is_alive;
       if (hasExplicitDeath) {
         if (currentAlive !== false) {
@@ -4093,8 +4094,8 @@
       }
       if (!text(person.death_date).trim()) {
         let deathRecord = '';
-        if (/生卒俱失/.test(sourceText)) {
-          deathRecord = '生卒俱失（谱载）';
+        if (lostVitalMatch) {
+          deathRecord = `${lostVitalMatch[0]}（谱载，明确已故）`;
         } else {
           const deathMatch = sourceText.match(/(?:公)?卒.{0,86}|(?:早逝|夭折|亡故).{0,28}/);
           if (deathMatch) {
