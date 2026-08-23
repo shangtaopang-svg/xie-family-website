@@ -51,7 +51,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v72'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v73'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -395,6 +395,8 @@
     var botEl = appendMessage('bot', '思考中…');
     var body = botEl.querySelector('.ai-txt') || botEl.lastChild;
     var done = false;
+    var metaVisual = null;
+    var visualShown = false;
 
     // 同名确认：提问中的人名有多个同名族人 → 弹候选按钮，点击后带选中 personId（resolvedId）重发
     var showNameSelect = function (j) {
@@ -455,8 +457,8 @@
         adoptBtn.addEventListener('click', function () { showClosestOverlay(closest || [], closestTree); });
         body.appendChild(adoptBtn);
       }
-      if (tree && tree.length) showTreeOverlay(tree, ownerIsSelf); // 世系图：呈现+朗读的同时弹出树状图
-      if (closest && closest.length) showClosestOverlay(closest, closestTree); // 血缘最亲：弹出家族关系树 + 亲密系数图
+      if (!visualShown && tree && tree.length) { showTreeOverlay(tree, ownerIsSelf); visualShown = true; }
+      if (!visualShown && ((closest && closest.length) || (closestTree && closestTree.root))) { showClosestOverlay(closest || [], closestTree); visualShown = true; }
       hist.push({ role: 'assistant', content: answer || '' });
       persist();
       scrollBottom(true);
@@ -513,6 +515,12 @@
         if (ev === 'meta') {
           if (j.code === 'AMBIGUOUS') { showNameSelect(j); return; }
           if (!j.ok) fail(j);
+          else {
+            metaVisual = j;
+            // 不等待长篇文字结束，图形数据一到就立即呈现。
+            if (j.tree && j.tree.length) { showTreeOverlay(j.tree, j.ownerIsSelf !== false); visualShown = true; }
+            else if ((j.closest && j.closest.length) || (j.closestTree && j.closestTree.root)) { showClosestOverlay(j.closest || [], j.closestTree || null); visualShown = true; }
+          }
         } else if (ev === 'delta') {
           if (j.t) { collect += j.t; body.textContent = collect; scrollBottom(false); }
         } else if (ev === 'done') {
@@ -524,7 +532,11 @@
       };
       var pump = function () {
         return reader.read().then(function (r) {
-          if (r.done) return;
+          if (r.done) {
+            // 桌面端偶发漏收 done 时，使用 meta 中已提前送达的树数据完成回答和永久入口。
+            if (!done && metaVisual) finish(collect || '查询完成，请查看世系图。', [], metaVisual.tree, metaVisual.ownerIsSelf !== false, metaVisual.closest || [], metaVisual.closestTree || null);
+            return;
+          }
           buf += dec.decode(r.value, { stream: true });
           var idx;
           while ((idx = buf.indexOf('\n\n')) !== -1) {
