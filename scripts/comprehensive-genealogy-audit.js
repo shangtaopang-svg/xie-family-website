@@ -50,13 +50,14 @@ function extractCourtesy(person, pages) {
   const name = clean(person.name);
   if (!name || name.length < 2) return [];
   const candidates = [];
-  // “某公字汝满公生”“某字景诰公生”是谱文中最稳定的字号格式。
-  const re = new RegExp(`${escReg(name)}(?:公)?字([一-龥]{1,6})(?=(?:公(?:生|卒|配|墓|子|女)|号|生|卒|配|仕|任|居|葬|迁|墓|享|以|，|。))`, 'g');
+  // 族谱中“字”通常紧跟一至两个字；不能贪多，否则会把“字汝发，业儒”
+  // 误读成“汝发业儒”，也会把“字启祥，系云生公”连成一段。
+  const re = new RegExp(`${escReg(name)}(?:公)?字([一-龥]{1,2})(?=(?:公(?:生|卒|配|墓|子|女)|号|生|卒|配|仕|任|居|葬|迁|墓|享|以|业|系|源|，|。))`, 'g');
   for (const page of pages) {
     let m;
     while ((m = re.exec(page.compact))) {
       const value = m[1].replace(/公$/, '');
-      if (value && value.length <= 4) candidates.push({ value, page: page.page });
+      if (value && value.length <= 2 && value !== '诰封') candidates.push({ value, page: page.page });
     }
   }
   const values = [...new Set(candidates.map((x) => x.value))];
@@ -158,6 +159,16 @@ function buildReport() {
     return { p, hints, courtesy, sourceVital: sourceVitals[String(p.id)] || null };
   });
   const courtesyCandidates = rows.filter((r) => !nonEmpty(r.p.courtesy_name) && r.courtesy.length === 1);
+  const byNameGeneration = new Map();
+  for (const p of people) {
+    const key = `${clean(p.name)}|${p.generation_num || ''}`;
+    if (!byNameGeneration.has(key)) byNameGeneration.set(key, []);
+    byNameGeneration.get(key).push(p);
+  }
+  const safeCourtesyCandidates = courtesyCandidates.filter((r) => {
+    const key = `${clean(r.p.name)}|${r.p.generation_num || ''}`;
+    return (byNameGeneration.get(key) || []).length === 1;
+  });
   const sourceVitalCandidates = rows.filter((r) => r.sourceVital && (!nonEmpty(r.p.birth_date) || !nonEmpty(r.death_date)));
   const sourceVitalParentConflicts = rows.filter((r) => nonEmpty(r.p.vital_parent_conflict));
   const sourceDetailCandidates = rows.filter((r) => !nonEmpty(r.p.biography) && (r.hints.hasBirth || r.hints.hasDeath || r.hints.hasBurial || r.hints.hasSpouse));
@@ -208,7 +219,7 @@ function buildReport() {
   }
   add('');
   add('## 6. 谱文可唯一提取、但当前字号为空的候选');
-  add(`共 ${courtesyCandidates.length} 条。下面只列出单一候选；多候选或同名冲突不自动写入：`);
+  add(`共 ${courtesyCandidates.length} 条；其中 ${safeCourtesyCandidates.length} 条同时满足“字号格式明确、姓名+世次唯一”，可进入人工确认后的安全写入批次。多候选或同名冲突不自动写入：`);
   for (const r of courtesyCandidates) add(`- ${recordLabel(r.p)}：字/号候选“${r.courtesy[0].value}”，谱页 ${r.courtesy[0].pages.join('、') || '未标页'}`);
   add('');
   add('## 7. 谱文可追溯但当前生卒字段为空的候选');
@@ -227,16 +238,16 @@ function buildReport() {
   }
   add('');
   add('## 9. 已确认的重点问题');
-  add('- 文杲：上册/下册均载“字克”，当前字段缺失。');
+  add(`- 文杲：上册/下册均载“字克”，当前字段${nonEmpty(people.find((p) => p.name === '文杲')?.courtesy_name) ? '已补入' : '仍缺失'}。`);
   add('- 云略：上册载“字汝满”，且配赵岸王氏，生康熙四年八月廿三日、卒康熙三十三年四月十七日，合葬本里假山脚之原。');
   add('- 锡洛：上册第86页载“字景诰”，并有乾隆五十一年生、道光十四年卒、配罗氏、子三明启明卿明远、女一等信息。');
-  add('- 世荣：下册第25页载“绍宗之子世荣，早逝，无传”；当前状态虽为已故，但简介未呈现“早逝”。');
+  add(`- 世荣：下册第25页载“绍宗之子世荣，早逝，无传”；当前状态虽为已故，简介${people.find((p) => p.name === '世荣')?.biography?.includes('早逝') ? '已呈现' : '仍未呈现'}“早逝”。`);
   add('');
   add('## 10. 审查结论');
-  add('当前数据的父子结构和出继/入继关系已有大量人工核定，但“所有族人字段已完整录入”尚未成立。下一步应先写入第6、7节中可唯一确认的候选，再对第8节逐条按 PDF 版面复核；同名、重复世次、配偶原始谱载与入赘不能自动合并。');
+  add('当前数据的父子结构和出继/入继关系已完成全量结构校验；字段补录采用分批审核：第6节安全候选先逐条确认后写入，第7节生卒候选保留来源与父 ID 冲突标记，第8节必须回到 PDF 原页逐条复核。任何同名、重复世次、配偶原始谱载和入赘记录均不自动合并。');
   add('');
   add('本报告由 `scripts/comprehensive-genealogy-audit.js` 生成，重新运行可复核。');
-  return { people, adoption, duplicates, courtesyCandidates, sourceVitalCandidates, sourceDetailCandidates, rows, report: lines.join('\n') + '\n' };
+  return { people, adoption, duplicates, courtesyCandidates, safeCourtesyCandidates, sourceVitalCandidates, sourceDetailCandidates, rows, report: lines.join('\n') + '\n' };
 }
 
 if (require.main === module) {
@@ -260,6 +271,22 @@ if (require.main === module) {
     return [p.id, p.name, p.generation_num, p.father_id, father ? father.name : '', p.gender, p.is_alive, p.courtesy_name, p.birth_date, p.death_date, p.spouse_ids, p.burial_place, hints.pages.join('、'), hints.hasBirth ? '有' : '', hints.hasDeath ? '有' : '', hints.hasSpouse ? '有' : '', hints.hasBurial ? '有' : '', sourceVital && sourceVital.birth_date || '', sourceVital && sourceVital.death_date || '', p.vital_parent_conflict || '', duplicateNames.has(`${p.id}`) ? '是' : '', flags.join('；')];
   });
   fs.writeFileSync(CSV_OUT, [csvHeader, ...csvRows].map((row) => row.map(csvEscape).join(',')).join('\r\n') + '\r\n', 'utf8');
+  const safeOut = path.join(ROOT, '交付_下枫槎谢氏世系图', '全面审查安全写入清单_20260823.csv');
+  const safeRows = result.safeCourtesyCandidates.map(({ p, courtesy }) => [
+    '字号候选', p.id, p.name, p.generation_num, p.father_id || '', courtesy[0].value,
+    courtesy[0].pages.join('、'), '需人工确认原页后写入'
+  ]);
+  fs.writeFileSync(safeOut, [['类别','ID','姓名','世次','父ID','候选内容','谱页','处理状态'], ...safeRows].map((row) => row.map(csvEscape).join(',')).join('\r\n') + '\r\n', 'utf8');
+  const reviewOut = path.join(ROOT, '交付_下枫槎谢氏世系图', '全面审查PDF逐页复核清单_20260823.csv');
+  const reviewRows = result.rows
+    .filter(({ p, hints, sourceVital }) => (sourceVital && (p.vital_parent_conflict || !nonEmpty(p.birth_date) || !nonEmpty(p.death_date))) || (!nonEmpty(p.biography) && (hints.hasBirth || hints.hasDeath || hints.hasBurial || hints.hasSpouse)))
+    .map(({ p, hints, sourceVital }) => [
+      p.id, p.name, p.generation_num, p.father_id || '', hints.pages.join('、'),
+      sourceVital && sourceVital.birth_date || '', sourceVital && sourceVital.death_date || '',
+      [hints.hasBirth && '生', hints.hasDeath && '卒', hints.hasBurial && '葬', hints.hasSpouse && '配', p.vital_parent_conflict && '父ID冲突'].filter(Boolean).join('、'),
+      '必须回到PDF原页确认后处理'
+    ]);
+  fs.writeFileSync(reviewOut, [['ID','姓名','世次','当前父ID','谱页候选','出生候选','卒年候选','核查类型','处理状态'], ...reviewRows].map((row) => row.map(csvEscape).join(',')).join('\r\n') + '\r\n', 'utf8');
   console.log(JSON.stringify({
     output: OUT,
     detailOutput: CSV_OUT,
@@ -267,8 +294,11 @@ if (require.main === module) {
     adoptionPairs: result.adoption.pairs.length,
     duplicateGroups: result.duplicates.length,
     courtesyCandidates: result.courtesyCandidates.length,
+    safeCourtesyCandidates: result.safeCourtesyCandidates.length,
     sourceVitalCandidates: result.sourceVitalCandidates.length,
     sourceDetailCandidates: result.sourceDetailCandidates.length,
+    safeOutput: safeOut,
+    reviewOutput: reviewOut,
   }, null, 2));
 }
 
