@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>枫槎谢氏宗谱 · 族谱查询</title>
-  <meta name="description" content="基于枫槎谢氏宗谱上下册整理的可编辑树状世系图交付界面">
-  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260823-01">
+  <title>枫槎谢氏宗谱 · 交付管理后台</title>
+  <meta name="description" content="枫槎谢氏宗谱交付版管理后台，可编辑世系关系和人物详情">
+  <link rel="stylesheet" href="styles.css?v=20260823-01">
 </head>
 <body>
   <div id="app" class="app-shell">
@@ -14,7 +14,7 @@
         <div class="brand-mark">谢</div>
         <div>
           <h1>枫槎谢氏宗谱</h1>
-          <p>独立交付版 · 可编辑世系图</p>
+          <p>交付管理后台 · 世系与人物编辑</p>
         </div>
       </div>
       <div class="source-badge">
@@ -32,7 +32,7 @@
 
     <section class="notice-bar">
       <span class="notice-icon">◆</span>
-      <span>这是独立交付界面，编辑内容不会修改原网站。附图仅作为卡片式树状布局参考。</span>
+      <span>这是独立管理后台，修改会保存在当前浏览器；请定期导出 JSON 备份。原网站后台已单独存档，不在公共网站呈现。</span>
       <button class="notice-close" aria-label="关闭提示" data-action="dismiss-notice">×</button>
     </section>
 
@@ -130,7 +130,7 @@
           <div id="query-stats" class="query-stat-grid" aria-label="族谱统计"></div>
 
           <section class="query-section query-audit-section" aria-label="数据审查状态">
-            <div class="query-section-head"><div><span class="query-kicker">SOURCE REVIEW</span><h4>数据审查状态</h4></div><a href="../交付_下枫槎谢氏世系图/数据核查报告_20260823.md" target="_blank" rel="noopener">查看审查报告 ↗</a></div>
+            <div class="query-section-head"><div><span class="query-kicker">SOURCE REVIEW</span><h4>数据审查状态</h4></div><a href="数据核查报告_20260823.md" target="_blank" rel="noopener">查看审查报告 ↗</a></div>
             <div id="query-audit" class="query-audit-grid"></div>
           </section>
 
@@ -175,7 +175,7 @@
   </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="../交付_下枫槎谢氏世系图/data.js"></script>
-<script src="../交付_下枫槎谢氏世系图/app.js?v=20260823-01"></script>
+  <script src="data.js"></script>
+<script src="app.js?v=20260823-01"></script>
 </body>
 </html>

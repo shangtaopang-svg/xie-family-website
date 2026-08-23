@@ -5693,3 +5693,8 @@ section a[href*="audio"] {
   .admin-modal div[style*="color:#333"] { color: #c9c5bf !important; }
   .admin-modal div[style*="accent-orange-dim"] { background: rgba(212,121,58,0.15) !important; }
 }
+/* 公共网站不呈现旧管理后台入口；后台文件已移入网站原页面存档目录。 */
+a[href*="admin.html"],
+li:has(> a[href*="admin.html"]) {
+  display: none !important;
+}
