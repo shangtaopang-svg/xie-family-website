@@ -426,7 +426,8 @@
               var v = person.is_alive;
               person.is_alive = (v === '是' || v === '在世' || v === '健在' || v === 'true' || v === '1') ? '是' : '否';
             } else {
-              person.is_alive = '是'; // Default to alive
+              // 空白状态必须保留为未标注，不能默认成在世，避免把未核定人员误着彩色。
+              person.is_alive = '';
             }
 
             // Convert generation_num to number
