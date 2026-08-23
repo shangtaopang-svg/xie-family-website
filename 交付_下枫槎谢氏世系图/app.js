@@ -1401,6 +1401,58 @@
     if (state.query.open) renderQueryDashboard();
   }
 
+  function mobileBackOneLevel() {
+    const globalNav = $('#global-nav-overlay');
+    if (globalNav && !globalNav.hidden) {
+      setGlobalNav(false);
+      return;
+    }
+    if (state.query.open) {
+      toggleQueryDrawer();
+      return;
+    }
+    if (state.immersive) {
+      toggleImmersive();
+      return;
+    }
+    if (state.selectedId !== null || state.mode !== 'view') {
+      flushDraftAutoSave();
+      state.selectedId = null;
+      state.mode = 'view';
+      state.draftId = null;
+      state.draftParentId = null;
+      renderDetail();
+      updateSelectedCardUI();
+      showToast('已返回当前世系图');
+      return;
+    }
+    if (state.view === 'main' && state.mainFocusId) {
+      focusMainBranch(null);
+      return;
+    }
+    if (state.view !== 'overview') {
+      switchView('overview');
+      return;
+    }
+    if (window.history.length > 1 && document.referrer && new URL(document.referrer, window.location.href).origin === window.location.origin) {
+      window.history.back();
+      return;
+    }
+    window.location.href = '../index.html';
+  }
+
+  function ensureMobileBackButton() {
+    if ($('#mobile-genealogy-back')) return;
+    const button = document.createElement('button');
+    button.id = 'mobile-genealogy-back';
+    button.className = 'mobile-genealogy-back';
+    button.type = 'button';
+    button.dataset.action = 'mobile-back';
+    button.setAttribute('aria-label', '返回上一级');
+    button.innerHTML = '<span aria-hidden="true">‹</span><strong>返回上一级</strong>';
+    document.body.appendChild(button);
+  }
+
   function clearQuery() {
     state.query.keyword = '';
     state.query.genFrom = '';
@@ -4442,6 +4494,7 @@
       case 'reset-map-position': resetMapPosition(); break;
       case 'toggle-compact': toggleCompact(); break;
       case 'toggle-query-drawer': toggleQueryDrawer(); break;
+      case 'mobile-back': mobileBackOneLevel(); break;
       case 'query-run': renderQuerySearchResults(); break;
       case 'query-clear': clearQuery(); break;
       case 'query-relation': renderQueryRelation(); break;
@@ -4763,6 +4816,7 @@
   }
 
   function init() {
+    ensureMobileBackButton();
     loadSaved();
     loadLayout();
     buildAdoptionIndex();

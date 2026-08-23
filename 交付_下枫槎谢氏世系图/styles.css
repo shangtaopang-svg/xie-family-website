@@ -365,6 +365,7 @@ html, body {
 }
 
 button, input, select, textarea { color-scheme: light; }
+.mobile-genealogy-back { display: none; }
 
 .app-header {
   min-height: 84px;
@@ -1226,6 +1227,32 @@ button, input, select, textarea { color-scheme: light; }
 .app-shell.is-query-open .query-toggle { background: #e7eee9; border-color: #6f8d7f; color: #3d6254; }.app-shell.is-immersive .query-drawer { display: none; }
 @media (max-width: 1100px) { .query-stat-grid { grid-template-columns: repeat(auto-fit, minmax(108px,1fr)); }.query-two-column { grid-template-columns: 1fr; } }
 @media (max-width: 680px) { .query-drawer { padding: 18px 14px 34px; }.query-stat-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }.query-audit-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }.query-form-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }.query-field-wide { grid-column: 1 / -1; }.query-result-row { grid-template-columns: 45px minmax(80px,1fr) 42px 58px; }.query-result-row > :nth-child(4), .query-result-row > :nth-child(5) { display: none; }.query-relation-form { grid-template-columns: 1fr; }.query-relation-mark { display: none; } }
+
+@media (max-width: 680px) {
+  .mobile-genealogy-back {
+    position: fixed;
+    z-index: 260;
+    left: max(14px, env(safe-area-inset-left));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 46px;
+    padding: 8px 17px 8px 12px;
+    border: 1px solid rgba(255,255,255,.4);
+    border-radius: 999px;
+    background: rgba(38,78,65,.96);
+    color: #fff;
+    box-shadow: 0 10px 28px rgba(27,48,41,.28);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .mobile-genealogy-back span { font-size: 27px; font-weight: 300; line-height: .7; transform: translateY(-1px); }
+  .mobile-genealogy-back strong { font-weight: 700; letter-spacing: .03em; white-space: nowrap; }
+  .mobile-genealogy-back:active { transform: scale(.96); background: #173f32; }
+}
 
 @container genealogy-main (max-width: 960px) {
   .tree-toolbar { align-items: stretch; flex-direction: column; gap: 9px; }
