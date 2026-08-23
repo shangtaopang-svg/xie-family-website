@@ -15,6 +15,8 @@
     '.sidebar .s-nav a:last-of-type{border-bottom:none}' +
     '.sidebar .s-nav a:hover{color:#04BF00;letter-spacing:0.12em}' +
     '.sidebar .s-nav a.active{color:#04BF00;letter-spacing:0.08em}' +
+    '.sidebar .s-nav .s-nav-section{display:block;padding:10px 24px 7px;border-top:2px solid var(--sb-border);color:var(--sb-sub);font-size:10px;font-weight:700;letter-spacing:.16em}' +
+    '.sidebar .s-nav a.s-admin-link{display:block !important;font-weight:700;background:rgba(155,91,34,.06)}' +
     '.sidebar .s-bottom{text-align:center;padding:16px 0 0;width:100%}' +
     '.sidebar .s-toggle{display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;user-select:none}' +
     '.sidebar .s-toggle .track{width:44px;height:22px;border-radius:11px;background:var(--sb-track);position:relative;transition:background 0.3s;flex:none}' +
@@ -80,8 +82,9 @@
       '<a href="' + p('vinyl-player') + '">🎵 枫槎留声机</a>' +
       '<a href="' + p('xie-collection') + '">📚 谢氏集萃</a>' +
       '<a href="' + p('contact') + '">✉️ 联系我们</a>' +
-      '<a href="' + p('admin') + '">🔐 网站内容管理后台</a>' +
-      '<a href="' + root() + '交付_下枫槎谢氏世系图/管理后台.html">📖 族谱管理后台</a>' +
+      '<span class="s-nav-section">管理入口</span>' +
+      '<a class="s-admin-link" id="site-content-admin-link" href="' + root() + 'pages/admin.html">🔐 网站内容管理后台</a>' +
+      '<a class="s-admin-link" id="genealogy-admin-link" href="' + root() + '交付_下枫槎谢氏世系图/管理后台.html">📖 族谱管理后台</a>' +
     '</nav>' +
     '<div class="s-bottom">' +
       '<div class="s-controls">' +
