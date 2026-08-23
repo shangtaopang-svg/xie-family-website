@@ -1319,7 +1319,16 @@
     const max = Math.max(1, ...Array.from(counts.values()));
     const from = Number(state.query.genFrom) || 0;
     const to = Number(state.query.genTo) || 9999;
-    container.innerHTML = generations.map((generation) => {
+    const ancientGenerations = generations.filter((generation) => generation >= 1 && generation <= 65);
+    let eraBracket = '';
+    if (ancientGenerations.length) {
+      const firstIndex = generations.indexOf(ancientGenerations[0]);
+      const lastIndex = generations.indexOf(ancientGenerations[ancientGenerations.length - 1]);
+      const left = 8 + firstIndex * 32;
+      const width = (lastIndex - firstIndex) * 32 + 28;
+      eraBracket = `<div class="query-era-bracket" style="left:${left}px;width:${width}px" aria-label="炎帝远古世系，闭区间[1,65]"><i class="era-bracket-line"></i><b class="era-bracket-arrow">▶</b><strong>炎帝远古世系</strong><b class="era-bracket-arrow">◀</b><i class="era-bracket-line"></i></div>`;
+    }
+    container.innerHTML = eraBracket + generations.map((generation) => {
       const count = counts.get(generation) || 0;
       const active = generation >= from && generation <= to && (from || to < 9999);
       const height = Math.max(8, Math.round((count / max) * 92));
