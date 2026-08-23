@@ -677,6 +677,20 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   flex-shrink: 0;
 }
 .ai-tree-back:hover, .ai-closest-back:hover { background: rgba(255,255,255,.28); }
+.ai-tree-fs {
+  border: 1px solid rgba(255,255,255,.45);
+  border-radius: 999px;
+  background: rgba(255,255,255,.14);
+  color: #fff;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font-size: 16px;
+  line-height: 28px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.ai-tree-fs:hover { background: rgba(255,255,255,.28); }
 @media (max-width: 768px) {
   .ai-tree-headbtns { gap: 5px; }
   .ai-tree-back, .ai-closest-back { min-height: 28px; padding: 0 8px; font-size: 11px; line-height: 26px; }
@@ -1129,4 +1143,25 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   min-height: 0;
   display: flex;
   flex-direction: column;
+}
+
+/* 世系图全屏：桌面端扩大到整个视口，手机端也保持可滚动的完整长图。 */
+#ai-tree-overlay.ai-tree-fs {
+  padding: 0;
+  background: #0f1116;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+#ai-tree-overlay.ai-tree-fs .ai-tree-modal {
+  width: 100vw;
+  max-height: none;
+  height: 100vh;
+  border-radius: 0;
+  animation: none;
+  box-shadow: none;
+}
+#ai-tree-overlay.ai-tree-fs .ai-tree-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }

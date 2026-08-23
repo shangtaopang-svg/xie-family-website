@@ -1539,13 +1539,51 @@
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
     modal.setAttribute('aria-labelledby', 'root-trace-title');
-    modal.innerHTML = `<div class="root-trace-shell"><header class="root-trace-head"><div><span class="eyebrow">ROOT LINEAGE</span><h3 id="root-trace-title">寻根直线世系</h3><p id="root-trace-summary"></p></div><button class="root-trace-close" data-action="close-root-trace" aria-label="关闭寻根世系">×</button></header><div id="root-trace-content" class="root-trace-content"></div></div>`;
+    modal.innerHTML = `<div class="root-trace-shell"><header class="root-trace-head"><div><span class="eyebrow">ROOT LINEAGE</span><h3 id="root-trace-title">寻根直线世系</h3><p id="root-trace-summary"></p></div><div class="root-trace-head-actions"><button id="root-trace-fullscreen" class="root-trace-fullscreen" data-action="toggle-root-trace-fullscreen" aria-label="全屏查看寻根世系">⛶ 全屏</button><button class="root-trace-close" data-action="close-root-trace" aria-label="关闭寻根世系">×</button></div></header><div id="root-trace-content" class="root-trace-content"></div></div>`;
     document.body.appendChild(modal);
+    if (!window._rootTraceFullscreenBound) {
+      document.addEventListener('fullscreenchange', updateRootTraceFullscreenButton);
+      window._rootTraceFullscreenBound = true;
+    }
+  }
+
+  function updateRootTraceFullscreenButton() {
+    const button = $('#root-trace-fullscreen');
+    const modal = $('#root-trace-modal');
+    if (!button || !modal) return;
+    const active = document.fullscreenElement === modal || modal.classList.contains('is-browser-fullscreen');
+    button.textContent = active ? '⛶ 退出全屏' : '⛶ 全屏';
+    button.setAttribute('aria-label', active ? '退出全屏查看寻根世系' : '全屏查看寻根世系');
+  }
+
+  async function toggleRootTraceFullscreen() {
+    const modal = $('#root-trace-modal');
+    if (!modal) return;
+    try {
+      if (document.fullscreenElement === modal) {
+        await document.exitFullscreen();
+      } else if (document.fullscreenElement) {
+        await document.exitFullscreen();
+        if (modal.requestFullscreen) await modal.requestFullscreen();
+      } else if (modal.requestFullscreen) {
+        await modal.requestFullscreen();
+      } else {
+        modal.classList.toggle('is-browser-fullscreen');
+      }
+    } catch (error) {
+      // 部分手机浏览器不允许脚本调用原生全屏，使用铺满视口的兼容模式。
+      modal.classList.toggle('is-browser-fullscreen');
+    }
+    updateRootTraceFullscreenButton();
   }
 
   function closeRootTrace() {
     const modal = $('#root-trace-modal');
     if (!modal) return;
+    if (document.fullscreenElement === modal && document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    }
+    modal.classList.remove('is-browser-fullscreen');
     modal.hidden = true;
     document.body.classList.remove('is-root-trace-open');
   }
@@ -5015,6 +5053,7 @@
       case 'query-relation': renderQueryRelation(); break;
       case 'query-locate': selectPerson(id, { forceRender: true }); break;
       case 'root-trace': openRootTrace(id); break;
+      case 'toggle-root-trace-fullscreen': toggleRootTraceFullscreen(); break;
       case 'close-root-trace': closeRootTrace(); break;
       case 'close-person-disambiguation': closePersonDisambiguation(); break;
       case 'pick-person-disambiguation': choosePersonDisambiguation(id); break;

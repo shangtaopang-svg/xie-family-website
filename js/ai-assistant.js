@@ -1155,6 +1155,7 @@
       '  <div class="ai-tree-head"><span class="ai-tree-title">🌳 世系图 · 从炎帝神农氏到' + esc(last.name) + '</span>' +
       '    <span class="ai-tree-headbtns">' +
       '      <button type="button" class="ai-tree-back" aria-label="返回族谱查询" title="返回族谱查询">↩ 返回族谱查询</button>' +
+      '      <button type="button" class="ai-tree-fs" aria-label="全屏查看世系图" title="全屏查看世系图">⛶</button>' +
       '      <button type="button" class="ai-tree-stop" aria-label="暂停口播" title="暂停口播" hidden>⏸</button>' +
       '      <button type="button" class="ai-tree-sound" aria-label="' + (ttsMuted ? '打开声音' : '静音') + '" title="' + (ttsMuted ? '打开声音' : '静音') + '">' + (ttsMuted ? '🔇' : '🔊') + '</button>' +
       '      <button type="button" class="ai-tree-close" aria-label="关闭">✕</button>' +
@@ -1190,6 +1191,8 @@
     if (treeSoundBtn) treeSoundBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleTts(); });
     var treeBackBtn = ov.querySelector('.ai-tree-back');
     if (treeBackBtn) treeBackBtn.addEventListener('click', function (e) { e.stopPropagation(); returnToGenealogyQuery(); });
+    var treeFsBtn = ov.querySelector('.ai-tree-fs');
+    if (treeFsBtn) treeFsBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleTreeFullscreen(); });
     var treeStopBtn = ov.querySelector('.ai-tree-stop');
     if (treeStopBtn) treeStopBtn.addEventListener('click', function (e) {
       e.stopPropagation();
@@ -1212,6 +1215,19 @@
   }
   function closeTreeOverlay() {
     if (treeOverlay) { try { treeOverlay.parentNode.removeChild(treeOverlay); } catch (e) {} treeOverlay = null; }
+  }
+
+  function toggleTreeFullscreen() {
+    var ov = treeOverlay || document.getElementById('ai-tree-overlay');
+    if (!ov) return;
+    var fs = ov.classList.toggle('ai-tree-fs');
+    var btn = ov.querySelector('.ai-tree-fs');
+    if (btn) {
+      btn.textContent = fs ? '🗗' : '⛶';
+      btn.title = fs ? '退出全屏' : '全屏查看世系图';
+      btn.setAttribute('aria-label', fs ? '退出全屏' : '全屏查看世系图');
+      btn.setAttribute('aria-pressed', String(fs));
+    }
   }
 
   // 完整世系快捷项的出继/入继关系图：将服务端附在目标节点上的双亲资料
