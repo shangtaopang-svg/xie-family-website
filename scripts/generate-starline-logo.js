@@ -130,48 +130,119 @@ const nodeMarkup = people
 
 const metadata = `source=data.js; people=${people.length}; roots=${roots.length}; generationRows=${generationValues.length}; layout=parent-child leaf-span; generated=2026-08-23`;
 
-function makeSvg({ lockup = false } = {}) {
-  const labelY = viewHeight - 1.2;
-  const labelX = lockup ? viewWidth + 10 : viewWidth / 2;
-  const width = lockup ? viewWidth + 64 : viewWidth;
-  const height = lockup ? viewHeight + 2 : viewHeight + 5;
-  const mapTransform = lockup ? 'translate(0 0)' : 'translate(0 0)';
-  const textMarkup = lockup
-    ? `<g transform="translate(${viewWidth + 8} 0)"><text x="0" y="${viewHeight / 2 - 2}" class="brand">枫槎谢氏</text><text x="0" y="${viewHeight / 2 + 3}" class="sub">星脉图</text><text x="0" y="${viewHeight / 2 + 9}" class="meta">${people.length}颗星 · ${generationValues.length}代行</text></g>`
-    : `<text x="${labelX}" y="${labelY}" text-anchor="middle" class="brand">枫槎谢氏 · 星脉图</text>`;
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<!-- ${metadata} -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">
-  <title id="title">枫槎谢氏·星脉图</title>
-  <desc id="desc">根据枫槎谢氏独立世系图真实父子数据压缩生成的像素星脉标志。</desc>
-  <style>
+function baseStyles() {
+  return `
     .bg { fill: #090c0b; }
     .edge { fill: none; stroke: #315548; stroke-width: .18; opacity: .34; shape-rendering: crispEdges; }
     .node { shape-rendering: crispEdges; }
     .root { filter: drop-shadow(0 0 1.1px #d6b56d); }
-    .brand { fill: #f1eadb; font-family: "Noto Serif SC", "Source Han Serif SC", SimSun, serif; font-size: 3.6px; letter-spacing: .35px; }
-    .sub { fill: #c9a464; font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif; font-size: 2.8px; letter-spacing: .6px; }
-    .meta { fill: #89928e; font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif; font-size: 1.9px; }
-  </style>
-  <rect class="bg" x="0" y="0" width="${width}" height="${height}"/>
-  <g transform="${mapTransform}">
-    <g class="edge">${edgeMarkup}</g>
-    <g>${nodeMarkup}</g>
-  </g>
-  ${textMarkup}
-</svg>
-`;
+    .brand { fill: #f1eadb; font-family: "Noto Serif SC", "Source Han Serif SC", SimSun, serif; letter-spacing: .35px; }
+    .sub { fill: #c9a464; font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif; letter-spacing: .6px; }
+    .meta { fill: #89928e; font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif; }
+  `;
 }
 
-fs.writeFileSync(path.join(outputDir, '枫槎谢氏-星脉图-主标.svg'), makeSvg({ lockup: false }), 'utf8');
-fs.writeFileSync(path.join(outputDir, '枫槎谢氏-星脉图-横版.svg'), makeSvg({ lockup: true }), 'utf8');
+function makeRawSvg() {
+  const width = viewWidth + 6;
+  const height = viewHeight + 5;
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!-- ${metadata}; variant=full-topology -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">
+  <title id="title">枫槎谢氏·星脉图·完整展开</title>
+  <desc id="desc">完整保留真实父子布局的像素星脉图。</desc>
+  <style>${baseStyles()}</style>
+  <rect class="bg" x="0" y="0" width="${width}" height="${height}"/>
+  <g class="edge">${edgeMarkup}</g><g>${nodeMarkup}</g>
+  <text x="${width / 2}" y="${height - 1.3}" text-anchor="middle" class="brand" font-size="3.6">枫槎谢氏 · 星脉图 · 完整展开</text>
+</svg>`;
+}
+
+function compactCells(columns, rows) {
+  const cells = new Map();
+  const maxX = Math.max(...[...positions.values()]);
+  const maxY = generationValues.length + 2;
+  for (const person of people) {
+    const point = pointFor(person);
+    const column = Math.max(0, Math.min(columns - 1, Math.floor((point.x - 3) / maxX * columns)));
+    const row = Math.max(0, Math.min(rows - 1, Math.floor((point.y - 3) / (maxY - 3) * rows)));
+    const key = `${column}:${row}`;
+    const cell = cells.get(key) || { count: 0, colors: new Map(), root: false };
+    cell.count += 1;
+    const color = colorFor(person);
+    cell.colors.set(color, (cell.colors.get(color) || 0) + 1);
+    cell.root = cell.root || !person.father_id || person.highlight;
+    cells.set(key, cell);
+  }
+  return [...cells.entries()].map(([key, cell]) => {
+    const [column, row] = key.split(':').map(Number);
+    const color = [...cell.colors.entries()].sort((a, b) => b[1] - a[1])[0][0];
+    return { column, row, count: cell.count, color, root: cell.root };
+  });
+}
+
+function compactMarkup({ columns, rows, x, y, width, height }) {
+  const cells = compactCells(columns, rows);
+  return cells.map(cell => {
+    const cellWidth = width / columns;
+    const cellHeight = height / rows;
+    const size = Math.max(.7, Math.min(cellWidth, cellHeight) * (cell.root ? .86 : .62));
+    const opacity = Math.min(.96, .35 + cell.count * .12);
+    const px = x + cell.column * cellWidth + (cellWidth - size) / 2;
+    const py = y + cell.row * cellHeight + (cellHeight - size) / 2;
+    return `<rect x="${px.toFixed(2)}" y="${py.toFixed(2)}" width="${size.toFixed(2)}" height="${size.toFixed(2)}" fill="${cell.color}" opacity="${opacity.toFixed(2)}"><title>${cell.count} 条真实族人记录聚合于此</title></rect>`;
+  }).join('');
+}
+
+function makeSquareSvg() {
+  const width = 128;
+  const height = 128;
+  const map = compactMarkup({ columns: 72, rows: 72, x: 18, y: 11, width: 92, height: 92 });
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!-- ${metadata}; variant=square-density-map; source-cells=72x72 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">
+  <title id="title">枫槎谢氏·星脉图·方形主标</title>
+  <desc id="desc">由完整世系父子数据压缩成 72×72 像素密度图的方形家族标志。</desc>
+  <style>${baseStyles()} .brand { font-size: 4.8px; } .meta { font-size: 2.2px; }</style>
+  <rect class="bg" x="0" y="0" width="${width}" height="${height}"/>
+  <rect x="17.5" y="10.5" width="93" height="93" fill="none" stroke="#315548" stroke-width=".35" opacity=".75"/>
+  <g>${map}</g>
+  <text x="64" y="115" text-anchor="middle" class="brand">枫槎谢氏</text>
+  <text x="64" y="121" text-anchor="middle" class="sub" font-size="2.7">星脉图 · 真实世系像素标</text>
+</svg>`;
+}
+
+function makeHeaderSvg() {
+  const width = 540;
+  const height = 180;
+  const map = compactMarkup({ columns: 108, rows: 42, x: 14, y: 56, width: 344, height: 88 });
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!-- ${metadata}; variant=header-density-map; source-cells=108x42 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">
+  <title id="title">枫槎谢氏·星脉图·网站横版</title>
+  <desc id="desc">适合网站页眉的 3:1 像素星脉标志，轮廓来自完整世系数据。</desc>
+  <style>${baseStyles()} .brand { font-size: 13px; } .sub { font-size: 8px; } .meta { font-size: 5px; }</style>
+  <rect class="bg" x="0" y="0" width="${width}" height="${height}"/>
+  <rect x="13" y="55" width="346" height="90" fill="none" stroke="#315548" stroke-width=".55" opacity=".75"/>
+  <g>${map}</g>
+  <g transform="translate(390 62)">
+    <text x="0" y="0" class="brand">枫槎谢氏</text>
+    <text x="0" y="18" class="sub">星脉图</text>
+    <text x="0" y="34" class="meta">${people.length}颗真实星点 · ${generationValues.length}代行</text>
+  </g>
+</svg>`;
+}
+
+fs.writeFileSync(path.join(outputDir, '枫槎谢氏-星脉图-主标.svg'), makeSquareSvg(), 'utf8');
+fs.writeFileSync(path.join(outputDir, '枫槎谢氏-星脉图-横版.svg'), makeHeaderSvg(), 'utf8');
+fs.writeFileSync(path.join(outputDir, '枫槎谢氏-星脉图-完整展开.svg'), makeRawSvg(), 'utf8');
 const readme = [
   '# 枫槎谢氏·星脉图',
   '',
-  '这两份 SVG 根据 交付_下枫槎谢氏世系图/data.js 的真实父子关系生成。每个像素星点对应一条族人记录，横向位置由子树叶节点顺序计算，纵向位置由实际世代行计算；没有使用虚构的树形轮廓。',
+  '这三份 SVG 根据 交付_下枫槎谢氏世系图/data.js 的真实父子关系生成。原始布局使用父子树的叶节点顺序与实际世代行；方形与横版使用真实点位的像素密度归并，不使用虚构的树形轮廓。',
   '',
-  '- 主标：适合头像、印章、网站角标。',
-  '- 横版：适合网站页眉、宣传片片头和横幅。',
+  '- 主标：72×72 密度网格，适合头像、印章、网站角标。',
+  '- 横版：108×42 密度网格，约 3:1，适合网站页眉、宣传片片头和横幅。',
+  '- 完整展开：保留原始横向拓扑，适合族谱大屏和长幅展示。',
   '- 颜色：金色为祖源/根节点，墨绿色为枫槎支系，赭红色为特殊支系，灰色为其他记录。',
   '',
   `生成数据：${people.length} 条人物记录，${roots.length} 个根组件，${generationValues.length} 个有效世代行。`,
@@ -179,4 +250,4 @@ const readme = [
 ].join('\n');
 fs.writeFileSync(path.join(outputDir, 'README.md'), readme, 'utf8');
 
-console.log(JSON.stringify({ people: people.length, roots: roots.length, generationRows: generationValues.length, width: viewWidth, height: viewHeight }, null, 2));
+console.log(JSON.stringify({ people: people.length, roots: roots.length, generationRows: generationValues.length, square: '128x128', header: '540x180', full: `${viewWidth}x${viewHeight}` }, null, 2));
