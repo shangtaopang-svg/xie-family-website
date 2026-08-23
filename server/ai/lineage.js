@@ -540,7 +540,11 @@ function answerFullLineage(query, selfId, forcedTargetId) {
     node.adoptionDetail = {
       biologicalParent: ctx.biologicalParent,
       adoptiveParent: ctx.adoptiveParent,
-      source: ctx.source
+      source: ctx.source,
+      commonAncestor: ctx.commonAncestor,
+      siblings: ctx.siblings,
+      person: ctx.person,
+      target: ctx.target
     };
   });
   const ownerIsSelf = Number(targetId) === Number(selfId);

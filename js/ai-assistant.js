@@ -51,7 +51,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v81'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v82'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -433,7 +433,14 @@
           panel.classList.remove('ai-selection-mode');
           body.textContent = '已选择「' + c.name + '（' + c.desc + '）」，正在查询…';
           scrollBottom(true);
-          chat(text, String(c.id), !!visualMode);
+          var routeText = text;
+          // 两个父系选项明确告诉服务端/结果区：按当前所选记录的父系直线上溯，
+          // 避免用户以为系统又把另一条出继链混进来。
+          if (visualMode && /炎帝|神农氏/.test(text) && c.adoptionRole) {
+            routeText = '请从炎帝神农氏开始，呈现' + c.name +
+              (c.adoptionRole === 'biological' ? '的亲生父系世系图' : '的承嗣父系世系图');
+          }
+          chat(routeText, String(c.id), !!visualMode);
         });
         body.appendChild(btn);
       });
@@ -1155,12 +1162,14 @@
     var target = (nodes || []).find(function (n) { return n && n.adoptionDetail; });
     if (!target || !target.adoptionDetail) return;
     var d = target.adoptionDetail;
-    var ctx = {
+    var ctx = d.context || {
       person: { name: target.name, shi: target.shi },
       biologicalParent: d.biologicalParent || null,
       adoptiveParent: d.adoptiveParent || null,
       source: d.source || target.adopt || '出继 / 入继关系',
-      siblings: []
+      commonAncestor: d.commonAncestor || null,
+      siblings: d.siblings || [],
+      target: d.target || null
     };
     showClosestOverlay([], { targetName: target.name, adoptions: [ctx] });
   }
