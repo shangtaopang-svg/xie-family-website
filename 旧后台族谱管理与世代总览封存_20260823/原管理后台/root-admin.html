@@ -6,11 +6,24 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title data-i18n="page.contact.title">联系我们 · 下枫槎谢氏</title>
+  <title data-i18n="page.admin.title">管理后台 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="../css/style.css?v=20260858">
-  <script defer src="../js/i18n.js"></script>
+  <link rel="stylesheet" href="../css/style.css?v=20260855">
+  <style>
+    /* 修复：窄桌面窗口(约901–1639px)下，居中的管理内容会被左侧固定导航(220px)遮住，
+       此区间内把内容左移220px避开导航；宽屏与手机布局保持不变（≥1640px时居中内容已自然位于导航右侧） */
+    @media (min-width: 901px) and (max-width: 1639px) {
+      .content > .page-wrap {
+        margin-left: 220px;
+        margin-right: auto;
+      }
+    }
+  </style>
+  <script defer src="../js/i18n.js?v=9"></script>
+  <script defer src="../js/file-store.js?v=6"></script>
+  <script defer src="../js/supabase.js?v=6"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/animejs@4/dist/anime.min.js"></script>
   <link rel="manifest" href="../manifest.json">
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
 </head>
@@ -89,7 +102,8 @@
           <li><a href="activities.html" data-i18n="nav.activities">家族活动</a></li>
           <li><a href="today.html" data-i18n="nav.today">今日下枫槎</a></li>
           <li><a href="reports.html" data-i18n="nav.reports">新闻报道</a></li>
-          <li><a href="contact.html" class="active" data-i18n="nav.contact">联系我们</a></li>
+          <li><a href="contact.html" data-i18n="nav.contact">联系我们</a></li>
+          <li><a href="admin.html" class="active" data-i18n="nav.admin" style="color:var(--accent-orange);">🔐 管理后台</a></li>
         </ul>
                 <!-- ===== 底部控制面板 ===== -->
         <div class="sidebar-controls">
@@ -111,119 +125,60 @@
 
   <!-- weather moved to hero on index -->
 
-  <div class="page-wrap">
+  <div class="page-wrap" style="max-width:1200px;">
     <div class="page-title">
-      <h2 data-i18n="nav.contact">联系我们</h2>
-      <p data-i18n="page.contact">沟通 · 交流 · 共建</p>
+      <h2 data-i18n="admin.panel.title">管理后台</h2>
+      <p data-i18n="page.admin">网站内容管理 · 权限验证</p>
     </div>
 
-    <div class="contact-grid">
-      <div>
-        <div class="section-title" style="text-align:left;"><h2 style="font-size:22px;">联系方式</h2><div class="divider" style="margin:8px 0;"></div></div>
-
-        <div class="contact-item">
-          <div class="icon">📍</div>
-          <div>
-            <h4>地址</h4>
-            <p>浙江省宁波市宁海县下枫槎村</p>
-            <p style="font-size:12px;color:var(--text-tertiary);">谢氏宗祠位于村中央</p>
-          </div>
-        </div>
-
-        <div class="contact-item">
-          <div class="icon">📞</div>
-          <div>
-            <h4>联系电话</h4>
-            <p>（信息更新中，敬请期待）</p>
-          </div>
-        </div>
-
-        <div class="contact-item">
-          <div class="icon">📧</div>
-          <div>
-            <h4>电子邮箱</h4>
-            <p>（信息更新中，敬请期待）</p>
-          </div>
-        </div>
-
-        <div class="contact-item">
-          <div class="icon">💬</div>
-          <div>
-            <h4>家族微信群</h4>
-            <p>请联系管理员邀请加入</p>
-          </div>
-        </div>
-
-        <div class="contact-item">
-          <div class="icon">👥</div>
-          <div>
-            <h4>家族理事会</h4>
-            <p>下枫槎谢氏家族理事会负责家族日常事务管理</p>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <div class="section-title" style="text-align:left;"><h2 style="font-size:22px;">在线留言</h2><div class="divider" style="margin:8px 0;"></div></div>
-        <form id="contact-form" class="glass-card" style="padding:24px;">
-          <div class="form-group">
-            <label for="name">姓名 *</label>
-            <input type="text" id="name" required placeholder="您的姓名">
-          </div>
-          <div class="form-group">
-            <label for="phone">联系方式（电话/微信）</label>
-            <input type="text" id="phone" placeholder="方便我们回复您">
-          </div>
-          <div class="form-group">
-            <label for="subject">主题 *</label>
-            <select id="subject">
-              <option>意见反馈</option>
-              <option>寻亲求助</option>
-              <option>投稿分享</option>
-              <option>活动报名</option>
-              <option>捐款咨询</option>
-              <option>族谱查询</option>
-              <option>其他</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="message">留言内容 *</label>
-            <textarea id="message" required placeholder="请详细描述您的需求或建议..."></textarea>
-          </div>
-          <button type="submit" class="btn btn-accent">提交留言</button>
-        </form>
-      </div>
+    <!-- ===== 登录框 ===== -->
+    <div id="admin-login-box" class="genealogy-lock">
+      <div class="lock-icon">🔐</div>
+      <h3 data-i18n="admin.login.title">管理员身份验证</h3>
+      <p data-i18n="admin.login.desc">请输入管理员密码以进入后台管理</p>
+      <form id="admin-login-form" action="javascript:void(0)">
+        <input type="password" id="admin-password" data-i18n="admin.password.placeholder" placeholder="请输入管理密码" autocomplete="off" onkeydown="if(event.key==='Enter')adminLogin()">
+        <p id="admin-error" class="error-msg" style="color:var(--accent-red);font-size:12px;display:none;margin-bottom:8px;"></p>
+        <button type="button" class="btn btn-accent" style="width:100%;" onclick="adminLogin()" data-i18n="btn.verify">验证身份</button>
+      </form>
+      <p style="margin-top:16px;font-size:12px;color:var(--text-tertiary);" data-i18n="admin.footnote">* 仅限家族管理员登录 · 未经授权禁止进入</p>
     </div>
 
-    <!-- 捐款通道 -->
-    <section id="donate" style="margin-top:50px;">
-      <div class="section-title"><h2>捐款通道</h2><div class="divider"></div><p>支持家族文化建设</p></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
-        <div class="glass-card" style="padding:30px;text-align:center;" class="fade-in">
-          <div style="font-size:48px;margin-bottom:12px;">🏛️</div>
-          <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:8px;font-size:17px;font-weight:500;">宗祠修缮基金</h3>
-          <p style="font-size:13px;color:var(--text-tertiary);margin-bottom:16px;">用于宗祠日常维护和修缮工程</p>
-          <p style="font-size:13px;color:var(--text-muted);">捐款方式正在建设中...</p>
-        </div>
-        <div class="glass-card" style="padding:30px;text-align:center;" class="fade-in">
-          <div style="font-size:48px;margin-bottom:12px;">📚</div>
-          <h3 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:8px;font-size:17px;font-weight:500;">教育基金</h3>
-          <p style="font-size:13px;color:var(--text-tertiary);margin-bottom:16px;">用于奖励优秀学子，资助困难学生</p>
-          <p style="font-size:13px;color:var(--text-muted);">捐款方式正在建设中...</p>
+    <!-- ===== 管理面板 ===== -->
+    <div id="admin-panel" class="admin-panel">
+      <div class="admin-header" style="margin-top:30px;">
+        <h3 style="font-size:16px;font-weight:500;letter-spacing:1px;" data-i18n="admin.panel.title">📊 网站内容管理</h3>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <span id="admin-login-name" data-i18n="admin.login.name" style="font-size:12px;color:var(--text-tertiary);">管理员</span>
+          <button id="admin-logout" class="logout-btn" data-i18n="admin.logout">退出登录</button>
         </div>
       </div>
-    </section>
-
-    <!-- 友情链接 -->
-    <section id="links" style="margin-top:50px;">
-      <div class="section-title"><h2>友情链接</h2><div class="divider"></div></div>
-      <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
-        <a href="http://www.cnbsz.org.cn" target="_blank" rel="noopener" class="btn" style="padding:10px 24px;font-size:13px;">宁波史志网（宁海地方志）</a>
-        <a href="http://www.ninghai.gov.cn" target="_blank" rel="noopener" class="btn" style="padding:10px 24px;font-size:13px;">宁海县人民政府</a>
-        <a href="#" target="_blank" rel="noopener" class="btn" style="padding:10px 24px;font-size:13px;">浙江谢氏宗亲会</a>
-        <a href="#" target="_blank" rel="noopener" class="btn" style="padding:10px 24px;font-size:13px;">中华谢氏联谊总会</a>
+      <div class="admin-body" style="display:flex;gap:24px;">
+        <!-- Sidebar -->
+        <div class="admin-sidebar">
+          
+          <div class="admin-sidebar-item active" data-module="members" onclick="switchModule('members')"><span class="icon">👥</span><span class="label" data-i18n="admin.members">成员管理</span></div>
+          <div class="admin-sidebar-item" data-module="genealogy" onclick="switchModule('genealogy')"><span class="icon">📖</span><span class="label">族谱管理</span></div>
+          <div class="admin-sidebar-item" data-module="genealogyOverview" onclick="switchModule('genealogyOverview')"><span class="icon">🌳</span><span class="label">世代总览</span></div>
+          <div class="admin-sidebar-item" data-module="ruzhuimarry" onclick="switchModule('ruzhuimarry')"><span class="icon">🔒</span><span class="label">入赘婚配</span></div>
+          <div class="admin-sidebar-item" data-module="activities" onclick="switchModule('activities')"><span class="icon">🎉</span><span class="label" data-i18n="admin.activities">活动管理</span></div>
+          <div class="admin-sidebar-item" data-module="news" onclick="switchModule('news')"><span class="icon">📢</span><span class="label" data-i18n="admin.news">消息发布</span></div>
+          <div class="admin-sidebar-item" data-module="honors" onclick="switchModule('honors')"><span class="icon">🏆</span><span class="label" data-i18n="admin.honors">村荣誉管理</span></div>
+          <div class="admin-sidebar-item" data-module="reports" onclick="switchModule('reports')"><span class="icon">📰</span><span class="label" data-i18n="admin.reports">新闻报道管理</span></div>
+          <div class="admin-sidebar-item" data-module="templeCarousel" onclick="switchModule('templeCarousel')"><span class="icon">🏛️</span><span class="label">宗祠轮播管理</span></div>
+          <div class="admin-sidebar-item" data-module="photos" onclick="switchModule('photos')"><span class="icon">🖼️</span><span class="label" data-i18n="admin.photos">照片管理</span></div>
+          <div class="admin-sidebar-item" data-module="videos" onclick="switchModule('videos')"><span class="icon">🎬</span><span class="label" data-i18n="admin.videos">视频管理</span></div>
+          <div class="admin-sidebar-item" data-module="xieCollection" onclick="switchModule('xieCollection')"><span class="icon">📚</span><span class="label">谢氏集萃</span></div>
+          <div class="admin-sidebar-item" data-module="music" onclick="switchModule('music')"><span class="icon">🎵</span><span class="label">背景音乐</span></div>
+          <div class="admin-sidebar-item" data-module="messages" onclick="switchModule('messages')"><span class="icon">💬</span><span class="label" data-i18n="admin.messages">留言管理</span></div>
+          <div class="admin-sidebar-item" data-module="visitors" onclick="switchModule('visitors')"><span class="icon">📋</span><span class="label">访客管理</span></div>
+          <div class="admin-sidebar-item" data-module="merit" onclick="switchModule('merit')"><span class="icon">🏛️</span><span class="label">功德管理</span></div>
+          <div class="admin-sidebar-item" data-module="settings" onclick="switchModule('settings')"><span class="icon">⚙️</span><span class="label" data-i18n="admin.settings">系统设置</span></div>
+        </div>
+        <!-- Content area -->
+        <div id="admin-content-area" class="admin-content-area" style="flex:1;min-width:0;"></div>
       </div>
-    </section>
+    </div>
   </div>
 
 </div>
@@ -232,18 +187,78 @@
     <div class="footer-inner">
       <div class="footer-section"><h4 data-i18n="footer.section1.title">下枫槎谢氏</h4><p data-i18n="footer.desc">宁海下枫槎村谢氏家族数字宗祠，致力于家族文化传承与宗亲联络。</p></div>
       <div class="footer-section"><h4 data-i18n="footer.section2.title">快捷链接</h4><a href="../index.html" data-i18n="nav.home">首页</a><a href="history.html" data-i18n="nav.history">家族历史</a><a href="genealogy.html">族谱查询</a>
-      <div class="footer-section"><h4 data-i18n="footer.section.content">内容</h4><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a><a href="news.html" data-i18n="nav.news">消息发布</a><a href="activities.html" data-i18n="nav.activities">家族活动</a><a href="today.html" data-i18n="nav.today">今日下枫槎</a><a href="reports.html" data-i18n="nav.reports">新闻报道</a></div>
+      <div class="footer-section"><h4 data-i18n="footer.section.content">内容</h4><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a><a href="news.html" data-i18n="nav.news">消息发布</a><a href="today.html" data-i18n="nav.today">今日下枫槎</a><a href="reports.html" data-i18n="nav.reports">新闻报道</a></div>
       <div class="footer-section"><h4 data-i18n="footer.section.contact">联系</h4><a href="contact.html" data-i18n="nav.contact">联系我们</a></div>
     </div>
     <div class="footer-bottom">
       <p data-i18n="footer.copyright">© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p>
     </div>
   </footer>
-
+  
   <a id="backBtn" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
-  <script defer src="../js/main.js?v=20260812"></script>
+  <!-- Inline critical admin function — works even if external JS fails to load -->
   <script>
+    if (localStorage.getItem("xie_admin_authed") === "true") { var lb=document.getElementById("admin-login-box"); var pn=document.getElementById("admin-panel"); if(lb)lb.style.display="none"; if(pn)pn.classList.add("active"); if(typeof loadFromSupabase==='function')loadFromSupabase(); if(location.hash&&location.hash.indexOf('genealogy-')>=0){var hid=parseInt(location.hash.replace('#genealogy-',''));(function ch(){if(typeof showEditForm==='function'){showEditForm('genealogy',hid);return;}setTimeout(ch,20);})();}else{if(typeof renderModule==='function')renderModule(currentModule||'members');if(typeof updateStats==='function')updateStats();} }
+  window.adminLogin = function adminLogin() {
+    var pwd = document.getElementById('admin-password');
+    var error = document.getElementById('admin-error');
+    var loginBox = document.getElementById('admin-login-box');
+    var panel = document.getElementById('admin-panel');
+    if (!pwd || !loginBox || !panel) return;
+
+    function enterPanel() {
+      loginBox.style.display = 'none';
+      panel.classList.add('active');
+      localStorage.setItem('xie_admin_authed', 'true');
+      if (typeof renderModule === 'function') {
+        renderModule(currentModule || 'members');
+        if (typeof updateStats === 'function') updateStats();
+      }
+      if (typeof loadFromSupabase === 'function') {
+        loadFromSupabase();
+      }
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/login', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 5000;
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        var data = JSON.parse(xhr.responseText);
+        if (data.ok) {
+          localStorage.setItem('xie_admin_token', data.token);
+          enterPanel();
+          return;
+        }
+      }
+      if (error) {
+        error.textContent = '密码错误，请重试';
+        error.style.display = 'block';
+      }
+    };
+    xhr.onerror = function() {
+      if (error) {
+        error.textContent = '无法连接服务器，请检查网络后重试';
+        error.style.display = 'block';
+      }
+    };
+    xhr.send(JSON.stringify({ password: pwd.value }));
+  };
+  // Hash routing: admin.html#genealogy-{id} opens edit form directly
+  if (location.hash && location.hash.indexOf('genealogy-') >= 0) {
+    var _hid = parseInt(location.hash.replace('#genealogy-', ''));
+    var _hc = 0, _ht = setInterval(function() {
+      if (typeof showEditForm === 'function') { showEditForm('genealogy', _hid); clearInterval(_ht); }
+      _hc++; if (_hc > 100) clearInterval(_ht);
+    }, 100);
+  }
+  </script>
+  <script defer src="../js/main.js?v=20260812"></script>
+  <script defer src="../js/admin.js?v=110"></script>
+  <script>
+    // Canvas animated background
     // bg-canvas removed
   </script>
     <audio id="bg-music" loop></audio>
@@ -257,20 +272,5 @@
     <a href="my.html" class="mb-tab"><span class="mb-tab-icon">👤</span><span class="mb-tab-label">我的</span></a>
   </nav>
 <script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();try{var u=sessionStorage.getItem("back_to");if(u&&u!==window.location.href&&!u.includes(location.host+"/?")){location.href=u;return}}catch(ex){}if(window.history.length>1)window.history.go(-1);else location.href="../entrance.html"});</script>
-<script>
-(function(){
-var b = document.createElement("div");
-b.id = "backTopBtn";
-b.innerHTML = "↑";
-b.style.cssText = "position:fixed;bottom:80px;right:16px;z-index:9999;width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.85);color:#0a0806;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;opacity:0.9;transition:opacity 0.3s;";
-b.onclick = function(){ window.scrollTo({top:0,behavior:"smooth"}); };
-window.addEventListener("scroll", function(){
-b.style.opacity = window.scrollY > 50 ? "0.9" : "0.3"; if(window.scrollY > 50){b.style.pointerEvents="auto"}else{b.style.pointerEvents="none"}
-});
-document.body.appendChild(b);
-})();
-</script><link rel="stylesheet" href="/css/ai.css?v=68">
-<script src="/js/ai-assistant.js?v=69" defer></script>
-<script defer src="../js/sidebar.js?v=8"></script>
 </body>
 </html>

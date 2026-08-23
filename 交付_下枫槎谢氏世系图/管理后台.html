@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>枫槎谢氏宗谱 · 交付管理后台</title>
   <meta name="description" content="枫槎谢氏宗谱交付版管理后台，可编辑世系关系和人物详情">
-  <link rel="stylesheet" href="styles.css?v=20260823-01">
+  <link rel="stylesheet" href="styles.css?v=20260823-03">
 </head>
 <body>
   <div id="app" class="app-shell">
@@ -23,6 +23,7 @@
         <span id="data-count-badge">加载中</span>
       </div>
       <div class="header-actions">
+        <a class="btn btn-ghost" href="../pages/genealogy.html" target="_blank" rel="noopener">查看前台</a>
         <button class="btn btn-ghost" data-action="import">导入 JSON</button>
         <button class="btn btn-ghost" data-action="export">导出 JSON</button>
         <button class="btn btn-primary" data-action="new-person">＋ 新增人物</button>
@@ -83,6 +84,7 @@
             <h2 id="tree-title">总览世系图</h2>
           </div>
           <div class="tree-toolbar-actions">
+            <button class="layout-btn global-nav-button" id="global-nav-toggle" data-action="toggle-global-nav" aria-expanded="false" aria-controls="global-nav-overlay">总导航</button>
             <button class="layout-btn" id="left-rail-toggle" data-action="toggle-left-rail">隐藏左栏</button>
             <button class="layout-btn" id="detail-toggle" data-action="toggle-detail-panel">隐藏详情</button>
             <button class="layout-btn immersive-toggle" id="immersive-toggle" data-action="toggle-immersive" aria-pressed="false">隐藏界面</button>
@@ -174,8 +176,17 @@
     </div>
   </div>
 
+  <div id="global-nav-overlay" class="global-nav-overlay" hidden>
+    <button class="global-nav-backdrop" data-action="close-global-nav" aria-label="关闭总导航"></button>
+    <section class="global-nav-panel" role="dialog" aria-modal="true" aria-labelledby="global-nav-title">
+      <header class="global-nav-head"><div><span>下枫槎村网站</span><h2 id="global-nav-title">总导航</h2></div><button class="global-nav-close" data-action="close-global-nav" aria-label="关闭总导航">×</button></header>
+      <nav class="global-nav-grid" aria-label="网站栏目">
+        <a href="../index.html"><strong>首页</strong><span>返回下枫槎村网站首页</span></a><a href="../pages/history.html"><strong>村史沿革</strong><span>村庄历史与人文脉络</span></a><a class="is-current" href="../pages/genealogy.html"><strong>族谱查询</strong><span>世系图、统计与亲缘查询</span></a><a href="../pages/members.html"><strong>族人信息</strong><span>族人资料与风采</span></a><a href="../pages/scenery.html"><strong>村庄风貌</strong><span>山水、村貌与生活</span></a><a href="../pages/activities.html"><strong>村务活动</strong><span>村务动态与文化活动</span></a><a href="../pages/honors.html"><strong>村庄荣誉</strong><span>荣誉成果与发展印记</span></a><a href="../pages/gallery.html"><strong>影像资料</strong><span>照片与珍贵影像</span></a><a href="../pages/contact.html"><strong>联系我们</strong><span>联系与到访信息</span></a>
+      </nav>
+    </section>
+  </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="data.js"></script>
-<script src="app.js?v=20260823-01"></script>
+<script src="app.js?v=20260823-03"></script>
 </body>
 </html>
