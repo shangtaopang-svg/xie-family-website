@@ -1038,8 +1038,8 @@
     try {
       const saved = JSON.parse(localStorage.getItem(LAYOUT_KEY) || 'null');
       if (!saved || typeof saved !== 'object') return;
-      state.layout.leftWidth = clamp(saved.leftWidth, 180, 420);
-      state.layout.detailWidth = clamp(saved.detailWidth, 280, 520);
+      state.layout.leftWidth = clamp(saved.leftWidth, 150, 520);
+      state.layout.detailWidth = clamp(saved.detailWidth, 240, 680);
       state.layout.leftHidden = Boolean(saved.leftHidden);
       state.layout.detailHidden = Boolean(saved.detailHidden);
     } catch (error) {
@@ -4775,12 +4775,31 @@
     const workspace = document.querySelector('.workspace');
     if (!workspace) return;
     $$('.panel-resizer').forEach((handle) => {
+      handle.title = handle.dataset.resizePanel === 'left'
+        ? '左右拖动调整左栏宽度；双击恢复默认宽度'
+        : '左右拖动调整详情栏宽度；双击恢复默认宽度';
       handle.addEventListener('pointerdown', (event) => {
         if (event.button !== 0) return;
         state.layout.resizing = true;
         state.layout.resizeSide = handle.dataset.resizePanel;
         state.layout.resizePointerId = event.pointerId;
         workspace.classList.add('is-resizing');
+        if (handle.setPointerCapture) handle.setPointerCapture(event.pointerId);
+        event.preventDefault();
+      });
+      handle.addEventListener('dblclick', (event) => {
+        if (handle.dataset.resizePanel === 'left') state.layout.leftWidth = 230;
+        if (handle.dataset.resizePanel === 'right') state.layout.detailWidth = 365;
+        applyLayout(true);
+        event.preventDefault();
+      });
+      handle.addEventListener('keydown', (event) => {
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        const step = event.shiftKey ? 30 : 10;
+        const direction = event.key === 'ArrowRight' ? 1 : -1;
+        if (handle.dataset.resizePanel === 'left') state.layout.leftWidth = clamp(state.layout.leftWidth + direction * step, 150, 520);
+        if (handle.dataset.resizePanel === 'right') state.layout.detailWidth = clamp(state.layout.detailWidth - direction * step, 240, 680);
+        applyLayout(true);
         event.preventDefault();
       });
     });
@@ -4795,8 +4814,8 @@
     document.addEventListener('pointermove', (event) => {
       if (!state.layout.resizing || event.pointerId !== state.layout.resizePointerId) return;
       const rect = workspace.getBoundingClientRect();
-      if (state.layout.resizeSide === 'left') state.layout.leftWidth = clamp(event.clientX - rect.left, 180, 420);
-      if (state.layout.resizeSide === 'right') state.layout.detailWidth = clamp(rect.right - event.clientX, 280, 520);
+      if (state.layout.resizeSide === 'left') state.layout.leftWidth = clamp(event.clientX - rect.left, 150, 520);
+      if (state.layout.resizeSide === 'right') state.layout.detailWidth = clamp(rect.right - event.clientX, 240, 680);
       applyLayout(false);
       event.preventDefault();
     }, { passive: false });
