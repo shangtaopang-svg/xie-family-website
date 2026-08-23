@@ -693,6 +693,20 @@ function resolveNameCandidates(query, selfId) {
   const cands = (byName.get(name) || []).map(p => {
     const fid = Number(p.father_id);
     const f = fid > 0 && byId.has(fid) ? byId.get(fid) : null;
+    const adoption = adoptionPairs.find(rel => rel.outId === Number(p.id) || rel.adoptiveId === Number(p.id));
+    let adoptionRole = '';
+    let biologicalFatherName = '';
+    let adoptiveFatherName = '';
+    let relationSource = '';
+    if (adoption) {
+      const outPerson = byId.get(adoption.outId);
+      const biologicalFather = outPerson && outPerson.father_id ? byId.get(Number(outPerson.father_id)) : null;
+      const adoptiveFather = byId.get(adoption.adoptiveParentId);
+      adoptionRole = adoption.outId === Number(p.id) ? 'biological' : 'adoptive';
+      biologicalFatherName = biologicalFather ? biologicalFather.name : '';
+      adoptiveFatherName = adoptiveFather ? adoptiveFather.name : '';
+      relationSource = adoption.source || '';
+    }
     return {
       id: Number(p.id),
       name: p.name,
@@ -700,6 +714,10 @@ function resolveNameCandidates(query, selfId) {
       fatherName: f ? f.name : null,
       brief: (p.biography || '').slice(0, 40),
       isSelf: Number(p.id) === Number(selfId),
+      adoptionRole,
+      biologicalFatherName,
+      adoptiveFatherName,
+      relationSource,
     };
   });
   return { name, candidates: cands };

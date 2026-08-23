@@ -51,7 +51,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v74'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v75'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -405,7 +405,10 @@
       body.textContent = '';
       var tip = document.createElement('div');
       tip.className = 'ai-verify-tip';
-      tip.textContent = '⚠️ 族谱中有 ' + (j.candidates ? j.candidates.length : 0) + ' 位「' + (j.name || '') + '」，请选择您要查询的哪一位：';
+      var hasAdoptionChoice = (j.candidates || []).some(function (c) { return !!c.adoptionRole; });
+      tip.textContent = hasAdoptionChoice
+        ? '🔗 「' + (j.name || '') + '」存在出继／入继关系。请选择要按亲生父系还是承嗣父系查询：'
+        : '⚠️ 族谱中有 ' + (j.candidates ? j.candidates.length : 0) + ' 位「' + (j.name || '') + '」，请选择您要查询的哪一位：';
       body.appendChild(tip);
       (j.candidates || []).forEach(function (c) {
         var btn = document.createElement('button');
@@ -415,7 +418,11 @@
         btn.style.width = '100%';
         btn.style.margin = '6px 0';
         btn.style.textAlign = 'left';
-        btn.textContent = c.name + ' · ' + (c.desc || '') + (c.fatherName ? '（父：' + c.fatherName + '）' : '') + (c.brief ? ' · ' + c.brief : '') + (c.isSelf ? '（本人）' : '');
+        var role = c.adoptionRole === 'biological' ? '亲生父系（出继记录）' : (c.adoptionRole === 'adoptive' ? '承嗣父系（入继记录）' : '');
+        var parentInfo = c.adoptionRole
+          ? '亲生父亲：' + (c.biologicalFatherName || '未详') + '；继父：' + (c.adoptiveFatherName || '未详')
+          : (c.fatherName ? '父亲：' + c.fatherName : '父亲未详');
+        btn.innerHTML = (role ? '<b>' + esc(role) + '</b><br>' : '') + '<strong>' + esc(c.name) + '</strong> · ' + esc(c.desc || '') + '<br><small>' + esc(parentInfo) + (c.relationSource ? '；' + esc(c.relationSource) : '') + (c.brief ? ' · ' + esc(c.brief) : '') + (c.isSelf ? '（本人）' : '') + '</small>';
         btn.addEventListener('click', function () {
           body.textContent = '已选择「' + c.name + '（' + c.desc + '）」，正在查询…';
           scrollBottom(true);
