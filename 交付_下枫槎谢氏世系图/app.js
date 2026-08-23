@@ -1681,13 +1681,51 @@
     modal.scrollTop = 0;
   }
 
+  function directAncestorTerm(person, distance) {
+    const sex = genderLabel(person) === '女' ? '母' : '父';
+    if (distance === 1) return sex === '母' ? '母亲' : '父亲';
+    if (distance === 2) return sex === '母' ? '外祖母/祖母' : '祖父';
+    if (distance === 3) return sex === '母' ? '曾祖母' : '曾祖父';
+    if (distance === 4) return sex === '母' ? '高祖母' : '高祖父';
+    return '第' + distance + '代祖先';
+  }
+
+  function collateralTerm(person, distanceFromCommon, direction) {
+    const sex = genderLabel(person) === '女' ? '女' : '男';
+    if (distanceFromCommon === 1 && direction === 'senior') return sex === '女' ? '姑母' : '叔伯';
+    if (distanceFromCommon === 2 && direction === 'junior') return sex === '女' ? '侄女/外甥女' : '侄子/外甥';
+    if (distanceFromCommon === 2 && direction === 'senior') return sex === '女' ? '姑祖母' : '叔祖父';
+    return '';
+  }
+
   function queryRelationText(p1, p2, path1, path2, common, d1, d2) {
-    if (path1.some((person) => String(personId(person)) === String(personId(p2)))) return `${text(p2.name)} 是 ${text(p1.name)} 的父系上一代`;
-    if (path2.some((person) => String(personId(person)) === String(personId(p1)))) return `${text(p1.name)} 是 ${text(p2.name)} 的父系上一代`;
-    if (common && d1 === 1 && d2 === 1) return '兄弟 / 姐妹关系';
-    if (common && d1 === d2) return '同辈旁系亲属';
-    if (common) return '旁系亲属（请结合谱页称谓核对）';
-    return '未找到共同父系路径';
+    // 所有距离均按实际 father_id / 承嗣归属链计数，不按“第几世”数字或列表相邻项推断父子。
+    if (path1.some((person) => String(personId(person)) === String(personId(p2)))) {
+      const distance = path1.findIndex((person) => String(personId(person)) === String(personId(p2)));
+      return `${text(p1.name)}称${text(p2.name)}为${directAncestorTerm(p2, distance)}（实际父系链相隔${distance}层）`;
+    }
+    if (path2.some((person) => String(personId(person)) === String(personId(p1)))) {
+      const distance = path2.findIndex((person) => String(personId(person)) === String(personId(p1)));
+      return `${text(p2.name)}称${text(p1.name)}为${directAncestorTerm(p1, distance)}（实际父系链相隔${distance}层）`;
+    }
+    if (common && d1 === 1 && d2 === 1) {
+      return `${text(p1.name)}与${text(p2.name)}为同父兄弟/姐妹，彼此称兄弟或姐妹`;
+    }
+    if (common && d1 === 1 && d2 > 1) {
+      const term = collateralTerm(p1, d1, 'senior') || '叔伯/姑母辈';
+      return `${text(p2.name)}称${text(p1.name)}为${term}（实际父系链相隔${d2 - d1}层）`;
+    }
+    if (common && d2 === 1 && d1 > 1) {
+      const term = collateralTerm(p2, d2, 'senior') || '叔伯/姑母辈';
+      return `${text(p1.name)}称${text(p2.name)}为${term}（实际父系链相隔${d1 - d2}层）`;
+    }
+    if (common && d1 === d2) {
+      return `${text(p1.name)}与${text(p2.name)}为同辈旁系亲属，彼此称堂兄弟/堂姐妹`;
+    }
+    if (common) {
+      return `${text(p1.name)}与${text(p2.name)}为旁系亲属，称谓需按实际房次核定（共同父系：${text(common.name)}）`;
+    }
+    return '未找到共同父系路径，不能仅凭世次数字推断称谓';
   }
 
   function renderQueryRelation() {

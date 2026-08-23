@@ -110,10 +110,12 @@ function ensureLoaded() {
   {
     // (1) 真实记录重指：[子id, 父id]
     const ANCIENT_REPOINT = [
-      // 远古顶链：炎帝(1)→临魁(2)→榆罔(3)→帝柱(4)→祝融(5)→吕尚(1184)→佐(1185)→申伯(6)
-      [3, 2], [4, 3], [5, 4], [1184, 5], [6, 1185],
-      // 弘(8)/猛(9)/申甫(7) 都是申伯之子（bio「申伯之子」「申伯之弟」）
-      [8, 6], [9, 6], [7, 1185],
+      // 远古顶链：炎帝(1)→临魁(2)→榆罔(10)→帝柱(11)→祝融(15)→吕尚(54)→佐(55)→宏道(64)→申伯(65)。
+      // 注意：1—65 世不是“数组相邻即父子”。榆罔、帝柱、祝融之间存在世次跳跃；
+      // 宏道（64世）是佐之子，且谱载为申伯、申甫之父，不能把申伯直接挂到佐(55)名下。
+      [3, 2], [4, 3], [5, 4], [1184, 5], [6, 1255],
+      // 弘(8)/猛(9) 是申伯之子；申甫(7) 是宏道之子。
+      [8, 6], [9, 6], [7, 1255],
       // 东山段错链重指（bio 依据）：鳅→懿、当/景秀→鳅、缵/显/顼→景秀、衡→缵
       [1150, 1146], [1152, 1150], [1124, 1150], [1126, 1124], [1127, 1124], [1128, 1124], [1130, 1126],
       // 逵→宜礼、简→逵、瑰→简、懿→瑰
@@ -303,13 +305,21 @@ function kinshipText(aId, bId) {
   const aAnc = getAncestorList(aId, false); // a 的祖先（远→近）
   const bAnc = getAncestorList(bId, false);
 
+  const ancestorTerm = (person, n) => {
+    const female = String(person.gender || '').includes('女');
+    if (n === 1) return female ? '母亲' : '父亲';
+    if (n === 2) return female ? '祖母/外祖母' : '祖父';
+    if (n === 3) return female ? '曾祖母' : '曾祖父';
+    if (n === 4) return female ? '高祖母' : '高祖父';
+    return `第${n}代祖先`;
+  };
   if (aAnc.some(p => Number(p.id) === Number(b.id))) {
-    const n = aAnc.findIndex(p => Number(p.id) === Number(b.id)) + 1; // b 是 a 的第 n 代祖
-    return `${a.name} 是 ${b.name} 的第 ${n} 代直系后代`;
+    const n = aAnc.findIndex(p => Number(p.id) === Number(b.id)) + 1;
+    return `${a.name}称${b.name}为${ancestorTerm(b, n)}（实际父系链相隔${n}层）`;
   }
   if (bAnc.some(p => Number(p.id) === Number(a.id))) {
     const n = bAnc.findIndex(p => Number(p.id) === Number(a.id)) + 1;
-    return `${b.name} 是 ${a.name} 的第 ${n} 代直系后代`;
+    return `${b.name}称${a.name}为${ancestorTerm(a, n)}（实际父系链相隔${n}层）`;
   }
   // 共同祖先：aAnc 是 近→远（索引0=父亲），从【最近端】找第一个交集 = 最近公共祖先(LCA)。
   // 注意：不能从远端找，否则亲兄弟会被误判为「共同祖先是最远祖」，如大四/小四共父在纲却报「共祖广，距63代」。
@@ -323,9 +333,11 @@ function kinshipText(aId, bId) {
   lb = bAnc.findIndex(p => Number(p.id) === Number(lca.id));
   const da = la + 1, db = lb + 1; // 各自离 LCA 的代数
   const lcaName = lca.name || ('ID ' + lca.id);
-  if (da === 1 && db === 1) return `${a.name} 与 ${b.name} 是亲兄弟/同父关系（共同父亲：${lcaName}）`;
-  if (da === 2 && db === 2) return `${a.name} 与 ${b.name} 是堂兄弟/堂亲（共同祖父：${lcaName}）`;
-  return `${a.name} 与 ${b.name} 是共祖的族人，共同祖先为 ${lcaName}（${a.name} 距其 ${da} 代、${b.name} 距其 ${db} 代）`;
+  if (da === 1 && db === 1) return `${a.name}与${b.name}为同父兄弟/姐妹，彼此称兄弟或姐妹（共同父亲：${lcaName}）`;
+  if (da === 1 && db > 1) return `${b.name}称${a.name}为叔伯/姑母辈（共同父系：${lcaName}）`;
+  if (db === 1 && da > 1) return `${a.name}称${b.name}为叔伯/姑母辈（共同父系：${lcaName}）`;
+  if (da === db) return `${a.name}与${b.name}为同辈旁系亲属，彼此称堂兄弟/堂姐妹（共同父系：${lcaName}）`;
+  return `${a.name}与${b.name}为旁系亲属，不能仅凭世次数字确定具体称谓（共同父系：${lcaName}，父系链距离${da}/${db}层）`;
 }
 
 /** 代数通俗表述：正数→「第N世」（族谱通用说法）；负数（远古炎帝世系）→「远古世系」；空→「未知」 */
