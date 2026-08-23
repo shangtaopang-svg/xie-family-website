@@ -125,9 +125,8 @@
           <span style="font-size:12px;color:var(--text-tertiary);" id="alive-count-hint"></span>
         </div>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-sm" onclick="document.getElementById('excel-upload').click()" style="font-size:12px;">📥 导入 Excel</button>
           <button class="btn btn-sm" onclick="exportExcel()" style="font-size:12px;">📤 导出 Excel</button>
-          <input type="file" id="excel-upload" accept=".xlsx,.xls,.csv" style="display:none;" onchange="importExcel(this)">
+          <span id="members-source-status" class="btn btn-sm" style="font-size:12px;cursor:default;border-color:rgba(76,116,100,.35);color:var(--accent-green,#4c7464);">● 数据来自族谱管理后台</span>
         </div>
       </div>
     </section>
@@ -197,7 +196,7 @@
       <div id="members-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))!important;gap:16px;"></div>
       <div id="members-empty" style="display:none;text-align:center;padding:60px 20px;">
         <div style="font-size:48px;margin-bottom:12px;">📭</div>
-        <p style="color:var(--text-tertiary);font-size:14px;">暂无在世成员数据。可通过上方"导入 Excel"批量录入族谱信息。</p>
+        <p style="color:var(--text-tertiary);font-size:14px;">暂无成员数据，请检查族谱管理后台服务。</p>
       </div>
     </section>
 
@@ -270,6 +269,9 @@
     }
 
     function getGenealogyData() {
+      // 公共“家族成员”栏目只读族谱管理后台的有效数据，禁止旧浏览器缓存覆盖后台核定结果。
+      return Array.isArray(window._genealogyBackendData) ? window._genealogyBackendData.slice() : [];
+      /* legacy localStorage reader retained below only as historical reference */
       try {
         var data = JSON.parse(localStorage.getItem('xie_admin_genealogy') || '[]');
         // 世代统一为炎帝全局世系（用户确认：炎帝=1世、申伯=65世），与时间轴/世系图一致：
@@ -295,7 +297,8 @@
     }
 
     function saveGenealogyData(data) {
-      localStorage.setItem('xie_admin_genealogy', JSON.stringify(data));
+      // 公共成员页为只读；新增、编辑、校勘必须在族谱管理后台完成并部署。
+      console.warn('家族成员栏目为只读页面，请在族谱管理后台编辑。');
     }
 
     function escapeHtml(text) {
@@ -693,26 +696,48 @@
         }
         html += '<div style="margin-top:8px;padding-top:6px;border-top:1px solid var(--divider);display:flex;gap:6px;">';
         html += '<span style="font-size:11px;color:var(--text-tertiary);">' + (p.birth_date || '') + (p.death_date ? ' ~ ' + p.death_date : '') + '</span>';
-        html += '<span style="margin-left:auto;"><a href="admin.html#genealogy-' + p.id + '" onclick="event.stopPropagation();" style="font-size:11px;color:var(--accent-orange);text-decoration:none;padding:2px 8px;border:1px solid var(--accent-orange);border-radius:4px;">✏️ 编辑</a></span>';
+        html += '<span style="margin-left:auto;font-size:11px;color:var(--text-tertiary);">族谱管理后台核定</span>';
         html += '</div>';
         html += '</div>';
       });
       container.innerHTML = html;
     }
 
+    function loadBackendGenealogyData() {
+      var status = document.getElementById('members-source-status');
+      if (status) status.textContent = '● 正在读取族谱管理后台数据…';
+      return fetch('../api/genealogy-members?ts=' + Date.now(), { cache: 'no-store' })
+        .then(function(response) {
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          return response.json();
+        })
+        .then(function(data) {
+          if (!Array.isArray(data)) throw new Error('数据格式错误');
+          window._genealogyBackendData = data;
+          if (status) {
+            status.textContent = '● 数据来自族谱管理后台 · ' + data.length + ' 人';
+            status.style.color = 'var(--accent-green,#4c7464)';
+          }
+          renderMembers();
+          return data;
+        })
+        .catch(function(error) {
+          window._genealogyBackendData = [];
+          if (status) {
+            status.textContent = '● 族谱管理后台数据读取失败';
+            status.style.color = '#a94c3c';
+          }
+          var container = document.getElementById('members-grid');
+          if (container) container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#a94c3c;font-size:14px;">无法读取族谱管理后台数据，请稍后重试。</div>';
+          console.error('读取族谱管理后台数据失败:', error);
+          return [];
+        });
+    }
+
     // Search
     document.addEventListener('DOMContentLoaded', function() {
-      renderMembers();
-
-      // Try loading from Supabase for up-to-date genealogy data
-      if (window.dbGetAll) {
-        dbGetAll('genealogy', { order: 'id.asc' }).then(function(supabaseData) {
-          if (supabaseData && supabaseData.length > 0) {
-            localStorage.setItem('xie_admin_genealogy', JSON.stringify(supabaseData));
-            renderMembers();
-          }
-        }).catch(function() {});
-      }
+      window._genealogyBackendData = [];
+      loadBackendGenealogyData();
 
       var searchInput = document.getElementById('members-search');
       if (searchInput) {

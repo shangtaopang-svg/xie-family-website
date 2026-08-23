@@ -497,6 +497,20 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // === API: 家族成员公共只读数据 ===
+  // 家族成员栏目必须与“族谱管理后台”使用同一数据源：
+  // 交付版 data.js + app.js 中已核定的修正 + source-vitals.js 生卒候选。
+  // 不再把旧 data/genealogy.json 或访客浏览器 localStorage 作为前台成员数据源。
+  if (url === '/api/genealogy-members' && req.method === 'GET') {
+    try {
+      const deliverySource = require('./server/ai/delivery-source.js');
+      const records = deliverySource.ensureLoaded();
+      return sendJson(req, res, 200, records.map(person => ({ ...person })));
+    } catch (e) {
+      return sendJson(req, res, 500, { error: '族谱管理后台数据暂时不可用' });
+    }
+  }
+
   // === B站封面代理 ===
   if (url === '/api/bilibili-cover' && req.method === 'GET') {
     const bvid = (req.url.match(/[?&]bvid=([^&]+)/) || [])[1];
