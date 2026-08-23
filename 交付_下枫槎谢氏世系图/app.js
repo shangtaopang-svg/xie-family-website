@@ -1350,7 +1350,7 @@
     document.body.classList.remove('is-root-trace-open');
   }
 
-  function rootTraceRelationHtml(person) {
+  function rootTraceRelationHtml(person, mainChain) {
     const key = String(personId(person));
     const relation = state.adoption.outById.get(key) || state.adoption.inById.get(key) || null;
     const rawFather = rawFatherOf(person);
@@ -1359,7 +1359,21 @@
     if (!relation && (!rawFather || !displayParent || String(personId(rawFather)) === String(personId(displayParent)))) return '';
     const biological = relation ? relation.biologicalParent : rawFather;
     const adoptive = relation ? relation.adoptiveParent : displayParent;
-    return `<aside class="root-trace-adoption"><strong>出继 / 入继关系</strong><span>亲生父亲：${escapeHtml(biological ? text(biological.name) : '未详')}${biological ? `（ID ${escapeHtml(personId(biological))}）` : ''}</span><span>继父（承嗣父）：${escapeHtml(adoptive ? text(adoptive.name) : '未详')}${adoptive ? `（ID ${escapeHtml(personId(adoptive))}）` : ''}</span>${relation && relation.source ? `<small>谱载：${escapeHtml(relation.source)}</small>` : ''}</aside>`;
+    let biologicalBranch = '';
+    if (biological) {
+      const mainIds = new Set((mainChain || []).map((member) => String(personId(member))));
+      const biologicalChain = queryAncestorChain(biological).reverse();
+      let commonIndex = -1;
+      biologicalChain.forEach((member, index) => {
+        if (mainIds.has(String(personId(member)))) commonIndex = index;
+      });
+      const branch = biologicalChain.slice(commonIndex >= 0 ? commonIndex : 0);
+      if (branch.length) {
+        const common = commonIndex >= 0 ? branch[0] : null;
+        biologicalBranch = `<div class="root-trace-bio-branch"><b>亲生父系支线${common ? `（由共同祖先“${escapeHtml(text(common.name))}”分出）` : ''}</b><div class="root-trace-bio-chain">${branch.map((member, index) => `<span class="root-trace-bio-node${index === 0 && common ? ' is-common' : ''}${index === branch.length - 1 ? ' is-biological-father' : ''}"><small>第${escapeHtml(generationOf(member) || '—')}世</small><strong>${escapeHtml(text(member.name) || '未命名')}</strong></span>`).join('<i aria-hidden="true">→</i>')}<i aria-hidden="true">→</i><span class="root-trace-bio-node is-adopted-person"><small>第${escapeHtml(generationOf(person) || '—')}世</small><strong>${escapeHtml(text(person.name))}</strong><em>出继</em></span></div></div>`;
+      }
+    }
+    return `<aside class="root-trace-adoption"><strong>出继 / 入继关系</strong><span>亲生父亲：${escapeHtml(biological ? text(biological.name) : '未详')}${biological ? `（ID ${escapeHtml(personId(biological))}）` : ''}</span><span>继父（承嗣父）：${escapeHtml(adoptive ? text(adoptive.name) : '未详')}${adoptive ? `（ID ${escapeHtml(personId(adoptive))}）` : ''}</span>${relation && relation.source ? `<small>谱载：${escapeHtml(relation.source)}</small>` : ''}${biologicalBranch}</aside>`;
   }
 
   function openRootTrace(id) {
@@ -1374,7 +1388,7 @@
     if (summary) summary.textContent = `${startsAtYandi ? '炎帝始祖' : '当前数据可追溯始祖'} → ${text(person.name)} · 共 ${chain.length} 代节点`;
     content.innerHTML = `${!startsAtYandi ? '<div class="root-trace-warning">当前数据链未直接抵达“炎帝”记录，以下展示现有数据能够完整追溯的最早世系。</div>' : ''}<div class="root-trace-line">${chain.map((member, index) => {
       const tags = adoptionTags(member).map((tag) => tag.label).join(' / ');
-      return `<article class="root-trace-node${index === 0 ? ' is-root' : ''}${index === chain.length - 1 ? ' is-target' : ''}"><div class="root-trace-card"><span>第${escapeHtml(generationOf(member) || '—')}世</span><strong>${escapeHtml(text(member.name) || '未命名')}</strong>${tags ? `<em>${escapeHtml(tags)}</em>` : ''}<small>${escapeHtml(text(member.branch) || '')}</small></div>${rootTraceRelationHtml(member)}</article>`;
+      return `<article class="root-trace-node${index === 0 ? ' is-root' : ''}${index === chain.length - 1 ? ' is-target' : ''}"><div class="root-trace-card"><span>第${escapeHtml(generationOf(member) || '—')}世</span><strong>${escapeHtml(text(member.name) || '未命名')}</strong>${tags ? `<em>${escapeHtml(tags)}</em>` : ''}<small>${escapeHtml(text(member.branch) || '')}</small></div>${rootTraceRelationHtml(member, chain)}</article>`;
     }).join('')}</div>`;
     modal.hidden = false;
     document.body.classList.add('is-root-trace-open');
