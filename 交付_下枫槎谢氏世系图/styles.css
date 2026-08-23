@@ -88,10 +88,12 @@ body[data-app-mode="admin"]:not(.admin-authenticated) #app { visibility: hidden;
 .rail-footer span { display: block; }
 
 .tree-area { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; background: var(--surface-soft); container-type: inline-size; container-name: genealogy-main; }
-.tree-toolbar { padding: 18px 22px 11px; display: flex; justify-content: space-between; align-items: end; gap: 16px; border-bottom: 1px solid #e2e9ee; background: rgba(255,255,255,.85); }
+.tree-toolbar { padding: 14px 18px 11px; display: flex; justify-content: space-between; align-items: center; gap: 14px; border-bottom: 1px solid #e2e9ee; background: rgba(255,255,255,.85); }
+.tree-toolbar > :first-child { flex: 0 1 230px; min-width: 150px; }
 .eyebrow { color: var(--primary); font-size: 10px; letter-spacing: .18em; font-weight: 800; }
-.tree-toolbar h2 { margin: 5px 0 0; color: var(--ink-strong); font-size: 20px; font-weight: 700; }
-.tree-toolbar-actions { display: flex; align-items: center; gap: 5px; }
+.tree-toolbar h2 { margin: 5px 0 0; color: var(--ink-strong); font-size: 20px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tree-toolbar-actions { min-width: 0; display: flex; flex: 1 1 auto; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 5px; }
+.tree-toolbar-actions > button { flex: 0 0 auto; white-space: nowrap; word-break: keep-all; }
 .icon-btn, .zoom-readout, .fit-btn, .layout-btn { height: 30px; min-width: 30px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 7px; }
 .icon-btn { font-size: 19px; line-height: 1; }
 .zoom-readout { min-width: 53px; font-size: 11px; color: var(--muted); }
@@ -465,7 +467,7 @@ button, input, select, textarea { color-scheme: light; }
 
 .tree-area { background: #efede6; }
 .tree-toolbar {
-  padding: 19px 24px 15px;
+  padding: 14px 18px 12px;
   background: #f8f6ef;
   border-bottom: 1px solid #d7d3ca;
 }
@@ -1225,6 +1227,13 @@ button, input, select, textarea { color-scheme: light; }
 @media (max-width: 1100px) { .query-stat-grid { grid-template-columns: repeat(auto-fit, minmax(108px,1fr)); }.query-two-column { grid-template-columns: 1fr; } }
 @media (max-width: 680px) { .query-drawer { padding: 18px 14px 34px; }.query-stat-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }.query-audit-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }.query-form-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }.query-field-wide { grid-column: 1 / -1; }.query-result-row { grid-template-columns: 45px minmax(80px,1fr) 42px 58px; }.query-result-row > :nth-child(4), .query-result-row > :nth-child(5) { display: none; }.query-relation-form { grid-template-columns: 1fr; }.query-relation-mark { display: none; } }
 
+@container genealogy-main (max-width: 960px) {
+  .tree-toolbar { align-items: stretch; flex-direction: column; gap: 9px; }
+  .tree-toolbar > :first-child { flex: none; width: 100%; min-width: 0; }
+  .tree-toolbar h2 { font-size: 19px; }
+  .tree-toolbar-actions { width: 100%; justify-content: flex-start; }
+}
+
 @container genealogy-main (max-width: 760px) {
   .query-drawer { padding: 18px 14px 34px; }
   .query-drawer-head { gap: 10px; }
@@ -1244,6 +1253,7 @@ button, input, select, textarea { color-scheme: light; }
 }
 
 @container genealogy-main (max-width: 600px) {
+  .tree-toolbar-actions { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; padding-bottom: 4px; scrollbar-width: thin; }
   .query-stat-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 
