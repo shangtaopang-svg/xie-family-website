@@ -5347,8 +5347,6 @@ section a[href*="audio"] {
 /* ===== 家族成员页 ===== */
 #members-grid { gap: 12px !important; }
 #members-grid > div {
-  background: #141414 !important;
-  border: 1px solid #2a2a2a !important;
   border-radius: 16px !important;
   padding: 14px !important;
 }
@@ -5603,14 +5601,11 @@ section a[href*="audio"] {
 
   /* 家族成员页 */
   #members-grid .member-card {
-    background: #141414 !important;
-    border: 1px solid #2a2a2a !important;
     border-radius: 16px !important;
     padding: 14px !important;
   }
   #members-grid .member-card div:first-child { color: #e8c97a !important;
   text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; font-size: 15px !important; font-weight: 600 !important; }
-  #members-grid .member-card div:not(:first-child) { color: #888 !important; font-size: 12px !important; }
 
   /* 家族树页 */
   .ancestor-card {
