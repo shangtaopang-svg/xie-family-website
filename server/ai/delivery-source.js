@@ -13,9 +13,12 @@ const vm = require('vm');
 
 const DATA_FILE = path.join(__dirname, '..', '..', '交付_下枫槎谢氏世系图', 'data.js');
 const APP_FILE = path.join(__dirname, '..', '..', '交付_下枫槎谢氏世系图', 'app.js');
+const VITALS_FILE = path.join(__dirname, '..', '..', '交付_下枫槎谢氏世系图', 'source-vitals.js');
 
 let data = [];
 let mtimeMs = -1;
+let appMtimeMs = -1;
+let vitalsMtimeMs = -1;
 
 function parseDataJs(text) {
   const match = String(text || '').match(/window\.GENEALOGY_DATA\s*=\s*(\[[\s\S]*?\])\s*;?\s*$/);
@@ -23,6 +26,42 @@ function parseDataJs(text) {
   const parsed = JSON.parse(match[1]);
   if (!Array.isArray(parsed)) throw new Error('交付版世系数据不是数组');
   return parsed;
+}
+
+function parseSourceVitalsJs(text) {
+  const match = String(text || '').match(/window\.GENEALOGY_VITALS\s*=\s*(\{[\s\S]*\})\s*;?\s*$/);
+  if (!match) throw new Error('未找到 window.GENEALOGY_VITALS 对象');
+  const parsed = JSON.parse(match[1]);
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('谱文生卒候选不是对象');
+  return parsed;
+}
+
+/**
+ * 把 source-vitals.js 中由上册/下册逐条提取的生卒候选合并到 AI 有效数据。
+ * 只填充当前为空的字段；姓名和父 ID 必须同时吻合，避免同名人物串档。
+ * 网页端已有同一规则，这里补上服务端后，AI、网页详情和寻根结果使用同一套生卒依据。
+ */
+function applySourceVitals(list, vitalsText) {
+  let vitals = {};
+  try { vitals = parseSourceVitalsJs(vitalsText); } catch (e) { return list; }
+  const byId = new Map(list.map((p) => [Number(p.id), p]));
+  for (const [id, vital] of Object.entries(vitals)) {
+    const person = byId.get(Number(id));
+    if (!person || !vital || String(person.name || '').trim() !== String(vital.name || '').trim()) continue;
+    const parentConflict = vital.father_id !== null && vital.father_id !== undefined && vital.father_id !== '' &&
+      person.father_id !== null && person.father_id !== undefined && person.father_id !== '' &&
+      Number(person.father_id) !== Number(vital.father_id);
+    // source-vitals 以稳定 ID 绑定人物；父 ID 可能因后续人工校勘而变化。
+    // 因此不因旧父 ID 冲突而丢弃同一 ID 的生卒资料，而是留下冲突标记供审查报告追踪。
+    if (parentConflict) person.vital_parent_conflict = `source-vitals父ID ${vital.father_id}；当前核定父ID ${person.father_id}`;
+    if (!String(person.birth_date || '').trim() && String(vital.birth_date || '').trim()) person.birth_date = vital.birth_date;
+    if (!String(person.death_date || '').trim() && String(vital.death_date || '').trim()) person.death_date = vital.death_date;
+    if (!String(person.vital_source || '').trim() && String(vital.source || '').trim()) person.vital_source = vital.source;
+    if (String(vital.death_date || '').trim() && person.is_alive !== true && String(person.is_alive || '').trim() !== '是') {
+      person.is_alive = '否';
+    }
+  }
+  return list;
 }
 
 /**
@@ -103,11 +142,17 @@ function applyAppFatherCorrections(list, appText) {
 }
 
 function ensureLoaded() {
-  let stat = null;
+  let stat = null, appStat = null, vitalsStat = null;
   try { stat = fs.statSync(DATA_FILE); } catch (e) { stat = null; }
+  try { appStat = fs.statSync(APP_FILE); } catch (e) { appStat = null; }
+  try { vitalsStat = fs.statSync(VITALS_FILE); } catch (e) { vitalsStat = null; }
   const nextMtime = stat ? stat.mtimeMs : -1;
-  if (nextMtime === mtimeMs) return data;
+  const nextAppMtime = appStat ? appStat.mtimeMs : -1;
+  const nextVitalsMtime = vitalsStat ? vitalsStat.mtimeMs : -1;
+  if (nextMtime === mtimeMs && nextAppMtime === appMtimeMs && nextVitalsMtime === vitalsMtimeMs) return data;
   mtimeMs = nextMtime;
+  appMtimeMs = nextAppMtime;
+  vitalsMtimeMs = nextVitalsMtime;
   if (!stat) {
     data = [];
     return data;
@@ -117,6 +162,9 @@ function ensureLoaded() {
     let appText = '';
     try { appText = fs.readFileSync(APP_FILE, 'utf-8'); } catch (e) { appText = ''; }
     data = applyAppFatherCorrections(data, appText);
+    let vitalsText = '';
+    try { vitalsText = fs.readFileSync(VITALS_FILE, 'utf-8'); } catch (e) { vitalsText = ''; }
+    data = applySourceVitals(data, vitalsText);
   } catch (e) {
     data = [];
     console.warn('[delivery-source] 读取交付版世系数据失败:', e.message);
@@ -125,6 +173,6 @@ function ensureLoaded() {
 }
 
 function getFilePath() { return DATA_FILE; }
-function getMtimeMs() { ensureLoaded(); return mtimeMs; }
+function getMtimeMs() { ensureLoaded(); return Math.max(mtimeMs, appMtimeMs, vitalsMtimeMs); }
 
-module.exports = { ensureLoaded, getFilePath, getMtimeMs, parseDataJs, applyAppFatherCorrections };
+module.exports = { ensureLoaded, getFilePath, getMtimeMs, parseDataJs, parseSourceVitalsJs, applyAppFatherCorrections, applySourceVitals };

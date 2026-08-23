@@ -37,7 +37,7 @@ function ensureLoaded() {
   const sourceFile = usingDelivery ? deliverySource.getFilePath() : LEGACY_DATA_FILE;
   let stat = null;
   try { stat = fs.statSync(sourceFile); } catch (e) { stat = null; }
-  const mtime = stat ? stat.mtimeMs : -1;
+  const mtime = usingDelivery ? deliverySource.getMtimeMs() : (stat ? stat.mtimeMs : -1);
   if (byId && mtime === mtimeMs && sourceFile === loadedSource) return;
   mtimeMs = mtime;
   loadedSource = sourceFile;

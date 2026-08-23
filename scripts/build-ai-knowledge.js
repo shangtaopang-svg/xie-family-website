@@ -129,6 +129,16 @@ function buildKnowledge() {
       p.generation_num !== undefined && p.generation_num !== null && p.generation_num !== '' ? '世次：第' + p.generation_num + '世' : '',
       p.branch ? '支系：' + p.branch : '',
       father ? '父亲：' + father.name : '',
+      p.gender ? '性别：' + p.gender : '',
+      p.is_alive === true || p.is_alive === '是' ? '状态：在世' : (p.is_alive === false || p.is_alive === '否' ? '状态：已故' : ''),
+      p.courtesy_name ? '字/号：' + p.courtesy_name : '',
+      p.birth_date ? '出生：' + p.birth_date : '',
+      p.death_date ? '卒年/卒葬：' + p.death_date : '',
+      p.burial_place ? '葬地：' + p.burial_place : '',
+      p.spouse_ids ? '配偶：' + p.spouse_ids : '',
+      p.spouse_record ? '配偶详细谱载：' + p.spouse_record : '',
+      p.source_pages ? '出处页码：' + p.source_pages : '',
+      p.vital_source ? '生卒依据：' + p.vital_source : '',
       p.biography ? '谱注：' + String(p.biography).trim() : ''
     ].filter(Boolean).join('；');
     if (details) {
