@@ -1330,7 +1330,7 @@
       const lastIndex = generations.indexOf(eraGenerations[eraGenerations.length - 1]);
       const left = 8 + firstIndex * 32;
       const width = (lastIndex - firstIndex) * 32 + 28;
-      return `<div class="query-era-bracket ${era.className}" style="top:${128 + index * 28}px;left:${left}px;width:${width}px" aria-label="${era.label}，闭区间[${era.from},${era.to}]"><i class="era-bracket-line"></i><b class="era-bracket-arrow">▶</b><strong>${era.label}</strong><b class="era-bracket-arrow">◀</b><i class="era-bracket-line"></i><span class="era-bracket-endpoint era-bracket-endpoint-start">${era.startLabel}</span><span class="era-bracket-endpoint era-bracket-endpoint-end">${era.endLabel}</span></div>`;
+      return `<div class="query-era-bracket ${era.className}" style="top:${16 + index * 32}px;left:${left}px;width:${width}px" aria-label="${era.label}，闭区间[${era.from},${era.to}]"><i class="era-bracket-line"></i><b class="era-bracket-arrow">▶</b><strong>${era.label}</strong><b class="era-bracket-arrow">◀</b><i class="era-bracket-line"></i><span class="era-bracket-endpoint era-bracket-endpoint-start">${era.startLabel}</span><span class="era-bracket-endpoint era-bracket-endpoint-end">${era.endLabel}</span></div>`;
     }).join('');
     container.innerHTML = eraBracket + generations.map((generation) => {
       const count = counts.get(generation) || 0;
