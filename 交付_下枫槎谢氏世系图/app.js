@@ -1274,7 +1274,7 @@
     const unknown = people.length - male - female;
     const out = people.filter((person) => adoptionTags(person).some((tag) => tag.className === 'adoption-out')).length;
     const incoming = people.filter((person) => adoptionTags(person).some((tag) => tag.className === 'adoption-in')).length;
-    const inLaw = people.filter((person) => /入赘/.test(adoptionText(person))).length;
+    const inLaw = people.filter((person) => /入赘/.test([person.name, adoptionText(person)].map(text).join(' '))).length;
     container.innerHTML = [
       queryStatHtml(people.length.toLocaleString('zh-CN'), '现有记录', ''),
       queryStatHtml(generations.length ? `第${Math.max(...generations)}世` : '—', '最高世代', ''),
@@ -1299,7 +1299,7 @@
     }).length;
     const out = people.filter((person) => adoptionTags(person).some((tag) => tag.className === 'adoption-out')).length;
     const incoming = people.filter((person) => adoptionTags(person).some((tag) => tag.className === 'adoption-in')).length;
-    const inLaw = people.filter((person) => /入赘/.test(adoptionText(person))).length;
+    const inLaw = people.filter((person) => /入赘/.test([person.name, adoptionText(person)].map(text).join(' '))).length;
     const item = (value, label, detail, kind) => `<div class="query-audit-item ${kind || ''}"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)} · ${escapeHtml(detail)}</span></div>`;
     container.innerHTML = [
       item(`${SOURCE_AUDIT_SNAPSHOT.fieldDiffRecords}`, '两源字段差异', `后台${SOURCE_AUDIT_SNAPSHOT.backendApi} / 交付磁盘${SOURCE_AUDIT_SNAPSHOT.deliveryDisk}，仅作对照`, 'warn'),
