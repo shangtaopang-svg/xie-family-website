@@ -1743,13 +1743,13 @@
     if (status && selected) status.textContent = `${currentView().label} · 当前树面卡片 ${$$('.person-card').length} 张 · 已选：${text(selected.name)}`;
   }
 
-  function zoomAroundPoint(factor, clientX, clientY) {
+  function zoomAroundPoint(factor, clientX, clientY, useClientAnchor = false) {
     const viewport = $('#tree-viewport');
     if (!viewport) return;
     const rect = viewport.getBoundingClientRect();
-    // 全部展开时固定以视口中心缩放，避免方框随着鼠标所在位置跳动。
-    const offsetX = rect.width / 2;
-    const offsetY = rect.height / 2;
+    // 鼠标滚轮固定以视口中心缩放；手机双指缩放则以两指中心为锚点，手感更自然。
+    const offsetX = useClientAnchor ? Math.max(0, Math.min(rect.width, clientX - rect.left)) : rect.width / 2;
+    const offsetY = useClientAnchor ? Math.max(0, Math.min(rect.height, clientY - rect.top)) : rect.height / 2;
     const oldZoom = state.zoom;
     const mapPan = state.mapPan || { x: 0, y: 0 };
     // 计算时扣除全景平移量，缩放后鼠标指向的卡片保持在原位置，不再出现跳图。
@@ -4546,8 +4546,43 @@
     let pendingWheelFactor = 1;
     let pendingWheelX = 0;
     let pendingWheelY = 0;
+    const touchPointers = new Map();
+    let pinchActive = false;
+    let pinchDistance = 0;
+    let pinchFrame = 0;
+    let pendingPinchFactor = 1;
+    let pendingPinchX = 0;
+    let pendingPinchY = 0;
+    const touchPair = () => Array.from(touchPointers.values()).slice(0, 2);
+    const pairMetrics = () => {
+      const pair = touchPair();
+      if (pair.length < 2) return null;
+      const dx = pair[1].x - pair[0].x;
+      const dy = pair[1].y - pair[0].y;
+      return {
+        distance: Math.max(1, Math.hypot(dx, dy)),
+        x: (pair[0].x + pair[1].x) / 2,
+        y: (pair[0].y + pair[1].y) / 2
+      };
+    };
     viewport.addEventListener('pointerdown', (event) => {
       if (event.button !== 0) return;
+      if (event.pointerType === 'touch') {
+        touchPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (touchPointers.size >= 2) {
+          const metrics = pairMetrics();
+          pinchActive = true;
+          pinchDistance = metrics ? metrics.distance : 1;
+          pendingPinchFactor = 1;
+          state.pan.active = false;
+          state.pan.pointerId = null;
+          state.pan.dragged = true;
+          viewport.classList.remove('is-panning');
+          viewport.classList.add('is-pinching');
+          event.preventDefault();
+          return;
+        }
+      }
       state.pan.active = true;
       state.pan.pointerId = event.pointerId;
       state.pan.startX = event.clientX;
@@ -4562,6 +4597,31 @@
       viewport.classList.add('is-panning');
     });
     const movePan = (event) => {
+      if (event.pointerType === 'touch' && touchPointers.has(event.pointerId)) {
+        touchPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      }
+      if (pinchActive && touchPointers.size >= 2) {
+        const metrics = pairMetrics();
+        if (!metrics) return;
+        event.preventDefault();
+        pendingPinchFactor *= metrics.distance / Math.max(1, pinchDistance);
+        pinchDistance = metrics.distance;
+        pendingPinchX = metrics.x;
+        pendingPinchY = metrics.y;
+        if (!pinchFrame) {
+          const commitPinch = () => {
+            pinchFrame = 0;
+            const factor = pendingPinchFactor;
+            pendingPinchFactor = 1;
+            if (Number.isFinite(factor) && Math.abs(factor - 1) > .0005) {
+              zoomAroundPoint(factor, pendingPinchX, pendingPinchY, true);
+            }
+          };
+          if (typeof requestAnimationFrame === 'function') pinchFrame = requestAnimationFrame(commitPinch);
+          else commitPinch();
+        }
+        return;
+      }
       if (!state.pan.active || event.pointerId !== state.pan.pointerId) return;
       const deltaX = event.clientX - state.pan.startX;
       const deltaY = event.clientY - state.pan.startY;
@@ -4590,6 +4650,19 @@
       }
     };
     const endPan = (event) => {
+      if (event.pointerType === 'touch') touchPointers.delete(event.pointerId);
+      if (pinchActive && touchPointers.size < 2) {
+        pinchActive = false;
+        pinchDistance = 0;
+        pendingPinchFactor = 1;
+        viewport.classList.remove('is-pinching');
+        state.pan.active = false;
+        state.pan.pointerId = null;
+        state.pan.suppressClick = true;
+        clearTimeout(state.pan.suppressTimer);
+        state.pan.suppressTimer = setTimeout(() => { state.pan.suppressClick = false; }, 350);
+        return;
+      }
       if (!state.pan.active || (event.pointerId !== undefined && event.pointerId !== state.pan.pointerId)) return;
       const dragged = state.pan.dragged;
       state.pan.active = false;

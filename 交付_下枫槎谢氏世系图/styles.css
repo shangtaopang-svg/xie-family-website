@@ -163,6 +163,8 @@ body.is-global-nav-open { overflow: hidden; }
 .tree-viewport.is-panning { cursor: grabbing; user-select: none; }
 .tree-viewport.is-panning * { cursor: grabbing !important; user-select: none; }
 .tree-viewport.is-panning .person-card { transition: none !important; transform: none !important; }
+.tree-viewport.is-pinching, .tree-viewport.is-pinching * { user-select: none !important; }
+.tree-viewport.is-pinching .person-card { transition: none !important; }
 .tree-canvas { position: relative; width: max-content; min-width: 100%; height: max-content; min-height: 100%; }
 .tree-stage { transform-origin: top left; width: max-content; min-width: 0; padding: 22px 42px; transition: none; will-change: transform; }
 .tree-stage.is-compact { --card-w: 132px; }
