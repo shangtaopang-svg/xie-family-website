@@ -530,6 +530,19 @@ function answerFullLineage(query, selfId, forcedTargetId) {
   const target = byId.get(targetId);
   const nodes = hc.buildFullChain(targetId);
   if (!nodes || !target) return { text: '未找到该族人的族谱记录，请重新验证身份。', tree: null, ownerIsSelf: true, targetName: '' };
+  // 完整直线世系中不能把承嗣链伪装成普通父子链。凡目标祖链经过出继/入继人物，
+  // 直接在对应节点附上亲生父亲、承嗣父亲和谱载原文，供前端在树中就地展开。
+  const adoptionContexts = adoptionContextsFor(targetId);
+  adoptionContexts.forEach((ctx) => {
+    const node = nodes.find(n => n.name === ctx.person.name && Number(n.shi) === Number(ctx.person.shi));
+    if (!node) return;
+    node.adopt = ctx.source || '出继 / 入继';
+    node.adoptionDetail = {
+      biologicalParent: ctx.biologicalParent,
+      adoptiveParent: ctx.adoptiveParent,
+      source: ctx.source
+    };
+  });
   const ownerIsSelf = Number(targetId) === Number(selfId);
   return { text: hc.formatChainText(nodes, target.name, ownerIsSelf), tree: nodes, ownerIsSelf, targetName: target.name };
 }

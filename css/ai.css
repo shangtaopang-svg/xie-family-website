@@ -683,6 +683,11 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
 .ai-tree-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
 .ai-tree-badge { font-size: 11px; border-radius: 999px; padding: 2px 8px; color: #fff; font-weight: 600; }
 .ai-tree-badge.adopt { background: #e8590c; }
+.ai-tree-adoption-detail { margin-top: 10px; padding: 10px; border: 1px solid #e2aa95; border-radius: 10px; background: #fff6f1; display: grid; grid-template-columns: 1fr 22px 1fr; gap: 7px; align-items: center; }
+.ai-tree-adoption-detail > div { display: flex; flex-direction: column; gap: 2px; }
+.ai-tree-adoption-detail span { font-size: 10px; color: #966451; }.ai-tree-adoption-detail b { font-size: 14px; color: #7e3527; }
+.ai-tree-adoption-detail i { color: #bd5843; font-style: normal; text-align: center; font-size: 18px; }
+.ai-tree-adoption-detail p { grid-column: 1 / -1; margin: 3px 0 0; padding-top: 6px; border-top: 1px dashed #dfb5a6; color: #845f52; font-size: 11px; line-height: 1.45; }
 
 .ai-result-visual {
   width: 100%; margin: 10px 0 2px; padding: 10px 12px; border: 1px solid #9db9aa;

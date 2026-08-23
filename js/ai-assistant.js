@@ -51,7 +51,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v70'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v71'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -1036,7 +1036,14 @@
         '<div class="ai-tree-sh"><span class="ai-tree-shi">第' + esc(n.shi) + '世</span>' + (n.isSelf ? '<span class="ai-tree-you">' + esc(ownerIsSelf ? '您' : n.name) + '</span>' : '') + '</div>' +
         '<div class="ai-tree-name">' + esc(n.name) + '</div>' +
         (note ? '<div class="ai-tree-note">' + esc(note) + '</div>' : '') +
-        (badges ? '<div class="ai-tree-badges">' + badges + '</div>' : '');
+        (badges ? '<div class="ai-tree-badges">' + badges + '</div>' : '') +
+        (n.adoptionDetail ?
+          '<div class="ai-tree-adoption-detail">' +
+          '  <div><span>亲生父亲</span><b>' + esc(n.adoptionDetail.biologicalParent && n.adoptionDetail.biologicalParent.name || '未详') + '</b></div>' +
+          '  <i aria-hidden="true">⇢</i>' +
+          '  <div><span>继父（承嗣父）</span><b>' + esc(n.adoptionDetail.adoptiveParent && n.adoptionDetail.adoptiveParent.name || '未详') + '</b></div>' +
+          '  <p>' + esc(n.adoptionDetail.source || '') + '</p>' +
+          '</div>' : '');
       frag.appendChild(row);
     });
     tbody.appendChild(frag);
