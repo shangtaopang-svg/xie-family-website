@@ -3489,6 +3489,56 @@
     }
     // 明扬（ID 1250）不是锡公之子，撤销原始数据中的错误父系，避免与明杨（ID 267）混淆。
     clearFatherOf(1250);
+    // 上册逐条核定：明扬、明聪、学幹的性别及生卒信息；年号同时保留原载写法。
+    const mingYang1250 = getPerson(1250);
+    if (mingYang1250) {
+      mingYang1250.gender = '男';
+      mingYang1250.birth_date = '乾隆五十二年丁未八月十八日亥时（公元1787年）';
+      mingYang1250.death_date = '嘉庆二十五年七月初一日酉时（公元1820年）';
+      mingYang1250.is_alive = '否';
+      mingYang1250.vital_source = '上册谱文：明扬字永畅，生乾隆丁未年，卒嘉庆廿五年';
+    }
+    const mingCong1251 = getPerson(1251);
+    if (mingCong1251) {
+      mingCong1251.gender = '男';
+      mingCong1251.birth_date = '嘉庆二十四年己卯五月二十四日申时（公元1799年）';
+      mingCong1251.death_date = '卒失（谱载）';
+      mingCong1251.is_alive = '否';
+      mingCong1251.vital_source = '上册谱文：锡巧公明聪字永慧，生嘉庆廿四年，卒失';
+    }
+    const xueGan1253 = getPerson(1253);
+    if (xueGan1253) {
+      xueGan1253.gender = '男';
+      xueGan1253.birth_date = '乾隆三十四年己丑九月十六日午时（公元1769年）';
+      xueGan1253.death_date = '卒俱失（谱载）';
+      xueGan1253.is_alive = '否';
+      xueGan1253.vital_source = '上册谱文：明灼公学幹字嘉茂，生乾隆己丑年，生卒俱失';
+    }
+    // 下册明确载“生娶卒葬俱失/卒失”者，只标已故，不虚构具体卒日。
+    const confirmedDeadRecords = {
+      141: '云英公大德公生娶卒俱失，墓在大岭脚',
+      1260: '善富公生光绪十三年，卒失',
+      1263: '昌鳌公卒失',
+      1266: '昌梧公卒道光廿八年八月初八日戌时',
+      1269: '大岳之子锡圭生乾隆四十二年，卒道光元年八月十六日酉时',
+      1270: '大全之子锡圭生嘉庆八年，卒咸丰五年三月廿八日申时',
+      1271: '昌美之子绍红生光绪十八年，卒失，葬虎头山'
+    };
+    for (const [id, source] of Object.entries(confirmedDeadRecords)) {
+      const person = getPerson(Number(id));
+      if (person) {
+        person.is_alive = '否';
+        person.death_date = /卒[^，。；]*/.exec(source)?.[0] || '卒失（谱载）';
+        person.vital_source = `下册/上册谱文：${source}`;
+      }
+    }
+    // 以上确认结果用静态变量再写一遍，供服务端安全解析器同步到 AI 读取层。
+    const dead141 = getPerson(141); if (dead141) { dead141.is_alive = '否'; dead141.death_date = '卒俱失（谱载）'; dead141.vital_source = '上册谱文：生娶卒俱失，墓在大岭脚'; }
+    const dead1260 = getPerson(1260); if (dead1260) { dead1260.is_alive = '否'; dead1260.death_date = '卒失（谱载）'; dead1260.vital_source = '下册谱文：生光绪十三年，卒失'; }
+    const dead1263 = getPerson(1263); if (dead1263) { dead1263.is_alive = '否'; dead1263.death_date = '卒失（谱载）'; dead1263.vital_source = '下册谱文：昌鳌公卒失'; }
+    const dead1266 = getPerson(1266); if (dead1266) { dead1266.is_alive = '否'; dead1266.death_date = '道光二十八年八月初八日戌时'; dead1266.vital_source = '上册谱文：昌梧公卒道光廿八年八月初八日戌时'; }
+    const dead1269 = getPerson(1269); if (dead1269) { dead1269.is_alive = '否'; dead1269.death_date = '道光元年八月十六日酉时'; dead1269.vital_source = '上册谱文：大岳之子锡圭卒道光元年'; }
+    const dead1270 = getPerson(1270); if (dead1270) { dead1270.is_alive = '否'; dead1270.death_date = '咸丰五年三月二十八日申时'; dead1270.vital_source = '上册谱文：大全之子锡圭卒咸丰五年'; }
     // 昌美之子绍红：原始数据缺少该人物，补入昌美支系。
     const shaoHong = ensureRecord({
       id: 1271,
@@ -3511,6 +3561,9 @@
         shaoHong.gender = '男';
         changed = true;
       }
+      shaoHong.is_alive = '否';
+      shaoHong.death_date = '卒失（谱载）';
+      shaoHong.vital_source = '下册谱文：生光绪十八年，卒失，葬虎头山';
     }
     // 上册世系图“明炜—学礼—昌弟”明确相承；昌弟不是台佐之子。
     setFatherOf(413, 357, '学礼之子昌弟');
@@ -4111,19 +4164,25 @@
       father_id: 812,
       highlight: false
     });
-    // 国芬下一代补录：敏华。性别暂不擅自推断，待族谱核对后可在详情中直接编辑。
+    // 下册载“国芬女敏华”，明确为女性；并载敏华生一九九四年甲戌十月初五日。
     const minHua = ensureRecord({
       id: 1275,
       name: '敏华',
       generation_num: 161,
       generation: '161',
-      gender: '',
+      gender: '女',
       branch: '',
-      biography: '国芬之下一代敏华',
+      birth_date: '一九九四年甲戌十月初五日（公元1994年）',
+      biography: '国芬之女敏华；配贵州务川县丹沙街道银杏社区刘美琳，生一九九九年己卯年',
       father_id: 667,
       highlight: false
     });
-    if (minHua) setFatherOf(1275, 667, '国芬之下一代敏华');
+    if (minHua) {
+      minHua.gender = '女';
+      minHua.birth_date = '一九九四年甲戌十月初五日（公元1994年）';
+      minHua.biography = '国芬之女敏华；配贵州务川县丹沙街道银杏社区刘美琳，生一九九九年己卯年';
+      setFatherOf(1275, 667, '国芬之女敏华');
+    }
     // 关系更正：沐阳是敏杰之子；敏华之子为道贝。
     setFatherOf(858, 778, '敏杰之子沐阳');
     const daoBei = ensureRecord({

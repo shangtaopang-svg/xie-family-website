@@ -108,7 +108,7 @@ function applyAppFatherCorrections(list, appText) {
   // 同步 app.js 中对已定位人物的静态字段修正。此前服务端只同步 father_id，
   // 会导致前台已经显示“孝品/道清”等修正，而 AI 仍读取旧姓名或旧世次。
   // 这里只接受字面量右值，动态表单表达式一律跳过，避免执行用户输入或猜测。
-  const staticFields = ['name', 'generation_num', 'generation', 'biography', 'gender', 'is_alive'];
+  const staticFields = ['name', 'generation_num', 'generation', 'biography', 'gender', 'is_alive', 'birth_date', 'death_date', 'vital_source'];
   for (const [varName, id] of variableIds) {
     const person = map.get(id);
     if (!person) continue;
