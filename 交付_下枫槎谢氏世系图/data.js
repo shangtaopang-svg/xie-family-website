@@ -17444,5 +17444,19 @@ window.GENEALOGY_DATA = [
     "is_alive": "否",
     "father_id": 879,
     "highlight": false
+  },
+  {
+    "id": 1285,
+    "name": "千十二",
+    "generation": "135",
+    "generation_num": 135,
+    "gender": "男",
+    "branch": "石马(下谢)",
+    "birth_date": "",
+    "spouse_ids": "",
+    "biography": "四十之子千十二",
+    "is_alive": "否",
+    "father_id": 1221,
+    "highlight": false
   }
 ];
