@@ -1321,7 +1321,9 @@
     const to = Number(state.query.genTo) || 9999;
     const eraDefinitions = [
       { from: 1, to: 65, label: '炎帝远古世系', startLabel: '炎帝（炎帝第1代）', endLabel: '申伯（炎帝第65代）', className: 'is-ancient' },
-      { from: 65, to: 99, label: '申伯世系', startLabel: '申伯（炎帝第65代）', endLabel: '缵（炎帝第99代）', className: 'is-shenbo' }
+      { from: 65, to: 99, label: '申伯世系', startLabel: '申伯（炎帝第65代）', endLabel: '缵（炎帝第99代）', className: 'is-shenbo' },
+      { from: 99, to: 122, label: '始宁东山世系', startLabel: '缵（炎帝第99代）', endLabel: '闓（炎帝第122代）', className: 'is-dongshan' },
+      { from: 122, to: 130, label: '临海下渡世系', startLabel: '闓（炎帝第122代）', endLabel: '小四（炎帝第130代）', className: 'is-linhai' }
     ];
     const eraBracket = eraDefinitions.map((era, index) => {
       const eraGenerations = generations.filter((generation) => generation >= era.from && generation <= era.to);
@@ -1330,8 +1332,9 @@
       const lastIndex = generations.indexOf(eraGenerations[eraGenerations.length - 1]);
       const left = 8 + firstIndex * 32;
       const width = (lastIndex - firstIndex) * 32 + 28;
-      const bracketTop = 16 + index * 32;
-      const guideHeight = Math.max(10, 92 - bracketTop - 42);
+      const bracketTop = 12 + index * 34;
+      const timelineBarTop = 174;
+      const guideHeight = Math.max(12, timelineBarTop - bracketTop - 24);
       return `<div class="query-era-bracket ${era.className}" style="top:${bracketTop}px;left:${left}px;width:${width}px;--era-guide-height:${guideHeight}px" aria-label="${era.label}，闭区间[${era.from},${era.to}]"><i class="era-bracket-line"></i><b class="era-bracket-arrow">▶</b><strong>${era.label}</strong><b class="era-bracket-arrow">◀</b><i class="era-bracket-line"></i><span class="era-bracket-guide era-bracket-guide-start"></span><span class="era-bracket-guide era-bracket-guide-end"></span><span class="era-bracket-endpoint era-bracket-endpoint-start">${era.startLabel}</span><span class="era-bracket-endpoint era-bracket-endpoint-end">${era.endLabel}</span></div>`;
     }).join('');
     container.innerHTML = eraBracket + generations.map((generation) => {
