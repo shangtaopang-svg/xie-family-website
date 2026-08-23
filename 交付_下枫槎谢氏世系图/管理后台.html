@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>枫槎谢氏宗谱 · 交付管理后台</title>
   <meta name="description" content="枫槎谢氏宗谱交付版管理后台，可编辑世系关系和人物详情">
-  <link rel="stylesheet" href="styles.css?v=20260823-01">
+  <link rel="stylesheet" href="styles.css?v=20260823-02">
 </head>
 <body>
   <div id="app" class="app-shell">
@@ -14,7 +14,7 @@
         <div class="brand-mark">谢</div>
         <div>
           <h1>枫槎谢氏宗谱</h1>
-          <p>交付管理后台 · 世系与人物编辑</p>
+          <p>独立交付版 · 可编辑世系图</p>
         </div>
       </div>
       <div class="source-badge">
@@ -32,11 +32,32 @@
 
     <section class="notice-bar">
       <span class="notice-icon">◆</span>
-      <span>这是独立管理后台，修改会保存在当前浏览器；请定期导出 JSON 备份。原网站后台已单独存档，不在公共网站呈现。</span>
+      <span>这是独立交付界面，编辑内容不会修改原网站。附图仅作为卡片式树状布局参考。</span>
       <button class="notice-close" aria-label="关闭提示" data-action="dismiss-notice">×</button>
     </section>
 
     <div class="workspace">
+      <aside id="site-nav" class="site-nav" aria-label="网站主导航">
+        <div class="site-nav-head">
+          <div class="site-nav-seal">谢</div>
+          <strong>下枫槎村网站</strong>
+          <span>村史、宗谱与乡土文化<br>一站式浏览导航</span>
+        </div>
+        <div class="site-nav-kicker">SITE NAVIGATION</div>
+        <nav class="site-nav-list" aria-label="网站栏目">
+          <a class="site-nav-link" href="../index.html"><i></i>首页</a>
+          <a class="site-nav-link" href="../pages/history.html"><i></i>村史沿革</a>
+          <a class="site-nav-link is-active" href="../pages/genealogy.html" aria-current="page"><i></i>族谱查询</a>
+          <a class="site-nav-link" href="../pages/members.html"><i></i>族人信息</a>
+          <a class="site-nav-link" href="../pages/scenery.html"><i></i>村庄风貌</a>
+          <a class="site-nav-link" href="../pages/activities.html"><i></i>村务活动</a>
+          <a class="site-nav-link" href="../pages/honors.html"><i></i>村庄荣誉</a>
+          <a class="site-nav-link" href="../pages/videos.html"><i></i>影像资料</a>
+          <a class="site-nav-link" href="../pages/contact.html"><i></i>联系我们</a>
+        </nav>
+        <div class="site-nav-foot"><strong>导航栏可调节</strong>拖动右侧分隔线调整宽度；点击上方“隐藏主导航”可暂时收起。</div>
+        <button class="panel-resizer site-nav-resizer" data-resize-panel="site-nav" aria-label="拖动调整主导航栏宽度" title="拖动调整主导航栏宽度"></button>
+      </aside>
       <aside class="control-rail" aria-label="世系图控制区">
         <div class="rail-section">
           <label class="field-label" for="search-input">搜索人物</label>
@@ -83,6 +104,7 @@
             <h2 id="tree-title">总览世系图</h2>
           </div>
           <div class="tree-toolbar-actions">
+            <button class="layout-btn" id="site-nav-toggle" data-action="toggle-site-nav">隐藏主导航</button>
             <button class="layout-btn" id="left-rail-toggle" data-action="toggle-left-rail">隐藏左栏</button>
             <button class="layout-btn" id="detail-toggle" data-action="toggle-detail-panel">隐藏详情</button>
             <button class="layout-btn immersive-toggle" id="immersive-toggle" data-action="toggle-immersive" aria-pressed="false">隐藏界面</button>
@@ -176,6 +198,6 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="data.js"></script>
-<script src="app.js?v=20260823-01"></script>
+<script src="app.js?v=20260823-02"></script>
 </body>
 </html>
