@@ -2568,6 +2568,9 @@
   }
 
   function persist() {
+    // 公开查询页只读，不能让旧的浏览器本地编辑缓存覆盖当前交付数据。
+    // 人物编辑、导入和自动备份只在独立管理后台执行。
+    if (!IS_ADMIN) return;
     try {
       const serialized = JSON.stringify(state.data);
       localStorage.setItem(STORAGE_KEY, serialized);
@@ -2618,6 +2621,13 @@
         changed = true;
       }
     };
+    // 小四（石马）是石马分房的第130世节点，与临海下渡的小四处于同一世次。
+    // 旧版本地缓存曾把这张卡片保留为132世，必须在启动时自动纠正，避免查询页继续显示旧值。
+    const stoneHorseXiaoSi = getPerson(1207);
+    if (stoneHorseXiaoSi && text(stoneHorseXiaoSi.name).trim() === '小四(石马)' && Number(stoneHorseXiaoSi.generation_num) !== 130) {
+      stoneHorseXiaoSi.generation_num = 130;
+      changed = true;
+    }
     // 上册明确记载：文杲子二，攒、撰。攒必须直接挂在文杲（ID 10）下面。
     setFatherOf(13, 10);
     // 上册后枫槎西房二房仅记大智之子为锡麟、锡凤；同名锡奎（ID 186）不是大智之子。
@@ -4362,6 +4372,14 @@
       state.verified = new Set(Array.isArray(verified) ? verified.map((id) => String(id)) : []);
     } catch (error) {
       state.verified = new Set();
+    }
+    // 族谱查询页是公开只读页面：始终从当前部署的 data.js 读取，
+    // 不读取历史浏览器 localStorage，避免旧缓存覆盖最新谱务修订。
+    if (!IS_ADMIN) {
+      state.data = clone(state.original);
+      rebuildDataIndexes();
+      applyKnownPdfCorrections();
+      return;
     }
     let loaded = false;
     try {
