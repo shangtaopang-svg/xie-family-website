@@ -2359,6 +2359,14 @@
     return people.length ? people.map((person) => relationChip(person)).join('') : `<span class="relation-chip muted-chip">${escapeHtml(emptyText || '暂无')}</span>`;
   }
 
+  // spouse_ids 中保留了谱册原文（例如“配石舌章章氏”），不一定能解析成本站人物卡片。
+  // 未解析时不能用“配偶未详”覆盖原始记录，必须原样呈现并注明来源类型。
+  function sourceRelationList(people, rawValue, emptyText) {
+    const raw = text(rawValue).trim();
+    if (!people.length && raw) return `<span class="relation-chip muted-chip source-relation-chip">谱载：${escapeHtml(raw)}</span>`;
+    return relationChipList(people, raw || emptyText || '暂无');
+  }
+
   function displayValue(value, empty) {
     const valueText = text(value).trim();
     return escapeHtml(valueText || empty || '未详');
@@ -2414,6 +2422,7 @@
     }
     const parents = parentsOf(person);
     const spouses = spousesOf(person);
+    const spouseRaw = formValue(person, 'spouse_ids');
     const children = childrenOf(person);
     const displayChildren = displayChildrenOf(person);
     const ancestors = ancestorsOf(person);
@@ -2422,11 +2431,12 @@
       ${IS_ADMIN ? '<div class="detail-actions"><button class="detail-btn primary" data-action="edit-person">直接编辑（实时保存）</button><button class="detail-btn" data-action="new-child">新增子女</button><button class="detail-btn" data-action="export-person">导出人物</button><button class="detail-btn danger" data-action="delete-person">删除</button></div>' : ''}
       <section class="detail-section"><h4>基本资料</h4><dl class="detail-grid">${detailField('姓名', person.name)}${detailField('性别', person.gender)}${detailField('本图世次', viewGenerationLabel(person))}${detailField('总谱世代', generationOf(person) ? `第${generationOf(person)}世` : person.generation)}${detailField('支系', person.branch)}${detailField('状态', boolLabel(person.is_alive))}${detailField('重点标记', person.highlight ? '是' : '否')}</dl></section>
       <section class="detail-section"><h4>时间与地点</h4><dl class="detail-grid">${detailField('出生信息', person.birth_date)}${detailField('卒年 / 卒葬', person.death_date)}${detailField('籍贯', person.native_place)}${detailField('居住地', person.residence)}${detailField('葬地', person.burial_place)}${detailField('资料依据', person.vital_source)}</dl></section>
-      <section class="detail-section"><h4>亲属关系</h4><dl class="detail-grid"><div class="detail-field full"><dt>父母（原始谱系）</dt><dd class="relation-list">${relationChipList(parents, '父母未详')}</dd></div><div class="detail-field full"><dt>配偶</dt><dd class="relation-list">${relationChipList(spouses, '配偶未详')}</dd></div><div class="detail-field full"><dt>子女（原始关联 ${children.length}）</dt><dd class="relation-list">${relationChipList(children, '暂无已关联子女')}</dd></div><div class="detail-field full"><dt>子女（本图归属 ${displayChildren.length}）</dt><dd class="relation-list">${relationChipList(displayChildren, '暂无本图归属子女')}</dd></div></dl></section>
+      <section class="detail-section"><h4>亲属关系</h4><dl class="detail-grid"><div class="detail-field full"><dt>父母（原始谱系）</dt><dd class="relation-list">${relationChipList(parents, '父母未详')}</dd></div><div class="detail-field full"><dt>配偶</dt><dd class="relation-list">${sourceRelationList(spouses, spouseRaw, '配偶未详')}</dd></div><div class="detail-field full"><dt>子女（原始关联 ${children.length}）</dt><dd class="relation-list">${relationChipList(children, '暂无已关联子女')}</dd></div><div class="detail-field full"><dt>子女（本图归属 ${displayChildren.length}）</dt><dd class="relation-list">${relationChipList(displayChildren, '暂无本图归属子女')}</dd></div></dl></section>
       ${adoptionDetailHtml(person)}
       <section class="detail-section"><h4>祖先路径</h4><div class="path-line">${ancestors.map((item, index) => `${index ? '<span class="path-arrow">›</span>' : ''}<span>${escapeHtml(item.name)}</span>`).join('')}</div></section>
       <section class="detail-section"><h4>族谱记载</h4><div class="detail-copy">${displayValue(person.biography, '暂无族谱记载')}</div></section>
-      <section class="detail-section"><h4>补充资料</h4><dl class="detail-grid">${detailField('字 / 号', person.courtesy_name)}${detailField('身份 / 官职', person.title)}${detailField('过继 / 收养说明', person.adopt_note, true)}${detailField('出处页码', person.source_pages)}${detailField('备注', person.notes, true)}</dl></section>
+      <section class="detail-section"><h4>补充资料</h4><dl class="detail-grid">${detailField('字 / 号', person.courtesy_name)}${detailField('身份 / 官职', person.title)}${detailField('过继 / 收养说明', person.adopt_note, true)}${detailField('出处页码', person.source_pages)}${detailField('资料依据', person.vital_source, true)}${detailField('配偶原始谱载', spouseRaw, true)}${detailField('备注', person.notes, true)}</dl></section>
+      ${person.book_record ? `<section class="detail-section book-record-section"><h4>上册 / 下册原始谱载</h4><div class="detail-copy">${displayValue(person.book_record)}</div></section>` : ''}
       <details class="raw-data"><summary>查看原始数据字段（含未在表单展示的字段）</summary><pre>${raw}</pre></details>`;
     refreshDetailMotion(panel, true, false);
   }

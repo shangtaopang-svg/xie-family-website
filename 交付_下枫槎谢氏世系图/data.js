@@ -1773,6 +1773,10 @@ window.GENEALOGY_DATA = [
     "birth_date": "公生乾隆三十五年庚寅七月初二日申时卒失",
     "spouse_ids": "配石舌章章氏",
     "biography": "公墓葬眠牛山之原一锡道",
+    "courtesy_name": "启建",
+    "source_pages": "上册第78页",
+    "vital_source": "上册 PDF 第78页（大业公条）",
+    "book_record": "大业字启建公生乾隆三十五年庚寅七月初二日申时卒失。配石舌章章氏生乾隆四十四年己亥，改适。公墓葬眠牛山之原。子一锡道。",
     "is_alive": "否",
     "father_id": 122,
     "highlight": false

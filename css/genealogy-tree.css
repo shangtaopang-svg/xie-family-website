@@ -335,3 +335,5 @@
   #stats-container .stat-card-anim .stat-num { font-size: 14px !important; }
   #stats-container .stat-card-anim .stat-label { font-size: 9px !important; margin-top: 0 !important; }
 }
+.source-relation-chip { border-color: #c9d8d1; background: #f4f8f5; color: #466b5b; }
+.book-record-section .detail-copy { white-space: pre-wrap; line-height: 1.8; }
