@@ -2435,8 +2435,8 @@
       ${adoptionDetailHtml(person)}
       <section class="detail-section"><h4>祖先路径</h4><div class="path-line">${ancestors.map((item, index) => `${index ? '<span class="path-arrow">›</span>' : ''}<span>${escapeHtml(item.name)}</span>`).join('')}</div></section>
       <section class="detail-section"><h4>族谱记载</h4><div class="detail-copy">${displayValue(person.biography, '暂无族谱记载')}</div></section>
-      <section class="detail-section"><h4>补充资料</h4><dl class="detail-grid">${detailField('字 / 号', person.courtesy_name)}${detailField('身份 / 官职', person.title)}${detailField('过继 / 收养说明', person.adopt_note, true)}${detailField('出处页码', person.source_pages)}${detailField('资料依据', person.vital_source, true)}${detailField('配偶原始谱载', spouseRaw, true)}${detailField('备注', person.notes, true)}</dl></section>
-      ${person.book_record ? `<section class="detail-section book-record-section"><h4>上册 / 下册原始谱载</h4><div class="detail-copy">${displayValue(person.book_record)}</div></section>` : ''}
+      <section class="detail-section"><h4>补充资料</h4><dl class="detail-grid">${detailField('字 / 号', person.courtesy_name)}${detailField('身份 / 官职', person.title)}${detailField('过继 / 收养说明', person.adopt_note, true)}${detailField('出处页码', person.source_pages)}${detailField('资料依据', person.vital_source, true)}${detailField('配偶原始谱载', spouseRaw, true)}${detailField('配偶完整信息', person.spouse_record, true)}${detailField('备注', person.notes, true)}</dl></section>
+      ${person.book_record ? `<section class="detail-section book-record-section"><h4>本人上册 / 下册原始谱载</h4><div class="detail-copy">${displayValue(person.book_record)}</div></section>` : ''}
       <details class="raw-data"><summary>查看原始数据字段（含未在表单展示的字段）</summary><pre>${raw}</pre></details>`;
     refreshDetailMotion(panel, true, false);
   }

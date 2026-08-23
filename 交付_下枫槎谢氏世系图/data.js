@@ -1772,6 +1772,7 @@ window.GENEALOGY_DATA = [
     "branch": "",
     "birth_date": "公生乾隆三十五年庚寅七月初二日申时卒失",
     "spouse_ids": "配石舌章章氏",
+    "spouse_record": "配石舌章章氏，生乾隆四十四年己亥，改适。",
     "biography": "公墓葬眠牛山之原一锡道",
     "courtesy_name": "启建",
     "source_pages": "上册第78页",
