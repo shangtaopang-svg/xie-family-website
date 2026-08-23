@@ -1,14 +1,336 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>枫槎谢氏宗谱 · 族谱管理后台</title>
-  <meta http-equiv="refresh" content="0;url=../交付_下枫槎谢氏世系图/管理后台.html">
-  <style>body{margin:0;display:grid;place-items:center;min-height:100vh;background:#f6f3ec;color:#31534a;font-family:system-ui,"Microsoft YaHei",sans-serif}a{color:#8a511f}</style>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="page.admin.title">管理后台 · 下枫槎谢氏</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+
+  <link rel="stylesheet" href="../css/style.css?v=20260858">
+  <style>
+    /* 修复：窄桌面窗口(约901–1639px)下，居中的管理内容会被左侧固定导航(220px)遮住，
+       此区间内把内容左移220px避开导航；宽屏与手机布局保持不变（≥1640px时居中内容已自然位于导航右侧） */
+    @media (min-width: 901px) and (max-width: 1639px) {
+      .content > .page-wrap {
+        margin-left: 220px;
+        margin-right: auto;
+      }
+    }
+
+    /* ===== 管理后台桌面端：左侧导航折叠（让族谱管理页面更大，方便编辑增减族人） ===== */
+    .admin-page-wrap { max-width: 1200px; }
+    .admin-nav-toggle {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--text-secondary);
+      padding: 5px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.25s;
+      font-family: var(--font-body);
+      white-space: nowrap;
+    }
+    .admin-nav-toggle:hover { background: var(--glass-hover); color: var(--accent-orange); }
+    @media (max-width: 900px) {
+      /* 折叠按钮为电脑端功能，手机端隐藏 */
+      .admin-nav-toggle { display: none; }
+    }
+    @media (min-width: 901px) {
+      /* 总导航（固定左侧220px）折叠为0 */
+      html.admin-mainnav-collapsed .site-header {
+        width: 0;
+        border-right: none;
+        overflow: hidden;
+      }
+      html.admin-mainnav-collapsed .content > .page-wrap {
+        margin-left: 0 !important;
+      }
+      html.admin-mainnav-collapsed .page-wrap.admin-page-wrap {
+        max-width: min(1600px, calc(100vw - 32px));
+      }
+      /* 后台模块导航（180px）折叠为0，内容区自动占满 */
+      html.admin-sb-collapsed .admin-sidebar {
+        width: 0;
+        overflow: hidden;
+      }
+      html.admin-sb-collapsed .admin-body {
+        gap: 0 !important;
+      }
+    }
+  </style>
+  <script defer src="../js/i18n.js?v=9"></script>
+  <script defer src="../js/file-store.js?v=6"></script>
+  <script defer src="../js/supabase.js?v=6"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/animejs@4/dist/anime.min.js"></script>
+  <link rel="manifest" href="../manifest.json">
+  <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
 </head>
-<body>
-  <p>正在进入新的族谱管理后台…… <a href="../交付_下枫槎谢氏世系图/管理后台.html">点击进入</a></p>
-  <script>location.replace('../交付_下枫槎谢氏世系图/管理后台.html');</script>
-</body>
+<body><script>
+(function(){
+  var ptKey = 'pt_go';
+  var pt = document.getElementById('page-transition');
+  
+  // If arriving from transition (sessionStorage flag)
+  if (sessionStorage.getItem(ptKey)) {
+    sessionStorage.removeItem(ptKey);
+    if (!pt) {
+      pt = document.createElement('div');
+      pt.id = 'page-transition';
+      pt.style.cssText = 'position:fixed;inset:0;z-index:999999;background:rgb(7,16,31);display:flex;flex-direction:column;align-items:center;justify-content:center;';if(!document.getElementById('pt-keyframes')){var ks=document.createElement('style');ks.id='pt-keyframes';ks.textContent='@keyframes ptSlide{0%{width:0}100%{width:100%}}@keyframes ptDash{0%{stroke-dashoffset:0}50%{stroke-dashoffset:-17}100%{stroke-dashoffset:-34}}@keyframes ptFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@keyframes ptDot{0%,100%{opacity:0.2}50%{opacity:1}}';document.head.appendChild(ks);}
+      pt.innerHTML = '<div style="text-align:center;animation:ptFade 0.3s ease both;"><div style="width:100px;height:100px;margin:0 auto 28px;"><svg viewBox="-3 -4 39 39" style="width:100%;height:100%;"><polygon fill="transparent" stroke="#04BF00" stroke-width="2" points="16,0 32,32 0,32" stroke-dasharray="17" style="animation:ptDash 0.8s cubic-bezier(0.35,0.04,0.63,0.95) infinite;"/></svg></div><div style="font-size:18px;color:#04BF00;letter-spacing:1px;white-space:nowrap;">ShangTaoPang 正在工作中<span style="display:inline;animation:ptDot 1.4s ease infinite;">.</span><span style="display:inline;animation:ptDot 1.4s ease infinite;animation-delay:0.2s;">.</span><span style="display:inline;animation:ptDot 1.4s ease infinite;animation-delay:0.4s;">.</span></div><div style="margin:24px auto 0;height:4px;width:100%;min-width:360px;max-width:90vw;background:rgba(255,255,255,0.1);border-radius:4px;"><div style="height:4px;border-radius:4px;background:#04BF00;width:0;animation:ptSlide 1.8s ease forwards;min-width:0;"></div></div></div>';
+      document.body.appendChild(pt);
+    }
+    // Fade out after brief display
+    setTimeout(function(){ pt.style.transition='opacity 0.5s ease'; pt.style.opacity='0'; setTimeout(function(){ pt.style.display='none'; },500); },1000);
+    return;
+  }
+  
+  // If overlay HTML exists on page (from index.html), ensure it's hidden
+  if (pt) pt.style.display = 'none';
+  
+  // Intercept nav clicks directly (inline, reliable)
+  document.addEventListener('click', function(e){
+    var a = e.target.closest('a');
+    if (!a) return;
+    if (a.classList.contains('back-page-btn')) return;
+    var h = a.getAttribute('href');
+    if (!h || h==='#' || h.startsWith('javascript:') || h.startsWith('http') || h.startsWith('tel:') || h.startsWith('mailto:') || !h.includes('.html')) return;
+    var cur = window.location.pathname.split('/').pop() || 'index.html';
+    if (h === cur || h === './'+cur) return;
+    e.preventDefault();
+    e.stopPropagation();
+    sessionStorage.setItem(ptKey, '1');
+    sessionStorage.setItem('back_to', window.location.href);
+    // Show overlay with all inline styles
+    var ov = document.getElementById('page-transition') || document.createElement('div');
+    ov.id = 'page-transition';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:999999;background:rgb(7,16,31);display:flex;flex-direction:column;align-items:center;justify-content:center;';
+    ov.innerHTML = '<div style="text-align:center;animation:ptFade 0.3s ease both;"><div style="width:100px;height:100px;margin:0 auto 28px;"><svg viewBox="-3 -4 39 39" style="width:100%;height:100%;"><polygon fill="transparent" stroke="#04BF00" stroke-width="2" points="16,0 32,32 0,32" stroke-dasharray="17" style="animation:ptDash 0.8s cubic-bezier(0.35,0.04,0.63,0.95) infinite;"/></svg></div><div style="font-size:18px;color:#04BF00;letter-spacing:1px;white-space:nowrap;">ShangTaoPang 正在工作中<span style="display:inline;animation:ptDot 1.4s ease infinite;">.</span><span style="display:inline;animation:ptDot 1.4s ease infinite;animation-delay:0.2s;">.</span><span style="display:inline;animation:ptDot 1.4s ease infinite;animation-delay:0.4s;">.</span></div><div style="margin:24px auto 0;height:4px;width:100%;min-width:360px;max-width:90vw;background:rgba(255,255,255,0.1);border-radius:4px;"><div style="height:4px;border-radius:4px;background:#04BF00;width:0;animation:ptSlide 1.8s ease forwards;min-width:0;"></div></div></div>';
+    if (!document.getElementById('pt-keyframes')) {
+      var ks = document.createElement('style');
+      ks.id = 'pt-keyframes';
+      ks.textContent = '@keyframes ptSlide{0%{width:0}100%{width:100%}}@keyframes ptDash{0%{stroke-dashoffset:0}50%{stroke-dashoffset:-17}100%{stroke-dashoffset:-34}}@keyframes ptFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@keyframes ptDot{0%,100%{opacity:0.2}50%{opacity:1}}';
+      document.head.appendChild(ks);
+    }
+    if (ov.parentNode !== document.body) document.body.appendChild(ov);
+    setTimeout(function(){ window.location.href = h; }, 800);
+  });
+})();
+</script>
+
+
+<div class="content">
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        <div class="logo-icon">谢</div>
+        <div class="logo-text"><h1 data-i18n="logo.title">下枫槎谢氏</h1><small data-i18n="logo.subtitle">宁海 · 下枫槎村</small></div>
+      </a>
+      <button class="nav-toggle" data-i18n-aria="nav.toggle" aria-label="菜单">☰</button>
+      <a href="../entrance.html" style="font-size:11px;color:#999;text-decoration:none;padding:4px 10px;border-radius:12px;border:1px solid #eee;white-space:nowrap;margin-left:auto">⛩ 返回石门</a>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="../index.html" data-i18n="nav.home">首页</a></li>
+          <li><a href="history.html" data-i18n="nav.history">家族历史</a></li>
+          <li><a href="genealogy.html">族谱查询</a>
+          <li><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a></li>
+          <li><a href="news.html" data-i18n="nav.news">消息发布</a></li>
+          <li><a href="members.html" data-i18n="nav.members">家族成员</a></li>
+          <li><a href="activities.html" data-i18n="nav.activities">家族活动</a></li>
+          <li><a href="today.html" data-i18n="nav.today">今日下枫槎</a></li>
+          <li><a href="reports.html" data-i18n="nav.reports">新闻报道</a></li>
+          <li><a href="contact.html" data-i18n="nav.contact">联系我们</a></li>
+          <li><a href="admin.html" class="active" data-i18n="nav.admin" style="color:var(--accent-orange);">🔐 管理后台</a></li>
+        </ul>
+                <!-- ===== 底部控制面板 ===== -->
+        <div class="sidebar-controls">
+          <div class="sc-row">
+            <button class="map-z-in sc-btn" title="放大">+</button>
+            <button class="map-z-out sc-btn" title="缩小">−</button>
+            <button class="music-btn" id="music-prev" title="上一首">⏮</button>
+            <button class="music-btn" id="music-toggle" title="播放/暂停">🔈</button>
+            <button class="music-btn" id="music-next" title="下一首">⏭</button>
+          </div>
+          <div class="sc-row">
+            <button class="nav-action-btn" id="theme-toggle" data-i18n-title="nav.theme" title="切换主题">☀️</button>
+            <button class="nav-action-btn lang-btn" id="lang-toggle" data-i18n-title="nav.lang" title="中英文切换">EN</button>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- weather moved to hero on index -->
+
+  <div class="page-wrap admin-page-wrap">
+    <div class="page-title">
+      <h2 data-i18n="admin.panel.title">管理后台</h2>
+      <p data-i18n="page.admin">网站内容管理 · 权限验证</p>
+    </div>
+
+    <!-- ===== 登录框 ===== -->
+    <div id="admin-login-box" class="genealogy-lock">
+      <div class="lock-icon">🔐</div>
+      <h3 data-i18n="admin.login.title">管理员身份验证</h3>
+      <p data-i18n="admin.login.desc">请输入管理员密码以进入后台管理</p>
+      <form id="admin-login-form" action="javascript:void(0)">
+        <input type="password" id="admin-password" data-i18n="admin.password.placeholder" placeholder="请输入管理密码" autocomplete="off" onkeydown="if(event.key==='Enter')adminLogin()">
+        <p id="admin-error" class="error-msg" style="color:var(--accent-red);font-size:12px;display:none;margin-bottom:8px;"></p>
+        <button type="button" class="btn btn-accent" style="width:100%;" onclick="adminLogin()" data-i18n="btn.verify">验证身份</button>
+      </form>
+      <p style="margin-top:16px;font-size:12px;color:var(--text-tertiary);" data-i18n="admin.footnote">* 仅限家族管理员登录 · 未经授权禁止进入</p>
+    </div>
+
+    <!-- ===== 管理面板 ===== -->
+    <div id="admin-panel" class="admin-panel">
+      <div class="admin-header" style="margin-top:30px;">
+        <h3 style="font-size:16px;font-weight:500;letter-spacing:1px;" data-i18n="admin.panel.title">📊 网站内容管理</h3>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button id="admin-mainnav-toggle" class="admin-nav-toggle" title="收起/展开左侧总导航">◀ 总导航</button>
+          <button id="admin-sb-toggle" class="admin-nav-toggle" title="收起/展开后台模块导航">◀ 后台菜单</button>
+          <span id="admin-login-name" data-i18n="admin.login.name" style="font-size:12px;color:var(--text-tertiary);">管理员</span>
+          <button id="admin-logout" class="logout-btn" data-i18n="admin.logout">退出登录</button>
+        </div>
+      </div>
+      <div class="admin-body" style="display:flex;gap:24px;">
+        <!-- Sidebar -->
+        <div class="admin-sidebar">
+          
+          <div class="admin-sidebar-item active" data-module="members" onclick="switchModule('members')"><span class="icon">👥</span><span class="label" data-i18n="admin.members">成员管理</span></div>
+          <div class="admin-sidebar-item" data-module="ruzhuimarry" onclick="switchModule('ruzhuimarry')"><span class="icon">🔒</span><span class="label">入赘婚配</span></div>
+          <div class="admin-sidebar-item" data-module="activities" onclick="switchModule('activities')"><span class="icon">🎉</span><span class="label" data-i18n="admin.activities">活动管理</span></div>
+          <div class="admin-sidebar-item" data-module="news" onclick="switchModule('news')"><span class="icon">📢</span><span class="label" data-i18n="admin.news">消息发布</span></div>
+          <div class="admin-sidebar-item" data-module="honors" onclick="switchModule('honors')"><span class="icon">🏆</span><span class="label" data-i18n="admin.honors">村荣誉管理</span></div>
+          <div class="admin-sidebar-item" data-module="reports" onclick="switchModule('reports')"><span class="icon">📰</span><span class="label" data-i18n="admin.reports">新闻报道管理</span></div>
+          <div class="admin-sidebar-item" data-module="templeCarousel" onclick="switchModule('templeCarousel')"><span class="icon">🏛️</span><span class="label">宗祠轮播管理</span></div>
+          <div class="admin-sidebar-item" data-module="photos" onclick="switchModule('photos')"><span class="icon">🖼️</span><span class="label" data-i18n="admin.photos">照片管理</span></div>
+          <div class="admin-sidebar-item" data-module="videos" onclick="switchModule('videos')"><span class="icon">🎬</span><span class="label" data-i18n="admin.videos">视频管理</span></div>
+          <div class="admin-sidebar-item" data-module="xieCollection" onclick="switchModule('xieCollection')"><span class="icon">📚</span><span class="label">谢氏集萃</span></div>
+          <div class="admin-sidebar-item" data-module="music" onclick="switchModule('music')"><span class="icon">🎵</span><span class="label">背景音乐</span></div>
+          <div class="admin-sidebar-item" data-module="messages" onclick="switchModule('messages')"><span class="icon">💬</span><span class="label" data-i18n="admin.messages">留言管理</span></div>
+          <div class="admin-sidebar-item" data-module="visitors" onclick="switchModule('visitors')"><span class="icon">📋</span><span class="label">访客管理</span></div>
+          <div class="admin-sidebar-item" data-module="merit" onclick="switchModule('merit')"><span class="icon">🏛️</span><span class="label">功德管理</span></div>
+          <div class="admin-sidebar-item" data-module="settings" onclick="switchModule('settings')"><span class="icon">⚙️</span><span class="label" data-i18n="admin.settings">系统设置</span></div>
+        </div>
+        <!-- Content area -->
+        <div id="admin-content-area" class="admin-content-area" style="flex:1;min-width:0;"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-section"><h4 data-i18n="footer.section1.title">下枫槎谢氏</h4><p data-i18n="footer.desc">宁海下枫槎村谢氏家族数字宗祠，致力于家族文化传承与宗亲联络。</p></div>
+      <div class="footer-section"><h4 data-i18n="footer.section2.title">快捷链接</h4><a href="../index.html" data-i18n="nav.home">首页</a><a href="history.html" data-i18n="nav.history">家族历史</a><a href="genealogy.html">族谱查询</a>
+      <div class="footer-section"><h4 data-i18n="footer.section.content">内容</h4><a href="celebrities.html" data-i18n="nav.celebrities">名人事迹</a><a href="news.html" data-i18n="nav.news">消息发布</a><a href="today.html" data-i18n="nav.today">今日下枫槎</a><a href="reports.html" data-i18n="nav.reports">新闻报道</a></div>
+      <div class="footer-section"><h4 data-i18n="footer.section.contact">联系</h4><a href="contact.html" data-i18n="nav.contact">联系我们</a></div>
+    </div>
+    <div class="footer-bottom">
+      <p data-i18n="footer.copyright">© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p>
+    </div>
+  </footer>
+  
+  <a id="backBtn" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
+  <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
+  <!-- Inline critical admin function — works even if external JS fails to load -->
+  <script>
+    if (localStorage.getItem("xie_admin_authed") === "true") { var lb=document.getElementById("admin-login-box"); var pn=document.getElementById("admin-panel"); if(lb)lb.style.display="none"; if(pn)pn.classList.add("active"); if(typeof loadFromSupabase==='function')loadFromSupabase(); if(typeof renderModule==='function')renderModule('members');if(typeof updateStats==='function')updateStats(); }
+  window.adminLogin = function adminLogin() {
+    var pwd = document.getElementById('admin-password');
+    var error = document.getElementById('admin-error');
+    var loginBox = document.getElementById('admin-login-box');
+    var panel = document.getElementById('admin-panel');
+    if (!pwd || !loginBox || !panel) return;
+
+    function enterPanel() {
+      loginBox.style.display = 'none';
+      panel.classList.add('active');
+      localStorage.setItem('xie_admin_authed', 'true');
+      if (typeof renderModule === 'function') {
+        renderModule(currentModule || 'members');
+        if (typeof updateStats === 'function') updateStats();
+      }
+      if (typeof loadFromSupabase === 'function') {
+        loadFromSupabase();
+      }
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/login', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 5000;
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        var data = JSON.parse(xhr.responseText);
+        if (data.ok) {
+          localStorage.setItem('xie_admin_token', data.token);
+          enterPanel();
+          return;
+        }
+      }
+      if (error) {
+        error.textContent = '密码错误，请重试';
+        error.style.display = 'block';
+      }
+    };
+    xhr.onerror = function() {
+      if (error) {
+        error.textContent = '无法连接服务器，请检查网络后重试';
+        error.style.display = 'block';
+      }
+    };
+    xhr.send(JSON.stringify({ password: pwd.value }));
+  };
+  </script>
+  <script>
+  // 管理后台桌面端：左侧总导航 / 后台模块导航 折叠开关（状态持久化，仅桌面端 CSS 生效）
+  (function(){
+    var K1 = 'xie_admin_mainnav_collapsed';
+    var K2 = 'xie_admin_sb_collapsed';
+    var mBtn = document.getElementById('admin-mainnav-toggle');
+    var sBtn = document.getElementById('admin-sb-toggle');
+    function is1(k){ try { return localStorage.getItem(k) === '1'; } catch(e){ return false; } }
+    function setLabel(){
+      if (mBtn) mBtn.textContent = is1(K1) ? '▶ 总导航' : '◀ 总导航';
+      if (sBtn) sBtn.textContent = is1(K2) ? '▶ 后台菜单' : '◀ 后台菜单';
+    }
+    function apply(){
+      document.documentElement.classList.toggle('admin-mainnav-collapsed', is1(K1));
+      document.documentElement.classList.toggle('admin-sb-collapsed', is1(K2));
+      setLabel();
+    }
+    if (mBtn) mBtn.addEventListener('click', function(){ localStorage.setItem(K1, is1(K1) ? '0' : '1'); apply(); });
+    if (sBtn) sBtn.addEventListener('click', function(){ localStorage.setItem(K2, is1(K2) ? '0' : '1'); apply(); });
+    apply();
+  })();
+  </script>
+  <script defer src="../js/main.js?v=20260812"></script>
+  <script defer src="../js/admin.js?v=111"></script>
+  <script>
+    // Canvas animated background
+    // bg-canvas removed
+  </script>
+    <audio id="bg-music" loop></audio>
+
+<script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();try{var u=sessionStorage.getItem("back_to");if(u&&u!==window.location.href&&!u.includes(location.host+"/?")){location.href=u;return}}catch(ex){}if(window.history.length>1)window.history.go(-1);else location.href="../entrance.html"});</script>
+<script>
+(function(){
+var b = document.createElement("div");
+b.id = "backTopBtn";
+b.innerHTML = "↑";
+b.style.cssText = "position:fixed;bottom:80px;right:16px;z-index:9999;width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.85);color:#0a0806;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;opacity:0.9;transition:opacity 0.3s;";
+b.onclick = function(){ window.scrollTo({top:0,behavior:"smooth"}); };
+window.addEventListener("scroll", function(){
+b.style.opacity = window.scrollY > 50 ? "0.9" : "0.3"; if(window.scrollY > 50){b.style.pointerEvents="auto"}else{b.style.pointerEvents="none"}
+});
+document.body.appendChild(b);
+})();
+</script></body>
 </html>

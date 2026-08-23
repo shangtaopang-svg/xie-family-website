@@ -3848,9 +3848,11 @@ function updateStats() {
 }
 
 // ===== Init =====
-var currentModule = 'genealogy';
+var currentModule = 'members';
 
 function switchModule(mod) {
+  // 族谱编辑已迁移到独立族谱管理后台；旧族谱管理与世代总览不再从本站后台呈现。
+  if (mod === 'genealogy' || mod === 'genealogyOverview') mod = 'members';
   currentModule = mod;
   var area = document.getElementById('admin-content-area');
   // Update active state in sidebar

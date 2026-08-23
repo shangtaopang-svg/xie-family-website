@@ -97,6 +97,7 @@ body.is-global-nav-open { overflow: hidden; }
 .admin-identity-bar span { color: rgba(255,248,236,.78); font-size: 11px; }
 .admin-identity-bar a { padding: 6px 12px; border: 1px solid rgba(255,255,255,.42); border-radius: 7px; color: #fff; font-size: 11px; text-decoration: none; }
 .admin-identity-bar a:hover { background: rgba(255,255,255,.12); }
+.admin-identity-bar .admin-identity-links { display: flex; align-items: center; gap: 8px; }
 .global-nav-overlay { position: fixed; inset: 0; z-index: 250; display: grid; place-items: center; padding: 22px; }
 .global-nav-overlay[hidden] { display: none; }
 .global-nav-backdrop { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: rgba(23,42,52,.56); backdrop-filter: blur(4px); }
