@@ -1275,6 +1275,7 @@ button, input, select, textarea { color-scheme: light; }
 .era-bracket-arrow:first-of-type { left: 6px; }
 .era-bracket-arrow:last-of-type { right: 6px; }
 .era-bracket-endpoint { position: absolute; top: 27px; padding: 1px 4px; border-radius: 3px; background: #f1eee7; color: currentColor; font-size: 10px; font-weight: 700; line-height: 1.2; white-space: nowrap; }
+.era-bracket-endpoint::after { content: ''; position: absolute; top: 100%; left: 50%; height: var(--era-guide-height, 24px); border-left: 1px dashed currentColor; opacity: .72; }
 .era-bracket-endpoint-start { left: 0; }
 .era-bracket-endpoint-end { right: 0; transform: translateX(-100%); }
 .era-bracket-line { display: none; }
