@@ -1376,6 +1376,38 @@
     return `<aside class="root-trace-adoption"><strong>出继 / 入继关系</strong><span>亲生父亲：${escapeHtml(biological ? text(biological.name) : '未详')}${biological ? `（ID ${escapeHtml(personId(biological))}）` : ''}</span><span>继父（承嗣父）：${escapeHtml(adoptive ? text(adoptive.name) : '未详')}${adoptive ? `（ID ${escapeHtml(personId(adoptive))}）` : ''}</span>${relation && relation.source ? `<small>谱载：${escapeHtml(relation.source)}</small>` : ''}${biologicalBranch}</aside>`;
   }
 
+  function rootTracePersonBox(person, extraClass = '', badge = '') {
+    return `<div class="root-trace-family-card ${extraClass}"><small>第${escapeHtml(generationOf(person) || '—')}世</small><strong>${escapeHtml(text(person.name) || '未命名')}</strong>${badge ? `<em>${escapeHtml(badge)}</em>` : ''}</div>`;
+  }
+
+  function rootTraceAdoptionTreeHtml(ancestor, relation, adoptedPerson) {
+    const biological = relation.biologicalParent;
+    const adoptive = relation.adoptiveParent;
+    const children = childrenOf(ancestor).filter((child) => generationOf(child) === generationOf(biological));
+    const ordered = children.length ? children : [biological, adoptive].filter(Boolean);
+    const columns = Math.max(2, ordered.length);
+    const childCards = ordered.map((child) => {
+      const isBiological = biological && String(personId(child)) === String(personId(biological));
+      const isAdoptive = adoptive && String(personId(child)) === String(personId(adoptive));
+      return rootTracePersonBox(child, `${isBiological ? 'is-biological-father' : ''}${isAdoptive ? ' is-adoptive-father' : ''}`, isBiological ? '亲生父亲' : isAdoptive ? '继父（承嗣父）' : '昌申之子');
+    }).join('');
+    const biologicalIndex = Math.max(0, ordered.findIndex((child) => biological && String(personId(child)) === String(personId(biological))));
+    const adoptiveIndex = Math.max(0, ordered.findIndex((child) => adoptive && String(personId(child)) === String(personId(adoptive))));
+    const childX = (index) => ((index + .5) / columns) * 100;
+    return `<article class="root-trace-family-tree" style="--family-columns:${columns}">
+      <div class="root-trace-family-ancestor">${rootTracePersonBox(ancestor, 'is-family-root', '父')}</div>
+      <div class="root-trace-family-children">${childCards}</div>
+      <div class="root-trace-family-descendant">${rootTracePersonBox(adoptedPerson, 'is-adopted-child', '出继 / 入继')}</div>
+      <svg class="root-trace-family-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <path class="family-sibling-line" d="M50 5 V20 M${childX(0)} 20 H${childX(columns - 1)} M${ordered.map((child, index) => `${childX(index)} 20 V38`).join(' M')}" />
+        <path class="family-birth-line" d="M${childX(biologicalIndex)} 56 V76 H50 V91" />
+        <path class="family-adoption-line" d="M${childX(adoptiveIndex)} 56 C${childX(adoptiveIndex)} 72, 64 75, 52 88" />
+      </svg>
+      <span class="family-birth-label">亲生父子</span><span class="family-adoption-label">出继给绍让为嗣</span>
+      ${relation.source ? `<p class="root-trace-family-source">谱载：${escapeHtml(relation.source)}</p>` : ''}
+    </article>`;
+  }
+
   function openRootTrace(id) {
     ensureRootTraceModal();
     const person = getPerson(id);
@@ -1384,9 +1416,25 @@
     const summary = $('#root-trace-summary');
     if (!person || !modal || !content) return;
     const chain = queryAncestorChain(person).reverse();
+    const adoptionTrees = new Map();
+    const skipTreeNodes = new Set();
+    chain.forEach((member) => {
+      const relation = state.adoption.inById.get(String(personId(member))) || state.adoption.outById.get(String(personId(member))) || null;
+      if (!relation || !relation.biologicalParent || !relation.adoptiveParent) return;
+      const biologicalFather = rawFatherOf(relation.biologicalParent);
+      const adoptiveFather = rawFatherOf(relation.adoptiveParent);
+      if (!biologicalFather || !adoptiveFather || String(personId(biologicalFather)) !== String(personId(adoptiveFather))) return;
+      adoptionTrees.set(String(personId(biologicalFather)), { ancestor: biologicalFather, relation, person: member });
+      skipTreeNodes.add(String(personId(relation.biologicalParent)));
+      skipTreeNodes.add(String(personId(relation.adoptiveParent)));
+      skipTreeNodes.add(String(personId(member)));
+    });
     const startsAtYandi = chain.length && text(chain[0].name).trim().includes('炎帝');
     if (summary) summary.textContent = `${startsAtYandi ? '炎帝始祖' : '当前数据可追溯始祖'} → ${text(person.name)} · 共 ${chain.length} 代节点`;
     content.innerHTML = `${!startsAtYandi ? '<div class="root-trace-warning">当前数据链未直接抵达“炎帝”记录，以下展示现有数据能够完整追溯的最早世系。</div>' : ''}<div class="root-trace-line">${chain.map((member, index) => {
+      const tree = adoptionTrees.get(String(personId(member)));
+      if (tree) return rootTraceAdoptionTreeHtml(tree.ancestor, tree.relation, tree.person);
+      if (skipTreeNodes.has(String(personId(member)))) return '';
       const tags = adoptionTags(member).map((tag) => tag.label).join(' / ');
       return `<article class="root-trace-node${index === 0 ? ' is-root' : ''}${index === chain.length - 1 ? ' is-target' : ''}"><div class="root-trace-card"><span>第${escapeHtml(generationOf(member) || '—')}世</span><strong>${escapeHtml(text(member.name) || '未命名')}</strong>${tags ? `<em>${escapeHtml(tags)}</em>` : ''}<small>${escapeHtml(text(member.branch) || '')}</small></div>${rootTraceRelationHtml(member, chain)}</article>`;
     }).join('')}</div>`;
