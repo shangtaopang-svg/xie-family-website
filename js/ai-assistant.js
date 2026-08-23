@@ -51,7 +51,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v82'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v83'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -402,6 +402,9 @@
     var done = false;
     var metaVisual = null;
     var visualShown = false;
+    // 只有“全面展示出继 / 入继关系”才打开双路线关系图；
+    // 亲生父系、承嗣父系两个单独选项必须显示各自完整的直线世系图。
+    var fullAdoptionMode = /全面(?:展示|呈现)[^。！？\n]{0,24}(?:出继|入继)/.test(String(text || ''));
 
     // 同名确认：提问中的人名有多个同名族人 → 弹候选按钮，点击后带选中 personId（resolvedId）重发
     var showNameSelect = function (j) {
@@ -508,7 +511,7 @@
         adoptBtn.addEventListener('click', function () { showClosestOverlay(closest || [], closestTree); });
         body.appendChild(adoptBtn);
       }
-      if (!visualShown && visualMode && adoptionNode) { showAdoptionRelationOverlay(tree); visualShown = true; }
+      if (!visualShown && visualMode && adoptionNode && fullAdoptionMode) { showAdoptionRelationOverlay(tree); visualShown = true; }
       else if (!visualShown && tree && tree.length) { showTreeOverlay(tree, ownerIsSelf); visualShown = true; }
       if (!visualShown && ((closest && closest.length) || (closestTree && closestTree.root))) { showClosestOverlay(closest || [], closestTree); visualShown = true; }
       hist.push({ role: 'assistant', content: answer || '' });
@@ -574,7 +577,7 @@
             // 不等待长篇文字结束，图形数据一到就立即呈现。
             if (j.tree && j.tree.length) {
               var metaAdoptionNode = j.tree.find(function (n) { return n && n.adoptionDetail; });
-              if (visualMode && metaAdoptionNode) showAdoptionRelationOverlay(j.tree);
+              if (visualMode && metaAdoptionNode && fullAdoptionMode) showAdoptionRelationOverlay(j.tree);
               else showTreeOverlay(j.tree, j.ownerIsSelf !== false);
               visualShown = true;
             }
@@ -1075,6 +1078,19 @@
     if (s === undefined || s === null) return '';
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
+  function returnToGenealogyQuery() {
+    closeTreeOverlay();
+    closeClosestOverlay();
+    // 二级世系/关系图均为弹层视图；关闭后回到族谱查询主页面，不改变原页面内容。
+    try {
+      if (window.location.pathname.indexOf('/pages/genealogy.html') !== -1) {
+        window.history.replaceState({}, document.title, '/pages/genealogy.html');
+        window.scrollTo(0, 0);
+      } else {
+        window.location.href = '/pages/genealogy.html';
+      }
+    } catch (e) { window.location.href = '/pages/genealogy.html'; }
+  }
   /** 迁徙阶段 → 徽标配色类 */
   function branchCls(b) {
     b = b || '';
@@ -1097,6 +1113,7 @@
       '<div class="ai-tree-modal">' +
       '  <div class="ai-tree-head"><span class="ai-tree-title">🌳 世系图 · 从炎帝神农氏到' + esc(last.name) + '</span>' +
       '    <span class="ai-tree-headbtns">' +
+      '      <button type="button" class="ai-tree-back" aria-label="返回族谱查询" title="返回族谱查询">↩ 返回族谱查询</button>' +
       '      <button type="button" class="ai-tree-stop" aria-label="暂停口播" title="暂停口播" hidden>⏸</button>' +
       '      <button type="button" class="ai-tree-sound" aria-label="' + (ttsMuted ? '打开声音' : '静音') + '" title="' + (ttsMuted ? '打开声音' : '静音') + '">' + (ttsMuted ? '🔇' : '🔊') + '</button>' +
       '      <button type="button" class="ai-tree-close" aria-label="关闭">✕</button>' +
@@ -1132,6 +1149,8 @@
     ov.addEventListener('click', function (e) { if (e.target === ov) closeTreeOverlay(); });
     var treeSoundBtn = ov.querySelector('.ai-tree-sound');
     if (treeSoundBtn) treeSoundBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleTts(); });
+    var treeBackBtn = ov.querySelector('.ai-tree-back');
+    if (treeBackBtn) treeBackBtn.addEventListener('click', function (e) { e.stopPropagation(); returnToGenealogyQuery(); });
     var treeStopBtn = ov.querySelector('.ai-tree-stop');
     if (treeStopBtn) treeStopBtn.addEventListener('click', function (e) {
       e.stopPropagation();
@@ -1347,6 +1366,7 @@
       '<div class="ai-closest-modal">' +
       '  <div class="ai-tree-head"><span class="ai-tree-title">' + title + '</span>' +
       '    <span class="ai-tree-headbtns">' +
+      '      <button type="button" class="ai-closest-back" aria-label="返回族谱查询" title="返回族谱查询">↩ 返回族谱查询</button>' +
       '      <button type="button" class="ai-closest-sound" aria-label="' + (ttsMuted ? '打开声音' : '静音') + '" title="' + (ttsMuted ? '打开声音' : '静音') + '">' + (ttsMuted ? '🔇' : '🔊') + '</button>' +
       '      <button type="button" class="ai-closest-stop" aria-label="暂停口播" title="暂停口播" hidden>⏸</button>' +
       '      <button type="button" class="ai-closest-close" aria-label="关闭">✕</button>' +
@@ -1430,6 +1450,8 @@
     ov.addEventListener('click', function (e) { if (e.target === ov) closeClosestOverlay(); });
     var soundBtn = ov.querySelector('.ai-closest-sound');
     if (soundBtn) soundBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleTts(); });
+    var closestBackBtn = ov.querySelector('.ai-closest-back');
+    if (closestBackBtn) closestBackBtn.addEventListener('click', function (e) { e.stopPropagation(); returnToGenealogyQuery(); });
     var closestStopBtn = ov.querySelector('.ai-closest-stop');
     if (closestStopBtn) closestStopBtn.addEventListener('click', function (e) {
       e.stopPropagation();
