@@ -1320,8 +1320,8 @@
     const from = Number(state.query.genFrom) || 0;
     const to = Number(state.query.genTo) || 9999;
     const eraDefinitions = [
-      { from: 1, to: 65, label: '炎帝远古世系', className: 'is-ancient' },
-      { from: 65, to: 99, label: '申伯世系', className: 'is-shenbo' }
+      { from: 1, to: 65, label: '炎帝远古世系', startLabel: '炎帝', endLabel: '申伯', className: 'is-ancient' },
+      { from: 65, to: 99, label: '申伯世系', startLabel: '申伯', endLabel: '缵', className: 'is-shenbo' }
     ];
     const eraBracket = eraDefinitions.map((era, index) => {
       const eraGenerations = generations.filter((generation) => generation >= era.from && generation <= era.to);
@@ -1330,7 +1330,7 @@
       const lastIndex = generations.indexOf(eraGenerations[eraGenerations.length - 1]);
       const left = 8 + firstIndex * 32;
       const width = (lastIndex - firstIndex) * 32 + 28;
-      return `<div class="query-era-bracket ${era.className}" style="top:${7 + index * 28}px;left:${left}px;width:${width}px" aria-label="${era.label}，闭区间[${era.from},${era.to}]"><i class="era-bracket-line"></i><b class="era-bracket-arrow">▶</b><strong>${era.label}</strong><b class="era-bracket-arrow">◀</b><i class="era-bracket-line"></i></div>`;
+      return `<div class="query-era-bracket ${era.className}" style="top:${128 + index * 28}px;left:${left}px;width:${width}px" aria-label="${era.label}，闭区间[${era.from},${era.to}]"><i class="era-bracket-line"></i><b class="era-bracket-arrow">▶</b><strong>${era.label}</strong><b class="era-bracket-arrow">◀</b><i class="era-bracket-line"></i><span class="era-bracket-endpoint era-bracket-endpoint-start">${era.startLabel}</span><span class="era-bracket-endpoint era-bracket-endpoint-end">${era.endLabel}</span></div>`;
     }).join('');
     container.innerHTML = eraBracket + generations.map((generation) => {
       const count = counts.get(generation) || 0;
