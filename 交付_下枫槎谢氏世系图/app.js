@@ -8,6 +8,7 @@
   const SESSION_VIEW_KEY = 'xiafengcha_genealogy_session_view_v1';
   const LAYOUT_KEY = 'xiafengcha_genealogy_layout_v1';
   const QUERY_STATE_KEY = 'xiafengcha_genealogy_query_v1';
+  const IS_ADMIN = document.body.dataset.appMode === 'admin';
   const initialData = Array.isArray(window.GENEALOGY_DATA) ? window.GENEALOGY_DATA : [];
   const clone = (value) => JSON.parse(JSON.stringify(value));
   const $ = (selector) => document.querySelector(selector);
@@ -1823,7 +1824,7 @@
     const clickTargetAttr = adoptionTarget ? ` data-open-id="${escapeHtml(personId(adoptionTarget))}"` : '';
     const cardAriaLabel = adoptionTarget ? `查看${escapeHtml(person.name)}入继卡及下一代` : `查看${escapeHtml(person.name)}详情`;
     return `<div class="${classes.join(' ')}" data-action="select-person" data-id="${escapeHtml(personId(person))}"${clickTargetAttr} role="button" tabindex="0" aria-label="${cardAriaLabel}">
-      <span class="verify-toggle${verified ? ' is-verified' : ''}" data-action="toggle-verified" data-id="${escapeHtml(personId(person))}" role="button" tabindex="0" aria-pressed="${verified}" aria-label="${verified ? '已核对无误，点击取消' : '标记为已核对无误'}" title="${verified ? '已核对无误 · 点击取消标记' : '点击标记为已核对'}">${verified ? '★' : '☆'}</span>
+      <span class="verify-toggle${verified ? ' is-verified' : ''}${IS_ADMIN ? '' : ' is-readonly'}"${IS_ADMIN ? ` data-action="toggle-verified" data-id="${escapeHtml(personId(person))}" role="button" tabindex="0" aria-pressed="${verified}" aria-label="${verified ? '已核对无误，点击取消' : '标记为已核对无误'}" title="${verified ? '已核对无误 · 点击取消标记' : '点击标记为已核对'}"` : ` aria-label="${verified ? '已核对无误' : '尚未核对'}"`}>${verified ? '★' : '☆'}</span>
       <span class="card-top"><span class="card-generation">${escapeHtml(generation)}</span><span class="card-branch">${escapeHtml(branch)}</span></span>
       <strong>${escapeHtml(person.name || '未命名人物')}</strong>
       ${isCurrentClanLeader ? '<span class="leader-badge">2026届族长</span>' : ''}
@@ -2126,7 +2127,7 @@
     const ancestors = ancestorsOf(person);
     const raw = escapeHtml(JSON.stringify(person, null, 2));
     panel.innerHTML = `<div class="detail-head"><div><h3>${escapeHtml(person.name || '未命名人物')}</h3><p>${escapeHtml(viewGenerationLabel(person))} · 总谱第${generationOf(person) || '未详'}世 · ${escapeHtml(text(person.branch) || '未标注支系')} · ID ${escapeHtml(personId(person))}</p></div><button class="detail-close" data-action="close-detail" aria-label="关闭详情">×</button></div>
-      <div class="detail-actions"><button class="detail-btn primary" data-action="edit-person">直接编辑（实时保存）</button><button class="detail-btn" data-action="new-child">新增子女</button><button class="detail-btn" data-action="export-person">导出人物</button><button class="detail-btn danger" data-action="delete-person">删除</button></div>
+      ${IS_ADMIN ? '<div class="detail-actions"><button class="detail-btn primary" data-action="edit-person">直接编辑（实时保存）</button><button class="detail-btn" data-action="new-child">新增子女</button><button class="detail-btn" data-action="export-person">导出人物</button><button class="detail-btn danger" data-action="delete-person">删除</button></div>' : ''}
       <section class="detail-section"><h4>基本资料</h4><dl class="detail-grid">${detailField('姓名', person.name)}${detailField('性别', person.gender)}${detailField('本图世次', viewGenerationLabel(person))}${detailField('总谱世代', generationOf(person) ? `第${generationOf(person)}世` : person.generation)}${detailField('支系', person.branch)}${detailField('状态', boolLabel(person.is_alive))}${detailField('重点标记', person.highlight ? '是' : '否')}</dl></section>
       <section class="detail-section"><h4>时间与地点</h4><dl class="detail-grid">${detailField('出生信息', person.birth_date)}${detailField('卒年 / 卒葬', person.death_date)}${detailField('籍贯', person.native_place)}${detailField('居住地', person.residence)}${detailField('葬地', person.burial_place)}</dl></section>
       <section class="detail-section"><h4>亲属关系</h4><dl class="detail-grid"><div class="detail-field full"><dt>父母（原始谱系）</dt><dd class="relation-list">${relationChipList(parents, '父母未详')}</dd></div><div class="detail-field full"><dt>配偶</dt><dd class="relation-list">${relationChipList(spouses, '配偶未详')}</dd></div><div class="detail-field full"><dt>子女（原始关联 ${children.length}）</dt><dd class="relation-list">${relationChipList(children, '暂无已关联子女')}</dd></div><div class="detail-field full"><dt>子女（本图归属 ${displayChildren.length}）</dt><dd class="relation-list">${relationChipList(displayChildren, '暂无本图归属子女')}</dd></div></dl></section>
@@ -4414,6 +4415,11 @@
 
   function handleAction(action, element) {
     const id = element && element.dataset ? element.dataset.id : null;
+    const adminOnlyActions = new Set(['import', 'export', 'new-person', 'reset-data', 'toggle-verified', 'edit-person', 'new-child', 'export-person', 'delete-person', 'cancel-edit']);
+    if (!IS_ADMIN && adminOnlyActions.has(action)) {
+      showToast('族谱前台仅供查询，修改请进入管理后台');
+      return;
+    }
     switch (action) {
       case 'import': $('#import-file').click(); break;
       case 'export': exportAll(); break;
