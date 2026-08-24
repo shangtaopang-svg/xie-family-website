@@ -1785,6 +1785,154 @@ body[data-app-mode="public"] .tree-viewport {
   .person-card, .person-card[data-action="select-person"] { min-height: 70px; }
 }
 
+/* 手机端四项查询入口：统一在族谱查询页内切换，不拆出信息类页面。 */
+.mobile-query-menu { display: none; }
+.mobile-query-menu[hidden] { display: none !important; }
+.mobile-query-switcher,
+.mobile-generation-actions { display: none; }
+
+@media (max-width: 760px) {
+  body[data-app-mode="public"] .mobile-query-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 420;
+    display: grid;
+    place-items: end center;
+    padding: 12px;
+    background: rgba(24, 48, 39, .48);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  body[data-app-mode="public"] .mobile-query-menu[hidden] { display: none !important; }
+  body[data-app-mode="public"] .mobile-query-menu-panel {
+    width: min(100%, 460px);
+    max-height: min(88dvh, 680px);
+    overflow: auto;
+    padding: 18px 14px max(18px, env(safe-area-inset-bottom));
+    border: 1px solid #c8d8cb;
+    border-radius: 22px 22px 14px 14px;
+    background: #fbfdf9;
+    box-shadow: 0 -14px 45px rgba(25, 58, 43, .25);
+  }
+  body[data-app-mode="public"] .mobile-query-menu-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  body[data-app-mode="public"] .mobile-query-menu-head h2 {
+    margin: 3px 0 0;
+    color: #244c3d;
+    font-family: "Noto Serif SC", "Source Han Serif SC", "STSong", serif;
+    font-size: 23px;
+  }
+  body[data-app-mode="public"] .mobile-query-menu-head button {
+    width: 44px;
+    height: 44px;
+    border: 1px solid #c8d3c9;
+    border-radius: 50%;
+    background: #fff;
+    color: #536b5e;
+    font-size: 28px;
+    line-height: 1;
+  }
+  body[data-app-mode="public"] .mobile-query-menu-intro {
+    margin: 10px 0 12px;
+    color: #718178;
+    font-size: 13px;
+  }
+  body[data-app-mode="public"] .mobile-query-menu-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+  }
+  body[data-app-mode="public"] .mobile-query-menu-grid button {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
+    align-items: center;
+    gap: 2px 8px;
+    min-height: 104px;
+    padding: 13px 11px;
+    border: 1px solid #cbdacf;
+    border-radius: 14px;
+    background: #f1f7f2;
+    color: #244c3d;
+    text-align: left;
+  }
+  body[data-app-mode="public"] .mobile-query-menu-grid button:active { transform: scale(.98); }
+  body[data-app-mode="public"] .mobile-query-menu-grid button:nth-child(3) { background: #fff7ec; border-color: #e2c6a6; }
+  body[data-app-mode="public"] .mobile-query-menu-grid button:nth-child(4) { background: #fff2ed; border-color: #e2b8a8; }
+  body[data-app-mode="public"] .mobile-query-menu-grid b {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #47725f;
+    color: #fff;
+    font-size: 14px;
+  }
+  body[data-app-mode="public"] .mobile-query-menu-grid strong { font-size: 16px; }
+  body[data-app-mode="public"] .mobile-query-menu-grid small {
+    grid-column: 2;
+    color: #718178;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  body[data-app-mode="public"] .mobile-query-switcher {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+    margin: 12px 0 10px;
+  }
+  body[data-app-mode="public"] .mobile-query-switcher button {
+    min-height: 44px;
+    padding: 5px 3px;
+    border: 1px solid #cbdacf;
+    border-radius: 9px;
+    background: #f4f8f5;
+    color: #4d6759;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  body[data-app-mode="public"] .mobile-query-switcher button.is-active {
+    border-color: #4c7d68;
+    background: #2f654f;
+    color: #fff;
+  }
+  body[data-app-mode="public"] .mobile-generation-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+    margin: 0 0 10px;
+  }
+  body[data-app-mode="public"] .mobile-generation-actions[hidden] { display: none !important; }
+  body[data-app-mode="public"] .mobile-generation-actions button {
+    min-height: 44px;
+    padding: 7px 5px;
+    border: 1px solid #d3b286;
+    border-radius: 9px;
+    background: #fff8ed;
+    color: #80542b;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  body[data-app-mode="public"] .query-drawer[data-mobile-mode] .query-stat-grid { display: none; }
+  body[data-app-mode="public"] .query-drawer[data-mobile-mode="people"] .query-form-grid .query-field:not(.query-field-wide),
+  body[data-app-mode="public"] .query-drawer[data-mobile-mode="generation"] .query-form-grid .query-field-wide,
+  body[data-app-mode="public"] .query-drawer[data-mobile-mode="generation"] .query-form-grid .query-field select,
+  body[data-app-mode="public"] .query-drawer[data-mobile-mode="relation"] .query-people-section { display: none; }
+  body[data-app-mode="public"] .query-drawer[data-mobile-mode="generation"] .query-form-grid .query-field:has(select) { display: none; }
+}
+
+@media (max-width: 380px) {
+  body[data-app-mode="public"] .mobile-query-menu-grid { grid-template-columns: 1fr; }
+  body[data-app-mode="public"] .mobile-query-menu-grid button { min-height: 78px; }
+  body[data-app-mode="public"] .mobile-query-switcher button { font-size: 11px; }
+}
+
 @media (max-width: 420px) {
   .tree-toolbar-actions { grid-template-columns: 1fr 1fr; }
   .tree-toolbar-actions > button { font-size: 11px; }

@@ -38,6 +38,7 @@
     searchQuery: '',
     query: {
       open: false,
+      mobileMode: 'people',
       keyword: '',
       genFrom: '',
       genTo: '',
@@ -1546,7 +1547,7 @@
     const rows = visible.map((person) => {
       const gender = genderLabel(person);
       const adoption = queryAdoptionLabel(person);
-      return `<div class="query-result-row"><span>${escapeHtml(generationOf(person) || '—')}</span><button data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}${adoption ? ` <em class="query-result-tag adopt">${escapeHtml(adoption)}</em>` : ''}</button><span class="query-result-tag${gender === '女' ? ' female' : ''}">${escapeHtml(gender)}</span><span>${escapeHtml(text(person.branch) || '未标注')}</span><span>${escapeHtml(lifeStatusLabel(person))}</span><span class="query-result-actions"><button data-action="query-locate" data-id="${escapeHtml(personId(person))}">定位</button><button class="root-trace-trigger" data-action="root-trace" data-id="${escapeHtml(personId(person))}">寻根</button></span></div>`;
+      return `<div class="query-result-row"><span>${escapeHtml(generationOf(person) || '—')}</span><button data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}${adoption ? ` <em class="query-result-tag adopt">${escapeHtml(adoption)}</em>` : ''}</button><span class="query-result-tag${gender === '女' ? ' female' : ''}">${escapeHtml(gender)}</span><span>${escapeHtml(text(person.branch) || '未标注')}</span><span>${escapeHtml(lifeStatusLabel(person))}</span><span class="query-result-actions"><button data-action="query-locate" data-id="${escapeHtml(personId(person))}">详情</button><button class="root-trace-trigger" data-action="root-trace" data-id="${escapeHtml(personId(person))}">寻根</button></span></div>`;
     }).join('');
     container.innerHTML = head + rows;
   }
@@ -1911,10 +1912,92 @@
     if (state.query.open) renderQueryDashboard();
   }
 
+  function closeMobileQueryMenu() {
+    const menu = $('#mobile-query-menu');
+    if (menu) menu.hidden = true;
+    document.documentElement.classList.remove('is-mobile-query-menu-open');
+  }
+
+  function openMobileQueryMenu() {
+    const menu = $('#mobile-query-menu');
+    if (!menu) return;
+    menu.hidden = false;
+    document.documentElement.classList.add('is-mobile-query-menu-open');
+  }
+
+  function focusQueryField(id) {
+    window.setTimeout(() => {
+      const input = $(`#${id}`);
+      if (!input) return;
+      input.focus({ preventScroll: true });
+      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 80);
+  }
+
+  function setMobileQueryMode(mode) {
+    if (!['people', 'generation', 'relation'].includes(mode)) return;
+    state.query.mobileMode = mode;
+    const drawer = $('#query-drawer');
+    if (drawer) drawer.dataset.mobileMode = mode;
+    const title = drawer && drawer.querySelector('.query-drawer-head h3');
+    if (title) title.textContent = mode === 'people' ? '查族人' : mode === 'generation' ? '查世代' : '查关系';
+    const peopleTitle = $('.query-people-section h4');
+    if (peopleTitle) peopleTitle.textContent = mode === 'generation' ? '按世次查看族人' : '查找族人';
+    $$('.mobile-query-switcher [data-route]').forEach((button) => {
+      const active = button.dataset.route === mode;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-current', active ? 'page' : 'false');
+    });
+    const people = $('.query-people-section');
+    const generation = $('.query-timeline-section');
+    const relation = $('.query-relation-section');
+    const adoption = $('.query-adoption-section');
+    if (people) people.hidden = mode !== 'people';
+    if (generation) generation.hidden = mode !== 'generation';
+    if (relation) relation.hidden = mode !== 'relation';
+    if (adoption) adoption.hidden = mode !== 'generation';
+    const generationActions = $('#mobile-generation-actions');
+    if (generationActions) generationActions.hidden = mode !== 'generation';
+    renderQueryDashboard();
+    if (mode === 'people') focusQueryField('query-search');
+    if (mode === 'generation') focusQueryField('query-gen-from');
+    if (mode === 'relation') focusQueryField('query-relation-a');
+  }
+
+  function openMobileQueryRoute(route) {
+    closeMobileQueryMenu();
+    if (route === 'lineage') {
+      if (state.query.open) toggleQueryDrawer();
+      return;
+    }
+    if (!state.query.open) toggleQueryDrawer();
+    setMobileQueryMode(route);
+  }
+
+  function chooseGenerationQuery(kind) {
+    setMobileQueryMode('generation');
+    const from = $('#query-gen-from');
+    const to = $('#query-gen-to');
+    if (kind === 'single') {
+      if (from) from.placeholder = '输入世次，例如 160';
+      if (to) { to.value = ''; to.placeholder = '单世查询时留空'; }
+      focusQueryField('query-gen-from');
+    } else {
+      if (from) from.placeholder = '起始世次，例如 150';
+      if (to) to.placeholder = '结束世次，例如 160';
+      focusQueryField('query-gen-from');
+    }
+  }
+
   function mobileBackOneLevel() {
     const rootTrace = $('#root-trace-modal');
     if (rootTrace && !rootTrace.hidden) {
       closeRootTrace();
+      return;
+    }
+    const mobileQueryMenu = $('#mobile-query-menu');
+    if (mobileQueryMenu && !mobileQueryMenu.hidden) {
+      closeMobileQueryMenu();
       return;
     }
     const globalNav = $('#global-nav-overlay');
@@ -5406,7 +5489,14 @@
       case 'toggle-minimap': toggleMinimap(); break;
       case 'reset-map-position': resetMapPosition(); break;
       case 'toggle-compact': toggleCompact(); break;
-      case 'toggle-query-drawer': toggleQueryDrawer(); break;
+      case 'toggle-query-drawer':
+        if (!IS_ADMIN && isMobileViewport() && !element.classList.contains('query-close')) openMobileQueryMenu();
+        else toggleQueryDrawer();
+        break;
+      case 'close-mobile-query-menu': closeMobileQueryMenu(); break;
+      case 'mobile-query-route': openMobileQueryRoute(element.dataset.route); break;
+      case 'mobile-generation-single': chooseGenerationQuery('single'); break;
+      case 'mobile-generation-range': chooseGenerationQuery('range'); break;
       case 'mobile-back': mobileBackOneLevel(); break;
       case 'query-run': runQuerySearch(); break;
       case 'query-clear': clearQuery(); break;

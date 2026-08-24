@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>枫槎谢氏宗谱 · 族谱查询</title>
   <meta name="description" content="枫槎谢氏宗谱族谱查询与只读世系图">
-  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260824-mobile-map-04">
+  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260824-mobile-map-05">
 </head>
 <body data-app-mode="public">
   <div id="app" class="app-shell">
@@ -122,6 +122,18 @@
             <button class="query-close" data-action="toggle-query-drawer" aria-label="关闭族谱查询">×</button>
           </div>
 
+          <nav class="mobile-query-switcher" aria-label="切换查询项目">
+            <button type="button" data-action="mobile-query-route" data-route="people">查族人</button>
+            <button type="button" data-action="mobile-query-route" data-route="generation">查世代</button>
+            <button type="button" data-action="mobile-query-route" data-route="relation">查关系</button>
+            <button type="button" data-action="mobile-query-route" data-route="lineage">查世系图</button>
+          </nav>
+
+          <div id="mobile-generation-actions" class="mobile-generation-actions" hidden>
+            <button type="button" data-action="mobile-generation-single">查第几世</button>
+            <button type="button" data-action="mobile-generation-range">查第几世到第几世</button>
+          </div>
+
           <div id="query-stats" class="query-stat-grid" aria-label="族谱统计"></div>
 
           <section class="query-section query-adoption-section" aria-label="出继入继一览表">
@@ -132,14 +144,14 @@
             <div id="query-adoption-table" class="query-adoption-table" hidden></div>
           </section>
 
-          <section class="query-section" aria-label="世代时间轴">
+          <section class="query-section query-timeline-section" aria-label="世代时间轴">
             <div class="query-section-head"><div><span class="query-kicker">GENERATION TIMELINE</span><h4>世代时间轴</h4></div><span class="query-muted">点击任一世代，筛选并定位该世代人物</span></div>
             <div class="query-timeline-scroll"><div id="query-timeline-bars" class="query-timeline-bars"></div></div>
             <section id="query-generation-detail" class="query-generation-detail" hidden aria-live="polite"></section>
           </section>
 
           <div class="query-two-column">
-            <section class="query-section" aria-label="高级搜索">
+            <section class="query-section query-people-section" aria-label="查族人">
               <div class="query-section-head"><div><span class="query-kicker">ADVANCED SEARCH</span><h4>高级搜索</h4></div></div>
               <div class="query-form-grid">
                 <label class="query-field query-field-wide"><span>姓名、字辈或族谱关键词</span><input id="query-search" data-query-field="keyword" type="search" placeholder="例如：水财、入继、枫槎" autocomplete="off"></label>
@@ -152,7 +164,7 @@
               <div id="query-search-results" class="query-results"></div>
             </section>
 
-            <section class="query-section" aria-label="亲缘关系查询">
+            <section class="query-section query-relation-section" aria-label="查关系">
               <div class="query-section-head"><div><span class="query-kicker">KINSHIP PATH</span><h4>亲缘关系查询</h4></div></div>
               <div class="query-relation-form"><label class="query-field"><span>第一个人</span><input id="query-relation-a" data-query-field="relationA" type="search" placeholder="输入姓名"></label><span class="query-relation-mark">↔</span><label class="query-field"><span>第二个人</span><input id="query-relation-b" data-query-field="relationB" type="search" placeholder="输入姓名"></label></div>
               <div class="query-form-actions"><button class="query-primary" data-action="query-relation">查关系</button><span class="query-muted">同名人物会保留不同 ID，避免混淆</span></div>
@@ -173,6 +185,22 @@
     </div>
   </div>
 
+  <div id="mobile-query-menu" class="mobile-query-menu" hidden>
+    <section class="mobile-query-menu-panel" role="dialog" aria-modal="true" aria-labelledby="mobile-query-menu-title">
+      <header class="mobile-query-menu-head">
+        <div><span class="eyebrow">GENEALOGY QUERY</span><h2 id="mobile-query-menu-title">族谱查询</h2></div>
+        <button type="button" data-action="close-mobile-query-menu" aria-label="关闭查询选项">×</button>
+      </header>
+      <p class="mobile-query-menu-intro">请选择要查询的内容</p>
+      <div class="mobile-query-menu-grid">
+        <button type="button" data-action="mobile-query-route" data-route="lineage"><b>1</b><strong>查世系图</strong><small>浏览总览、远古、申伯、始宁东山、临海下渡、石马、本宗世系图</small></button>
+        <button type="button" data-action="mobile-query-route" data-route="people"><b>2</b><strong>查族人</strong><small>输入一个姓名，查看详情或寻根</small></button>
+        <button type="button" data-action="mobile-query-route" data-route="generation"><b>3</b><strong>查世代</strong><small>按一世或连续世次查看人员列表</small></button>
+        <button type="button" data-action="mobile-query-route" data-route="relation"><b>4</b><strong>查关系</strong><small>查询两位族人的亲属称呼和关系路径</small></button>
+      </div>
+    </section>
+  </div>
+
   <div id="global-nav-overlay" class="global-nav-overlay" hidden>
     <button class="global-nav-backdrop" data-action="close-global-nav" aria-label="关闭总导航"></button>
     <section class="global-nav-panel" role="dialog" aria-modal="true" aria-labelledby="global-nav-title">
@@ -183,7 +211,7 @@
     </section>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="../交付_下枫槎谢氏世系图/app.js?v=20260824-mobile-map-04"></script>
+<script src="../交付_下枫槎谢氏世系图/app.js?v=20260824-mobile-map-05"></script>
 <link rel="stylesheet" href="/css/ai.css?v=91">
 <script src="/js/ai-assistant.js?v=91" defer></script>
 </body>
