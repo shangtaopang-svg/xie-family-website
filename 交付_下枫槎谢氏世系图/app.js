@@ -1935,12 +1935,12 @@
   }
 
   function setMobileQueryMode(mode) {
-    if (!['people', 'generation', 'relation'].includes(mode)) return;
+    if (!['people', 'generation', 'relation', 'info'].includes(mode)) return;
     state.query.mobileMode = mode;
     const drawer = $('#query-drawer');
     if (drawer) drawer.dataset.mobileMode = mode;
     const title = drawer && drawer.querySelector('.query-drawer-head h3');
-    if (title) title.textContent = mode === 'people' ? '查族人' : mode === 'generation' ? '查世代' : '查关系';
+    if (title) title.textContent = mode === 'people' ? '查族人' : mode === 'generation' ? '查世代' : mode === 'info' ? '族人信息' : '查关系';
     const peopleTitle = $('.query-people-section h4');
     if (peopleTitle) peopleTitle.textContent = mode === 'generation' ? '按世次查看族人' : '查找族人';
     $$('.mobile-query-switcher [data-route]').forEach((button) => {
@@ -1953,9 +1953,9 @@
     const relation = $('.query-relation-section');
     const adoption = $('.query-adoption-section');
     if (people) people.hidden = mode !== 'people';
-    if (generation) generation.hidden = mode !== 'generation';
+    if (generation) generation.hidden = !['generation', 'info'].includes(mode);
     if (relation) relation.hidden = mode !== 'relation';
-    if (adoption) adoption.hidden = mode !== 'generation';
+    if (adoption) adoption.hidden = !['generation', 'info'].includes(mode);
     const generationActions = $('#mobile-generation-actions');
     if (generationActions) generationActions.hidden = mode !== 'generation';
     renderQueryDashboard();

@@ -142,6 +142,7 @@ body.is-global-nav-open { overflow: hidden; }
 .view-tab { flex: 0 0 auto; padding: 7px 11px; border: 1px solid #d3e0e8; border-radius: 99px; background: #fff; color: var(--muted); font-size: 11px; white-space: nowrap; }
 .view-tab:hover { border-color: var(--primary); color: var(--primary-dark); background: var(--surface-blue); }
 .view-tab.is-active { border-color: var(--primary); background: var(--primary); color: #fff; box-shadow: 0 3px 10px rgba(43,131,183,.2); }
+.mobile-lineage-controls { display: none; }
 .main-branch-nav { position: relative; z-index: 8; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 7px 22px; border-bottom: 1px solid #e7edf1; background: #f6fafc; user-select: none; pointer-events: auto; }
 .main-branch-nav[hidden] { display: none; }
 .main-branch-title { color: #6d8290; font-size: 10px; font-weight: 700; white-space: nowrap; }
@@ -1867,6 +1868,7 @@ body[data-app-mode="public"] .tree-viewport {
   body[data-app-mode="public"] .mobile-query-menu-grid button:active { transform: scale(.98); }
   body[data-app-mode="public"] .mobile-query-menu-grid button:nth-child(3) { background: #fff7ec; border-color: #e2c6a6; }
   body[data-app-mode="public"] .mobile-query-menu-grid button:nth-child(4) { background: #fff2ed; border-color: #e2b8a8; }
+  body[data-app-mode="public"] .mobile-query-menu-grid button:nth-child(5) { background: #f1f5ff; border-color: #c4d1e7; }
   body[data-app-mode="public"] .mobile-query-menu-grid b {
     display: grid;
     place-items: center;
@@ -1887,7 +1889,7 @@ body[data-app-mode="public"] .tree-viewport {
 
   body[data-app-mode="public"] .mobile-query-switcher {
     display: none !important;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 5px;
     margin: 12px 0 10px;
   }
@@ -1906,6 +1908,14 @@ body[data-app-mode="public"] .tree-viewport {
     border-color: #4c7d68;
     background: #2f654f;
     color: #fff;
+  }
+  body[data-app-mode="public"] .query-drawer[data-mobile-mode="info"] .mobile-query-switcher {
+    display: flex !important;
+    overflow-x: auto;
+  }
+  body[data-app-mode="public"] .query-drawer[data-mobile-mode="info"] .mobile-query-switcher button {
+    flex: 0 0 auto;
+    min-width: 76px;
   }
   body[data-app-mode="public"] .mobile-generation-actions {
     display: grid;
@@ -1983,6 +1993,63 @@ body[data-app-mode="public"] .tree-viewport {
     display: none !important;
   }
 
+  /* “查世系图”移动端只保留视图选择和四个核心操作，避免左侧控制栏挤占树图区。 */
+  body[data-app-mode="public"] .control-rail { display: none !important; }
+  body[data-app-mode="public"] .main-branch-nav { display: none !important; }
+  body[data-app-mode="public"] .mobile-lineage-controls {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    padding: 8px 10px;
+    border-bottom: 1px solid #d7d3ca;
+    background: #f8f6ef;
+  }
+  body[data-app-mode="public"] .mobile-lineage-controls button {
+    min-width: 0;
+    min-height: 44px;
+    padding: 6px 3px;
+    border: 1px solid #c7c2b6;
+    border-radius: 7px;
+    background: #fbf9f3;
+    color: #315b4c;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  body[data-app-mode="public"] .mobile-lineage-controls button:active {
+    background: #e7eee9;
+    border-color: #6f8d7f;
+    transform: translateY(1px);
+  }
+  body[data-app-mode="public"] .view-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 8px 10px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    border-bottom: 1px solid #d7d3ca;
+    background: #f8f6ef;
+    scrollbar-width: thin;
+  }
+  body[data-app-mode="public"] .view-tab {
+    flex: 0 0 auto;
+    min-height: 44px;
+    padding: 6px 12px;
+    border: 1px solid #c7c2b6;
+    border-radius: 7px;
+    background: #fbf9f3;
+    color: #68766f;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  body[data-app-mode="public"] .view-tab.is-active {
+    border-color: #47725f;
+    background: #47725f;
+    color: #fff;
+    box-shadow: 0 2px 7px rgba(71, 114, 95, .22);
+  }
+
   body[data-app-mode="public"] .control-rail {
     display: block;
     padding: 8px 10px;
@@ -2031,14 +2098,7 @@ body[data-app-mode="public"] .tree-viewport {
   body[data-app-mode="public"] .tree-legend::-webkit-scrollbar { display: none; }
   body[data-app-mode="public"] .tree-legend .tree-help { display: none; }
 
-  body[data-app-mode="public"] .tree-toolbar-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: stretch;
-    justify-content: flex-start;
-    overflow: visible;
-    gap: 6px;
-  }
+  body[data-app-mode="public"] .tree-toolbar-actions { display: none !important; }
   body[data-app-mode="public"] .tree-toolbar-actions #global-nav-toggle,
   body[data-app-mode="public"] .tree-toolbar-actions #left-rail-toggle,
   body[data-app-mode="public"] .tree-toolbar-actions #detail-toggle,
