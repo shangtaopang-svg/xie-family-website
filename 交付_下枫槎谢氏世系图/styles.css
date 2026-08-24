@@ -1794,3 +1794,49 @@ body[data-app-mode="public"] .tree-viewport {
 @media (prefers-reduced-motion: reduce) {
   .tree-minimap *, .tree-toolbar-actions *, .person-card { transition: none !important; animation: none !important; }
 }
+
+/* 手机端收拢入口：搜索统一进入“族谱查询”，桌面端布局保持不变。 */
+@media (max-width: 760px) {
+  body[data-app-mode="public"] .control-rail > .rail-section:first-child { display: none; }
+
+  body[data-app-mode="public"] .rail-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  body[data-app-mode="public"] .rail-actions .rail-action {
+    min-width: 0;
+    padding-inline: 4px;
+    white-space: nowrap;
+    font-size: 11px;
+  }
+
+  body[data-app-mode="public"] .tree-toolbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    justify-content: flex-start;
+    overflow: visible;
+    gap: 6px;
+  }
+  body[data-app-mode="public"] .tree-toolbar-actions #global-nav-toggle,
+  body[data-app-mode="public"] .tree-toolbar-actions #left-rail-toggle,
+  body[data-app-mode="public"] .tree-toolbar-actions #detail-toggle,
+  body[data-app-mode="public"] .tree-toolbar-actions .pan-reset-btn,
+  body[data-app-mode="public"] .tree-toolbar-actions #compact-toggle,
+  body[data-app-mode="public"] .tree-toolbar-actions .print-btn {
+    display: none !important;
+  }
+  body[data-app-mode="public"] .tree-toolbar-actions .query-toggle {
+    order: -1;
+    flex: 1 1 100%;
+    min-width: 0;
+    background: #e7eee9;
+    border-color: #6f8d7f;
+    color: #315b4c;
+    font-weight: 800;
+  }
+  body[data-app-mode="public"] .tree-toolbar-actions > button {
+    flex: 1 1 auto;
+    min-width: 44px;
+  }
+}
