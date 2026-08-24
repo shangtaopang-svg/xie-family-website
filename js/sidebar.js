@@ -70,7 +70,7 @@
     '<nav class="s-nav">' +
       '<a href="' + root() + 'index.html">🏠 首页</a>' +
       '<a href="' + p('history') + '">📜 家族历史</a>' +
-      '<a href="' + p('genealogy') + '">🌳 族谱查询</a>' +
+      '<a href="' + p('genealogy') + '?chooser=1">🌳 族谱查询</a>' +
       '<a href="' + p('celebrities') + '">🏆 名人事迹</a>' +
       '<a href="' + p('merit-scroll') + '">📜 功德卷轴</a>' +
       '<a href="' + p('news') + '">📰 消息发布</a>' +

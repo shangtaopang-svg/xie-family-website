@@ -6044,6 +6044,9 @@
     }
     wireEvents();
     renderAll();
+    // 从网站主导航点击“族谱查询”时，直接打开四项查询选择；直接打开页面则保持安静。
+    const chooserRequested = new URLSearchParams(window.location.search).get('chooser') === '1';
+    if (!IS_ADMIN && isMobileViewport() && chooserRequested) setTimeout(openMobileQueryMenu, 80);
     if (sessionView && !hasExplicitRoute) restoreSessionViewport(sessionView);
     // 只有明确要求深度/安全展开时才自动全景；已有会话视图必须保持原位置和缩放。
     if (route.depth || route.safe || (state.mainFocusId && (!sessionView || hasExplicitRoute))) setTimeout(fitOverview, 0);
