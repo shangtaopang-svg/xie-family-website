@@ -1347,6 +1347,104 @@ button, input, select, textarea { color-scheme: light; }
   .generation-row-summary span { min-width: 0; }
 }
 
+/* ─────────────────────────────────────────────────────────────
+   2026-08 桌面端统一交互层
+   公共族谱页只读；三栏始终由同一组 CSS 变量控制，分隔栏与
+   隐藏/恢复按钮共用同一套状态。图面区域禁止页面级横向漂移，
+   横向空间只交给世系图自己的 viewport。
+   ───────────────────────────────────────────────────────────── */
+.header-readonly-badge {
+  margin-left: auto;
+  padding: 7px 11px;
+  border: 1px solid #c9d7cd;
+  border-radius: 999px;
+  background: #eef5ef;
+  color: #4e7561;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+
+body[data-app-mode="public"] .header-actions,
+body[data-app-mode="public"] #import-file {
+  display: none !important;
+}
+
+.app-header { min-height: 68px; padding: 10px 20px; gap: 16px; }
+.brand-block { min-width: 210px; }
+.brand-mark { width: 38px; height: 38px; font-size: 22px; }
+.brand-block h1 { font-size: 17px; }
+.source-badge { padding: 6px 9px; font-size: 11px; }
+.notice-bar { min-height: 29px; padding: 6px 20px; font-size: 11px; }
+
+.workspace {
+  grid-template-columns: minmax(168px, var(--left-rail-w)) minmax(0, 1fr) minmax(236px, var(--detail-panel-w));
+}
+.app-shell.is-left-hidden .workspace { grid-template-columns: 0 minmax(0, 1fr) minmax(236px, var(--detail-panel-w)); }
+.app-shell.is-detail-hidden .workspace { grid-template-columns: minmax(168px, var(--left-rail-w)) minmax(0, 1fr) 0; }
+.app-shell.is-left-hidden.is-detail-hidden .workspace { grid-template-columns: 0 minmax(0, 1fr) 0; }
+.control-rail { padding: 14px 12px; }
+.rail-section { padding-bottom: 12px; margin-bottom: 12px; }
+.stats-section { gap: 0; }
+.stat-line { padding: 5px 0; }
+.rail-footer { padding: 10px 10px 10px 12px; font-size: 10px; }
+
+.tree-toolbar {
+  min-height: 60px;
+  padding: 9px 14px 8px;
+  align-items: center;
+  gap: 10px;
+}
+.tree-toolbar > :first-child { flex: 0 1 205px; min-width: 145px; }
+.tree-toolbar h2 { margin-top: 3px; font-size: 19px; }
+.tree-toolbar-actions {
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 4px;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 1px 3px;
+  scrollbar-width: thin;
+}
+.tree-toolbar-actions > button { height: 28px; }
+.layout-btn, .fit-btn, .zoom-readout { padding-inline: 7px; font-size: 10px; }
+.tree-help { flex: 1 0 100%; margin-left: 0; font-size: 10px; }
+.tree-legend { gap: 9px; padding: 6px 14px; font-size: 10px; }
+.tree-viewport { padding: 22px 28px 56px; }
+.tree-viewport, .tree-area { min-width: 0; }
+
+.detail-panel { padding: 16px 15px 58px; }
+.detail-head h3 { font-size: 22px; }
+.panel-resizer { width: 18px; }
+.panel-resizer::after { width: 22px; height: 48px; font-size: 12px; }
+
+.query-drawer { padding: 20px 24px 30px; }
+.query-stat-grid { grid-template-columns: repeat(8, minmax(86px, 1fr)); gap: 6px; margin: 10px 0 12px; }
+.query-stat { min-height: 56px; padding: 7px 8px 6px; box-shadow: none; }
+.query-stat strong { font-size: 17px; }
+.query-stat span { margin-top: 3px; font-size: 9px; }
+.query-section { padding: 14px 15px; }
+.query-form-grid { gap: 7px; }
+.query-field input, .query-field select { min-height: 34px; padding-top: 6px; padding-bottom: 6px; }
+.query-form-actions { flex-wrap: wrap; gap: 7px; }
+
+@media (min-width: 901px) and (max-width: 1260px) {
+  .app-header { padding-inline: 14px; }
+  .source-badge { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+  .tree-toolbar { align-items: flex-start; flex-direction: column; }
+  .tree-toolbar > :first-child { width: 100%; flex: none; }
+  .tree-toolbar-actions { width: 100%; justify-content: flex-start; }
+  .query-stat-grid { grid-template-columns: repeat(4, minmax(100px, 1fr)); }
+}
+
+@media (max-width: 900px) {
+  .header-readonly-badge { margin-left: auto; }
+  .app-header { min-height: 64px; }
+  .query-stat { min-height: 64px; }
+}
+
 @media (max-width: 680px) {
   .mobile-genealogy-back {
     position: fixed;
@@ -1452,6 +1550,13 @@ button, input, select, textarea { color-scheme: light; }
   .query-result-row > :nth-child(4), .query-result-row > :nth-child(5) { display: none; }
   .query-result-actions { gap: 3px; }
   .query-result-actions .root-trace-trigger { padding: 3px 5px; }
+}
+
+@media (min-width: 901px) {
+  .query-stat-grid { align-items: stretch; }
+  .query-stat { min-height: 58px !important; padding: 7px 8px 6px; }
+  .query-stat strong { font-size: 17px; }
+  .query-stat span { margin-top: 3px; font-size: 9px; }
 }
 
 /* 生命状态优先于支系和性别底色：无明确证据时显示待核验，不按世次猜测。 */

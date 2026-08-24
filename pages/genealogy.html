@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>枫槎谢氏宗谱 · 族谱查询</title>
-  <meta name="description" content="基于枫槎谢氏宗谱上下册整理的可编辑树状世系图交付界面">
-  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260824-compact-01">
+  <meta name="description" content="枫槎谢氏宗谱族谱查询与只读世系图">
+  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260824-desktop-02">
 </head>
 <body data-app-mode="public">
   <div id="app" class="app-shell">
@@ -14,7 +14,7 @@
         <div class="brand-mark">谢</div>
         <div>
           <h1>枫槎谢氏宗谱</h1>
-          <p>独立交付版 · 可编辑世系图</p>
+          <p>族谱查询 · 只读世系图</p>
         </div>
       </div>
       <div class="source-badge">
@@ -22,12 +22,7 @@
         <span>数据来源：族谱管理后台最终数据（交付版基线）</span>
         <span id="data-count-badge">加载中</span>
       </div>
-      <div class="header-actions">
-        <button class="btn btn-ghost" data-action="import">导入 JSON</button>
-        <button class="btn btn-ghost" data-action="export">导出 JSON</button>
-        <button class="btn btn-primary" data-action="new-person">＋ 新增人物</button>
-        <input id="import-file" type="file" accept="application/json,.json" hidden>
-      </div>
+      <div class="header-readonly-badge" aria-label="只读查询页面">只读查询</div>
     </header>
 
     <section class="notice-bar">
@@ -58,7 +53,6 @@
           <button class="rail-action" data-action="expand-main">展开主脉</button>
           <button class="rail-action" data-action="expand-all">展开全部</button>
           <button class="rail-action" data-action="collapse-all">全部收起</button>
-          <button class="rail-action" data-action="reset-data">恢复原始数据</button>
         </div>
 
         <div class="rail-section stats-section">
@@ -70,8 +64,8 @@
         </div>
 
         <div class="rail-footer">
-          <p>编辑提示</p>
-          <span>点击人物卡片查看完整详情；右上角五角星用于标记“已核对无误”。数据会保存在当前浏览器，可随时导出备份。</span>
+          <p>查询提示</p>
+          <span>点击人物卡片查看完整详情；可使用搜索、筛选、全景、缩放和平移浏览世系图。族谱资料由管理后台统一维护。</span>
         </div>
         <button class="panel-resizer rail-resizer" data-resize-panel="left" aria-label="拖动调整左侧控制栏宽度" title="拖动调整左侧控制栏宽度"></button>
       </aside>
@@ -86,7 +80,7 @@
             <button class="layout-btn global-nav-button" id="global-nav-toggle" data-action="toggle-global-nav" aria-expanded="false" aria-controls="global-nav-overlay">总导航</button>
             <button class="layout-btn" id="left-rail-toggle" data-action="toggle-left-rail">隐藏左栏</button>
             <button class="layout-btn" id="detail-toggle" data-action="toggle-detail-panel">隐藏详情</button>
-            <button class="layout-btn immersive-toggle" id="immersive-toggle" data-action="toggle-immersive" aria-pressed="false">隐藏界面</button>
+            <button class="layout-btn immersive-toggle" id="immersive-toggle" data-action="toggle-immersive" aria-pressed="false">全屏浏览</button>
             <button class="fit-btn" data-action="fit-overview">全景</button>
             <button class="layout-btn pan-reset-btn" data-action="reset-map-position" title="将世系图移回中央">复位图面</button>
             <button class="fit-btn print-btn" data-action="print-tree">打印世系图</button>
@@ -189,7 +183,7 @@
     </section>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="../交付_下枫槎谢氏世系图/app.js?v=20260824-compact-01"></script>
+<script src="../交付_下枫槎谢氏世系图/app.js?v=20260824-desktop-02"></script>
 <link rel="stylesheet" href="/css/ai.css?v=91">
 <script src="/js/ai-assistant.js?v=91" defer></script>
 </body>

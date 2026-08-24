@@ -1142,8 +1142,8 @@
     shell.classList.toggle('is-immersive', state.immersive);
     const toggle = $('#immersive-toggle');
     if (toggle) {
-      toggle.textContent = state.immersive ? '显示界面' : '隐藏界面';
-      toggle.title = state.immersive ? '恢复顶部工具和说明区域' : '隐藏顶部工具、标签、图例和状态栏';
+      toggle.textContent = state.immersive ? '退出全屏' : '全屏浏览';
+      toggle.title = state.immersive ? '恢复顶部工具和说明区域' : '全屏查看世系图；可用浮动按钮恢复界面';
       toggle.setAttribute('aria-pressed', String(state.immersive));
     }
     const hud = $('#immersive-hud');
@@ -1157,6 +1157,12 @@
   function toggleImmersive() {
     state.immersive = !state.immersive;
     applyImmersiveMode(true);
+    if (state.immersive) {
+      const app = $('#app');
+      if (app && app.requestFullscreen) app.requestFullscreen().catch(() => { /* 浏览器不支持时使用页面沉浸模式 */ });
+    } else if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    }
     if (state.immersive && state.overviewMode) {
       // 隐藏顶部区域后视口变高，重新适配一次全景图，避免图面仍按旧高度缩放。
       const run = () => {
@@ -1167,7 +1173,7 @@
       else setTimeout(run, 0);
     }
     showToast(state.immersive
-      ? '已进入沉浸全景模式；滚轮缩放、拖拽平移，按 Esc 显示界面'
+      ? '已进入全屏浏览；滚轮缩放、拖拽平移，按 Esc 显示界面'
       : '已显示完整界面');
   }
 
@@ -2499,7 +2505,7 @@
     stage.classList.toggle('is-overview-map', state.overviewMode);
     stage.dataset.view = state.view;
     if (!root) {
-      stage.innerHTML = '<div class="tree-placeholder">暂无人物数据，请导入 JSON 或新增人物。</div>';
+      stage.innerHTML = '<div class="tree-placeholder">暂无可展示的族谱数据。</div>';
     } else {
       const memo = new Map();
       stage.innerHTML = `<div class="tree-root">${renderNode(root, 0, new Set(), memo)}</div>`;
@@ -5505,6 +5511,13 @@
   function wireEvents() {
     wirePanelResize();
     wireCanvasPan();
+    document.addEventListener('fullscreenchange', () => {
+      // 用户按 Esc 退出浏览器原生全屏时，同步恢复页面工具栏，避免留下“只剩图面”的假死状态。
+      if (state.immersive && !document.fullscreenElement) {
+        state.immersive = false;
+        applyImmersiveMode(true);
+      }
+    });
     window.addEventListener('pagehide', persistSessionView);
     window.addEventListener('beforeunload', persistSessionView);
     document.addEventListener('click', (event) => {
@@ -5632,7 +5645,8 @@
       if (match) setAncestorsExpanded(match);
       renderAll();
     });
-    $('#import-file').addEventListener('change', (event) => {
+    const importFile = $('#import-file');
+    if (importFile) importFile.addEventListener('change', (event) => {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
       const reader = new FileReader();
