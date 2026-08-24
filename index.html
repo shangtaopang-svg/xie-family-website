@@ -47,6 +47,11 @@
       .hero-weather-temp { font-size: 18px !important; }
       .nav-controls { display: none !important; }
     }
+    @media (max-width: 768px) {
+      /* 首页身份提示出现时，族谱入口仍须可直接使用。 */
+      .mbh-pills { position: relative; z-index: 10000001 !important; }
+      .mbh-pills .mbh-pill-active { position: relative; z-index: 10000002 !important; }
+    }
   </style>
   <script defer src="js/i18n.js?v=9"></script>
   <script defer src="js/file-store.js?v=6"></script>
@@ -66,6 +71,17 @@
   document.getElementById('clan-no').addEventListener('click',function(){d.remove();localStorage.setItem('mb_clan_asked','1');});
   document.getElementById('clan-yes').addEventListener('click',function(){d.remove();localStorage.setItem('mb_clan_asked','1');window.location.href='pages/clan-register.html';});
 })();</script>
+<script>
+// 首页族谱入口优先：点击时关闭身份提示并继续跳转，不被遮罩拦截。
+(function(){
+  document.addEventListener('click', function(e){
+    var a = e.target.closest && e.target.closest('a[href*="pages/genealogy.html"]');
+    if (!a) return;
+    var d = document.getElementById('mb-clan-dialog');
+    if (d) { d.remove(); try { localStorage.setItem('mb_clan_asked','1'); } catch (_) {} }
+  }, true);
+})();
+</script>
 </head>
 <body><script>
 (function(){
