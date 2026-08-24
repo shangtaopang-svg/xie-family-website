@@ -591,6 +591,7 @@
     };
     registerExplicitPair(100, 101, 88, '延省之子寅卿，出继给延荐为嗣', true);
     registerExplicitPair(169, 170, 107, '大顺由云良房出继，入继云奇为嗣', true);
+    registerExplicitPair(248, 249, 211, '锡高公之子明土，出继锡疏公为嗣', true);
     // 大文的入继记录必须保留在云美名下；锡昂是大文之子，不能直接跳挂到云美。
     registerExplicitPair(150, 151, 113, '大文由云良房出继，入继云美为嗣', true);
     // 善富的亲生记录在序赖名下，入继记录在序松名下；两张同名卡片都保留。
@@ -2714,6 +2715,7 @@
       <section class="detail-section"><h4>族谱记载</h4><div class="detail-copy">${displayValue(person.biography, '暂无族谱记载')}</div></section>
       <section class="detail-section"><h4>补充资料</h4><dl class="detail-grid">${detailField('字 / 号', person.courtesy_name)}${detailField('身份 / 官职', person.title)}${detailField('过继 / 收养说明', person.adopt_note, true)}${detailField('出处页码', person.source_pages)}${detailField('资料依据', person.vital_source, true)}${detailField('配偶原始谱载', spouseRaw, true)}${detailField('配偶完整信息', person.spouse_record, true)}${detailField('备注', person.notes, true)}</dl></section>
       ${person.book_record ? `<section class="detail-section book-record-section"><h4>本人上册 / 下册原始谱载</h4><div class="detail-copy">${displayValue(person.book_record)}</div></section>` : ''}
+      ${person.pdf_source_excerpt ? `<section class="detail-section pdf-source-section"><h4>PDF 原页逐条核对</h4><dl class="detail-grid">${detailField('核对页码', person.pdf_source_page)}${detailField('核对状态', person.pdf_source_review_status || '待复核')}${detailField('核对置信度', person.pdf_source_confidence, true)}${detailField('批次', person.pdf_review_batch)}</dl><div class="detail-copy pdf-source-excerpt"><strong>原页摘录（仅作证据，不替代结构化字段）</strong><p>${displayValue(person.pdf_source_excerpt)}</p></div></section>` : ''}
       <details class="raw-data" open><summary>查看全部原始数据字段（含未在表单展示的字段）</summary><pre>${raw}</pre></details>`;
     refreshDetailMotion(panel, true, false);
   }
