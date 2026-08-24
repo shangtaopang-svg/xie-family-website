@@ -3711,8 +3711,7 @@
       if (duplicateMingYangIds.has(String(state.selectedId))) state.selectedId = personId(canonicalMingYang);
       changed = true;
     }
-    // 明扬（ID 1250）不是锡公之子，撤销原始数据中的错误父系，避免与明杨（ID 267）混淆。
-    clearFatherOf(1250);
+    // 明扬（ID 1250）与明杨（ID 267）为同音异名的不同记录；父系以 canonical genealogy.json 原页复核结果为准。
     // 上册逐条核定：明扬、明聪、学幹的性别及生卒信息；年号同时保留原载写法。
     const mingYang1250 = getPerson(1250);
     if (mingYang1250) {
