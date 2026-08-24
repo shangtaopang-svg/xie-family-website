@@ -1935,6 +1935,8 @@ body[data-app-mode="public"] .tree-viewport {
     font-weight: 700;
   }
   body[data-app-mode="public"] .query-drawer[data-mobile-mode] .query-stat-grid { display: none; }
+  /* “族人信息”是信息总览入口，保留统计卡片；其他查询模式保持简洁。 */
+  body[data-app-mode="public"] .query-drawer[data-mobile-mode="info"] .query-stat-grid { display: grid; }
   body[data-app-mode="public"] .query-drawer[data-mobile-mode="people"] .query-form-grid .query-field:not(.query-field-wide),
   body[data-app-mode="public"] .query-drawer[data-mobile-mode="generation"] .query-form-grid .query-field-wide,
   body[data-app-mode="public"] .query-drawer[data-mobile-mode="generation"] .query-form-grid .query-field select,
