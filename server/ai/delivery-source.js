@@ -1,9 +1,9 @@
 /**
  * server/ai/delivery-source.js
  *
- * 交付版独立世系图的唯一结构化读取入口。
- * 交付页面使用 data.js（window.GENEALOGY_DATA = [...]），服务端不执行页面脚本，
- * 只安全提取其中的 JSON 数组并按文件 mtime 自动重载。
+ * 族谱管理后台 canonical 数据的唯一结构化读取入口。
+ * data/genealogy.json 是唯一成员数据源；交付版 data.js、app.js 和 PDF 仅作为
+ * 页面/谱文核对材料，不再参与 AI 的人物、父子和状态推断。
  */
 'use strict';
 
@@ -12,7 +12,7 @@ const path = require('path');
 const vm = require('vm');
 const { normalizeLifeStatus } = require('../life-status.js');
 
-const DATA_FILE = path.join(__dirname, '..', '..', '交付_下枫槎谢氏世系图', 'data.js');
+const DATA_FILE = path.join(__dirname, '..', '..', 'data', 'genealogy.json');
 const APP_FILE = path.join(__dirname, '..', '..', '交付_下枫槎谢氏世系图', 'app.js');
 const VITALS_FILE = path.join(__dirname, '..', '..', '交付_下枫槎谢氏世系图', 'source-vitals.js');
 
@@ -166,38 +166,29 @@ function applyAppFatherCorrections(list, appText) {
 }
 
 function ensureLoaded() {
-  let stat = null, appStat = null, vitalsStat = null;
+  let stat = null;
   try { stat = fs.statSync(DATA_FILE); } catch (e) { stat = null; }
-  try { appStat = fs.statSync(APP_FILE); } catch (e) { appStat = null; }
-  try { vitalsStat = fs.statSync(VITALS_FILE); } catch (e) { vitalsStat = null; }
   const nextMtime = stat ? stat.mtimeMs : -1;
-  const nextAppMtime = appStat ? appStat.mtimeMs : -1;
-  const nextVitalsMtime = vitalsStat ? vitalsStat.mtimeMs : -1;
-  if (nextMtime === mtimeMs && nextAppMtime === appMtimeMs && nextVitalsMtime === vitalsMtimeMs) return data;
+  if (nextMtime === mtimeMs) return data;
   mtimeMs = nextMtime;
-  appMtimeMs = nextAppMtime;
-  vitalsMtimeMs = nextVitalsMtime;
+  appMtimeMs = -1;
+  vitalsMtimeMs = -1;
   if (!stat) {
     data = [];
     return data;
   }
   try {
-    data = parseDataJs(fs.readFileSync(DATA_FILE, 'utf-8'));
-    let appText = '';
-    try { appText = fs.readFileSync(APP_FILE, 'utf-8'); } catch (e) { appText = ''; }
-    data = applyAppFatherCorrections(data, appText);
-    let vitalsText = '';
-    try { vitalsText = fs.readFileSync(VITALS_FILE, 'utf-8'); } catch (e) { vitalsText = ''; }
-    data = applySourceVitals(data, vitalsText);
+    data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+    if (!Array.isArray(data)) throw new Error('族谱管理后台数据不是数组');
     data = normalizeLifeStatus(data);
   } catch (e) {
     data = [];
-    console.warn('[delivery-source] 读取交付版世系数据失败:', e.message);
+    console.warn('[delivery-source] 读取族谱管理后台数据失败:', e.message);
   }
   return data;
 }
 
 function getFilePath() { return DATA_FILE; }
-function getMtimeMs() { ensureLoaded(); return Math.max(mtimeMs, appMtimeMs, vitalsMtimeMs); }
+function getMtimeMs() { ensureLoaded(); return mtimeMs; }
 
 module.exports = { ensureLoaded, getFilePath, getMtimeMs, parseDataJs, parseSourceVitalsJs, applyAppFatherCorrections, applySourceVitals };

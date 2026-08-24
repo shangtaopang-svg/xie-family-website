@@ -391,6 +391,13 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === 'POST') {
       try {
+        if (module === 'genealogy') {
+          const auth = req.headers['authorization'] || '';
+          const token = auth.replace(/^Bearer\s+/i, '');
+          if (!adminTokens.has(token)) {
+            return sendJson(req, res, 401, { error: '族谱数据写入需要管理员权限' });
+          }
+        }
         const body = await collectBody(req);
         // Validate it's a valid JSON array (or object)
         const data = JSON.parse(body);

@@ -1,17 +1,13 @@
 /**
  * server/ai/lineage.js
- * 确定性世系引擎：所有世系/辈分/亲属结论优先由交付版独立世系图 data.js 的 father_id 链计算，
- * 不经过大模型 —— 从根上杜绝"编造族谱数据"。上册/下册作为同等级文献依据进入 AI 检索上下文。
+ * 确定性世系引擎：所有世系/辈分/亲属结论只由族谱管理后台 canonical 数据的 father_id 链计算，
+ * 不经过大模型 —— 从根上杜绝“编造族谱数据”。上册/下册只作为核对依据进入 AI 检索上下文。
  *
  * 数据常驻内存（Map<id,Person> + Map<name,id[]>），每次查询前按 mtime 检测，
  * 管理后台修改族谱后即时生效。
  */
 'use strict';
-const fs = require('fs');
-const path = require('path');
 const deliverySource = require('./delivery-source.js');
-
-const LEGACY_DATA_FILE = path.join(__dirname, '..', '..', 'data', 'genealogy.json');
 
 let byId = null;
 let byName = null;
@@ -19,34 +15,62 @@ let mtimeMs = -1;
 let loadedSource = '';
 let adoptionPairs = [];
 
-function loadAdoptionPairs() {
+function loadAdoptionPairs(list) {
   adoptionPairs = [];
-  const appFile = path.join(__dirname, '..', '..', '交付_下枫槎谢氏世系图', 'app.js');
-  let src = '';
-  try { src = fs.readFileSync(appFile, 'utf-8'); } catch (e) { return; }
-  const re = /registerExplicitPair\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(['"])(.*?)\4\s*,\s*(?:true|false)\s*\)/g;
-  let m;
-  while ((m = re.exec(src))) {
-    adoptionPairs.push({ outId: Number(m[1]), adoptiveId: Number(m[2]), adoptiveParentId: Number(m[3]), source: m[5] });
+  const people = Array.isArray(list) ? list : [];
+  const byName = new Map();
+  const byId = new Map(people.map((p) => [Number(p.id), p]));
+  const structuredPairs = new Map();
+  for (const person of people) {
+    const outId = Number(person.adoption_pair_out_id ?? person.adoption_out_id);
+    const inId = Number(person.adoption_pair_in_id ?? person.adoption_in_id);
+    const parentId = Number(person.adoption_adoptive_parent_id);
+    if (!Number.isFinite(outId) || !Number.isFinite(inId) || !Number.isFinite(parentId)) continue;
+    const key = String(person.adoption_pair_id || `${outId}:${inId}:${parentId}`);
+    structuredPairs.set(key, {
+      outId,
+      adoptiveId: inId,
+      adoptiveParentId: parentId,
+      source: String(person.adoption_relation_source || person.adopt_note || '').trim()
+    });
+  }
+  structuredPairs.forEach((pair) => {
+    if (byId.has(pair.outId) && byId.has(pair.adoptiveId) && byId.has(pair.adoptiveParentId)) adoptionPairs.push(pair);
+  });
+  const structuredIds = new Set(adoptionPairs.map((pair) => `${pair.outId}:${pair.adoptiveId}:${pair.adoptiveParentId}`));
+  for (const person of people) {
+    const name = String(person.name || '').trim();
+    if (!name) continue;
+    (byName.get(name) || byName.set(name, []).get(name)).push(person);
+  }
+  for (const person of people) {
+    const source = [person.adopt_note, person.biography].filter(Boolean).join(' ');
+    const match = source.match(/(?:过继给?|入继给?|出继给?|出祧|入祧)([\u4e00-\u9fff]{1,6})/);
+    if (!match) continue;
+    const parentName = match[1];
+    const parentCandidates = (byName.get(parentName) || []).filter((p) => Number(p.id) !== Number(person.id));
+    const parent = parentCandidates
+      .filter((p) => Number(p.generation_num) === Number(person.generation_num) - 1)
+      .sort((a, b) => Number(a.id) - Number(b.id))[0] || parentCandidates[0];
+    if (!parent) continue;
+    const adoptivePerson = (byName.get(String(person.name || '').trim()) || [])
+      .find((p) => Number(p.id) !== Number(person.id) && Number(p.father_id) === Number(parent.id));
+    if (!adoptivePerson) continue;
+    const sourceLabel = source.replace(/\s+/g, ' ').trim();
+    const candidateKey = `${Number(person.id)}:${Number(adoptivePerson.id)}:${Number(parent.id)}`;
+    if (!byId.has(Number(person.id)) || structuredIds.has(candidateKey) || adoptionPairs.some((pair) => pair.outId === Number(person.id))) continue;
+    adoptionPairs.push({ outId: Number(person.id), adoptiveId: Number(adoptivePerson.id), adoptiveParentId: Number(parent.id), source: sourceLabel });
   }
 }
 
 function ensureLoaded() {
   const deliveryList = deliverySource.ensureLoaded();
-  const usingDelivery = Array.isArray(deliveryList) && deliveryList.length > 0;
-  const sourceFile = usingDelivery ? deliverySource.getFilePath() : LEGACY_DATA_FILE;
-  let stat = null;
-  try { stat = fs.statSync(sourceFile); } catch (e) { stat = null; }
-  const mtime = usingDelivery ? deliverySource.getMtimeMs() : (stat ? stat.mtimeMs : -1);
+  const sourceFile = deliverySource.getFilePath();
+  const mtime = deliverySource.getMtimeMs();
   if (byId && mtime === mtimeMs && sourceFile === loadedSource) return;
   mtimeMs = mtime;
   loadedSource = sourceFile;
-  let list = [];
-  if (usingDelivery) {
-    list = deliveryList;
-  } else {
-    try { list = JSON.parse(fs.readFileSync(LEGACY_DATA_FILE, 'utf-8')); } catch (e) { list = []; }
-  }
+  const list = Array.isArray(deliveryList) ? deliveryList : [];
   byId = new Map();
   byName = new Map();
   for (const p of list) {
@@ -55,11 +79,10 @@ function ensureLoaded() {
       (byName.get(p.name) || byName.set(p.name, []).get(p.name)).push(p);
     }
   }
-  loadAdoptionPairs();
+  loadAdoptionPairs(list);
 
-  // 交付版数据已经包含当前核对后的父子关系和人工修正，必须原样使用；
-  // 下方旧版后台数据的内存修补只作为缺少交付数据时的兼容回退。
-  if (usingDelivery) return;
+  // 服务器 canonical 为空时也不能回退到旧数据或内置推断，避免出现第二套事实来源。
+  return;
 
   // ===== 同名同人合并（仅内存，不改数据文件）=====
   // 同一人在不同分支/批次被录入成两条记录时（如「在纲之子小四」=「石马始祖小四(石马)」），

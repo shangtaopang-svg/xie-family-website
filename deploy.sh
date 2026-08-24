@@ -23,6 +23,9 @@ git pull origin master 2>&1 || {
   git remote set-url origin git@github.com:shangtaopang-svg/xie-family-website.git
 }
 
+echo "[deploy] Ensuring genealogy canonical data..."
+node scripts/ensure-canonical-genealogy.js
+
 echo "[deploy] Restarting PM2..."
 pm2 restart xie-family 2>&1
 echo "[deploy] Deploy complete!"

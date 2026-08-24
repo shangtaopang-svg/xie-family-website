@@ -1,14 +1,8 @@
 /**
  * server/ai/historical-chain.js
- * 「从炎帝神农氏开始的直系世系」权威主链 + 完整世系链构建。
- *
- * 背景：data/genealogy.json 里各大世系（远古/申伯/东山/临海/石马）是断开的，
- * 但站点 focus-tree / tree / genealogy 页面已硬编码了从炎帝神农氏到敬乙的
- * 权威叙事主链（第1世…第136世）。本模块把该主链固化为服务端数据，
- * 与本人真实 father_id 链衔接，得到完整世系图（确定性计算，不调大模型）。
- *
- * 人员仍在陆续录入：历史段用 MAIN_LINE 补齐，本人的段落用真实链
- * （录到哪显示到哪），数据增长后自动衔接。
+ * 「从炎帝神农氏开始的直系世系」构建器。
+ * 现在只沿族谱管理后台 canonical 数据中的 father_id 链展示；
+ * 不再使用本文件内置的叙事主链补人、改世次或替代后台缺失记录。
  */
 'use strict';
 const lineage = require('./lineage.js');
@@ -154,74 +148,18 @@ function buildFullChain(personId) {
   const real = (lineage.getAncestorList(personId, true) || []).slice().reverse();
   if (!real.length) return null;
 
-  // 连接点：真实链中靠近 root 的第一个能在主链命中的节点
-  let ci = -1, mi = -1;
-  for (let i = 0; i < real.length; i++) {
-    const k = normName(real[i].name);
-    if (mlIdx.has(k)) { ci = i; mi = mlIdx.get(k); break; }
-  }
-
-  const nodes = [];
-  const adoptNote = (p) => adoptionFromBio(p.biography) || (p.branch === '入继' ? '过继入族' : '');
-
-  // 世系贯通后：真实链 root 即炎帝（ci===0 且命中主链第1世）→ 整条链逐节点按主链世次映射。
-  // 不能再用旧「叙事段+真实段续排」：那会给全链连续世次（1,2,3,4…），丢失主链权威跳变世次
-  // （1,2,10,11,15,54,55,65,66,67…99,100,101,102…）。命中主链且世次严格递增→用主链世次，
-  // 未命中（如文杲、攒、伯能…枫槎实记）→ 上一世次+1 续排（与前台 连续完整世系 的 +129 体系一致：
-  // 文杲132、攒133、伯能134、叔仅146、彬乾147、云先153，已逐人对验主数据）。
-  if (ci === 0 && mi === 0) {
-    let prevShi = 0;
-    for (let k = 0; k < real.length; k++) {
-      const p = real[k];
-      const nm = normName(p.name);
-      const mj = nm ? mlIdx.get(nm) : undefined;
-      const ad = adoptNote(p);
-      let shi;
-      if (mj !== undefined && MAIN_LINE[mj][0] > prevShi) shi = MAIN_LINE[mj][0];
-      else shi = prevShi + 1;
-      prevShi = shi;
-      let note = ad;
-      if (!note && mj !== undefined && MAIN_LINE[mj][2]) note = MAIN_LINE[mj][2];
-      nodes.push({
-        name: p.name, shi, note,
-        branch: p.branch && p.branch !== '—' ? p.branch : branchOfShi(shi),
-        isSelf: Number(p.id) === Number(personId),
-        adopt: ad,
-      });
-    }
-    return nodes;
-  }
-
-  if (ci >= 0) {
-    // 叙事段：主链连接点之前（用叙事世次+备注）
-    for (let k = 0; k < mi; k++) {
-      const m = MAIN_LINE[k];
-      nodes.push({ name: m[1], shi: m[0], note: m[2], branch: branchOfShi(m[0]), isSelf: false, adopt: '' });
-    }
-    // 真实段：连接点起用真实数据（世次延续主链）
-    const baseShi = MAIN_LINE[mi][0];
-    for (let k = ci; k < real.length; k++) {
-      const p = real[k];
-      const ad = adoptNote(p);
-      nodes.push({
-        name: p.name,
-        shi: baseShi + (k - ci),
-        note: ad,
-        branch: p.branch && p.branch !== '—' ? p.branch : branchOfShi(baseShi + (k - ci)),
-        isSelf: Number(p.id) === Number(personId),
-        adopt: ad,
-      });
-    }
-  } else {
-    // 无连接点兜底：整条主链 + 真实链续排
-    MAIN_LINE.forEach(m => nodes.push({ name: m[1], shi: m[0], note: m[2], branch: branchOfShi(m[0]), isSelf: false, adopt: '' }));
-    let base = MAIN_LINE[MAIN_LINE.length - 1][0];
-    real.forEach((p, k) => {
-      const ad = adoptNote(p);
-      nodes.push({ name: p.name, shi: base + k + 1, note: ad, branch: p.branch, isSelf: Number(p.id) === Number(personId), adopt: ad });
-    });
-  }
-  return nodes;
+  return real.map((p) => {
+    const adopt = adoptionFromBio(p.biography) || (p.adopt_note ? '族谱载「' + String(p.adopt_note).trim() + '」' : '') || (p.branch === '入继' ? '过继入族' : '');
+    const shi = Number.isFinite(Number(p.generation_num)) ? Number(p.generation_num) : String(p.generation || '').trim();
+    return {
+      name: p.name,
+      shi,
+      note: adopt,
+      branch: p.branch && p.branch !== '—' ? p.branch : branchOfShi(Number(shi) || 0),
+      isSelf: Number(p.id) === Number(personId),
+      adopt,
+    };
+  });
 }
 
 /** 把节点数组排版成可读/可朗读的文本。ownerIsSelf=true 时用「您」（自己），否则用被查人名 */

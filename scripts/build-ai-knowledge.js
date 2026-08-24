@@ -5,8 +5,7 @@
  * 亦可被 server.js 启动时调用（knowledge.json 缺失或过期则自动重建）。
  *
  * 输入：
- *   交付_下枫槎谢氏世系图/data.js      → nameIndex + 结构化世系/生平检索块（首选）
- *   data/genealogy.json                → 交付数据缺失时的兼容回退
+ *   data/genealogy.json                 → 族谱管理后台 canonical 人物/世系数据（唯一结构化来源）
  *   上册_竖排提取.txt / 下册_竖排提取.txt → 按"第N页"分块
  *   data/parsed_entries.json           → 谱名条目索引（出继/入赘/分支）
  *   data/genealogy_book_extract.txt、data/genealogy_analysis.txt → 附加文献块
@@ -100,9 +99,7 @@ function bigramsOf(text) {
 
 /** 构建知识库；返回统计信息 */
 function buildKnowledge() {
-  const deliveryGenealogy = deliverySource.ensureLoaded();
-  const legacyGenealogy = readJson('data/genealogy.json') || [];
-  const genealogy = deliveryGenealogy.length ? deliveryGenealogy : legacyGenealogy;
+  const genealogy = deliverySource.ensureLoaded();
   const parsedEntries = readJson('data/parsed_entries.json') || [];
   const book1Text = readText('上册_竖排提取.txt');
   const book2Text = readText('下册_竖排提取.txt');
@@ -119,7 +116,7 @@ function buildKnowledge() {
     if (!p.name) continue;
     (nameIndex[p.name] = nameIndex[p.name] || []).push({
       id: p.id, branch: p.branch, generation: p.generation, generation_num: p.generation_num,
-      source: deliveryGenealogy.length ? 'delivery' : 'legacy'
+       source: '族谱管理后台'
     });
     const father = p.father_id !== undefined && p.father_id !== null
       ? byId.get(String(p.father_id))
@@ -273,8 +270,8 @@ function buildKnowledge() {
     builtAt: new Date().toISOString(),
     source: {
       genealogyCount: genealogy.length,
-      deliveryGenealogyCount: deliveryGenealogy.length,
-      structuredSource: deliveryGenealogy.length ? '交付_下枫槎谢氏世系图/data.js' : 'data/genealogy.json（兼容回退）',
+      canonicalCount: genealogy.length,
+      structuredSource: 'data/genealogy.json（交付版基线 + 族谱管理后台最终保存数据）',
       bioCount,
       entryCount,
       book1Chars: book1Text ? book1Text.length : 0,
@@ -296,7 +293,6 @@ function buildKnowledge() {
     written: true,
     stats: {
       persons: genealogy.length,
-      deliveryPersons: deliveryGenealogy.length,
       bioCount,
       entryCount,
       documents: documents.length,

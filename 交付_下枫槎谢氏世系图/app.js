@@ -9,6 +9,7 @@
   const LAYOUT_KEY = 'xiafengcha_genealogy_layout_v1';
   const QUERY_STATE_KEY = 'xiafengcha_genealogy_query_v1';
   const IS_ADMIN = document.body.dataset.appMode === 'admin';
+  const ADMIN_TOKEN_KEY = 'xie_admin_token';
   const initialData = Array.isArray(window.GENEALOGY_DATA) ? window.GENEALOGY_DATA : [];
   const clone = (value) => JSON.parse(JSON.stringify(value));
   const $ = (selector) => document.querySelector(selector);
@@ -96,10 +97,14 @@
     peopleByName: new Map(),
     rawChildrenByParent: new Map(),
     dataIndexReady: false,
+    sourceAuthority: 'static-fallback',
     viewIncludeCache: new Map(),
     viewIncludeCacheKey: ''
   };
   let draftAutoSaveTimer = null;
+  let serverSaveTimer = null;
+  let serverSaveBusy = false;
+  let serverSaveQueued = false;
   let searchLocateTimer = null;
   let searchComposing = false;
   let disambiguationCallback = null;
@@ -2699,6 +2704,45 @@
     return `<div class="form-field${full ? ' full' : ''}"><label for="field-${key}">${escapeHtml(label)}</label><textarea id="field-${key}" data-field="${key}">${escapeHtml(value)}</textarea></div>`;
   }
 
+  function getAdminToken() {
+    try { return localStorage.getItem(ADMIN_TOKEN_KEY) || ''; } catch (error) { return ''; }
+  }
+
+  function queueServerSave() {
+    if (!IS_ADMIN || typeof fetch !== 'function' || !getAdminToken()) return;
+    serverSaveQueued = true;
+    if (serverSaveTimer) clearTimeout(serverSaveTimer);
+    serverSaveTimer = setTimeout(flushServerSave, 350);
+  }
+
+  async function flushServerSave() {
+    if (!IS_ADMIN || typeof fetch !== 'function' || !getAdminToken()) return;
+    if (serverSaveBusy) return;
+    serverSaveBusy = true;
+    serverSaveQueued = false;
+    try {
+      const response = await fetch('/api/data/genealogy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + getAdminToken()
+        },
+        body: JSON.stringify(state.data)
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const status = $('#autosave-status');
+      if (status && state.mode === 'edit') {
+        status.textContent = '已同步到服务器';
+        status.classList.add('is-saved');
+      }
+    } catch (error) {
+      showToast('服务器保存失败，当前修改仍暂存于本机；请检查管理员登录状态');
+    } finally {
+      serverSaveBusy = false;
+      if (serverSaveQueued) serverSaveTimer = setTimeout(flushServerSave, 120);
+    }
+  }
+
   function persist() {
     // 公开查询页只读，不能让旧的浏览器本地编辑缓存覆盖当前交付数据。
     // 人物编辑、导入和自动备份只在独立管理后台执行。
@@ -2715,6 +2759,7 @@
     } catch (error) {
       showToast('本地保存或自动备份失败，请立即导出 JSON 备份');
     }
+    queueServerSave();
   }
 
   function applyKnownPdfCorrections() {
@@ -4555,12 +4600,18 @@
     } catch (error) {
       state.verified = new Set();
     }
-    // 族谱查询页是公开只读页面：始终从当前部署的 data.js 读取，
-    // 不读取历史浏览器 localStorage，避免旧缓存覆盖最新谱务修订。
+    // 管理后台成功读取服务器 canonical 后，不再用旧浏览器缓存覆盖服务器数据。
+    if (IS_ADMIN && state.sourceAuthority === 'management-canonical-admin') {
+      state.data = clone(state.original);
+      rebuildDataIndexes();
+      return;
+    }
+    // 族谱查询页是公开只读页面：管理后台 API 成功时只使用 canonical 数据，
+    // 不读取历史浏览器 localStorage，也不让交付版静态校勘覆盖后台最新输入。
     if (!IS_ADMIN) {
       state.data = clone(state.original);
       rebuildDataIndexes();
-      applyKnownPdfCorrections();
+      if (state.sourceAuthority !== 'management-canonical') applyKnownPdfCorrections();
       return;
     }
     let loaded = false;
@@ -5547,9 +5598,47 @@
     });
   }
 
-  function init() {
+  async function loadCanonicalData() {
+    if (typeof fetch !== 'function') return false;
+    const token = IS_ADMIN ? getAdminToken() : '';
+    if (IS_ADMIN && !token) return false;
+    try {
+      const response = await fetch('/api/data/genealogy?source=management&ts=' + Date.now(), {
+        cache: 'no-store',
+        headers: token ? { Authorization: 'Bearer ' + token } : {}
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const remoteData = await response.json();
+      if (!Array.isArray(remoteData) || !remoteData.every((item) => item && item.name !== undefined)) throw new Error('族谱管理后台返回格式错误');
+      state.data = clone(remoteData);
+      state.original = clone(remoteData);
+      state.sourceAuthority = IS_ADMIN ? 'management-canonical-admin' : 'management-canonical';
+      return true;
+    } catch (error) {
+      // 独立交付包可脱离服务器打开；服务器正常时，前台永远以管理后台 API 为准。
+      console.warn('[genealogy] 读取族谱管理后台数据失败，使用内置只读副本:', error.message);
+      return false;
+    }
+  }
+
+  async function reloadAdminCanonicalData() {
+    if (!IS_ADMIN || !getAdminToken()) return;
+    const viewPosition = captureViewPosition();
+    const loaded = await loadCanonicalData();
+    if (!loaded) return;
+    loadSaved();
+    buildAdoptionIndex();
+    buildFilters();
+    renderInPlace(viewPosition);
+    showToast('已载入服务器最新族谱数据');
+  }
+
+  window.addEventListener('xie-admin-authenticated', reloadAdminCanonicalData);
+
+  async function init() {
     ensureMobileBackButton();
     ensureRootTraceModal();
+    await loadCanonicalData();
     loadSaved();
     loadLayout();
     buildAdoptionIndex();
