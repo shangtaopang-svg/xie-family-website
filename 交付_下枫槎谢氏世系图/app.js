@@ -1249,7 +1249,7 @@
         .map(text).join(' ').toLowerCase();
       const generation = generationOf(person) || 0;
       const normalizedGender = genderLabel(person);
-      const normalizedAlive = boolLabel(person.is_alive) === '在世' ? '是' : boolLabel(person.is_alive) === '已故' ? '否' : '未知';
+      const normalizedAlive = lifeStatusLabel(person) === '在世' ? '是' : lifeStatusLabel(person) === '已故' ? '否' : lifeStatusLabel(person) === '状态冲突' ? '冲突' : '未知';
       if (q && !haystack.includes(q)) return false;
       if (from && generation < from) return false;
       if (to < 9999 && generation > to) return false;
@@ -1375,7 +1375,7 @@
   function generationSpouseHtml(person) {
     const raw = formValue(person, 'spouse_ids').trim();
     const spouses = spousesOf(person);
-    const linked = spouses.map((spouse) => `<article class="generation-spouse-card"><h5>${escapeHtml(text(spouse.name) || '未命名配偶')}</h5><div class="generation-spouse-meta">${escapeHtml(genderLabel(spouse))} · ${escapeHtml(boolLabel(spouse.is_alive))}</div><p>出生：${displayValue(annotateGregorianYears(spouse.birth_date))}；卒年 / 卒葬：${displayValue(annotateGregorianYears(spouse.death_date))}；寿命：${escapeHtml(lifespanLabel(spouse))}</p><p>葬地：${displayValue(spouse.burial_place)}；字 / 号：${displayValue(spouse.courtesy_name)}</p>${spouse.biography ? `<p>谱载：${displayValue(spouse.biography)}</p>` : ''}</article>`).join('');
+    const linked = spouses.map((spouse) => `<article class="generation-spouse-card"><h5>${escapeHtml(text(spouse.name) || '未命名配偶')}</h5><div class="generation-spouse-meta">${escapeHtml(genderLabel(spouse))} · ${escapeHtml(lifeStatusLabel(spouse))}</div><p>出生：${displayValue(annotateGregorianYears(spouse.birth_date))}；卒年 / 卒葬：${displayValue(annotateGregorianYears(spouse.death_date))}；寿命：${escapeHtml(lifespanLabel(spouse))}</p><p>葬地：${displayValue(spouse.burial_place)}；字 / 号：${displayValue(spouse.courtesy_name)}</p>${spouse.biography ? `<p>谱载：${displayValue(spouse.biography)}</p>` : ''}</article>`).join('');
     const source = raw ? `<div class="generation-spouse-source"><span>配偶原始谱载</span><strong>${displayValue(annotateGregorianYears(raw))}</strong>${person.spouse_record ? `<p>${displayValue(annotateGregorianYears(person.spouse_record))}</p>` : ''}</div>` : '';
     return linked || source || '<span class="query-muted">配偶信息未详</span>';
   }
@@ -1388,7 +1388,7 @@
     const deathSummary = displayValue(annotateGregorianYears(person.death_date));
     const detailGrid = `${generationDetailValue('出生信息', person.birth_date)}${generationDetailValue('卒年 / 卒葬', person.death_date)}${generationDetailValue('寿命', lifespanLabel(person))}${generationDetailValue('葬地', person.burial_place)}${generationDetailValue('籍贯 / 居住地', [person.native_place, person.residence].filter((value) => text(value).trim()).join('；'))}${generationDetailValue('字 / 号', person.courtesy_name)}${generationDetailValue('支系', person.branch)}${generationDetailValue('出处', [person.source_pages, person.vital_source].filter((value) => text(value).trim()).join('；'))}`;
     const details = `<details class="generation-row-details"><summary>查看完整资料</summary><div class="generation-person-grid">${detailGrid}</div><section class="generation-spouse-section"><h4>配偶 / 老婆信息</h4><div class="generation-spouse-list">${generationSpouseHtml(person)}</div></section>${special ? `<section class="generation-special"><h4>特殊说明</h4><p>${displayValue(special)}</p></section>` : ''}${person.biography ? `<section class="generation-book-note"><h4>族谱记载</h4><p>${displayValue(person.biography)}</p></section>` : ''}${person.book_record ? `<section class="generation-book-note"><h4>原始谱载</h4><p>${displayValue(person.book_record)}</p></section>` : ''}</details>`;
-    return `<article class="generation-person-card generation-person-row"><div class="generation-row-primary"><span class="generation-person-gen">第${escapeHtml(generationOf(person) || '—')}世</span><button class="generation-person-name" data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}</button><span class="generation-row-branch">${escapeHtml(text(person.branch) || '未标注支系')}</span></div><div class="generation-row-status"><span class="generation-tag ${genderLabel(person) === '女' ? 'is-female' : ''}">${escapeHtml(genderLabel(person))}</span><span class="generation-tag">${escapeHtml(boolLabel(person.is_alive))}</span>${adoption ? `<span class="generation-tag is-adoption">${escapeHtml(adoption)}</span>` : ''}</div><div class="generation-row-summary"><span><b>生卒</b>${birthSummary} → ${deathSummary}</span><span><b>配偶</b>${escapeHtml(spouseSummary)}</span><span><b>墓地</b>${displayValue(person.burial_place)}</span></div>${details}</article>`;
+    return `<article class="generation-person-card generation-person-row"><div class="generation-row-primary"><span class="generation-person-gen">第${escapeHtml(generationOf(person) || '—')}世</span><button class="generation-person-name" data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}</button><span class="generation-row-branch">${escapeHtml(text(person.branch) || '未标注支系')}</span></div><div class="generation-row-status"><span class="generation-tag ${genderLabel(person) === '女' ? 'is-female' : ''}">${escapeHtml(genderLabel(person))}</span><span class="generation-tag ${lifeStatusLabel(person) === '状态冲突' ? 'is-conflict' : lifeStatusLabel(person) === '已故' ? 'is-deceased' : lifeStatusLabel(person) === '在世' ? 'is-alive' : 'is-unknown'}">${escapeHtml(lifeStatusLabel(person))}</span>${adoption ? `<span class="generation-tag is-adoption">${escapeHtml(adoption)}</span>` : ''}</div><div class="generation-row-summary"><span><b>生卒</b>${birthSummary} → ${deathSummary}</span><span><b>配偶</b>${escapeHtml(spouseSummary)}</span><span><b>墓地</b>${displayValue(person.burial_place)}</span></div>${details}</article>`;
   }
 
   function renderQueryGenerationDetail() {
@@ -1426,7 +1426,7 @@
     const rows = visible.map((person) => {
       const gender = genderLabel(person);
       const adoption = queryAdoptionLabel(person);
-      return `<div class="query-result-row"><span>${escapeHtml(generationOf(person) || '—')}</span><button data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}${adoption ? ` <em class="query-result-tag adopt">${escapeHtml(adoption)}</em>` : ''}</button><span class="query-result-tag${gender === '女' ? ' female' : ''}">${escapeHtml(gender)}</span><span>${escapeHtml(text(person.branch) || '未标注')}</span><span>${escapeHtml(boolLabel(person.is_alive))}</span><span class="query-result-actions"><button data-action="query-locate" data-id="${escapeHtml(personId(person))}">定位</button><button class="root-trace-trigger" data-action="root-trace" data-id="${escapeHtml(personId(person))}">寻根</button></span></div>`;
+      return `<div class="query-result-row"><span>${escapeHtml(generationOf(person) || '—')}</span><button data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}${adoption ? ` <em class="query-result-tag adopt">${escapeHtml(adoption)}</em>` : ''}</button><span class="query-result-tag${gender === '女' ? ' female' : ''}">${escapeHtml(gender)}</span><span>${escapeHtml(text(person.branch) || '未标注')}</span><span>${escapeHtml(lifeStatusLabel(person))}</span><span class="query-result-actions"><button data-action="query-locate" data-id="${escapeHtml(personId(person))}">定位</button><button class="root-trace-trigger" data-action="root-trace" data-id="${escapeHtml(personId(person))}">寻根</button></span></div>`;
     }).join('');
     container.innerHTML = head + rows;
   }
@@ -2242,9 +2242,14 @@
     const branch = text(person.branch) || '未标注支系';
     const generation = viewGenerationLabel(person);
     const tags = adoptionTags(person);
+    const lifeStatus = lifeStatusInfo(person);
     const verified = state.verified.has(String(personId(person)));
     const classes = ['person-card', branchClass(branch)];
     if (genderOf(person) === '女') classes.push('is-female-card');
+    if (lifeStatus.status === '是') classes.push('is-living-card');
+    else if (lifeStatus.status === '否') classes.push('is-deceased-card');
+    else if (lifeStatus.status === '冲突') classes.push('is-status-conflict-card');
+    else classes.push('is-status-unknown-card');
     const specialId = String(personId(person));
     const isCurrentClanLeader = specialId === '445';
     if (isCurrentClanLeader) classes.push('current-clan-leader');
@@ -2271,7 +2276,7 @@
     const cardAriaLabel = adoptionTarget ? `查看${escapeHtml(person.name)}入继卡及下一代` : `查看${escapeHtml(person.name)}详情`;
     return `<div class="${classes.join(' ')}" data-action="select-person" data-id="${escapeHtml(personId(person))}"${clickTargetAttr} role="button" tabindex="0" aria-label="${cardAriaLabel}">
       <span class="verify-toggle${verified ? ' is-verified' : ''}${IS_ADMIN ? '' : ' is-readonly'}"${IS_ADMIN ? ` data-action="toggle-verified" data-id="${escapeHtml(personId(person))}" role="button" tabindex="0" aria-pressed="${verified}" aria-label="${verified ? '已核对无误，点击取消' : '标记为已核对无误'}" title="${verified ? '已核对无误 · 点击取消标记' : '点击标记为已核对'}"` : ` aria-label="${verified ? '已核对无误' : '尚未核对'}"`}>${verified ? '★' : '☆'}</span>
-      <span class="card-top"><span class="card-generation">${escapeHtml(generation)}</span><span class="card-branch">${escapeHtml(branch)}</span></span>
+      <span class="card-top"><span class="card-generation">${escapeHtml(generation)}</span><span class="card-top-right"><span class="card-branch">${escapeHtml(branch)}</span><span class="card-gender ${genderOf(person) === '女' ? 'is-female' : genderOf(person) === '男' ? 'is-male' : 'is-unknown'}">${genderOf(person) === '女' ? '女' : genderOf(person) === '男' ? '男' : '性别待核'}</span></span></span>
       <strong>${escapeHtml(person.name || '未命名人物')}</strong>
       ${isCurrentClanLeader ? '<span class="leader-badge">2026届族长</span>' : ''}
       ${adoptionBadgeHtml(person)}
@@ -2524,7 +2529,7 @@
 
   function spouseFullInfoHtml(spouses, rawValue, owner) {
     const raw = text(rawValue).trim();
-    const linked = spouses.map((spouse) => `<article class="detail-spouse-card"><div class="detail-spouse-head"><button class="relation-chip" data-action="select-person" data-id="${escapeHtml(personId(spouse))}">${escapeHtml(text(spouse.name) || '未命名配偶')}</button><span>${escapeHtml(genderLabel(spouse))} · ${escapeHtml(boolLabel(spouse.is_alive))}</span></div><dl class="detail-spouse-grid">${detailField('出生信息', spouse.birth_date)}${detailField('卒年 / 卒葬', spouse.death_date)}${detailField('寿命', lifespanLabel(spouse))}${detailField('葬地', spouse.burial_place)}${detailField('籍贯 / 居住地', [spouse.native_place, spouse.residence].filter((value) => text(value).trim()).join('；'))}${detailField('字 / 号', spouse.courtesy_name)}${detailField('支系', spouse.branch)}${detailField('出处', [spouse.source_pages, spouse.vital_source].filter((value) => text(value).trim()).join('；'))}</dl>${spouse.biography ? `<div class="detail-spouse-note"><span>配偶谱载</span>${displayValue(spouse.biography)}</div>` : ''}${spouse.book_record ? `<div class="detail-spouse-note"><span>配偶原始谱载</span>${displayValue(spouse.book_record)}</div>` : ''}</article>`).join('');
+    const linked = spouses.map((spouse) => `<article class="detail-spouse-card"><div class="detail-spouse-head"><button class="relation-chip" data-action="select-person" data-id="${escapeHtml(personId(spouse))}">${escapeHtml(text(spouse.name) || '未命名配偶')}</button><span>${escapeHtml(genderLabel(spouse))} · ${escapeHtml(lifeStatusLabel(spouse))}</span></div><dl class="detail-spouse-grid">${detailField('出生信息', spouse.birth_date)}${detailField('卒年 / 卒葬', spouse.death_date)}${detailField('寿命', lifespanLabel(spouse))}${detailField('葬地', spouse.burial_place)}${detailField('籍贯 / 居住地', [spouse.native_place, spouse.residence].filter((value) => text(value).trim()).join('；'))}${detailField('字 / 号', spouse.courtesy_name)}${detailField('支系', spouse.branch)}${detailField('出处', [spouse.source_pages, spouse.vital_source].filter((value) => text(value).trim()).join('；'))}</dl>${spouse.biography ? `<div class="detail-spouse-note"><span>配偶谱载</span>${displayValue(spouse.biography)}</div>` : ''}${spouse.book_record ? `<div class="detail-spouse-note"><span>配偶原始谱载</span>${displayValue(spouse.book_record)}</div>` : ''}</article>`).join('');
     const source = raw ? `<div class="detail-spouse-source"><span>配偶原始谱载（${escapeHtml(text(owner && owner.name))}条目）</span><p>${displayValue(annotateGregorianYears(raw))}</p>${owner && owner.spouse_record ? `<p>${displayValue(annotateGregorianYears(owner.spouse_record))}</p>` : ''}</div>` : '';
     return linked || source || '<div class="detail-muted">配偶没有可显示的独立人物卡或原始谱载。</div>';
   }
@@ -2539,6 +2544,34 @@
     if (value === true || value === 1 || normalized === 'true' || normalized === '是' || normalized === '在世') return '在世';
     if (value === false || value === 0 || normalized === 'false' || normalized === '否' || normalized === '已故') return '已故';
     return '未标注';
+  }
+
+  const LIFE_PLACEHOLDER_RE = /^(?:未详|未定|未知|未标注|不详|无|暂无|待核验|待确认|—|-|空|null|undefined)$/i;
+  const LIFE_DEATH_RE = /(?:生娶卒葬俱失|生卒(?:俱失|均失|失考)|(?:^|[\s，,。；;：:、])卒(?:年|日|失|俱失|均失|无考|失考|于|后|时)|殁|早逝|夭折|亡故|享年|墓葬|葬于|葬在|墓在|合葬)/;
+  const LIFE_ALIVE_RE = /(?:现年|在世|健在|尚健|尚在|仍健|生存|未卒|存世)/;
+
+  function lifeStatusInfo(person) {
+    const record = person || {};
+    const meaningful = (value) => {
+      const valueText = text(value).trim();
+      return Boolean(valueText) && !LIFE_PLACEHOLDER_RE.test(valueText);
+    };
+    const sourceText = ['death_date', 'biography', 'vital_source', 'book_record', 'notes', 'adopt_note', 'status_source']
+      .map((key) => text(record[key]).trim()).filter(Boolean).join(' ');
+    const deathField = meaningful(record.death_date);
+    const deathEvidence = deathField || LIFE_DEATH_RE.test(sourceText);
+    const aliveEvidence = LIFE_ALIVE_RE.test(sourceText);
+    const raw = text(record.is_alive).trim().toLowerCase();
+    const manualAlive = record.is_alive === true || record.is_alive === 1 || raw === 'true' || raw === '是' || raw === '在世';
+    const conflict = record.life_status_conflict === true || (deathEvidence && (aliveEvidence || manualAlive));
+    if (conflict) return { status: '冲突', label: '状态冲突', conflict: true };
+    if (deathEvidence) return { status: '否', label: '已故', conflict: false };
+    if (aliveEvidence || manualAlive) return { status: '是', label: '在世', conflict: false };
+    return { status: '', label: '待核验', conflict: false };
+  }
+
+  function lifeStatusLabel(person) {
+    return lifeStatusInfo(person).label;
   }
 
   function detailField(label, value, full) {
@@ -2591,7 +2624,7 @@
     const raw = escapeHtml(JSON.stringify(person, null, 2));
     panel.innerHTML = `<div class="detail-head"><div><h3>${escapeHtml(person.name || '未命名人物')}</h3><p>${escapeHtml(viewGenerationLabel(person))} · 总谱第${generationOf(person) || '未详'}世 · ${escapeHtml(text(person.branch) || '未标注支系')} · ID ${escapeHtml(personId(person))}</p></div><button class="detail-close" data-action="close-detail" aria-label="关闭详情">×</button></div>
       ${IS_ADMIN ? '<div class="detail-actions"><button class="detail-btn primary" data-action="edit-person">直接编辑（实时保存）</button><button class="detail-btn" data-action="new-child">新增子女</button><button class="detail-btn" data-action="export-person">导出人物</button><button class="detail-btn danger" data-action="delete-person">删除</button></div>' : ''}
-      <section class="detail-section"><h4>基本资料</h4><dl class="detail-grid">${detailField('姓名', person.name)}${detailField('性别', person.gender)}${detailField('本图世次', viewGenerationLabel(person))}${detailField('总谱世代', generationOf(person) ? `第${generationOf(person)}世` : person.generation)}${detailField('支系', person.branch)}${detailField('状态', boolLabel(person.is_alive))}${detailField('重点标记', person.highlight ? '是' : '否')}</dl></section>
+      <section class="detail-section"><h4>基本资料</h4><dl class="detail-grid">${detailField('姓名', person.name)}${detailField('性别', person.gender)}${detailField('本图世次', viewGenerationLabel(person))}${detailField('总谱世代', generationOf(person) ? `第${generationOf(person)}世` : person.generation)}${detailField('支系', person.branch)}${detailField('状态', lifeStatusLabel(person))}${detailField('状态依据', person.life_status_source || '待核验')}${detailField('重点标记', person.highlight ? '是' : '否')}</dl></section>
       <section class="detail-section"><h4>时间与地点</h4><dl class="detail-grid">${detailField('出生信息', person.birth_date)}${detailField('卒年 / 卒葬', person.death_date)}${detailField('籍贯', person.native_place)}${detailField('居住地', person.residence)}${detailField('葬地', person.burial_place)}${detailField('资料依据', person.vital_source)}</dl></section>
       <section class="detail-section"><h4>亲属关系</h4><dl class="detail-grid"><div class="detail-field full"><dt>父母（原始谱系）</dt><dd class="relation-list">${relationChipList(parents, '父母未详')}</dd></div><div class="detail-field full"><dt>配偶</dt><dd class="relation-list">${sourceRelationList(spouses, spouseRaw, '配偶未详')}</dd></div><div class="detail-field full"><dt>子女（原始关联 ${children.length}）</dt><dd class="relation-list">${relationChipList(children, '暂无已关联子女')}</dd></div><div class="detail-field full"><dt>子女（本图归属 ${displayChildren.length}）</dt><dd class="relation-list">${relationChipList(displayChildren, '暂无本图归属子女')}</dd></div></dl></section>
       <section class="detail-section detail-spouses-section"><h4>配偶完整信息</h4><div class="detail-spouses-list">${spouseFullInfoHtml(spouses, spouseRaw, person)}</div></section>
@@ -4442,23 +4475,25 @@
       }
       const birthText = text(person.birth_date).trim();
       const bioText = text(person.biography).trim();
-      const sourceText = `${birthText} ${bioText}`;
+      const sourceText = [person.death_date, person.biography, person.vital_source, person.book_record, person.notes, person.adopt_note, person.status_source]
+        .map((value) => text(value).trim()).filter(Boolean).join(' ');
       const lostVitalMatch = sourceText.match(/生(?:娶)?卒(?:葬)?(?:均|俱|均俱)?(?:失考|失|不详)/);
-      // 炎帝远古世系至明字辈（总谱第156世）均属确定的历史先人；第157世起
-      // 已进入近现代可能在世区间，必须继续依谱载或后台人工核定，不能按世次猜测。
-      const historicalAncestor = Number(generationOf(person) || 0) > 0 && Number(generationOf(person)) <= 156;
-      const hasExplicitDeath = historicalAncestor || Boolean(lostVitalMatch) || /(?:卒|殁|早逝|夭折|亡故|享年|墓葬|葬于|葬在|合葬|公葬)/.test(sourceText);
+      // 生命状态只能由明确的卒年/卒日、卒失/卒俱失、葬载或“在世/健在”证据决定。
+      // 世次、古今、出生日期本身都不能作为已故或在世的推断依据。
+      const statusEvidence = lifeStatusInfo(person);
+      const hasExplicitDeath = statusEvidence.deathEvidence;
       const currentAlive = person.is_alive;
-      if (hasExplicitDeath) {
-        if (currentAlive !== false) {
-          person.is_alive = false;
-          changed = true;
-        }
-      } else if (text(currentAlive).trim() === '否') {
-        person.is_alive = null;
+      const nextAlive = statusEvidence.status === '是' ? true : statusEvidence.status === '否' ? false : null;
+      if (currentAlive !== nextAlive) {
+        person.is_alive = nextAlive;
         changed = true;
-      } else if (text(currentAlive).trim() === '是') {
-        person.is_alive = true;
+      }
+      if (Boolean(person.life_status_conflict) !== Boolean(statusEvidence.conflict)) {
+        person.life_status_conflict = statusEvidence.conflict;
+        changed = true;
+      }
+      if (text(person.life_status_source).trim() !== statusEvidence.label) {
+        person.life_status_source = statusEvidence.label;
         changed = true;
       }
       if (!text(person.death_date).trim()) {
@@ -4503,9 +4538,7 @@
         changed = true;
       }
       if (hasExplicitDeath || birthText || bioText) {
-        const vitalSource = historicalAncestor && !birthText && !bioText
-          ? '枫槎谢氏宗谱世次年代校核'
-          : '枫槎谢氏宗谱上册/下册谱文';
+        const vitalSource = '枫槎谢氏宗谱上册/下册谱文';
         if (text(person.vital_source).trim() !== vitalSource) {
           person.vital_source = vitalSource;
           changed = true;

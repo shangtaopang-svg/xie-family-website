@@ -5693,3 +5693,31 @@ a[href*="admin.html"],
 li:has(> a[href*="admin.html"]) {
   display: none !important;
 }
+#members-grid .member-card.is-alive,
+#members-grid .member-card.is-alive:hover {
+  background: rgba(76,154,118,.14) !important;
+  background-image: none !important;
+  border-color: rgba(76,154,118,.42) !important;
+  border-left-color: #4c9a76 !important;
+}
+#members-grid .member-card.is-deceased,
+#members-grid .member-card.is-deceased:hover {
+  background: rgba(110,118,116,.18) !important;
+  background-image: none !important;
+  border-color: rgba(112,121,118,.38) !important;
+  border-left-color: #7b8580 !important;
+}
+#members-grid .member-card.is-status-unknown,
+#members-grid .member-card.is-status-unknown:hover {
+  background: rgba(197,169,94,.14) !important;
+  background-image: none !important;
+  border-color: rgba(197,169,94,.42) !important;
+  border-left-color: #b18d39 !important;
+}
+#members-grid .member-card.is-status-conflict,
+#members-grid .member-card.is-status-conflict:hover {
+  background: rgba(179,59,53,.14) !important;
+  background-image: none !important;
+  border-color: rgba(179,59,53,.48) !important;
+  border-left-color: #b33b35 !important;
+}

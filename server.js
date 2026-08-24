@@ -24,6 +24,7 @@ const { exec } = require('child_process');
 // AI 咨询模块
 const aiToken = require('./server/ai/token.js');
 const { buildKnowledge } = require('./scripts/build-ai-knowledge.js');
+const { normalizeLifeStatus } = require('./server/life-status.js');
 
 // 启动时确保 AI 知识库存在且不早于任一源文件（重建约 1s，幂等）
 setTimeout(() => {
@@ -378,6 +379,7 @@ const server = http.createServer(async (req, res) => {
                 p.branch = '—';
               }
             });
+            if (module === 'genealogy') parsed = normalizeLifeStatus(parsed);
           }
           sendJson(req, res, 200, parsed);
         } catch (e) {
@@ -498,14 +500,13 @@ const server = http.createServer(async (req, res) => {
   }
 
   // === API: 家族成员公共只读数据 ===
-  // 家族成员栏目必须与“族谱管理后台”使用同一数据源：
-  // 交付版 data.js + app.js 中已核定的修正 + source-vitals.js 生卒候选。
-  // 不再把旧 data/genealogy.json 或访客浏览器 localStorage 作为前台成员数据源。
+  // 家族成员栏目必须以“族谱管理后台”的 canonical 数据为准。
+  // 交付版世系图和 PDF 只作为谱文/来源核对材料，不在这里另起一套成员名单。
   if (url === '/api/genealogy-members' && req.method === 'GET') {
     try {
-      const deliverySource = require('./server/ai/delivery-source.js');
-      const records = deliverySource.ensureLoaded();
-      return sendJson(req, res, 200, records.map(person => ({ ...person })));
+      const canonicalPath = path.join(DATA_DIR, 'genealogy.json');
+      const records = JSON.parse(fs.readFileSync(canonicalPath, 'utf8'));
+      return sendJson(req, res, 200, normalizeLifeStatus(records).map(person => ({ ...person })));
     } catch (e) {
       return sendJson(req, res, 500, { error: '族谱管理后台数据暂时不可用' });
     }

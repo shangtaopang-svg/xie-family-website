@@ -1452,45 +1452,53 @@ button, input, select, textarea { color-scheme: light; }
   .query-result-actions .root-trace-trigger { padding: 3px 5px; }
 }
 
-/* 女性人物统一使用大红色卡片，保留支系、出继/入继等边框与标签信息。 */
-.person-card.is-female-card,
-.person-card.is-female-card:hover,
-.person-card.is-female-card:focus-visible {
-  background: #7f1d1d !important;
-  background-image: linear-gradient(145deg, #9f2d2d, #681313) !important;
-  color: #fff8f5 !important;
-  box-shadow: 0 5px 14px rgba(137, 37, 37, .24);
+/* 生命状态优先于支系和性别底色：无明确证据时显示待核验，不按世次猜测。 */
+.person-card.is-living-card,
+.person-card.is-living-card:hover,
+.person-card.is-living-card:focus-visible {
+  border-color: #4c9a76 !important;
+  border-left-color: #2f7a61 !important;
+  background: linear-gradient(145deg, #edf9f1, #d8eee0) !important;
+  color: #234b3a !important;
 }
-/* 支系着色规则不能覆盖女性卡片：女性在任何世系分组中都保持深红色。 */
-.tree-stage .tree-node .person-card.is-female-card,
-.tree-stage .tree-node .person-card.is-female-card:hover,
-.tree-stage .tree-node .person-card.is-female-card:focus-visible {
-  border-color: #b94b4b !important;
-  border-left-color: #b94b4b !important;
-  background: #7f1d1d !important;
-  background-image: linear-gradient(145deg, #9f2d2d, #681313) !important;
-  color: #fff8f5 !important;
-  box-shadow: 0 5px 14px rgba(137, 37, 37, .24) !important;
+.person-card.is-deceased-card,
+.person-card.is-deceased-card:hover,
+.person-card.is-deceased-card:focus-visible {
+  border-color: #9aa39e !important;
+  border-left-color: #717b75 !important;
+  background: linear-gradient(145deg, #f0f1ef, #d9ddda) !important;
+  color: #3e4843 !important;
 }
-.tree-stage .tree-node .person-card.is-female-card strong,
-.tree-stage .tree-node .person-card.is-female-card .card-generation,
-.tree-stage .tree-node .person-card.is-female-card .card-branch,
-.tree-stage .tree-node .person-card.is-female-card .card-bio,
-.tree-stage .tree-node .person-card.is-female-card .card-bottom {
-  color: #fff8f5 !important;
+.person-card.is-status-unknown-card,
+.person-card.is-status-unknown-card:hover,
+.person-card.is-status-unknown-card:focus-visible {
+  border-color: #c5a95e !important;
+  border-left-color: #b18d39 !important;
+  background: linear-gradient(145deg, #fff9e8, #f3e8be) !important;
+  color: #594a24 !important;
 }
-.person-card.is-female-card strong,
-.person-card.is-female-card .card-generation,
-.person-card.is-female-card .card-branch,
-.person-card.is-female-card .card-bio,
-.person-card.is-female-card .card-bottom {
-  color: #fff8f5 !important;
+.person-card.is-status-conflict-card,
+.person-card.is-status-conflict-card:hover,
+.person-card.is-status-conflict-card:focus-visible {
+  border-color: #b33b35 !important;
+  border-left-color: #8f241f !important;
+  background: linear-gradient(145deg, #fff0ee, #f3c9c4) !important;
+  color: #76231f !important;
+  box-shadow: 0 0 0 3px rgba(179, 59, 53, .2), 0 7px 18px rgba(143, 36, 31, .16) !important;
 }
-.person-card.is-female-card .card-branch,
-.person-card.is-female-card .card-bio,
-.person-card.is-female-card .card-bottom {
-  color: #ffe5df !important;
-}
+.person-card.is-living-card strong, .person-card.is-living-card .card-generation, .person-card.is-living-card .card-branch, .person-card.is-living-card .card-bio, .person-card.is-living-card .card-bottom { color: #2f6b55 !important; }
+.person-card.is-deceased-card strong, .person-card.is-deceased-card .card-generation, .person-card.is-deceased-card .card-branch, .person-card.is-deceased-card .card-bio, .person-card.is-deceased-card .card-bottom { color: #53615a !important; }
+.person-card.is-status-unknown-card strong, .person-card.is-status-unknown-card .card-generation, .person-card.is-status-unknown-card .card-branch, .person-card.is-status-unknown-card .card-bio, .person-card.is-status-unknown-card .card-bottom { color: #6b5726 !important; }
+.person-card.is-status-conflict-card strong, .person-card.is-status-conflict-card .card-generation, .person-card.is-status-conflict-card .card-branch, .person-card.is-status-conflict-card .card-bio, .person-card.is-status-conflict-card .card-bottom { color: #76231f !important; }
+
+/* 性别使用明确标识，不再用深红底色代替性别信息。 */
+.card-top-right { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 0; }
+.card-gender { flex: 0 0 auto; padding: 1px 4px; border: 1px solid currentColor; border-radius: 3px; font-size: 9px; line-height: 1.2; font-weight: 700; opacity: .9; }
+.card-gender.is-female { color: #9b2c2c; background: #fff0ef; }
+.card-gender.is-male { color: #426c8a; background: #eef6fb; }
+.card-gender.is-unknown { color: #85724a; background: #fff9e8; }
+.person-card.is-female-card { border-left-color: #a33a3a !important; }
+.person-card.is-female-card .card-gender.is-female { box-shadow: 0 0 0 1px rgba(163, 58, 58, .12); }
 
 /* 卡片本体可点击，编辑入口统一放在详情面板中，避免卡片信息被快捷按钮挤压。 */
 .person-card { cursor: pointer; }

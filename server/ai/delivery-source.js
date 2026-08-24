@@ -10,6 +10,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { normalizeLifeStatus } = require('../life-status.js');
 
 const DATA_FILE = path.join(__dirname, '..', '..', '交付_下枫槎谢氏世系图', 'data.js');
 const APP_FILE = path.join(__dirname, '..', '..', '交付_下枫槎谢氏世系图', 'app.js');
@@ -188,6 +189,7 @@ function ensureLoaded() {
     let vitalsText = '';
     try { vitalsText = fs.readFileSync(VITALS_FILE, 'utf-8'); } catch (e) { vitalsText = ''; }
     data = applySourceVitals(data, vitalsText);
+    data = normalizeLifeStatus(data);
   } catch (e) {
     data = [];
     console.warn('[delivery-source] 读取交付版世系数据失败:', e.message);

@@ -541,7 +541,8 @@
       html += '<div>性别：' + (person.gender || '—') + '</div>';
       if (person.birth_date) html += '<div>出生：' + person.birth_date + '</div>';
       if (person.death_date) html += '<div>逝世：' + person.death_date + '</div>';
-      html += '<div>状态：' + (person.is_alive === '是' ? '在世' : (person.is_alive === '否' ? '已故' : '—')) + '</div>';
+      var lifeStatusLabel = person.life_status_label || (person.is_alive === '是' ? '在世' : (person.is_alive === '否' ? '已故' : '待核验'));
+      html += '<div>状态：' + escapeHtml(lifeStatusLabel) + '</div>';
       if (person.adopted && person.adopted !== '否') html += '<div>过继：' + escapeHtml(person.adopted) + '</div>';
       if (person.address) html += '<div style="grid-column:1/-1;">居住地：' + escapeHtml(person.address) + '</div>';
       if (person.father_id) {
@@ -674,20 +675,22 @@
 
         var isAlive = p.is_alive === '是';
         var isDeceased = p.is_alive === '否';
-        var isStatusUnknown = !isAlive && !isDeceased;
-        var cardBg = isAlive ? 'rgba(220,38,38,0.08)' : (isDeceased ? 'rgba(110,118,116,0.18)' : 'rgba(150,145,132,0.10)');
-        var cardBorder = isAlive ? 'rgba(220,38,38,0.28)' : (isDeceased ? 'rgba(112,121,118,0.34)' : 'rgba(150,145,132,0.24)');
-        var cardAccent = isAlive ? '#ef4444' : (isDeceased ? '#7b8580' : '#a69f92');
-        var cardClass = isAlive ? ' is-alive' : (isDeceased ? ' is-deceased' : ' is-status-unknown');
+        var isConflict = p.life_status === '冲突' || p.life_status_conflict === true;
+        var isStatusUnknown = !isAlive && !isDeceased && !isConflict;
+        var cardBg = isConflict ? 'rgba(179,59,53,0.12)' : (isAlive ? 'rgba(76,154,118,0.12)' : (isDeceased ? 'rgba(110,118,116,0.18)' : 'rgba(197,169,94,0.14)'));
+        var cardBorder = isConflict ? 'rgba(179,59,53,0.42)' : (isAlive ? 'rgba(76,154,118,0.38)' : (isDeceased ? 'rgba(112,121,118,0.34)' : 'rgba(197,169,94,0.38)'));
+        var cardAccent = isConflict ? '#b33b35' : (isAlive ? '#4c9a76' : (isDeceased ? '#7b8580' : '#b18d39'));
+        var cardClass = isConflict ? ' is-status-conflict' : (isAlive ? ' is-alive' : (isDeceased ? ' is-deceased' : ' is-status-unknown'));
         html += '<div class="glass-card member-card' + cardClass + '" onclick="showMemberDetail(' + p.id + ')" style="padding:18px;cursor:pointer;background:' + cardBg + ';border:1px solid ' + cardBorder + ';border-left:3px solid ' + cardAccent + ';" onmouseenter="this.style.background=' + "'" + 'var(--accent-orange-dim)' + "'" + '" onmouseleave="this.style.background=' + "'" + cardBg + "'" + '">';
         html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">';
-        html += '<div style="font-size:30px;">' + (isDeceased ? '🕊' : (p.gender === '男' ? '👤' : '👩')) + '</div>';
+        html += '<div style="font-size:30px;">' + (isConflict ? '⚠️' : (isDeceased ? '🕊' : (p.gender === '男' ? '👤' : '👩'))) + '</div>';
         html += '<div style="flex:1;min-width:0;">';
         html += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">';
         html += '<span style="font-size:16px;font-weight:600;color:var(--text-primary);">' + escapeHtml(cleanDisplayName(p.name)) + '</span>';
-        if (isDeceased) html += '<span style="font-size:10px;color:#5f6864;padding:1px 6px;border-radius:3px;background:rgba(112,121,118,0.18);font-weight:600;">已故</span>';
-        else if (isAlive) html += '<span style="font-size:10px;color:#b52222;padding:1px 6px;border-radius:3px;background:rgba(220,38,38,0.15);font-weight:700;">在世</span>';
-        else html += '<span style="font-size:10px;color:#817a70;padding:1px 6px;border-radius:3px;background:rgba(150,145,132,0.14);font-weight:500;">状态未标注</span>';
+        if (isConflict) html += '<span style="font-size:10px;color:#8f241f;padding:1px 6px;border-radius:3px;background:rgba(179,59,53,0.16);font-weight:700;">状态冲突</span>';
+        else if (isDeceased) html += '<span style="font-size:10px;color:#5f6864;padding:1px 6px;border-radius:3px;background:rgba(112,121,118,0.18);font-weight:600;">已故</span>';
+        else if (isAlive) html += '<span style="font-size:10px;color:#2f7a61;padding:1px 6px;border-radius:3px;background:rgba(76,154,118,0.16);font-weight:700;">在世</span>';
+        else html += '<span style="font-size:10px;color:#806c2f;padding:1px 6px;border-radius:3px;background:rgba(197,169,94,0.18);font-weight:500;">待核验</span>';
         if (p.adopted && p.adopted !== '否') html += '<span style="font-size:10px;background:var(--accent-orange-dim);color:var(--accent-orange);padding:1px 6px;border-radius:3px;font-weight:500;">団</span>';
         if (hasBiography) html += '<span style="font-size:10px;color:var(--text-muted);">📄</span>';
         html += '</div>';
