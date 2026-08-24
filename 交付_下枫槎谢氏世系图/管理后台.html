@@ -151,6 +151,14 @@
             <div id="query-audit" class="query-audit-grid"></div>
           </section>
 
+          <section class="query-section query-adoption-section" aria-label="出继入继一览表">
+            <div class="query-section-head query-adoption-head">
+              <div><span class="query-kicker">ADOPTION CROSS-CHECK</span><h4>出继／入继核实</h4><p class="query-muted">以族谱管理后台主数据为准，逐组对应亲生父亲与承嗣父。</p></div>
+              <button class="query-adoption-toggle" type="button" data-action="toggle-adoption-table" aria-expanded="false">出继入继一览表</button>
+            </div>
+            <div id="query-adoption-table" class="query-adoption-table" hidden></div>
+          </section>
+
           <section class="query-section" aria-label="世代时间轴">
             <div class="query-section-head"><div><span class="query-kicker">GENERATION TIMELINE</span><h4>世代时间轴</h4></div><span class="query-muted">点击任一世代，筛选并定位该世代人物</span></div>
             <div class="query-timeline-scroll"><div id="query-timeline-bars" class="query-timeline-bars"></div></div>
@@ -222,7 +230,7 @@
   });
 })();
 </script>
-<script src="app.js?v=20260824-02"></script>
+<script src="app.js?v=20260824-03"></script>
 <link rel="stylesheet" href="/css/ai.css?v=78">
 <script src="/js/ai-assistant.js?v=78" defer></script>
 </body>

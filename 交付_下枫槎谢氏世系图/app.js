@@ -1286,6 +1286,58 @@
     ].map(text).join(' ')));
   }
 
+  function adoptionRows(people) {
+    const rows = new Map();
+    (people || []).forEach((person) => {
+      const pairId = text(person.adoption_pair_id).trim();
+      const status = text(person.adoption_status).trim();
+      if (!pairId || (status !== 'out' && status !== 'in')) return;
+      if (!rows.has(pairId)) rows.set(pairId, { pairId, out: null, incoming: null });
+      const row = rows.get(pairId);
+      if (status === 'out') row.out = person;
+      if (status === 'in') row.incoming = person;
+    });
+    return Array.from(rows.values())
+      .sort((a, b) => (generationOf(a.out || a.incoming) || 9999) - (generationOf(b.out || b.incoming) || 9999) || Number(personId(a.out || a.incoming)) - Number(personId(b.out || b.incoming)));
+  }
+
+  function adoptionPersonLink(person, role) {
+    if (!person) return '<span class="adoption-table-muted">未找到记录</span>';
+    return `<button class="adoption-table-person" data-action="query-locate" data-id="${escapeHtml(personId(person))}" title="定位${escapeHtml(text(person.name))}"><strong>${escapeHtml(text(person.name) || '未命名')}</strong><small>ID ${escapeHtml(personId(person))} · 第${escapeHtml(generationOf(person) || '—')}世</small></button><span class="adoption-table-role ${role}">${role === 'out' ? '出继记录' : '入继记录'}</span>`;
+  }
+
+  function adoptionParentLink(person, label) {
+    if (!person) return `<span class="adoption-table-muted">${escapeHtml(label)}未详</span>`;
+    return `<button class="adoption-table-parent" data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')} <small>ID ${escapeHtml(personId(person))}</small></button>`;
+  }
+
+  function renderAdoptionTable() {
+    const container = $('#query-adoption-table');
+    const toggle = document.querySelector('[data-action="toggle-adoption-table"]');
+    if (!container) return;
+    const rows = adoptionRows(state.data);
+    const opened = Boolean(state.query.adoptionTableOpen);
+    container.hidden = !opened;
+    if (toggle) {
+      toggle.setAttribute('aria-expanded', String(opened));
+      toggle.textContent = opened ? '收起出继入继一览表' : '出继入继一览表';
+    }
+    if (!opened) return;
+    const complete = rows.filter((row) => row.out && row.incoming);
+    const incomplete = rows.length - complete.length;
+    const tableRows = rows.map((row, index) => {
+      const out = row.out;
+      const incoming = row.incoming;
+      const adoptiveFatherId = (incoming && (incoming.adoption_adoptive_parent_id || incoming.adoptive_parent_id)) || null;
+      const biologicalFather = out ? getPerson(out.father_id) : null;
+      const adoptiveFather = getPerson(adoptiveFatherId) || (incoming ? getPerson(incoming.father_id) : null);
+      const source = text((out && (out.adoption_relation_source || out.adopt_note)) || (incoming && (incoming.adoption_relation_source || incoming.adopt_note))).trim();
+      const generation = generationOf(out || incoming);
+      return `<tr><td class="adoption-table-index">${index + 1}</td><td>第${escapeHtml(generation || '—')}世</td><td>${adoptionPersonLink(out, 'out')}</td><td>${adoptionPersonLink(incoming, 'in')}</td><td>${adoptionParentLink(biologicalFather, '亲生父亲')}</td><td>${adoptionParentLink(adoptiveFather, '承嗣父')}</td><td class="adoption-table-source">${escapeHtml(source || '原始谱载未详')}</td></tr>`;
+    }).join('');
+    container.innerHTML = `<div class="adoption-table-summary"><strong>共 ${complete.length} 组完整对应关系</strong><span>出继 ${complete.length} 人 · 入继 ${complete.length} 人 · 数据源：族谱管理后台</span>${incomplete ? `<em>另有 ${incomplete} 组资料未能成对，需复核</em>` : '<em class="is-ok">出继数量与入继数量相等</em>'}</div><div class="adoption-table-scroll"><table><thead><tr><th>#</th><th>世次</th><th>出继记录</th><th>入继记录</th><th>亲生父亲</th><th>承嗣父</th><th>谱载说明</th></tr></thead><tbody>${tableRows || '<tr><td colspan="7" class="adoption-table-empty">当前主数据暂无结构化出继／入继记录。</td></tr>'}</tbody></table></div>`;
+  }
+
   function renderQueryStats() {
     const container = $('#query-stats');
     if (!container) return;
@@ -1794,6 +1846,7 @@
     if (!$('#query-drawer')) return;
     renderQueryStats();
     renderQueryAudit();
+    renderAdoptionTable();
     renderQueryTimeline();
     renderQuerySearchResults();
     renderQueryRelationCandidates();
@@ -5183,6 +5236,10 @@
       case 'query-run': runQuerySearch(); break;
       case 'query-clear': clearQuery(); break;
       case 'query-relation': renderQueryRelation(); break;
+      case 'toggle-adoption-table':
+        state.query.adoptionTableOpen = !state.query.adoptionTableOpen;
+        renderAdoptionTable();
+        break;
       case 'query-locate': selectPerson(id, { forceRender: true }); break;
       case 'root-trace': openRootTrace(id); break;
       case 'toggle-root-trace-fullscreen': toggleRootTraceFullscreen(); break;
