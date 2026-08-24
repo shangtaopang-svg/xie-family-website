@@ -51,7 +51,7 @@
 
         <div class="rail-section rail-actions">
           <button class="rail-action" data-action="expand-main">展开主脉</button>
-          <button class="rail-action" data-action="expand-all">展开全部</button>
+          <button class="rail-action rail-action-advanced" data-action="expand-all" title="高级功能：展开当前视图全部人物，数据较多时可能需要等待">全部展开（高级）</button>
           <button class="rail-action" data-action="collapse-all">全部收起</button>
         </div>
 
@@ -81,7 +81,9 @@
             <button class="layout-btn" id="left-rail-toggle" data-action="toggle-left-rail">隐藏左栏</button>
             <button class="layout-btn" id="detail-toggle" data-action="toggle-detail-panel">隐藏详情</button>
             <button class="layout-btn immersive-toggle" id="immersive-toggle" data-action="toggle-immersive" aria-pressed="false">全屏浏览</button>
-            <button class="fit-btn" data-action="fit-overview">全景</button>
+            <button class="fit-btn view-fit-button" data-action="fit-screen" title="将当前已展开内容适应到可视区域">适应屏幕</button>
+            <button class="fit-btn view-all-button" data-action="show-full-map" title="高级功能：展开当前视图全部人物并显示全图">显示全图（高级）</button>
+            <button class="layout-btn back-person-button" data-action="back-to-person" title="回到当前选中人物">回到本人</button>
             <button class="layout-btn pan-reset-btn" data-action="reset-map-position" title="将世系图移回中央">复位图面</button>
             <button class="fit-btn print-btn" data-action="print-tree">打印世系图</button>
             <button class="fit-btn" id="compact-toggle" data-action="toggle-compact" aria-pressed="true">标准</button>
@@ -93,20 +95,32 @@
         </div>
         <div id="view-tabs" class="view-tabs" role="tablist" aria-label="世系图视图切换"></div>
         <div id="main-branch-nav" class="main-branch-nav" hidden></div>
-        <div class="tree-legend">
-          <span><i class="legend-swatch swatch-ancient"></i>远古世系</span>
-          <span><i class="legend-swatch swatch-branch"></i>分房支系</span>
-          <span><i class="legend-swatch swatch-modern"></i>枫槎本宗</span>
-          <span><i class="legend-swatch swatch-adoption-out"></i>出继卡片</span>
-          <span><i class="legend-swatch swatch-adoption-in"></i>入继 / 承嗣</span>
-          <span class="tree-help">左右分隔线可拖动调宽 · 可隐藏两侧区域 · 滚轮缩放 · 拖拽世系图平移 · 撰/攒粗框空白处可四向移动 · 单击卡片查看详情</span>
-        </div>
+        <details id="tree-legend" class="tree-legend" open>
+          <summary class="tree-legend-summary"><strong>图例</strong><span>点击展开说明</span></summary>
+          <div class="tree-legend-content">
+            <span><i class="legend-swatch swatch-ancient"></i>远古世系</span>
+            <span><i class="legend-swatch swatch-branch"></i>分房支系</span>
+            <span><i class="legend-swatch swatch-modern"></i>枫槎本宗</span>
+            <span><i class="legend-swatch swatch-adoption-out"></i>出继卡片</span>
+            <span><i class="legend-swatch swatch-adoption-in"></i>入继 / 承嗣</span>
+            <span class="tree-help">左右分隔线可拖动调宽 · 可隐藏两侧区域 · 滚轮缩放 · 拖拽世系图平移 · 单击卡片查看详情</span>
+          </div>
+        </details>
         <div id="tree-viewport" class="tree-viewport" tabindex="0" aria-label="可缩放、可滚动的树状世系图">
           <div id="tree-canvas" class="tree-canvas"><div id="tree-stage" class="tree-stage"></div></div>
         </div>
+        <aside id="tree-minimap" class="tree-minimap" aria-label="世系图缩略导航">
+          <button class="minimap-toggle" type="button" data-action="toggle-minimap" aria-expanded="false" aria-controls="tree-minimap-panel">缩略图</button>
+          <div id="tree-minimap-panel" class="tree-minimap-panel" hidden>
+            <div class="minimap-head"><strong>缩略导航</strong><span>点击定位</span></div>
+            <div id="tree-minimap-plot" class="tree-minimap-plot" role="application" aria-label="点击缩略图定位世系图"></div>
+          </div>
+        </aside>
         <div id="immersive-hud" class="tree-immersive-hud" hidden aria-label="沉浸全景控制">
           <button class="immersive-hud-btn" data-action="toggle-immersive">显示界面</button>
-          <button class="immersive-hud-btn" data-action="fit-overview">全景</button>
+          <button class="immersive-hud-btn" data-action="fit-screen">适应屏幕</button>
+          <button class="immersive-hud-btn" data-action="show-full-map">显示全图</button>
+          <button class="immersive-hud-btn" data-action="back-to-person">回到本人</button>
           <button class="immersive-hud-btn" data-action="reset-map-position">复位</button>
           <span>滚轮缩放 · 拖拽平移 · Esc 显示界面</span>
         </div>

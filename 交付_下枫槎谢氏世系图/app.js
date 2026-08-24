@@ -52,6 +52,7 @@
     draftId: null,
     draftParentId: null,
     mainFocusId: null,
+    mobileFocusRootId: null,
     layout: {
       leftWidth: 230,
       detailWidth: 365,
@@ -1054,6 +1055,44 @@
     });
     const root = findRoot();
     if (root) state.expanded.add(String(personId(root)));
+  }
+
+  function isMobileViewport() {
+    return typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 760px)').matches;
+  }
+
+  // 手机端默认只展开目标人物附近的有限窗口，避免把上千张卡片一次性塞进小屏。
+  // 祖先链必须完整展开，后代按层级和数量限制展开；用户仍可通过“显示全图（高级）”主动查看全量。
+  function prepareMobileFocusWindow(person, radius = 4) {
+    state.overviewMode = false;
+    state.compact = true;
+    state.expanded.clear();
+    const focus = person || getPerson(state.selectedId) || getPerson(state.mainFocusId) || findRoot();
+    if (!focus) return;
+    const lineage = [];
+    const seen = new Set();
+    let current = focus;
+    while (current && !seen.has(String(personId(current))) && lineage.length <= radius) {
+      seen.add(String(personId(current)));
+      lineage.push(current);
+      const key = String(personId(current));
+      const displayParentId = state.adoption.displayParentById.get(key);
+      current = displayParentId ? getPerson(displayParentId) : parentsOf(current)[0] || null;
+    }
+    const windowRoot = lineage[lineage.length - 1] || focus;
+    state.mobileFocusRootId = personId(windowRoot);
+    lineage.forEach((item) => state.expanded.add(String(personId(item))));
+    let budget = 180;
+    const walk = (current, distance) => {
+      if (!current || distance >= radius || budget <= 0) return;
+      const children = treeChildren(current);
+      if (!children.length) return;
+      state.expanded.add(String(personId(current)));
+      budget -= children.length;
+      children.forEach((child) => walk(child, distance + 1));
+    };
+    walk(focus, 0);
+    state.expanded.add(String(personId(focus)));
   }
 
   function focusMainBranch(id) {
@@ -2192,7 +2231,123 @@
     applyZoom();
     viewport.scrollLeft = 0;
     viewport.scrollTop = 0;
-    showToast(`已切换全景视图 · ${formatZoom()}，拖拽图面可四向平移`);
+    renderMiniMap();
+    showToast(`已适应屏幕 · ${formatZoom()}，拖拽图面可四向平移`);
+  }
+
+  function renderMiniMap() {
+    const panel = $('#tree-minimap-panel');
+    const plot = $('#tree-minimap-plot');
+    const stage = $('#tree-stage');
+    const viewport = $('#tree-viewport');
+    if (!panel || !plot || !stage || !viewport || panel.hidden || !stage.innerHTML.trim()) return;
+    const cards = Array.from(stage.querySelectorAll('.person-card'));
+    if (!cards.length) {
+      plot.innerHTML = '<span class="minimap-empty">暂无图面</span>';
+      return;
+    }
+    const stageRect = stage.getBoundingClientRect();
+    const zoom = Math.max(.001, Number(state.zoom) || 1);
+    const contentWidth = Math.max(1, stage.scrollWidth);
+    const contentHeight = Math.max(1, stage.scrollHeight);
+    const mapWidth = 184;
+    const mapHeight = 112;
+    const fragment = document.createDocumentFragment();
+    cards.forEach((card) => {
+      const rect = card.getBoundingClientRect();
+      const left = (rect.left - stageRect.left) / zoom;
+      const top = (rect.top - stageRect.top) / zoom;
+      const width = Math.max(2, rect.width / zoom);
+      const height = Math.max(2, rect.height / zoom);
+      const node = document.createElement('span');
+      node.className = `minimap-node${card.classList.contains('is-selected') ? ' is-selected' : ''}${card.classList.contains('is-female-card') ? ' is-female' : ''}`;
+      node.style.left = `${Math.max(0, Math.min(99.5, left / contentWidth * 100))}%`;
+      node.style.top = `${Math.max(0, Math.min(99.5, top / contentHeight * 100))}%`;
+      node.style.width = `${Math.max(1, Math.min(100, width / contentWidth * 100))}%`;
+      node.style.height = `${Math.max(1.5, Math.min(100, height / contentHeight * 100))}%`;
+      node.dataset.minimapX = String(left + width / 2);
+      node.dataset.minimapY = String(top + height / 2);
+      node.title = card.querySelector('strong')?.textContent || '定位人物';
+      fragment.appendChild(node);
+    });
+    plot.innerHTML = '';
+    plot.style.setProperty('--minimap-width', `${mapWidth}px`);
+    plot.style.setProperty('--minimap-height', `${mapHeight}px`);
+    plot.appendChild(fragment);
+    const visibleRect = document.createElement('span');
+    visibleRect.className = 'minimap-viewport';
+    const viewWidth = Math.min(100, viewport.clientWidth / Math.max(1, contentWidth * zoom) * 100);
+    const viewHeight = Math.min(100, viewport.clientHeight / Math.max(1, contentHeight * zoom) * 100);
+    const viewLeft = state.overviewMode
+      ? Math.max(0, Math.min(100 - viewWidth, (-Number(state.mapPan?.x || 0) / zoom) / contentWidth * 100))
+      : Math.max(0, Math.min(100 - viewWidth, viewport.scrollLeft / zoom / contentWidth * 100));
+    const viewTop = state.overviewMode
+      ? Math.max(0, Math.min(100 - viewHeight, (-Number(state.mapPan?.y || 0) / zoom) / contentHeight * 100))
+      : Math.max(0, Math.min(100 - viewHeight, viewport.scrollTop / zoom / contentHeight * 100));
+    visibleRect.style.left = `${viewLeft}%`;
+    visibleRect.style.top = `${viewTop}%`;
+    visibleRect.style.width = `${Math.max(3, viewWidth)}%`;
+    visibleRect.style.height = `${Math.max(5, viewHeight)}%`;
+    plot.appendChild(visibleRect);
+  }
+
+  function focusMiniMapPoint(x, y) {
+    const viewport = $('#tree-viewport');
+    if (!viewport) return;
+    const contentX = Number(x) || 0;
+    const contentY = Number(y) || 0;
+    const zoom = Math.max(.001, Number(state.zoom) || 1);
+    if (state.overviewMode) {
+      state.mapPan = {
+        x: viewport.clientWidth / 2 - contentX * zoom,
+        y: viewport.clientHeight / 2 - contentY * zoom
+      };
+      applyMapPan();
+    } else {
+      state.mapPan = { x: 0, y: 0 };
+      applyMapPan();
+      viewport.scrollLeft = Math.max(0, contentX * zoom - viewport.clientWidth / 2);
+      viewport.scrollTop = Math.max(0, contentY * zoom - viewport.clientHeight / 2);
+    }
+    renderMiniMap();
+    persistSessionView();
+  }
+
+  function toggleMinimap() {
+    const panel = $('#tree-minimap-panel');
+    const toggle = document.querySelector('.minimap-toggle');
+    if (!panel) return;
+    panel.hidden = !panel.hidden;
+    if (toggle) {
+      toggle.setAttribute('aria-expanded', String(!panel.hidden));
+      toggle.textContent = panel.hidden ? '缩略图' : '收起缩略图';
+    }
+    if (!panel.hidden) renderMiniMap();
+  }
+
+  function backToPerson() {
+    const target = getPerson(state.selectedId) || getPerson(state.mainFocusId) || findRoot();
+    if (!target) {
+      showToast('当前没有可返回的人物');
+      return;
+    }
+    state.selectedId = personId(target);
+    state.mode = 'view';
+    if (isMobileViewport() && !state.overviewMode) prepareMobileFocusWindow(target, 4);
+    else {
+      setAncestorsExpanded(target);
+      if (treeChildren(target).length) state.expanded.add(String(personId(target)));
+    }
+    renderTree();
+    renderDetail();
+    updateSelectedCardUI();
+    const card = document.querySelector(`.person-card[data-id="${CSS.escape(String(personId(target)))}"]`);
+    if (card) {
+      card.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
+      card.classList.add('is-search-target-pulse');
+    }
+    renderMiniMap();
+    showToast(`已回到“${text(target.name)}”`);
   }
 
   function stepZoom(direction) {
@@ -2499,7 +2654,9 @@
 
   function renderTree() {
     const stage = $('#tree-stage');
-    const root = findRoot();
+    const root = isMobileViewport() && !state.overviewMode && state.mobileFocusRootId
+      ? (getPerson(state.mobileFocusRootId) || findRoot())
+      : findRoot();
     if (!stage) return;
     state.overviewMetrics = { width: 0, height: 0 };
     stage.classList.toggle('is-compact', state.compact);
@@ -2514,6 +2671,7 @@
     applyBranchOffsets();
     applyZoom();
     renderGroupFrames();
+    renderMiniMap();
     animateTreeEntrance(stage);
     const activeFilters = [state.branch && `支系：${state.branch}`, state.generation && `世代：${viewGenerationText(Number(state.generation))}`].filter(Boolean).join(' · ');
     const selected = getPerson(state.selectedId);
@@ -4762,6 +4920,7 @@
     state.immersive = false;
     state.view = key;
     state.mainFocusId = null;
+    state.mobileFocusRootId = null;
     state.selectedId = null;
     state.mode = 'view';
     state.branch = '';
@@ -4974,7 +5133,8 @@
     const previousExpanded = new Set(state.expanded);
     state.selectedId = personId(selection);
     state.mode = 'view';
-    setAncestorsExpanded(selection);
+    if (isMobileViewport() && !state.overviewMode) prepareMobileFocusWindow(selection, 4);
+    else setAncestorsExpanded(selection);
     const selectionKey = String(personId(selection));
     const selectionChildren = treeChildren(selection);
     if (selectionChildren.length) state.expanded.add(selectionKey);
@@ -5040,6 +5200,7 @@
   function expandMain() {
     state.overviewMode = false;
     state.immersive = false;
+    state.mobileFocusRootId = null;
     seedMainExpansion();
     renderTree();
   }
@@ -5065,7 +5226,7 @@
         fullExpandBusy = false;
         if (trigger) {
           trigger.disabled = false;
-          trigger.textContent = previousLabel || '展开全部';
+          trigger.textContent = previousLabel || '全部展开（高级）';
         }
       }
     };
@@ -5077,6 +5238,7 @@
   function collapseAll() {
     state.overviewMode = false;
     state.immersive = false;
+    state.mobileFocusRootId = null;
     state.expanded.clear();
     const root = findRoot();
     if (root) state.expanded.add(String(personId(root)));
@@ -5236,6 +5398,10 @@
       case 'toggle-detail-panel': togglePanel('right'); break;
       case 'toggle-immersive': toggleImmersive(); break;
       case 'fit-overview': fitOverview(); break;
+      case 'fit-screen': fitOverview(); break;
+      case 'show-full-map': expandAll(); break;
+      case 'back-to-person': backToPerson(); break;
+      case 'toggle-minimap': toggleMinimap(); break;
       case 'reset-map-position': resetMapPosition(); break;
       case 'toggle-compact': toggleCompact(); break;
       case 'toggle-query-drawer': toggleQueryDrawer(); break;
@@ -5513,6 +5679,23 @@
   function wireEvents() {
     wirePanelResize();
     wireCanvasPan();
+    const treeViewport = $('#tree-viewport');
+    if (treeViewport) treeViewport.addEventListener('scroll', () => renderMiniMap(), { passive: true });
+    const minimapPlot = $('#tree-minimap-plot');
+    if (minimapPlot) minimapPlot.addEventListener('click', (event) => {
+      const node = event.target.closest('.minimap-node');
+      const plotRect = minimapPlot.getBoundingClientRect();
+      if (node) {
+        focusMiniMapPoint(node.dataset.minimapX, node.dataset.minimapY);
+        return;
+      }
+      if (event.target === minimapPlot && plotRect.width && plotRect.height) {
+        const stage = $('#tree-stage');
+        const x = ((event.clientX - plotRect.left) / plotRect.width) * Math.max(1, stage?.scrollWidth || 1);
+        const y = ((event.clientY - plotRect.top) / plotRect.height) * Math.max(1, stage?.scrollHeight || 1);
+        focusMiniMapPoint(x, y);
+      }
+    });
     document.addEventListener('fullscreenchange', () => {
       // 用户按 Esc 退出浏览器原生全屏时，同步恢复页面工具栏，避免留下“只剩图面”的假死状态。
       if (state.immersive && !document.fullscreenElement) {
@@ -5760,6 +5943,13 @@
     }
     if (state.view === 'main' && route.depth) prepareDepthExpansion(route.depth);
     if (state.view === 'main' && route.safe) prepareSafeExpansion();
+    // 手机默认保持局部窗口；只有明确点击“显示全图（高级）”或通过深度路由时才加载全量视图。
+    if (isMobileViewport() && !route.depth && !route.safe) {
+      const mobileTarget = getPerson(state.selectedId) || getPerson(state.mainFocusId) || findRoot();
+      prepareMobileFocusWindow(mobileTarget, 4);
+      state.zoom = 1;
+      state.mapPan = { x: 0, y: 0 };
+    }
     wireEvents();
     renderAll();
     if (sessionView && !hasExplicitRoute) restoreSessionViewport(sessionView);
