@@ -1268,6 +1268,35 @@
     return `<div class="query-stat${className ? ` ${className}` : ''}"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></div>`;
   }
 
+  // 统计必须以管理后台 canonical 数据中的结构化字段为准，不能再依赖
+  // 卡片标签的推断结果。这样同一组出继/入继记录始终按一对一对应统计。
+  function adoptionSummary(people) {
+    const outIds = new Set();
+    const inIds = new Set();
+    const pairIds = new Set();
+    (people || []).forEach((person) => {
+      const id = String(personId(person));
+      const status = text(person.adoption_status).trim();
+      const pairId = text(person.adoption_pair_id).trim();
+      if (pairId) pairIds.add(pairId);
+      if (status === 'out') outIds.add(id);
+      else if (status === 'in') inIds.add(id);
+      else {
+        // 兼容后台尚未补结构化字段的旧记录，但只作为兜底。
+        if (adoptionTags(person).some((tag) => tag.className === 'adoption-out')) outIds.add(id);
+        if (adoptionTags(person).some((tag) => tag.className === 'adoption-in')) inIds.add(id);
+      }
+    });
+    return { out: outIds.size, incoming: inIds.size, pairs: pairIds.size };
+  }
+
+  function inLawRecords(people) {
+    return (people || []).filter((person) => /入赘|入贅|赘婿|贅婿|招赘|招贅/.test([
+      person.name, person.biography, person.adopt_note, person.notes,
+      person.spouse_record, person.book_record
+    ].map(text).join(' ')));
+  }
+
   function renderQueryStats() {
     const container = $('#query-stats');
     if (!container) return;
@@ -1277,9 +1306,8 @@
     const male = people.filter((person) => genderOf(person) === '男').length;
     const female = people.filter((person) => genderOf(person) === '女').length;
     const unknown = people.length - male - female;
-    const out = people.filter((person) => adoptionTags(person).some((tag) => tag.className === 'adoption-out')).length;
-    const incoming = people.filter((person) => adoptionTags(person).some((tag) => tag.className === 'adoption-in')).length;
-    const inLaw = people.filter((person) => /入赘/.test([person.name, adoptionText(person)].map(text).join(' '))).length;
+    const adoption = adoptionSummary(people);
+    const inLaw = inLawRecords(people).length;
     container.innerHTML = [
       queryStatHtml(people.length.toLocaleString('zh-CN'), '现有记录', ''),
       queryStatHtml(generations.length ? `第${Math.max(...generations)}世` : '—', '最高世代', ''),
@@ -1287,7 +1315,7 @@
       queryStatHtml(male.toLocaleString('zh-CN'), '男', ''),
       queryStatHtml(female.toLocaleString('zh-CN'), '女（已校正）', 'is-female'),
       queryStatHtml(unknown.toLocaleString('zh-CN'), '性别未标注', 'is-audit'),
-      queryStatHtml(`${out}/${incoming}`, '出继 / 入继记录', 'is-audit'),
+      queryStatHtml(`${adoption.out}/${adoption.incoming}`, '出继 / 入继记录', 'is-audit'),
       queryStatHtml(inLaw.toLocaleString('zh-CN'), '入赘记录', 'is-audit')
     ].join('');
   }
@@ -1302,16 +1330,16 @@
       const father = person.father_id ?? person.fatherId ?? person.father;
       return father !== null && father !== undefined && father !== '' && !getPerson(father);
     }).length;
-    const out = people.filter((person) => adoptionTags(person).some((tag) => tag.className === 'adoption-out')).length;
-    const incoming = people.filter((person) => adoptionTags(person).some((tag) => tag.className === 'adoption-in')).length;
-    const inLaw = people.filter((person) => /入赘/.test([person.name, adoptionText(person)].map(text).join(' '))).length;
+    const adoption = adoptionSummary(people);
+    const inLawPeople = inLawRecords(people);
+    const inLaw = inLawPeople.length;
     const item = (value, label, detail, kind) => `<div class="query-audit-item ${kind || ''}"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)} · ${escapeHtml(detail)}</span></div>`;
     container.innerHTML = [
       item(`${SOURCE_AUDIT_SNAPSHOT.fieldDiffRecords}`, '两源字段差异', `后台${SOURCE_AUDIT_SNAPSHOT.backendApi} / 交付磁盘${SOURCE_AUDIT_SNAPSHOT.deliveryDisk}，仅作对照`, 'warn'),
       item(`${SOURCE_AUDIT_SNAPSHOT.fatherDiffRecords}`, '父系字段差异', '已按谱页与人工核定优先，不直接覆盖', 'warn'),
       item(`${unknownGender}`, '当前性别未标注', `父子关联${directFatherRefs}条${orphanRefs ? `，孤立父 ID ${orphanRefs} 条` : '，父 ID 可解析'}`, unknownGender ? 'warn' : 'ok'),
-      item(`${out} / ${incoming}`, '出继 / 入继核对', `${out === incoming ? '数量相等，继续按人物对照' : '存在数量差异，需按谱页逐项复核'}`, out === incoming ? 'ok' : 'warn'),
-      item(`${inLaw}`, '入赘单独记录', '不并入出继 / 入继统计', 'ok'),
+      item(`${adoption.out} / ${adoption.incoming}`, '出继 / 入继核对', `${adoption.out === adoption.incoming ? `数量相等，共${adoption.pairs || adoption.out}组` : '存在数量差异，需按谱页逐项复核'}`, adoption.out === adoption.incoming ? 'ok' : 'warn'),
+      item(`${inLaw}`, '入赘单独记录', `${inLaw ? inLawPeople.map((person) => text(person.name)).join('、') : '后台当前未记录'}；不并入出继 / 入继统计`, 'ok'),
       item(`${SOURCE_AUDIT_SNAPSHOT.upperTerms.out + SOURCE_AUDIT_SNAPSHOT.lowerTerms.out}`, '谱页“出继”词项', `上册${SOURCE_AUDIT_SNAPSHOT.upperTerms.out} / 下册${SOURCE_AUDIT_SNAPSHOT.lowerTerms.out}`, 'ok')
     ].join('');
   }
