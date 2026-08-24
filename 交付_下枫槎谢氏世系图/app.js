@@ -226,12 +226,7 @@
 
   const DENG_ROOT_IDS = new Set(['135', '143', '155']);
 
-  // 以谱页中的“女/长女/次女”等明确语义补齐性别口径。
-  // 这些 ID 也用于统计，不能只靠原始 gender 字段，否则本谱女性会被漏计。
-  const CONFIRMED_FEMALE_IDS = new Set([
-    '667', '709', '784', '812', '814', '827', '860', '864', '927', '929', '932',
-    '1030', '1032', '1074', '1082', '1091', '1101', '1102', '1121', '1268', '1273', '1274'
-  ]);
+  // 性别统计只读取 canonical 后台数据中的 gender 字段；旧版谱页推断 ID 不再覆盖主数据。
 
   // “保岳”在谱文中明确记为“入赘婿”，旧数据的 gender=女 为错误字段，
   // 必须由谱文语义覆盖，避免把入赘男误计入女性统计。
@@ -434,7 +429,6 @@
     if (!person) return '';
     const key = String(personId(person));
     if (CONFIRMED_MALE_IDS.has(key)) return '男';
-    if (CONFIRMED_FEMALE_IDS.has(key)) return '女';
     const value = text(person.gender).trim();
     return value === '男' || value === '女' ? value : '';
   }
@@ -4523,14 +4517,7 @@
       xieNan.gender = '女';
       changed = true;
     }
-    // 统一整理已核定的女性人物。卡片底色只依据此字段判断，避免女性仍显示为男色卡片。
-    CONFIRMED_FEMALE_IDS.forEach((id) => {
-      const person = getPerson(id);
-      if (person && text(person.gender).trim() !== '女') {
-        person.gender = '女';
-        changed = true;
-      }
-    });
+    // 卡片与统计只依据 canonical gender 字段，避免前台另行推断造成数据分叉。
     // 谱文生卒审校：旧转换数据把绝大多数人物默认写成“否”。只有谱文存在明确
     // 卒、殁、早逝、享年或葬载时才确认已故；无证据的字符串默认值恢复为未标注。
     // 后台人工保存的布尔值不覆盖，避免冲掉后续人工核定结论。
