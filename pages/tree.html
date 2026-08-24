@@ -437,10 +437,11 @@
     return result;
   }
 
-  function getGenealogyData() {
+  var canonicalGenealogyData = [];
+  function getGenealogyData() { return canonicalGenealogyData; }
+  /* 旧静态 seed 已停用；保留在历史代码中仅供离线审计，不参与运行时。 */
+  function getGenealogyDataLegacyDisabled() {
   var combined = [];
-  try { var stored = localStorage.getItem('xie_admin_genealogy'); if (stored) combined = JSON.parse(stored); } catch(e) {}
-  if (!combined.length) combined = getFullSeedData();
   // 世代统一为炎帝全局世系（用户确认：炎帝=1世、申伯=65世），与族谱页/成员页/时间轴一致：
   // 1) 名字在远古世系 → 直接用远古世次的炎帝全局世次（小四=130世、文杲=132世、敬乙=136世等）
   // 2) 下枫槎族人（本地世次>0）→ +131 平移（文杲1→132、彬乾16→147、天字辈34→165）
@@ -479,7 +480,7 @@
     }
   }
   return combined.concat(ancient);
-}
+  }
 
 function getPersonNameById(id, data) {
     if (!id && id !== 0) return null;
@@ -2370,19 +2371,15 @@ function locateInTree(personId) {
   } else {
     document.addEventListener('DOMContentLoaded', renderGenealogyPageSVG);
   }
-  // Try loading from Supabase for up-to-date genealogy data across devices
-  if (window.dbGetAll) {
-    dbGetAll('genealogy', { order: 'id.asc' }).then(function(supabaseData) {
-      if (supabaseData && supabaseData.length > 0) {
-        localStorage.setItem('xie_admin_genealogy', JSON.stringify(supabaseData));
-        // Re-render with Supabase data
-        renderGenealogyPageSVG();
-        // Render timeline when its script loads
-        setTimeout(function() { if (window.renderTimeline) { document.getElementById('genealogy-timeline').style.opacity = '1';
-    setTimeout(function() { if (window.renderTimeline) window.renderTimeline(); }, 100); window.renderTimeline(); } }, 200);
-      }
-    }).catch(function() {});
-  }
+  // 旧树状页也只读族谱管理后台 canonical 数据；不再从 Supabase/旧 localStorage 直接取数。
+  fetch('../api/data/genealogy?ts=' + Date.now(), { cache: 'no-store' }).then(function(r){
+    if (!r.ok) throw new Error('canonical genealogy request failed');
+    return r.json();
+  }).then(function(canonicalData) {
+    if (!Array.isArray(canonicalData) || canonicalData.length < 100) throw new Error('canonical genealogy data is empty');
+    canonicalGenealogyData = canonicalData;
+    renderGenealogyPageSVG();
+  }).catch(function(error) { console.warn('canonical genealogy load failed:', error.message); });
   </script>
 
   <script>

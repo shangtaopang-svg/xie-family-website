@@ -32,7 +32,6 @@ setTimeout(() => {
     const kbPath = path.join(DATA_DIR, 'ai', 'knowledge.json');
     const sources = [
       path.join(DATA_DIR, 'genealogy.json'),
-      path.join(__dirname, '交付_下枫槎谢氏世系图', 'data.js'),
       path.join(DATA_DIR, 'parsed_entries.json'),
       path.join(DATA_DIR, 'genealogy_book_extract.txt'),
       path.join(DATA_DIR, 'genealogy_analysis.txt'),
@@ -604,6 +603,27 @@ const server = http.createServer(async (req, res) => {
 
   // === Static file serving ===
   if (url === '/') url = '/index.html';
+
+  // 历史快照、临时审计文件、旧后台副本和后台原始 JSON 不属于公开网站资源。
+  // 它们保留在本地/服务器备份目录供恢复与审计，但不允许通过静态路径输出。
+  let decodedUrl = url;
+  try { decodedUrl = decodeURIComponent(url); } catch (e) { /* 保持原始路径，后续按普通静态路径处理 */ }
+  const isArchivedSnapshot = /(?:^|\/)(?:网站原页面存档_|旧后台族谱管理与世代总览封存_|原始数据备份|全面审查.*备份|.*前备份|.*封存)(?:\/|$)/.test(decodedUrl);
+  if (
+    url === '/data/genealogy.json' ||
+    url === '/data/genealogy_full.json' ||
+    url === '/交付_下枫槎谢氏世系图/data.js' ||
+    url.startsWith('/backups/') ||
+    url.startsWith('/data/backups/') ||
+    url === '/_bk.html' ||
+    url.startsWith('/_tmp_') ||
+    url === '/recover.html' ||
+    url === '/pages/recover.html' ||
+    isArchivedSnapshot
+  ) {
+    res.writeHead(404, { 'Content-Length': '9' });
+    return res.end('Not Found');
+  }
 
   const filePath = path.join(__dirname, url);
   const ext = path.extname(filePath);

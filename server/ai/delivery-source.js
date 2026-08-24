@@ -9,12 +9,10 @@
 
 const fs = require('fs');
 const path = require('path');
-const vm = require('vm');
+const vm = require('vm'); // 仅供一次性迁移脚本；运行时 ensureLoaded 不调用旧来源
 const { normalizeLifeStatus } = require('../life-status.js');
 
 const DATA_FILE = path.join(__dirname, '..', '..', 'data', 'genealogy.json');
-const APP_FILE = path.join(__dirname, '..', '..', '交付_下枫槎谢氏世系图', 'app.js');
-const VITALS_FILE = path.join(__dirname, '..', '..', '交付_下枫槎谢氏世系图', 'source-vitals.js');
 
 let data = [];
 let mtimeMs = -1;

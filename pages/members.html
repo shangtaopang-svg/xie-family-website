@@ -151,15 +151,7 @@
             <th style="padding:8px 14px;border:1px solid var(--glass-border);text-align:center;">世代</th>
           </tr>
         </thead>
-        <tbody>
-          <tr><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;font-weight:600;">金瑜</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">本姓陈·一市下</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;font-size:18px;color:#ef4444;font-weight:700;">↔</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">聪林（三女）</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">162世</td></tr>
-          <tr style="background:var(--glass-bg);"><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;font-weight:600;">施鹏</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">杭州人</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;font-size:18px;color:#ef4444;font-weight:700;">↔</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">玮</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">162世</td></tr>
-          <tr><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;font-weight:600;">保岳</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">本姓葛·白岩人</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;font-size:18px;color:#ef4444;font-weight:700;">↔</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">国芬</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">160世</td></tr>
-          <tr style="background:var(--glass-bg);"><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;font-weight:600;">王邦旭</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">女婿入赘</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;font-size:18px;color:#ef4444;font-weight:700;">↔</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">开静（孝静）</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">163世</td></tr>
-          <tr><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;font-weight:600;">张小兵</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">女婿入赘</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;font-size:18px;color:#ef4444;font-weight:700;">↔</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">开蕾</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">163世</td></tr>
-          <tr style="background:var(--glass-bg);"><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;font-weight:600;">赵敏杰</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">女婿/入赘</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;font-size:18px;color:#ef4444;font-weight:700;">↔</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">佳颖</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">164世</td></tr>
-          <tr><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;font-weight:600;">雪水</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">前童人·入赘</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;font-size:18px;color:#ef4444;font-weight:700;">↔</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">聪芳</td><td style="padding:6px 12px;border:1px solid var(--glass-border);text-align:center;">162世</td></tr>
-        </tbody>
+        <tbody id="marriage-records-body"><tr><td colspan="5" style="padding:16px;text-align:center;color:#aaa;">正在读取族谱管理后台数据…</td></tr></tbody>
       </table>
       </div>
     </div>
@@ -271,29 +263,6 @@
     function getGenealogyData() {
       // 公共“家族成员”栏目只读族谱管理后台的有效数据，禁止旧浏览器缓存覆盖后台核定结果。
       return Array.isArray(window._genealogyBackendData) ? window._genealogyBackendData.slice() : [];
-      /* legacy localStorage reader retained below only as historical reference */
-      try {
-        var data = JSON.parse(localStorage.getItem('xie_admin_genealogy') || '[]');
-        // 世代统一为炎帝全局世系（用户确认：炎帝=1世、申伯=65世），与时间轴/世系图一致：
-        // 1) 名字在远古世系 → 直接用远古世次的炎帝全局世次（小四=130世、文杲=132世、敬乙=136世等）
-        // 2) 下枫槎族人（本地世次>0）→ +131 平移（文杲1→132、彬乾16→147、天字辈34→165）
-        // 3) 负世代（远古示意祖先）→ generation 字段的全局世次（炎帝-10→1、申伯-3→65）
-        var ancient = getAncientGenealogyData();
-        var aMap = {};
-        for (var ai = 0; ai < ancient.length; ai++) {
-          var an = ancient[ai].name;
-          if (aMap[an] === undefined || ancient[ai].generation_num > aMap[an]) aMap[an] = ancient[ai].generation_num;
-        }
-        for (var i = 0; i < data.length; i++) {
-          var p = data[i];
-          if (aMap[p.name] !== undefined) { p.generation_num = aMap[p.name]; continue; }
-          var g = parseInt(p.generation_num, 10);
-          if (g > 0) { p.generation_num = g + 131; continue; }
-          var gg = parseInt(p.generation, 10);
-          p.generation_num = (gg > 0) ? gg : 0;
-        }
-        return data;
-      } catch(e) { return []; }
     }
 
     function saveGenealogyData(data) {
@@ -353,7 +322,9 @@
     }
 
     // ===== State =====
-    var _showAliveOnly = false;
+    // 公共成员页默认只展示后台明确核定“在世”的人员；
+    // 年代、世次或“无卒年”不能代替后台状态核定。
+    var _showAliveOnly = true;
     var _genFilter = '';
     var _searchFilter = '';
 
@@ -616,8 +587,37 @@
       // Store data for filters
       window._membersData = data;
 
+      renderMarriageRecords(data);
+
       // Initial render
       applyFilters(data);
+    }
+
+    function renderMarriageRecords(data) {
+      var body = document.getElementById('marriage-records-body');
+      if (!body) return;
+      var rows = (data || []).filter(function(person) {
+        return person && (person.marriage_type || person.in_law_origin || person.in_law_spouse || person.in_law_note);
+      }).sort(function(a, b) {
+        return (parseInt(a.generation_num, 10) || 0) - (parseInt(b.generation_num, 10) || 0) || (a.name || '').localeCompare(b.name || '');
+      });
+      if (!rows.length) {
+        body.innerHTML = '<tr><td colspan="5" style="padding:16px;text-align:center;color:#aaa;">后台当前未记录入赘婚配</td></tr>';
+        return;
+      }
+      body.innerHTML = rows.map(function(person) {
+        var name = escapeHtml(cleanDisplayName(person.name || ''));
+        var origin = escapeHtml(person.in_law_origin || '未详');
+        var spouse = escapeHtml(person.in_law_spouse || '未详');
+        var gen = person.generation_num ? '第' + escapeHtml(person.generation_num) + '世' : '未详';
+        return '<tr>'
+          + '<td style="padding:10px 14px;border:1px solid var(--glass-border);text-align:center;font-weight:700;">' + name + '</td>'
+          + '<td style="padding:10px 14px;border:1px solid var(--glass-border);text-align:center;">' + origin + '</td>'
+          + '<td style="padding:10px 14px;border:1px solid var(--glass-border);text-align:center;">↔</td>'
+          + '<td style="padding:10px 14px;border:1px solid var(--glass-border);text-align:center;">' + spouse + '</td>'
+          + '<td style="padding:10px 14px;border:1px solid var(--glass-border);text-align:center;">' + gen + '</td>'
+          + '</tr>';
+      }).join('');
     }
 
     function setGenFilter(btn, gen) {

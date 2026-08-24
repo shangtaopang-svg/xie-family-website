@@ -1292,6 +1292,7 @@
 
   function inLawRecords(people) {
     return (people || []).filter((person) => /入赘|入贅|赘婿|贅婿|招赘|招贅/.test([
+      person.marriage_type, person.in_law_origin, person.in_law_spouse, person.in_law_note,
       person.name, person.biography, person.adopt_note, person.notes,
       person.spouse_record, person.book_record
     ].map(text).join(' ')));

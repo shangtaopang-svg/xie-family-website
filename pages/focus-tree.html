@@ -125,33 +125,9 @@ function getFullSeedData() {
     return result;
   }
 
-  function getGenealogyData() {
-  var combined = [];
-  try {
-    var stored = localStorage.getItem('xie_admin_genealogy');
-    if (stored) combined = JSON.parse(stored);
-  } catch(e) {}
-  if (!combined.length) combined = getFullSeedData();
-  // Ancient lineage data
-  var ancient = getAncientGenealogyData();
-  var ancientNames = {};
-  for (var ai = 0; ai < ancient.length; ai++) ancientNames[ancient[ai].name] = true;
-  combined = combined.filter(function(p) {
-    if (ancientNames[p.name]) return false;
-    var base = p.name.replace(/\(.*\)$/, '');
-    if (base !== p.name && ancientNames[base]) return false;
-    return true;
-  });
-  // Connect stored 文杲公 to ancient 小四
-  for (var ci = 0; ci < combined.length; ci++) {
-    if (combined[ci].name === '文杲公' || combined[ci].name === '文杲') {
-      for (var ai = 0; ai < ancient.length; ai++) {
-        if (ancient[ai].name === '小四') { combined[ci].father_id = ancient[ai].id; break; }
-      }
-    }
-  }
-  return combined.concat(ancient);
-}
+  // 唯一运行时数据：族谱管理后台 canonical API；旧 seed/localStorage 不参与页面。
+  var canonicalGenealogyData = [];
+  function getGenealogyData() { return canonicalGenealogyData; }
 
 function esc(t){if(!t)return '';return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
@@ -271,36 +247,25 @@ function show(id){
 }
 
 function loadData(){
-  try{allData = (typeof getGenealogyData==='function')?getGenealogyData():[];}catch(e){}
-  if(!allData||!allData.length){document.getElementById('tree').innerHTML='<div style="padding:60px;text-align:center;color:rgba(255,255,255,0.3);">暂无数据</div>';return;}
-  document.getElementById('tree').innerHTML='<div style="padding:40px;text-align:center;color:rgba(255,255,255,0.3);">记录数: '+allData.length+'，尝试加载...</div>';
-  if(allData.length<=10){
-    document.getElementById('tree').innerHTML='<div style="padding:40px;text-align:center;color:#fb923c;">正在从服务器加载完整数据('+allData.length+'条)...</div>';
-    var dbg = document.getElementById('tree');
-    fetch('/api/data/genealogy').then(function(r){return r.json();}).then(function(remoteData){
-      if(remoteData&&remoteData.length>10){
-        allData = remoteData;
-        localStorage.setItem('xie_admin_genealogy', JSON.stringify(remoteData));
-        dbg.innerHTML='<div style="padding:20px;text-align:center;color:#22c55e;">已加载'+remoteData.length+'条数据</div>';
-        var did=null;
-        for(var i=0;i<allData.length;i++){if(allData[i].name&&allData[i].name.indexOf('文杲')>=0){did=allData[i].id;break;}}
-        if(!did&&allData.length>0)did=allData[0].id;
-        if(did!=null)show(did);
-      } else {
-        dbg.innerHTML='<div style="padding:20px;text-align:center;color:#ef4444;">服务器返回数据为空</div>';
-      }
-    }).catch(function(err){
-      dbg.innerHTML='<div style="padding:20px;text-align:center;color:#ef4444;">加载失败: '+err.message+'</div>';
-    });
-  } else {
+  var dbg = document.getElementById('tree');
+  dbg.innerHTML='<div style="padding:40px;text-align:center;color:rgba(255,255,255,0.3);">正在读取族谱管理后台数据…</div>';
+  fetch('/api/data/genealogy?ts=' + Date.now(), { cache: 'no-store' }).then(function(r){
+    if(!r.ok) throw new Error('canonical genealogy request failed');
+    return r.json();
+  }).then(function(remoteData){
+    if(!Array.isArray(remoteData)||remoteData.length<100) throw new Error('canonical genealogy data is empty');
+    canonicalGenealogyData = remoteData;
+    allData = remoteData;
+    dbg.innerHTML='<div style="padding:20px;text-align:center;color:#22c55e;">已加载'+remoteData.length+'条后台数据</div>';
     showFirst();
-  }
+  }).catch(function(err){
+    dbg.innerHTML='<div style="padding:20px;text-align:center;color:#ef4444;">后台数据加载失败：'+err.message+'</div>';
+  });
   function showFirst(){
     var did=null;
     for(var i=0;i<allData.length;i++){if(allData[i].name&&allData[i].name.indexOf('文杲')>=0){did=allData[i].id;break;}}
     if(!did&&allData.length>0)did=allData[0].id;
-    document.getElementById('tree').innerHTML='<div style="padding:40px;text-align:center;color:rgba(255,255,255,0.3);">正在显示...</div>';
-    show(did);
+    if(did!=null)show(did);
   }
 }
 

@@ -90,53 +90,13 @@
     return remapped;
   }
 
+  // 运行时唯一结构化族谱来源：族谱管理后台的 canonical API。
+  // 旧 JSON、静态 seed、localStorage 与 Supabase 仅作历史备份，不得进入前台渲染。
   var _genealogyData = null;
+  var _canonicalGenealogyData = null;
 
   function getGenealogyData() {
-    var data = _genealogyData;
-    if (!data || data.length < 5) {
-      try {
-        var stored = localStorage.getItem('xie_admin_genealogy');
-        if (stored && stored.length > 100) {
-          data = JSON.parse(stored);
-        }
-      } catch(e) {}
-    }
-    if (!data || data.length < 5) data = getFullSeedData();
-    // 世代统一为炎帝全局世系（用户确认：炎帝=1世、申伯=65世），与成员页/时间轴一致：
-    // 1) 名字在远古世系 → 直接用远古世次的炎帝全局世次（小四=130世、文杲=132世、敬乙=136世等）
-    // 2) 下枫槎族人（本地世次>0）→ +131 平移（文杲1→132、彬乾16→147、天字辈34→165）
-    // 3) 负世代（远古示意祖先）→ generation 字段的全局世次（炎帝-10→1、申伯-3→65）
-    var ancMap = {};
-    var ancList = getAncientGenealogyData();
-    for (var ai2 = 0; ai2 < ancList.length; ai2++) {
-      var ancName = ancList[ai2].name;
-      if (ancMap[ancName] === undefined || ancList[ai2].generation_num > ancMap[ancName]) ancMap[ancName] = ancList[ai2].generation_num;
-    }
-    for (var di = 0; di < data.length; di++) {
-      var per = data[di];
-      // 幂等：缓存 _genealogyData 已是换算后（本地世次>131 不重复平移），远古世系(id>=50000)名字在 ancMap 赋同值不副作用
-      if (ancMap[per.name] !== undefined) { per.generation_num = ancMap[per.name]; continue; }
-      var gv = parseInt(per.generation_num, 10);
-      if (gv > 0) { if (gv <= 131) per.generation_num = gv + 131; continue; }
-      var ggv = parseInt(per.generation, 10);
-      per.generation_num = (ggv > 0) ? ggv : 0;
-    }
-    // Merge ancient lineage
-    var ancient = getAncientGenealogyData();
-    // 现代人父链重连（必须在 filter 之前：远古名记录重连完才被过滤，
-    // 其现代子孙的 father_id 由此重映射到古世系 50000+ id）
-    reconnectModernToAncient(data, ancient);
-    var ancientNames = {};
-    for (var ai = 0; ai < ancient.length; ai++) ancientNames[ancient[ai].name] = true;
-    data = data.filter(function(p) {
-      if (ancientNames[p.name]) return false;
-      var base = p.name.replace(/\(.*\)$/, '');
-      if (base !== p.name && ancientNames[base]) return false;
-      return true;
-    });
-    _genealogyData = data.concat(ancient);
-    return _genealogyData;
+    return Array.isArray(_canonicalGenealogyData) ? _canonicalGenealogyData : [];
   }
 
   // 连续完整世系：古世系168 + 后枫槎精选树80，去重头部重叠，从炎帝(1世)一路贯通到彬公/乾公。
@@ -146,59 +106,19 @@
   // 其世代 +129 统一为炎帝全局世次（攒=133、伯能=134、叔仅=146、彬乾=147、云先=153，已逐人对验主数据）。
   var _continuousData = null;
   function getContinuousLineageData() {
-    if (_continuousData && _continuousData.length > 100) return _continuousData;
-    var ancient = getAncientGenealogyData();
-    var hf = getHoufengchaTreeData();
-    var ancIdByName = {};
-    for (var i = 0; i < ancient.length; i++) ancIdByName[ancient[i].name] = ancient[i].id;
-    var hfById = {};
-    for (var i = 0; i < hf.length; i++) hfById[hf[i].id] = hf[i];
-    var skip = {'小四':1, '丹一':1, '文杲':1, '文榘':1};
-    var out = ancient.slice();
-    for (var i = 0; i < hf.length; i++) {
-      var p = hf[i];
-      if (skip[p.name]) continue;
-      var fatherId = p.father_id;
-      if (fatherId && hfById[fatherId] && skip[hfById[fatherId].name]) {
-        fatherId = ancIdByName[hfById[fatherId].name];
-      }
-      var g = (p.generation_num || 0) + 129;
-      out.push({
-        id: p.id, name: p.name, gender: p.gender || '男',
-        generation_num: g, generation: g.toString(),
-        branch: p.branch || '后枫槎', father_id: fatherId,
-        spouse_ids: p.spouse_ids || '', is_alive: p.is_alive || '否',
-        biography: p.biography || '', highlight: p.highlight
-      });
-    }
-    _continuousData = out;
-    return out;
+    // 连续世系也必须使用同一份后台数据，不能重新拼接旧 hard-coded seed。
+    return getGenealogyData();
   }
 
-  // Load full 1080 records from JSON - OVERRIDE everything
-  // ★缓存坑：快照 fetch 无版本参数会被浏览器/nginx 永久缓存（部署后仍是旧数据）。
-  // ?v= 必须与 genealogy-tree.js 版本同步递增（生产数据改版后快照也换新 URL 击穿缓存）
-  fetch('../data/genealogy_full.json?v=8').then(function(r){return r.json()}).then(function(d){
-    // 实时 API 数据优先：若已通过 dbGetAll 加载活数据（后台增改后），旧快照不再覆盖，前端与后台保持一致
-    if (window.__liveGenealogyLoaded) { return; }
+  // 旧世系页面也只能读取族谱管理后台的 canonical 接口。
+  // genealogy_full.json 是历史快照，保留在磁盘备查，但不能再进入前台渲染或统计。
+  fetch('../api/data/genealogy?ts=' + Date.now(), { cache: 'no-store' }).then(function(r){
+    if (!r.ok) throw new Error('canonical genealogy request failed');
+    return r.json();
+  }).then(function(d){
     if (d && d.length > 100) {
-      // 统计口径与实时 API 一致（不混入远古世系）：先把全量快照 d 存 localStorage 供「总人数」统计。
-      // 旧代码此处 d.filter 缺 return true 把全量过滤成空数组，再 concat(远古168) 写入 localStorage，
-      // 导致统计一刹那闪现 168，直到 live API 覆盖才恢复 1249（已修）
-      localStorage.setItem('xie_admin_genealogy', JSON.stringify(d));
-      // Merge ancient lineage into full JSON data（去重后供树/时间轴渲染完整世系）
-      var ancient = getAncientGenealogyData();
-      // 现代人父链重连（必须在 filter 之前：远古名记录重连完才被过滤）
-      reconnectModernToAncient(d, ancient);
-      var ancientNames = {};
-      for (var ai = 0; ai < ancient.length; ai++) ancientNames[ancient[ai].name] = true;
-      d = d.filter(function(p) {
-        if (ancientNames[p.name]) return false;
-        var base = p.name.replace(/\(.*\)$/, '');
-        if (base !== p.name && ancientNames[base]) return false;
-        return true;
-      });
-      _genealogyData = d.concat(ancient);
+      _canonicalGenealogyData = d;
+      _genealogyData = d;
       // Re-render everything
       if (typeof renderGenealogyPageSVG === 'function') {
         renderGenealogyPageSVG();
@@ -458,64 +378,9 @@ function getBranchData(data, rootNamePattern) {
   return data.filter(function(p) { return ids.indexOf(p.id) >= 0; });
 }
 
-// ★本宗世系图（后枫槎）大字辈后代挂接（2026-08-15 用户需求）：硬编码精选树(80人)到大字辈(第25世)即止，
-// 而完整数据(genealogy.json)里大字辈下面还有 545 个正常直系子孙（锡→明→学/台→昌→…→现代）。
-// 两套数据是同一批人，按「名字+父亲名」精确对应（含入继/出继标注），渲染时把直系子树从完整数据挂接过来。
-// 完整数据里 17 个串回主链/远古的交叉节点（协/列宗/穆宗/林/涣/旺/珽/国辉/宁/福/杨贞/平利/平和/平祖/翠/利/文）
-// 被剔除——判据：子代世代不递增（子generation_num<=父），即非正常父链。
-// 世代对齐：getGenealogyData 是炎帝全局(大字辈=154世)、getHoufengchaTreeData 是石马第一世(大字辈=25世)，
-// 挂接子孙按 delta 平移回本宗世系图世次体系，图内世次连续（25世大字辈→26世锡字辈→…）。
+// 本宗世系图现在直接按后台 canonical 数据筛选，不再拼接旧精选树或静态 ID。
 function getHoufengchaEnhancedData() {
-  var base = getHoufengchaTreeData();
-  var full = getGenealogyData();
-  function cleanName(n) { return String(n || '').replace(/\(.*\)$/, ''); }
-  var fullById = {}, childrenOf = {}, byName = {};
-  for (var fi = 0; fi < full.length; fi++) {
-    var fp = full[fi];
-    fullById[fp.id] = fp;
-    if (fp.father_id) (childrenOf[fp.father_id] = childrenOf[fp.father_id] || []).push(fp);
-    var fnm = cleanName(fp.name);
-    (byName[fnm] = byName[fnm] || []).push(fp);
-  }
-  var baseById = {};
-  for (var bi = 0; bi < base.length; bi++) baseById[base[bi].id] = base[bi];
-  var out = base.slice();
-  var added = {}, skipped = [], childCount = 0;
-  var usedName = {};
-  for (var bj = 0; bj < base.length; bj++) {
-    var p = base[bj];
-    var cn = cleanName(p.name);
-    if (!/^大/.test(cn)) continue;                            // 只补「大」字辈
-    // 匹配源：精选树与完整库父链体系不同（云字辈 vs 光/延字辈），只能按名字匹配；
-    // full 同名有多个时按 base 出现顺序依次分配（大性/大文/大顺各两处→挂不同子树）
-    var cands = (byName[cn] || []).filter(function(c) { return (childrenOf[c.id] || []).length > 0; });
-    if (!cands.length) continue;
-    var idx = usedName[cn] || 0;
-    usedName[cn] = idx + 1;
-    var match = cands[idx % cands.length];
-    var delta = (parseInt(p.generation_num, 10) || 0) - (parseInt(match.generation_num, 10) || 0);
-    (function attach(fParent, newFid) {
-      var kids = childrenOf[fParent.id] || [];
-      for (var k2 = 0; k2 < kids.length; k2++) {
-        var c = kids[k2];
-        var cg = parseInt(c.generation_num, 10) || 0;
-        var pg = parseInt(fParent.generation_num, 10) || 0;
-        if (cg <= pg) { skipped.push(c.name + '(父' + fParent.name + ')'); continue; }  // 交叉异常
-        if (added[c.id]) continue;
-        var n = {};
-        for (var kk in c) { if (Object.prototype.hasOwnProperty.call(c, kk)) n[kk] = c[kk]; }
-        n.father_id = newFid;
-        n.generation_num = cg + delta;
-        n.generation = n.generation_num.toString();
-        n.branch = '后枫槎';
-        added[c.id] = true;
-        out.push(n); childCount++;
-        attach(c, c.id);
-      }
-    })(match, p.id);
-  }
-  window._mblEnhanceInfo = { base: base.length, added: childCount, skipped: skipped.length, skippedNames: skipped.slice(0, 25) };
-  return out;
+  return getGenealogyData();
 }
 
 var _currentBranch = 'all';
@@ -530,11 +395,10 @@ function filterBranch(branch) {
   var btn = document.getElementById(btnId);
   if (btn) { btn.style.background = 'var(--accent-orange)'; btn.style.color = '#fff'; btn.style.border = 'none'; }
   // Get and filter data
-  // 连续完整世系：古世系168 + 后枫槎精选树80 合并（见 getContinuousLineageData）
-  // 本宗世系图（后枫槎）：直接复用后台同一棵硬编码精选树（js/admin.js getHoufengchaTreeData），保证与后台显示一致
+  // 连续世系、本宗世系图和总览均由后台 canonical 数据筛选。
   var data;
   if (branch === '连续完整世系') { data = getContinuousLineageData(); }
-  else if (branch === '本宗世系图（后枫槎）') { data = getHoufengchaEnhancedData(); }
+  else if (branch === '本宗世系图（后枫槎）') { data = getGenealogyData(); }
   // 全世系总览：真实 1249 人，数据修正后天然是从炎帝→现在的贯通树（与「全部世系」同源，入口语义更清晰）
   else if (branch === '全世系总览') { data = getGenealogyData(); }
   else { data = getGenealogyData(); }
@@ -561,7 +425,9 @@ function filterBranch(branch) {
       if (branch === '连续完整世系' || branch === '全世系总览') {
         rootId = 50000; // 炎帝神农氏：整条连续世系的起点
       } else if (branch === '本宗世系图（后枫槎）') {
-        rootId = 60000; // 本宗世系图精选树根节点：小四
+        for (var hi = 0; hi < data.length; hi++) {
+          if (String(data[hi].name || '').replace(/\(.*\)$/, '') === '文杲') { rootId = data[hi].id; break; }
+        }
       } else {
         for (var i = 0; i < data.length; i++) {
           if (data[i].name.indexOf(branch) >= 0) { rootId = data[i].id; break; }
@@ -1981,11 +1847,6 @@ function treeAutoLocate(personId) {
   var data = getGenealogyData();
   var person = null;
   for (var i = 0; i < data.length; i++) { if (data[i].id === personId) { person = data[i]; break; } }
-  // 本宗世系图精选树（id 60000+）不在常规族谱数据中，单独在其共享数据源中查找
-  if (!person && typeof getHoufengchaTreeData === 'function' && personId >= 60000 && personId < 60100) {
-    var hfData = getHoufengchaTreeData();
-    for (var j = 0; j < hfData.length; j++) { if (hfData[j].id === personId) { person = hfData[j]; break; } }
-  }
   if (!person) return;
   var statusEl = document.getElementById('tree-search-status');
 
@@ -3267,30 +3128,13 @@ function locateInTree(personId) {
   function renderGenealogyPageSVG() {
     var data = getGenealogyData();
     if (!data || data.length === 0) { return; }
-    // Stats — 统计口径统一：以 /api/data/genealogy 权威数据为准（与首页「族人」、成员页「总人数」一致，均为 1249）。
-    // 不把硬编码远古世系（178人）计入总数，避免 首页1249 vs 本页1250 的数据不一致。树/时间轴/检索仍含远古世系（完整世系展示）。
-    var statsData = null;
-    try { var st = localStorage.getItem('xie_admin_genealogy'); if (st && st.length > 100) statsData = JSON.parse(st); } catch(e) {}
-    // 权威统计守卫：仅全量数据（localStorage 快照 / live API，均 1249）才渲染统计卡片，
-    // 拦截种子回退(176)或历史残留的远古-only(168)，杜绝「一刹那 168」再出现（根因：JSON 处理器过滤缺 return true，已修）
-    if (!statsData || statsData.length < 1000) statsData = (data && data.length >= 1000) ? data : null;
-    // 世代统一为炎帝全局世系（用户确认：炎帝=1世、申伯=65世），与成员页/时间轴一致：
-    // 1) 名字在远古世系 → 直接用远古世次的炎帝全局世次（小四=130世、文杲=132世）
-    // 2) 下枫槎族人（本地世次>0）→ +131 平移（文杲1→132、天字辈34→165）
-    // 3) 负世代（远古示意祖先）→ generation 字段的全局世次（炎帝-10→1、申伯-3→65）
-    var ancientStats = getAncientGenealogyData();
-    var aMapStats = {};
-    for (var si = 0; si < ancientStats.length; si++) {
-      var sName = ancientStats[si].name;
-      if (aMapStats[sName] === undefined || ancientStats[si].generation_num > aMapStats[sName]) aMapStats[sName] = ancientStats[si].generation_num;
-    }
+    // 统计、树、时间轴、检索全部使用同一份后台 canonical 数据。
+    // 不读取 localStorage 快照，也不把旧 seed/远古硬编码拼入统计。
+    var statsData = data;
     if (statsData) {
       statsData.forEach(function(p) {
-        if (aMapStats[p.name] !== undefined) { p.generation_num = aMapStats[p.name]; return; }
-        var sg = parseInt(p.generation_num, 10);
-        if (sg > 0) { p.generation_num = sg + 131; return; }
-        var sgg = parseInt(p.generation, 10);
-        p.generation_num = (sgg > 0) ? sgg : 0;
+        // canonical 数据的世次已由管理后台核定，前台不再自行平移或重算。
+        p.generation_num = parseInt(p.generation_num, 10) || 0;
       });
       var total = statsData.length;
       var gens = {}, branches = {}, males = 0, females = 0, genMax = 0;
@@ -3336,41 +3180,8 @@ function locateInTree(personId) {
   } else {
     document.addEventListener('DOMContentLoaded', renderGenealogyPageSVG);
   }
-  // Try loading from Supabase for up-to-date genealogy data across devices
-  // 注意：supabase.js 为 defer 加载，本内联脚本在解析期执行时 window.dbGetAll 尚未就绪，
-  // 因此这里「立即尝试 + 轮询兜底」，确保后台增改后前端族谱查询能取到实时数据
-  function tryLoadLiveGenealogy() {
-    if (!window.dbGetAll) return false;
-    dbGetAll('genealogy', { order: 'id.asc' }).then(function(supabaseData) {
-      // Only use Supabase data if it has REAL names (not placeholders)
-      var hasRealData = supabaseData && supabaseData.length > 5 && supabaseData.some(function(p) { return /^(小四|文杲|彬|乾|攒|撰|伯|祖|宗|道|体|开|裕|静|元|宏|孟|公|书|叔|文对)/.test(p.name); });
-      if (hasRealData) {
-        // 实时 API 数据已就绪：标记后，旧快照 genealogy_full.json 不再覆盖（后台增改后前端自动同步）
-        window.__liveGenealogyLoaded = true;
-        localStorage.setItem('xie_admin_genealogy', JSON.stringify(supabaseData));
-        // 强制下次 getGenealogyData() 重新读取 localStorage 中的实时数据（否则缓存停留在初始 seed，统计与首页不一致）
-        _genealogyData = null;
-        // Re-render with Supabase data
-        setTimeout(renderGenealogyPageSVG, 10);
-        // Render timeline when its script loads
-        setTimeout(function() { if (window.renderTimeline) { document.getElementById('genealogy-timeline').style.opacity = '1';
-    setTimeout(function() { if (window.renderTimeline) window.renderTimeline(); }, 100); window.renderTimeline(); } }, 200);
-      }
-    }).catch(function() {});
-    return true;
-  }
-  if (!tryLoadLiveGenealogy()) {
-    // supabase.js（defer）会在 DOMContentLoaded 之前执行完毕，此时 dbGetAll 必然就绪；
-    // 轮询仅作为极端情况兜底（最多约 10 秒）
-    var _liveTries = 0;
-    var _liveTimer = setInterval(function() {
-      _liveTries++;
-      if (window.dbGetAll || _liveTries > 20) {
-        clearInterval(_liveTimer);
-        if (window.dbGetAll) tryLoadLiveGenealogy();
-      }
-    }, 500);
-  }
+  // 已移除 Supabase/旧缓存兜底。后台 canonical API 失败时页面保持空态，
+  // 防止旧数据悄悄覆盖唯一数据源。
 
   // ===== 开启页搜索跳转支持：?search=姓名 → 自动填入搜索框并执行搜索 =====
   (function(){

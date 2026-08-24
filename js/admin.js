@@ -3932,22 +3932,23 @@ document.addEventListener('DOMContentLoaded', function() {
     // 登录后从 Supabase 加载数据
     loadFromSupabase();
 
-    // 从 JSON 文件加载完整族谱数据（后台编辑与 AI 咨询读同一份 genealogy.json，避免数据源不一致）
-    fetch('../data/genealogy.json').then(function(r){return r.json()}).then(function(full){
-      if (full && full.length > 100) {
-        localStorage.setItem('xie_admin_genealogy', JSON.stringify(full));
-        // 族谱管理与世代总览都依赖这份数据，加载完成后都需刷新
-        if (currentModule === 'genealogy' || currentModule === 'genealogyOverview') { renderModule(currentModule); updateStats(); }
-      }
-    }).catch(function(){});
-    // Also override API-loaded data: delay to run after loadFromSupabase
-    setTimeout(function() {
-      fetch('../data/genealogy.json').then(function(r){return r.json()}).then(function(full){
-        if (full && full.length > 100) {
+    // 族谱管理必须只读取 canonical API；旧版直接读取 data/genealogy.json，
+    // 会绕过后台接口缓存和权限，造成前台/后台出现两套数据。
+    function loadCanonicalGenealogy() {
+      fetch('../api/data/genealogy?ts=' + Date.now(), { cache: 'no-store' }).then(function(r){
+        if (!r.ok) throw new Error('canonical genealogy request failed');
+        return r.json();
+      }).then(function(full){
+        if (Array.isArray(full) && full.length > 100) {
           localStorage.setItem('xie_admin_genealogy', JSON.stringify(full));
           if (currentModule === 'genealogy' || currentModule === 'genealogyOverview') { renderModule(currentModule); updateStats(); }
         }
-      }).catch(function(){});
+      }).catch(function(e){ console.warn('canonical 族谱数据加载失败:', e.message); });
+    }
+    loadCanonicalGenealogy();
+    // 登录后再次校准，避免旧页面状态覆盖 canonical。
+    setTimeout(function() {
+      loadCanonicalGenealogy();
     }, 2000);
   }
 

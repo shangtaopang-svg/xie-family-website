@@ -3004,21 +3004,24 @@ document.addEventListener('DOMContentLoaded', function() {
     // 登录后从 Supabase 加载数据
     loadFromSupabase();
 
-    // 从 JSON 文件加载完整族谱数据（1080条）
-    fetch('../data/genealogy_full.json').then(function(r){return r.json()}).then(function(full){
-      if (full && full.length > 100) {
-        localStorage.setItem('xie_admin_genealogy', JSON.stringify(full));
-        if (currentModule === 'genealogy') { renderModule('genealogy'); updateStats(); }
-      }
-    }).catch(function(){});
-    // Also override API-loaded data: delay to run after loadFromSupabase
-    setTimeout(function() {
-      fetch('../data/genealogy_full.json').then(function(r){return r.json()}).then(function(full){
-        if (full && full.length > 100) {
+    // 族谱管理必须与前台、族人栏目、AI 共用服务器 canonical 数据。
+    // 旧版这里读取 genealogy_full.json，会把后台本地数据覆盖成另一套旧快照，
+    // 造成总人数、女性人数、出继/入继等统计与前台不一致。
+    function loadCanonicalGenealogy() {
+      fetch('../api/data/genealogy?ts=' + Date.now(), { cache: 'no-store' }).then(function(r){
+        if (!r.ok) throw new Error('canonical genealogy request failed');
+        return r.json();
+      }).then(function(full){
+        if (Array.isArray(full) && full.length > 100) {
           localStorage.setItem('xie_admin_genealogy', JSON.stringify(full));
           if (currentModule === 'genealogy') { renderModule('genealogy'); updateStats(); }
         }
-      }).catch(function(){});
+      }).catch(function(e){ console.warn('canonical 族谱数据加载失败:', e.message); });
+    }
+    loadCanonicalGenealogy();
+    // 登录后再次校准，避免旧页面状态或 Supabase 回填覆盖 canonical。
+    setTimeout(function() {
+      loadCanonicalGenealogy();
     }, 2000);
   }
 

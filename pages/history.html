@@ -710,22 +710,19 @@
 
       function loadData() {
         // Always fetch fresh data from server (skip potentially stale localStorage)
-        fetch('../data/genealogy.json')
+        fetch('../api/data/genealogy?ts=' + Date.now(), { cache: 'no-store' })
           .then(function(r){ return r.json(); })
           .then(function(d){
             DATA = d;
-            // Update localStorage with fresh data
-            try { localStorage.setItem('xie_admin_genealogy', JSON.stringify(d)); } catch(e) {}
+            window.__historyCanonicalData = d;
             renderAll();
           })
           .catch(function(err){
-            // Fallback: try localStorage, then seed data
-            try {
-              var stored = localStorage.getItem('xie_admin_genealogy');
-              if (stored) { DATA = JSON.parse(stored); renderAll(); return; }
-            } catch(e) {}
-            DATA = getSeedData();
-            renderAll();
+            // 不回退到旧 localStorage/seed，避免历史数据混入当前网站。
+            DATA = [];
+            window.__historyCanonicalData = [];
+            var empty = document.getElementById('tree-shima');
+            if (empty) empty.innerHTML = '<div class="ltree-loading" style="padding:20px;text-align:center;color:var(--accent-orange);">族谱管理后台数据暂时无法读取</div>';
           });
       }
 
@@ -943,27 +940,8 @@ function renderChain(ids) {
     // ===== Detail modal =====
     function escHtml(t) { if (!t) return ''; return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
     function lineageDetail(id) {
-      var d = null;
-      try {
-        var stored = localStorage.getItem('xie_admin_genealogy');
-        if (stored) d = JSON.parse(stored);
-      } catch(e) {}
-      if (!d) {
-        // Use seed
-        d = [
-          {id:1,name:'炎帝神农氏',generation:'1',generation_num:-10,branch:'炎帝世系',biography:'姜姓始祖，号神农氏，为中华民族人文始祖之一。'},
-          {id:2,name:'临魁',generation:'2',generation_num:-9,branch:'炎帝世系',biography:'炎帝之子，继位。'},
-          {id:3,name:'榆罔',generation:'10',generation_num:-8,branch:'炎帝世系',biography:'帝柱之父。'},
-          {id:4,name:'帝柱',generation:'11',generation_num:-7,branch:'炎帝世系',biography:''},
-          {id:5,name:'祝融',generation:'15',generation_num:-6,branch:'炎帝世系',biography:''},
-          {id:1184,name:'吕尚',generation:'54',generation_num:-5,branch:'炎帝世系',biography:'姜太公，周朝开国功臣。'},
-          {id:1185,name:'佐',generation:'55',generation_num:-4,branch:'炎帝世系',biography:'吕尚之子，申伯之父。'},
-          {id:6,name:'申伯',generation:'65',generation_num:-3,branch:'谢氏得姓',biography:'谢氏鼻祖。周宣王封于谢邑，以邑为氏。'},
-          {id:1126,name:'缵',generation:'35',generation_num:35,branch:'东山第一世',biography:'东山第一世'},
-          {id:1130,name:'衡',generation:'36',generation_num:36,branch:'始宁东山',biography:'会稽东山始祖'},
-          {id:1183,name:'闓',generation:'58',generation_num:58,branch:'始宁东山',biography:'观之子，临海下渡第一世'}
-        ];
-      }
+      var d = window.__historyCanonicalData || [];
+      if (!d.length) return;
       var p = null;
       for (var i=0;i<d.length;i++) { if (d[i].id === id) { p = d[i]; break; } }
       if (!p) return;

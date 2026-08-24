@@ -2,13 +2,11 @@ const fs = require('fs');
 const path = require('path');
 
 const projectRoot = path.resolve(__dirname, '..');
-const sourcePath = path.join(projectRoot, '交付_下枫槎谢氏世系图', 'data.js');
+// LOGO 生成也只读取后台 canonical 数据；交付版 data.js 已隔离为历史备份。
+const sourcePath = path.join(projectRoot, 'data', 'genealogy.json');
 const outputDir = path.join(projectRoot, 'logo');
 
-const source = fs.readFileSync(sourcePath, 'utf8')
-  .replace(/^window\.GENEALOGY_DATA\s*=\s*/, '')
-  .replace(/;?\s*$/, '');
-const people = JSON.parse(source);
+const people = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
 const ids = new Set(people.map(person => person.id));
 const byId = new Map(people.map(person => [person.id, person]));
 const children = new Map(people.map(person => [person.id, []]));
@@ -238,7 +236,7 @@ fs.writeFileSync(path.join(outputDir, '枫槎谢氏-星脉图-完整展开.svg')
 const readme = [
   '# 枫槎谢氏·星脉图',
   '',
-  '这三份 SVG 根据 交付_下枫槎谢氏世系图/data.js 的真实父子关系生成。原始布局使用父子树的叶节点顺序与实际世代行；方形与横版使用真实点位的像素密度归并，不使用虚构的树形轮廓。',
+  '这三份 SVG 根据族谱管理后台 canonical 数据 data/genealogy.json 的真实父子关系生成。原始布局使用父子树的叶节点顺序与实际世代行；方形与横版使用真实点位的像素密度归并，不使用虚构的树形轮廓。',
   '',
   '- 主标：72×72 密度网格，适合头像、印章、网站角标。',
   '- 横版：108×42 密度网格，约 3:1，适合网站页眉、宣传片片头和横幅。',

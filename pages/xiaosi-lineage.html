@@ -88,10 +88,8 @@
   <div id="tree" class="loading">加载中…</div>
 
 <script>
-function getData() {
-  try { var s = localStorage.getItem('xie_admin_genealogy'); if (s) return convGen(JSON.parse(s)); } catch(e) {}
-  return [];
-}
+var canonicalGenealogyData = [];
+function getData() { return canonicalGenealogyData; }
 // 世代统一为炎帝全局世系（与族谱页/成员页/时间轴一致）：远古重名→远古世次；下枫槎本地>0→+131；负世代→generation字段
 function convGen(data) {
   var fixed = { '小四':130, '丹一':131, '丹二':131, '丹三':131, '文杲':132, '文榘':132, '丹九':132 };
@@ -193,7 +191,18 @@ function render() {
   container.innerHTML = buildTree(data, rootId, 0, true);
 }
 
-document.addEventListener('DOMContentLoaded', render);
+document.addEventListener('DOMContentLoaded', function(){
+  // 旧石马页只作为兼容入口，数据仍以族谱管理后台 canonical 接口为唯一来源。
+  render();
+  fetch('../api/data/genealogy?ts=' + Date.now(), { cache: 'no-store' }).then(function(r){
+    if (!r.ok) throw new Error('canonical genealogy request failed');
+    return r.json();
+  }).then(function(canonicalData){
+    if (!Array.isArray(canonicalData) || canonicalData.length < 100) throw new Error('canonical genealogy data is empty');
+    canonicalGenealogyData = canonicalData;
+    render();
+  }).catch(function(error){ console.warn('canonical genealogy load failed:', error.message); });
+});
 </script>
   <a id="backBtn" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
