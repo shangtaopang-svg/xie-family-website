@@ -1793,6 +1793,8 @@ body[data-app-mode="public"] .tree-viewport {
 .mobile-query-launcher { display: none; }
 
 @media (max-width: 760px) {
+  /* 查询四项弹窗打开时让出完整操作空间，避免 AI 悬浮球遮挡第 3、4 项。 */
+  html.is-mobile-query-menu-open #ai-fab { display: none !important; }
   body[data-app-mode="public"] .mobile-query-menu {
     position: fixed;
     inset: 0;
