@@ -228,10 +228,6 @@
 
   // 性别统计只读取 canonical 后台数据中的 gender 字段；旧版谱页推断 ID 不再覆盖主数据。
 
-  // “保岳”在谱文中明确记为“入赘婿”，旧数据的 gender=女 为错误字段，
-  // 必须由谱文语义覆盖，避免把入赘男误计入女性统计。
-  const CONFIRMED_MALE_IDS = new Set(['660']);
-
   // 这是 2026-08-23 的只读源数据对照快照。它不覆盖交付数据，
   // 只用于在查询面板中明确提示“后台旧快照”和“交付版核定数据”的差异。
   const SOURCE_AUDIT_SNAPSHOT = {
@@ -427,8 +423,6 @@
 
   function genderOf(person) {
     if (!person) return '';
-    const key = String(personId(person));
-    if (CONFIRMED_MALE_IDS.has(key)) return '男';
     const value = text(person.gender).trim();
     return value === '男' || value === '女' ? value : '';
   }
