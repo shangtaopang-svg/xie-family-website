@@ -1789,7 +1789,8 @@ body[data-app-mode="public"] .tree-viewport {
 .mobile-query-menu { display: none; }
 .mobile-query-menu[hidden] { display: none !important; }
 .mobile-query-switcher,
-.mobile-generation-actions { display: none; }
+.mobile-generation-actions,
+.mobile-query-launcher { display: none; }
 
 @media (max-width: 760px) {
   body[data-app-mode="public"] .mobile-query-menu {
@@ -1799,9 +1800,9 @@ body[data-app-mode="public"] .tree-viewport {
     display: grid;
     place-items: end center;
     padding: 12px;
-    background: rgba(24, 48, 39, .48);
-    -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
+    background: rgba(24, 48, 39, .34);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    backdrop-filter: blur(12px) saturate(120%);
   }
   body[data-app-mode="public"] .mobile-query-menu[hidden] { display: none !important; }
   body[data-app-mode="public"] .mobile-query-menu-panel {
@@ -1811,7 +1812,9 @@ body[data-app-mode="public"] .tree-viewport {
     padding: 18px 14px max(18px, env(safe-area-inset-bottom));
     border: 1px solid #c8d8cb;
     border-radius: 22px 22px 14px 14px;
-    background: #fbfdf9;
+    background: rgba(251, 253, 249, .82);
+    -webkit-backdrop-filter: blur(22px) saturate(125%);
+    backdrop-filter: blur(22px) saturate(125%);
     box-shadow: 0 -14px 45px rgba(25, 58, 43, .25);
   }
   body[data-app-mode="public"] .mobile-query-menu-head {
@@ -1855,7 +1858,7 @@ body[data-app-mode="public"] .tree-viewport {
     padding: 13px 11px;
     border: 1px solid #cbdacf;
     border-radius: 14px;
-    background: #f1f7f2;
+    background: rgba(241, 247, 242, .72);
     color: #244c3d;
     text-align: left;
   }
@@ -1881,7 +1884,7 @@ body[data-app-mode="public"] .tree-viewport {
   }
 
   body[data-app-mode="public"] .mobile-query-switcher {
-    display: grid;
+    display: none !important;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 5px;
     margin: 12px 0 10px;
@@ -1925,6 +1928,28 @@ body[data-app-mode="public"] .tree-viewport {
   body[data-app-mode="public"] .query-drawer[data-mobile-mode="generation"] .query-form-grid .query-field select,
   body[data-app-mode="public"] .query-drawer[data-mobile-mode="relation"] .query-people-section { display: none; }
   body[data-app-mode="public"] .query-drawer[data-mobile-mode="generation"] .query-form-grid .query-field:has(select) { display: none; }
+  body[data-app-mode="public"] .mobile-query-launcher {
+    position: fixed;
+    right: max(14px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 270;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 64px;
+    min-height: 44px;
+    padding: 8px 14px;
+    border: 1px solid rgba(255,255,255,.68);
+    border-radius: 999px;
+    background: rgba(255,255,255,.58);
+    color: #285844;
+    box-shadow: 0 8px 24px rgba(35, 77, 57, .18);
+    -webkit-backdrop-filter: blur(14px) saturate(135%);
+    backdrop-filter: blur(14px) saturate(135%);
+    font-size: 13px;
+    font-weight: 800;
+  }
+  body[data-app-mode="public"] .mobile-query-launcher:active { transform: scale(.96); }
 }
 
 @media (max-width: 380px) {
