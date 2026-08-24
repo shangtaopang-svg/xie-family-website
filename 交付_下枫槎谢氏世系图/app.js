@@ -5246,6 +5246,8 @@
   }
 
   function printTree() {
+    if (isMobileViewport()) return;
+
     flushDraftAutoSave();
     const sourceStage = $('#tree-stage');
     if (!sourceStage) return;

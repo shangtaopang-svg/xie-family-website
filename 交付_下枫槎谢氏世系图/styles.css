@@ -1451,6 +1451,9 @@ body[data-app-mode="public"] #import-file {
 }
 
 @media (max-width: 680px) {
+  /* 手机端不提供世系图打印入口；打印版仅在电脑端使用。 */
+  .tree-toolbar-actions .print-btn { display: none !important; }
+
   .mobile-genealogy-back {
     position: fixed;
     z-index: 260;
