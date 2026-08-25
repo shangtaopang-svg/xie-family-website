@@ -1988,7 +1988,8 @@ body[data-app-mode="public"] .tree-viewport {
 .mobile-query-switcher,
 .mobile-generation-actions,
 .mobile-query-launcher,
-.mobile-home-link { display: none; }
+.mobile-home-link,
+.mobile-header-actions { display: none; }
 
 @media (max-width: 760px) {
   /* 首页进入族谱查询时，先显示选择弹窗，避免世系图首帧短暂闪现。 */
@@ -2224,6 +2225,70 @@ body[data-app-mode="public"] .tree-viewport {
     text-decoration: none;
   }
   body[data-app-mode="public"] .mobile-home-link:active { transform: scale(.96); }
+
+  /* 手机端快捷入口固定在标题栏右侧，避免底部悬浮按钮遮挡查询内容。 */
+  body[data-app-mode="public"] .app-header {
+    box-sizing: border-box;
+    min-height: 64px;
+    height: 64px;
+    padding: 8px 10px;
+    gap: 7px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+  body[data-app-mode="public"] .brand-block {
+    min-width: 0;
+    flex: 1 1 auto;
+    gap: 8px;
+    overflow: hidden;
+  }
+  body[data-app-mode="public"] .brand-mark {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+  }
+  body[data-app-mode="public"] .brand-block h1 {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 16px;
+  }
+  body[data-app-mode="public"] .brand-block p,
+  body[data-app-mode="public"] .source-badge { display: none; }
+  body[data-app-mode="public"] .mobile-header-actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 6px;
+  }
+  body[data-app-mode="public"] .mobile-header-actions .mobile-home-link,
+  body[data-app-mode="public"] .mobile-header-actions .mobile-query-launcher {
+    position: static;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 42px;
+    height: 42px;
+    padding: 0 8px;
+    border: 1px solid #aac2b3;
+    border-radius: 8px;
+    background: #f8fcf9;
+    color: #285844;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+  body[data-app-mode="public"] .mobile-header-actions .mobile-home-link:active,
+  body[data-app-mode="public"] .mobile-header-actions .mobile-query-launcher:active { transform: scale(.96); }
+  body[data-app-mode="public"] #app.is-detail-only .mobile-header-actions .mobile-query-launcher { display: inline-flex !important; }
 }
 
 @media (max-width: 380px) {
@@ -2291,7 +2356,6 @@ body[data-app-mode="public"] .tree-viewport {
     background: #315b4c;
     border-color: #315b4c;
   }
-  body[data-app-mode="public"] #app.is-detail-only .mobile-query-launcher,
   body[data-app-mode="public"] #app.is-detail-only ~ .mobile-query-launcher {
     display: none !important;
   }

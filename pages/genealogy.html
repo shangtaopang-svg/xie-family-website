@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>枫槎谢氏宗谱 · 族谱查询</title>
   <meta name="description" content="枫槎谢氏宗谱族谱查询与只读世系图">
-  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260825-mobile-map-41">
+  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260825-mobile-header-42">
   <script>
     if (new URLSearchParams(location.search).get('chooser') === '1' && window.matchMedia('(max-width: 760px)').matches) {
       document.documentElement.classList.add('is-chooser-pending');
@@ -21,6 +21,10 @@
           <h1>枫槎谢氏宗谱</h1>
           <p>族谱查询 · 只读世系图</p>
         </div>
+      </div>
+      <div class="mobile-header-actions" aria-label="族谱快捷入口">
+        <a class="mobile-home-link" href="../index.html" aria-label="返回网站首页">返回首页</a>
+        <button id="mobile-query-launcher" class="mobile-query-launcher" type="button" data-action="toggle-query-drawer" aria-label="唤起五项族谱查询">五项查询</button>
       </div>
       <div class="source-badge">
         <span class="source-dot"></span>
@@ -240,9 +244,6 @@
       </div>
     </section>
   </div>
-  <a class="mobile-home-link" href="../index.html" aria-label="返回网站首页">返回首页</a>
-  <button id="mobile-query-launcher" class="mobile-query-launcher" type="button" data-action="toggle-query-drawer" aria-label="唤起五项族谱查询">五项查询</button>
-
   <div id="global-nav-overlay" class="global-nav-overlay" hidden>
     <button class="global-nav-backdrop" data-action="close-global-nav" aria-label="关闭总导航"></button>
     <section class="global-nav-panel" role="dialog" aria-modal="true" aria-labelledby="global-nav-title">
@@ -253,7 +254,7 @@
     </section>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="../交付_下枫槎谢氏世系图/app.js?v=20260825-mobile-map-41"></script>
+  <script src="../交付_下枫槎谢氏世系图/app.js?v=20260825-mobile-header-42"></script>
 <link rel="stylesheet" href="/css/ai.css?v=91">
 <script src="/js/ai-assistant.js?v=91" defer></script>
 </body>
