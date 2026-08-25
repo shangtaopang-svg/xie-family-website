@@ -2101,8 +2101,11 @@ body[data-app-mode="public"] .tree-viewport {
   body[data-app-mode="public"] .mobile-query-launcher:active { transform: scale(.96); }
   body[data-app-mode="public"] .mobile-home-link {
     position: fixed;
-    left: max(14px, env(safe-area-inset-left));
-    bottom: max(72px, calc(env(safe-area-inset-bottom) + 72px));
+    /* 放到手机页面顶部的标题/内容留白区，避免与底部查询入口叠在一起。 */
+    top: max(98px, calc(env(safe-area-inset-top) + 98px));
+    right: max(14px, env(safe-area-inset-right));
+    left: auto;
+    bottom: auto;
     z-index: 270;
     display: inline-flex;
     align-items: center;
