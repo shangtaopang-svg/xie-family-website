@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>枫槎谢氏宗谱 · 族谱查询</title>
   <meta name="description" content="枫槎谢氏宗谱族谱查询与只读世系图">
-  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260825-mobile-map-20">
+  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260825-mobile-map-21">
   <script>
     if (new URLSearchParams(location.search).get('chooser') === '1' && window.matchMedia('(max-width: 760px)').matches) {
       document.documentElement.classList.add('is-chooser-pending');
@@ -122,7 +122,6 @@
               <h3>族谱查询与统计</h3>
               <p>沿用本交付界面风格；查询结果可直接定位到中央世系图并高亮人物。</p>
             </div>
-            <button class="query-close" data-action="toggle-query-drawer" aria-label="关闭族谱查询">×</button>
           </div>
 
           <nav class="mobile-query-switcher" aria-label="切换查询项目">
@@ -132,6 +131,17 @@
             <button type="button" data-action="mobile-query-route" data-route="lineage">查世系图</button>
             <button type="button" data-action="mobile-query-route" data-route="info">族人信息</button>
           </nav>
+
+          <section class="query-section query-lineage7-section" aria-label="查某人上下七代" hidden>
+            <div class="query-section-head">
+              <div><span class="query-kicker">SEVEN GENERATIONS</span><h4>查某人上下7代</h4><p class="query-muted">上三代 · 本人 · 下三代</p></div>
+            </div>
+            <div class="query-lineage7-form">
+              <label class="query-field query-lineage7-field"><span>输入族人姓名</span><input id="query-lineage7-name" type="search" placeholder="例如：伟中、大顺" autocomplete="off"></label>
+              <button class="query-primary query-lineage7-submit" type="button" data-action="query-lineage7">查询上下7代</button>
+            </div>
+            <div id="query-lineage7-result" class="query-lineage7-result" hidden aria-live="polite"></div>
+          </section>
 
           <div id="query-generation-actions" class="query-generation-actions" hidden aria-label="按世次查询">
             <div class="query-generation-action-card">
@@ -224,7 +234,7 @@
     </section>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="../交付_下枫槎谢氏世系图/app.js?v=20260825-mobile-map-20"></script>
+  <script src="../交付_下枫槎谢氏世系图/app.js?v=20260825-mobile-map-21"></script>
 <link rel="stylesheet" href="/css/ai.css?v=91">
 <script src="/js/ai-assistant.js?v=91" defer></script>
 </body>
