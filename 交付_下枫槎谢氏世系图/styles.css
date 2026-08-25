@@ -1814,6 +1814,7 @@ body[data-app-mode="public"] .tree-viewport {
   }
   body[data-app-mode="public"] .mobile-query-menu[hidden] { display: none !important; }
   body[data-app-mode="public"] .mobile-query-menu-panel {
+    align-self: start;
     width: 100%;
     height: auto;
     max-height: none;
