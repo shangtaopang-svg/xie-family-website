@@ -1373,6 +1373,29 @@ button, input, select, textarea { color-scheme: light; }
 .query-lineage7-graph-level.is-focus .query-lineage7-graph-label { color: #a04f3c; }
 .query-lineage7-graph-level.is-ancestor .query-lineage7-graph-label,
 .query-lineage7-graph-level.is-descendant .query-lineage7-graph-label { color: #8d786b; }
+.query-lineage7-adoption-tree { margin: 4px 0 2px; padding: 14px 12px 12px; border: 1px solid #d7b6a5; border-radius: 12px; background: linear-gradient(145deg, #fff8f3, #f8f1e9); overflow-x: auto; }
+.query-lineage7-adoption-tree-title { color: #8e4d39; font-family: "Noto Serif SC", "Source Han Serif SC", serif; font-size: 16px; font-weight: 800; }
+.query-lineage7-adoption-tree-subtitle { margin-top: 3px; color: #9c7666; font-size: 11px; }
+.query-lineage7-family-canvas { position: relative; height: 410px; min-width: 620px; margin: 8px auto 0; }
+.query-lineage7-family-root, .query-lineage7-family-child, .query-lineage7-family-adopted { position: absolute; z-index: 2; }
+.query-lineage7-family-root { top: 8px; left: calc(50% - 120px); width: 240px; }
+.query-lineage7-family-child { top: 138px; width: 178px; }
+.query-lineage7-family-adopted { top: 308px; width: 230px; }
+.query-lineage7-family-card { min-height: 88px; padding: 10px 11px; box-sizing: border-box; border: 1px solid #b8cbbf; border-left: 4px solid #477966; border-radius: 9px; background: #f6faf5; box-shadow: 0 4px 12px rgba(43, 73, 59, .07); }
+.query-lineage7-family-card.is-common-parent { background: #eef6ef; border-color: #9ab9a7; }
+.query-lineage7-family-card.is-biological-parent { background: #fffdf5; border-left-color: #6d8f7c; }
+.query-lineage7-family-card.is-adoptive-parent { background: #f0f8f2; border-left-color: #477966; }
+.query-lineage7-family-card.is-sibling { background: #fbfaf4; }
+.query-lineage7-family-card.is-adopted-person { min-height: 94px; border-color: #bd7158; border-left-color: #af4f3b; background: #fff5ef; box-shadow: 0 0 0 3px rgba(190, 102, 76, .12); }
+.query-lineage7-family-card .query-lineage7-name { margin-top: 5px; font-size: 17px; }
+.query-lineage7-family-lines { position: absolute; z-index: 1; inset: 0; width: 100%; height: 410px; overflow: visible; pointer-events: none; }
+.query-lineage7-family-lines path { fill: none; stroke-width: 2px; stroke-linecap: round; stroke-linejoin: round; }
+.query-lineage7-family-lines .is-blood { stroke: #6f9182; }
+.query-lineage7-family-lines .is-dashed { stroke: #af6d56; stroke-dasharray: 6 5; }
+.query-lineage7-family-lines .is-adoption { stroke: #af6d56; }
+.query-lineage7-family-line-label { position: absolute; z-index: 3; padding: 2px 5px; border-radius: 5px; background: rgba(255, 248, 243, .92); color: #8e5747; font-size: 10px; white-space: nowrap; }
+.query-lineage7-family-line-label.is-blood-label { color: #5e7e70; }
+.query-lineage7-family-source { margin: 2px 0 0; padding-top: 8px; border-top: 1px dashed #dfc5b7; color: #967265; font-size: 10px; line-height: 1.45; }
 .query-lineage7-graph + .query-lineage7-adoption { margin-top: 18px; }
 .query-lineage7-empty { padding: 12px 2px; }
 .query-lineage7-adoption { margin-top: 16px; padding: 14px; border: 1px solid #d7b6a5; border-radius: 11px; background: linear-gradient(145deg, #fff8f3, #f9efe8); }

@@ -1592,6 +1592,57 @@
     return `<div class="query-lineage7-adoption-inline" aria-label="${escapeHtml(text(outPerson.name))}的出继入继关系"><div class="query-lineage7-adoption-inline-title">出继／入继关系</div><div class="query-lineage7-adoption-inline-flow">${node(relation.biologicalParent, '亲生父亲', 'is-biological')}<span class="query-lineage7-adoption-inline-arrow is-biological" aria-hidden="true">→<small>亲生</small></span>${node(outPerson, '出继人', 'is-out')}<span class="query-lineage7-adoption-inline-arrow is-adoption" aria-hidden="true">→<small>入继给</small></span>${node(relation.adoptiveParent, '承嗣父', 'is-adoptive')}</div></div>`;
   }
 
+  // 上下七代查询中的出继/入继必须是树上的真实分支：
+  // 共同父亲下面保留所有亲生子女，再从亲生父亲和承嗣父分别引线到出继人。
+  function queryLineage7FamilyCard(person, label, className) {
+    if (!person) return '';
+    const status = lifeStatusLabel(person);
+    const adoption = queryAdoptionLabel(person);
+    return `<article class="query-lineage7-family-card ${className || ''}"><div class="query-lineage7-card-top"><span>${escapeHtml(label || '')}</span><span class="query-lineage7-status">${escapeHtml(status)}</span></div><button class="query-lineage7-name" data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}</button><div class="query-lineage7-meta"><span>第${escapeHtml(generationOf(person) || '—')}世</span><span>${escapeHtml(text(person.branch) || '未标注支系')}</span>${genderLabel(person) !== '未知' ? `<span>${escapeHtml(genderLabel(person))}</span>` : ''}</div>${adoption ? `<div class="query-lineage7-badge">${escapeHtml(adoption)}</div>` : ''}</article>`;
+  }
+
+  function queryLineage7AdoptionTreeHtml(context) {
+    if (!context || !context.commonParent || !context.relation || !context.adoptedPerson) return '';
+    const biological = context.relation.biologicalParent;
+    const adoptive = context.relation.adoptiveParent;
+    if (!biological || !adoptive) return '';
+
+    const people = [];
+    const add = (person) => {
+      if (!person) return;
+      const key = String(personId(person));
+      if (!people.some((item) => String(personId(item)) === key)) people.push(person);
+    };
+    queryLineage7Children(context.commonParent).forEach(add);
+    // 出继记录有时会从展示父子索引中移出，强制把亲生父亲和承嗣父补回同胞行。
+    add(biological);
+    add(adoptive);
+    const columns = Math.max(2, people.length);
+    const cardWidth = 178;
+    const gap = 12;
+    const familyWidth = Math.max(620, columns * cardWidth + (columns - 1) * gap + 30);
+    const rowWidth = columns * cardWidth + (columns - 1) * gap;
+    const left = (familyWidth - rowWidth) / 2;
+    const childX = (person) => left + people.findIndex((item) => String(personId(item)) === String(personId(person))) * (cardWidth + gap) + cardWidth / 2;
+    const rootX = familyWidth / 2;
+    const adoptedWidth = 230;
+    const adoptedX = (familyWidth - adoptedWidth) / 2;
+    const biologicalX = childX(biological);
+    const adoptiveX = childX(adoptive);
+    const childCards = people.map((person) => {
+      const key = String(personId(person));
+      const isBiological = key === String(personId(biological));
+      const isAdoptive = key === String(personId(adoptive));
+      const label = isBiological ? '亲生父亲' : isAdoptive ? '承嗣父' : '昌申之子';
+      const className = isBiological ? 'is-biological-parent' : isAdoptive ? 'is-adoptive-parent' : 'is-sibling';
+      return `<div class="query-lineage7-family-child" style="left:${Math.round(childX(person) - cardWidth / 2)}px">${queryLineage7FamilyCard(person, label, className)}</div>`;
+    }).join('');
+    const source = context.relation.source || `谱载：${text(biological.name)}之子${text(context.adoptedPerson.name)}，出继给${text(adoptive.name)}为嗣`;
+    const lineSvg = `<svg class="query-lineage7-family-lines" viewBox="0 0 ${familyWidth} 410" preserveAspectRatio="none" aria-hidden="true"><path class="is-blood" d="M ${rootX} 108 V 126 H ${biologicalX} M ${biologicalX} 126 V 140"/><path class="is-blood" d="M ${rootX} 126 H ${childX(people[0])} M ${rootX} 126 H ${childX(people[people.length - 1])}"/><path class="is-blood" d="M ${people.map((person) => `M ${childX(person)} 126 V 140`).join(' ') }"/><path class="is-blood is-dashed" d="M ${biologicalX} 230 C ${biologicalX} 270 ${adoptedX + adoptedWidth * .34} 255 ${adoptedX + adoptedWidth * .34} 310"/><path class="is-adoption" d="M ${adoptiveX} 230 V 268 H ${adoptedX + adoptedWidth * .68} V 310"/></svg>`;
+    const labels = `<span class="query-lineage7-family-line-label is-blood-label" style="left:${Math.round((biologicalX + adoptedX + adoptedWidth * .34) / 2)}px;top:252px">亲生父子</span><span class="query-lineage7-family-line-label is-adoption-label" style="left:${Math.round((adoptiveX + adoptedX + adoptedWidth * .68) / 2)}px;top:268px">出继给${escapeHtml(text(adoptive.name))}为嗣</span>`;
+    return `<section class="query-lineage7-adoption-tree" aria-label="${escapeHtml(text(context.adoptedPerson.name))}的出继入继树状关系"><div class="query-lineage7-adoption-tree-title">出继／入继关系</div><div class="query-lineage7-adoption-tree-subtitle">昌申下面同时保留亲生父亲与承嗣父的真实关系</div><div class="query-lineage7-family-canvas" style="width:${familyWidth}px"><div class="query-lineage7-family-root">${queryLineage7FamilyCard(context.commonParent, '共同父亲', 'is-common-parent')}</div><div class="query-lineage7-family-children">${childCards}</div><div class="query-lineage7-family-adopted" style="left:${Math.round(adoptedX)}px">${queryLineage7FamilyCard(context.adoptedPerson, '出继／入继', 'is-adopted-person')}</div>${lineSvg}${labels}</div><p class="query-lineage7-family-source">${escapeHtml(source)}</p></section>`;
+  }
+
   function queryLineage7AdoptionLinks(people) {
     const visibleIds = new Set(people.map((person) => String(personId(person))));
     const links = [];
@@ -1662,7 +1713,34 @@
     // 上下七代必须按“父在上、子在下”的真正树状结构展示，不能再使用
     // 带世代标签的横向列表，否则多子女和跨继关系会看起来像同级并列。
     const graphLevels = [];
+    const samePerson = (a, b) => a && b && String(personId(a)) === String(personId(b));
+    let adoptionTreeContext = null;
     ancestors.forEach((item) => {
+      const key = String(personId(item.person));
+      const relation = state.adoption.outById.get(key) || state.adoption.inById.get(key);
+      if (!relation || !relation.biologicalParent || !relation.adoptiveParent) return;
+      const biologicalParent = relation.biologicalParent;
+      const adoptiveParent = relation.adoptiveParent;
+      const commonParent = rawFatherOf(biologicalParent);
+      const adoptiveCommonParent = rawFatherOf(adoptiveParent);
+      if (commonParent && adoptiveCommonParent && samePerson(commonParent, adoptiveCommonParent) && ancestors.some((ancestor) => samePerson(ancestor.person, commonParent))) {
+        adoptionTreeContext = { commonParent, relation, adoptedPerson: item.person };
+      }
+    });
+    const adoptionTreeIds = adoptionTreeContext ? new Set([
+      String(personId(adoptionTreeContext.commonParent)),
+      String(personId(adoptionTreeContext.relation.biologicalParent)),
+      String(personId(adoptionTreeContext.relation.adoptiveParent)),
+      String(personId(adoptionTreeContext.adoptedPerson)),
+    ]) : new Set();
+    ancestors.forEach((item) => {
+      const key = String(personId(item.person));
+      if (adoptionTreeContext && samePerson(item.person, adoptionTreeContext.commonParent)) {
+        graphLevels.push(queryLineage7AdoptionTreeHtml(adoptionTreeContext));
+        graphLevels.push('<i class="query-lineage7-graph-connector" aria-hidden="true"></i>');
+        return;
+      }
+      if (adoptionTreeIds.has(key)) return;
       graphLevels.push(`<div class="query-lineage7-graph-level is-single is-ancestor"><div class="query-lineage7-graph-label">${escapeHtml(item.level)}</div><div class="query-lineage7-graph-cards">${queryLineage7Card(item.person, item.role, item.level)}</div></div>`);
       graphLevels.push('<i class="query-lineage7-graph-connector" aria-hidden="true"></i>');
     });
