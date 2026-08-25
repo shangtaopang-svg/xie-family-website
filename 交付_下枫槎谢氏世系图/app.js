@@ -1663,13 +1663,11 @@
     });
 
     const allPeople = [focus, ...ancestors.map((item) => item.person), ...descendantRows.flatMap((row) => row.people)];
-    const adoptionLinks = queryLineage7AdoptionLinks(allPeople);
     const total = ancestors.length + 1 + descendantRows.reduce((sum, row) => sum + row.people.length, 0);
     container.hidden = false;
-    const adoptionMarkup = adoptionLinks.length
-      ? `<section class="query-lineage7-adoption"><div class="query-lineage7-adoption-head"><strong>出继 / 入继关系</strong><span>树状世系之外，单独保留亲生父亲、出继人和承嗣父的真实对应关系</span></div>${adoptionLinks.map(queryLineage7AdoptionHtml).join('')}</section>`
-      : '';
-    container.innerHTML = `<div class="query-lineage7-result-head"><div><strong>${escapeHtml(text(focus.name))} · 上下7代树状世系</strong><span>上三代 ${ancestors.length} 人 · 本人 1 人 · 下三代 ${total - ancestors.length - 1} 人</span></div><button type="button" class="query-secondary" data-action="query-lineage7-clear">重新查询</button></div><div class="query-lineage7-tree"><div class="query-lineage7-graph">${graphLevels.join('')}</div></div>${adoptionMarkup}`;
+    // “上下7代”只呈现上下七代树状世系；出继/入继关系单独在族人详情和
+    // 族人信息页面查看，避免在树状结果中重复插入一整块关系卡片。
+    container.innerHTML = `<div class="query-lineage7-result-head"><div><strong>${escapeHtml(text(focus.name))} · 上下7代树状世系</strong><span>上三代 ${ancestors.length} 人 · 本人 1 人 · 下三代 ${total - ancestors.length - 1} 人</span></div><button type="button" class="query-secondary" data-action="query-lineage7-clear">重新查询</button></div><div class="query-lineage7-tree"><div class="query-lineage7-graph">${graphLevels.join('')}</div></div>`;
   }
 
   function runLineage7Query() {
