@@ -3019,8 +3019,9 @@
       return element;
     };
     const edgeLayer = makeSvg('g', { class: 'overview-svg-edges' });
+    const zoneFrameLayer = makeSvg('g', { class: 'overview-svg-zone-frames' });
     const nodeLayer = makeSvg('g', { class: 'overview-svg-nodes' });
-    svg.append(edgeLayer, nodeLayer);
+    svg.append(edgeLayer, zoneFrameLayer, nodeLayer);
     edges.forEach(({ parent, child }) => {
       const startX = parent.x + parent.width / 2;
       const startY = parent.y + parent.height;
@@ -3036,6 +3037,46 @@
       const endY = to.y + to.height / 2;
       const bend = Math.max(20, Math.abs(endX - startX) * .25);
       edgeLayer.append(makeSvg('path', { d: `M ${startX} ${startY} C ${startX + bend} ${startY + 14}, ${endX - bend} ${endY - 14}, ${endX} ${endY}`, class: 'overview-svg-adoption-edge' }));
+    });
+    // 全展开地图中也保留三大房派的视觉分区，避免只在普通树面上显示外框。
+    const overviewZones = [
+      { rootId: '61', label: '文对', fill: '#eef1fb', stroke: '#7d83b1', text: '#555d91' },
+      { rootId: '60', label: '彬', fill: '#ecf3ee', stroke: '#718b7c', text: '#466454' },
+      { rootId: '59', label: '乾', fill: '#fdf1e9', stroke: '#bd7958', text: '#914f39' }
+    ];
+    const childrenById = new Map();
+    edges.forEach(({ parent, child }) => {
+      const key = String(parent.id);
+      if (!childrenById.has(key)) childrenById.set(key, []);
+      childrenById.get(key).push(child);
+    });
+    overviewZones.forEach((zone) => {
+      const root = nodeById.get(zone.rootId);
+      if (!root) return;
+      const included = new Set([zone.rootId]);
+      const queue = [root];
+      while (queue.length) {
+        const current = queue.shift();
+        (childrenById.get(String(current.id)) || []).forEach((child) => {
+          const childKey = String(child.id);
+          if (included.has(childKey)) return;
+          included.add(childKey);
+          queue.push(child);
+        });
+      }
+      const zoneNodes = nodes.filter((node) => included.has(String(node.id)));
+      if (!zoneNodes.length) return;
+      const padX = 18;
+      const padTop = 28;
+      const padBottom = 18;
+      const left = Math.max(4, Math.min(...zoneNodes.map((node) => node.x)) - padX);
+      const top = Math.max(4, Math.min(...zoneNodes.map((node) => node.y)) - padTop);
+      const right = Math.min(baseWidth - 4, Math.max(...zoneNodes.map((node) => node.x + node.width)) + padX);
+      const bottom = Math.min(baseHeight - 4, Math.max(...zoneNodes.map((node) => node.y + node.height)) + padBottom);
+      const frame = makeSvg('rect', { class: 'overview-svg-zone-frame-box', x: left, y: top, width: Math.max(1, right - left), height: Math.max(1, bottom - top), rx: 12, fill: zone.fill, stroke: zone.stroke, 'stroke-width': 2.2, 'fill-opacity': .18 });
+      const label = makeSvg('text', { class: 'overview-svg-zone-frame-label', x: left + 10, y: top + 17, fill: zone.text });
+      label.textContent = zone.label;
+      zoneFrameLayer.append(frame, label);
     });
     const svgNodeById = new Map();
     nodes.forEach((node) => {
@@ -3391,8 +3432,10 @@
     const adoptionTarget = adoptionRelation(person)?.adoptiveRecord || null;
     const clickTargetAttr = adoptionTarget ? ` data-open-id="${escapeHtml(personId(adoptionTarget))}"` : '';
     const cardAriaLabel = adoptionTarget ? `查看${escapeHtml(person.name)}入继卡及下一代` : `查看${escapeHtml(person.name)}详情`;
+    const mainGeneration = state.view === 'main' ? `<span class="main-card-generation">${escapeHtml(generation)}</span>` : '';
     return `<div class="${classes.join(' ')}" data-action="select-person" data-id="${escapeHtml(personId(person))}"${clickTargetAttr} role="button" tabindex="0" aria-label="${cardAriaLabel}">
       <span class="verify-toggle${verified ? ' is-verified' : ''}${IS_ADMIN ? '' : ' is-readonly'}"${IS_ADMIN ? ` data-action="toggle-verified" data-id="${escapeHtml(personId(person))}" role="button" tabindex="0" aria-pressed="${verified}" aria-label="${verified ? '已核对无误，点击取消' : '标记为已核对无误'}" title="${verified ? '已核对无误 · 点击取消标记' : '点击标记为已核对'}"` : ` aria-label="${verified ? '已核对无误' : '尚未核对'}"`}>${verified ? '★' : '☆'}</span>
+      ${mainGeneration}
       <span class="card-top"><span class="card-generation">${escapeHtml(generation)}</span><span class="card-top-right"><span class="card-branch">${escapeHtml(branch)}</span><span class="card-gender ${genderOf(person) === '女' ? 'is-female' : genderOf(person) === '男' ? 'is-male' : 'is-unknown'}">${genderOf(person) === '女' ? '女' : genderOf(person) === '男' ? '男' : '性别待核'}</span></span></span>
       <strong>${escapeHtml(person.name || '未命名人物')}</strong>
       ${isCurrentClanLeader ? '<span class="leader-badge">2026届族长</span>' : ''}
@@ -3418,6 +3461,7 @@
       descendants = `<button class="expand-button" data-action="toggle-node" data-id="${escapeHtml(personId(person))}">＋${children.length}子女</button>`;
     }
     const nodeClasses = ['tree-node', depth === 0 ? 'is-root' : '', children.length && isExpanded ? 'has-open-children' : ''];
+    if (String(personId(person)) === '61') nodeClasses.push('special-wendui-zone');
     if (String(personId(person)) === '59') nodeClasses.push('special-qian-zone');
     if (String(personId(person)) === '60') nodeClasses.push('special-bin-zone');
     if (String(personId(person)) === '69') nodeClasses.push('chengzhi-zone');

@@ -238,6 +238,8 @@ body[data-app-mode="public"] .query-generation-action-row button { min-height: 4
 .overview-svg-name { fill: #243d34; font: 700 15px "Microsoft YaHei", sans-serif; }
 .overview-svg-route { fill: #526a61; opacity: .78; font: 500 9px "Microsoft YaHei", sans-serif; }
 .overview-svg-star { fill: #b94c49; font: 700 13px Arial, sans-serif; }
+.overview-svg-zone-frame-box { pointer-events: none; }
+.overview-svg-zone-frame-label { pointer-events: none; font: 800 12px "Microsoft YaHei", sans-serif; }
 .overview-svg-node { cursor: pointer; }
 /* 手机端全展开时，长世次/支系文本会跨卡片互相覆盖；保留姓名和连线，详情仍由点击卡片查看。 */
 .overview-svg-layer.is-mobile-overview .overview-svg-generation,
@@ -2732,4 +2734,74 @@ body[data-app-mode="public"] .tree-viewport {
 
 @media (min-width: 520px) and (max-width: 760px) {
   body[data-app-mode="public"] .mobile-overview-section-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* 手机端本宗世系图：保留原有树形布局，只增加文对、彬、乾三个清晰的分区框和世代标识。 */
+@media (max-width: 760px) {
+  body[data-app-mode="public"] .tree-stage[data-view="main"] .tree-node.special-wendui-zone,
+  body[data-app-mode="public"] .tree-stage[data-view="main"] .tree-node.special-bin-zone,
+  body[data-app-mode="public"] .tree-stage[data-view="main"] .tree-node.special-qian-zone {
+    position: relative;
+    margin: 16px 8px 14px;
+    padding: 16px 10px 20px;
+    border: 3px solid;
+    border-radius: 12px;
+    box-shadow: 0 7px 16px rgba(53, 67, 61, .08);
+  }
+  body[data-app-mode="public"] .tree-stage[data-view="main"] .tree-node.special-wendui-zone {
+    border-color: #7d83b1;
+    background: rgba(239, 241, 252, .92);
+  }
+  body[data-app-mode="public"] .tree-stage[data-view="main"] .tree-node.special-bin-zone {
+    border-color: #718b7c;
+    background: rgba(236, 243, 238, .94);
+  }
+  body[data-app-mode="public"] .tree-stage[data-view="main"] .tree-node.special-qian-zone {
+    border-color: #bd7958;
+    background: rgba(253, 241, 233, .94);
+  }
+  body[data-app-mode="public"] .tree-stage[data-view="main"] .tree-node.special-wendui-zone::after,
+  body[data-app-mode="public"] .tree-stage[data-view="main"] .tree-node.special-bin-zone::after,
+  body[data-app-mode="public"] .tree-stage[data-view="main"] .tree-node.special-qian-zone::after {
+    position: absolute;
+    top: -12px;
+    left: 12px;
+    padding: 2px 8px;
+    border: 1px solid;
+    border-radius: 4px;
+    background: #fbfaf5;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.25;
+  }
+  body[data-app-mode="public"] .tree-stage[data-view="main"] .tree-node.special-wendui-zone::after {
+    content: "文对";
+    color: #555d91;
+    border-color: #7d83b1;
+  }
+  body[data-app-mode="public"] .tree-stage[data-view="main"] .tree-node.special-bin-zone::after {
+    content: "彬";
+    color: #466454;
+    border-color: #718b7c;
+  }
+  body[data-app-mode="public"] .tree-stage[data-view="main"] .tree-node.special-qian-zone::after {
+    content: "乾";
+    color: #914f39;
+    border-color: #bd7958;
+  }
+  body[data-app-mode="public"] .tree-stage[data-view="main"] .main-card-generation {
+    display: block;
+    min-height: 13px;
+    margin: -2px 0 2px;
+    color: #5b7669;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.25;
+    text-align: left;
+  }
+  body[data-app-mode="public"] .tree-stage.is-overview-map[data-view="main"] .main-card-generation {
+    min-height: 11px;
+    margin: -1px 0 1px;
+    font-size: 9px;
+  }
 }
