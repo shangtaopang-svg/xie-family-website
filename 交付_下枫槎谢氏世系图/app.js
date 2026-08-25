@@ -22,8 +22,6 @@
     view: 'overview',
     compact: true,
     overviewMode: false,
-    // 全展开后的观看方式：总览只看结构，分区阅读聚焦局部，路径追踪强调直系。
-    overviewDisplayMode: 'atlas',
     immersive: false,
     detailOnly: false,
     expanded: new Set(),
@@ -2721,7 +2719,6 @@
       mapPan: clone(state.mapPan || { x: 0, y: 0 }),
       compact: state.compact,
       overviewMode: state.overviewMode,
-      overviewDisplayMode: state.overviewDisplayMode,
       branchOffsets: clone(state.branchOffsets),
       expanded: new Set(state.expanded)
     };
@@ -2755,7 +2752,6 @@
         searchQuery: state.searchQuery,
         compact: state.compact,
         overviewMode: state.overviewMode,
-        overviewDisplayMode: state.overviewDisplayMode,
         immersive: state.immersive,
         zoom: state.zoom,
         mapPan: clone(state.mapPan || { x: 0, y: 0 }),
@@ -2805,7 +2801,6 @@
     state.mapPan = clone(snapshot.mapPan || { x: 0, y: 0 });
     state.compact = snapshot.compact;
     state.overviewMode = Boolean(snapshot.overviewMode);
-    state.overviewDisplayMode = snapshot.overviewDisplayMode || state.overviewDisplayMode;
     state.branchOffsets = clone(snapshot.branchOffsets || { qian: { x: 0, y: 0 }, hou: { x: 0, y: 0 } });
     state.expanded = new Set(snapshot.expanded);
     renderAll();
@@ -2834,7 +2829,6 @@
     state.mapPan = clone(snapshot.mapPan || { x: 0, y: 0 });
     state.compact = snapshot.compact;
     state.overviewMode = Boolean(snapshot.overviewMode);
-    state.overviewDisplayMode = snapshot.overviewDisplayMode || state.overviewDisplayMode;
     state.branchOffsets = clone(snapshot.branchOffsets || { qian: { x: 0, y: 0 }, hou: { x: 0, y: 0 } });
     state.expanded = new Set(snapshot.expanded);
     renderTree();
@@ -2846,112 +2840,6 @@
     };
     if (typeof requestAnimationFrame === 'function') requestAnimationFrame(restore);
     else setTimeout(restore, 0);
-  }
-
-  function overviewMapMode() {
-    return ['atlas', 'reading', 'path'].includes(state.overviewDisplayMode)
-      ? state.overviewDisplayMode
-      : 'atlas';
-  }
-
-  function renderOverviewModeSwitcher() {
-    const switcher = $('#overview-mode-switcher');
-    if (!switcher) return;
-    const visible = Boolean(state.overviewCanvas && state.overviewCanvas.active);
-    switcher.hidden = !visible;
-    if (!visible) return;
-    const mode = overviewMapMode();
-    switcher.querySelectorAll('[data-action="overview-display-mode"]').forEach((button) => {
-      const active = button.dataset.mode === mode;
-      button.setAttribute('aria-pressed', String(active));
-    });
-  }
-
-  function overviewFocusIds(mode) {
-    const map = state.overviewCanvas;
-    const focus = getPerson(state.selectedId) || getPerson(state.mainFocusId);
-    if (!map || !focus) return new Set();
-    const focusId = String(personId(focus));
-    if (mode === 'path') {
-      const ids = new Set([focusId]);
-      let current = focus;
-      const seen = new Set();
-      while (current && !seen.has(String(personId(current)))) {
-        const currentId = String(personId(current));
-        seen.add(currentId);
-        ids.add(currentId);
-        const displayParentId = state.adoption.displayParentById.get(currentId);
-        current = displayParentId ? getPerson(displayParentId) : parentsOf(current)[0] || null;
-      }
-      return ids;
-    }
-    // 分区阅读保留目标附近一层亲属，其他分支淡化为背景，帮助用户先看清局部。
-    const nearby = new Set([focusId]);
-    const queue = [{ id: focusId, depth: 0 }];
-    const links = new Map();
-    map.edges.forEach(({ parent, child }) => {
-      const p = String(parent.id); const c = String(child.id);
-      if (!links.has(p)) links.set(p, []);
-      if (!links.has(c)) links.set(c, []);
-      links.get(p).push(c); links.get(c).push(p);
-    });
-    while (queue.length) {
-      const item = queue.shift();
-      if (item.depth >= 2) continue;
-      (links.get(item.id) || []).forEach((id) => {
-        if (nearby.has(id)) return;
-        nearby.add(id);
-        queue.push({ id, depth: item.depth + 1 });
-      });
-    }
-    return nearby;
-  }
-
-  function applyOverviewDisplayMode() {
-    const map = state.overviewCanvas;
-    if (!map || !map.active || !map.layer) {
-      renderOverviewModeSwitcher();
-      return;
-    }
-    const mode = overviewMapMode();
-    map.layer.classList.remove('is-atlas', 'is-reading', 'is-path');
-    map.layer.classList.add(`is-${mode}`);
-    const focusIds = overviewFocusIds(mode);
-    map.nodes.forEach((node) => {
-      const group = map.svgNodeById.get(String(node.id));
-      if (!group) return;
-      const key = String(node.id);
-      const focused = focusIds.has(key);
-      group.classList.toggle('is-dim', mode !== 'atlas' && !focused);
-      group.classList.toggle('is-near-focus', mode === 'reading' && focused);
-      group.classList.toggle('is-path-node', mode === 'path' && focused);
-    });
-    (map.edgeElements || []).forEach(({ element, from, to, adoption }) => {
-      const onPath = mode === 'path' && focusIds.has(String(from.id)) && focusIds.has(String(to.id));
-      element.classList.toggle('is-path-edge', onPath);
-      element.classList.toggle('is-dim', mode !== 'atlas' && !onPath);
-      element.classList.toggle('is-adoption-link', Boolean(adoption));
-    });
-    renderOverviewModeSwitcher();
-  }
-
-  function setOverviewDisplayMode(mode, options = {}) {
-    if (!state.overviewCanvas?.active) {
-      showToast('请先点击“全部展开”进入总览地图');
-      return;
-    }
-    if (mode === 'path' && !state.selectedId) {
-      showToast('请先点击一个人物，再进入路径追踪');
-      return;
-    }
-    state.overviewDisplayMode = ['atlas', 'reading', 'path'].includes(mode) ? mode : 'atlas';
-    if (state.overviewDisplayMode === 'atlas') fitOverview({ atlas: true, silent: options.silent });
-    else fitOverview({ readable: true, silent: options.silent });
-    applyOverviewDisplayMode();
-    if (!options.silent) {
-      const labels = { atlas: '总览地图', reading: '分区阅读', path: '路径追踪' };
-      showToast(`已切换到${labels[state.overviewDisplayMode]}；可继续缩放、拖动查看`);
-    }
   }
 
   function fitOverview(options = {}) {
@@ -2969,8 +2857,7 @@
     const availableWidth = Math.max(1, viewport.clientWidth - 12);
     const availableHeight = Math.max(1, viewport.clientHeight - 12);
     const fit = Math.min(availableWidth / contentWidth, availableHeight / contentHeight) * .96;
-    const atlas = Boolean(options && options.atlas) || (!options.readable && overviewMapMode() === 'atlas');
-    const readable = Boolean(options && options.readable && canvasMap) || Boolean(canvasMap && !atlas);
+    const readable = Boolean(options && options.readable && canvasMap);
     if (readable) {
       // 全展开时不再把 1,253 张卡片压成一张“看不清的缩略图”。
       // 先以可读比例聚焦当前人物，用户仍可点击“全景”回到完整缩略图。
@@ -2997,9 +2884,8 @@
     applyZoom();
     viewport.scrollLeft = 0;
     viewport.scrollTop = 0;
-    applyOverviewDisplayMode();
     renderMiniMap();
-    if (!options.silent) showToast(readable ? `已进入可读浏览 · ${formatZoom()}，可拖拽查看各分支；“总览地图”可看整图` : `已进入总览地图 · ${formatZoom()}，点击节点进入分区阅读`);
+    showToast(readable ? `已进入可读浏览 · ${formatZoom()}，可拖拽查看各分支；“全景”可看整图` : `已适应屏幕 · ${formatZoom()}，拖拽图面可四向平移`);
   }
 
   // 总览图浏览层：保留一次 DOM 排版作为“几何真值”，之后用 SVG
@@ -3014,7 +2900,6 @@
     canvasWrap?.classList.remove('overview-canvas-active');
     viewport?.classList.remove('overview-canvas-viewport');
     state.overviewCanvas = null;
-    renderOverviewModeSwitcher();
   }
 
   function canvasRoundRect(ctx, x, y, width, height, radius) {
@@ -3109,7 +2994,6 @@
       });
     });
     const adoptionEdges = [];
-    const edgeElements = [];
     state.adoption.outById.forEach((relation) => {
       const from = nodeById.get(String(personId(relation.outPerson)));
       const target = nodeById.get(String(personId(relation.adoptiveRecord || relation.adoptiveParent)));
@@ -3142,9 +3026,7 @@
       const endX = child.x + child.width / 2;
       const endY = child.y;
       const middleY = startY + Math.max(8, (endY - startY) / 2);
-      const element = makeSvg('path', { d: `M ${startX} ${startY} V ${middleY} H ${endX} V ${endY}`, class: 'overview-svg-parent-edge' });
-      edgeLayer.append(element);
-      edgeElements.push({ element, from: parent, to: child, adoption: false });
+      edgeLayer.append(makeSvg('path', { d: `M ${startX} ${startY} V ${middleY} H ${endX} V ${endY}`, class: 'overview-svg-parent-edge' }));
     });
     adoptionEdges.forEach(({ from, to }) => {
       const startX = from.x + from.width / 2;
@@ -3152,9 +3034,7 @@
       const endX = to.x + to.width / 2;
       const endY = to.y + to.height / 2;
       const bend = Math.max(20, Math.abs(endX - startX) * .25);
-      const element = makeSvg('path', { d: `M ${startX} ${startY} C ${startX + bend} ${startY + 14}, ${endX - bend} ${endY - 14}, ${endX} ${endY}`, class: 'overview-svg-adoption-edge' });
-      edgeLayer.append(element);
-      edgeElements.push({ element, from, to, adoption: true });
+      edgeLayer.append(makeSvg('path', { d: `M ${startX} ${startY} C ${startX + bend} ${startY + 14}, ${endX - bend} ${endY - 14}, ${endX} ${endY}`, class: 'overview-svg-adoption-edge' }));
     });
     const svgNodeById = new Map();
     nodes.forEach((node) => {
@@ -3162,16 +3042,6 @@
       const group = makeSvg('g', { class: 'overview-svg-node', 'data-overview-id': node.id, tabindex: '-1' });
       const card = makeSvg('rect', { x: node.x, y: node.y, width: node.width, height: node.height, rx: Math.min(8, node.height * .16), class: 'overview-svg-card', fill: colors.fill, stroke: colors.stroke, 'stroke-width': 1.25 });
       group.append(card);
-      // 总览地图的“结构点”：远景只保留这些节点，不显示缩小后无法阅读的文字。
-      const density = makeSvg('rect', {
-        x: node.x + node.width / 2 - 38,
-        y: node.y + node.height / 2 - 10,
-        width: 76,
-        height: 20,
-        rx: 10,
-        class: 'overview-svg-density-dot'
-      });
-      group.append(density);
       if (node.isVerified) {
         const star = makeSvg('text', { x: node.x + node.width - 5, y: node.y + 15, class: 'overview-svg-star', 'text-anchor': 'end' });
         star.textContent = '★';
@@ -3194,7 +3064,7 @@
     canvasWrap.appendChild(svg);
     canvasWrap.classList.add('overview-canvas-active');
     viewport.classList.add('overview-canvas-viewport');
-    const map = { active: true, layer: svg, svgNodeById, nodes, nodeById, edges, adoptionEdges, edgeElements, baseWidth, baseHeight, stageDisplay: stage.style.display || '' };
+    const map = { active: true, layer: svg, svgNodeById, nodes, nodeById, edges, adoptionEdges, baseWidth, baseHeight, stageDisplay: stage.style.display || '' };
     state.overviewCanvas = map;
     state.overviewMetrics = { width: baseWidth, height: baseHeight };
     stage.style.display = 'none';
@@ -3202,14 +3072,9 @@
       if (state.pan.suppressClick) return;
       const group = event.target.closest?.('[data-overview-id]');
       const node = group ? nodeById.get(String(group.dataset.overviewId)) : null;
-      if (node) {
-        selectPerson(node.id);
-        if (overviewMapMode() === 'atlas') setOverviewDisplayMode('reading', { silent: true });
-      }
+      if (node) selectPerson(node.id);
     });
     drawOverviewCanvas();
-    renderOverviewModeSwitcher();
-    applyOverviewDisplayMode();
   }
 
   function renderMiniMap() {
@@ -6174,10 +6039,6 @@
     }
     renderDetail();
     updateSelectedCardUI();
-    // 总览地图点击节点后自动进入可读分区，避免用户在整张密集地图上继续找字。
-    if (state.overviewCanvas?.active && overviewMapMode() === 'atlas') {
-      setOverviewDisplayMode('reading', { silent: true });
-    }
     const card = document.querySelector(`.person-card[data-id="${CSS.escape(String(personId(selection)))}"]`);
     if (card) {
       card.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
@@ -6238,12 +6099,11 @@
     const run = () => {
       try {
         prepareFullExpansion();
-        state.overviewDisplayMode = 'atlas';
         renderAll();
-        if (state.overviewCanvas?.active) fitOverview({ atlas: true });
+        if (state.overviewCanvas?.active) fitOverview({ readable: true });
         else if (isMobileViewport()) fitExpandedTreeForMobile();
-        else fitOverview({ atlas: true });
-        showToast('已进入总览地图：点击节点进入分区阅读，路径追踪可查看直系关系');
+        else fitOverview({ readable: true });
+        showToast('本宗世系图已全部展开，可缩放、平移查看全图');
       } catch (error) {
         showToast('展开全部时遇到异常，请先使用“展开主脉”或按支系查看');
       } finally {
@@ -6329,7 +6189,6 @@
     // 恢复主界面原来的筛选、缩放和展开状态；打印窗口保留刚才生成的完整图面。
     state.compact = snapshot.compact;
     state.overviewMode = Boolean(snapshot.overviewMode);
-    state.overviewDisplayMode = snapshot.overviewDisplayMode || state.overviewDisplayMode;
     state.branch = snapshot.branch;
     state.generation = snapshot.generation;
     state.searchQuery = snapshot.searchQuery;
@@ -6457,15 +6316,8 @@
       case 'toggle-left-rail': togglePanel('left'); break;
       case 'toggle-detail-panel': togglePanel('right'); break;
       case 'toggle-immersive': toggleImmersive(); break;
-      case 'overview-display-mode': setOverviewDisplayMode(element.dataset.mode); break;
-      case 'fit-overview':
-        if (state.overviewCanvas?.active) setOverviewDisplayMode('atlas');
-        else fitOverview();
-        break;
-      case 'fit-screen':
-        if (state.overviewCanvas?.active) setOverviewDisplayMode('reading');
-        else fitOverview();
-        break;
+      case 'fit-overview': fitOverview(); break;
+      case 'fit-screen': fitOverview(); break;
       case 'show-full-map': expandAll(); break;
       case 'back-to-person': backToPerson(); break;
       case 'toggle-minimap': toggleMinimap(); break;

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>枫槎谢氏宗谱 · 族谱查询</title>
   <meta name="description" content="枫槎谢氏宗谱族谱查询与只读世系图">
-  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260825-overview-map-02">
+  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260825-overview-svg-01">
   <script>
     if (new URLSearchParams(location.search).get('chooser') === '1' && window.matchMedia('(max-width: 760px)').matches) {
       document.documentElement.classList.add('is-chooser-pending');
@@ -94,13 +94,6 @@
           </div>
         </div>
         <div id="view-tabs" class="view-tabs" role="tablist" aria-label="世系图视图切换"></div>
-        <div id="overview-mode-switcher" class="overview-mode-switcher" hidden aria-label="全展开观看方式">
-          <span class="overview-mode-label">全展开观看</span>
-          <button type="button" data-action="overview-display-mode" data-mode="atlas" aria-pressed="true">总览地图</button>
-          <button type="button" data-action="overview-display-mode" data-mode="reading" aria-pressed="false">分区阅读</button>
-          <button type="button" data-action="overview-display-mode" data-mode="path" aria-pressed="false">路径追踪</button>
-          <small>缩小时看结构，点击节点进入清晰阅读</small>
-        </div>
         <div class="mobile-lineage-controls" aria-label="世系图操作">
           <button type="button" data-action="expand-all" aria-label="全部展开" title="全部展开">⊞</button>
           <button type="button" data-action="collapse-all" aria-label="全部收起" title="全部收起">⊟</button>
@@ -255,7 +248,7 @@
     </section>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="../交付_下枫槎谢氏世系图/app.js?v=20260825-overview-map-02"></script>
+  <script src="../交付_下枫槎谢氏世系图/app.js?v=20260825-overview-svg-01"></script>
 <link rel="stylesheet" href="/css/ai.css?v=91">
 <script src="/js/ai-assistant.js?v=91" defer></script>
 </body>

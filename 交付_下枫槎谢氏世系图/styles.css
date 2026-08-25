@@ -239,35 +239,6 @@ body[data-app-mode="public"] .query-generation-action-row button { min-height: 4
 .overview-svg-route { fill: #526a61; opacity: .78; font: 500 9px "Microsoft YaHei", sans-serif; }
 .overview-svg-star { fill: #b94c49; font: 700 13px Arial, sans-serif; }
 .overview-svg-node { cursor: pointer; }
-.overview-svg-density-dot { display: none; }
-.overview-mode-switcher { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; padding: 8px 22px; border-bottom: 1px solid #dfe8e2; background: rgba(244, 249, 245, .96); color: #526a61; }
-.overview-mode-switcher[hidden] { display: none; }
-.overview-mode-label { margin-right: 3px; font-size: 11px; font-weight: 800; color: #365448; }
-.overview-mode-switcher button { min-height: 30px; padding: 5px 11px; border: 1px solid #b9cec2; border-radius: 999px; background: #fff; color: #426658; font-size: 11px; font-weight: 700; cursor: pointer; }
-.overview-mode-switcher button:hover, .overview-mode-switcher button[aria-pressed="true"] { border-color: #4d806b; background: #4d806b; color: #fff; box-shadow: 0 3px 9px rgba(60, 102, 82, .16); }
-.overview-mode-switcher small { margin-left: auto; color: #7b9185; font-size: 10px; }
-/* 远景只显示结构点，不把缩小后的姓名挤成不可读的噪点。 */
-.overview-svg-layer.is-atlas .overview-svg-card { fill: rgba(71, 116, 91, .14); stroke: rgba(71, 116, 91, .22); }
-.overview-svg-layer.is-atlas .overview-svg-generation,
-.overview-svg-layer.is-atlas .overview-svg-name,
-.overview-svg-layer.is-atlas .overview-svg-route,
-.overview-svg-layer.is-atlas .overview-svg-star { display: none; }
-.overview-svg-layer.is-atlas .overview-svg-density-dot { display: block; fill: #4f826d; stroke: #f3f8f3; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
-.overview-svg-layer.is-reading .overview-svg-node.is-dim { opacity: .16; }
-.overview-svg-layer.is-reading .overview-svg-node.is-near-focus { opacity: 1; }
-.overview-svg-layer.is-path .overview-svg-node.is-dim { opacity: .08; }
-.overview-svg-layer.is-path .overview-svg-node.is-path-node { opacity: 1; }
-.overview-svg-layer.is-path .overview-svg-node.is-path-node .overview-svg-card { stroke: #b85a4a; stroke-width: 2.5; }
-.overview-svg-layer .overview-svg-parent-edge.is-dim,
-.overview-svg-layer .overview-svg-adoption-edge.is-dim { opacity: .08; }
-.overview-svg-layer .overview-svg-parent-edge.is-path-edge { stroke: #47745d; stroke-width: 2.6; }
-.overview-svg-layer .overview-svg-adoption-edge.is-path-edge { stroke: #b85a4a; stroke-width: 3; }
-@media (max-width: 760px) {
-  .overview-mode-switcher { gap: 6px; padding: 7px 14px; }
-  .overview-mode-switcher button { flex: 1 1 0; min-width: 0; padding-inline: 7px; font-size: 10px; }
-  .overview-mode-label, .overview-mode-switcher small { flex: 1 0 100%; margin-left: 0; }
-  .overview-mode-switcher small { order: 3; }
-}
 .tree-stage { transform-origin: top left; width: max-content; min-width: 0; padding: 22px 42px; transition: none; will-change: transform; }
 .tree-stage.is-compact { --card-w: 132px; }
 .tree-stage.is-compact .person-card { min-height: 70px; padding: 7px 9px 6px; border-width: 1px; border-radius: 8px; }
