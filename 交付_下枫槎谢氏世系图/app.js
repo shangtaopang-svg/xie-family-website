@@ -2041,18 +2041,6 @@
     window.location.href = '../index.html';
   }
 
-  function ensureMobileBackButton() {
-    if ($('#mobile-genealogy-back')) return;
-    const button = document.createElement('button');
-    button.id = 'mobile-genealogy-back';
-    button.className = 'mobile-genealogy-back';
-    button.type = 'button';
-    button.dataset.action = 'mobile-back';
-    button.setAttribute('aria-label', '返回上一级');
-    button.innerHTML = '<span aria-hidden="true">‹</span><strong>返回上一级</strong>';
-    document.body.appendChild(button);
-  }
-
   function clearQuery() {
     state.query.keyword = '';
     state.query.genFrom = '';
@@ -5526,7 +5514,6 @@
       case 'mobile-generation-range': chooseGenerationQuery('range'); break;
       case 'query-generation-single': runGenerationQuery('single'); break;
       case 'query-generation-range': runGenerationQuery('range'); break;
-      case 'mobile-back': mobileBackOneLevel(); break;
       case 'query-run': runQuerySearch(); break;
       case 'query-clear': clearQuery(); break;
       case 'query-relation': renderQueryRelation(); break;
@@ -6029,7 +6016,6 @@
   window.addEventListener('xie-admin-authenticated', reloadAdminCanonicalData);
 
   async function init() {
-    ensureMobileBackButton();
     ensureRootTraceModal();
     await loadCanonicalData();
     loadSaved();
