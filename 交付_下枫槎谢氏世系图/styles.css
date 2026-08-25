@@ -350,6 +350,9 @@ body[data-app-mode="public"] .query-generation-action-row button { min-height: 4
 .detail-empty h3 { margin: 0 0 8px; color: var(--ink-strong); font-size: 17px; }
 .detail-empty p { max-width: 235px; margin: 0; font-size: 12px; line-height: 1.7; }
 .detail-head { display: flex; align-items: start; justify-content: space-between; gap: 10px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+.detail-head-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex: 0 0 auto; }
+.detail-return-query { min-height: 36px; padding: 7px 12px; border: 1px solid #6f8d7f; border-radius: 8px; background: #e7f1ea; color: #315b4c; font-size: 12px; font-weight: 800; white-space: nowrap; cursor: pointer; }
+.detail-return-query:hover { border-color: #3d725d; background: #d7eadc; color: #244d3e; }
 .detail-head h3 { margin: 0; color: var(--ink-strong); font-size: 24px; }
 .detail-head p { margin: 5px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
 .detail-close { width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface-soft); color: var(--muted); font-size: 17px; }
@@ -2247,6 +2250,24 @@ body[data-app-mode="public"] .tree-viewport {
     width: 44px;
     height: 44px;
     font-size: 25px;
+  }
+  body[data-app-mode="public"] #app.is-detail-only .detail-head-actions {
+    gap: 8px;
+  }
+  body[data-app-mode="public"] #app.is-detail-only .detail-return-query {
+    min-height: 44px;
+    padding: 8px 14px;
+    border-radius: 12px;
+    background: #3f7461;
+    border-color: #3f7461;
+    color: #fffdf7;
+    font-size: 14px;
+    box-shadow: 0 5px 12px rgba(45, 91, 70, .18);
+  }
+  body[data-app-mode="public"] #app.is-detail-only .detail-return-query:hover,
+  body[data-app-mode="public"] #app.is-detail-only .detail-return-query:active {
+    background: #315b4c;
+    border-color: #315b4c;
   }
   body[data-app-mode="public"] #app.is-detail-only .mobile-query-launcher,
   body[data-app-mode="public"] #app.is-detail-only ~ .mobile-query-launcher {
