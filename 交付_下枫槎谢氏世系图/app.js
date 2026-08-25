@@ -2260,11 +2260,11 @@
 
   function openLineageViewFromQuery(view) {
     if (!VIEW_DEFS[view]) return;
+    // 选择世系图后必须回到图面本身。此前这里先切图、再保留查询抽屉，
+    // 抽屉会盖住树图区，用户看起来就像“点击后没有世系图”。
+    closeMobileQueryMenu();
+    if (state.query.open) toggleQueryDrawer();
     switchView(view);
-    // 切换远古、申伯、本宗等世系图时保留“查世系图”面板，
-    // “上下7代”统一从“查族人”页面进入。
-    if (!state.query.open) toggleQueryDrawer();
-    setMobileQueryMode('lineage');
   }
 
   function chooseGenerationQuery(kind) {
