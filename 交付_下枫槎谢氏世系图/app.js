@@ -34,6 +34,7 @@
       width: 0,
       height: 0
     },
+    overviewCanvas: null,
     branch: '',
     generation: '',
     searchQuery: '',
@@ -2636,6 +2637,14 @@
     if (!stage) return;
     const viewport = $('#tree-viewport');
     const canvas = $('#tree-canvas');
+    const overviewCanvas = state.overviewCanvas && state.overviewCanvas.active ? state.overviewCanvas : null;
+    if (overviewCanvas) {
+      canvas.style.width = `${Math.ceil(overviewCanvas.baseWidth)}px`;
+      canvas.style.height = `${Math.ceil(overviewCanvas.baseHeight)}px`;
+      applyMapPan();
+      updateZoomReadouts();
+      return;
+    }
     const overviewFastPath = state.overviewMode;
     let baseWidth;
     let baseHeight;
@@ -2677,6 +2686,11 @@
     const x = Number(pan.x) || 0;
     const y = Number(pan.y) || 0;
     const zoom = Math.max(.001, Number(state.zoom) || 1);
+    const overviewCanvas = state.overviewCanvas && state.overviewCanvas.active ? state.overviewCanvas : null;
+    if (overviewCanvas && overviewCanvas.canvas) {
+      overviewCanvas.canvas.style.transform = `translate3d(${x}px, ${y}px, 0) scale3d(${zoom}, ${zoom}, 1)`;
+      return;
+    }
     if (state.overviewMode) {
       // 全景模式只更新合成层，平移和缩放不再触发布局计算。
       stage.style.transform = `translate3d(${x}px, ${y}px, 0) scale3d(${zoom}, ${zoom}, 1)`;
@@ -2832,11 +2846,14 @@
     const viewport = $('#tree-viewport');
     const stage = $('#tree-stage');
     if (!viewport || !stage || !stage.innerHTML.trim()) return;
-    state.overviewMetrics = { width: 0, height: 0 };
-    stage.style.zoom = 1;
-    stage.style.transform = 'none';
-    const contentWidth = Math.max(1, stage.scrollWidth);
-    const contentHeight = Math.max(1, stage.scrollHeight);
+    const canvasMap = state.overviewCanvas && state.overviewCanvas.active ? state.overviewCanvas : null;
+    if (!canvasMap) {
+      state.overviewMetrics = { width: 0, height: 0 };
+      stage.style.zoom = 1;
+      stage.style.transform = 'none';
+    }
+    const contentWidth = Math.max(1, canvasMap?.baseWidth || state.overviewMetrics.width || stage.scrollWidth);
+    const contentHeight = Math.max(1, canvasMap?.baseHeight || state.overviewMetrics.height || stage.scrollHeight);
     const availableWidth = Math.max(1, viewport.clientWidth - 12);
     const availableHeight = Math.max(1, viewport.clientHeight - 12);
     const fit = Math.min(availableWidth / contentWidth, availableHeight / contentHeight) * .96;
@@ -2855,39 +2872,255 @@
     showToast(`已适应屏幕 · ${formatZoom()}，拖拽图面可四向平移`);
   }
 
+  // 总览图的高性能浏览层：保留一次 DOM 排版作为“几何真值”，之后用 Canvas
+  // 承担全量卡片的绘制、缩放和平移，避免操作时反复重排数百个 DOM 节点。
+  function deactivateOverviewCanvas() {
+    const stage = $('#tree-stage');
+    const canvasWrap = $('#tree-canvas');
+    const map = state.overviewCanvas;
+    if (map && map.canvas && map.canvas.parentNode) map.canvas.parentNode.removeChild(map.canvas);
+    if (stage && map) stage.style.display = map.stageDisplay || '';
+    canvasWrap?.classList.remove('overview-canvas-active');
+    state.overviewCanvas = null;
+  }
+
+  function canvasRoundRect(ctx, x, y, width, height, radius) {
+    const r = Math.max(0, Math.min(radius, width / 2, height / 2));
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(x, y, width, height, r);
+      return;
+    }
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + width, y, x + width, y + height, r);
+    ctx.arcTo(x + width, y + height, x, y + height, r);
+    ctx.arcTo(x, y + height, x, y, r);
+    ctx.arcTo(x, y, x + width, y, r);
+    ctx.closePath();
+  }
+
+  function overviewCanvasColors(node) {
+    const classes = new Set(node.classes || []);
+    if (classes.has('is-female-card')) return { fill: '#f2d8dd', stroke: '#a43f4f', text: '#632a35' };
+    if (classes.has('special-bin-card') || classes.has('special-bin-zone')) return { fill: '#e0e4e5', stroke: '#7a858b', text: '#35434b' };
+    if (classes.has('special-qian-card') || classes.has('special-qian-zone')) return { fill: '#f6e0d7', stroke: '#b45b45', text: '#74392c' };
+    if (classes.has('is-adoption-out')) return { fill: '#f8e8e3', stroke: '#b85d4c', text: '#6f3027' };
+    if (classes.has('is-adoption-in')) return { fill: '#e8f2ea', stroke: '#5b8c72', text: '#294f3e' };
+    if (classes.has('is-deceased-card')) return { fill: '#dce2df', stroke: '#8a9891', text: '#46534d' };
+    if (classes.has('is-living-card')) return { fill: '#e5f2e8', stroke: '#57956e', text: '#25573a' };
+    return { fill: '#f6f7f2', stroke: '#7b9c8b', text: '#243d34' };
+  }
+
+  function drawOverviewCanvas() {
+    const map = state.overviewCanvas;
+    if (!map || !map.active || !map.ctx) return;
+    const { ctx, baseWidth, baseHeight, renderScale } = map;
+    ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
+    ctx.clearRect(0, 0, baseWidth, baseHeight);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    // 先画父子连接线，确保卡片始终压在线条上方。
+    ctx.strokeStyle = '#91aaa0';
+    ctx.lineWidth = 1.5;
+    map.edges.forEach(({ parent, child }) => {
+      const startX = parent.x + parent.width / 2;
+      const startY = parent.y + parent.height;
+      const endX = child.x + child.width / 2;
+      const endY = child.y;
+      const middleY = startY + Math.max(8, (endY - startY) * .5);
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(startX, middleY);
+      ctx.lineTo(endX, middleY);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+    });
+    map.adoptionEdges.forEach(({ from, to }) => {
+      ctx.save();
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = '#b85a4a';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(from.x + from.width / 2, from.y + from.height);
+      ctx.bezierCurveTo(from.x + from.width / 2, from.y + from.height + 18, to.x + to.width / 2, to.y - 18, to.x + to.width / 2, to.y);
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    map.nodes.forEach((node) => {
+      const colors = overviewCanvasColors(node);
+      const selected = String(node.id) === String(state.selectedId);
+      ctx.save();
+      canvasRoundRect(ctx, node.x, node.y, node.width, node.height, Math.min(8, node.height * .16));
+      ctx.fillStyle = colors.fill;
+      ctx.fill();
+      ctx.lineWidth = selected ? 3 : 1.25;
+      ctx.strokeStyle = selected ? '#c47743' : colors.stroke;
+      ctx.stroke();
+      if (node.isVerified) {
+        ctx.fillStyle = '#b94c49';
+        ctx.font = '700 13px Arial, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText('★', node.x + node.width - 5, node.y + 15);
+      }
+      ctx.textAlign = 'left';
+      ctx.fillStyle = colors.text;
+      ctx.font = `600 ${Math.max(8, Math.min(11, node.height * .18))}px "Microsoft YaHei", sans-serif`;
+      ctx.fillText(node.generation, node.x + 6, node.y + 13);
+      ctx.font = `700 ${Math.max(10, Math.min(15, node.height * .25))}px "Microsoft YaHei", sans-serif`;
+      ctx.fillText(node.name, node.x + 6, node.y + Math.min(node.height - 7, Math.max(27, node.height * .58)));
+      if (node.route && node.height > 34) {
+        ctx.fillStyle = colors.text;
+        ctx.globalAlpha = .78;
+        ctx.font = `500 ${Math.max(7, Math.min(9, node.height * .14))}px "Microsoft YaHei", sans-serif`;
+        ctx.fillText(node.route, node.x + 6, node.y + node.height - 7);
+      }
+      ctx.restore();
+    });
+  }
+
+  function activateOverviewCanvas(stage) {
+    const canvasWrap = $('#tree-canvas');
+    const viewport = $('#tree-viewport');
+    if (!stage || !canvasWrap || !viewport || !state.overviewMode) return;
+    deactivateOverviewCanvas();
+    stage.style.zoom = 1;
+    stage.style.transform = 'none';
+    stage.style.display = '';
+    const stageRect = stage.getBoundingClientRect();
+    const cardElements = Array.from(stage.querySelectorAll('.person-card'));
+    const nodes = [];
+    const nodeById = new Map();
+    cardElements.forEach((card) => {
+      const rect = card.getBoundingClientRect();
+      const id = String(card.dataset.id || '');
+      if (!id || !rect.width || !rect.height) return;
+      const node = {
+        id,
+        x: rect.left - stageRect.left,
+        y: rect.top - stageRect.top,
+        width: rect.width,
+        height: rect.height,
+        name: card.querySelector('strong')?.textContent?.trim() || '未命名',
+        generation: card.querySelector('.card-generation')?.textContent?.trim() || '',
+        route: card.querySelector('.card-route')?.textContent?.trim() || card.querySelector('.card-branch')?.textContent?.trim() || '',
+        classes: Array.from(card.classList),
+        isFemale: card.classList.contains('is-female-card'),
+        isVerified: card.classList.contains('is-verified')
+      };
+      nodes.push(node);
+      nodeById.set(id, node);
+    });
+    const edges = [];
+    stage.querySelectorAll('.tree-node').forEach((nodeElement) => {
+      const card = Array.from(nodeElement.children).find((child) => child.classList?.contains('person-card'));
+      if (!card) return;
+      const childRow = Array.from(nodeElement.children).find((child) => child.classList?.contains('children-row'));
+      if (!childRow) return;
+      const parent = nodeById.get(String(card.dataset.id || ''));
+      if (!parent) return;
+      Array.from(childRow.children).forEach((childElement) => {
+        const childCard = Array.from(childElement.children).find((child) => child.classList?.contains('person-card'));
+        const child = childCard ? nodeById.get(String(childCard.dataset.id || '')) : null;
+        if (child) edges.push({ parent, child });
+      });
+    });
+    const adoptionEdges = [];
+    state.adoption.outById.forEach((relation) => {
+      const from = nodeById.get(String(personId(relation.outPerson)));
+      const target = nodeById.get(String(personId(relation.adoptiveRecord || relation.adoptiveParent)));
+      if (from && target && from !== target) adoptionEdges.push({ from, to: target });
+    });
+    const right = nodes.reduce((max, node) => Math.max(max, node.x + node.width), 0);
+    const bottom = nodes.reduce((max, node) => Math.max(max, node.y + node.height), 0);
+    const baseWidth = Math.max(1, stage.scrollWidth, right + 44);
+    const baseHeight = Math.max(1, stage.scrollHeight, bottom + 44);
+    const maxPixels = 16000000;
+    const renderScale = Math.max(.35, Math.min(1.25, window.devicePixelRatio || 1, Math.sqrt(maxPixels / Math.max(1, baseWidth * baseHeight))));
+    const canvas = document.createElement('canvas');
+    canvas.className = 'overview-canvas-layer';
+    canvas.width = Math.max(1, Math.ceil(baseWidth * renderScale));
+    canvas.height = Math.max(1, Math.ceil(baseHeight * renderScale));
+    canvas.style.width = `${Math.ceil(baseWidth)}px`;
+    canvas.style.height = `${Math.ceil(baseHeight)}px`;
+    canvas.setAttribute('aria-label', '总世系图全景图，点击人物查看详情');
+    canvasWrap.appendChild(canvas);
+    canvasWrap.classList.add('overview-canvas-active');
+    const map = {
+      active: true, canvas, ctx: canvas.getContext('2d'), nodes, nodeById, edges, adoptionEdges,
+      baseWidth, baseHeight, renderScale, stageDisplay: stage.style.display || ''
+    };
+    state.overviewCanvas = map;
+    state.overviewMetrics = { width: baseWidth, height: baseHeight };
+    stage.style.display = 'none';
+    canvas.addEventListener('click', (event) => {
+      if (state.pan.suppressClick) return;
+      const rect = canvas.getBoundingClientRect();
+      const zoom = Math.max(.001, Number(state.zoom) || 1);
+      const x = (event.clientX - rect.left) / zoom;
+      const y = (event.clientY - rect.top) / zoom;
+      const node = nodes.slice().reverse().find((item) => x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height);
+      if (node) selectPerson(node.id);
+    });
+    drawOverviewCanvas();
+  }
+
   function renderMiniMap() {
     const panel = $('#tree-minimap-panel');
     const plot = $('#tree-minimap-plot');
     const stage = $('#tree-stage');
     const viewport = $('#tree-viewport');
     if (!panel || !plot || !stage || !viewport || panel.hidden || !stage.innerHTML.trim()) return;
-    const cards = Array.from(stage.querySelectorAll('.person-card'));
+    const canvasMap = state.overviewCanvas && state.overviewCanvas.active ? state.overviewCanvas : null;
+    const cards = canvasMap ? canvasMap.nodes : Array.from(stage.querySelectorAll('.person-card'));
     if (!cards.length) {
       plot.innerHTML = '<span class="minimap-empty">暂无图面</span>';
       return;
     }
-    const stageRect = stage.getBoundingClientRect();
     const zoom = Math.max(.001, Number(state.zoom) || 1);
-    const contentWidth = Math.max(1, stage.scrollWidth);
-    const contentHeight = Math.max(1, stage.scrollHeight);
+    const contentWidth = Math.max(1, canvasMap?.baseWidth || stage.scrollWidth);
+    const contentHeight = Math.max(1, canvasMap?.baseHeight || stage.scrollHeight);
     const mapWidth = 184;
     const mapHeight = 112;
     const fragment = document.createDocumentFragment();
     cards.forEach((card) => {
-      const rect = card.getBoundingClientRect();
-      const left = (rect.left - stageRect.left) / zoom;
-      const top = (rect.top - stageRect.top) / zoom;
-      const width = Math.max(2, rect.width / zoom);
-      const height = Math.max(2, rect.height / zoom);
+      let left;
+      let top;
+      let width;
+      let height;
+      let selected;
+      let female;
+      let title;
+      if (canvasMap) {
+        left = card.x;
+        top = card.y;
+        width = Math.max(2, card.width);
+        height = Math.max(2, card.height);
+        selected = String(card.id) === String(state.selectedId);
+        female = card.isFemale;
+        title = card.name;
+      } else {
+        const stageRect = stage.getBoundingClientRect();
+        const rect = card.getBoundingClientRect();
+        left = (rect.left - stageRect.left) / zoom;
+        top = (rect.top - stageRect.top) / zoom;
+        width = Math.max(2, rect.width / zoom);
+        height = Math.max(2, rect.height / zoom);
+        selected = card.classList.contains('is-selected');
+        female = card.classList.contains('is-female-card');
+        title = card.querySelector('strong')?.textContent || '定位人物';
+      }
       const node = document.createElement('span');
-      node.className = `minimap-node${card.classList.contains('is-selected') ? ' is-selected' : ''}${card.classList.contains('is-female-card') ? ' is-female' : ''}`;
+      node.className = `minimap-node${selected ? ' is-selected' : ''}${female ? ' is-female' : ''}`;
       node.style.left = `${Math.max(0, Math.min(99.5, left / contentWidth * 100))}%`;
       node.style.top = `${Math.max(0, Math.min(99.5, top / contentHeight * 100))}%`;
       node.style.width = `${Math.max(1, Math.min(100, width / contentWidth * 100))}%`;
       node.style.height = `${Math.max(1.5, Math.min(100, height / contentHeight * 100))}%`;
       node.dataset.minimapX = String(left + width / 2);
       node.dataset.minimapY = String(top + height / 2);
-      node.title = card.querySelector('strong')?.textContent || '定位人物';
+      node.title = title;
       fragment.appendChild(node);
     });
     plot.innerHTML = '';
@@ -2989,6 +3222,8 @@
       : null;
     if (selectedCard) selectedCard.classList.add('is-selected');
     domSelectedId = selectedKey || null;
+    const canvasMap = state.overviewCanvas && state.overviewCanvas.active ? state.overviewCanvas : null;
+    if (canvasMap) drawOverviewCanvas();
     const status = $('#tree-status');
     const selected = getPerson(state.selectedId);
     if (status && selected) status.textContent = `${currentView().label} · 当前树面卡片 ${$$('.person-card').length} 张 · 已选：${text(selected.name)}`;
@@ -3003,6 +3238,20 @@
     const offsetY = useClientAnchor ? Math.max(0, Math.min(rect.height, clientY - rect.top)) : rect.height / 2;
     const oldZoom = state.zoom;
     const mapPan = state.mapPan || { x: 0, y: 0 };
+    const canvasMap = state.overviewCanvas && state.overviewCanvas.active ? state.overviewCanvas : null;
+    if (canvasMap) {
+      const focusX = (offsetX - (Number(mapPan.x) || 0)) / oldZoom;
+      const focusY = (offsetY - (Number(mapPan.y) || 0)) / oldZoom;
+      state.zoom = Math.max(.005, Math.min(1.8, +(state.zoom * factor).toFixed(4)));
+      if (state.zoom === oldZoom) return;
+      state.mapPan = {
+        x: offsetX - focusX * state.zoom,
+        y: offsetY - focusY * state.zoom
+      };
+      applyZoom();
+      renderMiniMap();
+      return;
+    }
     // 计算时扣除全景平移量，缩放后鼠标指向的卡片保持在原位置，不再出现跳图。
     const focusX = (viewport.scrollLeft + offsetX - (Number(mapPan.x) || 0)) / oldZoom;
     const focusY = (viewport.scrollTop + offsetY - (Number(mapPan.y) || 0)) / oldZoom;
@@ -3267,6 +3516,7 @@
   }
 
   function renderGroupFrames() {
+    if (state.overviewCanvas && state.overviewCanvas.active) return;
     renderDaerGroupFrame();
     renderDengGroupFrame();
     renderQianziGroupFrame();
@@ -3278,6 +3528,7 @@
       ? (getPerson(state.mobileFocusRootId) || findRoot())
       : findRoot();
     if (!stage) return;
+    if (state.overviewCanvas && state.overviewCanvas.active) deactivateOverviewCanvas();
     state.overviewMetrics = { width: 0, height: 0 };
     stage.classList.toggle('is-compact', state.compact);
     stage.classList.toggle('is-overview-map', state.overviewMode);
@@ -3289,6 +3540,7 @@
       stage.innerHTML = `<div class="tree-root">${renderNode(root, 0, new Set(), memo)}</div>`;
     }
     applyBranchOffsets();
+    if (state.overviewMode) activateOverviewCanvas(stage);
     applyZoom();
     renderGroupFrames();
     renderMiniMap();
