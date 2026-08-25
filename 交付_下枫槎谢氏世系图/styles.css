@@ -138,6 +138,43 @@ body.is-global-nav-open { overflow: hidden; }
   .global-nav-grid a { min-height: 70px; padding: 12px; }
 }
 
+/* 查询结果操作按钮：移动端与电脑端均保持清晰、可点击的按钮形态。 */
+.query-result-actions [data-action="query-detail"],
+.query-result-actions [data-action="root-trace"] {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 70px;
+  min-height: 38px;
+  padding: 7px 12px;
+  border: 1px solid;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.query-result-actions [data-action="query-detail"] { border-color: #5f8d79; background: #e8f3ec; color: #285c48; }
+.query-result-actions [data-action="root-trace"] { border-color: #b77859; background: #fff0e6; color: #934b38; }
+.query-result-actions [data-action="query-detail"]:hover,
+.query-result-actions [data-action="root-trace"]:hover,
+.query-result-actions [data-action="query-detail"]:focus-visible,
+.query-result-actions [data-action="root-trace"]:focus-visible { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(53,67,61,.14); text-decoration: none; outline: none; }
+.query-result-actions [data-action="query-detail"]:hover,
+.query-result-actions [data-action="query-detail"]:focus-visible { background: #cfe6d8; }
+.query-result-actions [data-action="root-trace"]:hover,
+.query-result-actions [data-action="root-trace"]:focus-visible { background: #f5d0bc; }
+
+@media (max-width: 680px) {
+  .query-result-row { grid-template-columns: 45px minmax(80px,1fr) 42px 158px; }
+  .query-result-actions { gap: 5px; }
+  .query-result-actions [data-action="query-detail"],
+  .query-result-actions [data-action="root-trace"] { min-width: 74px; min-height: 44px; padding: 8px 10px; font-size: 13px; border-radius: 8px; }
+}
+
 /* 2026-08-25 查询页修正：查世代数字表单、重复标题与时间轴收窄。 */
 body[data-app-mode="public"] .query-drawer[data-mobile-mode="people"] .query-people-section > .query-section-head { display: none; }
 body[data-app-mode="public"] .query-generation-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0 0 12px; }
