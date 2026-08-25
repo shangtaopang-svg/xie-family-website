@@ -1806,20 +1806,21 @@ body[data-app-mode="public"] .tree-viewport {
     inset: 0;
     z-index: 420;
     display: grid;
-    place-items: start center;
-    padding: max(12px, env(safe-area-inset-top)) 12px 12px;
+    place-items: stretch;
+    padding: 0;
     background: rgba(24, 48, 39, .34);
     -webkit-backdrop-filter: blur(12px) saturate(120%);
     backdrop-filter: blur(12px) saturate(120%);
   }
   body[data-app-mode="public"] .mobile-query-menu[hidden] { display: none !important; }
   body[data-app-mode="public"] .mobile-query-menu-panel {
-    width: min(100%, 460px);
-    max-height: min(88dvh, 680px);
+    width: 100%;
+    height: 100%;
+    max-height: none;
     overflow: auto;
-    padding: 18px 14px max(18px, env(safe-area-inset-bottom));
+    padding: max(18px, env(safe-area-inset-top)) 14px max(18px, env(safe-area-inset-bottom));
     border: 1px solid #c8d8cb;
-    border-radius: 14px 14px 22px 22px;
+    border-radius: 0;
     background: rgba(251, 253, 249, .82);
     -webkit-backdrop-filter: blur(22px) saturate(125%);
     backdrop-filter: blur(22px) saturate(125%);
