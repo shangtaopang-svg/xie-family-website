@@ -300,13 +300,24 @@
       else {
         const generation = generationOf(person);
         included = !(view.generations && (generation === null || generation < view.generations[0] || generation > view.generations[1]));
-        if (included && state.view === 'main' && state.mainFocusId) included = isWithinMainFocus(person, state.mainFocusId);
+        if (included && state.view === 'main') {
+          if (state.mainFocusId) {
+            included = isWithinMainFocus(person, state.mainFocusId);
+          } else {
+            // 本宗世系的 branch 字段并不是完整的树结构：大量真实主宗成员
+            // 在管理后台中使用“—”作为暂未细分支系的占位值。不能再用
+            // branch 白名单裁切本宗，否则“展开全部”只会显示很少一部分。
+            // 以本宗根节点的真实父子链为准，保留所有后代及其承嗣归属。
+            included = personKey === String(toId(view.rootId)) || isStrictDescendantOf(person, view.rootId);
+          }
+        }
         // 丹一一支接入枫槎始祖及前、后枫槎等支系，按真实父系回溯到小四，不能按支系名称过滤。
         if (included && state.view === 'shima') {
           if (isStrictDescendantOf(person, 10)) included = false;
           else included = belongsToViewRoot(person, view.rootId);
         }
-        if (included && state.view !== 'shima' && view.branches) {
+        // 本宗世系按根节点父子链筛选；不能再用旧的 branch 白名单二次裁切。
+        if (included && state.view !== 'shima' && state.view !== 'main' && view.branches) {
           const branch = text(person.branch).trim();
           included = view.branches.includes(branch) || Boolean(view.includeBlank && !branch);
         }
@@ -1056,6 +1067,14 @@
   function prepareFullExpansion() {
     state.overviewMode = true;
     state.compact = true;
+    // 从分支聚焦或带 focus 的地址进入后，点“展开全部”必须回到完整本宗，
+    // 否则 viewIncludes 会继续把整棵树限制在当前聚焦分支内。
+    if (state.view === 'main') {
+      state.mainFocusId = null;
+      state.mobileFocusRootId = null;
+      state.viewIncludeCache.clear();
+      state.viewIncludeCacheKey = '';
+    }
     state.expanded.clear();
     const people = state.data.filter((person) => viewIncludes(person) && !isHiddenAdoptionRecord(person));
     people.forEach((person) => {
