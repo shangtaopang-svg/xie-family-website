@@ -2077,6 +2077,12 @@
     setMobileQueryMode(route);
   }
 
+  function openLineageViewFromQuery(view) {
+    if (!VIEW_DEFS[view]) return;
+    if (state.query.open) toggleQueryDrawer();
+    switchView(view);
+  }
+
   function chooseGenerationQuery(kind) {
     setMobileQueryMode('generation');
     const from = $('#query-gen-from');
@@ -5612,6 +5618,7 @@
         break;
       case 'close-mobile-query-menu': closeMobileQueryMenu(); break;
       case 'mobile-query-route': openMobileQueryRoute(element.dataset.route); break;
+      case 'query-lineage-view': openLineageViewFromQuery(element.dataset.view); break;
       case 'mobile-generation-single': chooseGenerationQuery('single'); break;
       case 'mobile-generation-range': chooseGenerationQuery('range'); break;
       case 'query-generation-single': runGenerationQuery('single'); break;

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>枫槎谢氏宗谱 · 族谱查询</title>
   <meta name="description" content="枫槎谢氏宗谱族谱查询与只读世系图">
-  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260825-mobile-map-21">
+  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260825-mobile-map-22">
   <script>
     if (new URLSearchParams(location.search).get('chooser') === '1' && window.matchMedia('(max-width: 760px)').matches) {
       document.documentElement.classList.add('is-chooser-pending');
@@ -136,6 +136,24 @@
             <div class="query-section-head">
               <div><span class="query-kicker">SEVEN GENERATIONS</span><h4>查某人上下7代</h4><p class="query-muted">上三代 · 本人 · 下三代</p></div>
             </div>
+            <div class="query-lineage-view-block">
+              <span class="query-lineage-view-title">原有世系图</span>
+              <div class="query-lineage-view-picker" aria-label="选择世系图">
+                <button type="button" data-action="query-lineage-view" data-view="overview">总览世系图</button>
+                <button type="button" data-action="query-lineage-view" data-view="ancient">远古世系图</button>
+                <button type="button" data-action="query-lineage-view" data-view="shenbo">申伯世系图</button>
+                <button type="button" data-action="query-lineage-view" data-view="dongshan">始宁东山世系图</button>
+                <button type="button" data-action="query-lineage-view" data-view="linhai">临海下渡世系图</button>
+                <button type="button" data-action="query-lineage-view" data-view="shima">石马（下谢）世系图</button>
+                <button type="button" data-action="query-lineage-view" data-view="main">本宗世系图（下枫槎）</button>
+              </div>
+              <div class="query-lineage-map-actions" aria-label="世系图操作">
+                <button type="button" data-action="expand-all" title="全部展开">⊞ <span>展开</span></button>
+                <button type="button" data-action="collapse-all" title="全部收起">⊟ <span>收起</span></button>
+                <button type="button" data-action="zoom-in" title="放大">＋ <span>放大</span></button>
+                <button type="button" data-action="zoom-out" title="缩小">− <span>缩小</span></button>
+              </div>
+            </div>
             <div class="query-lineage7-form">
               <label class="query-field query-lineage7-field"><span>输入族人姓名</span><input id="query-lineage7-name" type="search" placeholder="例如：伟中、大顺" autocomplete="off"></label>
               <button class="query-primary query-lineage7-submit" type="button" data-action="query-lineage7">查询上下7代</button>
@@ -234,7 +252,7 @@
     </section>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="../交付_下枫槎谢氏世系图/app.js?v=20260825-mobile-map-21"></script>
+  <script src="../交付_下枫槎谢氏世系图/app.js?v=20260825-mobile-map-22"></script>
 <link rel="stylesheet" href="/css/ai.css?v=91">
 <script src="/js/ai-assistant.js?v=91" defer></script>
 </body>
