@@ -1582,6 +1582,43 @@
     return `<article class="query-lineage7-card is-${role}"><div class="query-lineage7-card-top"><span class="query-lineage7-level">${escapeHtml(level)}</span><span class="query-lineage7-status">${escapeHtml(status)}</span></div><button class="query-lineage7-name" data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}</button><div class="query-lineage7-meta"><span>第${escapeHtml(generationOf(person) || '—')}世</span><span>${escapeHtml(text(person.branch) || '未标注支系')}</span>${genderLabel(person) !== '未知' ? `<span>${escapeHtml(genderLabel(person))}</span>` : ''}</div>${adoption ? `<div class="query-lineage7-badge">${escapeHtml(adoption)}</div>` : ''}${relationship ? `<div class="query-lineage7-relation">${escapeHtml(relationship)}</div>` : ''}</article>`;
   }
 
+  function queryLineage7AdoptionLinks(people) {
+    const visibleIds = new Set(people.map((person) => String(personId(person))));
+    const links = [];
+    const seen = new Set();
+    state.adoption.outById.forEach((relation) => {
+      const records = [relation.biologicalParent, relation.outPerson, relation.adoptiveRecord, relation.adoptiveParent].filter(Boolean);
+      if (!records.some((person) => visibleIds.has(String(personId(person))))) return;
+      const key = [relation.outPerson, relation.adoptiveRecord, relation.adoptiveParent]
+        .map((person) => person ? String(personId(person)) : '—').join('|');
+      if (seen.has(key)) return;
+      seen.add(key);
+      links.push(relation);
+    });
+    return links;
+  }
+
+  function queryLineage7AdoptionHtml(relation) {
+    const biological = relation.biologicalParent;
+    const outPerson = relation.outPerson;
+    const adoptiveRecord = relation.adoptiveRecord || relation.outPerson;
+    const adoptiveParent = relation.adoptiveParent;
+    const outLabel = adoptiveRecord && String(personId(adoptiveRecord)) !== String(personId(outPerson))
+      ? `${text(outPerson.name)}（出继记录）`
+      : `${text(outPerson.name)}（出继 / 入继）`;
+    return `<article class="query-lineage7-adoption-card">
+      <div class="query-lineage7-adoption-title">出继 / 入继关系</div>
+      <div class="query-lineage7-adoption-flow">
+        <div class="query-lineage7-adoption-node"><span>亲生父亲</span><button data-action="query-locate" data-id="${escapeHtml(personId(biological))}">${escapeHtml(text(biological.name))}</button><small>血缘父系</small></div>
+        <div class="query-lineage7-adoption-edge is-biological" aria-hidden="true"><i></i><b>亲生</b><i></i></div>
+        <div class="query-lineage7-adoption-node is-child"><span>出继人</span><button data-action="query-locate" data-id="${escapeHtml(personId(outPerson))}">${escapeHtml(outLabel)}</button><small>${escapeHtml(queryAdoptionLabel(outPerson) || '出继记录')}</small></div>
+        <div class="query-lineage7-adoption-edge is-adoption" aria-hidden="true"><i></i><b>入继给</b><i></i></div>
+        <div class="query-lineage7-adoption-node is-adoptive"><span>承嗣父</span><button data-action="query-locate" data-id="${escapeHtml(personId(adoptiveParent))}">${escapeHtml(text(adoptiveParent.name))}</button><small>入继 / 承嗣父</small></div>
+      </div>
+      <p>${escapeHtml(relation.source || '族谱载有出继、入继关系；亲生父系与承嗣父系同时保留。')}</p>
+    </article>`;
+  }
+
   function renderQueryLineage7() {
     const container = $('#query-lineage7-result');
     if (!container) return;
@@ -1617,9 +1654,14 @@
     rows.push(`<div class="query-lineage7-row query-lineage7-row-focus"><span class="query-lineage7-row-label">本人</span><div class="query-lineage7-cards">${queryLineage7Card(focus, 'focus', '本人')}</div></div>`);
     descendantRows.forEach((row) => rows.push(`<div class="query-lineage7-row query-lineage7-row-descendant"><span class="query-lineage7-row-label">下${row.distance}代</span><div class="query-lineage7-cards">${row.people.map((person) => queryLineage7Card(person, 'descendant', `下${row.distance}代`)).join('')}</div></div>`));
 
+    const allPeople = [focus, ...ancestors.map((item) => item.person), ...descendantRows.flatMap((row) => row.people)];
+    const adoptionLinks = queryLineage7AdoptionLinks(allPeople);
     const total = ancestors.length + 1 + descendantRows.reduce((sum, row) => sum + row.people.length, 0);
     container.hidden = false;
-    container.innerHTML = `<div class="query-lineage7-result-head"><div><strong>${escapeHtml(text(focus.name))} · 上下7代</strong><span>上三代 ${ancestors.length} 人 · 本人 1 人 · 下三代 ${total - ancestors.length - 1} 人</span></div><button type="button" class="query-secondary" data-action="query-lineage7-clear">重新查询</button></div><div class="query-lineage7-tree">${rows.join('<i class="query-lineage7-connector" aria-hidden="true"></i>')}</div>`;
+    const adoptionMarkup = adoptionLinks.length
+      ? `<section class="query-lineage7-adoption"><div class="query-lineage7-adoption-head"><strong>出继 / 入继关系</strong><span>树状世系之外，单独保留亲生父亲、出继人和承嗣父的真实对应关系</span></div>${adoptionLinks.map(queryLineage7AdoptionHtml).join('')}</section>`
+      : '';
+    container.innerHTML = `<div class="query-lineage7-result-head"><div><strong>${escapeHtml(text(focus.name))} · 上下7代树状世系</strong><span>上三代 ${ancestors.length} 人 · 本人 1 人 · 下三代 ${total - ancestors.length - 1} 人</span></div><button type="button" class="query-secondary" data-action="query-lineage7-clear">重新查询</button></div><div class="query-lineage7-tree">${rows.join('<i class="query-lineage7-connector" aria-hidden="true"></i>')}</div>${adoptionMarkup}`;
   }
 
   function runLineage7Query() {
@@ -2079,8 +2121,11 @@
 
   function openLineageViewFromQuery(view) {
     if (!VIEW_DEFS[view]) return;
-    if (state.query.open) toggleQueryDrawer();
     switchView(view);
+    // 切换远古、申伯、本宗等世系图时保留“查世系图”面板，
+    // 这样用户仍可继续使用“查某人上下7代”，不会因换图而丢失查询入口。
+    if (!state.query.open) toggleQueryDrawer();
+    setMobileQueryMode('lineage');
   }
 
   function chooseGenerationQuery(kind) {
@@ -5641,6 +5686,8 @@
         break;
       case 'query-locate': {
         const openDetails = text(element.textContent).trim() === '详情';
+        // 查询抽屉位于主内容层之上；点击“详情”时先收起它，避免详情已渲染但被抽屉遮住。
+        if (openDetails && state.query.open) toggleQueryDrawer();
         selectPerson(id, { forceRender: true });
         if (openDetails && isMobileViewport()) {
           window.setTimeout(() => $('#detail-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 40);
