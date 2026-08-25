@@ -2375,3 +2375,26 @@ body[data-app-mode="public"] .tree-viewport {
     min-height: 44px;
   }
 }
+
+/* 最终覆盖：手机查询结果必须完整显示“详情”和“寻根”两个按钮。 */
+@media (max-width: 680px) {
+  .query-result-row:not(.query-result-head) {
+    grid-template-columns: 40px minmax(0, 1fr) 42px 154px !important;
+    min-width: 0 !important;
+  }
+  .query-result-actions {
+    display: flex !important;
+    gap: 5px !important;
+    overflow: visible !important;
+  }
+  .query-result-actions [data-action="query-detail"],
+  .query-result-actions [data-action="root-trace"] {
+    flex: 0 0 74px;
+    width: 74px;
+    min-width: 74px;
+    min-height: 44px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+}
