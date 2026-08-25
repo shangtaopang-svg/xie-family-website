@@ -49,7 +49,12 @@
       relationB: '',
       relationAId: null,
       relationBId: null,
-      lineage7Id: null
+      lineage7Id: null,
+      lineage7Map: {
+        zoom: 1,
+        x: 0,
+        y: 0
+      }
     },
     mode: 'view',
     draftId: null,
@@ -1681,6 +1686,183 @@
     </article>`;
   }
 
+  const LINEAGE7_ZOOM_MIN = 0.28;
+  const LINEAGE7_ZOOM_MAX = 2.4;
+
+  function lineage7MapState() {
+    if (!state.query.lineage7Map) state.query.lineage7Map = { zoom: 1, x: 0, y: 0 };
+    return state.query.lineage7Map;
+  }
+
+  function lineage7MapElements() {
+    const viewport = $('[data-lineage7-viewport]');
+    const canvas = $('[data-lineage7-canvas]');
+    return viewport && canvas ? { viewport, canvas } : null;
+  }
+
+  function clampLineage7MapPosition(x, y, zoom, viewport, canvas) {
+    const width = Math.max(1, canvas.offsetWidth || canvas.scrollWidth || 1) * zoom;
+    const height = Math.max(1, canvas.offsetHeight || canvas.scrollHeight || 1) * zoom;
+    const viewportWidth = Math.max(1, viewport.clientWidth);
+    const viewportHeight = Math.max(1, viewport.clientHeight);
+    const nextX = width <= viewportWidth
+      ? (viewportWidth - width) / 2
+      : clamp(x, viewportWidth - width - 40, 40);
+    const nextY = height <= viewportHeight
+      ? (viewportHeight - height) / 2
+      : clamp(y, viewportHeight - height - 40, 40);
+    return { x: nextX, y: nextY };
+  }
+
+  function applyLineage7MapTransform() {
+    const elements = lineage7MapElements();
+    if (!elements) return;
+    const { viewport, canvas } = elements;
+    const map = lineage7MapState();
+    map.zoom = clamp(Number(map.zoom) || 1, LINEAGE7_ZOOM_MIN, LINEAGE7_ZOOM_MAX);
+    const position = clampLineage7MapPosition(Number(map.x) || 0, Number(map.y) || 0, map.zoom, viewport, canvas);
+    map.x = position.x;
+    map.y = position.y;
+    canvas.style.transform = `translate3d(${map.x}px, ${map.y}px, 0) scale(${map.zoom})`;
+    const label = $('[data-lineage7-zoom]');
+    if (label) label.textContent = `${Math.round(map.zoom * 100)}%`;
+  }
+
+  function fitLineage7Map() {
+    const elements = lineage7MapElements();
+    if (!elements) return;
+    const { viewport, canvas } = elements;
+    const map = lineage7MapState();
+    const canvasWidth = Math.max(1, canvas.offsetWidth || canvas.scrollWidth || 1);
+    const canvasHeight = Math.max(1, canvas.offsetHeight || canvas.scrollHeight || 1);
+    const availableWidth = Math.max(120, viewport.clientWidth - 28);
+    const availableHeight = Math.max(120, viewport.clientHeight - 28);
+    map.zoom = clamp(Math.min(availableWidth / canvasWidth, availableHeight / canvasHeight, 1), LINEAGE7_ZOOM_MIN, 1);
+    map.x = (viewport.clientWidth - canvasWidth * map.zoom) / 2;
+    map.y = (viewport.clientHeight - canvasHeight * map.zoom) / 2;
+    applyLineage7MapTransform();
+  }
+
+  function resetLineage7Map() {
+    const elements = lineage7MapElements();
+    if (!elements) return;
+    const { viewport, canvas } = elements;
+    const map = lineage7MapState();
+    map.zoom = 1;
+    map.x = (viewport.clientWidth - (canvas.offsetWidth || canvas.scrollWidth || 1)) / 2;
+    map.y = (viewport.clientHeight - (canvas.offsetHeight || canvas.scrollHeight || 1)) / 2;
+    applyLineage7MapTransform();
+  }
+
+  function zoomLineage7Map(factor, clientX, clientY) {
+    const elements = lineage7MapElements();
+    if (!elements) return;
+    const { viewport } = elements;
+    const map = lineage7MapState();
+    const oldZoom = clamp(Number(map.zoom) || 1, LINEAGE7_ZOOM_MIN, LINEAGE7_ZOOM_MAX);
+    const nextZoom = clamp(oldZoom * factor, LINEAGE7_ZOOM_MIN, LINEAGE7_ZOOM_MAX);
+    if (Math.abs(nextZoom - oldZoom) < .001) return;
+    const rect = viewport.getBoundingClientRect();
+    const pointX = Number.isFinite(clientX) ? clientX - rect.left : viewport.clientWidth / 2;
+    const pointY = Number.isFinite(clientY) ? clientY - rect.top : viewport.clientHeight / 2;
+    const contentX = (pointX - map.x) / oldZoom;
+    const contentY = (pointY - map.y) / oldZoom;
+    map.zoom = nextZoom;
+    map.x = pointX - contentX * nextZoom;
+    map.y = pointY - contentY * nextZoom;
+    applyLineage7MapTransform();
+  }
+
+  function wireLineage7Map() {
+    const elements = lineage7MapElements();
+    if (!elements || elements.viewport.dataset.lineage7Wired === 'true') return;
+    const { viewport } = elements;
+    viewport.dataset.lineage7Wired = 'true';
+    const pointers = new Map();
+    let dragPointerId = null;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let dragOriginX = 0;
+    let dragOriginY = 0;
+    let dragged = false;
+    let pinchDistance = 0;
+    const pairMetrics = () => {
+      const pair = Array.from(pointers.values()).slice(0, 2);
+      if (pair.length < 2) return null;
+      const dx = pair[1].x - pair[0].x;
+      const dy = pair[1].y - pair[0].y;
+      return { distance: Math.max(1, Math.hypot(dx, dy)), x: (pair[0].x + pair[1].x) / 2, y: (pair[0].y + pair[1].y) / 2 };
+    };
+    viewport.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) return;
+      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (pointers.size >= 2) {
+        const metrics = pairMetrics();
+        pinchDistance = metrics ? metrics.distance : 1;
+        dragPointerId = null;
+        dragged = true;
+        viewport.classList.add('is-pinching');
+        event.preventDefault();
+        return;
+      }
+      const map = lineage7MapState();
+      dragPointerId = event.pointerId;
+      dragStartX = event.clientX;
+      dragStartY = event.clientY;
+      dragOriginX = map.x;
+      dragOriginY = map.y;
+      dragged = false;
+      viewport.classList.add('is-panning');
+    });
+    viewport.addEventListener('pointermove', (event) => {
+      if (event.pointerType === 'touch' && pointers.has(event.pointerId)) pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (pointers.size >= 2 && pinchDistance) {
+        const metrics = pairMetrics();
+        if (!metrics) return;
+        event.preventDefault();
+        const factor = metrics.distance / Math.max(1, pinchDistance);
+        pinchDistance = metrics.distance;
+        zoomLineage7Map(factor, metrics.x, metrics.y);
+        return;
+      }
+      if (dragPointerId !== event.pointerId) return;
+      const deltaX = event.clientX - dragStartX;
+      const deltaY = event.clientY - dragStartY;
+      if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) dragged = true;
+      if (!dragged) return;
+      if (viewport.setPointerCapture && !viewport.hasPointerCapture(event.pointerId)) viewport.setPointerCapture(event.pointerId);
+      const map = lineage7MapState();
+      map.x = dragOriginX + deltaX;
+      map.y = dragOriginY + deltaY;
+      event.preventDefault();
+      applyLineage7MapTransform();
+    }, { passive: false });
+    const end = (event) => {
+      pointers.delete(event.pointerId);
+      if (pointers.size < 2) {
+        pinchDistance = 0;
+        viewport.classList.remove('is-pinching');
+      }
+      if (dragPointerId !== event.pointerId) return;
+      const wasDragged = dragged;
+      dragPointerId = null;
+      dragged = false;
+      viewport.classList.remove('is-panning');
+      if (event.pointerId !== undefined && viewport.hasPointerCapture && viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
+      if (wasDragged) {
+        state.pan.suppressClick = true;
+        clearTimeout(state.pan.suppressTimer);
+        state.pan.suppressTimer = setTimeout(() => { state.pan.suppressClick = false; }, 350);
+      }
+    };
+    viewport.addEventListener('pointerup', end);
+    viewport.addEventListener('pointercancel', end);
+    viewport.addEventListener('wheel', (event) => {
+      event.preventDefault();
+      zoomLineage7Map(Math.exp(-event.deltaY * .0014), event.clientX, event.clientY);
+    }, { passive: false });
+  }
+
   function renderQueryLineage7() {
     const container = $('#query-lineage7-result');
     if (!container) return;
@@ -1756,7 +1938,11 @@
     container.hidden = false;
     // “上下7代”只呈现上下七代树状世系；出继/入继关系单独在族人详情和
     // 族人信息页面查看，避免在树状结果中重复插入一整块关系卡片。
-    container.innerHTML = `<div class="query-lineage7-result-head"><div><strong>${escapeHtml(text(focus.name))} · 上下7代树状世系</strong><span>上三代 ${ancestors.length} 人 · 本人 1 人 · 下三代 ${total - ancestors.length - 1} 人</span></div><button type="button" class="query-secondary" data-action="query-lineage7-clear">重新查询</button></div><div class="query-lineage7-tree"><div class="query-lineage7-graph">${graphLevels.join('')}</div></div>`;
+    container.innerHTML = `<div class="query-lineage7-result-head"><div><strong>${escapeHtml(text(focus.name))} · 上下7代树状世系</strong><span>上三代 ${ancestors.length} 人 · 本人 1 人 · 下三代 ${total - ancestors.length - 1} 人</span></div><button type="button" class="query-secondary" data-action="query-lineage7-clear">重新查询</button></div><div class="query-lineage7-map-shell"><div class="query-lineage7-map-toolbar" role="toolbar" aria-label="上下7代世系图工具"><span>世系图</span><button type="button" data-action="query-lineage7-fit" title="适应可视区域">适应</button><button type="button" data-action="query-lineage7-zoom-out" title="缩小">−</button><output data-lineage7-zoom>100%</output><button type="button" data-action="query-lineage7-zoom-in" title="放大">＋</button><button type="button" data-action="query-lineage7-reset" title="复位到100%">复位</button></div><div class="query-lineage7-map-viewport" data-lineage7-viewport tabindex="0" aria-label="上下7代树状世系图，可缩放和平移"><div class="query-lineage7-map-canvas" data-lineage7-canvas><div class="query-lineage7-tree"><div class="query-lineage7-graph">${graphLevels.join('')}</div></div></div></div><p class="query-lineage7-map-tip">滚轮缩放，拖动平移；手机可单指拖动、双指缩放</p></div>`;
+    window.requestAnimationFrame(() => {
+      wireLineage7Map();
+      fitLineage7Map();
+    });
   }
 
   function runLineage7Query(requestedId = null) {
@@ -5850,6 +6036,10 @@
         focusQueryField('query-search');
         break;
       }
+      case 'query-lineage7-fit': fitLineage7Map(); break;
+      case 'query-lineage7-zoom-in': zoomLineage7Map(1.18); break;
+      case 'query-lineage7-zoom-out': zoomLineage7Map(1 / 1.18); break;
+      case 'query-lineage7-reset': resetLineage7Map(); break;
       case 'query-run': runQuerySearch(); break;
       case 'query-clear': clearQuery(); break;
       case 'query-relation': renderQueryRelation(); break;

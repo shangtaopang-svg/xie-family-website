@@ -1338,6 +1338,19 @@ button, input, select, textarea { color-scheme: light; }
 .query-lineage7-result-head strong { display: block; color: #315c4e; font-family: "Noto Serif SC", "Source Han Serif SC", serif; font-size: 18px; }
 .query-lineage7-result-head span { display: block; margin-top: 4px; color: #7d8981; font-size: 12px; }
 .query-lineage7-tree { display: flex; flex-direction: column; align-items: stretch; }
+.query-lineage7-map-shell { margin-top: 12px; padding: 10px; border: 1px solid #d7ded8; border-radius: 12px; background: #f4f8f3; }
+.query-lineage7-map-toolbar { display: flex; align-items: center; justify-content: flex-end; gap: 6px; min-height: 38px; padding: 0 2px 9px; border-bottom: 1px solid #dbe3dc; color: #547267; font-size: 11px; font-weight: 800; }
+.query-lineage7-map-toolbar > span { margin-right: auto; letter-spacing: .08em; }
+.query-lineage7-map-toolbar button, .query-lineage7-map-toolbar output { box-sizing: border-box; min-width: 38px; min-height: 36px; padding: 7px 9px; border: 1px solid #b9cec1; border-radius: 7px; background: #fff; color: #416556; font: inherit; text-align: center; }
+.query-lineage7-map-toolbar button { cursor: pointer; }
+.query-lineage7-map-toolbar button:hover, .query-lineage7-map-toolbar button:focus-visible { border-color: #477966; background: #e9f1eb; outline: none; }
+.query-lineage7-map-toolbar output { min-width: 56px; color: #7b6b55; background: #fffaf2; }
+.query-lineage7-map-viewport { position: relative; height: clamp(360px, 58vh, 660px); overflow: hidden; border: 1px solid #d9e1da; border-radius: 9px; background-color: #fbfcf8; background-image: linear-gradient(rgba(106, 143, 126, .08) 1px, transparent 1px), linear-gradient(90deg, rgba(106, 143, 126, .08) 1px, transparent 1px); background-size: 24px 24px; cursor: grab; touch-action: none; overscroll-behavior: contain; }
+.query-lineage7-map-viewport.is-panning { cursor: grabbing; }
+.query-lineage7-map-viewport.is-pinching { cursor: zoom-in; }
+.query-lineage7-map-canvas { display: inline-block; position: relative; width: max-content; min-width: 100%; padding: 16px 20px 22px; box-sizing: border-box; transform-origin: 0 0; will-change: transform; }
+.query-lineage7-map-canvas .query-lineage7-tree { width: max-content; min-width: 100%; overflow: visible; }
+.query-lineage7-map-tip { margin: 8px 2px 0; color: #839088; font-size: 10px; text-align: center; }
 .query-lineage7-row { position: relative; display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; align-items: center; }
 .query-lineage7-row-label { color: #8d6b56; font-size: 11px; font-weight: 800; text-align: center; }
 .query-lineage7-cards { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
@@ -1509,6 +1522,11 @@ button, input, select, textarea { color-scheme: light; }
 @media (max-width: 680px) {
   .query-lineage7-result { overflow: hidden; }
   .query-lineage7-tree { overflow-x: auto; overflow-y: visible; padding-bottom: 5px; }
+  .query-lineage7-map-shell { margin-inline: -4px; padding: 8px; }
+  .query-lineage7-map-toolbar { gap: 5px; }
+  .query-lineage7-map-toolbar button, .query-lineage7-map-toolbar output { min-width: 42px; min-height: 42px; padding: 8px 9px; }
+  .query-lineage7-map-viewport { height: min(62vh, 620px); min-height: 360px; }
+  .query-lineage7-map-canvas { padding: 14px 16px 20px; }
   .query-lineage7-graph { min-width: 100%; width: max-content; min-width: 620px; padding-inline: 12px; }
   .query-lineage7-graph-label { left: 6px; width: 38px; font-size: 9px; }
   .query-lineage7-graph-cards { margin-left: 38px; gap: 8px; max-width: none; }
