@@ -141,9 +141,15 @@
             <button type="button" data-action="mobile-query-route" data-route="info">族人信息</button>
           </nav>
 
-          <div id="mobile-generation-actions" class="mobile-generation-actions" hidden>
-            <button type="button" data-action="mobile-generation-single">查第几世</button>
-            <button type="button" data-action="mobile-generation-range">查第几世到第几世</button>
+          <div id="query-generation-actions" class="query-generation-actions" hidden aria-label="按世次查询">
+            <div class="query-generation-action-card">
+              <label for="query-generation-single">查第几世</label>
+              <div class="query-generation-action-row"><input id="query-generation-single" type="number" min="1" max="165" inputmode="numeric" placeholder="例如 160"><button type="button" data-action="query-generation-single">查询</button></div>
+            </div>
+            <div class="query-generation-action-card">
+              <label>查第几世到第几世</label>
+              <div class="query-generation-action-row"><input id="query-generation-from" type="number" min="1" max="165" inputmode="numeric" placeholder="起始"><span>—</span><input id="query-generation-to" type="number" min="1" max="165" inputmode="numeric" placeholder="结束"><button type="button" data-action="query-generation-range">查询</button></div>
+            </div>
           </div>
 
           <div id="query-stats" class="query-stat-grid" aria-label="族谱统计"></div>

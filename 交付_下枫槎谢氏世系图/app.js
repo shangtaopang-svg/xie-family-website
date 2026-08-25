@@ -1455,10 +1455,10 @@
       if (!eraGenerations.length) return '';
       const firstIndex = generations.indexOf(eraGenerations[0]);
       const lastIndex = generations.indexOf(eraGenerations[eraGenerations.length - 1]);
-      const left = 8 + firstIndex * 32;
-      const width = (lastIndex - firstIndex) * 32 + 28;
+      const left = 8 + firstIndex * 26;
+      const width = (lastIndex - firstIndex) * 26 + 24;
       const bracketTop = 12 + index * 34;
-      const timelineBarTop = 174;
+      const timelineBarTop = 148;
       const guideHeight = Math.max(12, timelineBarTop - bracketTop - 24);
       return `<div class="query-era-bracket ${era.className}" style="top:${bracketTop}px;left:${left}px;width:${width}px;--era-guide-height:${guideHeight}px" aria-label="${era.label}，闭区间[${era.from},${era.to}]"><i class="era-bracket-line"></i><b class="era-bracket-arrow">▶</b><strong>${era.label}</strong><b class="era-bracket-arrow">◀</b><i class="era-bracket-line"></i><span class="era-bracket-guide era-bracket-guide-start"></span><span class="era-bracket-guide era-bracket-guide-end"></span><span class="era-bracket-endpoint era-bracket-endpoint-start">${era.startLabel}</span><span class="era-bracket-endpoint era-bracket-endpoint-end">${era.endLabel}</span></div>`;
     }).join('');
@@ -1517,14 +1517,15 @@
     if (!container) return;
     const generation = Number(state.query.genFrom) || 0;
     const to = Number(state.query.genTo) || 0;
-    if (!generation || generation !== to) {
+    if (!generation || !to || generation > to) {
       container.hidden = true;
       container.innerHTML = '';
       return;
     }
-    const people = queryPeople().filter((person) => generationOf(person) === generation).sort((a, b) => Number(personId(a)) - Number(personId(b)));
+    const people = queryPeople().filter((person) => { const personGeneration = generationOf(person); return personGeneration >= generation && personGeneration <= to; }).sort((a, b) => Number(personId(a)) - Number(personId(b)));
+    const heading = generation === to ? `第${generation}世族人完整信息` : `第${generation}—${to}世族人完整信息`;
     container.hidden = false;
-    container.innerHTML = `<div class="generation-detail-head"><div><span class="query-kicker">GENERATION RECORDS</span><h4>第${generation}世族人完整信息</h4><p>共 ${people.length} 人；配偶资料优先显示独立人物记录，同时保留上册 / 下册原始谱载。</p></div><button class="query-secondary" type="button" data-action="query-generation-close">收起本世代</button></div><div class="generation-detail-list">${people.length ? people.map(generationPersonCard).join('') : '<p class="query-muted">本世代暂无记录。</p>'}</div>`;
+    container.innerHTML = `<div class="generation-detail-head"><div><span class="query-kicker">GENERATION RECORDS</span><h4>${heading}</h4><p>共 ${people.length} 人；配偶资料优先显示独立人物记录，同时保留上册 / 下册原始谱载。</p></div><button class="query-secondary" type="button" data-action="query-generation-close">收起查询</button></div><div class="generation-detail-list">${people.length ? people.map(generationPersonCard).join('') : '<p class="query-muted">本范围暂无记录。</p>'}</div>`;
   }
 
   function queryAdoptionLabel(person) {
@@ -1943,7 +1944,7 @@
     const title = drawer && drawer.querySelector('.query-drawer-head h3');
     if (title) title.textContent = mode === 'people' ? '查族人' : mode === 'generation' ? '查世代' : mode === 'info' ? '族人信息' : '查关系';
     const peopleTitle = $('.query-people-section h4');
-    if (peopleTitle) peopleTitle.textContent = mode === 'generation' ? '按世次查看族人' : '查找族人';
+    if (peopleTitle) peopleTitle.textContent = mode === 'generation' ? '按世次查看族人' : '';
     $$('.mobile-query-switcher [data-route]').forEach((button) => {
       const active = button.dataset.route === mode;
       button.classList.toggle('is-active', active);
@@ -1953,15 +1954,15 @@
     const generation = $('.query-timeline-section');
     const relation = $('.query-relation-section');
     const adoption = $('.query-adoption-section');
+    const generationActions = $('#query-generation-actions');
     if (people) people.hidden = mode !== 'people';
     if (generation) generation.hidden = !['generation', 'info'].includes(mode);
     if (relation) relation.hidden = mode !== 'relation';
-    if (adoption) adoption.hidden = !['generation', 'info'].includes(mode);
-    const generationActions = $('#mobile-generation-actions');
+    if (adoption) adoption.hidden = mode !== 'info';
     if (generationActions) generationActions.hidden = mode !== 'generation';
     renderQueryDashboard();
     if (mode === 'people') focusQueryField('query-search');
-    if (mode === 'generation') focusQueryField('query-gen-from');
+    if (mode === 'generation') focusQueryField('query-generation-single');
     if (mode === 'relation') focusQueryField('query-relation-a');
   }
 
@@ -2078,9 +2079,34 @@
     state.query.genTo = String(generation);
     const from = $('#query-gen-from'); const to = $('#query-gen-to');
     if (from) from.value = String(generation); if (to) to.value = String(generation);
+    const single = $('#query-generation-single'); const rangeFrom = $('#query-generation-from'); const rangeTo = $('#query-generation-to');
+    if (single) single.value = String(generation); if (rangeFrom) rangeFrom.value = String(generation); if (rangeTo) rangeTo.value = String(generation);
     renderQueryTimeline();
     renderQuerySearchResults();
     showToast(`已筛选第${generation}世，点击结果即可定位人物`);
+  }
+
+  function runGenerationQuery(kind) {
+    const single = $('#query-generation-single');
+    const rangeFrom = $('#query-generation-from');
+    const rangeTo = $('#query-generation-to');
+    let from = kind === 'single' ? Number(single && single.value) : Number(rangeFrom && rangeFrom.value);
+    let to = kind === 'single' ? from : Number(rangeTo && rangeTo.value);
+    if (!Number.isInteger(from) || from < 1 || from > 165 || !Number.isInteger(to) || to < 1 || to > 165) {
+      showToast('请输入有效的世次数字（1—165）');
+      return;
+    }
+    if (from > to) [from, to] = [to, from];
+    state.query.genFrom = String(from);
+    state.query.genTo = String(to);
+    const oldFrom = $('#query-gen-from'); const oldTo = $('#query-gen-to');
+    if (oldFrom) oldFrom.value = String(from); if (oldTo) oldTo.value = String(to);
+    if (single) single.value = kind === 'single' ? String(from) : '';
+    if (rangeFrom) rangeFrom.value = String(from); if (rangeTo) rangeTo.value = String(to);
+    renderQueryTimeline();
+    renderQuerySearchResults();
+    const people = queryPeople().filter((person) => { const generation = generationOf(person); return generation >= from && generation <= to; });
+    showToast(kind === 'single' ? `已查询第${from}世，共${people.length}人` : `已查询第${from}—${to}世，共${people.length}人`);
   }
 
   function formatZoom() {
@@ -5498,6 +5524,8 @@
       case 'mobile-query-route': openMobileQueryRoute(element.dataset.route); break;
       case 'mobile-generation-single': chooseGenerationQuery('single'); break;
       case 'mobile-generation-range': chooseGenerationQuery('range'); break;
+      case 'query-generation-single': runGenerationQuery('single'); break;
+      case 'query-generation-range': runGenerationQuery('range'); break;
       case 'mobile-back': mobileBackOneLevel(); break;
       case 'query-run': runQuerySearch(); break;
       case 'query-clear': clearQuery(); break;
@@ -5506,7 +5534,14 @@
         state.query.adoptionTableOpen = !state.query.adoptionTableOpen;
         renderAdoptionTable();
         break;
-      case 'query-locate': selectPerson(id, { forceRender: true }); break;
+      case 'query-locate': {
+        const openDetails = text(element.textContent).trim() === '详情';
+        selectPerson(id, { forceRender: true });
+        if (openDetails && isMobileViewport()) {
+          window.setTimeout(() => $('#detail-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 40);
+        }
+        break;
+      }
       case 'root-trace': openRootTrace(id); break;
       case 'toggle-root-trace-fullscreen': toggleRootTraceFullscreen(); break;
       case 'close-root-trace': closeRootTrace(); break;
