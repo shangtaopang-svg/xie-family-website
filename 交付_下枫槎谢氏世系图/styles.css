@@ -1818,7 +1818,8 @@ body[data-app-mode="public"] .tree-viewport {
     height: 100%;
     max-height: none;
     overflow: auto;
-    padding: max(18px, env(safe-area-inset-top)) 14px max(18px, env(safe-area-inset-bottom));
+    /* 浏览器已经把系统状态栏从视口中扣除，不再重复叠加 safe-area 顶部留白。 */
+    padding: 8px 14px max(18px, env(safe-area-inset-bottom));
     border: 1px solid #c8d8cb;
     border-radius: 0;
     background: rgba(251, 253, 249, .82);
