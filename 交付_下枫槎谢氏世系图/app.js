@@ -1550,7 +1550,7 @@
     const rows = visible.map((person) => {
       const gender = genderLabel(person);
       const adoption = queryAdoptionLabel(person);
-      return `<div class="query-result-row"><span>${escapeHtml(generationOf(person) || '—')}</span><button type="button" data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}${adoption ? ` <em class="query-result-tag adopt">${escapeHtml(adoption)}</em>` : ''}</button><span class="query-result-tag${gender === '女' ? ' female' : ''}">${escapeHtml(gender)}</span><span>${escapeHtml(text(person.branch) || '未标注')}</span><span>${escapeHtml(lifeStatusLabel(person))}</span><span class="query-result-actions"><button type="button" data-action="query-detail" data-id="${escapeHtml(personId(person))}">详情</button><button type="button" class="root-trace-trigger" data-action="root-trace" data-id="${escapeHtml(personId(person))}">寻根</button></span></div>`;
+      return `<div class="query-result-row"><span>${escapeHtml(generationOf(person) || '—')}</span><button type="button" data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}${adoption ? ` <em class="query-result-tag adopt">${escapeHtml(adoption)}</em>` : ''}</button><span class="query-result-tag${gender === '女' ? ' female' : ''}">${escapeHtml(gender)}</span><span>${escapeHtml(text(person.branch) || '未标注')}</span><span>${escapeHtml(lifeStatusLabel(person))}</span><span class="query-result-actions"><button type="button" data-action="query-detail" data-id="${escapeHtml(personId(person))}">详情</button><button type="button" data-action="query-lineage7" data-id="${escapeHtml(personId(person))}">7代人</button><button type="button" class="root-trace-trigger" data-action="root-trace" data-id="${escapeHtml(personId(person))}">寻根</button></span></div>`;
     }).join('');
     container.innerHTML = head + rows;
   }
@@ -1759,10 +1759,16 @@
     container.innerHTML = `<div class="query-lineage7-result-head"><div><strong>${escapeHtml(text(focus.name))} · 上下7代树状世系</strong><span>上三代 ${ancestors.length} 人 · 本人 1 人 · 下三代 ${total - ancestors.length - 1} 人</span></div><button type="button" class="query-secondary" data-action="query-lineage7-clear">重新查询</button></div><div class="query-lineage7-tree"><div class="query-lineage7-graph">${graphLevels.join('')}</div></div>`;
   }
 
-  function runLineage7Query() {
-    const input = $('#query-lineage7-name');
-    const keyword = text(input && input.value).trim();
+  function runLineage7Query(requestedId = null) {
     const result = $('#query-lineage7-result');
+    const requestedPerson = requestedId ? getPerson(requestedId) : null;
+    if (requestedPerson) {
+      state.query.lineage7Id = personId(requestedPerson);
+      renderQueryLineage7();
+      return;
+    }
+    const input = $('#query-search');
+    const keyword = text(input && input.value || state.query.keyword).trim();
     if (!keyword) {
       state.query.lineage7Id = null;
       if (result) { result.hidden = false; result.innerHTML = '<p class="query-muted query-lineage7-empty">请输入要查询的族人姓名。</p>'; }
@@ -2238,7 +2244,7 @@
     if (mode === 'people') focusQueryField('query-search');
     if (mode === 'generation') focusQueryField('query-generation-single');
     if (mode === 'relation') focusQueryField('query-relation-a');
-    if (mode === 'lineage') focusQueryField('query-lineage7-name');
+    if (mode === 'lineage') focusQueryField('query-search');
   }
 
   function openMobileQueryRoute(route) {
@@ -2333,7 +2339,7 @@
     state.query.gender = '';
     state.query.alive = '';
     state.query.lineage7Id = null;
-    ['query-search', 'query-gen-from', 'query-gen-to', 'query-gender', 'query-alive', 'query-lineage7-name'].forEach((id) => { const input = $(`#${id}`); if (input) input.value = ''; });
+    ['query-search', 'query-gen-from', 'query-gen-to', 'query-gender', 'query-alive'].forEach((id) => { const input = $(`#${id}`); if (input) input.value = ''; });
     renderQueryDashboard();
   }
 
@@ -5834,13 +5840,14 @@
       case 'mobile-generation-range': chooseGenerationQuery('range'); break;
       case 'query-generation-single': runGenerationQuery('single'); break;
       case 'query-generation-range': runGenerationQuery('range'); break;
-      case 'query-lineage7': runLineage7Query(); break;
+      case 'query-lineage7':
+        setMobileQueryMode('people');
+        runLineage7Query(id);
+        break;
       case 'query-lineage7-clear': {
         state.query.lineage7Id = null;
-        const lineageInput = $('#query-lineage7-name');
-        if (lineageInput) lineageInput.value = '';
         renderQueryLineage7();
-        focusQueryField('query-lineage7-name');
+        focusQueryField('query-search');
         break;
       }
       case 'query-run': runQuerySearch(); break;
@@ -6187,11 +6194,6 @@
       handleAction(target.dataset.action, target);
     });
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' && event.target && event.target.id === 'query-lineage7-name' && !event.isComposing) {
-        event.preventDefault();
-        runLineage7Query();
-        return;
-      }
       const rootTrace = $('#root-trace-modal');
       if (event.key === 'Escape' && rootTrace && !rootTrace.hidden) {
         event.preventDefault();

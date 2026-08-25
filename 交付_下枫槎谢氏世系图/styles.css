@@ -140,6 +140,7 @@ body.is-global-nav-open { overflow: hidden; }
 
 /* 查询结果操作按钮：移动端与电脑端均保持清晰、可点击的按钮形态。 */
 .query-result-actions [data-action="query-detail"],
+.query-result-actions [data-action="query-lineage7"],
 .query-result-actions [data-action="root-trace"] {
   box-sizing: border-box;
   display: inline-flex;
@@ -158,20 +159,26 @@ body.is-global-nav-open { overflow: hidden; }
   transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
 }
 .query-result-actions [data-action="query-detail"] { border-color: #5f8d79; background: #e8f3ec; color: #285c48; }
+.query-result-actions [data-action="query-lineage7"] { border-color: #9d8a4a; background: #fff7d9; color: #765d22; }
 .query-result-actions [data-action="root-trace"] { border-color: #b77859; background: #fff0e6; color: #934b38; }
 .query-result-actions [data-action="query-detail"]:hover,
+.query-result-actions [data-action="query-lineage7"]:hover,
 .query-result-actions [data-action="root-trace"]:hover,
 .query-result-actions [data-action="query-detail"]:focus-visible,
+.query-result-actions [data-action="query-lineage7"]:focus-visible,
 .query-result-actions [data-action="root-trace"]:focus-visible { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(53,67,61,.14); text-decoration: none; outline: none; }
 .query-result-actions [data-action="query-detail"]:hover,
 .query-result-actions [data-action="query-detail"]:focus-visible { background: #cfe6d8; }
 .query-result-actions [data-action="root-trace"]:hover,
 .query-result-actions [data-action="root-trace"]:focus-visible { background: #f5d0bc; }
+.query-result-actions [data-action="query-lineage7"]:hover,
+.query-result-actions [data-action="query-lineage7"]:focus-visible { background: #f6e9ad; }
 
 @media (max-width: 680px) {
   .query-result-row { grid-template-columns: 45px minmax(80px,1fr) 42px 158px; }
   .query-result-actions { gap: 5px; }
   .query-result-actions [data-action="query-detail"],
+  .query-result-actions [data-action="query-lineage7"],
   .query-result-actions [data-action="root-trace"] { min-width: 74px; min-height: 44px; padding: 8px 10px; font-size: 13px; border-radius: 8px; }
 }
 
@@ -1325,9 +1332,7 @@ button, input, select, textarea { color-scheme: light; }
 .query-era-label strong { font-size: 13px; font-weight: 700; color: #42584f; }
 .query-section-head h4 { margin: 3px 0 0; color: var(--ink-strong); font-family: "Noto Serif SC", "Source Han Serif SC", serif; font-size: 15px; letter-spacing: .08em; }
 .query-section-head a { color: #8d523f; font-size: 11px; text-decoration: none; }.query-section-head a:hover { text-decoration: underline; }
-.query-lineage7-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 10px; }
-.query-lineage7-field { min-width: 0; }
-.query-lineage7-submit { min-height: 42px; white-space: nowrap; }
+.query-lineage7-section > .query-section-head { margin-bottom: 0; }
 .query-lineage7-result { margin-top: 14px; padding-top: 14px; border-top: 1px solid #ded8ce; }
 .query-lineage7-result-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
 .query-lineage7-result-head strong { display: block; color: #315c4e; font-family: "Noto Serif SC", "Source Han Serif SC", serif; font-size: 18px; }
@@ -2140,9 +2145,7 @@ body[data-app-mode="public"] .tree-viewport {
   body[data-app-mode="public"] .query-drawer[data-mobile-mode="relation"] .query-people-section { display: none; }
   body[data-app-mode="public"] .query-drawer[data-mobile-mode="generation"] .query-form-grid .query-field:has(select) { display: none; }
   body[data-app-mode="public"] .query-drawer .query-close { display: none !important; }
-  body[data-app-mode="public"] .query-lineage7-form { grid-template-columns: 1fr; gap: 8px; }
   body[data-app-mode="public"] .query-drawer[data-mobile-mode="people"] .query-lineage7-section { margin-top: 14px; padding-top: 14px; border-top: 1px solid #ded8ce; }
-  body[data-app-mode="public"] .query-lineage7-submit { width: 100%; }
   body[data-app-mode="public"] .query-lineage7-result-head { align-items: flex-start; }
   body[data-app-mode="public"] .query-lineage7-result-head strong { font-size: 17px; }
   body[data-app-mode="public"] .query-lineage7-row { grid-template-columns: 42px minmax(0, 1fr); gap: 7px; }
@@ -2458,18 +2461,20 @@ body[data-app-mode="public"] .tree-viewport {
   }
 }
 
-/* 最终覆盖：手机查询结果必须完整显示“详情”和“寻根”两个按钮。 */
+/* 最终覆盖：查询结果必须完整显示“详情”“7代人”和“寻根”三个按钮。 */
 @media (max-width: 680px) {
   .query-result-row:not(.query-result-head) {
-    grid-template-columns: 40px minmax(0, 1fr) 42px 154px !important;
+    grid-template-columns: 40px minmax(0, 1fr) 42px !important;
     min-width: 0 !important;
   }
   .query-result-actions {
+    grid-column: 1 / -1;
     display: flex !important;
     gap: 5px !important;
     overflow: visible !important;
   }
   .query-result-actions [data-action="query-detail"],
+  .query-result-actions [data-action="query-lineage7"],
   .query-result-actions [data-action="root-trace"] {
     flex: 0 0 74px;
     width: 74px;
@@ -2478,5 +2483,11 @@ body[data-app-mode="public"] .tree-viewport {
     padding: 8px 10px;
     border-radius: 8px;
     font-size: 13px;
+  }
+}
+
+@media (min-width: 681px) {
+  .query-result-row:not(.query-result-head) {
+    grid-template-columns: 52px minmax(95px, 1fr) 56px minmax(105px, 1.35fr) 76px 226px;
   }
 }
