@@ -2141,6 +2141,8 @@ body[data-app-mode="public"] .tree-viewport {
   body[data-app-mode="public"] .query-drawer[data-mobile-mode="generation"] .query-form-grid .query-field:has(select) { display: none; }
   body[data-app-mode="public"] .query-drawer .query-close { display: none !important; }
   body[data-app-mode="public"] .query-lineage7-form { grid-template-columns: 1fr; gap: 8px; }
+  body[data-app-mode="public"] .query-drawer[data-mobile-mode="people"] .query-lineage-view-block { display: none; }
+  body[data-app-mode="public"] .query-drawer[data-mobile-mode="people"] .query-lineage7-section { margin-top: 14px; padding-top: 14px; border-top: 1px solid #ded8ce; }
   body[data-app-mode="public"] .query-lineage7-submit { width: 100%; }
   body[data-app-mode="public"] .query-lineage7-result-head { align-items: flex-start; }
   body[data-app-mode="public"] .query-lineage7-result-head strong { font-size: 17px; }

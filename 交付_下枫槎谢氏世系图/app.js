@@ -2229,7 +2229,8 @@
     if (generation) generation.hidden = !['generation', 'info'].includes(mode);
     if (relation) relation.hidden = mode !== 'relation';
     if (adoption) adoption.hidden = mode !== 'info';
-    if (lineage7) lineage7.hidden = mode !== 'lineage';
+    // “上下7代”属于查族人的延伸查询，不再放在查世系图入口中。
+    if (lineage7) lineage7.hidden = mode !== 'people';
     if (generationActions) generationActions.hidden = mode !== 'generation';
     renderQueryDashboard();
     if (mode === 'people') focusQueryField('query-search');
@@ -2253,7 +2254,7 @@
     if (!VIEW_DEFS[view]) return;
     switchView(view);
     // 切换远古、申伯、本宗等世系图时保留“查世系图”面板，
-    // 这样用户仍可继续使用“查某人上下7代”，不会因换图而丢失查询入口。
+    // “上下7代”统一从“查族人”页面进入。
     if (!state.query.open) toggleQueryDrawer();
     setMobileQueryMode('lineage');
   }
