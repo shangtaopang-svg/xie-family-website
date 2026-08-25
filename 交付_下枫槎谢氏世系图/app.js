@@ -2687,8 +2687,8 @@
     const y = Number(pan.y) || 0;
     const zoom = Math.max(.001, Number(state.zoom) || 1);
     const overviewCanvas = state.overviewCanvas && state.overviewCanvas.active ? state.overviewCanvas : null;
-    if (overviewCanvas && overviewCanvas.canvas) {
-      overviewCanvas.canvas.style.transform = `translate3d(${x}px, ${y}px, 0) scale3d(${zoom}, ${zoom}, 1)`;
+    if (overviewCanvas && overviewCanvas.layer) {
+      overviewCanvas.layer.style.transform = `translate3d(${x}px, ${y}px, 0) scale3d(${zoom}, ${zoom}, 1)`;
       return;
     }
     if (state.overviewMode) {
@@ -2842,7 +2842,7 @@
     else setTimeout(restore, 0);
   }
 
-  function fitOverview() {
+  function fitOverview(options = {}) {
     const viewport = $('#tree-viewport');
     const stage = $('#tree-stage');
     if (!viewport || !stage || !stage.innerHTML.trim()) return;
@@ -2857,30 +2857,48 @@
     const availableWidth = Math.max(1, viewport.clientWidth - 12);
     const availableHeight = Math.max(1, viewport.clientHeight - 12);
     const fit = Math.min(availableWidth / contentWidth, availableHeight / contentHeight) * .96;
-    state.zoom = Math.max(.005, Math.min(1.8, fit));
+    const readable = Boolean(options && options.readable && canvasMap);
+    if (readable) {
+      // 全展开时不再把 1,253 张卡片压成一张“看不清的缩略图”。
+      // 先以可读比例聚焦当前人物，用户仍可点击“全景”回到完整缩略图。
+      state.zoom = Math.max(.55, Math.min(.9, fit * 45));
+    } else {
+      state.zoom = Math.max(.005, Math.min(1.8, fit));
+    }
     // 全景图可能因为横向跨度很大而缩到很小；把实际图面居中，避免它贴在左上角看起来像“消失”。
     const fittedWidth = contentWidth * state.zoom;
     const fittedHeight = contentHeight * state.zoom;
-    state.mapPan = {
-      x: Math.max(0, (availableWidth - fittedWidth) / 2),
-      y: Math.max(0, (availableHeight - fittedHeight) / 2)
-    };
+    if (readable && canvasMap.nodes.length) {
+      const focusId = state.selectedId || canvasMap.nodes[0].id;
+      const focusNode = canvasMap.nodeById.get(String(focusId)) || canvasMap.nodes[0];
+      state.mapPan = {
+        x: Math.round(availableWidth / 2 - (focusNode.x + focusNode.width / 2) * state.zoom),
+        y: Math.round(Math.max(24, availableHeight * .22) - (focusNode.y + focusNode.height / 2) * state.zoom)
+      };
+    } else {
+      state.mapPan = {
+        x: Math.max(0, (availableWidth - fittedWidth) / 2),
+        y: Math.max(0, (availableHeight - fittedHeight) / 2)
+      };
+    }
     applyZoom();
     viewport.scrollLeft = 0;
     viewport.scrollTop = 0;
     renderMiniMap();
-    showToast(`已适应屏幕 · ${formatZoom()}，拖拽图面可四向平移`);
+    showToast(readable ? `已进入可读浏览 · ${formatZoom()}，可拖拽查看各分支；“全景”可看整图` : `已适应屏幕 · ${formatZoom()}，拖拽图面可四向平移`);
   }
 
-  // 总览图的高性能浏览层：保留一次 DOM 排版作为“几何真值”，之后用 Canvas
-  // 承担全量卡片的绘制、缩放和平移，避免操作时反复重排数百个 DOM 节点。
+  // 总览图浏览层：保留一次 DOM 排版作为“几何真值”，之后用 SVG
+  // 承担全量卡片的绘制、缩放和平移。SVG 保证文字和线条在放大时不糊。
   function deactivateOverviewCanvas() {
     const stage = $('#tree-stage');
     const canvasWrap = $('#tree-canvas');
+    const viewport = $('#tree-viewport');
     const map = state.overviewCanvas;
-    if (map && map.canvas && map.canvas.parentNode) map.canvas.parentNode.removeChild(map.canvas);
+    if (map && map.layer && map.layer.parentNode) map.layer.parentNode.removeChild(map.layer);
     if (stage && map) stage.style.display = map.stageDisplay || '';
     canvasWrap?.classList.remove('overview-canvas-active');
+    viewport?.classList.remove('overview-canvas-viewport');
     state.overviewCanvas = null;
   }
 
@@ -2914,70 +2932,18 @@
 
   function drawOverviewCanvas() {
     const map = state.overviewCanvas;
-    if (!map || !map.active || !map.ctx) return;
-    const { ctx, baseWidth, baseHeight, renderScale } = map;
-    ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
-    ctx.clearRect(0, 0, baseWidth, baseHeight);
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    // 先画父子连接线，确保卡片始终压在线条上方。
-    ctx.strokeStyle = '#91aaa0';
-    ctx.lineWidth = 1.5;
-    map.edges.forEach(({ parent, child }) => {
-      const startX = parent.x + parent.width / 2;
-      const startY = parent.y + parent.height;
-      const endX = child.x + child.width / 2;
-      const endY = child.y;
-      const middleY = startY + Math.max(8, (endY - startY) * .5);
-      ctx.beginPath();
-      ctx.moveTo(startX, startY);
-      ctx.lineTo(startX, middleY);
-      ctx.lineTo(endX, middleY);
-      ctx.lineTo(endX, endY);
-      ctx.stroke();
-    });
-    map.adoptionEdges.forEach(({ from, to }) => {
-      ctx.save();
-      ctx.setLineDash([5, 4]);
-      ctx.strokeStyle = '#b85a4a';
-      ctx.lineWidth = 1.8;
-      ctx.beginPath();
-      ctx.moveTo(from.x + from.width / 2, from.y + from.height);
-      ctx.bezierCurveTo(from.x + from.width / 2, from.y + from.height + 18, to.x + to.width / 2, to.y - 18, to.x + to.width / 2, to.y);
-      ctx.stroke();
-      ctx.restore();
-    });
-
+    if (!map || !map.active || !map.svgNodeById) return;
     map.nodes.forEach((node) => {
-      const colors = overviewCanvasColors(node);
+      const group = map.svgNodeById.get(String(node.id));
+      if (!group) return;
       const selected = String(node.id) === String(state.selectedId);
-      ctx.save();
-      canvasRoundRect(ctx, node.x, node.y, node.width, node.height, Math.min(8, node.height * .16));
-      ctx.fillStyle = colors.fill;
-      ctx.fill();
-      ctx.lineWidth = selected ? 3 : 1.25;
-      ctx.strokeStyle = selected ? '#c47743' : colors.stroke;
-      ctx.stroke();
-      if (node.isVerified) {
-        ctx.fillStyle = '#b94c49';
-        ctx.font = '700 13px Arial, sans-serif';
-        ctx.textAlign = 'right';
-        ctx.fillText('★', node.x + node.width - 5, node.y + 15);
+      const colors = overviewCanvasColors(node);
+      const card = group.querySelector('.overview-svg-card');
+      group.classList.toggle('is-selected', selected);
+      if (card) {
+        card.setAttribute('stroke', selected ? '#c47743' : colors.stroke);
+        card.setAttribute('stroke-width', selected ? '3' : '1.25');
       }
-      ctx.textAlign = 'left';
-      ctx.fillStyle = colors.text;
-      ctx.font = `600 ${Math.max(8, Math.min(11, node.height * .18))}px "Microsoft YaHei", sans-serif`;
-      ctx.fillText(node.generation, node.x + 6, node.y + 13);
-      ctx.font = `700 ${Math.max(10, Math.min(15, node.height * .25))}px "Microsoft YaHei", sans-serif`;
-      ctx.fillText(node.name, node.x + 6, node.y + Math.min(node.height - 7, Math.max(27, node.height * .58)));
-      if (node.route && node.height > 34) {
-        ctx.fillStyle = colors.text;
-        ctx.globalAlpha = .78;
-        ctx.font = `500 ${Math.max(7, Math.min(9, node.height * .14))}px "Microsoft YaHei", sans-serif`;
-        ctx.fillText(node.route, node.x + 6, node.y + node.height - 7);
-      }
-      ctx.restore();
     });
   }
 
@@ -3037,31 +3003,75 @@
     const bottom = nodes.reduce((max, node) => Math.max(max, node.y + node.height), 0);
     const baseWidth = Math.max(1, stage.scrollWidth, right + 44);
     const baseHeight = Math.max(1, stage.scrollHeight, bottom + 44);
-    const maxPixels = 16000000;
-    const renderScale = Math.max(.35, Math.min(1.25, window.devicePixelRatio || 1, Math.sqrt(maxPixels / Math.max(1, baseWidth * baseHeight))));
-    const canvas = document.createElement('canvas');
-    canvas.className = 'overview-canvas-layer';
-    canvas.width = Math.max(1, Math.ceil(baseWidth * renderScale));
-    canvas.height = Math.max(1, Math.ceil(baseHeight * renderScale));
-    canvas.style.width = `${Math.ceil(baseWidth)}px`;
-    canvas.style.height = `${Math.ceil(baseHeight)}px`;
-    canvas.setAttribute('aria-label', '总世系图全景图，点击人物查看详情');
-    canvasWrap.appendChild(canvas);
-    canvasWrap.classList.add('overview-canvas-active');
-    const map = {
-      active: true, canvas, ctx: canvas.getContext('2d'), nodes, nodeById, edges, adoptionEdges,
-      baseWidth, baseHeight, renderScale, stageDisplay: stage.style.display || ''
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.classList.add('overview-svg-layer');
+    svg.setAttribute('viewBox', `0 0 ${baseWidth} ${baseHeight}`);
+    svg.setAttribute('width', String(Math.ceil(baseWidth)));
+    svg.setAttribute('height', String(Math.ceil(baseHeight)));
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', '总世系图全景图，点击人物查看详情');
+    svg.setAttribute('focusable', 'false');
+    const makeSvg = (tag, attrs = {}) => {
+      const element = document.createElementNS(svgNS, tag);
+      Object.entries(attrs).forEach(([key, value]) => element.setAttribute(key, String(value)));
+      return element;
     };
+    const edgeLayer = makeSvg('g', { class: 'overview-svg-edges' });
+    const nodeLayer = makeSvg('g', { class: 'overview-svg-nodes' });
+    svg.append(edgeLayer, nodeLayer);
+    edges.forEach(({ parent, child }) => {
+      const startX = parent.x + parent.width / 2;
+      const startY = parent.y + parent.height;
+      const endX = child.x + child.width / 2;
+      const endY = child.y;
+      const middleY = startY + Math.max(8, (endY - startY) / 2);
+      edgeLayer.append(makeSvg('path', { d: `M ${startX} ${startY} V ${middleY} H ${endX} V ${endY}`, class: 'overview-svg-parent-edge' }));
+    });
+    adoptionEdges.forEach(({ from, to }) => {
+      const startX = from.x + from.width / 2;
+      const startY = from.y + from.height;
+      const endX = to.x + to.width / 2;
+      const endY = to.y + to.height / 2;
+      const bend = Math.max(20, Math.abs(endX - startX) * .25);
+      edgeLayer.append(makeSvg('path', { d: `M ${startX} ${startY} C ${startX + bend} ${startY + 14}, ${endX - bend} ${endY - 14}, ${endX} ${endY}`, class: 'overview-svg-adoption-edge' }));
+    });
+    const svgNodeById = new Map();
+    nodes.forEach((node) => {
+      const colors = overviewCanvasColors(node);
+      const group = makeSvg('g', { class: 'overview-svg-node', 'data-overview-id': node.id, tabindex: '-1' });
+      const card = makeSvg('rect', { x: node.x, y: node.y, width: node.width, height: node.height, rx: Math.min(8, node.height * .16), class: 'overview-svg-card', fill: colors.fill, stroke: colors.stroke, 'stroke-width': 1.25 });
+      group.append(card);
+      if (node.isVerified) {
+        const star = makeSvg('text', { x: node.x + node.width - 5, y: node.y + 15, class: 'overview-svg-star', 'text-anchor': 'end' });
+        star.textContent = '★';
+        group.append(star);
+      }
+      const generation = makeSvg('text', { x: node.x + 6, y: node.y + 13, class: 'overview-svg-generation' });
+      generation.textContent = node.generation;
+      group.append(generation);
+      const name = makeSvg('text', { x: node.x + 6, y: node.y + Math.min(node.height - 7, Math.max(27, node.height * .58)), class: 'overview-svg-name' });
+      name.textContent = node.name;
+      group.append(name);
+      if (node.route && node.height > 34) {
+        const route = makeSvg('text', { x: node.x + 6, y: node.y + node.height - 7, class: 'overview-svg-route' });
+        route.textContent = node.route;
+        group.append(route);
+      }
+      nodeLayer.append(group);
+      svgNodeById.set(String(node.id), group);
+    });
+    canvasWrap.appendChild(svg);
+    canvasWrap.classList.add('overview-canvas-active');
+    viewport.classList.add('overview-canvas-viewport');
+    const map = { active: true, layer: svg, svgNodeById, nodes, nodeById, edges, adoptionEdges, baseWidth, baseHeight, stageDisplay: stage.style.display || '' };
     state.overviewCanvas = map;
     state.overviewMetrics = { width: baseWidth, height: baseHeight };
     stage.style.display = 'none';
-    canvas.addEventListener('click', (event) => {
+    svg.addEventListener('click', (event) => {
       if (state.pan.suppressClick) return;
-      const rect = canvas.getBoundingClientRect();
-      const zoom = Math.max(.001, Number(state.zoom) || 1);
-      const x = (event.clientX - rect.left) / zoom;
-      const y = (event.clientY - rect.top) / zoom;
-      const node = nodes.slice().reverse().find((item) => x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height);
+      const group = event.target.closest?.('[data-overview-id]');
+      const node = group ? nodeById.get(String(group.dataset.overviewId)) : null;
       if (node) selectPerson(node.id);
     });
     drawOverviewCanvas();
@@ -6090,8 +6100,9 @@
       try {
         prepareFullExpansion();
         renderAll();
-        if (isMobileViewport()) fitExpandedTreeForMobile();
-        else fitOverview();
+        if (state.overviewCanvas?.active) fitOverview({ readable: true });
+        else if (isMobileViewport()) fitExpandedTreeForMobile();
+        else fitOverview({ readable: true });
         showToast('本宗世系图已全部展开，可缩放、平移查看全图');
       } catch (error) {
         showToast('展开全部时遇到异常，请先使用“展开主脉”或按支系查看');
@@ -6469,8 +6480,9 @@
       state.pan.startY = event.clientY;
       state.pan.scrollLeft = viewport.scrollLeft;
       state.pan.scrollTop = viewport.scrollTop;
-      panCanScrollX = viewport.scrollWidth - viewport.clientWidth > 2;
-      panCanScrollY = viewport.scrollHeight - viewport.clientHeight > 2;
+      const cameraMode = Boolean(state.overviewCanvas?.active);
+      panCanScrollX = !cameraMode && viewport.scrollWidth - viewport.clientWidth > 2;
+      panCanScrollY = !cameraMode && viewport.scrollHeight - viewport.clientHeight > 2;
       state.pan.originMapX = Number(state.mapPan && state.mapPan.x) || 0;
       state.pan.originMapY = Number(state.mapPan && state.mapPan.y) || 0;
       state.pan.dragged = false;
