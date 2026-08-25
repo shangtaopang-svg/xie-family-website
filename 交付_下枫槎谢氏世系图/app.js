@@ -1065,6 +1065,31 @@
     if (root) state.expanded.add(String(personId(root)));
   }
 
+  // 手机端全部展开时不要强行缩成“全景缩略图”。
+  // 本宗世系横向跨度很大，按整张图适应屏幕会得到 1% 左右的比例，
+  // 用户会误以为树图消失。保留一个可读的起始比例，后续仍可缩放、平移。
+  function fitExpandedTreeForMobile() {
+    const viewport = $('#tree-viewport');
+    const stage = $('#tree-stage');
+    if (!viewport || !stage || !stage.innerHTML.trim()) return;
+    state.overviewMetrics = { width: 0, height: 0 };
+    stage.style.zoom = 1;
+    stage.style.transform = 'none';
+    const contentWidth = Math.max(1, stage.scrollWidth);
+    const contentHeight = Math.max(1, stage.scrollHeight);
+    const availableWidth = Math.max(1, viewport.clientWidth - 24);
+    const availableHeight = Math.max(1, viewport.clientHeight - 24);
+    const naturalFit = Math.min(availableWidth / contentWidth, availableHeight / contentHeight) * .96;
+    // 0.16—0.42 是手机端可辨认且不会一次铺满屏幕的起始范围。
+    // 图越宽，仍保持最低可读比例，用户可以用手势继续缩小或放大。
+    state.zoom = Math.max(.16, Math.min(.42, naturalFit));
+    state.mapPan = { x: 12, y: 12 };
+    applyZoom();
+    viewport.scrollLeft = 0;
+    viewport.scrollTop = 0;
+    renderMiniMap();
+  }
+
   function isMobileViewport() {
     return typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 760px)').matches;
   }
@@ -5794,7 +5819,8 @@
       try {
         prepareFullExpansion();
         renderAll();
-        fitOverview();
+        if (isMobileViewport()) fitExpandedTreeForMobile();
+        else fitOverview();
         showToast('本宗世系图已全部展开，可缩放、平移查看全图');
       } catch (error) {
         showToast('展开全部时遇到异常，请先使用“展开主脉”或按支系查看');
