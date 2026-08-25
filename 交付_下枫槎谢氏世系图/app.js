@@ -1579,7 +1579,17 @@
         ? `亲生父亲：${text(relation.biologicalParent.name)} · 承嗣父：${text(relation.adoptiveParent.name)}`
         : '';
     const status = lifeStatusLabel(person);
-    return `<article class="query-lineage7-card is-${role}"><div class="query-lineage7-card-top"><span class="query-lineage7-level">${escapeHtml(level)}</span><span class="query-lineage7-status">${escapeHtml(status)}</span></div><button class="query-lineage7-name" data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}</button><div class="query-lineage7-meta"><span>第${escapeHtml(generationOf(person) || '—')}世</span><span>${escapeHtml(text(person.branch) || '未标注支系')}</span>${genderLabel(person) !== '未知' ? `<span>${escapeHtml(genderLabel(person))}</span>` : ''}</div>${adoption ? `<div class="query-lineage7-badge">${escapeHtml(adoption)}</div>` : ''}${relationship ? `<div class="query-lineage7-relation">${escapeHtml(relationship)}</div>` : ''}</article>`;
+    return `<article class="query-lineage7-card is-${role}"><div class="query-lineage7-card-top"><span class="query-lineage7-level">${escapeHtml(level)}</span><span class="query-lineage7-status">${escapeHtml(status)}</span></div><button class="query-lineage7-name" data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}</button><div class="query-lineage7-meta"><span>第${escapeHtml(generationOf(person) || '—')}世</span><span>${escapeHtml(text(person.branch) || '未标注支系')}</span>${genderLabel(person) !== '未知' ? `<span>${escapeHtml(genderLabel(person))}</span>` : ''}</div>${adoption ? `<div class="query-lineage7-badge">${escapeHtml(adoption)}</div>` : ''}${relationship ? queryLineage7AdoptionInlineHtml(person) : ''}</article>`;
+  }
+
+  // 出继/入继关系嵌入发生关系的人物卡片，明确区分亲生父亲、出继人和承嗣父。
+  function queryLineage7AdoptionInlineHtml(person) {
+    const relation = state.adoption.outById.get(String(personId(person)))
+      || state.adoption.inById.get(String(personId(person)));
+    if (!relation || !relation.biologicalParent || !relation.adoptiveParent) return '';
+    const outPerson = relation.outPerson || person;
+    const node = (item, label, className) => `<button class="query-lineage7-adoption-inline-node ${className}" type="button" data-action="query-locate" data-id="${escapeHtml(personId(item))}"><strong>${escapeHtml(text(item.name) || '未命名')}</strong><small>${escapeHtml(label)}</small></button>`;
+    return `<div class="query-lineage7-adoption-inline" aria-label="${escapeHtml(text(outPerson.name))}的出继入继关系"><div class="query-lineage7-adoption-inline-title">出继／入继关系</div><div class="query-lineage7-adoption-inline-flow">${node(relation.biologicalParent, '亲生父亲', 'is-biological')}<span class="query-lineage7-adoption-inline-arrow is-biological" aria-hidden="true">→<small>亲生</small></span>${node(outPerson, '出继人', 'is-out')}<span class="query-lineage7-adoption-inline-arrow is-adoption" aria-hidden="true">→<small>入继给</small></span>${node(relation.adoptiveParent, '承嗣父', 'is-adoptive')}</div></div>`;
   }
 
   function queryLineage7AdoptionLinks(people) {
