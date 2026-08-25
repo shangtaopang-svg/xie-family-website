@@ -1649,10 +1649,18 @@
       frontier = next;
     }
 
-    const rows = [];
-    ancestors.forEach((item) => rows.push(`<div class="query-lineage7-row query-lineage7-row-ancestor"><span class="query-lineage7-row-label">${escapeHtml(item.level)}</span><div class="query-lineage7-cards">${queryLineage7Card(item.person, item.role, item.level)}</div></div>`));
-    rows.push(`<div class="query-lineage7-row query-lineage7-row-focus"><span class="query-lineage7-row-label">本人</span><div class="query-lineage7-cards">${queryLineage7Card(focus, 'focus', '本人')}</div></div>`);
-    descendantRows.forEach((row) => rows.push(`<div class="query-lineage7-row query-lineage7-row-descendant"><span class="query-lineage7-row-label">下${row.distance}代</span><div class="query-lineage7-cards">${row.people.map((person) => queryLineage7Card(person, 'descendant', `下${row.distance}代`)).join('')}</div></div>`));
+    // 上下七代必须按“父在上、子在下”的真正树状结构展示，不能再使用
+    // 带世代标签的横向列表，否则多子女和跨继关系会看起来像同级并列。
+    const graphLevels = [];
+    ancestors.forEach((item) => {
+      graphLevels.push(`<div class="query-lineage7-graph-level is-single is-ancestor"><div class="query-lineage7-graph-label">${escapeHtml(item.level)}</div><div class="query-lineage7-graph-cards">${queryLineage7Card(item.person, item.role, item.level)}</div></div>`);
+      graphLevels.push('<i class="query-lineage7-graph-connector" aria-hidden="true"></i>');
+    });
+    graphLevels.push(`<div class="query-lineage7-graph-level is-single is-focus"><div class="query-lineage7-graph-label">本人</div><div class="query-lineage7-graph-cards">${queryLineage7Card(focus, 'focus', '本人')}</div></div>`);
+    descendantRows.forEach((row) => {
+      graphLevels.push('<i class="query-lineage7-graph-connector" aria-hidden="true"></i>');
+      graphLevels.push(`<div class="query-lineage7-graph-level ${row.people.length > 1 ? 'is-branch' : 'is-single'} is-descendant"><div class="query-lineage7-graph-label">下${row.distance}代</div><div class="query-lineage7-graph-cards">${row.people.map((person) => queryLineage7Card(person, 'descendant', `下${row.distance}代`)).join('')}</div></div>`);
+    });
 
     const allPeople = [focus, ...ancestors.map((item) => item.person), ...descendantRows.flatMap((row) => row.people)];
     const adoptionLinks = queryLineage7AdoptionLinks(allPeople);
@@ -1661,7 +1669,7 @@
     const adoptionMarkup = adoptionLinks.length
       ? `<section class="query-lineage7-adoption"><div class="query-lineage7-adoption-head"><strong>出继 / 入继关系</strong><span>树状世系之外，单独保留亲生父亲、出继人和承嗣父的真实对应关系</span></div>${adoptionLinks.map(queryLineage7AdoptionHtml).join('')}</section>`
       : '';
-    container.innerHTML = `<div class="query-lineage7-result-head"><div><strong>${escapeHtml(text(focus.name))} · 上下7代树状世系</strong><span>上三代 ${ancestors.length} 人 · 本人 1 人 · 下三代 ${total - ancestors.length - 1} 人</span></div><button type="button" class="query-secondary" data-action="query-lineage7-clear">重新查询</button></div><div class="query-lineage7-tree">${rows.join('<i class="query-lineage7-connector" aria-hidden="true"></i>')}</div>${adoptionMarkup}`;
+    container.innerHTML = `<div class="query-lineage7-result-head"><div><strong>${escapeHtml(text(focus.name))} · 上下7代树状世系</strong><span>上三代 ${ancestors.length} 人 · 本人 1 人 · 下三代 ${total - ancestors.length - 1} 人</span></div><button type="button" class="query-secondary" data-action="query-lineage7-clear">重新查询</button></div><div class="query-lineage7-tree"><div class="query-lineage7-graph">${graphLevels.join('')}</div></div>${adoptionMarkup}`;
   }
 
   function runLineage7Query() {

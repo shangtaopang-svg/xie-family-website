@@ -1308,6 +1308,22 @@ button, input, select, textarea { color-scheme: light; }
 .query-lineage7-badge { display: inline-block; margin-top: 7px; padding: 2px 7px; border-radius: 999px; background: #f0ddd5; color: #9c4f3b; font-size: 10px; font-weight: 800; }
 .query-lineage7-relation { margin-top: 7px; color: #9a5c48; font-size: 10px; line-height: 1.45; }
 .query-lineage7-connector { display: block; width: 1px; height: 16px; margin-left: 77px; border-left: 1px dashed #b99a86; }
+/* 上下七代查询：父子层级图。每一层的卡片保持同一水平线，
+   多子女层用横向血缘线连接，避免把兄弟误读成前后代。 */
+.query-lineage7-graph { display: flex; flex-direction: column; align-items: center; min-width: 100%; padding: 4px 10px 10px; box-sizing: border-box; }
+.query-lineage7-graph-level { position: relative; display: flex; justify-content: center; width: 100%; min-width: max-content; box-sizing: border-box; }
+.query-lineage7-graph-label { position: absolute; left: 0; top: 50%; width: 42px; transform: translateY(-50%); color: #9a7863; font-size: 10px; font-weight: 800; text-align: left; }
+.query-lineage7-graph-cards { position: relative; display: flex; justify-content: center; gap: 12px; width: max-content; max-width: calc(100% - 54px); margin-left: 42px; }
+.query-lineage7-graph-cards .query-lineage7-card { position: relative; flex: 0 0 190px; min-width: 190px; max-width: 240px; box-sizing: border-box; }
+.query-lineage7-graph-level.is-branch { padding-top: 18px; }
+.query-lineage7-graph-level.is-branch .query-lineage7-graph-cards::before { content: ''; position: absolute; top: 8px; left: 95px; right: 95px; border-top: 2px solid #6f9182; }
+.query-lineage7-graph-level.is-branch .query-lineage7-card::before { content: ''; position: absolute; top: -18px; left: 50%; height: 18px; border-left: 2px solid #6f9182; }
+.query-lineage7-graph-connector { display: block; width: 2px; height: 22px; margin: 0 auto; border-left: 2px solid #6f9182; }
+.query-lineage7-graph-level.is-focus .query-lineage7-card { min-width: 220px; }
+.query-lineage7-graph-level.is-focus .query-lineage7-graph-label { color: #a04f3c; }
+.query-lineage7-graph-level.is-ancestor .query-lineage7-graph-label,
+.query-lineage7-graph-level.is-descendant .query-lineage7-graph-label { color: #8d786b; }
+.query-lineage7-graph + .query-lineage7-adoption { margin-top: 18px; }
 .query-lineage7-empty { padding: 12px 2px; }
 .query-lineage7-adoption { margin-top: 16px; padding: 14px; border: 1px solid #d7b6a5; border-radius: 11px; background: linear-gradient(145deg, #fff8f3, #f9efe8); }
 .query-lineage7-adoption-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; margin-bottom: 11px; }
@@ -1407,6 +1423,19 @@ button, input, select, textarea { color-scheme: light; }
 .app-shell.is-query-open .query-toggle { background: #e7eee9; border-color: #6f8d7f; color: #3d6254; }.app-shell.is-immersive .query-drawer { display: none; }
 @media (max-width: 1100px) { .query-stat-grid { grid-template-columns: repeat(auto-fit, minmax(108px,1fr)); }.query-two-column { grid-template-columns: 1fr; } }
 @media (max-width: 680px) { .query-drawer { padding: 18px 14px 34px; }.query-stat-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }.query-audit-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }.query-form-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }.query-field-wide { grid-column: 1 / -1; }.query-result-row { grid-template-columns: 45px minmax(80px,1fr) 42px 78px; min-width: 0; gap: 6px; padding-inline: 2px; }.query-result-row > :nth-child(4), .query-result-row > :nth-child(5) { display: none; }.query-result-actions { gap: 3px; }.query-relation-form { grid-template-columns: 1fr; }.query-relation-mark { display: none; } }
+
+@media (max-width: 680px) {
+  .query-lineage7-result { overflow: hidden; }
+  .query-lineage7-tree { overflow-x: auto; overflow-y: visible; padding-bottom: 5px; }
+  .query-lineage7-graph { min-width: 100%; width: max-content; min-width: 620px; padding-inline: 12px; }
+  .query-lineage7-graph-label { left: 6px; width: 38px; font-size: 9px; }
+  .query-lineage7-graph-cards { margin-left: 38px; gap: 8px; max-width: none; }
+  .query-lineage7-graph-cards .query-lineage7-card { flex-basis: 158px; min-width: 158px; max-width: 190px; padding: 10px; }
+  .query-lineage7-graph-level.is-focus .query-lineage7-card { min-width: 190px; }
+  .query-lineage7-graph-level.is-branch .query-lineage7-graph-cards::before { left: 79px; right: 79px; }
+  .query-lineage7-result-head { align-items: flex-start; }
+  .query-lineage7-result-head strong { font-size: 17px; }
+}
 
 @media (max-width: 680px) {
   .generation-detail-head { display: block; }
