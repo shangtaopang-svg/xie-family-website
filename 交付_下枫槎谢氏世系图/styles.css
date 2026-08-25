@@ -1795,6 +1795,10 @@ body[data-app-mode="public"] .tree-viewport {
 .mobile-home-link { display: none; }
 
 @media (max-width: 760px) {
+  /* 首页进入族谱查询时，先显示选择弹窗，避免世系图首帧短暂闪现。 */
+  html.is-chooser-pending #app { visibility: hidden; }
+  html.is-chooser-pending body[data-app-mode="public"] #mobile-query-menu,
+  html.is-chooser-pending body[data-app-mode="public"] #mobile-query-menu[hidden] { display: grid !important; }
   /* 查询四项弹窗打开时让出完整操作空间，避免 AI 悬浮球遮挡第 3、4 项。 */
   html.is-mobile-query-menu-open #ai-fab { display: none !important; }
   body[data-app-mode="public"] .mobile-query-menu {
