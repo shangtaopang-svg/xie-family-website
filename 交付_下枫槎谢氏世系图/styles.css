@@ -239,6 +239,10 @@ body[data-app-mode="public"] .query-generation-action-row button { min-height: 4
 .overview-svg-route { fill: #526a61; opacity: .78; font: 500 9px "Microsoft YaHei", sans-serif; }
 .overview-svg-star { fill: #b94c49; font: 700 13px Arial, sans-serif; }
 .overview-svg-node { cursor: pointer; }
+/* 手机端全展开时，长世次/支系文本会跨卡片互相覆盖；保留姓名和连线，详情仍由点击卡片查看。 */
+.overview-svg-layer.is-mobile-overview .overview-svg-generation,
+.overview-svg-layer.is-mobile-overview .overview-svg-route { display: none; }
+.overview-svg-layer.is-mobile-overview .overview-svg-name { font-size: 17px; }
 .tree-stage { transform-origin: top left; width: max-content; min-width: 0; padding: 22px 42px; transition: none; will-change: transform; }
 .tree-stage.is-compact { --card-w: 132px; }
 .tree-stage.is-compact .person-card { min-height: 70px; padding: 7px 9px 6px; border-width: 1px; border-radius: 8px; }

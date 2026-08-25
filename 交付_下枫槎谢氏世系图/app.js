@@ -3006,6 +3006,7 @@
     const svgNS = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(svgNS, 'svg');
     svg.classList.add('overview-svg-layer');
+    if (isMobileViewport()) svg.classList.add('is-mobile-overview');
     svg.setAttribute('viewBox', `0 0 ${baseWidth} ${baseHeight}`);
     svg.setAttribute('width', String(Math.ceil(baseWidth)));
     svg.setAttribute('height', String(Math.ceil(baseHeight)));
