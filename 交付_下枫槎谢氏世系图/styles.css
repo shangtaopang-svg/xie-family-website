@@ -1815,13 +1815,13 @@ body[data-app-mode="public"] .tree-viewport {
   body[data-app-mode="public"] .mobile-query-menu[hidden] { display: none !important; }
   body[data-app-mode="public"] .mobile-query-menu-panel {
     width: 100%;
-    height: 100%;
+    height: auto;
     max-height: none;
-    overflow: auto;
+    overflow: visible;
     /* 浏览器已经把系统状态栏从视口中扣除，不再重复叠加 safe-area 顶部留白。 */
     padding: 8px 14px max(18px, env(safe-area-inset-bottom));
     border: 1px solid #c8d8cb;
-    border-radius: 0;
+    border-radius: 0 0 18px 18px;
     background: rgba(251, 253, 249, .82);
     -webkit-backdrop-filter: blur(22px) saturate(125%);
     backdrop-filter: blur(22px) saturate(125%);
@@ -1855,22 +1855,27 @@ body[data-app-mode="public"] .tree-viewport {
     font-size: 13px;
   }
   body[data-app-mode="public"] .mobile-query-menu-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 9px;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
   }
+  body[data-app-mode="public"] .mobile-query-menu-grid::-webkit-scrollbar { display: none; }
   body[data-app-mode="public"] .mobile-query-menu-grid button {
-    display: grid;
-    grid-template-columns: 30px minmax(0, 1fr);
+    display: flex;
+    flex: 1 0 68px;
+    flex-direction: column;
     align-items: center;
-    gap: 2px 8px;
-    min-height: 104px;
-    padding: 13px 11px;
+    justify-content: center;
+    gap: 4px;
+    min-height: 66px;
+    padding: 8px 5px;
     border: 1px solid #cbdacf;
     border-radius: 14px;
     background: rgba(241, 247, 242, .72);
     color: #244c3d;
-    text-align: left;
+    text-align: center;
   }
   body[data-app-mode="public"] .mobile-query-menu-grid button:active { transform: scale(.98); }
   body[data-app-mode="public"] .mobile-query-menu-grid button:nth-child(3) { background: #fff7ec; border-color: #e2c6a6; }
@@ -1879,19 +1884,16 @@ body[data-app-mode="public"] .tree-viewport {
   body[data-app-mode="public"] .mobile-query-menu-grid b {
     display: grid;
     place-items: center;
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     background: #47725f;
     color: #fff;
-    font-size: 14px;
+    font-size: 12px;
   }
-  body[data-app-mode="public"] .mobile-query-menu-grid strong { font-size: 16px; }
+  body[data-app-mode="public"] .mobile-query-menu-grid strong { font-size: 12px; white-space: nowrap; }
   body[data-app-mode="public"] .mobile-query-menu-grid small {
-    grid-column: 2;
-    color: #718178;
-    font-size: 11px;
-    line-height: 1.45;
+    display: none;
   }
 
   body[data-app-mode="public"] .mobile-query-switcher {
@@ -1974,7 +1976,7 @@ body[data-app-mode="public"] .tree-viewport {
   body[data-app-mode="public"] .mobile-home-link {
     position: fixed;
     left: max(14px, env(safe-area-inset-left));
-    bottom: max(16px, env(safe-area-inset-bottom));
+    bottom: max(72px, calc(env(safe-area-inset-bottom) + 72px));
     z-index: 270;
     display: inline-flex;
     align-items: center;
@@ -1997,8 +1999,8 @@ body[data-app-mode="public"] .tree-viewport {
 }
 
 @media (max-width: 380px) {
-  body[data-app-mode="public"] .mobile-query-menu-grid { grid-template-columns: 1fr; }
-  body[data-app-mode="public"] .mobile-query-menu-grid button { min-height: 78px; }
+  body[data-app-mode="public"] .mobile-query-menu-grid { display: flex; }
+  body[data-app-mode="public"] .mobile-query-menu-grid button { min-height: 62px; }
   body[data-app-mode="public"] .mobile-query-switcher button { font-size: 11px; }
 }
 

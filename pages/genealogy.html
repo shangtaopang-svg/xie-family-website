@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>枫槎谢氏宗谱 · 族谱查询</title>
   <meta name="description" content="枫槎谢氏宗谱族谱查询与只读世系图">
-  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260825-mobile-map-15">
+  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260825-mobile-map-16">
   <script>
     if (new URLSearchParams(location.search).get('chooser') === '1' && window.matchMedia('(max-width: 760px)').matches) {
       document.documentElement.classList.add('is-chooser-pending');
@@ -98,10 +98,10 @@
         </div>
         <div id="view-tabs" class="view-tabs" role="tablist" aria-label="世系图视图切换"></div>
         <div class="mobile-lineage-controls" aria-label="世系图操作">
-          <button type="button" data-action="expand-all">全部展开</button>
-          <button type="button" data-action="collapse-all">全部收起</button>
-          <button type="button" data-action="zoom-in" aria-label="放大世系图">放大</button>
-          <button type="button" data-action="zoom-out" aria-label="缩小世系图">缩小</button>
+          <button type="button" data-action="expand-all" aria-label="全部展开" title="全部展开">⊞</button>
+          <button type="button" data-action="collapse-all" aria-label="全部收起" title="全部收起">⊟</button>
+          <button type="button" data-action="zoom-in" aria-label="放大世系图" title="放大">＋</button>
+          <button type="button" data-action="zoom-out" aria-label="缩小世系图" title="缩小">−</button>
         </div>
         <div id="main-branch-nav" class="main-branch-nav" hidden></div>
         <div class="tree-legend">
@@ -205,7 +205,7 @@
       </header>
       <p class="mobile-query-menu-intro">请选择要查询的内容</p>
       <div class="mobile-query-menu-grid">
-        <button type="button" data-action="mobile-query-route" data-route="lineage"><b>1</b><strong>查世系图</strong><small>浏览总览、远古、申伯、始宁东山、临海下渡、石马、本宗世系图</small></button>
+        <button type="button" data-action="mobile-query-route" data-route="lineage"><b>1</b><strong>查世系图</strong><small>浏览各类世系图</small></button>
         <button type="button" data-action="mobile-query-route" data-route="people"><b>2</b><strong>查族人</strong><small>输入一个姓名，查看详情或寻根</small></button>
         <button type="button" data-action="mobile-query-route" data-route="generation"><b>3</b><strong>查世代</strong><small>按一世或连续世次查看人员列表</small></button>
         <button type="button" data-action="mobile-query-route" data-route="relation"><b>4</b><strong>查关系</strong><small>查询两位族人的亲属称呼和关系路径</small></button>
@@ -226,7 +226,7 @@
     </section>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="../交付_下枫槎谢氏世系图/app.js?v=20260825-mobile-map-15"></script>
+  <script src="../交付_下枫槎谢氏世系图/app.js?v=20260825-mobile-map-16"></script>
 <link rel="stylesheet" href="/css/ai.css?v=91">
 <script src="/js/ai-assistant.js?v=91" defer></script>
 </body>
