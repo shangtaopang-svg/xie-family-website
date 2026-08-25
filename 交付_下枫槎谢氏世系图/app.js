@@ -3533,17 +3533,105 @@
     renderQianziGroupFrame();
   }
 
+  // 手机端总览采用“分区索引 → 分段世系图”，避免把上千张卡片压缩到一张不可读的超宽画布。
+  const MOBILE_OVERVIEW_VIEWS = ['ancient', 'shenbo', 'dongshan', 'linhai', 'shima', 'main'];
+
+  function personBelongsToView(person, viewKey) {
+    if (!person) return false;
+    if (viewKey === 'overview') return true;
+    const view = VIEW_DEFS[viewKey];
+    if (!view) return false;
+    if (String(personId(person)) === String(toId(view.rootId))) return true;
+    const generation = generationOf(person);
+    if (view.generations && (generation === null || generation < view.generations[0] || generation > view.generations[1])) return false;
+    return viewKey === 'main' ? isStrictDescendantOf(person, view.rootId) : true;
+  }
+
+  function mobileOverviewSectionStats(viewKey) {
+    const view = VIEW_DEFS[viewKey];
+    const people = state.data.filter((person) => personBelongsToView(person, viewKey) && !isHiddenAdoptionRecord(person));
+    const generations = people.map(generationOf).filter((value) => value !== null);
+    const minGeneration = generations.length ? Math.min(...generations) : (view.generations ? view.generations[0] : null);
+    const maxGeneration = generations.length ? Math.max(...generations) : (view.generations ? view.generations[1] : null);
+    const generationText = minGeneration !== null && maxGeneration !== null ? `第${minGeneration}—${maxGeneration}世` : '世次待核';
+    return {
+      count: people.length,
+      rootName: text(getPerson(view.rootId)?.name) || '起点待核',
+      generationText
+    };
+  }
+
+  function renderMobileOverviewIndex() {
+    const total = state.data.filter((person) => !isHiddenAdoptionRecord(person)).length;
+    const cards = MOBILE_OVERVIEW_VIEWS.map((viewKey, index) => {
+      const view = VIEW_DEFS[viewKey];
+      const stats = mobileOverviewSectionStats(viewKey);
+      return `<button class="mobile-overview-section-card section-${escapeHtml(viewKey)}" data-action="mobile-overview-section" data-view="${escapeHtml(viewKey)}" aria-label="查看${escapeHtml(view.label)}">
+        <span class="mobile-overview-section-number">${index + 1}</span>
+        <span class="mobile-overview-section-copy"><strong>${escapeHtml(view.label)}</strong><small>${escapeHtml(stats.generationText)} · ${stats.count}人</small><em>起点：${escapeHtml(stats.rootName)} · 点击查看本段世系</em></span>
+        <span class="mobile-overview-section-arrow" aria-hidden="true">›</span>
+      </button>`;
+    }).join('');
+    return `<section class="mobile-overview-index" aria-label="总览世系分区">
+      <div class="mobile-overview-index-head"><span class="mobile-overview-kicker">LINEAGE ATLAS</span><span class="mobile-overview-total">${total} 位已录入族人</span><h3>总览世系分区</h3><p>先选择一段世系，再查看清晰、可缩放的连续树图。</p></div>
+      <div class="mobile-overview-section-list">${cards}</div>
+      <p class="mobile-overview-index-note">总览已按世系分区整理。进入分区后可展开主脉、展开全部、收起，并用双指缩放或拖动查看。</p>
+    </section>`;
+  }
+
+  function openMobileOverviewSection(viewKey) {
+    if (!MOBILE_OVERVIEW_VIEWS.includes(viewKey)) return;
+    switchView(viewKey);
+    showToast(`已进入${text(VIEW_DEFS[viewKey]?.label)}，可展开查看本段世系`);
+  }
+
   function renderTree() {
     const stage = $('#tree-stage');
-    const root = isMobileViewport() && !state.overviewMode && state.mobileFocusRootId
-      ? (getPerson(state.mobileFocusRootId) || findRoot())
-      : findRoot();
+    const viewport = $('#tree-viewport');
+    const canvas = $('#tree-canvas');
+    const mobileOverviewIndex = isMobileViewport() && state.overviewMode && state.view === 'overview';
     if (!stage) return;
     if (state.overviewCanvas && state.overviewCanvas.active) deactivateOverviewCanvas();
     state.overviewMetrics = { width: 0, height: 0 };
     stage.classList.toggle('is-compact', state.compact);
     stage.classList.toggle('is-overview-map', state.overviewMode);
+    stage.classList.toggle('is-mobile-overview-index', mobileOverviewIndex);
     stage.dataset.view = state.view;
+    viewport?.classList.toggle('mobile-overview-index-viewport', mobileOverviewIndex);
+    canvas?.classList.toggle('mobile-overview-index-canvas', mobileOverviewIndex);
+    if (mobileOverviewIndex) {
+      stage.style.zoom = '1';
+      stage.style.transform = 'none';
+      stage.style.left = '';
+      stage.style.top = '';
+      if (canvas) {
+        canvas.style.width = '100%';
+        canvas.style.height = 'auto';
+        canvas.style.minWidth = '0';
+        canvas.style.minHeight = '0';
+      }
+      state.zoom = 1;
+      state.mapPan = { x: 0, y: 0 };
+      stage.innerHTML = renderMobileOverviewIndex();
+      const minimap = $('#tree-minimap-panel');
+      if (minimap) minimap.hidden = true;
+      updateZoomReadouts();
+      $('#tree-status').textContent = '总览世系分区 · 选择一段进入连续世系图';
+      return;
+    }
+    stage.style.zoom = '';
+    stage.style.transform = '';
+    stage.style.left = '';
+    stage.style.top = '';
+    if (canvas) {
+      canvas.style.removeProperty('width');
+      canvas.style.removeProperty('height');
+      canvas.style.removeProperty('min-width');
+      canvas.style.removeProperty('min-height');
+    }
+    const root = isMobileViewport() && !state.overviewMode && state.mobileFocusRootId
+      ? (getPerson(state.mobileFocusRootId) || findRoot())
+      : findRoot();
     if (!root) {
       stage.innerHTML = '<div class="tree-placeholder">暂无可展示的族谱数据。</div>';
     } else {
@@ -6101,10 +6189,15 @@
       try {
         prepareFullExpansion();
         renderAll();
-        if (state.overviewCanvas?.active) fitOverview({ readable: true });
+        if (isMobileViewport() && state.view === 'overview' && state.overviewMode) {
+          state.zoom = 1;
+          state.mapPan = { x: 0, y: 0 };
+          updateZoomReadouts();
+          showToast('总览已按六段世系整理，请选择一段查看连续树图');
+        } else if (state.overviewCanvas?.active) fitOverview({ readable: true });
         else if (isMobileViewport()) fitExpandedTreeForMobile();
         else fitOverview({ readable: true });
-        showToast('本宗世系图已全部展开，可缩放、平移查看全图');
+        if (!(isMobileViewport() && state.view === 'overview' && state.overviewMode)) showToast('本宗世系图已全部展开，可缩放、平移查看全图');
       } catch (error) {
         showToast('展开全部时遇到异常，请先使用“展开主脉”或按支系查看');
       } finally {
@@ -6310,6 +6403,7 @@
       case 'print-tree': printTree(); break;
       case 'reset-data': resetData(); break;
       case 'switch-view': switchView(element.dataset.view); break;
+      case 'mobile-overview-section': openMobileOverviewSection(element.dataset.view); break;
       case 'focus-main-branch': focusMainBranch(element.dataset.focusId); break;
       case 'expand-depth': expandToDepth(element.dataset.depth); break;
       case 'toggle-global-nav': toggleGlobalNav(); break;

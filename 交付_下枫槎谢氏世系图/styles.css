@@ -2589,3 +2589,147 @@ body[data-app-mode="public"] .tree-viewport {
     grid-template-columns: 52px minmax(95px, 1fr) 56px minmax(105px, 1.35fr) 76px 226px;
   }
 }
+
+/* 手机端总览：先选世系分区，再进入连续树图，避免全部节点挤成不可读的横向大图。 */
+@media (max-width: 760px) {
+  body[data-app-mode="public"] .tree-viewport.mobile-overview-index-viewport {
+    overflow-x: hidden;
+    overflow-y: auto;
+    touch-action: pan-y;
+    padding: 14px 12px 64px;
+    background: #e8f4ed;
+  }
+  body[data-app-mode="public"] .tree-canvas.mobile-overview-index-canvas {
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+  }
+  body[data-app-mode="public"] .tree-stage.is-mobile-overview-index {
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    transform: none !important;
+    zoom: 1 !important;
+  }
+  body[data-app-mode="public"] .mobile-overview-index {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  body[data-app-mode="public"] .mobile-overview-index-head {
+    padding: 6px 4px 14px;
+  }
+  body[data-app-mode="public"] .mobile-overview-kicker {
+    display: block;
+    margin-bottom: 4px;
+    color: #b45f45;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .18em;
+  }
+  body[data-app-mode="public"] .mobile-overview-index-head h3 {
+    margin: 0;
+    color: #1e3d31;
+    font-size: 24px;
+    line-height: 1.2;
+  }
+  body[data-app-mode="public"] .mobile-overview-index-head p {
+    margin: 7px 0 0;
+    color: #71827a;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  body[data-app-mode="public"] .mobile-overview-total {
+    float: right;
+    margin-top: 2px;
+    padding: 4px 8px;
+    border: 1px solid #c3d7ca;
+    border-radius: 999px;
+    color: #47725f;
+    background: rgba(255,255,255,.66);
+    font-size: 11px;
+    font-weight: 700;
+  }
+  body[data-app-mode="public"] .mobile-overview-section-list {
+    display: grid;
+    gap: 9px;
+  }
+  body[data-app-mode="public"] .mobile-overview-section-card {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) 22px;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 84px;
+    padding: 12px 13px 12px 11px;
+    border: 1px solid #c7dbce;
+    border-radius: 14px;
+    background: rgba(250,253,249,.94);
+    color: #2d5342;
+    text-align: left;
+    box-shadow: 0 3px 10px rgba(48, 81, 64, .08);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body[data-app-mode="public"] .mobile-overview-section-card:active {
+    transform: scale(.985);
+    box-shadow: 0 1px 4px rgba(48, 81, 64, .08);
+  }
+  body[data-app-mode="public"] .mobile-overview-section-number {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    color: #fff;
+    background: #477b65;
+    font-size: 16px;
+    font-weight: 800;
+  }
+  body[data-app-mode="public"] .mobile-overview-section-copy {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+  }
+  body[data-app-mode="public"] .mobile-overview-section-copy strong {
+    overflow: hidden;
+    color: #234b3a;
+    font-size: 16px;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  body[data-app-mode="public"] .mobile-overview-section-copy small,
+  body[data-app-mode="public"] .mobile-overview-section-copy em {
+    overflow: hidden;
+    color: #708179;
+    font-size: 11px;
+    font-style: normal;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  body[data-app-mode="public"] .mobile-overview-section-arrow {
+    color: #477b65;
+    font-size: 28px;
+    font-weight: 300;
+    line-height: 1;
+    text-align: right;
+  }
+  body[data-app-mode="public"] .mobile-overview-section-card.section-shenbo,
+  body[data-app-mode="public"] .mobile-overview-section-card.section-dongshan { border-color: #d9cda8; background: #fffaf0; }
+  body[data-app-mode="public"] .mobile-overview-section-card.section-linhai,
+  body[data-app-mode="public"] .mobile-overview-section-card.section-shima { border-color: #e0c8be; background: #fff7f3; }
+  body[data-app-mode="public"] .mobile-overview-section-card.section-main { border-color: #b7cce0; background: #f4f8ff; }
+  body[data-app-mode="public"] .mobile-overview-index-note {
+    margin: 13px 4px 0;
+    color: #7c8b84;
+    font-size: 11px;
+    line-height: 1.55;
+  }
+}
+
+@media (min-width: 520px) and (max-width: 760px) {
+  body[data-app-mode="public"] .mobile-overview-section-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
