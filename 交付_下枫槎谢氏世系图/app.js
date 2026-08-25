@@ -1549,7 +1549,7 @@
     const rows = visible.map((person) => {
       const gender = genderLabel(person);
       const adoption = queryAdoptionLabel(person);
-      return `<div class="query-result-row"><span>${escapeHtml(generationOf(person) || '—')}</span><button data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}${adoption ? ` <em class="query-result-tag adopt">${escapeHtml(adoption)}</em>` : ''}</button><span class="query-result-tag${gender === '女' ? ' female' : ''}">${escapeHtml(gender)}</span><span>${escapeHtml(text(person.branch) || '未标注')}</span><span>${escapeHtml(lifeStatusLabel(person))}</span><span class="query-result-actions"><button data-action="query-detail" data-id="${escapeHtml(personId(person))}">详情</button><button class="root-trace-trigger" data-action="root-trace" data-id="${escapeHtml(personId(person))}">寻根</button></span></div>`;
+      return `<div class="query-result-row"><span>${escapeHtml(generationOf(person) || '—')}</span><button type="button" data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}${adoption ? ` <em class="query-result-tag adopt">${escapeHtml(adoption)}</em>` : ''}</button><span class="query-result-tag${gender === '女' ? ' female' : ''}">${escapeHtml(gender)}</span><span>${escapeHtml(text(person.branch) || '未标注')}</span><span>${escapeHtml(lifeStatusLabel(person))}</span><span class="query-result-actions"><button type="button" data-action="query-detail" data-id="${escapeHtml(personId(person))}">详情</button><button type="button" class="root-trace-trigger" data-action="root-trace" data-id="${escapeHtml(personId(person))}">寻根</button></span></div>`;
     }).join('');
     container.innerHTML = head + rows;
   }
@@ -5720,14 +5720,29 @@
   }
 
   function openQueryPersonDetail(id) {
-    // “详情”是查询结果的确定动作：关闭查询层后直接打开完整人物资料，
-    // 不依赖按钮文字或定位动作的副作用，避免手机端看起来像没有反应。
+    // “详情”是查询结果的确定动作：关闭查询层、恢复详情栏，再直接打开完整人物资料。
+    // 详情栏可能被用户此前手动隐藏；若不强制恢复，移动端点击后只会更新隐藏区域，
+    // 看起来就像按钮没有反应。
     closeMobileQueryMenu();
     if (state.query.open) toggleQueryDrawer();
+    const drawer = $('#query-drawer');
+    if (drawer) drawer.hidden = true;
+    const shell = $('#app');
+    if (shell) shell.classList.remove('is-query-open');
+    if (state.layout.detailHidden) {
+      state.layout.detailHidden = false;
+      applyLayout(true);
+    }
+    const person = getPerson(id);
+    if (!person) {
+      showToast('未找到该族人，无法打开详情');
+      return;
+    }
     selectPerson(id, { forceRender: true });
     window.setTimeout(() => {
       const panel = $('#detail-panel');
       if (!panel || !panel.classList.contains('has-person')) return;
+      panel.hidden = false;
       if (isMobileViewport()) panel.scrollIntoView({ behavior: 'auto', block: 'start' });
       const heading = panel.querySelector('.detail-head h3');
       if (heading) heading.setAttribute('tabindex', '-1');
