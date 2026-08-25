@@ -2155,6 +2155,16 @@
     if (shell) shell.classList.toggle('is-detail-only', state.detailOnly);
   }
 
+  function restoreMobilePeopleQuery() {
+    if (IS_ADMIN || !isMobileViewport()) return;
+    const shell = $('#app');
+    const drawer = $('#query-drawer');
+    state.query.open = true;
+    if (drawer) drawer.hidden = false;
+    if (shell) shell.classList.add('is-query-open');
+    setMobileQueryMode('people');
+  }
+
   function closeMobileQueryMenu() {
     const menu = $('#mobile-query-menu');
     if (menu) menu.hidden = true;
@@ -5869,7 +5879,17 @@
       case 'export-person': exportPerson(); break;
       case 'delete-person': deleteSelected(); break;
       case 'cancel-edit': flushDraftAutoSave(); state.mode = 'view'; state.draftId = null; state.draftParentId = null; renderDetail(); break;
-      case 'close-detail': flushDraftAutoSave(); setDetailOnlyMode(false); state.selectedId = null; state.mode = 'view'; renderDetail(); updateSelectedCardUI(); break;
+      case 'close-detail': {
+        const restorePeopleQuery = !IS_ADMIN && isMobileViewport();
+        flushDraftAutoSave();
+        setDetailOnlyMode(false);
+        state.selectedId = null;
+        state.mode = 'view';
+        renderDetail();
+        updateSelectedCardUI();
+        if (restorePeopleQuery) restoreMobilePeopleQuery();
+        break;
+      }
       default: break;
     }
   }
