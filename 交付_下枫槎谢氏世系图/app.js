@@ -23,6 +23,7 @@
     compact: true,
     overviewMode: false,
     immersive: false,
+    detailOnly: false,
     expanded: new Set(),
     zoom: 1,
     mapPan: {
@@ -2134,6 +2135,8 @@
   }
 
   function toggleQueryDrawer() {
+    // 从人物详情返回查询时，恢复完整查询界面；详情专用模式只服务于手机端的“详情”结果。
+    setDetailOnlyMode(false);
     state.query.open = !state.query.open;
     const drawer = $('#query-drawer');
     const shell = $('#app');
@@ -2144,6 +2147,12 @@
       if (button.dataset.action === 'toggle-query-drawer' && button.classList.contains('query-toggle')) button.textContent = state.query.open ? '关闭查询' : '族谱查询';
     });
     if (state.query.open) renderQueryDashboard();
+  }
+
+  function setDetailOnlyMode(open) {
+    const shell = $('#app');
+    state.detailOnly = Boolean(open) && isMobileViewport() && !IS_ADMIN;
+    if (shell) shell.classList.toggle('is-detail-only', state.detailOnly);
   }
 
   function closeMobileQueryMenu() {
@@ -5738,6 +5747,8 @@
       showToast('未找到该族人，无法打开详情');
       return;
     }
+    // 手机端详情必须停留在当前查询页，只显示完整人物资料；不再把树图区带到视口中。
+    setDetailOnlyMode(true);
     selectPerson(id, { forceRender: true });
     window.setTimeout(() => {
       const panel = $('#detail-panel');
@@ -5858,7 +5869,7 @@
       case 'export-person': exportPerson(); break;
       case 'delete-person': deleteSelected(); break;
       case 'cancel-edit': flushDraftAutoSave(); state.mode = 'view'; state.draftId = null; state.draftParentId = null; renderDetail(); break;
-      case 'close-detail': flushDraftAutoSave(); state.selectedId = null; state.mode = 'view'; renderDetail(); updateSelectedCardUI(); break;
+      case 'close-detail': flushDraftAutoSave(); setDetailOnlyMode(false); state.selectedId = null; state.mode = 'view'; renderDetail(); updateSelectedCardUI(); break;
       default: break;
     }
   }

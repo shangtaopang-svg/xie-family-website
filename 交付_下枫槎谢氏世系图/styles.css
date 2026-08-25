@@ -2217,6 +2217,43 @@ body[data-app-mode="public"] .tree-viewport {
   .tree-minimap *, .tree-toolbar-actions *, .person-card { transition: none !important; animation: none !important; }
 }
 
+/* 手机端查询结果的“详情”是资料页，不是世系图：隐藏树图区与查询层，保留同一页面中的完整详情。 */
+@media (max-width: 760px) {
+  body[data-app-mode="public"] #app.is-detail-only .workspace {
+    display: block !important;
+    min-height: calc(100vh - 96px);
+    overflow: visible;
+  }
+  body[data-app-mode="public"] #app.is-detail-only .control-rail,
+  body[data-app-mode="public"] #app.is-detail-only .tree-area {
+    display: none !important;
+  }
+  body[data-app-mode="public"] #app.is-detail-only .detail-panel {
+    display: block !important;
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: 100vw;
+    min-height: calc(100vh - 96px);
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    padding: 16px 14px calc(36px + env(safe-area-inset-bottom));
+    border: 0;
+    background-color: #edf6ef;
+    background-image: linear-gradient(rgba(71, 116, 91, .055) 1px, transparent 1px), linear-gradient(90deg, rgba(71, 116, 91, .055) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  body[data-app-mode="public"] #app.is-detail-only .detail-close {
+    width: 44px;
+    height: 44px;
+    font-size: 25px;
+  }
+  body[data-app-mode="public"] #app.is-detail-only .mobile-query-launcher,
+  body[data-app-mode="public"] #app.is-detail-only ~ .mobile-query-launcher {
+    display: none !important;
+  }
+}
+
 /* 手机端收拢入口：搜索统一进入“族谱查询”，桌面端布局保持不变。 */
 @media (max-width: 760px) {
   body[data-app-mode="public"] .control-rail > .rail-section:first-child { display: none; }
