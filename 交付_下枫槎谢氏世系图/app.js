@@ -1549,7 +1549,7 @@
     const rows = visible.map((person) => {
       const gender = genderLabel(person);
       const adoption = queryAdoptionLabel(person);
-      return `<div class="query-result-row"><span>${escapeHtml(generationOf(person) || '—')}</span><button data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}${adoption ? ` <em class="query-result-tag adopt">${escapeHtml(adoption)}</em>` : ''}</button><span class="query-result-tag${gender === '女' ? ' female' : ''}">${escapeHtml(gender)}</span><span>${escapeHtml(text(person.branch) || '未标注')}</span><span>${escapeHtml(lifeStatusLabel(person))}</span><span class="query-result-actions"><button data-action="query-locate" data-id="${escapeHtml(personId(person))}">详情</button><button class="root-trace-trigger" data-action="root-trace" data-id="${escapeHtml(personId(person))}">寻根</button></span></div>`;
+      return `<div class="query-result-row"><span>${escapeHtml(generationOf(person) || '—')}</span><button data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}${adoption ? ` <em class="query-result-tag adopt">${escapeHtml(adoption)}</em>` : ''}</button><span class="query-result-tag${gender === '女' ? ' female' : ''}">${escapeHtml(gender)}</span><span>${escapeHtml(text(person.branch) || '未标注')}</span><span>${escapeHtml(lifeStatusLabel(person))}</span><span class="query-result-actions"><button data-action="query-locate" data-query-detail="true" data-id="${escapeHtml(personId(person))}">详情</button><button class="root-trace-trigger" data-action="root-trace" data-id="${escapeHtml(personId(person))}">寻根</button></span></div>`;
     }).join('');
     container.innerHTML = head + rows;
   }
@@ -5685,12 +5685,15 @@
         renderAdoptionTable();
         break;
       case 'query-locate': {
-        const openDetails = text(element.textContent).trim() === '详情';
-        // 查询抽屉位于主内容层之上；点击“详情”时先收起它，避免详情已渲染但被抽屉遮住。
+        const openDetails = element.dataset.queryDetail === 'true' || text(element.textContent).trim() === '详情';
+        // 查询抽屉位于主内容层之上；打开详情时先收起它，避免详情已渲染但被抽屉遮住。
         if (openDetails && state.query.open) toggleQueryDrawer();
         selectPerson(id, { forceRender: true });
         if (openDetails && isMobileViewport()) {
-          window.setTimeout(() => $('#detail-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 40);
+          window.setTimeout(() => {
+            const panel = $('#detail-panel');
+            if (panel) panel.scrollIntoView({ behavior: 'auto', block: 'start' });
+          }, 120);
         }
         break;
       }
