@@ -2223,12 +2223,14 @@
     const generation = $('.query-timeline-section');
     const relation = $('.query-relation-section');
     const adoption = $('.query-adoption-section');
+    const lineage = $('.query-lineage-section');
     const lineage7 = $('.query-lineage7-section');
     const generationActions = $('#query-generation-actions');
     if (people) people.hidden = mode !== 'people';
     if (generation) generation.hidden = !['generation', 'info'].includes(mode);
     if (relation) relation.hidden = mode !== 'relation';
     if (adoption) adoption.hidden = mode !== 'info';
+    if (lineage) lineage.hidden = mode !== 'lineage';
     // “上下7代”属于查族人的延伸查询，不再放在查世系图入口中。
     if (lineage7) lineage7.hidden = mode !== 'people';
     if (generationActions) generationActions.hidden = mode !== 'generation';
