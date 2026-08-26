@@ -2624,6 +2624,8 @@
     if (drawer) drawer.dataset.mobileMode = mode;
     const title = drawer && drawer.querySelector('.query-drawer-head h3');
     if (title) title.textContent = mode === 'people' ? '查族人' : mode === 'generation' ? '查世代' : mode === 'lineage' ? '查世系图' : mode === 'info' ? '族人信息' : '查关系';
+    const switcher = $('.mobile-query-switcher');
+    if (switcher) switcher.hidden = mode === 'info';
     const peopleTitle = $('.query-people-section h4');
     if (peopleTitle) peopleTitle.textContent = mode === 'generation' ? '按世次查看族人' : '';
     $$('.mobile-query-switcher [data-route]').forEach((button) => {
@@ -2639,7 +2641,7 @@
     const lineage7 = $('.query-lineage7-section');
     const generationActions = $('#query-generation-actions');
     if (people) people.hidden = mode !== 'people';
-    if (generation) generation.hidden = !['generation', 'info'].includes(mode);
+    if (generation) generation.hidden = mode !== 'generation';
     if (relation) relation.hidden = mode !== 'relation';
     if (adoption) adoption.hidden = mode !== 'info';
     if (lineage) lineage.hidden = mode !== 'lineage';

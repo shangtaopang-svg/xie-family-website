@@ -2186,12 +2186,7 @@ body[data-app-mode="public"] .tree-viewport {
     color: #fff;
   }
   body[data-app-mode="public"] .query-drawer[data-mobile-mode="info"] .mobile-query-switcher {
-    display: flex !important;
-    overflow-x: auto;
-  }
-  body[data-app-mode="public"] .query-drawer[data-mobile-mode="info"] .mobile-query-switcher button {
-    flex: 0 0 auto;
-    min-width: 76px;
+    display: none !important;
   }
   body[data-app-mode="public"] .mobile-generation-actions {
     display: grid;
