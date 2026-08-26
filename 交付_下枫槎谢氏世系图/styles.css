@@ -2576,8 +2576,24 @@ body[data-app-mode="public"] .tree-viewport {
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.22), transparent 15%, transparent 85%, rgba(31, 66, 49, 0.12));
   opacity: 0.55;
 }
+.query-book-frame-wrap::before {
+  position: absolute;
+  inset: 0 0 0 auto;
+  z-index: 2;
+  width: 58%;
+  pointer-events: none;
+  content: '';
+  opacity: 0;
+  transform: translateX(100%) skewX(-4deg);
+  transform-origin: right center;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.08) 28%, rgba(255, 255, 255, 0.82) 72%, rgba(182, 198, 188, 0.52) 100%);
+  box-shadow: -18px 0 24px rgba(47, 79, 62, 0.12);
+}
 .query-book-frame-wrap.is-turning {
   animation: query-book-page-turn 360ms ease both;
+}
+.query-book-frame-wrap.is-turning::before {
+  animation: query-book-page-flip 360ms cubic-bezier(0.22, 0.7, 0.25, 1) both;
 }
 .query-book-frame-wrap iframe {
   position: relative;
@@ -2592,6 +2608,12 @@ body[data-app-mode="public"] .tree-viewport {
   0% { opacity: 0.76; transform: perspective(1100px) rotateY(-0.7deg); }
   55% { opacity: 0.98; transform: perspective(1100px) rotateY(0.35deg); }
   100% { opacity: 1; transform: perspective(1100px) rotateY(0); }
+}
+@keyframes query-book-page-flip {
+  0% { opacity: 0; transform: translateX(100%) skewX(-4deg); }
+  18% { opacity: 0.92; }
+  72% { opacity: 0.28; }
+  100% { opacity: 0; transform: translateX(-112%) skewX(4deg); }
 }
 @media (max-width: 760px) {
   .query-book-head { align-items: flex-start; flex-direction: column; }
