@@ -94,6 +94,8 @@ setTimeout(() => {
 
 // In-memory admin tokens (expire on server restart — acceptable for this scale)
 const adminTokens = new Set();
+// 供 AI 服务复用同一套管理员会话；不把管理员手机号或令牌写入前端数据文件。
+global.__xieAdminTokens = adminTokens;
 function generateToken() {
   return crypto.randomBytes(32).toString('hex');
 }
@@ -220,17 +222,24 @@ function gzipSend(req, res, status, headers, data) {
 }
 
 // === AI 咨询窗口 HTML 注入（在 gzipSend 之前对 .html 做字符串替换） ===
-const AI_INJECT_BLACKLIST = new Set(['/admin.html', '/recover.html']);
+const AI_INJECT_BLACKLIST = new Set(['/admin.html', '/recover.html', '/entrance.html']);
 const AI_INJECT_MARK = '/js/ai-assistant.js';
+const PUBLIC_ACCESS_MARK = '/js/public-access-gate.js';
 function injectAiHtml(buf) {
   const html = buf.toString('utf-8');
-  if (html.indexOf(AI_INJECT_MARK) !== -1) return buf; // 已注入过，跳过
   const m = html.search(/<\/body>/i);
   if (m === -1) return buf; // 无 body（HTML 片段）则跳过
-  const inject =
-    '<link rel="stylesheet" href="/css/ai.css">\n' +
-    '<script src="/js/ai-assistant.js" defer></script>\n';
-  return Buffer.from(html.slice(0, m) + inject + '</body>' + html.slice(m + 7), 'utf-8');
+  const inject = [];
+  if (html.indexOf(AI_INJECT_MARK) === -1) {
+    inject.push('<link rel="stylesheet" href="/css/ai.css">');
+    inject.push('<script src="/js/ai-assistant.js" defer></script>');
+  }
+  if (html.indexOf(PUBLIC_ACCESS_MARK) === -1) {
+    inject.push('<link rel="stylesheet" href="/css/public-access-gate.css?v=20260826-access-02">');
+    inject.push('<script src="/js/public-access-gate.js?v=20260826-access-02" defer></script>');
+  }
+  if (!inject.length) return buf;
+  return Buffer.from(html.slice(0, m) + inject.join('\n') + '\n</body>' + html.slice(m + 7), 'utf-8');
 }
 
 const server = http.createServer(async (req, res) => {
@@ -357,7 +366,7 @@ const server = http.createServer(async (req, res) => {
       const token = generateToken();
       adminTokens.add(token);
       appendAccessAudit({ role: 'admin', provider: 'phone' });
-      return sendJson(req, res, 200, { ok: true, token, method: 'phone' });
+      return sendJson(req, res, 200, { ok: true, role: 'admin', name: '管理员', token, method: 'phone', expiresAt: Date.now() + 12 * 3600e3 });
     } catch (e) {
       return sendJson(req, res, 400, { ok: false, error: '请求数据错误' });
     }
@@ -429,6 +438,24 @@ const server = http.createServer(async (req, res) => {
       const body = JSON.parse(await collectBody(req));
       const provider = body.provider === 'phone' || body.provider === 'wechat' ? body.provider : 'visitor';
       appendAccessAudit({ role: 'visitor', provider, consentVersion: String(body.consentVersion || 'v1') });
+      return sendJson(req, res, 200, { ok: true, role: 'visitor', sessionId: generateToken(), expiresAt: Date.now() + 12 * 3600e3 });
+    } catch (e) {
+      return sendJson(req, res, 400, { ok: false, message: '请求数据错误' });
+    }
+  }
+
+  // === API: 普通访客手机号登录 ===
+  // 当前不接入短信验证码服务时，仅建立短期访客会话并记录脱敏审计信息；
+  // 不把手机号明文写入页面或族谱数据。配置短信服务后可在此端点叠加验证码校验。
+  if (url === '/api/public-auth/visitor-login' && req.method === 'POST') {
+    try {
+      const body = JSON.parse(await collectBody(req));
+      const phone = normalizePhone(body.phone);
+      if (!/^1\d{10}$/.test(phone)) {
+        return sendJson(req, res, 400, { ok: false, message: '请输入有效的11位手机号' });
+      }
+      const phoneHash = crypto.createHash('sha256').update(phone).digest('hex');
+      appendAccessAudit({ role: 'visitor', provider: body.provider === 'wechat' ? 'wechat' : 'phone', phoneHash, consentVersion: String(body.consentVersion || 'v2') });
       return sendJson(req, res, 200, { ok: true, role: 'visitor', sessionId: generateToken(), expiresAt: Date.now() + 12 * 3600e3 });
     } catch (e) {
       return sendJson(req, res, 400, { ok: false, message: '请求数据错误' });

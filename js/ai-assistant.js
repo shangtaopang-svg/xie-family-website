@@ -44,6 +44,7 @@
 
   var LS_HIST = 'ai_chat_history_v1';
   var LS_TOKEN = 'ai_clan_token';
+  var LS_ADMIN_TOKEN = 'xie_admin_token';
   var LS_PERSON = 'ai_clan_person';
   var LS_FAB_POS = 'ai_fab_pos';
   var LS_PANEL_POS = 'ai_panel_pos';
@@ -71,7 +72,7 @@
   var bubbleTimer = null; // 进入页面时的欢迎气泡自动隐藏计时器
 
   function isMb() { return window.matchMedia('(max-width:768px)').matches; }
-  function getToken() { try { return localStorage.getItem(LS_TOKEN) || ''; } catch (e) { return ''; } }
+  function getToken() { try { return localStorage.getItem(LS_ADMIN_TOKEN) || localStorage.getItem(LS_TOKEN) || ''; } catch (e) { return ''; } }
   function getPerson() { try { return JSON.parse(localStorage.getItem(LS_PERSON) || 'null'); } catch (e) { return null; } }
 
   function $(sel, root) { return (root || document).querySelector(sel); }

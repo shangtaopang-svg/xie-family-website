@@ -1,0 +1,80 @@
+.public-access-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2147482000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 35, 29, .58);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.public-access-dialog {
+  width: min(620px, 100%);
+  max-height: min(760px, calc(100dvh - 40px));
+  overflow: auto;
+  color: #17372c;
+  background: rgba(249, 252, 247, .95);
+  border: 1px solid rgba(103, 150, 127, .4);
+  border-radius: 24px;
+  box-shadow: 0 24px 80px rgba(8, 31, 23, .28);
+  animation: public-access-in .22s ease-out both;
+}
+
+.public-access-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 25px 28px 14px;
+}
+
+.public-access-kicker {
+  display: block;
+  margin-bottom: 7px;
+  color: #b2674c;
+  font: 700 11px/1.2 Arial, sans-serif;
+  letter-spacing: .18em;
+}
+
+.public-access-head h2 { margin: 0; font-size: clamp(24px, 4vw, 34px); letter-spacing: .04em; }
+.public-access-close { flex: 0 0 auto; width: 40px; height: 40px; border: 1px solid #bdccc2; border-radius: 50%; background: #fff; color: #426558; font-size: 24px; cursor: pointer; }
+.public-access-body { padding: 0 28px 28px; }
+.public-access-body p { margin: 0 0 16px; color: #63766d; line-height: 1.8; }
+.public-access-note { padding: 16px; border-left: 3px solid #b2674c; background: rgba(255, 247, 240, .82); color: #53665d; line-height: 1.75; }
+.public-access-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 22px; }
+.public-access-btn { min-height: 46px; padding: 0 20px; border: 1px solid #9ab5a8; border-radius: 12px; background: #fff; color: #28614e; font: 700 15px/1.2 inherit; cursor: pointer; }
+.public-access-btn.primary { border-color: #28614e; background: #28614e; color: #fff; }
+.public-access-btn.danger { border-color: #c6846e; color: #9b4b36; }
+.public-access-btn:disabled { opacity: .52; cursor: not-allowed; }
+.public-access-role-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 20px; }
+.public-access-role-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.public-access-role { min-height: 130px; padding: 18px; text-align: left; border: 1px solid #bfd1c5; border-radius: 16px; background: rgba(235, 247, 238, .7); color: #214d3e; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+.public-access-role.admin-role { border-color: #c98548; background: rgba(255, 246, 226, .86); }
+.public-access-role:hover { transform: translateY(-2px); border-color: #4e8871; box-shadow: 0 10px 24px rgba(58, 104, 83, .12); }
+.public-access-role strong { display: block; margin-bottom: 9px; font-size: 20px; }
+.public-access-role span { color: #6c7e75; line-height: 1.6; }
+.public-access-form { display: grid; gap: 12px; margin-top: 16px; }
+.public-access-form label { display: grid; gap: 7px; color: #526a5e; font-size: 14px; }
+.public-access-form input { min-height: 48px; padding: 0 14px; border: 1px solid #becfc3; border-radius: 11px; background: #fff; color: #17372c; font: inherit; outline: none; }
+.public-access-form input:focus { border-color: #3d7961; box-shadow: 0 0 0 3px rgba(61, 121, 97, .13); }
+.public-access-message { min-height: 24px; margin-top: 12px; color: #9b4b36; line-height: 1.5; }
+.public-access-message.success { color: #226244; }
+.public-access-provider { display: grid; gap: 10px; margin-top: 18px; padding: 15px; border: 1px dashed #b6c9bc; border-radius: 13px; background: rgba(255,255,255,.55); }
+.public-access-provider-title { color: #45695a; font-weight: 700; }
+.public-access-provider-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.public-access-provider small { color: #78877f; line-height: 1.5; }
+.public-access-success { padding: 16px; border-radius: 13px; background: #e7f5e8; color: #226244; font-weight: 700; }
+
+@keyframes public-access-in { from { opacity: 0; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 600px) {
+  .public-access-backdrop { align-items: start; padding: 10px; }
+  .public-access-dialog { max-height: calc(100dvh - 20px); border-radius: 20px; }
+  .public-access-head { padding: 20px 18px 10px; }
+  .public-access-body { padding: 0 18px 20px; }
+  .public-access-role-grid { grid-template-columns: 1fr; }
+  .public-access-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .public-access-btn { width: 100%; padding: 0 10px; }
+}
