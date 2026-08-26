@@ -231,7 +231,8 @@
   function go() {
     var q = input.value.trim();
     if (!q) { input.focus(); return; }
-    location.href = 'pages/genealogy.html?rootSearch=' + encodeURIComponent(q);
+    // 标记入口来源：从首页搜索进入寻根直线世系后，关闭按钮应直接回到首页。
+    location.href = 'pages/genealogy.html?rootSearch=' + encodeURIComponent(q) + '&rootOrigin=home-search';
   }
   btn.addEventListener('click', go);
   input.addEventListener('keydown', function(e){ if (e.key === 'Enter') go(); });

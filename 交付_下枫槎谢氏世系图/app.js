@@ -2203,6 +2203,12 @@
   function closeRootTrace() {
     const modal = $('#root-trace-modal');
     if (!modal) return;
+    const rootOrigin = new URLSearchParams(window.location.search).get('rootOrigin');
+    if (rootOrigin === 'home-search') {
+      // 首页搜索是一个独立的直达流程；关闭寻根结果时回到首页，而不是回到中间世系图页。
+      window.location.replace('../index.html');
+      return;
+    }
     if (document.fullscreenElement === modal && document.exitFullscreen) {
       document.exitFullscreen().catch(() => {});
     }
