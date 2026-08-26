@@ -141,7 +141,7 @@
     render();
   }
   function boot() {
-    if (!document.body || document.body.getAttribute('data-app-mode') === 'admin' || document.body.getAttribute('data-public-gate') === 'off') return;
+    if (!document.body || document.body.getAttribute('data-public-gate') === 'off') return;
     if (!window.matchMedia || !window.matchMedia('(max-width: 768px)').matches) return;
     // 每次进入手机端公开页面都重新经过完整入口流程：隐私确认 → 身份选择 → 登录/核验。
     // sessionStorage 仍保留本次结果，供当前页面的业务功能读取；但不能用它跳过下一次进入。
