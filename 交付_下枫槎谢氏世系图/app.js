@@ -2556,7 +2556,7 @@
     pageFields.forEach((field) => {
       const value = text(field).trim();
       if (!value) return;
-      const explicit = /(上册|下册)\s*(?:PDF\s*)?(?:第\s*)?(\d{1,4})\s*(?:页)?/gi;
+      const explicit = /(上册|下册)\s*(?:PDF\s*)?(?:第\s*)?(\d{1,4})\s*(?:页)?(?:\s*(?:[-—~至]\s*(?:第\s*)?(\d{1,4})\s*(?:页)?)?)/gi;
       let match;
       while ((match = explicit.exec(value))) add(match[1] === '下册' ? 'lower' : 'upper', match[2]);
       if (bookHint) {
@@ -2656,12 +2656,15 @@
     const page = Math.max(1, Number.parseInt(state.pdfBook.page, 10) || 1);
     const definition = pdfBookDefinition(book);
     const status = $('#query-book-page-status');
-    const nextPage = page + 1;
-    if (status) status.textContent = `${definition.label} · 第 ${page}—${nextPage} 页`;
+    const rightPanel = frameRight.closest('.query-book-page-panel');
+    const spread = frameLeft.closest('.query-book-spread');
+    if (rightPanel) rightPanel.hidden = true;
+    if (spread) spread.setAttribute('aria-label', '原谱单页');
+    if (status) status.textContent = `${definition.label} · 第 ${page} 页`;
     frameLeft.title = `${definition.label}第 ${page} 页`;
-    frameRight.title = `${definition.label}第 ${nextPage} 页`;
+    frameRight.title = '';
     frameLeft.src = pdfBookPageUrl(book, page);
-    frameRight.src = pdfBookPageUrl(book, nextPage);
+    frameRight.src = 'about:blank';
   }
 
   function openPdfBook(book, page, withTurnEffect) {
@@ -2677,12 +2680,12 @@
     if (withTurnEffect) {
       playPageTurnSound();
       flashPdfBookPage();
-      updatePdfBookTurnNote(`咔嚓 · 已翻到第 ${state.pdfBook.page}—${state.pdfBook.page + 1} 页`);
+      updatePdfBookTurnNote(`咔嚓 · 已翻到第 ${state.pdfBook.page} 页`);
     }
   }
 
   function turnPdfBookPage(delta) {
-    openPdfBook(state.pdfBook.book, Number(state.pdfBook.page) + (delta < 0 ? -2 : 2), true);
+    openPdfBook(state.pdfBook.book, Number(state.pdfBook.page) + (delta < 0 ? -1 : 1), true);
   }
 
   function goToPdfBookPage() {
