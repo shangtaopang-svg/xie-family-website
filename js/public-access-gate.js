@@ -69,7 +69,7 @@
     saveSession(session);
     if (result.role === 'admin' && result.token) { try { localStorage.setItem(ADMIN_TOKEN_KEY, result.token); localStorage.setItem(AI_TOKEN_KEY, result.token); } catch (e) {} }
     var body = getBody();
-    if (body) body.innerHTML = '<div class="public-access-success">' + (result.role === 'admin' ? '管理员身份验证通过，全部页面和 AI 咨询权限已开启。' : result.role === 'clan' ? '族人身份核验通过，欢迎回家。' : '普通访客登录成功。') + '</div><p>本次登录保存在当前浏览器会话中，过期或重新打开后需要再次确认。</p><div class="public-access-actions"><button class="public-access-btn primary" type="button" data-access-action="close">开始浏览</button></div>';
+    if (body) body.innerHTML = '<div class="public-access-success">' + (result.role === 'admin' ? '管理员身份验证通过，全部页面和 AI 咨询权限已开启。' : result.role === 'clan' ? '族人身份核验通过，欢迎回家。' : '普通访客登录成功。') + '</div><p>本次登录仅用于当前页面；进入其他公开页面时，需要重新完成身份确认。</p><div class="public-access-actions"><button class="public-access-btn primary" type="button" data-access-action="close">开始浏览</button></div>';
   }
   function validPhone(value) { return /^1\d{10}$/.test(String(value || '').replace(/[\s-]/g, '').replace(/^\+86/, '')); }
   function adminLogin() {
@@ -143,11 +143,10 @@
   function boot() {
     if (!document.body || document.body.getAttribute('data-app-mode') === 'admin' || document.body.getAttribute('data-public-gate') === 'off') return;
     if (!window.matchMedia || !window.matchMedia('(max-width: 768px)').matches) return;
-    var session = readSession();
-    if (sessionValid(session)) return;
-    // 管理员令牌只用于当前已同意并登录后的 AI/后台请求；新浏览会话仍须重新经过
-    // 隐私确认和身份选择，避免仅凭浏览器遗留令牌绕过登录流程。
-    launch();
+    // 每次进入手机端公开页面都重新经过完整入口流程：隐私确认 → 身份选择 → 登录/核验。
+    // sessionStorage 仍保留本次结果，供当前页面的业务功能读取；但不能用它跳过下一次进入。
+    // 管理员令牌同样只用于登录后的权限与 AI 请求，不能绕过入口流程。
+    launch(true);
   }
   document.addEventListener('click', function (event) {
     var launcher = event.target.closest && event.target.closest('[data-access-launcher]');

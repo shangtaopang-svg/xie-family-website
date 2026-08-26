@@ -235,8 +235,8 @@ function injectAiHtml(buf) {
     inject.push('<script src="/js/ai-assistant.js" defer></script>');
   }
   if (html.indexOf(PUBLIC_ACCESS_MARK) === -1) {
-    inject.push('<link rel="stylesheet" href="/css/public-access-gate.css?v=20260826-access-02">');
-    inject.push('<script src="/js/public-access-gate.js?v=20260826-access-02" defer></script>');
+    inject.push('<link rel="stylesheet" href="/css/public-access-gate.css?v=20260826-access-03">');
+    inject.push('<script src="/js/public-access-gate.js?v=20260826-access-03" defer></script>');
   }
   if (!inject.length) return buf;
   return Buffer.from(html.slice(0, m) + inject.join('\n') + '\n</body>' + html.slice(m + 7), 'utf-8');
