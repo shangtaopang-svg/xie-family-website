@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var CONSENT_VERSION = 'privacy-v3-20260826';
+  var CONSENT_VERSION = 'privacy-v4-20260827';
   var SESSION_KEY = 'xie_public_access_v2';
   var ADMIN_TOKEN_KEY = 'xie_admin_token';
   var AI_TOKEN_KEY = 'ai_admin_token';
@@ -14,6 +14,10 @@
   }
   function readSession() { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { return null; } }
   function sessionValid(session) { return !!(session && session.expiresAt && Number(session.expiresAt) > Date.now()); }
+  function validSession() {
+    var session = readSession();
+    return !!(sessionValid(session) && session.consentVersion === CONSENT_VERSION && session.role);
+  }
   function saveSession(value) { try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(value)); } catch (e) {} }
   function api(path, options) {
     return fetch(path, options).then(function (response) {
@@ -48,6 +52,9 @@
       modal.style.display = 'none';
     }
     document.documentElement.classList.remove('public-access-open');
+    var callback = window.__publicAccessAfterClose;
+    window.__publicAccessAfterClose = null;
+    if (typeof callback === 'function') setTimeout(callback, 0);
   }
   function showMessage(message, success) {
     var el = document.getElementById('public-access-message');
@@ -90,7 +97,7 @@
     if (result.role === 'admin' && result.token) { try { localStorage.setItem(ADMIN_TOKEN_KEY, result.token); localStorage.setItem(AI_TOKEN_KEY, result.token); } catch (e) {} }
     var body = getBody();
     if (body) {
-      body.innerHTML = '<div class="public-access-success">' + (result.role === 'admin' ? '管理员身份验证通过，全部页面和 AI 咨询权限已开启。' : result.role === 'clan' ? '族人身份核验通过，欢迎回家。' : '普通访客登录成功。') + '</div><p>本次登录仅用于当前页面；进入其他公开页面时，需要重新完成身份确认。</p><div class="public-access-actions"><button class="public-access-btn primary" type="button" data-access-action="close">开始浏览</button></div>';
+      body.innerHTML = '<div class="public-access-success">' + (result.role === 'admin' ? '管理员身份验证通过，全部页面和 AI 咨询权限已开启。' : result.role === 'clan' ? '族人身份核验通过，欢迎回家。' : '普通访客登录成功。') + '</div><p>身份确认已保存到当前浏览器会话；后续族谱查询无需重复确认。</p><div class="public-access-actions"><button class="public-access-btn primary" type="button" data-access-action="close">开始浏览</button></div>';
       var browseButton = body.querySelector('[data-access-action="close"]');
       if (browseButton) browseButton.addEventListener('click', function (event) {
         event.preventDefault();
@@ -163,7 +170,8 @@
     return !!(window.matchMedia && window.matchMedia('(max-width: 768px)').matches);
   }
   function launch(force) {
-    if (!force && !isMobile() && sessionValid(readSession())) return;
+    if (!isMobile()) return;
+    if (!force && validSession()) return;
     build();
     var modal = getBackdrop();
     if (!modal) return;
@@ -178,24 +186,24 @@
   }
   function boot() {
     if (!document.body || document.body.getAttribute('data-public-gate') === 'off') return;
-    if (!isMobile()) return;
-    // 每次进入手机端公开页面都重新经过完整入口流程：隐私确认 → 身份选择 → 登录/核验。
-    // sessionStorage 仍保留本次结果，供当前页面的业务功能读取；但不能用它跳过下一次进入。
-    // 管理员令牌同样只用于登录后的权限与 AI 请求，不能绕过入口流程。
-    launch(true);
+    if (!isMobile() || document.body.getAttribute('data-public-gate') !== 'always') return;
+    if (validSession()) return;
+    launch(false);
   }
-  // 手机浏览器可能通过 back/forward cache 恢复页面，恢复时再次强制走登录确认。
+  // 手机浏览器通过 back/forward cache 恢复时，只在本页配置为 always 且会话失效时重新确认。
   window.addEventListener('pageshow', function (event) {
     if (!event.persisted || !isMobile()) return;
-    if (!document.body || document.body.getAttribute('data-public-gate') === 'off') return;
-    launch(true);
+    if (!document.body || document.body.getAttribute('data-public-gate') !== 'always') return;
+    if (validSession()) return;
+    launch(false);
   });
   document.addEventListener('click', function (event) {
     var launcher = event.target.closest && event.target.closest('[data-access-launcher]');
     if (!launcher) return;
     event.preventDefault();
-    launch(true);
+    launch(false);
   });
-  window.openPublicAccessGate = function () { launch(true); };
+  window.openPublicAccessGate = function () { launch(false); };
+  window.publicAccessSessionValid = validSession;
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 }());

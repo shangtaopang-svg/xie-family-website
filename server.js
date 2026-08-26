@@ -260,7 +260,7 @@ function gzipSend(req, res, status, headers, data) {
 const AI_INJECT_BLACKLIST = new Set(['/admin.html', '/recover.html', '/entrance.html']);
 const AI_INJECT_MARK = '/js/ai-assistant.js';
 const PUBLIC_ACCESS_MARK = '/js/public-access-gate.js';
-const PUBLIC_ACCESS_SCRIPT_VERSION = '20260826-mobile-auth-03';
+const PUBLIC_ACCESS_SCRIPT_VERSION = '20260827-mobile-auth-04';
 function injectAiHtml(buf) {
   const html = buf.toString('utf-8').replace(/\/js\/public-access-gate\.js\?v=[^"'\s>]+/g, '/js/public-access-gate.js?v=' + PUBLIC_ACCESS_SCRIPT_VERSION);
   const m = html.search(/<\/body>/i);
@@ -271,7 +271,7 @@ function injectAiHtml(buf) {
     inject.push('<script src="/js/ai-assistant.js" defer></script>');
   }
   if (html.indexOf(PUBLIC_ACCESS_MARK) === -1) {
-    inject.push('<link rel="stylesheet" href="/css/public-access-gate.css?v=20260826-access-04">');
+    inject.push('<link rel="stylesheet" href="/css/public-access-gate.css?v=20260827-access-01">');
     inject.push('<script src="/js/public-access-gate.js?v=' + PUBLIC_ACCESS_SCRIPT_VERSION + '" defer></script>');
   }
   if (!inject.length) return buf;
