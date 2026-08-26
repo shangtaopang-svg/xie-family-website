@@ -68,6 +68,7 @@
   var panelPos = null;  // 用户拖拽后面板的位置 {x,y}
   var fabMoved = false; // 本次点击是否为拖拽（用于抑制打开面板）
   var bubbleDismissed = false; // 用户是否关闭过问候气泡（记住，不再显示）
+  var bubbleTimer = null; // 进入页面时的欢迎气泡自动隐藏计时器
 
   function isMb() { return window.matchMedia('(max-width:768px)').matches; }
   function getToken() { try { return localStorage.getItem(LS_TOKEN) || ''; } catch (e) { return ''; } }
@@ -226,16 +227,24 @@
   }
 
   /* ---------------- 悬浮球问候气泡 ---------------- */
-  function hideBubble() { if (bubble) bubble.style.display = 'none'; }
+  function hideBubble() {
+    if (bubbleTimer) { clearTimeout(bubbleTimer); bubbleTimer = null; }
+    if (bubble) bubble.style.display = 'none';
+  }
   function showBubble() { if (bubble && !bubbleDismissed) bubble.style.display = ''; }
 
   function setupBubble() {
     if (!bubble) return;
-    // 旧版「永久关闭」标记作废：问候气泡每次访问都重新出现（用户反馈文字消失）
-    // 手机端常驻显示，不再 4.5s 后收起为小圆点
+    // 欢迎语只在本次页面进入时显示，3 秒后自动隐藏；机器人按钮始终保留。
     try { localStorage.removeItem(LS_GREET); } catch (e) {}
     bubbleDismissed = false;
     bubble.classList.remove('collapsed');
+    showBubble();
+    if (bubbleTimer) clearTimeout(bubbleTimer);
+    bubbleTimer = setTimeout(function () {
+      bubbleTimer = null;
+      if (bubble) bubble.style.display = 'none';
+    }, 3000);
     bubble.addEventListener('click', function (e) {
       var closeBtn = document.getElementById('ai-bubble-close');
       if (e.target === closeBtn || (closeBtn && closeBtn.contains(e.target))) {
@@ -312,7 +321,7 @@
     panel.hidden = true;
     panel.classList.remove('ai-selection-mode');
     stopSpeak(); // 关闭窗口同时停止朗读：避免出现「窗口关了但声音还在响」的诡异状态
-    showBubble(); // 面板关闭后重新显示问候气泡
+    // 欢迎语只在初次进入页面时显示，不因关闭咨询面板再次出现
     document.body.style.overflow = '';
     input.blur();
     resetViewport();
