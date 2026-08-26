@@ -1086,9 +1086,8 @@
     if (root) state.expanded.add(String(personId(root)));
   }
 
-  // 手机端全部展开时不要强行缩成“全景缩略图”。
-  // 本宗世系横向跨度很大，按整张图适应屏幕会得到 1% 左右的比例，
-  // 用户会误以为树图消失。保留一个可读的起始比例，后续仍可缩放、平移。
+  // 兼容旧版调用：现在“全部展开”统一由 fitOverview({ whole: true })
+  // 计算整张图的适配比例，这个函数只保留给旧状态恢复等场景使用。
   function fitExpandedTreeForMobile() {
     const viewport = $('#tree-viewport');
     const stage = $('#tree-stage');
@@ -2884,10 +2883,14 @@
     }
     const contentWidth = Math.max(1, canvasMap?.baseWidth || state.overviewMetrics.width || stage.scrollWidth);
     const contentHeight = Math.max(1, canvasMap?.baseHeight || state.overviewMetrics.height || stage.scrollHeight);
-    const availableWidth = Math.max(1, viewport.clientWidth - 12);
-    const availableHeight = Math.max(1, viewport.clientHeight - 12);
+    const viewportStyle = typeof getComputedStyle === 'function' ? getComputedStyle(viewport) : null;
+    const horizontalPadding = (parseFloat(viewportStyle?.paddingLeft) || 0) + (parseFloat(viewportStyle?.paddingRight) || 0);
+    const verticalPadding = (parseFloat(viewportStyle?.paddingTop) || 0) + (parseFloat(viewportStyle?.paddingBottom) || 0);
+    const availableWidth = Math.max(1, viewport.clientWidth - horizontalPadding - 12);
+    const availableHeight = Math.max(1, viewport.clientHeight - verticalPadding - 12);
     const fit = Math.min(availableWidth / contentWidth, availableHeight / contentHeight) * .96;
-    const readable = Boolean(options && options.readable && canvasMap);
+    const whole = Boolean(options && options.whole);
+    const readable = !whole && Boolean(options && options.readable && canvasMap);
     if (readable) {
       // 全展开时不再把 1,253 张卡片压成一张“看不清的缩略图”。
       // 先以可读比例聚焦当前人物，用户仍可点击“全景”回到完整缩略图。
@@ -2915,7 +2918,34 @@
     viewport.scrollLeft = 0;
     viewport.scrollTop = 0;
     renderMiniMap();
-    showToast(readable ? `已进入可读浏览 · ${formatZoom()}，可拖拽查看各分支；“全景”可看整图` : `已适应屏幕 · ${formatZoom()}，拖拽图面可四向平移`);
+    showToast(readable
+      ? `已进入可读浏览 · ${formatZoom()}，可拖拽查看各分支；“全景”可看整图`
+      : whole
+        ? `全部展开 · ${formatZoom()}，整张世系图已完整适配窗口，可缩放、平移查看`
+        : `已适应屏幕 · ${formatZoom()}，拖拽图面可四向平移`);
+  }
+
+  // 收起后不保留“全部展开”时的缩小比例和偏移，
+  // 将当前世系的根节点重新放到展示窗口中央，避免图面贴边或停留在角落。
+  function centerCollapsedTree() {
+    const viewport = $('#tree-viewport');
+    const stage = $('#tree-stage');
+    if (!viewport || !stage || !stage.innerHTML.trim()) return;
+    state.zoom = 1;
+    state.mapPan = { x: 0, y: 0 };
+    state.overviewMetrics = { width: 0, height: 0 };
+    stage.style.zoom = 1;
+    stage.style.transform = 'none';
+    const contentWidth = Math.max(1, stage.scrollWidth, stage.offsetWidth);
+    const contentHeight = Math.max(1, stage.scrollHeight, stage.offsetHeight);
+    state.mapPan = {
+      x: Math.max(0, Math.round((viewport.clientWidth - contentWidth) / 2)),
+      y: Math.max(0, Math.round((viewport.clientHeight - contentHeight) / 2))
+    };
+    applyZoom();
+    viewport.scrollLeft = 0;
+    viewport.scrollTop = 0;
+    renderMiniMap();
   }
 
   // 总览图浏览层：保留一次 DOM 排版作为“几何真值”，之后用 SVG
@@ -6292,9 +6322,11 @@
           state.mapPan = { x: 0, y: 0 };
           updateZoomReadouts();
           showToast('总览已按六段世系整理，请选择一段查看连续树图');
-        } else if (state.overviewCanvas?.active) fitOverview({ readable: true });
-        else if (isMobileViewport()) fitExpandedTreeForMobile();
-        else fitOverview({ readable: true });
+        } else {
+          // 全部展开的结果必须在当前世系展示窗口内完整出现。
+          // SVG 图层保持矢量清晰，用户仍可继续放大或平移查看细节。
+          fitOverview({ whole: true });
+        }
         if (!(isMobileViewport() && state.view === 'overview' && state.overviewMode)) showToast('本宗世系图已全部展开，可缩放、平移查看全图');
       } catch (error) {
         showToast('展开全部时遇到异常，请先使用“展开主脉”或按支系查看');
@@ -6315,10 +6347,18 @@
     state.overviewMode = false;
     state.immersive = false;
     state.mobileFocusRootId = null;
+    state.zoom = 1;
+    state.mapPan = { x: 0, y: 0 };
     state.expanded.clear();
     const root = findRoot();
     if (root) state.expanded.add(String(personId(root)));
     renderTree();
+    const center = () => centerCollapsedTree();
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => requestAnimationFrame(center));
+    } else {
+      setTimeout(center, 0);
+    }
   }
 
   function printTree() {
