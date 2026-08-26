@@ -143,8 +143,8 @@
 
   // ID 来自族谱管理后台唯一主数据源：文杲(10)→撰(12)/攒(13)，撰(12)→文对(61)，攒(13)→乾(59)/彬(60)。
   const MAIN_SUBLINEAGES = {
-    // 6-0 是文杲至撰、攒的桥接图，只保留这三个节点，不向下展开后续分支。
-    wengao: { label: '文杲-撰/攒世系', rootId: 10, includeIds: [12, 13] },
+    // 6-0 是文杲至文对、彬、乾的完整路径图，终点以下不再展开。
+    wengao: { label: '文杲至文对/彬/乾世系图', rootId: 10, targetIds: [61, 60, 59] },
     wendui: { label: '撰公派下文对世系', rootId: 12, targetId: 61 },
     qian: { label: '攒公派下乾公世系', rootId: 13, targetId: 59 },
     bin: { label: '攒公派下彬公世系', rootId: 13, targetId: 60 }
@@ -229,6 +229,19 @@
       if (key === target) return true;
       visited.add(key);
       current = state.adoption.displayParentById.get(key) || rawFatherOf(current);
+    }
+    return false;
+  }
+
+  function isOnPathToTarget(person, targetId) {
+    const personKey = String(personId(person));
+    const visited = new Set();
+    let current = getPerson(targetId);
+    while (current && !visited.has(String(personId(current)))) {
+      const currentKey = String(personId(current));
+      if (currentKey === personKey) return true;
+      visited.add(currentKey);
+      current = state.adoption.displayParentById.get(currentKey) || rawFatherOf(current);
     }
     return false;
   }
@@ -339,9 +352,8 @@
             // 以本宗根节点的真实父子链为准，保留所有后代及其承嗣归属。
             included = personKey === String(toId(effectiveRootId)) || isStrictDescendantOf(person, effectiveRootId);
           }
-          if (included && sublineage?.includeIds) {
-            const allowedIds = new Set([effectiveRootId, ...sublineage.includeIds].map((id) => String(toId(id))));
-            included = allowedIds.has(personKey);
+          if (included && sublineage?.targetIds) {
+            included = sublineage.targetIds.some((targetId) => isOnPathToTarget(person, targetId));
           }
         }
         // 丹一一支接入枫槎始祖及前、后枫槎等支系，按真实父系回溯到小四，不能按支系名称过滤。
