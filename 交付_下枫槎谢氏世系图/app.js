@@ -1035,6 +1035,20 @@
     }
   }
 
+  function expandSublineagePaths(sublineage) {
+    if (!sublineage) return false;
+    const targetIds = Array.isArray(sublineage.targetIds)
+      ? sublineage.targetIds
+      : sublineage.targetId !== undefined && sublineage.targetId !== null
+        ? [sublineage.targetId]
+        : [];
+    const targets = targetIds.map((id) => getPerson(id)).filter(Boolean);
+    if (!targets.length) return false;
+    state.expanded.clear();
+    targets.forEach((target) => setAncestorsExpanded(target));
+    return true;
+  }
+
   function renderViewTabs() {
     const container = $('#view-tabs');
     if (!container) return;
@@ -6181,10 +6195,9 @@
     if (search) search.value = '';
     buildFilters();
     seedMainExpansion();
-    if (state.mainSublineage && state.mainLineageTargetId) {
-      state.expanded.clear();
-      setAncestorsExpanded(getPerson(state.mainLineageTargetId));
-    }
+    // 子世系入口直接展开从起点到终点的完整路径；6-0 有三个终点，需同时展开三条路径。
+    // viewIncludes 已限制终点以下不再进入当前图面。
+    if (state.mainSublineage) expandSublineagePaths(MAIN_SUBLINEAGES[state.mainSublineage]);
     renderAll();
     fitOverview();
     showToast(`已切换到${currentView().label}`);
