@@ -2626,6 +2626,48 @@ body[data-app-mode="public"] .tree-viewport {
   }
 }
 
+/* 手机端“查世系图”是独立的六段选择层：
+   只保留标题和六个世系卡片，避免底部继续露出空白详情区或其他查询模块。 */
+@media (max-width: 760px) {
+  body[data-app-mode="public"] #query-drawer[data-mobile-mode="lineage"] {
+    position: fixed;
+    inset: 64px 0 0;
+    z-index: 350;
+    box-sizing: border-box;
+    width: 100vw;
+    height: auto;
+    max-height: none;
+    padding: 12px 10px max(24px, env(safe-area-inset-bottom));
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: #f8f6ef;
+    border: 0;
+    box-shadow: 0 -8px 28px rgba(63, 67, 59, .08);
+  }
+  body[data-app-mode="public"] #query-drawer[data-mobile-mode="lineage"] > :not(.query-drawer-head):not(.query-lineage-section) {
+    display: none !important;
+  }
+  body[data-app-mode="public"] #query-drawer[data-mobile-mode="lineage"] .query-drawer-head {
+    margin: 0;
+    padding: 4px 2px 12px;
+    background: #f8f6ef;
+  }
+  body[data-app-mode="public"] #query-drawer[data-mobile-mode="lineage"] .query-lineage-section {
+    min-height: calc(100dvh - 110px);
+    margin: 0;
+    padding: 10px 0 28px;
+    border: 0;
+    background: transparent;
+  }
+  body[data-app-mode="public"] #query-drawer[data-mobile-mode="lineage"] .query-lineage-card-picker {
+    gap: 10px;
+  }
+  body[data-app-mode="public"] #query-drawer[data-mobile-mode="lineage"] .query-lineage-card-note {
+    display: none !important;
+  }
+}
+
 @media (min-width: 681px) {
   .query-result-row:not(.query-result-head) {
     grid-template-columns: 52px minmax(95px, 1fr) 56px minmax(105px, 1.35fr) 76px 226px;
