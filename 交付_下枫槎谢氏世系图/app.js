@@ -141,8 +141,9 @@
 
   const VIEW_ORDER = ['overview', 'ancient', 'shenbo', 'dongshan', 'linhai', 'shima', 'main'];
 
-  // ID 来自族谱管理后台唯一主数据源：撰(12)→文对(61)，攒(13)→乾(59)，攒(13)→彬(60)。
+  // ID 来自族谱管理后台唯一主数据源：文杲(10)→撰(12)/攒(13)，撰(12)→文对(61)，攒(13)→乾(59)/彬(60)。
   const MAIN_SUBLINEAGES = {
+    wengao: { label: '文杲-撰/攒世系', rootId: 10 },
     wendui: { label: '撰公派下文对世系', rootId: 12, targetId: 61 },
     qian: { label: '攒公派下乾公世系', rootId: 13, targetId: 59 },
     bin: { label: '攒公派下彬公世系', rootId: 13, targetId: 60 }
