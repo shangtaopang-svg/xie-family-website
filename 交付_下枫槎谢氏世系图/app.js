@@ -24,6 +24,7 @@
     overviewMode: false,
     immersive: false,
     detailOnly: false,
+    detailOrigin: null,
     expanded: new Set(),
     zoom: 1,
     mapPan: {
@@ -3906,7 +3907,7 @@
     const displayChildren = displayChildrenOf(person);
     const ancestors = ancestorsOf(person);
     const raw = escapeHtml(JSON.stringify(person, null, 2));
-    panel.innerHTML = `<div class="detail-head"><div><h3>${escapeHtml(person.name || '未命名人物')}</h3><p>${escapeHtml(viewGenerationLabel(person))} · 总谱第${generationOf(person) || '未详'}世 · ${escapeHtml(text(person.branch) || '未标注支系')} · ID ${escapeHtml(personId(person))}</p></div><div class="detail-head-actions">${!IS_ADMIN ? '<button class="detail-return-query" data-action="back-to-people-query">返回查族人</button>' : ''}<button class="detail-close" data-action="close-detail" aria-label="关闭详情">×</button></div></div>
+    panel.innerHTML = `<div class="detail-head"><div><h3>${escapeHtml(person.name || '未命名人物')}</h3><p>${escapeHtml(viewGenerationLabel(person))} · 总谱第${generationOf(person) || '未详'}世 · ${escapeHtml(text(person.branch) || '未标注支系')} · ID ${escapeHtml(personId(person))}</p></div><div class="detail-head-actions">${!IS_ADMIN ? (state.detailOrigin === 'query' ? '<button class="detail-return-query" data-action="back-to-people-query">返回查族人</button>' : '<button class="detail-return-query" data-action="close-detail">返回世系图</button>') : ''}<button class="detail-close" data-action="close-detail" aria-label="关闭详情">×</button></div></div>
       ${IS_ADMIN ? '<div class="detail-actions"><button class="detail-btn primary" data-action="edit-person">直接编辑（实时保存）</button><button class="detail-btn" data-action="new-child">新增子女</button><button class="detail-btn" data-action="export-person">导出人物</button><button class="detail-btn danger" data-action="delete-person">删除</button></div>' : ''}
       <section class="detail-section"><h4>基本资料</h4><dl class="detail-grid">${detailField('姓名', person.name)}${detailField('性别', person.gender)}${detailField('本图世次', viewGenerationLabel(person))}${detailField('总谱世代', generationOf(person) ? `第${generationOf(person)}世` : person.generation)}${detailField('支系', person.branch)}${detailField('状态', lifeStatusLabel(person))}${detailField('状态依据', person.life_status_source || '待核验')}${detailField('重点标记', person.highlight ? '是' : '否')}</dl></section>
       <section class="detail-section"><h4>时间与地点</h4><dl class="detail-grid">${detailField('出生信息', person.birth_date)}${detailField('卒年 / 卒葬', person.death_date)}${detailField('籍贯', person.native_place)}${detailField('居住地', person.residence)}${detailField('葬地', person.burial_place)}${detailField('资料依据', person.vital_source)}</dl></section>
@@ -6168,6 +6169,19 @@
     if (state.mode === 'edit') flushDraftAutoSave();
     const person = getPerson(id);
     if (!person) return;
+    // 手机端只读世系图的详情栏位于树图区之后；如果仍保持三段式布局，
+    // 点击卡片虽然会更新详情，但用户当前视口看不到任何变化。
+    // 直接切换为资料模式，让点击卡片有明确、可见的反馈。查询页自己的
+    // “详情”动作已有专用流程，因此不在 query.open 时重复切换。
+    const enterMobileCardDetail = !IS_ADMIN
+      && isMobileViewport()
+      && !state.query.open
+      && !state.overviewMode
+      && !state.detailOnly;
+    if (enterMobileCardDetail) {
+      state.detailOrigin = 'tree';
+      setDetailOnlyMode(true);
+    }
     // 同名的亲生 / 入继记录点击时统一落到承嗣卡片：
     // 点击“水财（出继）”也要直接看到“水财（入继）”下面的世和、世安。
     const outRelation = adoptionRelation(person);
@@ -6207,6 +6221,17 @@
       card.classList.remove('is-search-target-pulse');
       void card.offsetWidth;
       card.classList.add('is-search-target-pulse');
+    }
+    if (enterMobileCardDetail) {
+      window.setTimeout(() => {
+        const panel = $('#detail-panel');
+        if (!panel || !panel.classList.contains('has-person')) return;
+        panel.hidden = false;
+        window.scrollTo({ top: 0, behavior: 'auto' });
+        const heading = panel.querySelector('.detail-head h3');
+        if (heading) heading.setAttribute('tabindex', '-1');
+        heading?.focus({ preventScroll: true });
+      }, 0);
     }
   }
 
@@ -6446,6 +6471,7 @@
       return;
     }
     // 手机端详情必须停留在当前查询页，只显示完整人物资料；不再把树图区带到视口中。
+    state.detailOrigin = 'query';
     setDetailOnlyMode(true);
     selectPerson(id, { forceRender: true });
     window.setTimeout(() => {
@@ -6575,14 +6601,16 @@
       case 'delete-person': deleteSelected(); break;
       case 'cancel-edit': flushDraftAutoSave(); state.mode = 'view'; state.draftId = null; state.draftParentId = null; renderDetail(); break;
       case 'close-detail': {
-        const restorePeopleQuery = !IS_ADMIN && isMobileViewport();
+        const restorePeopleQuery = !IS_ADMIN && isMobileViewport() && state.detailOrigin === 'query';
         flushDraftAutoSave();
         setDetailOnlyMode(false);
+        state.detailOrigin = null;
         state.selectedId = null;
         state.mode = 'view';
         renderDetail();
         updateSelectedCardUI();
         if (restorePeopleQuery) restoreMobilePeopleQuery();
+        else if (!IS_ADMIN && isMobileViewport()) window.scrollTo({ top: 0, behavior: 'auto' });
         break;
       }
       case 'back-to-people-query': returnToPeopleQuery(); break;
