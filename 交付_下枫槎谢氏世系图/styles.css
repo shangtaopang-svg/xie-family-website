@@ -2370,6 +2370,17 @@ body[data-app-mode="public"] .tree-viewport {
   .tree-minimap *, .tree-toolbar-actions *, .person-card { transition: none !important; animation: none !important; }
 }
 
+/* 公共世系图初始只展示图面；人物卡片被点击后，详情栏才参与布局。 */
+body[data-app-mode="public"] #app.is-detail-empty .workspace {
+  grid-template-columns: var(--left-rail-w) minmax(0, 1fr) 0 !important;
+}
+body[data-app-mode="public"] #app.is-left-hidden.is-detail-empty .workspace {
+  grid-template-columns: 0 minmax(0, 1fr) 0 !important;
+}
+body[data-app-mode="public"] #detail-panel[hidden] {
+  display: none !important;
+}
+
 /* 手机端查询结果的“详情”是资料页，不是世系图：隐藏树图区与查询层，保留同一页面中的完整详情。 */
 @media (max-width: 760px) {
   body[data-app-mode="public"] #app.is-detail-only .workspace {

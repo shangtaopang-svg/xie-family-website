@@ -4093,6 +4093,12 @@
   }
 
   function refreshDetailMotion(panel, hasPerson, editing) {
+    // 公共查询页未选中人物时不保留空白详情栏；点击卡片后再恢复详情栏。
+    // 管理后台仍保留原有详情/编辑布局，避免影响后台操作。
+    const shell = $('#app');
+    const hideEmptyDetail = !IS_ADMIN && !hasPerson;
+    panel.hidden = hideEmptyDetail;
+    if (shell) shell.classList.toggle('is-detail-empty', hideEmptyDetail);
     panel.classList.toggle('has-person', hasPerson);
     panel.classList.toggle('is-editing', editing);
     panel.classList.remove('is-refreshing');
