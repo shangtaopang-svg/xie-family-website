@@ -15,6 +15,9 @@
       <p>请输入管理员密码后进入</p>
       <input id="genealogy-admin-password" type="password" autocomplete="current-password" placeholder="管理员密码" required>
       <button type="submit">验证并进入</button>
+      <div class="genealogy-auth-divider">或使用管理员手机号快捷进入</div>
+      <input id="genealogy-admin-phone" type="tel" autocomplete="tel" inputmode="numeric" placeholder="登记的管理员手机号">
+      <button id="genealogy-admin-phone-submit" type="button" class="genealogy-auth-phone">手机号快捷登录</button>
       <span id="genealogy-admin-error" role="alert"></span>
       <a href="../pages/genealogy.html">返回族谱查询前台</a>
     </form>
@@ -215,6 +218,8 @@
   var gate = document.getElementById('genealogy-admin-auth');
   var form = document.getElementById('genealogy-admin-login');
   var input = document.getElementById('genealogy-admin-password');
+  var phoneInput = document.getElementById('genealogy-admin-phone');
+  var phoneButton = document.getElementById('genealogy-admin-phone-submit');
   var error = document.getElementById('genealogy-admin-error');
   function enter() { document.body.classList.add('admin-authenticated'); gate.hidden = true; window.dispatchEvent(new Event('xie-admin-authenticated')); }
   function reject(message) { document.body.classList.remove('admin-authenticated'); gate.hidden = false; error.textContent = message || ''; setTimeout(function(){ input.focus(); }, 0); }
@@ -227,6 +232,15 @@
       .then(function(r){ if (!r.ok) throw new Error(); return r.json(); })
       .then(function(data){ if (!data.ok || !data.token) throw new Error(); localStorage.setItem('xie_admin_token', data.token); input.value = ''; enter(); })
       .catch(function(){ reject('密码错误，请重试'); });
+  });
+  phoneButton.addEventListener('click', function () {
+    var phone = phoneInput.value.trim();
+    if (!phone) { reject('请输入登记的管理员手机号'); return; }
+    error.textContent = '正在验证手机号…';
+    fetch('/api/admin/phone-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: phone }) })
+      .then(function(r){ return r.json().then(function(data){ if (!r.ok || !data.ok || !data.token) throw new Error(data.error || '手机号未登记'); return data; }); })
+      .then(function(data){ localStorage.setItem('xie_admin_token', data.token); phoneInput.value = ''; enter(); })
+      .catch(function(e){ reject(e.message || '手机号验证失败'); });
   });
 })();
 </script>

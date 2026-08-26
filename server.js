@@ -50,9 +50,13 @@ setTimeout(() => {
 
 const PORT = parseInt(process.env.PORT, 10) || 3001;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin2025';
+// 管理员手机号仅以 SHA-256 哈希保存；可通过 .env 中的 ADMIN_PHONE_SHA256 覆盖。
+// 默认值对应管理员当前登记手机号，不在前端页面或返回结果中暴露原号码。
+const ADMIN_PHONE_SHA256 = process.env.ADMIN_PHONE_SHA256 || '01b878db43fe3a747ca56288dfd443c04fb7247772607cafe8bc088c2d408474';
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 const DATA_DIR = path.join(__dirname, 'data');
 const BACKUP_DIR = path.join(__dirname, 'data', 'backups');
+const ACCESS_AUDIT_PATH = path.join(DATA_DIR, 'access-audit.json');
 if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
 
 // Periodic auto-backup every 30 minutes
@@ -94,6 +98,19 @@ function generateToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
+function normalizePhone(phone) {
+  return String(phone || '').replace(/[\s-]/g, '').replace(/^\+86/, '');
+}
+
+function isAdminPhone(phone) {
+  const normalized = normalizePhone(phone);
+  if (!/^1\d{10}$/.test(normalized)) return false;
+  const actual = crypto.createHash('sha256').update(normalized).digest('hex');
+  const expected = Buffer.from(ADMIN_PHONE_SHA256, 'utf8');
+  const received = Buffer.from(actual, 'utf8');
+  return expected.length === received.length && crypto.timingSafeEqual(expected, received);
+}
+
 const MIME = {
   '.html': 'text/html;charset=utf-8',
   '.css': 'text/css;charset=utf-8',
@@ -128,6 +145,42 @@ function collectBody(req) {
 function sendJson(req, res, status, data) {
   const body = JSON.stringify(data);
   gzipSend(req, res, status, { 'Content-Type': 'application/json' }, body);
+}
+
+function publicAuthConfig() {
+  return {
+    phone: Boolean(process.env.SMS_PROVIDER_URL && process.env.SMS_PROVIDER_KEY),
+    wechat: Boolean(process.env.WECHAT_APPID && process.env.WECHAT_APPSECRET),
+  };
+}
+
+function findMemberByLineage(name, fatherName, grandpaName) {
+  const filePath = path.join(DATA_DIR, 'genealogy.json');
+  if (!fs.existsSync(filePath)) return { error: '族谱数据暂未加载' };
+  const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  const idMap = {};
+  data.forEach(p => { idMap[p.id] = p.name; });
+  const matches = data.filter(p => {
+    if (p.name !== name || !p.father_id) return false;
+    const father = data.find(f => f.id === parseInt(p.father_id));
+    if (!father || idMap[parseInt(p.father_id)] !== fatherName || !father.father_id) return false;
+    return idMap[parseInt(father.father_id)] === grandpaName;
+  });
+  return { data, matches };
+}
+
+function appendAccessAudit(entry) {
+  try {
+    let rows = [];
+    if (fs.existsSync(ACCESS_AUDIT_PATH)) {
+      const parsed = JSON.parse(fs.readFileSync(ACCESS_AUDIT_PATH, 'utf-8'));
+      if (Array.isArray(parsed)) rows = parsed;
+    }
+    rows.push({ ...entry, createdAt: new Date().toISOString() });
+    fs.writeFileSync(ACCESS_AUDIT_PATH, JSON.stringify(rows.slice(-2000), null, 2), 'utf-8');
+  } catch (e) {
+    console.warn('[access] 审计记录写入失败:', e.message);
+  }
 }
 
 // TTS 朗读限流：每 IP 滑动窗口 20 次/分钟
@@ -293,6 +346,23 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // === API: Administrator phone bootstrap login ===
+  // 这是管理员快捷入口；正式生产环境可在 .env 配置短信服务后再叠加验证码。
+  if (url === '/api/admin/phone-login' && req.method === 'POST') {
+    try {
+      const body = JSON.parse(await collectBody(req));
+      if (!isAdminPhone(body.phone)) {
+        return sendJson(req, res, 401, { ok: false, error: '手机号未登记为管理员' });
+      }
+      const token = generateToken();
+      adminTokens.add(token);
+      appendAccessAudit({ role: 'admin', provider: 'phone' });
+      return sendJson(req, res, 200, { ok: true, token, method: 'phone' });
+    } catch (e) {
+      return sendJson(req, res, 400, { ok: false, error: '请求数据错误' });
+    }
+  }
+
   // === API: Verify admin token ===
   if (url === '/api/verify' && req.method === 'GET') {
     const auth = req.headers['authorization'] || '';
@@ -313,26 +383,16 @@ const server = http.createServer(async (req, res) => {
         if (!name || !fatherName) {
           return sendJson(req, res, 200, { verified: false, message: '请输入姓名和父亲名字' });
         }
-        const filePath = path.join(DATA_DIR, 'genealogy.json');
-        if (!fs.existsSync(filePath)) {
-          return sendJson(req, res, 200, { verified: false, message: '族谱数据暂未加载' });
-        }
-        const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-        const idMap = {};
-        data.forEach(p => idMap[p.id] = p.name);
-        const matches = data.filter(p => {
-          if (p.name !== name) return false;
-          if (!p.father_id) return false;
-          const fName = idMap[parseInt(p.father_id)];
-          if (!fName || fName !== fatherName) return false;
-          if (grandpaName) {
-            const father = data.find(f => f.id === parseInt(p.father_id));
-            if (!father || !father.father_id) return false;
-            const gName = idMap[parseInt(father.father_id)];
-            if (!gName || gName !== grandpaName) return false;
-          }
-          return true;
-        });
+        const result = findMemberByLineage(name, fatherName, grandpaName || '');
+        if (result.error) return sendJson(req, res, 200, { verified: false, message: result.error });
+        const { data, matches } = grandpaName
+          ? result
+          : (() => {
+              const filePath = path.join(DATA_DIR, 'genealogy.json');
+              const idMap = {};
+              data.forEach(p => { idMap[p.id] = p.name; });
+              return { data, matches: data.filter(p => p.name === name && p.father_id && idMap[parseInt(p.father_id)] === fatherName) };
+            })();
         if (matches.length > 0) {
           const p = matches[0];
           const resp = {
@@ -357,6 +417,58 @@ const server = http.createServer(async (req, res) => {
       }
     });
     return;
+  }
+
+  // === API: Public access consent and simplified clan verification ===
+  if (url === '/api/public-auth/config' && req.method === 'GET') {
+    return sendJson(req, res, 200, { ok: true, providers: publicAuthConfig() });
+  }
+
+  if (url === '/api/public-auth/visitor' && req.method === 'POST') {
+    try {
+      const body = JSON.parse(await collectBody(req));
+      const provider = body.provider === 'phone' || body.provider === 'wechat' ? body.provider : 'visitor';
+      appendAccessAudit({ role: 'visitor', provider, consentVersion: String(body.consentVersion || 'v1') });
+      return sendJson(req, res, 200, { ok: true, role: 'visitor', sessionId: generateToken(), expiresAt: Date.now() + 12 * 3600e3 });
+    } catch (e) {
+      return sendJson(req, res, 400, { ok: false, message: '请求数据错误' });
+    }
+  }
+
+  if (url === '/api/public-auth/verify-member' && req.method === 'POST') {
+    try {
+      const body = JSON.parse(await collectBody(req));
+      const name = String(body.name || '').trim();
+      const fatherName = String(body.fatherName || '').trim();
+      const grandpaName = String(body.grandpaName || '').trim();
+      if (!name || !fatherName || !grandpaName) {
+        return sendJson(req, res, 200, { verified: false, message: '请完整填写本人、父亲和祖父姓名' });
+      }
+      const result = findMemberByLineage(name, fatherName, grandpaName);
+      if (result.error) return sendJson(req, res, 200, { verified: false, message: result.error });
+      if (!result.matches.length) return sendJson(req, res, 200, { verified: false, message: '未找到完全匹配的族谱记录，请核对姓名' });
+      if (result.matches.length > 1) {
+        return sendJson(req, res, 200, {
+          verified: false,
+          ambiguous: true,
+          message: '存在多条相同父系记录，请联系管理员进一步核验',
+          candidates: result.matches.map(p => ({ id: p.id, name: p.name, branch: p.branch, generation: p.generation }))
+        });
+      }
+      const person = result.matches[0];
+      appendAccessAudit({ role: 'clan', provider: body.provider || 'lineage', personId: person.id, consentVersion: String(body.consentVersion || 'v1') });
+      return sendJson(req, res, 200, {
+        verified: true,
+        role: 'clan',
+        message: '族人身份核验通过',
+        personId: person.id,
+        name: person.name,
+        token: aiToken.signPersonToken(person),
+        expiresAt: Date.now() + 7 * 864e5
+      });
+    } catch (e) {
+      return sendJson(req, res, 400, { verified: false, message: '请求数据错误' });
+    }
   }
 
   // === API: Data read/write (local JSON storage, replaces Supabase) ===
@@ -618,10 +730,12 @@ const server = http.createServer(async (req, res) => {
     return res.end('Not Found');
   }
 
-  const filePath = path.join(__dirname, url);
+  // 静态路径先解码再解析，否则带中文目录名的管理后台会被错误回退到首页。
+  // 同时使用 resolve + 目录边界校验，避免 URL 编码的路径穿越。
+  const filePath = path.resolve(__dirname, '.' + decodedUrl);
   const ext = path.extname(filePath);
 
-  if (!filePath.startsWith(__dirname)) {
+  if (filePath !== __dirname && !filePath.startsWith(__dirname + path.sep)) {
     res.writeHead(403);
     return res.end('Forbidden');
   }

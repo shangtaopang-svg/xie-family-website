@@ -182,6 +182,9 @@
         <p id="admin-error" class="error-msg" style="color:var(--accent-red);font-size:12px;display:none;margin-bottom:8px;"></p>
         <button type="button" class="btn btn-accent" style="width:100%;" onclick="adminLogin()" data-i18n="btn.verify">验证身份</button>
       </form>
+      <div style="margin:16px 0 10px;border-top:1px solid var(--border-color);padding-top:16px;text-align:center;color:var(--text-tertiary);font-size:12px;">或使用管理员手机号快捷进入</div>
+      <input type="tel" id="admin-phone" class="form-input" placeholder="请输入登记的管理员手机号" autocomplete="tel" inputmode="numeric">
+      <button type="button" class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="adminPhoneLogin()">手机号快捷登录</button>
       <p style="margin-top:16px;font-size:12px;color:var(--text-tertiary);" data-i18n="admin.footnote">* 仅限家族管理员登录 · 未经授权禁止进入</p>
     </div>
 
@@ -241,7 +244,16 @@
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
   <!-- Inline critical admin function — works even if external JS fails to load -->
   <script>
-    if (localStorage.getItem("xie_admin_authed") === "true") { var lb=document.getElementById("admin-login-box"); var pn=document.getElementById("admin-panel"); if(lb)lb.style.display="none"; if(pn)pn.classList.add("active"); if(typeof loadFromSupabase==='function')loadFromSupabase(); if(typeof renderModule==='function')renderModule('members');if(typeof updateStats==='function')updateStats(); }
+    (function(){
+      var savedToken = localStorage.getItem('xie_admin_token') || '';
+      if (!savedToken) return;
+      fetch('/api/verify', {headers:{Authorization:'Bearer '+savedToken}}).then(function(r){
+        if (!r.ok) throw new Error('expired');
+        var lb=document.getElementById('admin-login-box'); var pn=document.getElementById('admin-panel');
+        if(lb)lb.style.display='none'; if(pn)pn.classList.add('active');
+        if(typeof loadFromSupabase==='function')loadFromSupabase(); if(typeof renderModule==='function')renderModule('members'); if(typeof updateStats==='function')updateStats();
+      }).catch(function(){ localStorage.removeItem('xie_admin_token'); localStorage.removeItem('xie_admin_authed'); });
+    })();
   window.adminLogin = function adminLogin() {
     var pwd = document.getElementById('admin-password');
     var error = document.getElementById('admin-error');
@@ -287,6 +299,18 @@
       }
     };
     xhr.send(JSON.stringify({ password: pwd.value }));
+  };
+  window.adminPhoneLogin = function adminPhoneLogin() {
+    var phone = document.getElementById('admin-phone');
+    var error = document.getElementById('admin-error');
+    var loginBox = document.getElementById('admin-login-box');
+    var panel = document.getElementById('admin-panel');
+    if (!phone || !phone.value.trim()) { if(error){ error.textContent='请输入管理员手机号'; error.style.display='block'; } return; }
+    if(error){ error.textContent='正在验证手机号…'; error.style.display='block'; }
+    fetch('/api/admin/phone-login', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({phone:phone.value.trim()})})
+      .then(function(r){ return r.json().then(function(data){ if(!r.ok || !data.ok) throw new Error(data.error || '手机号未登记'); return data; }); })
+      .then(function(data){ localStorage.setItem('xie_admin_token', data.token); localStorage.setItem('xie_admin_authed','true'); loginBox.style.display='none'; panel.classList.add('active'); if(typeof renderModule==='function') renderModule(typeof currentModule !== 'undefined' ? currentModule : 'members'); if(typeof updateStats==='function') updateStats(); if(typeof loadFromSupabase==='function') loadFromSupabase(); })
+      .catch(function(e){ if(error){ error.textContent=e.message || '手机号验证失败'; error.style.display='block'; } });
   };
   </script>
   <script>

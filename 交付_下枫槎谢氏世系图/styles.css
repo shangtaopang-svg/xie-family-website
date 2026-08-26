@@ -37,6 +37,9 @@ body[data-app-mode="public"] .verify-toggle.is-readonly { cursor: default; point
 .genealogy-auth-card h2 { margin: 0; color: #27473e; font-size: 22px; }.genealogy-auth-card p { margin: 7px 0 18px; color: #7a8882; font-size: 12px; }
 .genealogy-auth-card input { box-sizing: border-box; width: 100%; height: 42px; padding: 0 12px; border: 1px solid #c8d2cd; border-radius: 8px; outline: 0; background: #fff; font-size: 14px; }.genealogy-auth-card input:focus { border-color: #39705e; box-shadow: 0 0 0 3px rgba(57,112,94,.12); }
 .genealogy-auth-card button { width: 100%; height: 42px; margin-top: 10px; border: 0; border-radius: 8px; background: #285947; color: #fff; font-weight: 700; cursor: pointer; }.genealogy-auth-card button:hover { background: #1f493a; }
+.genealogy-auth-divider { margin-top: 16px; padding-top: 14px; border-top: 1px solid #d8e0dc; color: #7a8882; font-size: 12px; }
+.genealogy-auth-card .genealogy-auth-phone { margin-top: 8px; background: #e9f3ee; color: #285947; border: 1px solid #a8c7b8; }
+.genealogy-auth-card .genealogy-auth-phone:hover { background: #dcece4; }
 .genealogy-auth-card span { display: block; min-height: 18px; margin-top: 8px; color: #b34f41; font-size: 11px; }.genealogy-auth-card a { color: #7b674e; font-size: 11px; }
 body[data-app-mode="admin"]:not(.admin-authenticated) #app { visibility: hidden; pointer-events: none; }
 .app-header { min-height: 76px; padding: 13px 22px; background: rgba(255,255,255,.96); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 22px; flex-wrap: wrap; z-index: 10; }
