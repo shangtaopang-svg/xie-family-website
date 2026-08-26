@@ -25,6 +25,9 @@
     immersive: false,
     detailOnly: false,
     detailOrigin: null,
+    // 从世系卡片进入移动端详情前保存的完整视图快照。
+    // 返回世系图时必须恢复原来的树面，不能把详情用的局部窗口当成新树面。
+    detailReturnSnapshot: null,
     expanded: new Set(),
     zoom: 1,
     mapPan: {
@@ -2751,6 +2754,20 @@
       branchOffsets: clone(state.branchOffsets),
       expanded: new Set(state.expanded)
     };
+  }
+
+  function captureDetailReturnSnapshot() {
+    return Object.assign(captureViewPosition(), {
+      selectedId: state.selectedId,
+      mode: state.mode,
+      view: state.view,
+      mainFocusId: state.mainFocusId,
+      mobileFocusRootId: state.mobileFocusRootId,
+      branch: state.branch,
+      generation: state.generation,
+      searchQuery: state.searchQuery,
+      immersive: state.immersive
+    });
   }
 
   // 刷新页面时保留当前工作区；使用 sessionStorage 使每个浏览器标签页各自记住自己的观看位置。
@@ -6218,6 +6235,7 @@
       && !state.overviewMode
       && !state.detailOnly;
     if (enterMobileCardDetail) {
+      state.detailReturnSnapshot = captureDetailReturnSnapshot();
       state.detailOrigin = 'tree';
       setDetailOnlyMode(true);
     }
@@ -6521,6 +6539,7 @@
     }
     // 手机端详情必须停留在当前查询页，只显示完整人物资料；不再把树图区带到视口中。
     state.detailOrigin = 'query';
+    state.detailReturnSnapshot = null;
     setDetailOnlyMode(true);
     selectPerson(id, { forceRender: true });
     window.setTimeout(() => {
@@ -6651,9 +6670,26 @@
       case 'cancel-edit': flushDraftAutoSave(); state.mode = 'view'; state.draftId = null; state.draftParentId = null; renderDetail(); break;
       case 'close-detail': {
         const restorePeopleQuery = !IS_ADMIN && isMobileViewport() && state.detailOrigin === 'query';
+        const restoreTree = !IS_ADMIN && state.detailOrigin === 'tree' && state.detailReturnSnapshot;
+        const treeSnapshot = restoreTree ? state.detailReturnSnapshot : null;
         flushDraftAutoSave();
         setDetailOnlyMode(false);
         state.detailOrigin = null;
+        state.detailReturnSnapshot = null;
+        if (treeSnapshot) {
+          state.selectedId = treeSnapshot.selectedId ?? null;
+          state.mode = treeSnapshot.mode || 'view';
+          state.view = treeSnapshot.view || state.view;
+          state.mainFocusId = treeSnapshot.mainFocusId ?? null;
+          state.mobileFocusRootId = treeSnapshot.mobileFocusRootId ?? null;
+          state.branch = treeSnapshot.branch || '';
+          state.generation = treeSnapshot.generation || '';
+          state.searchQuery = treeSnapshot.searchQuery || '';
+          state.immersive = Boolean(treeSnapshot.immersive);
+          renderInPlace(treeSnapshot);
+          updateSelectedCardUI();
+          break;
+        }
         state.selectedId = null;
         state.mode = 'view';
         renderDetail();
