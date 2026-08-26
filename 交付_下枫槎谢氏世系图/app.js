@@ -1031,11 +1031,13 @@
     const requestedView = params.get('view');
     const focusId = params.get('focus');
     const depth = Number(params.get('depth'));
+    const rootSearch = text(params.get('rootSearch')).trim();
     return {
       view: VIEW_DEFS[requestedView] ? requestedView : null,
       focusId: focusId ? personId(getPerson(focusId)) : null,
       depth: [1, 3, 5].includes(depth) ? depth : null,
-      safe: params.get('safe') === '1'
+      safe: params.get('safe') === '1',
+      rootSearch
     };
   }
 
@@ -2236,9 +2238,74 @@
         <path class="family-birth-line" d="M${childX(biologicalIndex)} 56 V76 H50 V91" />
         <path class="family-adoption-line" d="M${childX(adoptiveIndex)} 56 C${childX(adoptiveIndex)} 72, 64 75, 52 88" />
       </svg>
-      <span class="family-birth-label">亲生父子</span><span class="family-adoption-label">出继给绍让为嗣</span>
+      <span class="family-birth-label">亲生父子</span><span class="family-adoption-label">出继给${escapeHtml(text(adoptive.name) || '承嗣父')}为嗣</span>
       ${relation.source ? `<p class="root-trace-family-source">谱载：${escapeHtml(relation.source)}</p>` : ''}
     </article>`;
+  }
+
+  function rootTraceChildren(person) {
+    if (!person) return [];
+    const candidates = new Map();
+    const addChildrenOf = (record) => {
+      if (!record) return;
+      treeChildren(record).forEach((child) => {
+        const key = String(personId(child));
+        if (key !== String(personId(person)) && !isHiddenAdoptionRecord(child)) candidates.set(key, child);
+      });
+    };
+    // 首页直达寻根既要保留正常子女，也要兼容同一人物的亲生记录与入继记录。
+    // 这样目标人物是出继/入继记录时，子女不会因为记录 ID 不同而消失。
+    addChildrenOf(person);
+    const outgoing = state.adoption.outById.get(String(personId(person)));
+    if (outgoing) addChildrenOf(outgoing.adoptiveRecord || outgoing.outPerson);
+    const incoming = state.adoption.inById.get(String(personId(person)));
+    if (incoming) addChildrenOf(incoming.outPerson || incoming.adoptiveRecord);
+    return Array.from(candidates.values()).sort((a, b) =>
+      (generationOf(a) || 9999) - (generationOf(b) || 9999) ||
+      text(a.name).localeCompare(text(b.name), 'zh-CN') || Number(personId(a)) - Number(personId(b))
+    );
+  }
+
+  function rootTraceChildrenHtml(person, mainChain) {
+    const children = rootTraceChildren(person);
+    const childCards = children.map((child) => {
+      const relation = state.adoption.outById.get(String(personId(child))) || state.adoption.inById.get(String(personId(child))) || null;
+      const tags = adoptionTags(child).map((tag) => tag.label).join(' / ');
+      const cardClass = relation ? 'is-adopted-child' : '';
+      return rootTracePersonBox(child, cardClass, tags || '子女');
+    }).join('');
+    const adoptionDetails = children.map((child) => {
+      const relation = state.adoption.outById.get(String(personId(child))) || state.adoption.inById.get(String(personId(child))) || null;
+      const biological = rawFatherOf(child);
+      const displayParentId = state.adoption.displayParentById.get(String(personId(child)));
+      const displayParent = displayParentId !== undefined ? getPerson(displayParentId) : biological;
+      const hasDifferentParent = biological && displayParent && String(personId(biological)) !== String(personId(displayParent));
+      return relation || hasDifferentParent ? rootTraceRelationHtml(child, mainChain) : '';
+    }).join('');
+    return `<section class="root-trace-children" aria-labelledby="root-trace-children-title">
+      <header class="root-trace-children-head"><div><span class="eyebrow">NEXT GENERATION</span><h4 id="root-trace-children-title">${escapeHtml(text(person.name) || '目标人物')}的直系子女</h4></div><span class="root-trace-children-count">${children.length} 人</span></header>
+      ${children.length ? `<div class="root-trace-children-connector" aria-hidden="true"></div><div class="root-trace-children-grid">${childCards}</div>${adoptionDetails}` : '<p class="root-trace-children-empty">当前统一族谱数据未记录该人物的直系下一代。</p>'}
+    </section>`;
+  }
+
+  function openRootTraceSearch(keyword) {
+    const query = text(keyword).trim();
+    if (!query) return;
+    const exact = state.data.filter((person) => text(person.name).trim() === query);
+    const candidates = exact.length ? exact : state.data.filter((person) => text(person.name).toLowerCase().includes(query.toLowerCase()));
+    if (candidates.length > 1) {
+      showPersonDisambiguation(query, candidates, (person) => {
+        state.selectedId = personId(person);
+        openRootTrace(personId(person));
+      });
+      return;
+    }
+    if (candidates.length === 1) {
+      state.selectedId = personId(candidates[0]);
+      openRootTrace(personId(candidates[0]));
+      return;
+    }
+    showToast(`没有找到“${query}”，请按族谱中的姓名重新输入`);
   }
 
   function openRootTrace(id) {
@@ -2270,7 +2337,7 @@
       if (skipTreeNodes.has(String(personId(member)))) return '';
       const tags = adoptionTags(member).map((tag) => tag.label).join(' / ');
       return `<article class="root-trace-node${index === 0 ? ' is-root' : ''}${index === chain.length - 1 ? ' is-target' : ''}"><div class="root-trace-card"><span>第${escapeHtml(generationOf(member) || '—')}世</span><strong>${escapeHtml(text(member.name) || '未命名')}</strong>${tags ? `<em>${escapeHtml(tags)}</em>` : ''}<small>${escapeHtml(text(member.branch) || '')}</small></div>${rootTraceRelationHtml(member, chain)}</article>`;
-    }).join('')}</div>`;
+    }).join('')}</div>${rootTraceChildrenHtml(person, chain)}`;
     modal.hidden = false;
     document.body.classList.add('is-root-trace-open');
     modal.scrollTop = 0;
@@ -7159,7 +7226,7 @@
     markVerifiedLineageViewsOnce();
     const sessionView = loadSessionView();
     const route = readMainRoute();
-    const hasExplicitRoute = Boolean(route.view || route.focusId || route.depth || route.safe);
+    const hasExplicitRoute = Boolean(route.view || route.focusId || route.depth || route.safe || route.rootSearch);
     if (route.view) state.view = route.view;
     else if (sessionView && VIEW_DEFS[sessionView.view]) state.view = sessionView.view;
     state.mainFocusId = state.view === 'main'
@@ -7207,6 +7274,7 @@
     if (sessionView && !hasExplicitRoute) restoreSessionViewport(sessionView);
     // 只有明确要求深度/安全展开时才自动全景；已有会话视图必须保持原位置和缩放。
     if (route.depth || route.safe || (state.mainFocusId && (!sessionView || hasExplicitRoute))) setTimeout(fitOverview, 0);
+    if (route.rootSearch) setTimeout(() => openRootTraceSearch(route.rootSearch), 0);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

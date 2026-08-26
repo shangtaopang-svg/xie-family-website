@@ -481,6 +481,17 @@ button, input, select, textarea { color-scheme: light; }
 .root-trace-node.is-target .root-trace-card { justify-self: center; }
 .root-trace-family-tree { position: relative; z-index: 2; width: min(760px,100%); min-height: 330px; margin: 0 auto 18px; padding-top: 4px; background: #f8f5ed; }.root-trace-family-ancestor,.root-trace-family-descendant { position: relative; z-index: 2; display: flex; justify-content: center; }.root-trace-family-children { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(var(--family-columns),minmax(0,1fr)); gap: 12px; margin-top: 55px; }.root-trace-family-descendant { margin-top: 72px; }.root-trace-family-card { box-sizing: border-box; width: min(170px,100%); min-height: 68px; justify-self: center; padding: 9px 11px; border: 1px solid #9bad9f; border-left: 5px solid #527366; border-radius: 7px; background: #fffdf7; box-shadow: 0 4px 12px rgba(43,65,56,.08); text-align: left; }.root-trace-family-card small { display: block; color: #7c8780; font-size: 9px; }.root-trace-family-card strong { display: inline-block; margin: 3px 5px 0 0; color: #263e35; font-family: "Noto Serif SC","Source Han Serif SC",serif; font-size: 17px; }.root-trace-family-card em { display: inline-block; padding: 2px 4px; border-radius: 3px; background: #e9d4cc; color: #963f34; font-size: 8px; font-style: normal; }.root-trace-family-card.is-family-root { background: #f2f5ef; }.root-trace-family-card.is-biological-father { border-color: #b9795d; border-left-color: #a75038; background: #fff5ed; }.root-trace-family-card.is-adoptive-father { border-color: #7c9c8d; border-left-color: #3f715f; background: #eef6f1; }.root-trace-family-card.is-adopted-child { border-color: #a64d3e; border-left-color: #a13f34; background: #fff8f2; box-shadow: 0 0 0 3px rgba(161,63,52,.1); }.root-trace-family-lines { position: absolute; z-index: 1; inset: 0; width: 100%; height: 300px; overflow: visible; pointer-events: none; }.root-trace-family-lines path { fill: none; vector-effect: non-scaling-stroke; }.family-sibling-line,.family-birth-line { stroke: #648376; stroke-width: 2; }.family-adoption-line { stroke: #b55243; stroke-width: 2.4; stroke-dasharray: 6 4; }.family-birth-label,.family-adoption-label { position: absolute; z-index: 3; padding: 2px 6px; border-radius: 10px; background: #f8f5ed; font-size: 9px; white-space: nowrap; }.family-birth-label { left: 47%; top: 218px; color: #557568; }.family-adoption-label { right: 9%; top: 216px; color: #a14639; }.root-trace-family-source { position: relative; z-index: 2; margin: 12px 0 0; color: #8b6d62; text-align: center; font-size: 10px; }
 
+.root-trace-children { position: relative; width: min(760px,100%); margin: 28px auto 0; padding: 18px 18px 22px; border: 1px solid #b9c9bd; border-radius: 12px; background: rgba(239,247,240,.82); box-shadow: 0 8px 22px rgba(43,65,56,.06); }
+.root-trace-children-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid #d0ddd2; }
+.root-trace-children-head .eyebrow { color: #658274; font-size: 10px; letter-spacing: .16em; }
+.root-trace-children-head h4 { margin: 4px 0 0; color: #294b3d; font-family: "Noto Serif SC","Source Han Serif SC",serif; font-size: 18px; }
+.root-trace-children-count { flex: 0 0 auto; padding: 4px 9px; border-radius: 999px; background: #dbeadf; color: #3f6e59; font-size: 11px; font-weight: 700; }
+.root-trace-children-connector { width: 2px; height: 18px; margin: 0 auto; background: #789487; }
+.root-trace-children-grid { position: relative; display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 12px; }
+.root-trace-children-grid .root-trace-family-card { width: 100%; min-height: 72px; }
+.root-trace-children-grid .root-trace-family-card.is-adopted-child { border-color: #c47b68; border-left-color: #aa4d3d; background: #fff5ef; }
+.root-trace-children .root-trace-adoption { margin-top: 14px; background: #fff8f3; }
+.root-trace-children-empty { margin: 16px 0 2px; color: #77847d; font-size: 12px; text-align: center; }
 .app-header {
   min-height: 84px;
   padding: 16px 26px 15px;
@@ -1718,6 +1729,14 @@ body[data-app-mode="public"] #import-file {
   .root-trace-head-actions { gap: 5px; }
   .root-trace-fullscreen { min-height: 38px; padding: 0 9px; font-size: 11px; }
   .root-trace-content { padding: 18px 14px 88px; }
+  .root-trace-children { width: 100%; box-sizing: border-box; margin-top: 22px; padding: 14px 12px 17px; }
+  .root-trace-children-head { align-items: center; gap: 8px; }
+  .root-trace-children-head h4 { font-size: 16px; }
+  .root-trace-children-head .eyebrow { font-size: 9px; }
+  .root-trace-children-count { padding: 4px 8px; font-size: 10px; }
+  .root-trace-children-grid { grid-template-columns: 1fr; gap: 9px; }
+  .root-trace-children-grid .root-trace-family-card { width: min(260px,82vw); }
+  .root-trace-children .root-trace-adoption { width: 100%; }
   .root-trace-node { width: 100%; grid-template-columns: minmax(0,1fr); gap: 7px; margin-bottom: 18px; }
   .root-trace-card { justify-self: center; width: min(260px,82vw); }
   .root-trace-adoption { width: min(300px,88vw); box-sizing: border-box; justify-self: center; }

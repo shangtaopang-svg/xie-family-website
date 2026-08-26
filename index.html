@@ -224,7 +224,7 @@
 </div>
 
 <script>
-// ===== 开启页搜索：搜族人姓名 → 跳转族谱查询页并自动搜索 =====
+// ===== 首页搜索：搜族人姓名 → 直接打开炎帝至本人及子女的直线世系 =====
 (function(){
   var input = document.getElementById('mbSearchInput');
   var btn = document.getElementById('mbSearchBtn');
@@ -232,7 +232,7 @@
   function go() {
     var q = input.value.trim();
     if (!q) { input.focus(); return; }
-    location.href = 'pages/genealogy.html?search=' + encodeURIComponent(q);
+    location.href = 'pages/genealogy.html?rootSearch=' + encodeURIComponent(q);
   }
   btn.addEventListener('click', go);
   input.addEventListener('keydown', function(e){ if (e.key === 'Enter') go(); });
