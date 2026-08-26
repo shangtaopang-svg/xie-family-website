@@ -2639,58 +2639,52 @@
   }
 
   function renderPdfBookModule() {
-    const frame = $('#query-book-frame');
-    if (!frame) return;
+    const frameLeft = $('#query-book-frame-left');
+    const frameRight = $('#query-book-frame-right');
+    if (!frameLeft || !frameRight) return;
     const book = state.pdfBook.book;
     const page = Math.max(1, Number.parseInt(state.pdfBook.page, 10) || 1);
     const definition = pdfBookDefinition(book);
-    $$('.query-book-tabs [data-book]').forEach((button) => {
-      const active = button.dataset.book === book;
-      button.classList.toggle('is-active', active);
-      button.setAttribute('aria-selected', String(active));
-    });
-    const pageInput = $('#query-book-page');
-    if (pageInput && document.activeElement !== pageInput) pageInput.value = String(page);
-    const searchInput = $('#query-book-search');
-    if (searchInput && document.activeElement !== searchInput) searchInput.value = state.pdfBook.query;
     const status = $('#query-book-page-status');
-    if (status) status.textContent = `${definition.label} · 第 ${page} 页`;
-    frame.title = `${definition.label}原始 PDF`;
-    if (!frame.dataset.loaded) {
-      frame.src = pdfBookPageUrl(book, page);
-      frame.dataset.loaded = 'true';
-    }
-    const openLink = $('#query-book-open');
-    if (openLink) {
-      openLink.href = pdfBookPageUrl(book, page);
-      openLink.textContent = `新窗口打开${definition.label}`;
-    }
-    renderPdfBookSearchResults();
+    const nextPage = page + 1;
+    if (status) status.textContent = `${definition.label} · 第 ${page}—${nextPage} 页`;
+    frameLeft.title = `${definition.label}第 ${page} 页`;
+    frameRight.title = `${definition.label}第 ${nextPage} 页`;
+    frameLeft.src = pdfBookPageUrl(book, page);
+    frameRight.src = pdfBookPageUrl(book, nextPage);
   }
 
   function openPdfBook(book, page, withTurnEffect) {
     state.pdfBook.book = PDF_BOOKS[book] ? book : 'upper';
     state.pdfBook.page = Math.max(1, Number.parseInt(page, 10) || 1);
-    const frame = $('#query-book-frame');
-    if (frame) {
-      frame.src = pdfBookPageUrl(state.pdfBook.book, state.pdfBook.page);
-      frame.dataset.loaded = 'true';
-    }
     renderPdfBookModule();
+    const reader = $('#query-book-reader');
+    if (reader) {
+      reader.hidden = false;
+      document.body.classList.add('query-book-overlay-open');
+      window.setTimeout(() => reader.querySelector('.query-book-close')?.focus(), 0);
+    }
     if (withTurnEffect) {
       playPageTurnSound();
       flashPdfBookPage();
-      updatePdfBookTurnNote(`咔嚓 · 已翻到第 ${state.pdfBook.page} 页`);
+      updatePdfBookTurnNote(`咔嚓 · 已翻到第 ${state.pdfBook.page}—${state.pdfBook.page + 1} 页`);
     }
   }
 
   function turnPdfBookPage(delta) {
-    openPdfBook(state.pdfBook.book, Number(state.pdfBook.page) + delta, true);
+    openPdfBook(state.pdfBook.book, Number(state.pdfBook.page) + (delta < 0 ? -2 : 2), true);
   }
 
   function goToPdfBookPage() {
     const input = $('#query-book-page');
     openPdfBook(state.pdfBook.book, input ? input.value : state.pdfBook.page, true);
+  }
+
+  function closePdfBook() {
+    const reader = $('#query-book-reader');
+    if (!reader) return;
+    reader.hidden = true;
+    document.body.classList.remove('query-book-overlay-open');
   }
 
   function runPdfBookSearch() {
@@ -2736,11 +2730,11 @@
     const cards = matches.map((person) => {
       const detailRefs = pdfBookSourceRefs(person);
       const lineageRefs = pdfLineageSourceRefs(person);
-      const refsHtml = (refs, emptyText, kind) => refs.length
-        ? `<div class="query-person-source-pages">${refs.map((ref) => `<button type="button" class="query-person-source-page" data-action="query-person-source-open" data-book="${escapeHtml(ref.book || '')}" data-page="${ref.page}" data-source-kind="${kind}">${escapeHtml(pdfBookDefinition(ref.book).label)} · 第 ${ref.page} 页</button>`).join('')}</div>`
-        : `<span class="query-person-source-unavailable">${escapeHtml(emptyText)}</span>`;
+      const sourceButton = (ref, kind, label, unavailable) => ref
+        ? `<button type="button" class="query-person-source-action is-${kind}" data-action="query-person-source-open" data-book="${escapeHtml(ref.book || '')}" data-page="${ref.page}" data-source-kind="${kind}"><strong>${label}</strong><small>${escapeHtml(pdfBookDefinition(ref.book).label)} · 第 ${ref.page} 页</small></button>`
+        : `<button type="button" class="query-person-source-action is-${kind} is-disabled" disabled aria-disabled="true" title="${escapeHtml(unavailable)}"><strong>${label}</strong><small>暂无明确页码</small></button>`;
       const generation = generationOf(person);
-      return `<article class="query-person-source-card"><div class="query-person-source-person"><strong>${escapeHtml(text(person.name) || '未命名人物')}</strong><span>第${escapeHtml(generation || '—')}世 · ID ${escapeHtml(personId(person))}${text(person.courtesy_name).trim() ? ` · 字：${escapeHtml(text(person.courtesy_name))}` : ''}</span></div><div class="query-person-source-options"><section class="query-person-source-option is-lineage"><h5>世系信息</h5><p>上册原谱树状世系页</p>${refsHtml(lineageRefs, '未标注上册树状页，暂不猜测', 'lineage')}</section><section class="query-person-source-option is-detail"><h5>族人详情</h5><p>上册／下册族人原始记录</p>${refsHtml(detailRefs, '未标注原谱页，暂不猜测', 'detail')}</section></div></article>`;
+      return `<article class="query-person-source-card"><div class="query-person-source-person"><strong>${escapeHtml(text(person.name) || '未命名人物')}</strong><span>第${escapeHtml(generation || '—')}世 · ID ${escapeHtml(personId(person))}${text(person.courtesy_name).trim() ? ` · 字：${escapeHtml(text(person.courtesy_name))}` : ''}</span></div><div class="query-person-source-actions">${sourceButton(lineageRefs[0], 'lineage', '世系页', '数据中没有明确标注上册世系页')}${sourceButton(detailRefs[0], 'detail', '详情页', '数据中没有明确标注原谱详情页')}</div></article>`;
     }).join('');
     container.innerHTML = `<div class="query-person-source-summary">找到 ${matches.length} 位匹配族人${matches.length === 30 ? '，仅显示前30位' : ''}；同名记录请按世次、支系和 ID 选择。</div>${cards}`;
   }
@@ -2768,10 +2762,8 @@
     $$('.query-person-source-card.is-selected, .query-person-source-page.is-selected').forEach((node) => node.classList.remove('is-selected'));
     personCard?.classList.add('is-selected');
     element.classList.add('is-selected');
-    openPdfBook(book, page, true);
     state.pdfBook.focus = { name: personName, kind: element.dataset.sourceKind === 'lineage' ? '世系信息' : '族人详情', book, page: Number(page) };
-    const reader = $('.query-book-reader');
-    if (reader) reader.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    openPdfBook(book, page, true);
     const kind = element.dataset.sourceKind === 'lineage' ? '世系信息' : '族人详情';
     updatePdfBookTurnNote(`已定位${kind}：${pdfBookDefinition(book).label}第 ${page} 页`);
     updatePdfBookFocusNote(`当前已定位：${personName} · ${kind} · ${pdfBookDefinition(book).label}第 ${page} 页。PDF 原页保持不改，页码按钮与本提示用于核对。`);
@@ -7060,6 +7052,7 @@
       case 'query-book-search': runPdfBookSearch(); break;
       case 'query-book-clear': clearPdfBookSearch(); break;
       case 'query-book-open-source': openPdfBook(element.dataset.book || state.pdfBook.book, element.dataset.page, true); break;
+      case 'query-book-close': closePdfBook(); break;
       case 'query-person-source-search': runPersonSourceSearch(); break;
       case 'query-person-source-clear': clearPersonSourceSearch(); break;
       case 'query-person-source-open': openPersonSourcePage(element); break;

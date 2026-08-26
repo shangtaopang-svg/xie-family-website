@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>枫槎谢氏宗谱 · 族谱查询</title>
   <meta name="description" content="枫槎谢氏宗谱族谱查询与只读世系图">
-    <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260826-pdf-book-02">
+    <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260826-pdf-book-03">
   <link rel="stylesheet" href="../css/public-access-gate.css?v=20260826-access-01">
   <script>
     if (new URLSearchParams(location.search).get('chooser') === '1' && window.matchMedia('(max-width: 760px)').matches) {
@@ -143,25 +143,39 @@
               </div>
               <div id="query-person-source-results" class="query-person-source-results" aria-live="polite"></div>
             </section>
-            <div class="query-section-head query-book-head">
-              <div><span class="query-kicker">ORIGINAL GENEALOGY BOOK</span><h4>原谱页预览</h4><p class="query-muted">选择上方入口后，原封不动打开对应 PDF 页；可使用阅读器缩放、拖动和平移。</p></div>
-              <span id="query-book-turn-note" class="query-book-turn-note" aria-live="polite">点击翻页，听原谱“咔嚓”一声</span>
+            <div class="query-book-launch-note" role="note">
+              <span class="query-kicker">ORIGINAL GENEALOGY BOOK</span>
+              <strong>按姓名直达原谱</strong>
+              <span>选择“世系页”或“详情页”，原封不动打开上册、下册对应页面。</span>
             </div>
-            <div class="query-book-tabs" role="tablist" aria-label="选择原谱册次">
-              <button type="button" role="tab" data-action="query-book-select" data-book="upper" aria-selected="true">上册</button>
-              <button type="button" role="tab" data-action="query-book-select" data-book="lower" aria-selected="false">下册</button>
-            </div>
-            <div class="query-book-reader" aria-label="原谱阅读器">
-              <div class="query-book-toolbar">
-                <button type="button" class="query-book-turn-button" data-action="query-book-prev" aria-label="上一页">‹</button>
-                <label for="query-book-page">第 <input id="query-book-page" data-pdf-book-field="page" type="number" min="1" inputmode="numeric" value="1"> 页</label>
-                <button type="button" class="query-book-go" data-action="query-book-go">打开</button>
-                <button type="button" class="query-book-turn-button" data-action="query-book-next" aria-label="下一页">›</button>
-                <a id="query-book-open" class="query-book-open" href="#" target="_blank" rel="noopener">新窗口打开</a>
-                <span id="query-book-page-status" class="query-book-page-status" aria-live="polite">上册 · 第 1 页</span>
+            <div id="query-book-reader" class="query-book-reader query-book-reader-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="query-book-reader-title">
+              <div class="query-book-reader-shell">
+                <header class="query-book-reader-header">
+                  <div>
+                    <span class="query-kicker">ORIGINAL GENEALOGY BOOK</span>
+                    <h4 id="query-book-reader-title">原谱双页阅读</h4>
+                    <p id="query-book-focus-note" class="query-book-focus-note" aria-live="polite">请选择一位族人，再点击“世系页”或“详情页”。</p>
+                  </div>
+                  <div class="query-book-reader-head-actions">
+                    <span id="query-book-page-status" class="query-book-page-status" aria-live="polite">上册 · 第 1—2 页</span>
+                    <button type="button" class="query-book-close" data-action="query-book-close" aria-label="关闭电子书">×</button>
+                  </div>
+                </header>
+                <div class="query-book-landscape-hint" aria-live="polite">建议横屏观看 · 点击左右按钮翻页 · <span id="query-book-turn-note">咔嚓</span></div>
+                <div id="query-book-frame-wrap" class="query-book-frame-wrap">
+                  <button type="button" class="query-book-page-zone is-prev" data-action="query-book-prev" aria-label="上一组">‹</button>
+                  <div class="query-book-spread" aria-label="原谱左右双页">
+                    <div class="query-book-page-panel"><span class="query-book-page-label">左页</span><iframe id="query-book-frame-left" title="左侧原始 PDF 页面" loading="lazy"></iframe></div>
+                    <div class="query-book-page-panel"><span class="query-book-page-label">右页</span><iframe id="query-book-frame-right" title="右侧原始 PDF 页面" loading="lazy"></iframe></div>
+                  </div>
+                  <button type="button" class="query-book-page-zone is-next" data-action="query-book-next" aria-label="下一组">›</button>
+                </div>
+                <footer class="query-book-reader-footer">
+                  <button type="button" class="query-book-footer-button" data-action="query-book-prev">上一组</button>
+                  <button type="button" class="query-book-footer-button" data-action="query-book-next">下一组</button>
+                  <button type="button" class="query-book-footer-button is-return" data-action="query-book-close">返回电子族谱</button>
+                </footer>
               </div>
-              <div id="query-book-focus-note" class="query-book-focus-note" aria-live="polite">请选择一位族人，再点击“世系信息”或“族人详情”中的原谱页。</div>
-              <div id="query-book-frame-wrap" class="query-book-frame-wrap"><iframe id="query-book-frame" title="上册原始 PDF" loading="lazy"></iframe></div>
             </div>
           </section>
 
@@ -313,7 +327,7 @@
     </section>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="../交付_下枫槎谢氏世系图/app.js?v=20260826-pdf-book-02"></script>
+<script src="../交付_下枫槎谢氏世系图/app.js?v=20260826-pdf-book-03"></script>
 <link rel="stylesheet" href="/css/ai.css?v=92">
 <script src="/js/ai-assistant.js?v=92" defer></script>
 </body>
