@@ -236,7 +236,7 @@ function injectAiHtml(buf) {
   }
   if (html.indexOf(PUBLIC_ACCESS_MARK) === -1) {
     inject.push('<link rel="stylesheet" href="/css/public-access-gate.css?v=20260826-access-04">');
-    inject.push('<script src="/js/public-access-gate.js?v=20260826-access-04" defer></script>');
+    inject.push('<script src="/js/public-access-gate.js?v=20260826-mobile-auth-01" defer></script>');
   }
   if (!inject.length) return buf;
   return Buffer.from(html.slice(0, m) + inject.join('\n') + '\n</body>' + html.slice(m + 7), 'utf-8');

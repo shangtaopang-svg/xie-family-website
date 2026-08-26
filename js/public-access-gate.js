@@ -5,7 +5,7 @@
   var SESSION_KEY = 'xie_public_access_v2';
   var ADMIN_TOKEN_KEY = 'xie_admin_token';
   var AI_TOKEN_KEY = 'ai_admin_token';
-  var state = { step: 'consent', role: '', provider: 'phone' };
+  var state = { step: 'consent', role: '', provider: 'phone', authenticated: false };
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>'"]/g, function (ch) {
@@ -26,6 +26,20 @@
   function getBackdrop() { return document.getElementById('public-access-backdrop'); }
   function getBody() { return document.getElementById('public-access-body'); }
   function close() {
+    if (!state.authenticated) {
+      var body = getBody();
+      if (body) {
+        var note = document.getElementById('public-access-lock-message');
+        if (!note) {
+          note = document.createElement('div');
+          note.id = 'public-access-lock-message';
+          note.className = 'public-access-message';
+          body.appendChild(note);
+        }
+        note.textContent = '请先完成隐私确认和身份核验，才能进入网站。';
+      }
+      return;
+    }
     var modal = getBackdrop();
     if (modal) modal.hidden = true;
     document.documentElement.classList.remove('public-access-open');
@@ -62,9 +76,10 @@
   }
   function decline() {
     var body = getBody();
-    if (body) body.innerHTML = '<div class="public-access-message">您已选择不同意，本次不会提交身份信息。</div><div class="public-access-actions"><button class="public-access-btn" type="button" data-access-action="close">关闭</button></div>';
+    if (body) body.innerHTML = '<div class="public-access-message">您已选择不同意，本次不会提交身份信息，也不能进入网站。</div><div class="public-access-actions"><button class="public-access-btn primary" type="button" data-access-action="restart">重新确认</button></div>';
   }
   function finish(result) {
+    state.authenticated = true;
     var session = { role: result.role, name: result.name || '', personId: result.personId || null, sessionId: result.sessionId || '', consentVersion: CONSENT_VERSION, provider: state.provider, expiresAt: result.expiresAt || (Date.now() + 12 * 3600e3) };
     saveSession(session);
     if (result.role === 'admin' && result.token) { try { localStorage.setItem(ADMIN_TOKEN_KEY, result.token); localStorage.setItem(AI_TOKEN_KEY, result.token); } catch (e) {} }
@@ -119,6 +134,7 @@
       if (!action) return;
       var name = action.getAttribute('data-access-action');
       if (name === 'close') close();
+      else if (name === 'restart') { state.authenticated = false; state.step = 'consent'; state.role = ''; state.provider = 'phone'; render(); }
       else if (name === 'decline') decline();
       else if (name === 'consent') { state.step = 'role'; render(); }
       else if (name === 'role-clan') { state.role = 'clan'; state.step = 'clan'; render(); }
@@ -130,24 +146,34 @@
       else if (name === 'submit') { if (state.role === 'admin') adminLogin(); else if (state.role === 'visitor') visitorLogin(); else clanVerify(); }
     });
   }
+  function isMobile() {
+    return !!(window.matchMedia && window.matchMedia('(max-width: 768px)').matches);
+  }
   function launch(force) {
-    if (!force && sessionValid(readSession())) return;
+    if (!force && !isMobile() && sessionValid(readSession())) return;
     build();
     var modal = getBackdrop();
     if (!modal) return;
     modal.hidden = false;
     document.documentElement.classList.add('public-access-open');
+    state.authenticated = false;
     state.step = 'consent'; state.role = ''; state.provider = 'phone';
     render();
   }
   function boot() {
     if (!document.body || document.body.getAttribute('data-public-gate') === 'off') return;
-    if (!window.matchMedia || !window.matchMedia('(max-width: 768px)').matches) return;
+    if (!isMobile()) return;
     // 每次进入手机端公开页面都重新经过完整入口流程：隐私确认 → 身份选择 → 登录/核验。
     // sessionStorage 仍保留本次结果，供当前页面的业务功能读取；但不能用它跳过下一次进入。
     // 管理员令牌同样只用于登录后的权限与 AI 请求，不能绕过入口流程。
     launch(true);
   }
+  // 手机浏览器可能通过 back/forward cache 恢复页面，恢复时再次强制走登录确认。
+  window.addEventListener('pageshow', function (event) {
+    if (!event.persisted || !isMobile()) return;
+    if (!document.body || document.body.getAttribute('data-public-gate') === 'off') return;
+    launch(true);
+  });
   document.addEventListener('click', function (event) {
     var launcher = event.target.closest && event.target.closest('[data-access-launcher]');
     if (!launcher) return;
