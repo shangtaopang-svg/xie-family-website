@@ -41,7 +41,12 @@
       return;
     }
     var modal = getBackdrop();
-    if (modal) modal.hidden = true;
+    if (modal) {
+      modal.hidden = true;
+      modal.setAttribute('hidden', 'hidden');
+      modal.setAttribute('aria-hidden', 'true');
+      modal.style.display = 'none';
+    }
     document.documentElement.classList.remove('public-access-open');
   }
   function showMessage(message, success) {
@@ -84,7 +89,15 @@
     saveSession(session);
     if (result.role === 'admin' && result.token) { try { localStorage.setItem(ADMIN_TOKEN_KEY, result.token); localStorage.setItem(AI_TOKEN_KEY, result.token); } catch (e) {} }
     var body = getBody();
-    if (body) body.innerHTML = '<div class="public-access-success">' + (result.role === 'admin' ? '管理员身份验证通过，全部页面和 AI 咨询权限已开启。' : result.role === 'clan' ? '族人身份核验通过，欢迎回家。' : '普通访客登录成功。') + '</div><p>本次登录仅用于当前页面；进入其他公开页面时，需要重新完成身份确认。</p><div class="public-access-actions"><button class="public-access-btn primary" type="button" data-access-action="close">开始浏览</button></div>';
+    if (body) {
+      body.innerHTML = '<div class="public-access-success">' + (result.role === 'admin' ? '管理员身份验证通过，全部页面和 AI 咨询权限已开启。' : result.role === 'clan' ? '族人身份核验通过，欢迎回家。' : '普通访客登录成功。') + '</div><p>本次登录仅用于当前页面；进入其他公开页面时，需要重新完成身份确认。</p><div class="public-access-actions"><button class="public-access-btn primary" type="button" data-access-action="close">开始浏览</button></div>';
+      var browseButton = body.querySelector('[data-access-action="close"]');
+      if (browseButton) browseButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        close();
+      }, { once: true });
+    }
   }
   function validPhone(value) { return /^1\d{10}$/.test(String(value || '').replace(/[\s-]/g, '').replace(/^\+86/, '')); }
   function adminLogin() {
@@ -155,6 +168,9 @@
     var modal = getBackdrop();
     if (!modal) return;
     modal.hidden = false;
+    modal.removeAttribute('hidden');
+    modal.setAttribute('aria-hidden', 'false');
+    modal.style.removeProperty('display');
     document.documentElement.classList.add('public-access-open');
     state.authenticated = false;
     state.step = 'consent'; state.role = ''; state.provider = 'phone';

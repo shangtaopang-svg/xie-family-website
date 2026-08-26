@@ -260,7 +260,7 @@ function gzipSend(req, res, status, headers, data) {
 const AI_INJECT_BLACKLIST = new Set(['/admin.html', '/recover.html', '/entrance.html']);
 const AI_INJECT_MARK = '/js/ai-assistant.js';
 const PUBLIC_ACCESS_MARK = '/js/public-access-gate.js';
-const PUBLIC_ACCESS_SCRIPT_VERSION = '20260826-mobile-auth-02';
+const PUBLIC_ACCESS_SCRIPT_VERSION = '20260826-mobile-auth-03';
 function injectAiHtml(buf) {
   const html = buf.toString('utf-8').replace(/\/js\/public-access-gate\.js\?v=[^"'\s>]+/g, '/js/public-access-gate.js?v=' + PUBLIC_ACCESS_SCRIPT_VERSION);
   const m = html.search(/<\/body>/i);
