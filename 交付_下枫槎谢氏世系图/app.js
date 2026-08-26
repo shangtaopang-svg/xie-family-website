@@ -2384,6 +2384,7 @@
       if (button.dataset.action === 'toggle-query-drawer' && button.classList.contains('query-toggle')) button.textContent = state.query.open ? '关闭查询' : '族谱查询';
     });
     if (state.query.open) renderQueryDashboard();
+    updateMobileLineageSelectionBackButton();
   }
 
   function setDetailOnlyMode(open) {
@@ -2423,6 +2424,35 @@
     const menu = $('#mobile-query-menu');
     if (menu) menu.hidden = true;
     document.documentElement.classList.remove('is-mobile-query-menu-open');
+  }
+
+  function updateMobileLineageSelectionBackButton() {
+    const button = $('#mobile-lineage-selection-back');
+    if (!button) return;
+    const visible = !IS_ADMIN
+      && isMobileViewport()
+      && state.view !== 'overview'
+      && !state.query.open
+      && !state.detailOnly;
+    button.hidden = !visible;
+  }
+
+  function returnToMobileLineageSelection() {
+    if (IS_ADMIN || !isMobileViewport()) return;
+    flushDraftAutoSave();
+    closeMobileQueryMenu();
+    setDetailOnlyMode(false);
+    state.selectedId = null;
+    state.mode = 'view';
+    renderDetail();
+    updateSelectedCardUI();
+    const drawer = $('#query-drawer');
+    const shell = $('#app');
+    state.query.open = true;
+    if (drawer) drawer.hidden = false;
+    if (shell) shell.classList.add('is-query-open');
+    setMobileQueryMode('lineage');
+    updateMobileLineageSelectionBackButton();
   }
 
   function openMobileQueryMenu() {
@@ -6384,6 +6414,7 @@
     renderDetail();
     applyImmersiveMode(false);
     if (state.query.open) renderQueryDashboard();
+    updateMobileLineageSelectionBackButton();
   }
 
   function showToast(message) {
@@ -6468,6 +6499,7 @@
       case 'close-mobile-query-menu': closeMobileQueryMenu(); break;
       case 'mobile-query-route': openMobileQueryRoute(element.dataset.route); break;
       case 'query-lineage-view': openLineageViewFromQuery(element.dataset.view); break;
+      case 'return-lineage-selection': returnToMobileLineageSelection(); break;
       case 'mobile-generation-single': chooseGenerationQuery('single'); break;
       case 'mobile-generation-range': chooseGenerationQuery('range'); break;
       case 'query-generation-single': runGenerationQuery('single'); break;

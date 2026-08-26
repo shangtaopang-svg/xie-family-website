@@ -627,6 +627,9 @@ button, input, select, textarea { color-scheme: light; }
 .view-tab:hover { border-color: rgba(174, 104, 79, .35); background: transparent; color: var(--accent); }
 .view-tab.is-active { border-color: var(--accent); background: transparent; color: var(--ink-strong); box-shadow: none; font-weight: 700; }
 
+/* 手机端进入具体世系后，用单一返回入口替代横向世系标签栏，避免误触和横向溢出。 */
+.mobile-lineage-selection-back { display: none; }
+
 .main-branch-nav { gap: 6px; padding: 8px 24px; background: #f1eee7; border-bottom: 1px solid #dad6cc; }
 .main-branch-title { color: #78857e; letter-spacing: .05em; }
 .main-branch-btn { min-height: 28px; padding: 5px 9px; border: 1px solid #c7cec8; border-radius: 4px; background: #f9f7f1; color: #527067; }
@@ -2443,16 +2446,29 @@ body[data-app-mode="public"] .tree-viewport {
     border-color: #6f8d7f;
     transform: translateY(1px);
   }
-  body[data-app-mode="public"] .view-tabs {
+  body[data-app-mode="public"] .view-tabs { display: none !important; }
+  body[data-app-mode="public"] .mobile-lineage-selection-back {
     display: flex;
-    gap: 6px;
-    padding: 8px 10px;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    border-bottom: 1px solid #d7d3ca;
-    background: #f8f6ef;
-    scrollbar-width: thin;
+    align-items: center;
+    justify-content: center;
+    width: calc(100% - 20px);
+    min-height: 44px;
+    margin: 8px 10px;
+    padding: 7px 14px;
+    border: 1px solid #7b9d8d;
+    border-radius: 9px;
+    background: #e8f1eb;
+    color: #315b4c;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: .04em;
   }
+  body[data-app-mode="public"] .mobile-lineage-selection-back:active {
+    background: #d7e8dc;
+    border-color: #47725f;
+    transform: translateY(1px);
+  }
+  body[data-app-mode="public"] .mobile-lineage-selection-back[hidden] { display: none !important; }
   body[data-app-mode="public"] .view-tab {
     flex: 0 0 auto;
     min-height: 44px;
