@@ -505,17 +505,10 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // === API: 家族成员公共只读数据 ===
-  // 家族成员栏目必须以“族谱管理后台”的 canonical 数据为准。
-  // 交付版世系图和 PDF 只作为谱文/来源核对材料，不在这里另起一套成员名单。
+  // === 已取消：家族成员公共只读接口 ===
+  // 族人资料只通过族谱查询公开功能和管理后台使用，不再提供独立成员栏目接口。
   if (url === '/api/genealogy-members' && req.method === 'GET') {
-    try {
-      const canonicalPath = path.join(DATA_DIR, 'genealogy.json');
-      const records = JSON.parse(fs.readFileSync(canonicalPath, 'utf8'));
-      return sendJson(req, res, 200, normalizeLifeStatus(records).map(person => ({ ...person })));
-    } catch (e) {
-      return sendJson(req, res, 500, { error: '族谱管理后台数据暂时不可用' });
-    }
+    return sendJson(req, res, 410, { error: '家族成员页面已取消，请使用族谱查询' });
   }
 
   // === B站封面代理 ===

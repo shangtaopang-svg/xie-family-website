@@ -60,7 +60,6 @@
       '<a href="' + p('celebrities') + '">🏆 名人事迹</a>' +
       '<a href="' + p('merit-scroll') + '">📜 功德卷轴</a>' +
       '<a href="' + p('news') + '">📰 消息发布</a>' +
-      '<a href="' + p('members') + '">👥 家族成员</a>' +
       '<a href="' + p('activities') + '">🎪 家族活动</a>' +
       '<a href="' + p('today') + '">📸 今日下枫槎</a>' +
       '<a href="' + p('reports') + '">📋 新闻报道</a>' +
