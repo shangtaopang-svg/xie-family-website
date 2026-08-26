@@ -2246,12 +2246,20 @@
   function rootTraceChildren(person) {
     if (!person) return [];
     const candidates = new Map();
+    const addCandidate = (child) => {
+      if (!child) return;
+      const key = String(personId(child));
+      if (key !== String(personId(person)) && !isHiddenAdoptionRecord(child)) candidates.set(key, child);
+    };
     const addChildrenOf = (record) => {
       if (!record) return;
-      treeChildren(record).forEach((child) => {
-        const key = String(personId(child));
-        if (key !== String(personId(person)) && !isHiddenAdoptionRecord(child)) candidates.set(key, child);
-      });
+      treeChildren(record).forEach(addCandidate);
+      // 直达寻根必须以统一主数据中的 father_id 为最终兜底。
+      // 同名的出继/入继记录可能被展示树映射到承嗣父，不能因此漏掉亲生子女。
+      state.data.filter((child) => {
+        const father = rawFatherOf(child);
+        return father && String(personId(father)) === String(personId(record));
+      }).forEach(addCandidate);
     };
     // 首页直达寻根既要保留正常子女，也要兼容同一人物的亲生记录与入继记录。
     // 这样目标人物是出继/入继记录时，子女不会因为记录 ID 不同而消失。
