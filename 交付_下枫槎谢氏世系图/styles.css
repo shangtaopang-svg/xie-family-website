@@ -2552,9 +2552,19 @@ body[data-app-mode="public"] #tree-status[hidden] {
   }
   body[data-app-mode="public"] .notice-bar .notice-close { display: none; }
   body[data-app-mode="public"] .tree-area { min-height: 0; }
-  /* 手机世系图使用“屏幕内展示窗”：不要让全景 SVG 的原始高度反过来撑高页面，
-     否则“全部展开”会按一个超出屏幕的长容器计算比例，用户只能看到上半段。 */
-  body[data-app-mode="public"] .tree-area { height: calc(100dvh - 250px); min-height: 420px; }
+  /* 手机世系图使用剩余空间展示：查询栏/详情为空时，树图区自动填满整个工作区，
+     不再把隐藏区域留下的高度浪费成大片绿色空白。点击人物后详情重新参与页面排布。 */
+  body[data-app-mode="public"] .tree-area {
+    height: auto;
+    min-height: 420px;
+    flex: 1 1 0;
+  }
+  body[data-app-mode="public"] #app.is-detail-empty .workspace {
+    min-height: 0;
+  }
+  body[data-app-mode="public"] #app.is-detail-empty .tree-area {
+    min-height: 0;
+  }
   body[data-app-mode="public"] .tree-viewport:not(.mobile-overview-index-viewport) {
     height: 100%;
     min-height: 0;
