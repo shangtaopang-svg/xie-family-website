@@ -3064,10 +3064,15 @@
     const fit = Math.min(availableWidth / contentWidth, availableHeight / contentHeight) * .96;
     const whole = Boolean(options && options.whole);
     const readable = !whole && Boolean(options && options.readable && canvasMap);
+    // 公共手机端进入某一段世系时，不按“整棵树的高度”压成缩略图。
+    // 这里保留可滚动的展示窗，让卡片先达到可读尺寸；“全景/全部展开”仍走 whole 分支。
+    const mobileLineageReadable = !IS_ADMIN && isMobileViewport() && !whole && !state.overviewMode;
     if (readable) {
       // 全展开时不再把 1,253 张卡片压成一张“看不清的缩略图”。
       // 先以可读比例聚焦当前人物，用户仍可点击“全景”回到完整缩略图。
       state.zoom = Math.max(.55, Math.min(.9, fit * 45));
+    } else if (mobileLineageReadable) {
+      state.zoom = Math.max(.55, Math.min(1.25, fit));
     } else {
       state.zoom = Math.max(.005, Math.min(1.8, fit));
     }
@@ -3902,7 +3907,11 @@
       const minimap = $('#tree-minimap-panel');
       if (minimap) minimap.hidden = true;
       updateZoomReadouts();
-      $('#tree-status').textContent = '总览世系分区 · 选择一段进入连续世系图';
+      const overviewStatus = $('#tree-status');
+      if (overviewStatus) {
+        overviewStatus.textContent = '总览世系分区 · 选择一段进入连续世系图';
+        overviewStatus.hidden = !IS_ADMIN && isMobileViewport();
+      }
       return;
     }
     stage.style.zoom = '';
@@ -3933,7 +3942,13 @@
     const activeFilters = [state.branch && `支系：${state.branch}`, state.generation && `世代：${viewGenerationText(Number(state.generation))}`].filter(Boolean).join(' · ');
     const selected = getPerson(state.selectedId);
     const visible = $$('.person-card').length;
-    $('#tree-status').textContent = `${currentView().label} · ${activeFilters ? `当前筛选：${activeFilters} · ` : ''}当前树面卡片 ${visible} 张${selected ? ` · 已选：${text(selected.name)}` : ' · 点击卡片查看详情'}`;
+    const treeStatus = $('#tree-status');
+    if (treeStatus) {
+      treeStatus.textContent = `${currentView().label} · ${activeFilters ? `当前筛选：${activeFilters} · ` : ''}当前树面卡片 ${visible} 张${selected ? ` · 已选：${text(selected.name)}` : ' · 点击卡片查看详情'}`;
+      // 未点击人物前不显示说明性占位条，把展示高度完整留给世系图。
+      // 选中人物后恢复状态提示，详情面板由 renderDetail() 独立控制。
+      treeStatus.hidden = !IS_ADMIN && isMobileViewport() && !selected;
+    }
   }
 
   // 卡片点击展开只增量插入当前节点的下一代，避免为一张卡片重新生成整棵大树。

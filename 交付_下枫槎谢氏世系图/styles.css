@@ -2375,6 +2375,9 @@ body[data-app-mode="public"] #app.is-left-hidden.is-detail-empty .workspace {
 body[data-app-mode="public"] #detail-panel[hidden] {
   display: none !important;
 }
+body[data-app-mode="public"] #tree-status[hidden] {
+  display: none !important;
+}
 
 /* 手机端查询结果的“详情”是资料页，不是世系图：隐藏树图区与查询层，保留同一页面中的完整详情。 */
 @media (max-width: 760px) {
