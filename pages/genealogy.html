@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>枫槎谢氏宗谱 · 族谱查询</title>
   <meta name="description" content="枫槎谢氏宗谱族谱查询与只读世系图">
-  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260825-main-zones-generation-01">
+  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260826-mobile-lineage-selector-01">
   <script>
     if (new URLSearchParams(location.search).get('chooser') === '1' && window.matchMedia('(max-width: 760px)').matches) {
       document.documentElement.classList.add('is-chooser-pending');
@@ -133,24 +133,39 @@
             <div class="query-section-head">
               <div><span class="query-kicker">LINEAGE MAPS</span><h4>查世系图</h4><p class="query-muted">选择要查看的世系图</p></div>
             </div>
-            <div class="query-lineage-view-block">
-              <span class="query-lineage-view-title">世系图选择</span>
-              <div class="query-lineage-view-picker" aria-label="选择世系图">
-                <button type="button" data-action="query-lineage-view" data-view="overview">总览世系图</button>
-                <button type="button" data-action="query-lineage-view" data-view="ancient">远古世系图</button>
-                <button type="button" data-action="query-lineage-view" data-view="shenbo">申伯世系图</button>
-                <button type="button" data-action="query-lineage-view" data-view="dongshan">始宁东山世系图</button>
-                <button type="button" data-action="query-lineage-view" data-view="linhai">临海下渡世系图</button>
-                <button type="button" data-action="query-lineage-view" data-view="shima">石马（下谢）世系图</button>
-                <button type="button" data-action="query-lineage-view" data-view="main">本宗世系图（下枫槎）</button>
-              </div>
-              <div class="query-lineage-map-actions" aria-label="世系图操作">
-                <button type="button" data-action="expand-all" title="全部展开">⊞ <span>展开</span></button>
-                <button type="button" data-action="collapse-all" title="全部收起">⊟ <span>收起</span></button>
-                <button type="button" data-action="zoom-in" title="放大">＋ <span>放大</span></button>
-                <button type="button" data-action="zoom-out" title="缩小">− <span>缩小</span></button>
-              </div>
+            <div class="query-lineage-card-picker" aria-label="选择世系图分区">
+              <button class="query-lineage-card query-lineage-card-ancient" type="button" data-action="query-lineage-view" data-view="ancient">
+                <span class="query-lineage-card-number">1</span>
+                <span class="query-lineage-card-copy"><strong>远古世系图</strong><small>第1—65世 · 10人</small><em>起点：炎帝神农氏 · 点击查看本段世系</em></span>
+                <span class="query-lineage-card-arrow" aria-hidden="true">›</span>
+              </button>
+              <button class="query-lineage-card query-lineage-card-shenbo" type="button" data-action="query-lineage-view" data-view="shenbo">
+                <span class="query-lineage-card-number">2</span>
+                <span class="query-lineage-card-copy"><strong>申伯世系图</strong><small>第65—101世 · 55人</small><em>起点：申伯 · 点击查看本段世系</em></span>
+                <span class="query-lineage-card-arrow" aria-hidden="true">›</span>
+              </button>
+              <button class="query-lineage-card query-lineage-card-dongshan" type="button" data-action="query-lineage-view" data-view="dongshan">
+                <span class="query-lineage-card-number">3</span>
+                <span class="query-lineage-card-copy"><strong>始宁东山世系图</strong><small>第99—122世 · 50人</small><em>起点：缵 · 点击查看本段世系</em></span>
+                <span class="query-lineage-card-arrow" aria-hidden="true">›</span>
+              </button>
+              <button class="query-lineage-card query-lineage-card-linhai" type="button" data-action="query-lineage-view" data-view="linhai">
+                <span class="query-lineage-card-number">4</span>
+                <span class="query-lineage-card-copy"><strong>临海下渡世系图</strong><small>第122—130世 · 23人</small><em>起点：闓 · 点击查看本段世系</em></span>
+                <span class="query-lineage-card-arrow" aria-hidden="true">›</span>
+              </button>
+              <button class="query-lineage-card query-lineage-card-shima" type="button" data-action="query-lineage-view" data-view="shima">
+                <span class="query-lineage-card-number">5</span>
+                <span class="query-lineage-card-copy"><strong>石马（下谢）世系图</strong><small>第130—141世 · 63人</small><em>起点：小四 · 点击查看本段世系</em></span>
+                <span class="query-lineage-card-arrow" aria-hidden="true">›</span>
+              </button>
+              <button class="query-lineage-card query-lineage-card-main" type="button" data-action="query-lineage-view" data-view="main">
+                <span class="query-lineage-card-number">6</span>
+                <span class="query-lineage-card-copy"><strong>本宗世系图（下枫槎）</strong><small>第132—165世 · 875人</small><em>起点：文杲 · 点击查看本段世系</em></span>
+                <span class="query-lineage-card-arrow" aria-hidden="true">›</span>
+              </button>
             </div>
+            <p class="query-lineage-card-note">总览已按世系分区整理。进入分区后可展开主脉、展开全部、收起，并用双指缩放或拖动查看。</p>
           </section>
 
           <div id="query-generation-actions" class="query-generation-actions" hidden aria-label="按世次查询">
@@ -248,7 +263,7 @@
     </section>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="../交付_下枫槎谢氏世系图/app.js?v=20260825-main-zones-generation-01"></script>
+  <script src="../交付_下枫槎谢氏世系图/app.js?v=20260826-mobile-lineage-selector-01"></script>
 <link rel="stylesheet" href="/css/ai.css?v=91">
 <script src="/js/ai-assistant.js?v=91" defer></script>
 </body>

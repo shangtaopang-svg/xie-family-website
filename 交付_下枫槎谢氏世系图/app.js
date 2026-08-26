@@ -2475,7 +2475,6 @@
     if (mode === 'people') focusQueryField('query-search');
     if (mode === 'generation') focusQueryField('query-generation-single');
     if (mode === 'relation') focusQueryField('query-relation-a');
-    if (mode === 'lineage') focusQueryField('query-search');
   }
 
   function openMobileQueryRoute(route) {
