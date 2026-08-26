@@ -2936,11 +2936,20 @@
     state.overviewMetrics = { width: 0, height: 0 };
     stage.style.zoom = 1;
     stage.style.transform = 'none';
-    const contentWidth = Math.max(1, stage.scrollWidth, stage.offsetWidth);
-    const contentHeight = Math.max(1, stage.scrollHeight, stage.offsetHeight);
+    // 以根人物卡片为视觉中心，而不是以 stage 外框为中心。
+    // stage 可能因树枝布局保留额外空白，按外框居中会让主卡片在手机端偏左/偏上。
+    const viewportRect = viewport.getBoundingClientRect();
+    const rootCard = stage.querySelector('.tree-root .person-card');
+    const rootRect = rootCard?.getBoundingClientRect();
+    const rootCenterX = rootRect
+      ? rootRect.left + rootRect.width / 2 - viewportRect.left
+      : stage.getBoundingClientRect().left + stage.getBoundingClientRect().width / 2 - viewportRect.left;
+    const rootCenterY = rootRect
+      ? rootRect.top + rootRect.height / 2 - viewportRect.top
+      : stage.getBoundingClientRect().top + stage.getBoundingClientRect().height / 2 - viewportRect.top;
     state.mapPan = {
-      x: Math.max(0, Math.round((viewport.clientWidth - contentWidth) / 2)),
-      y: Math.max(0, Math.round((viewport.clientHeight - contentHeight) / 2))
+      x: Math.round(viewport.clientWidth / 2 - rootCenterX),
+      y: Math.round(viewport.clientHeight / 2 - rootCenterY)
     };
     applyZoom();
     viewport.scrollLeft = 0;
