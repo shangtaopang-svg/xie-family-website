@@ -65,6 +65,10 @@
     draftId: null,
     draftParentId: null,
     mainFocusId: null,
+    // 本宗世系的移动端子入口：保留独立起点与目标支脉，避免把三条支脉混成一个本宗图。
+    mainSublineage: null,
+    mainLineageRootId: null,
+    mainLineageTargetId: null,
     mobileFocusRootId: null,
     layout: {
       leftWidth: 230,
@@ -136,6 +140,13 @@
   };
 
   const VIEW_ORDER = ['overview', 'ancient', 'shenbo', 'dongshan', 'linhai', 'shima', 'main'];
+
+  // ID 来自族谱管理后台唯一主数据源：撰(12)→文对(61)，攒(13)→乾(59)，攒(13)→彬(60)。
+  const MAIN_SUBLINEAGES = {
+    wendui: { label: '撰公派下文对世系', rootId: 12, targetId: 61 },
+    qian: { label: '攒公派下乾公世系', rootId: 13, targetId: 59 },
+    bin: { label: '攒公派下彬公世系', rootId: 13, targetId: 60 }
+  };
 
   function toId(value) {
     if (value === null || value === undefined || value === '') return null;
@@ -291,7 +302,7 @@
 
   function viewIncludes(person) {
     if (!person) return false;
-    const cacheKey = `${state.view}|${state.mainFocusId || ''}|${state.data.length}`;
+    const cacheKey = `${state.view}|${state.mainFocusId || ''}|${state.mainSublineage || ''}|${state.mainLineageRootId || ''}|${state.mainLineageTargetId || ''}|${state.data.length}`;
     if (state.viewIncludeCacheKey !== cacheKey) {
       state.viewIncludeCache.clear();
       state.viewIncludeCacheKey = cacheKey;
@@ -301,19 +312,27 @@
     const view = currentView();
     let included = true;
     if (state.view !== 'overview') {
-      if (personKey === String(toId(view.rootId))) included = true;
+      const effectiveRootId = state.view === 'main' && state.mainLineageRootId
+        ? state.mainLineageRootId
+        : view.rootId;
+      if (personKey === String(toId(effectiveRootId))) included = true;
       else {
         const generation = generationOf(person);
         included = !(view.generations && (generation === null || generation < view.generations[0] || generation > view.generations[1]));
         if (included && state.view === 'main') {
-          if (state.mainFocusId) {
+          if (state.mainSublineage && state.mainLineageRootId) {
+            const rootId = String(toId(state.mainLineageRootId));
+            const targetId = state.mainLineageTargetId ? String(toId(state.mainLineageTargetId)) : '';
+            const inRootBranch = personKey === rootId || isStrictDescendantOf(person, rootId);
+            included = inRootBranch && (!targetId || isWithinMainFocus(person, targetId));
+          } else if (state.mainFocusId) {
             included = isWithinMainFocus(person, state.mainFocusId);
           } else {
             // 本宗世系的 branch 字段并不是完整的树结构：大量真实主宗成员
             // 在管理后台中使用“—”作为暂未细分支系的占位值。不能再用
             // branch 白名单裁切本宗，否则“展开全部”只会显示很少一部分。
             // 以本宗根节点的真实父子链为准，保留所有后代及其承嗣归属。
-            included = personKey === String(toId(view.rootId)) || isStrictDescendantOf(person, view.rootId);
+            included = personKey === String(toId(effectiveRootId)) || isStrictDescendantOf(person, effectiveRootId);
           }
         }
         // 丹一一支接入枫槎始祖及前、后枫槎等支系，按真实父系回溯到小四，不能按支系名称过滤。
@@ -947,7 +966,8 @@
   }
 
   function findRoot() {
-    const viewRoot = getPerson(currentView().rootId);
+    const rootId = state.view === 'main' && state.mainLineageRootId ? state.mainLineageRootId : currentView().rootId;
+    const viewRoot = getPerson(rootId);
     return viewRoot || getPerson(1) || state.data.find((person) => !resolveRef(person.father_id ?? person.fatherId ?? person.father)) || state.data[0] || null;
   }
 
@@ -1003,7 +1023,7 @@
       return `<button class="view-tab${active ? ' is-active' : ''}" role="tab" aria-selected="${active}" data-action="switch-view" data-view="${key}">${escapeHtml(view.label)}</button>`;
     }).join('');
     const title = $('#tree-title');
-    if (title) title.textContent = currentView().label;
+    if (title) title.textContent = state.mainSublineage ? MAIN_SUBLINEAGES[state.mainSublineage]?.label || currentView().label : currentView().label;
   }
 
   function renderMainBranchNav() {
@@ -1032,9 +1052,15 @@
     const focusId = params.get('focus');
     const depth = Number(params.get('depth'));
     const rootSearch = text(params.get('rootSearch')).trim();
+    const sublineage = MAIN_SUBLINEAGES[params.get('sublineage')] ? params.get('sublineage') : null;
+    const lineageRootId = sublineage ? personId(getPerson(params.get('lineageRoot'))) : null;
+    const lineageTargetId = sublineage ? personId(getPerson(params.get('lineageTarget'))) : null;
     return {
       view: VIEW_DEFS[requestedView] ? requestedView : null,
       focusId: focusId ? personId(getPerson(focusId)) : null,
+      sublineage,
+      lineageRootId,
+      lineageTargetId,
       depth: [1, 3, 5].includes(depth) ? depth : null,
       safe: params.get('safe') === '1',
       rootSearch
@@ -1076,7 +1102,7 @@
     state.compact = true;
     // 从分支聚焦或带 focus 的地址进入后，点“展开全部”必须回到完整本宗，
     // 否则 viewIncludes 会继续把整棵树限制在当前聚焦分支内。
-    if (state.view === 'main') {
+    if (state.view === 'main' && !state.mainSublineage) {
       state.mainFocusId = null;
       state.mobileFocusRootId = null;
       state.viewIncludeCache.clear();
@@ -2596,13 +2622,22 @@
     setMobileQueryMode(route);
   }
 
-  function openLineageViewFromQuery(view) {
+  function openLineageViewFromQuery(element) {
+    const view = element?.dataset?.view;
     if (!VIEW_DEFS[view]) return;
     // 选择世系图后必须回到图面本身。此前这里先切图、再保留查询抽屉，
     // 抽屉会盖住树图区，用户看起来就像“点击后没有世系图”。
     closeMobileQueryMenu();
     if (state.query.open) toggleQueryDrawer();
-    switchView(view);
+    const sublineage = view === 'main' && MAIN_SUBLINEAGES[element.dataset.sublineage]
+      ? element.dataset.sublineage
+      : null;
+    switchView(view, sublineage ? {
+      sublineage,
+      lineageRootId: element.dataset.lineageRoot,
+      lineageTargetId: element.dataset.lineageTarget,
+      focusId: element.dataset.lineageTarget
+    } : undefined);
   }
 
   function chooseGenerationQuery(kind) {
@@ -2867,6 +2902,9 @@
       sessionStorage.setItem(SESSION_VIEW_KEY, JSON.stringify({
         view: state.view,
         mainFocusId: state.mainFocusId,
+        mainSublineage: state.mainSublineage,
+        mainLineageRootId: state.mainLineageRootId,
+        mainLineageTargetId: state.mainLineageTargetId,
         selectedId: state.selectedId,
         branch: state.branch,
         generation: state.generation,
@@ -6089,13 +6127,17 @@
     showToast('已导出人物详情');
   }
 
-  function switchView(key) {
+  function switchView(key, options = {}) {
     if (!VIEW_DEFS[key]) return;
     flushDraftAutoSave();
     state.overviewMode = false;
     state.immersive = false;
     state.view = key;
     state.mainFocusId = null;
+    state.mainSublineage = key === 'main' ? options.sublineage || null : null;
+    state.mainLineageRootId = state.mainSublineage ? personId(getPerson(options.lineageRootId)) : null;
+    state.mainLineageTargetId = state.mainSublineage ? personId(getPerson(options.lineageTargetId)) : null;
+    if (state.mainSublineage && options.focusId) state.mainFocusId = personId(getPerson(options.focusId));
     state.mobileFocusRootId = null;
     state.selectedId = null;
     state.mode = 'view';
@@ -6106,6 +6148,10 @@
     if (search) search.value = '';
     buildFilters();
     seedMainExpansion();
+    if (state.mainSublineage && state.mainLineageTargetId) {
+      state.expanded.clear();
+      setAncestorsExpanded(getPerson(state.mainLineageTargetId));
+    }
     renderAll();
     fitOverview();
     showToast(`已切换到${currentView().label}`);
@@ -6667,7 +6713,7 @@
         break;
       case 'close-mobile-query-menu': closeMobileQueryMenu(); break;
       case 'mobile-query-route': openMobileQueryRoute(element.dataset.route); break;
-      case 'query-lineage-view': openLineageViewFromQuery(element.dataset.view); break;
+      case 'query-lineage-view': openLineageViewFromQuery(element); break;
       case 'return-lineage-selection': returnToMobileLineageSelection(); break;
       case 'mobile-generation-single': chooseGenerationQuery('single'); break;
       case 'mobile-generation-range': chooseGenerationQuery('range'); break;
@@ -7234,12 +7280,23 @@
     markVerifiedLineageViewsOnce();
     const sessionView = loadSessionView();
     const route = readMainRoute();
-    const hasExplicitRoute = Boolean(route.view || route.focusId || route.depth || route.safe || route.rootSearch);
+    const hasExplicitRoute = Boolean(route.view || route.focusId || route.sublineage || route.depth || route.safe || route.rootSearch);
     if (route.view) state.view = route.view;
     else if (sessionView && VIEW_DEFS[sessionView.view]) state.view = sessionView.view;
     state.mainFocusId = state.view === 'main'
       ? (route.focusId || (sessionView && sessionView.mainFocusId ? personId(getPerson(sessionView.mainFocusId)) : null))
       : null;
+    state.mainSublineage = state.view === 'main'
+      ? (route.sublineage || (!hasExplicitRoute && sessionView ? sessionView.mainSublineage || null : null))
+      : null;
+    const sublineage = state.mainSublineage ? MAIN_SUBLINEAGES[state.mainSublineage] : null;
+    state.mainLineageRootId = state.mainSublineage
+      ? personId(getPerson(route.lineageRootId || (sessionView && sessionView.mainLineageRootId) || sublineage?.rootId))
+      : null;
+    state.mainLineageTargetId = state.mainSublineage
+      ? personId(getPerson(route.lineageTargetId || (sessionView && sessionView.mainLineageTargetId) || sublineage?.targetId))
+      : null;
+    if (state.mainSublineage && state.mainLineageTargetId) state.mainFocusId = state.mainLineageTargetId;
     if (sessionView && !hasExplicitRoute) {
       state.branch = text(sessionView.branch);
       state.generation = text(sessionView.generation);
@@ -7268,7 +7325,7 @@
     if (state.view === 'main' && route.depth) prepareDepthExpansion(route.depth);
     if (state.view === 'main' && route.safe) prepareSafeExpansion();
     // 手机默认保持局部窗口；只有明确点击“显示全图（高级）”或通过深度路由时才加载全量视图。
-    if (isMobileViewport() && !route.depth && !route.safe) {
+    if (isMobileViewport() && !route.depth && !route.safe && !state.mainSublineage) {
       const mobileTarget = getPerson(state.selectedId) || getPerson(state.mainFocusId) || findRoot();
       prepareMobileFocusWindow(mobileTarget, 4);
       state.zoom = 1;
