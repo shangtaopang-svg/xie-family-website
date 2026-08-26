@@ -143,7 +143,8 @@
 
   // ID 来自族谱管理后台唯一主数据源：文杲(10)→撰(12)/攒(13)，撰(12)→文对(61)，攒(13)→乾(59)/彬(60)。
   const MAIN_SUBLINEAGES = {
-    wengao: { label: '文杲-撰/攒世系', rootId: 10 },
+    // 6-0 是文杲至撰、攒的桥接图，只保留这三个节点，不向下展开后续分支。
+    wengao: { label: '文杲-撰/攒世系', rootId: 10, includeIds: [12, 13] },
     wendui: { label: '撰公派下文对世系', rootId: 12, targetId: 61 },
     qian: { label: '攒公派下乾公世系', rootId: 13, targetId: 59 },
     bin: { label: '攒公派下彬公世系', rootId: 13, targetId: 60 }
@@ -334,6 +335,10 @@
             // branch 白名单裁切本宗，否则“展开全部”只会显示很少一部分。
             // 以本宗根节点的真实父子链为准，保留所有后代及其承嗣归属。
             included = personKey === String(toId(effectiveRootId)) || isStrictDescendantOf(person, effectiveRootId);
+          }
+          if (included && view.includeIds) {
+            const allowedIds = new Set([effectiveRootId, ...view.includeIds].map((id) => String(toId(id))));
+            included = allowedIds.has(personKey);
           }
         }
         // 丹一一支接入枫槎始祖及前、后枫槎等支系，按真实父系回溯到小四，不能按支系名称过滤。
