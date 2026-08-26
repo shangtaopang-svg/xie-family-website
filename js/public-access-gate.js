@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var CONSENT_VERSION = 'privacy-v2-20260826';
+  var CONSENT_VERSION = 'privacy-v3-20260826';
   var SESSION_KEY = 'xie_public_access_v2';
   var ADMIN_TOKEN_KEY = 'xie_admin_token';
   var AI_TOKEN_KEY = 'ai_admin_token';
@@ -55,7 +55,7 @@
     var body = getBody();
     if (!body) return;
     if (state.step === 'consent') {
-      body.innerHTML = '<p>欢迎访问下枫槎谢氏数字宗谱。本网站包含家族世系、历史资料及部分近现代族人信息。</p><div class="public-access-note"><b>隐私保护说明</b><br>我们只使用您主动填写的登录或核验信息，用于身份识别、访问控制和族谱展示；不会在公开页面显示您的手机号、微信号或其他登录凭证，也不会向无关第三方出售或提供。族人核验只需本人姓名、父亲姓名和祖父姓名，不要求上传身份证件。您可以随时停止访问。</div><div class="public-access-actions"><button class="public-access-btn danger" type="button" data-access-action="decline">不同意</button><button class="public-access-btn primary" type="button" data-access-action="consent">同意并继续</button></div>';
+      body.innerHTML = '<p>欢迎访问下枫槎谢氏数字宗谱。本网站包含家族世系、历史资料及部分近现代族人信息。</p><div class="public-access-note"><b>隐私保护说明</b><p>为保护族谱资料及族人隐私，本网站将根据您的选择收集必要的登录信息，用于身份认证、访问权限管理和族谱服务。</p><p>族谱中的历史资料、世系关系等信息仅用于文化传承与查询，不得擅自复制、传播、商业使用或用于其他用途。对于在世族人的出生日期、联系方式、居住地等个人信息，网站将进行权限控制，未经本人或管理授权不会公开展示。</p><p>您可以选择“族人”或“普通访客”身份访问。族人身份需要经过核验，普通访客无需提交族谱内部信息。您可以申请查询、更正或删除与本人相关的信息。</p><p>点击“同意并继续”，表示您已阅读并同意本说明；点击“不同意”，将退出登录流程。</p></div><div class="public-access-actions"><button class="public-access-btn danger" type="button" data-access-action="decline">不同意</button><button class="public-access-btn primary" type="button" data-access-action="consent">同意并继续</button></div>';
       return;
     }
     if (state.step === 'role') {

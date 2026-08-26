@@ -260,8 +260,9 @@ function gzipSend(req, res, status, headers, data) {
 const AI_INJECT_BLACKLIST = new Set(['/admin.html', '/recover.html', '/entrance.html']);
 const AI_INJECT_MARK = '/js/ai-assistant.js';
 const PUBLIC_ACCESS_MARK = '/js/public-access-gate.js';
+const PUBLIC_ACCESS_SCRIPT_VERSION = '20260826-mobile-auth-02';
 function injectAiHtml(buf) {
-  const html = buf.toString('utf-8');
+  const html = buf.toString('utf-8').replace(/\/js\/public-access-gate\.js\?v=[^"'\s>]+/g, '/js/public-access-gate.js?v=' + PUBLIC_ACCESS_SCRIPT_VERSION);
   const m = html.search(/<\/body>/i);
   if (m === -1) return buf; // 无 body（HTML 片段）则跳过
   const inject = [];
@@ -271,7 +272,7 @@ function injectAiHtml(buf) {
   }
   if (html.indexOf(PUBLIC_ACCESS_MARK) === -1) {
     inject.push('<link rel="stylesheet" href="/css/public-access-gate.css?v=20260826-access-04">');
-    inject.push('<script src="/js/public-access-gate.js?v=20260826-mobile-auth-01" defer></script>');
+    inject.push('<script src="/js/public-access-gate.js?v=' + PUBLIC_ACCESS_SCRIPT_VERSION + '" defer></script>');
   }
   if (!inject.length) return buf;
   return Buffer.from(html.slice(0, m) + inject.join('\n') + '\n</body>' + html.slice(m + 7), 'utf-8');
