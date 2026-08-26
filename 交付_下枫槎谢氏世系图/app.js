@@ -2728,7 +2728,8 @@
       return;
     }
     const cards = matches.map((person) => {
-      const detailRefs = pdfBookSourceRefs(person);
+      // 电子族谱只允许打开数据中明确标注了“上册/下册”的页码；没有册别的旧页码不猜测，避免按钮点击无反应。
+      const detailRefs = pdfBookSourceRefs(person).filter((ref) => PDF_BOOKS[ref.book]);
       const lineageRefs = pdfLineageSourceRefs(person);
       const sourceButton = (ref, kind, label, unavailable) => ref
         ? `<button type="button" class="query-person-source-action is-${kind}" data-action="query-person-source-open" data-book="${escapeHtml(ref.book || '')}" data-page="${ref.page}" data-source-kind="${kind}"><strong>${label}</strong><small>${escapeHtml(pdfBookDefinition(ref.book).label)} · 第 ${ref.page} 页</small></button>`
