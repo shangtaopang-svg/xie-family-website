@@ -156,17 +156,52 @@ function publicAuthConfig() {
   };
 }
 
+function normalizeLineageName(value) {
+  return String(value == null ? '' : value).replace(/[\s\u3000]+/g, '').trim();
+}
+
 function findMemberByLineage(name, fatherName, grandpaName) {
   const filePath = path.join(DATA_DIR, 'genealogy.json');
   if (!fs.existsSync(filePath)) return { error: '族谱数据暂未加载' };
   const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-  const idMap = {};
-  data.forEach(p => { idMap[p.id] = p.name; });
-  const matches = data.filter(p => {
-    if (p.name !== name || !p.father_id) return false;
-    const father = data.find(f => f.id === parseInt(p.father_id));
-    if (!father || idMap[parseInt(p.father_id)] !== fatherName || !father.father_id) return false;
-    return idMap[parseInt(father.father_id)] === grandpaName;
+  const recordsById = new Map(data.map(person => [String(person.id), person]));
+  const targetName = normalizeLineageName(name);
+  const targetFatherName = normalizeLineageName(fatherName);
+  const targetGrandpaName = normalizeLineageName(grandpaName);
+
+  // 族谱核验必须使用明确的结构化父系关系。除亲生父系外，
+  // 仅补充谱中明确登记为“入继/承嗣”的父系，不能按姓名或文本模糊猜测。
+  function parentIdsOf(person) {
+    const ids = [];
+    if (person && person.father_id != null && person.father_id !== '') ids.push(String(person.father_id));
+    return ids;
+  }
+
+  function grandparentCandidatesOf(father) {
+    const candidates = new Set();
+    parentIdsOf(father).forEach(parentId => {
+      const parent = recordsById.get(parentId);
+      if (!parent) return;
+      candidates.add(parentId);
+
+      // 例如：世常（入继）记录挂在绍让名下。其子伟中的“祖父”
+      // 既可按直系父系世常核验，也可按谱载承嗣父绍让核验。
+      if (parent.adoption_status === 'in' && parent.adoption_adoptive_parent_id != null) {
+        const adoptiveParentId = String(parent.adoption_adoptive_parent_id);
+        if (recordsById.has(adoptiveParentId)) candidates.add(adoptiveParentId);
+      }
+    });
+    return candidates;
+  }
+
+  const matches = data.filter(person => {
+    if (normalizeLineageName(person.name) !== targetName || person.father_id == null || person.father_id === '') return false;
+    const father = recordsById.get(String(person.father_id));
+    if (!father || normalizeLineageName(father.name) !== targetFatherName) return false;
+    return Array.from(grandparentCandidatesOf(father)).some(parentId => {
+      const parent = recordsById.get(parentId);
+      return parent && normalizeLineageName(parent.name) === targetGrandpaName;
+    });
   });
   return { data, matches };
 }
