@@ -2897,7 +2897,7 @@
     const drawer = $('#query-drawer');
     if (drawer) drawer.dataset.mobileMode = mode;
     const title = drawer && drawer.querySelector('.query-drawer-head h3');
-    if (title) title.textContent = mode === 'people' ? '查族人' : mode === 'generation' ? '查世代' : mode === 'lineage' ? '查世系图' : mode === 'info' ? '族人信息' : '查关系';
+    if (title) title.textContent = mode === 'people' ? '查族人' : mode === 'generation' ? '查世代' : mode === 'lineage' ? '查世系图' : mode === 'info' ? '电子族谱' : '查关系';
     const switcher = $('.mobile-query-switcher');
     if (switcher) switcher.hidden = mode === 'info';
     const peopleTitle = $('.query-people-section h4');
