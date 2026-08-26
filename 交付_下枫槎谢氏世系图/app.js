@@ -312,6 +312,9 @@
     const personKey = String(personId(person));
     if (state.viewIncludeCache.has(personKey)) return state.viewIncludeCache.get(personKey);
     const view = currentView();
+    const sublineage = state.view === 'main' && state.mainSublineage
+      ? MAIN_SUBLINEAGES[state.mainSublineage]
+      : null;
     let included = true;
     if (state.view !== 'overview') {
       const effectiveRootId = state.view === 'main' && state.mainLineageRootId
@@ -336,8 +339,8 @@
             // 以本宗根节点的真实父子链为准，保留所有后代及其承嗣归属。
             included = personKey === String(toId(effectiveRootId)) || isStrictDescendantOf(person, effectiveRootId);
           }
-          if (included && view.includeIds) {
-            const allowedIds = new Set([effectiveRootId, ...view.includeIds].map((id) => String(toId(id))));
+          if (included && sublineage?.includeIds) {
+            const allowedIds = new Set([effectiveRootId, ...sublineage.includeIds].map((id) => String(toId(id))));
             included = allowedIds.has(personKey);
           }
         }
