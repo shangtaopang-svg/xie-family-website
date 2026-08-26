@@ -6,6 +6,7 @@
   <title>枫槎谢氏宗谱 · 族谱查询</title>
   <meta name="description" content="枫槎谢氏宗谱族谱查询与只读世系图">
     <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260826-pdf-book-02">
+  <link rel="stylesheet" href="../css/public-access-gate.css?v=20260826-access-01">
   <script>
     if (new URLSearchParams(location.search).get('chooser') === '1' && window.matchMedia('(max-width: 760px)').matches) {
       document.documentElement.classList.add('is-chooser-pending');
@@ -131,20 +132,25 @@
           </nav>
 
           <section class="query-section query-info-books-section" aria-label="上册下册原谱电子书" hidden>
+            <section class="query-person-source-section" aria-label="按姓名查看原谱页">
+              <div class="query-section-head query-person-source-head">
+                <div><span class="query-kicker">PERSON SOURCE</span><h4>按姓名查看原谱</h4><p class="query-muted">输入姓名，选择查看世系信息或族人详情；系统只打开已明确标注的原谱页。</p></div>
+              </div>
+              <div class="query-person-source-form">
+                <label class="query-field" for="query-person-source-search"><span>族人姓名</span><input id="query-person-source-search" type="search" placeholder="输入姓名，例如：明秀" autocomplete="off"></label>
+                <button type="button" class="query-primary" data-action="query-person-source-search">查询</button>
+                <button type="button" class="query-secondary" data-action="query-person-source-clear">清除</button>
+              </div>
+              <div id="query-person-source-results" class="query-person-source-results" aria-live="polite"></div>
+            </section>
             <div class="query-section-head query-book-head">
-              <div><span class="query-kicker">ORIGINAL GENEALOGY BOOK</span><h4>上册／下册原谱</h4><p class="query-muted">保持族谱原页版面，只提供翻页和按姓名定位。</p></div>
+              <div><span class="query-kicker">ORIGINAL GENEALOGY BOOK</span><h4>原谱页预览</h4><p class="query-muted">选择上方入口后，原封不动打开对应 PDF 页；可使用阅读器缩放、拖动和平移。</p></div>
               <span id="query-book-turn-note" class="query-book-turn-note" aria-live="polite">点击翻页，听原谱“咔嚓”一声</span>
             </div>
             <div class="query-book-tabs" role="tablist" aria-label="选择原谱册次">
               <button type="button" role="tab" data-action="query-book-select" data-book="upper" aria-selected="true">上册</button>
               <button type="button" role="tab" data-action="query-book-select" data-book="lower" aria-selected="false">下册</button>
             </div>
-            <div class="query-book-searchbar">
-              <label class="query-field query-book-search-field" for="query-book-search"><span>按姓名查原谱页</span><input id="query-book-search" data-pdf-book-field="query" type="search" placeholder="输入姓名，例如：明秀" autocomplete="off"></label>
-              <button type="button" class="query-primary" data-action="query-book-search">定位</button>
-              <button type="button" class="query-secondary" data-action="query-book-clear">清除</button>
-            </div>
-            <div id="query-book-results" class="query-book-results" aria-live="polite"></div>
             <div class="query-book-reader" aria-label="原谱阅读器">
               <div class="query-book-toolbar">
                 <button type="button" class="query-book-turn-button" data-action="query-book-prev" aria-label="上一页">‹</button>
@@ -154,6 +160,7 @@
                 <a id="query-book-open" class="query-book-open" href="#" target="_blank" rel="noopener">新窗口打开</a>
                 <span id="query-book-page-status" class="query-book-page-status" aria-live="polite">上册 · 第 1 页</span>
               </div>
+              <div id="query-book-focus-note" class="query-book-focus-note" aria-live="polite">请选择一位族人，再点击“世系信息”或“族人详情”中的原谱页。</div>
               <div id="query-book-frame-wrap" class="query-book-frame-wrap"><iframe id="query-book-frame" title="上册原始 PDF" loading="lazy"></iframe></div>
             </div>
           </section>
@@ -306,7 +313,7 @@
     </section>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-    <script src="../交付_下枫槎谢氏世系图/app.js?v=20260826-pdf-book-01"></script>
+<script src="../交付_下枫槎谢氏世系图/app.js?v=20260826-pdf-book-02"></script>
 <link rel="stylesheet" href="/css/ai.css?v=92">
 <script src="/js/ai-assistant.js?v=92" defer></script>
 </body>

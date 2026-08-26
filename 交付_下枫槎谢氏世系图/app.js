@@ -64,12 +64,14 @@
         zoom: 1,
         x: 0,
         y: 0
-      }
+      },
+      personSourceKeyword: ''
     },
     pdfBook: {
       book: 'upper',
       page: 1,
-      query: ''
+      query: '',
+      focus: null
     },
     mode: 'view',
     draftId: null,
@@ -2598,6 +2600,12 @@
     note.textContent = message || '点击翻页，听原谱“咔嚓”一声';
   }
 
+  function updatePdfBookFocusNote(message) {
+    const note = $('#query-book-focus-note');
+    if (!note) return;
+    note.textContent = message || '请选择一位族人，再点击“世系信息”或“族人详情”中的原谱页。';
+  }
+
   function playPageTurnSound() {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return;
@@ -2702,6 +2710,73 @@
     renderPdfBookSearchResults();
   }
 
+  function pdfLineageSourceRefs(person) {
+    // 族谱树状页只认数据中明确标注的“上册”页，不根据世次或相邻记录猜页码。
+    return pdfBookSourceRefs(person).filter((ref) => ref.book === 'upper');
+  }
+
+  function renderPersonSourceResults() {
+    const container = $('#query-person-source-results');
+    if (!container) return;
+    const keyword = text(state.query.personSourceKeyword).trim();
+    if (!keyword) {
+      container.innerHTML = '<div class="query-person-source-empty">输入姓名后，选择要查看的原谱内容。</div>';
+      return;
+    }
+    const needle = keyword.toLocaleLowerCase();
+    const matches = state.data.filter((person) => {
+      const name = text(person.name).trim().toLocaleLowerCase();
+      const courtesy = text(person.courtesy_name).trim().toLocaleLowerCase();
+      return name === needle || courtesy === needle || name.includes(needle) || courtesy.includes(needle);
+    }).slice(0, 30);
+    if (!matches.length) {
+      container.innerHTML = `<div class="query-person-source-empty">未找到“${escapeHtml(keyword)}”，请检查姓名或字。</div>`;
+      return;
+    }
+    const cards = matches.map((person) => {
+      const detailRefs = pdfBookSourceRefs(person);
+      const lineageRefs = pdfLineageSourceRefs(person);
+      const refsHtml = (refs, emptyText, kind) => refs.length
+        ? `<div class="query-person-source-pages">${refs.map((ref) => `<button type="button" class="query-person-source-page" data-action="query-person-source-open" data-book="${escapeHtml(ref.book || '')}" data-page="${ref.page}" data-source-kind="${kind}">${escapeHtml(pdfBookDefinition(ref.book).label)} · 第 ${ref.page} 页</button>`).join('')}</div>`
+        : `<span class="query-person-source-unavailable">${escapeHtml(emptyText)}</span>`;
+      const generation = generationOf(person);
+      return `<article class="query-person-source-card"><div class="query-person-source-person"><strong>${escapeHtml(text(person.name) || '未命名人物')}</strong><span>第${escapeHtml(generation || '—')}世 · ID ${escapeHtml(personId(person))}${text(person.courtesy_name).trim() ? ` · 字：${escapeHtml(text(person.courtesy_name))}` : ''}</span></div><div class="query-person-source-options"><section class="query-person-source-option is-lineage"><h5>世系信息</h5><p>上册原谱树状世系页</p>${refsHtml(lineageRefs, '未标注上册树状页，暂不猜测', 'lineage')}</section><section class="query-person-source-option is-detail"><h5>族人详情</h5><p>上册／下册族人原始记录</p>${refsHtml(detailRefs, '未标注原谱页，暂不猜测', 'detail')}</section></div></article>`;
+    }).join('');
+    container.innerHTML = `<div class="query-person-source-summary">找到 ${matches.length} 位匹配族人${matches.length === 30 ? '，仅显示前30位' : ''}；同名记录请按世次、支系和 ID 选择。</div>${cards}`;
+  }
+
+  function runPersonSourceSearch() {
+    const input = $('#query-person-source-search');
+    state.query.personSourceKeyword = input ? input.value : state.query.personSourceKeyword;
+    renderPersonSourceResults();
+  }
+
+  function clearPersonSourceSearch() {
+    state.query.personSourceKeyword = '';
+    state.pdfBook.focus = null;
+    const input = $('#query-person-source-search');
+    if (input) input.value = '';
+    renderPersonSourceResults();
+  }
+
+  function openPersonSourcePage(element) {
+    const book = element.dataset.book;
+    const page = element.dataset.page;
+    if (!PDF_BOOKS[book] || !page) return;
+    const personCard = element.closest('.query-person-source-card');
+    const personName = personCard?.querySelector('.query-person-source-person strong')?.textContent?.trim() || '该族人';
+    $$('.query-person-source-card.is-selected, .query-person-source-page.is-selected').forEach((node) => node.classList.remove('is-selected'));
+    personCard?.classList.add('is-selected');
+    element.classList.add('is-selected');
+    openPdfBook(book, page, true);
+    state.pdfBook.focus = { name: personName, kind: element.dataset.sourceKind === 'lineage' ? '世系信息' : '族人详情', book, page: Number(page) };
+    const reader = $('.query-book-reader');
+    if (reader) reader.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const kind = element.dataset.sourceKind === 'lineage' ? '世系信息' : '族人详情';
+    updatePdfBookTurnNote(`已定位${kind}：${pdfBookDefinition(book).label}第 ${page} 页`);
+    updatePdfBookFocusNote(`当前已定位：${personName} · ${kind} · ${pdfBookDefinition(book).label}第 ${page} 页。PDF 原页保持不改，页码按钮与本提示用于核对。`);
+  }
+
   function renderQueryDashboard() {
     if (!$('#query-drawer')) return;
     renderQueryStats();
@@ -2712,6 +2787,7 @@
     renderQueryRelationCandidates();
     renderQueryLineage7();
     renderPdfBookModule();
+    renderPersonSourceResults();
   }
 
   function toggleQueryDrawer() {
@@ -6984,6 +7060,9 @@
       case 'query-book-search': runPdfBookSearch(); break;
       case 'query-book-clear': clearPdfBookSearch(); break;
       case 'query-book-open-source': openPdfBook(element.dataset.book || state.pdfBook.book, element.dataset.page, true); break;
+      case 'query-person-source-search': runPersonSourceSearch(); break;
+      case 'query-person-source-clear': clearPersonSourceSearch(); break;
+      case 'query-person-source-open': openPersonSourcePage(element); break;
       case 'query-book-prev': turnPdfBookPage(-1); break;
       case 'query-book-next': turnPdfBookPage(1); break;
       case 'query-book-go': goToPdfBookPage(); break;
@@ -7390,6 +7469,11 @@
       if (event.key === 'Enter' && event.target?.id === 'query-book-search') {
         event.preventDefault();
         runPdfBookSearch();
+        return;
+      }
+      if (event.key === 'Enter' && event.target?.id === 'query-person-source-search') {
+        event.preventDefault();
+        runPersonSourceSearch();
         return;
       }
       if (event.key === 'Enter' && event.target?.id === 'query-book-page') {

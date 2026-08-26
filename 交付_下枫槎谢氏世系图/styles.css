@@ -2365,6 +2365,83 @@ body[data-app-mode="public"] .tree-viewport {
   .tree-minimap *, .tree-toolbar-actions *, .person-card { transition: none !important; animation: none !important; }
 }
 
+/* 按姓名定位原谱：将“世系信息”和“族人详情”作为两个清晰、可验证的入口。 */
+.query-person-source-section {
+  margin: 0 22px 18px;
+  padding: 18px;
+  border: 1px solid rgba(71, 118, 96, .26);
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(247, 252, 248, .96), rgba(237, 247, 240, .9));
+}
+.query-person-source-head { margin: 0 0 14px; }
+.query-person-source-form {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto auto;
+  align-items: end;
+  gap: 10px;
+}
+.query-person-source-form .query-primary,
+.query-person-source-form .query-secondary { min-height: 44px; white-space: nowrap; }
+.query-person-source-results { display: grid; gap: 10px; margin-top: 14px; }
+.query-person-source-empty,
+.query-person-source-summary {
+  padding: 12px 14px;
+  border: 1px dashed rgba(71, 118, 96, .28);
+  border-radius: 10px;
+  color: #6b7e73;
+  background: rgba(255, 255, 255, .64);
+  font-size: 13px;
+}
+.query-person-source-summary { color: #8e513d; font-weight: 700; }
+.query-person-source-card {
+  display: grid;
+  gap: 14px;
+  padding: 15px;
+  border: 2px solid rgba(71, 118, 96, .2);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .82);
+  box-shadow: 0 8px 20px rgba(45, 78, 61, .06);
+}
+.query-person-source-person { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 14px; }
+.query-person-source-person strong { color: #294d3e; font-family: Georgia, "Noto Serif SC", serif; font-size: 20px; }
+.query-person-source-person span { color: #71827a; font-size: 12px; }
+.query-person-source-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.query-person-source-option { min-width: 0; padding: 13px; border: 1px solid; border-radius: 12px; }
+.query-person-source-option.is-lineage { border-color: rgba(71, 118, 96, .36); background: #eef8f0; }
+.query-person-source-option.is-detail { border-color: rgba(183, 111, 77, .36); background: #fff6f0; }
+.query-person-source-option h5 { margin: 0; color: #2e5d4a; font-size: 16px; }
+.query-person-source-option.is-detail h5 { color: #92513b; }
+.query-person-source-option p { margin: 4px 0 10px; color: #798980; font-size: 12px; }
+.query-person-source-pages { display: flex; flex-wrap: wrap; gap: 7px; }
+.query-person-source-page {
+  min-height: 36px;
+  padding: 7px 10px;
+  border: 1px solid rgba(71, 118, 96, .38);
+  border-radius: 9px;
+  color: #35664f;
+  background: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+.query-person-source-option.is-detail .query-person-source-page { border-color: rgba(183, 111, 77, .42); color: #92513b; }
+.query-person-source-page:hover { transform: translateY(-1px); box-shadow: 0 5px 12px rgba(45, 78, 61, .12); }
+.query-person-source-option.is-detail .query-person-source-page:hover { background: #fff0e8; }
+.query-person-source-unavailable { color: #9a8176; font-size: 12px; line-height: 1.5; }
+@media (max-width: 760px) {
+  body[data-app-mode="public"] .query-person-source-section { margin: 0 0 12px; padding: 12px; border-radius: 13px; }
+  body[data-app-mode="public"] .query-person-source-form { grid-template-columns: 1fr auto; }
+  body[data-app-mode="public"] .query-person-source-form .query-field { grid-column: 1 / -1; }
+  body[data-app-mode="public"] .query-person-source-form .query-primary,
+  body[data-app-mode="public"] .query-person-source-form .query-secondary { width: 100%; }
+  body[data-app-mode="public"] .query-person-source-options { grid-template-columns: 1fr; }
+  body[data-app-mode="public"] .query-person-source-card { padding: 12px; }
+  body[data-app-mode="public"] .query-person-source-person strong { font-size: 18px; }
+  body[data-app-mode="public"] .query-person-source-page { min-height: 44px; }
+}
+
 /* 原谱电子书：只做阅读壳，不改写 PDF 原页内容。 */
 .query-info-books-section {
   min-width: 0;
@@ -2559,6 +2636,28 @@ body[data-app-mode="public"] .tree-viewport {
   font-size: 12px;
   font-weight: 700;
 }
+.query-book-focus-note {
+  margin: 0 10px 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(183, 111, 77, .42);
+  border-left: 4px solid #b76f4d;
+  border-radius: 10px;
+  color: #784733;
+  background: #fff4ed;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.query-person-source-card.is-selected {
+  border-color: #b76f4d;
+  box-shadow: 0 0 0 3px rgba(183, 111, 77, .16), 0 12px 24px rgba(45, 78, 61, .1);
+}
+.query-person-source-page.is-selected {
+  color: #fff;
+  border-color: #b76f4d;
+  background: #b76f4d;
+  box-shadow: 0 0 0 3px rgba(183, 111, 77, .16);
+}
 .query-book-frame-wrap {
   position: relative;
   height: min(72vh, 760px);
@@ -2629,6 +2728,8 @@ body[data-app-mode="public"] .tree-viewport {
   .query-book-result-pages { justify-content: flex-start; }
   .query-book-reader { margin-inline: 14px; }
   .query-book-toolbar { gap: 6px; }
+  .query-book-focus-note { margin-inline: 8px; font-size: 12px; }
+  .query-book-page-status { width: 100%; margin-left: 0; }
   .query-book-page-status { width: 100%; margin-left: 0; padding: 2px 4px 0; }
   .query-book-frame-wrap { height: min(65vh, 680px); min-height: 380px; }
 }
