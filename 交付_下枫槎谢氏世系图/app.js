@@ -2604,48 +2604,10 @@
     }).join('')}`;
   }
 
-  function updatePdfBookTurnNote(message) {
-    const note = $('#query-book-turn-note');
-    if (!note) return;
-    note.textContent = message || '点击翻页，听原谱“咔嚓”一声';
-  }
-
   function updatePdfBookFocusNote(message) {
     const note = $('#query-book-focus-note');
     if (!note) return;
     note.textContent = message || '请选择一位族人，再点击“世系信息”或“族人详情”中的原谱页。';
-  }
-
-  function playPageTurnSound() {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextClass) return;
-    try {
-      if (!pdfBookAudioContext) pdfBookAudioContext = new AudioContextClass();
-      if (pdfBookAudioContext.state === 'suspended') pdfBookAudioContext.resume();
-      const now = pdfBookAudioContext.currentTime;
-      const gain = pdfBookAudioContext.createGain();
-      const oscillator = pdfBookAudioContext.createOscillator();
-      oscillator.type = 'square';
-      oscillator.frequency.setValueAtTime(1250, now);
-      oscillator.frequency.exponentialRampToValueAtTime(520, now + 0.055);
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.075, now + 0.004);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
-      oscillator.connect(gain).connect(pdfBookAudioContext.destination);
-      oscillator.start(now);
-      oscillator.stop(now + 0.075);
-    } catch (error) {
-      // 浏览器不支持音频时保留视觉翻页提示，不影响阅读。
-    }
-  }
-
-  function flashPdfBookPage() {
-    const frameWrap = $('#query-book-frame-wrap');
-    if (!frameWrap) return;
-    frameWrap.classList.remove('is-turning');
-    void frameWrap.offsetWidth;
-    frameWrap.classList.add('is-turning');
-    window.setTimeout(() => frameWrap.classList.remove('is-turning'), 360);
   }
 
   function renderPdfBookModule() {
@@ -2667,7 +2629,7 @@
     frameRight.src = 'about:blank';
   }
 
-  function openPdfBook(book, page, withTurnEffect) {
+  function openPdfBook(book, page) {
     state.pdfBook.book = PDF_BOOKS[book] ? book : 'upper';
     state.pdfBook.page = Math.max(1, Number.parseInt(page, 10) || 1);
     renderPdfBookModule();
@@ -2677,20 +2639,6 @@
       document.body.classList.add('query-book-overlay-open');
       window.setTimeout(() => reader.querySelector('.query-book-close')?.focus(), 0);
     }
-    if (withTurnEffect) {
-      playPageTurnSound();
-      flashPdfBookPage();
-      updatePdfBookTurnNote(`咔嚓 · 已翻到第 ${state.pdfBook.page} 页`);
-    }
-  }
-
-  function turnPdfBookPage(delta) {
-    openPdfBook(state.pdfBook.book, Number(state.pdfBook.page) + (delta < 0 ? -1 : 1), true);
-  }
-
-  function goToPdfBookPage() {
-    const input = $('#query-book-page');
-    openPdfBook(state.pdfBook.book, input ? input.value : state.pdfBook.page, true);
   }
 
   function closePdfBook() {
@@ -2706,7 +2654,7 @@
     renderPdfBookSearchResults();
     const matches = pdfBookSearchResults(state.pdfBook.query);
     if (matches.length === 1 && matches[0].refs.length === 1 && matches[0].refs[0].book && matches[0].refs[0].page) {
-      openPdfBook(matches[0].refs[0].book, matches[0].refs[0].page, true);
+      openPdfBook(matches[0].refs[0].book, matches[0].refs[0].page);
     }
   }
 
@@ -2777,10 +2725,9 @@
     personCard?.classList.add('is-selected');
     element.classList.add('is-selected');
     state.pdfBook.focus = { name: personName, kind: element.dataset.sourceKind === 'lineage' ? '世系信息' : '族人详情', book, page: Number(page) };
-    openPdfBook(book, page, true);
+    openPdfBook(book, page);
     const kind = element.dataset.sourceKind === 'lineage' ? '世系信息' : '族人详情';
-    updatePdfBookTurnNote(`已定位${kind}：${pdfBookDefinition(book).label}第 ${page} 页`);
-    updatePdfBookFocusNote(`当前已定位：${personName} · ${kind} · ${pdfBookDefinition(book).label}第 ${page} 页。PDF 原页保持不改，页码按钮与本提示用于核对。`);
+    updatePdfBookFocusNote(`当前已定位：${personName} · ${kind} · ${pdfBookDefinition(book).label}第 ${page} 页。PDF 原页保持不改，可直接缩放、平移查看。`);
   }
 
   function renderQueryDashboard() {
@@ -7100,17 +7047,13 @@
       case 'close-mobile-query-menu': closeMobileQueryMenu(); break;
       case 'mobile-query-route': openMobileQueryRoute(element.dataset.route); break;
       case 'query-lineage-view': openLineageViewFromQuery(element); break;
-      case 'query-book-select': openPdfBook(element.dataset.book, 1, false); break;
       case 'query-book-search': runPdfBookSearch(); break;
       case 'query-book-clear': clearPdfBookSearch(); break;
-      case 'query-book-open-source': openPdfBook(element.dataset.book || state.pdfBook.book, element.dataset.page, true); break;
+      case 'query-book-open-source': openPdfBook(element.dataset.book || state.pdfBook.book, element.dataset.page); break;
       case 'query-book-close': closePdfBook(); break;
       case 'query-person-source-search': runPersonSourceSearch(); break;
       case 'query-person-source-clear': clearPersonSourceSearch(); break;
       case 'query-person-source-open': openPersonSourcePage(element); break;
-      case 'query-book-prev': turnPdfBookPage(-1); break;
-      case 'query-book-next': turnPdfBookPage(1); break;
-      case 'query-book-go': goToPdfBookPage(); break;
       case 'return-lineage-selection': returnToMobileLineageSelection(); break;
       case 'mobile-generation-single': chooseGenerationQuery('single'); break;
       case 'mobile-generation-range': chooseGenerationQuery('range'); break;
@@ -7519,11 +7462,6 @@
       if (event.key === 'Enter' && event.target?.id === 'query-person-source-search') {
         event.preventDefault();
         runPersonSourceSearch();
-        return;
-      }
-      if (event.key === 'Enter' && event.target?.id === 'query-book-page') {
-        event.preventDefault();
-        goToPdfBookPage();
         return;
       }
       const target = event.target.closest && event.target.closest('.verify-toggle, .person-card[data-action="select-person"]');
