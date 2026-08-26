@@ -10,6 +10,11 @@
   const QUERY_STATE_KEY = 'xiafengcha_genealogy_query_v1';
   const IS_ADMIN = document.body.dataset.appMode === 'admin';
   const ADMIN_TOKEN_KEY = 'xie_admin_token';
+  const PDF_BOOKS = Object.freeze({
+    upper: { label: '上册', url: '../assets/genealogy-books/upper.pdf' },
+    lower: { label: '下册', url: '../assets/genealogy-books/lower.pdf' }
+  });
+  let pdfBookAudioContext = null;
   const initialData = Array.isArray(window.GENEALOGY_DATA) ? window.GENEALOGY_DATA : [];
   const clone = (value) => JSON.parse(JSON.stringify(value));
   const $ = (selector) => document.querySelector(selector);
@@ -60,6 +65,11 @@
         x: 0,
         y: 0
       }
+    },
+    pdfBook: {
+      book: 'upper',
+      page: 1,
+      query: ''
     },
     mode: 'view',
     draftId: null,
@@ -2505,6 +2515,193 @@
     result.innerHTML = `<strong>${escapeHtml(relation)}</strong><span>查询人物：${escapeHtml(text(p1.name))}（ID ${escapeHtml(personId(p1))}）与 ${escapeHtml(text(p2.name))}（ID ${escapeHtml(personId(p2))}）${common ? ` · 共同父系：${escapeHtml(text(common.name))}` : ''}</span><div class="query-path" style="margin-top:7px">${pathText}</div>`;
   }
 
+  function pdfBookDefinition(book) {
+    return PDF_BOOKS[book] || PDF_BOOKS.upper;
+  }
+
+  function pdfBookPageUrl(book, page) {
+    const definition = pdfBookDefinition(book);
+    const url = new URL(definition.url, window.location.href);
+    const safePage = Math.max(1, Number.parseInt(page, 10) || 1);
+    url.hash = `page=${safePage}&zoom=page-width`;
+    return url.href;
+  }
+
+  function pdfBookSourceRefs(person) {
+    const refs = [];
+    const seen = new Set();
+    const bookText = [person?.pdf_source_book, person?.source_book, person?.book].map(text).join('；');
+    const bookHint = /下册/.test(bookText) ? 'lower' : /上册/.test(bookText) ? 'upper' : null;
+    const pageFields = [person?.pdf_source_page, person?.source_pages, person?.pdf_page, person?.source_page];
+    const add = (book, page) => {
+      const value = Number.parseInt(page, 10);
+      if (!Number.isInteger(value) || value < 1 || value > 9999) return;
+      const key = `${book || 'unknown'}:${value}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      refs.push({ book: book || null, page: value });
+    };
+    pageFields.forEach((field) => {
+      const value = text(field).trim();
+      if (!value) return;
+      const explicit = /(上册|下册)\s*(?:PDF\s*)?(?:第\s*)?(\d{1,4})\s*(?:页)?/gi;
+      let match;
+      while ((match = explicit.exec(value))) add(match[1] === '下册' ? 'lower' : 'upper', match[2]);
+      if (bookHint) {
+        const numbered = /(?:第\s*)?(\d{1,4})\s*页?/g;
+        while ((match = numbered.exec(value))) add(bookHint, match[1]);
+      }
+    });
+    return refs;
+  }
+
+  function pdfBookSearchResults(keyword) {
+    const needle = text(keyword).trim().toLocaleLowerCase();
+    if (!needle) return [];
+    return state.data.map((person) => {
+      const values = [person.name, person.courtesy_name, person.alias, person.book_record, person.pdf_source_excerpt, person.branch];
+      const exactName = text(person.name).trim().toLocaleLowerCase() === needle;
+      const haystack = values.map(text).join(' ').toLocaleLowerCase();
+      if (!haystack.includes(needle)) return null;
+      const refs = pdfBookSourceRefs(person);
+      const score = exactName ? 10 : text(person.name).toLocaleLowerCase().includes(needle) ? 8 : 1;
+      return { person, refs, score };
+    }).filter(Boolean).sort((a, b) => b.score - a.score || Number(personId(a.person)) - Number(personId(b.person))).slice(0, 30);
+  }
+
+  function renderPdfBookSearchResults() {
+    const result = $('#query-book-results');
+    if (!result) return;
+    const keyword = text(state.pdfBook.query).trim();
+    if (!keyword) {
+      result.innerHTML = '<div class="query-book-empty">输入姓名后，系统只会打开已明确标注页码的原谱页面；没有页码的不自动猜测。</div>';
+      return;
+    }
+    const matches = pdfBookSearchResults(keyword);
+    if (!matches.length) {
+      result.innerHTML = `<div class="query-book-empty">未找到“${escapeHtml(keyword)}”的原谱定位记录。</div>`;
+      return;
+    }
+    result.innerHTML = `<div class="query-book-result-summary">找到 ${matches.length} 条相关记录，请选择要打开的原谱页。</div>${matches.map(({ person, refs }) => {
+      const name = text(person.name) || '未命名人物';
+      const generation = text(person.generation_num || person.generation || '—');
+      const buttons = refs.length
+        ? refs.map((ref) => `<button type="button" class="query-book-page-link" data-action="query-book-open-source" data-book="${escapeHtml(ref.book || '')}" data-page="${ref.page}">${escapeHtml(ref.book ? pdfBookDefinition(ref.book).label : '原谱')} · 第 ${ref.page} 页</button>`).join('')
+        : '<span class="query-book-no-page">原始页码尚未结构化标注，不自动猜测页码</span>';
+      return `<article class="query-book-result-card"><div class="query-book-result-person"><strong>${escapeHtml(name)}</strong><span>第${escapeHtml(generation)}世 · ID ${escapeHtml(personId(person))}</span></div><div class="query-book-result-pages">${buttons}</div></article>`;
+    }).join('')}`;
+  }
+
+  function updatePdfBookTurnNote(message) {
+    const note = $('#query-book-turn-note');
+    if (!note) return;
+    note.textContent = message || '点击翻页，听原谱“咔嚓”一声';
+  }
+
+  function playPageTurnSound() {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    try {
+      if (!pdfBookAudioContext) pdfBookAudioContext = new AudioContextClass();
+      if (pdfBookAudioContext.state === 'suspended') pdfBookAudioContext.resume();
+      const now = pdfBookAudioContext.currentTime;
+      const gain = pdfBookAudioContext.createGain();
+      const oscillator = pdfBookAudioContext.createOscillator();
+      oscillator.type = 'square';
+      oscillator.frequency.setValueAtTime(1250, now);
+      oscillator.frequency.exponentialRampToValueAtTime(520, now + 0.055);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.075, now + 0.004);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+      oscillator.connect(gain).connect(pdfBookAudioContext.destination);
+      oscillator.start(now);
+      oscillator.stop(now + 0.075);
+    } catch (error) {
+      // 浏览器不支持音频时保留视觉翻页提示，不影响阅读。
+    }
+  }
+
+  function flashPdfBookPage() {
+    const frameWrap = $('#query-book-frame-wrap');
+    if (!frameWrap) return;
+    frameWrap.classList.remove('is-turning');
+    void frameWrap.offsetWidth;
+    frameWrap.classList.add('is-turning');
+    window.setTimeout(() => frameWrap.classList.remove('is-turning'), 360);
+  }
+
+  function renderPdfBookModule() {
+    const frame = $('#query-book-frame');
+    if (!frame) return;
+    const book = state.pdfBook.book;
+    const page = Math.max(1, Number.parseInt(state.pdfBook.page, 10) || 1);
+    const definition = pdfBookDefinition(book);
+    $$('.query-book-tabs [data-book]').forEach((button) => {
+      const active = button.dataset.book === book;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-selected', String(active));
+    });
+    const pageInput = $('#query-book-page');
+    if (pageInput && document.activeElement !== pageInput) pageInput.value = String(page);
+    const searchInput = $('#query-book-search');
+    if (searchInput && document.activeElement !== searchInput) searchInput.value = state.pdfBook.query;
+    const status = $('#query-book-page-status');
+    if (status) status.textContent = `${definition.label} · 第 ${page} 页`;
+    frame.title = `${definition.label}原始 PDF`;
+    if (!frame.dataset.loaded) {
+      frame.src = pdfBookPageUrl(book, page);
+      frame.dataset.loaded = 'true';
+    }
+    const openLink = $('#query-book-open');
+    if (openLink) {
+      openLink.href = pdfBookPageUrl(book, page);
+      openLink.textContent = `新窗口打开${definition.label}`;
+    }
+    renderPdfBookSearchResults();
+  }
+
+  function openPdfBook(book, page, withTurnEffect) {
+    state.pdfBook.book = PDF_BOOKS[book] ? book : 'upper';
+    state.pdfBook.page = Math.max(1, Number.parseInt(page, 10) || 1);
+    const frame = $('#query-book-frame');
+    if (frame) {
+      frame.src = pdfBookPageUrl(state.pdfBook.book, state.pdfBook.page);
+      frame.dataset.loaded = 'true';
+    }
+    renderPdfBookModule();
+    if (withTurnEffect) {
+      playPageTurnSound();
+      flashPdfBookPage();
+      updatePdfBookTurnNote(`咔嚓 · 已翻到第 ${state.pdfBook.page} 页`);
+    }
+  }
+
+  function turnPdfBookPage(delta) {
+    openPdfBook(state.pdfBook.book, Number(state.pdfBook.page) + delta, true);
+  }
+
+  function goToPdfBookPage() {
+    const input = $('#query-book-page');
+    openPdfBook(state.pdfBook.book, input ? input.value : state.pdfBook.page, true);
+  }
+
+  function runPdfBookSearch() {
+    const input = $('#query-book-search');
+    state.pdfBook.query = input ? input.value : state.pdfBook.query;
+    renderPdfBookSearchResults();
+    const matches = pdfBookSearchResults(state.pdfBook.query);
+    if (matches.length === 1 && matches[0].refs.length === 1 && matches[0].refs[0].book && matches[0].refs[0].page) {
+      openPdfBook(matches[0].refs[0].book, matches[0].refs[0].page, true);
+    }
+  }
+
+  function clearPdfBookSearch() {
+    state.pdfBook.query = '';
+    const input = $('#query-book-search');
+    if (input) input.value = '';
+    renderPdfBookSearchResults();
+  }
+
   function renderQueryDashboard() {
     if (!$('#query-drawer')) return;
     renderQueryStats();
@@ -2514,6 +2711,7 @@
     renderQuerySearchResults();
     renderQueryRelationCandidates();
     renderQueryLineage7();
+    renderPdfBookModule();
   }
 
   function toggleQueryDrawer() {
@@ -2639,14 +2837,19 @@
     const adoption = $('.query-adoption-section');
     const lineage = $('.query-lineage-section');
     const lineage7 = $('.query-lineage7-section');
+    const infoBooks = $('.query-info-books-section');
+    const stats = $('#query-stats');
     const generationActions = $('#query-generation-actions');
     if (people) people.hidden = mode !== 'people';
     if (generation) generation.hidden = mode !== 'generation';
     if (relation) relation.hidden = mode !== 'relation';
-    if (adoption) adoption.hidden = mode !== 'info';
+    // 出继/入继核实保留在专门查询流程中，不与“族人信息”的原谱阅读重复展示。
+    if (adoption) adoption.hidden = true;
     if (lineage) lineage.hidden = mode !== 'lineage';
     // “上下7代”属于查族人的延伸查询，不再放在查世系图入口中。
     if (lineage7) lineage7.hidden = mode !== 'people';
+    if (infoBooks) infoBooks.hidden = mode !== 'info';
+    if (stats) stats.hidden = mode === 'info';
     if (generationActions) generationActions.hidden = mode !== 'generation';
     renderQueryDashboard();
     if (mode === 'people') focusQueryField('query-search');
@@ -6777,6 +6980,13 @@
       case 'close-mobile-query-menu': closeMobileQueryMenu(); break;
       case 'mobile-query-route': openMobileQueryRoute(element.dataset.route); break;
       case 'query-lineage-view': openLineageViewFromQuery(element); break;
+      case 'query-book-select': openPdfBook(element.dataset.book, 1, false); break;
+      case 'query-book-search': runPdfBookSearch(); break;
+      case 'query-book-clear': clearPdfBookSearch(); break;
+      case 'query-book-open-source': openPdfBook(element.dataset.book || state.pdfBook.book, element.dataset.page, true); break;
+      case 'query-book-prev': turnPdfBookPage(-1); break;
+      case 'query-book-next': turnPdfBookPage(1); break;
+      case 'query-book-go': goToPdfBookPage(); break;
       case 'return-lineage-selection': returnToMobileLineageSelection(); break;
       case 'mobile-generation-single': chooseGenerationQuery('single'); break;
       case 'mobile-generation-range': chooseGenerationQuery('range'); break;
@@ -7177,6 +7387,16 @@
         toggleImmersive();
         return;
       }
+      if (event.key === 'Enter' && event.target?.id === 'query-book-search') {
+        event.preventDefault();
+        runPdfBookSearch();
+        return;
+      }
+      if (event.key === 'Enter' && event.target?.id === 'query-book-page') {
+        event.preventDefault();
+        goToPdfBookPage();
+        return;
+      }
       const target = event.target.closest && event.target.closest('.verify-toggle, .person-card[data-action="select-person"]');
       if (!target || (event.key !== 'Enter' && event.key !== ' ')) return;
       event.preventDefault();
@@ -7196,6 +7416,13 @@
       scheduleDraftAutoSave();
     });
     document.addEventListener('input', (event) => {
+      const bookField = event.target.closest && event.target.closest('[data-pdf-book-field]');
+      if (bookField) {
+        if (bookField.dataset.pdfBookField === 'query') state.pdfBook.query = bookField.value;
+        if (bookField.dataset.pdfBookField === 'page') state.pdfBook.page = bookField.value;
+        if (bookField.dataset.pdfBookField === 'query') renderPdfBookSearchResults();
+        return;
+      }
       const field = event.target.closest && event.target.closest('[data-query-field]');
       if (!field) return;
       const key = field.dataset.queryField;
