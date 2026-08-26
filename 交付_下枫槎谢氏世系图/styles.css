@@ -237,6 +237,7 @@ body[data-app-mode="public"] .query-generation-action-row button { min-height: 4
 .overview-svg-layer:active { cursor: grabbing; }
 .overview-svg-parent-edge { fill: none; stroke: #91aaa0; stroke-width: 1.5; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; }
 .overview-svg-adoption-edge { fill: none; stroke: #b85a4a; stroke-width: 1.8; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; }
+.overview-svg-adoption-label { fill: #9b4338; font: 700 10px "Microsoft YaHei", sans-serif; paint-order: stroke; stroke: #f8f5ed; stroke-width: 5px; stroke-linejoin: round; letter-spacing: .02em; pointer-events: none; }
 .overview-svg-generation { fill: #526a61; font: 600 11px "Microsoft YaHei", sans-serif; }
 .overview-svg-name { fill: #243d34; font: 700 15px "Microsoft YaHei", sans-serif; }
 .overview-svg-route { fill: #526a61; opacity: .78; font: 500 9px "Microsoft YaHei", sans-serif; }
@@ -248,6 +249,9 @@ body[data-app-mode="public"] .query-generation-action-row button { min-height: 4
 .overview-svg-layer.is-mobile-overview .overview-svg-generation,
 .overview-svg-layer.is-mobile-overview .overview-svg-route { display: none; }
 .overview-svg-layer.is-mobile-overview .overview-svg-name { font-size: 17px; }
+.overview-svg-layer.is-mobile-overview .overview-svg-adoption-label { font-size: 10px; stroke-width: 4px; }
+/* 世系卡在手机全景图中也必须保留世代；只隐藏过长的支系文字。 */
+.overview-svg-layer.is-mobile-overview .overview-svg-generation { display: block; font-size: 10px; }
 .tree-stage { transform-origin: top left; width: max-content; min-width: 0; padding: 22px 42px; transition: none; will-change: transform; }
 .tree-stage.is-compact { --card-w: 132px; }
 .tree-stage.is-compact .person-card { min-height: 70px; padding: 7px 9px 6px; border-width: 1px; border-radius: 8px; }

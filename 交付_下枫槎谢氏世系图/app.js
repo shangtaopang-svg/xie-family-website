@@ -814,6 +814,16 @@
     return state.adoption.outById.get(String(personId(person))) || null;
   }
 
+  // 全景世系图中的出继/入继旁注统一使用关系本身生成，避免只显示“出继”
+  // 而无法判断亲生父亲、出继本人和承嗣父。这个文字只用于可视化，不改动原始谱文。
+  function adoptionRelationDisplayLabel(relation) {
+    if (!relation) return '';
+    const childName = text(relation.outPerson?.name).trim() || '此人';
+    const biologicalName = text(relation.biologicalParent?.name).trim() || '亲生父亲';
+    const adoptiveName = text(relation.adoptiveParent?.name).trim() || '承嗣父';
+    return `${childName}由${biologicalName}出继给${adoptiveName}为嗣`;
+  }
+
   function adoptionTags(person) {
     if (!person) return [];
     const tags = [];
@@ -3516,7 +3526,13 @@
     state.adoption.outById.forEach((relation) => {
       const from = nodeById.get(String(personId(relation.outPerson)));
       const target = nodeById.get(String(personId(relation.adoptiveRecord || relation.adoptiveParent)));
-      if (from && target && from !== target) adoptionEdges.push({ from, to: target });
+      if (from && target && from !== target) {
+        adoptionEdges.push({
+          from,
+          to: target,
+          label: adoptionRelationDisplayLabel(relation)
+        });
+      }
     });
     const right = nodes.reduce((max, node) => Math.max(max, node.x + node.width), 0);
     const bottom = nodes.reduce((max, node) => Math.max(max, node.y + node.height), 0);
@@ -3540,7 +3556,8 @@
     const edgeLayer = makeSvg('g', { class: 'overview-svg-edges' });
     const zoneFrameLayer = makeSvg('g', { class: 'overview-svg-zone-frames' });
     const nodeLayer = makeSvg('g', { class: 'overview-svg-nodes' });
-    svg.append(edgeLayer, zoneFrameLayer, nodeLayer);
+    const adoptionAnnotationLayer = makeSvg('g', { class: 'overview-svg-adoption-annotations', 'pointer-events': 'none' });
+    svg.append(edgeLayer, zoneFrameLayer, nodeLayer, adoptionAnnotationLayer);
     edges.forEach(({ parent, child }) => {
       const startX = parent.x + parent.width / 2;
       const startY = parent.y + parent.height;
@@ -3549,13 +3566,44 @@
       const middleY = startY + Math.max(8, (endY - startY) / 2);
       edgeLayer.append(makeSvg('path', { d: `M ${startX} ${startY} V ${middleY} H ${endX} V ${endY}`, class: 'overview-svg-parent-edge' }));
     });
-    adoptionEdges.forEach(({ from, to }) => {
+    adoptionEdges.forEach(({ from, to, label }) => {
       const startX = from.x + from.width / 2;
       const startY = from.y + from.height;
       const endX = to.x + to.width / 2;
-      const endY = to.y + to.height / 2;
-      const bend = Math.max(20, Math.abs(endX - startX) * .25);
-      edgeLayer.append(makeSvg('path', { d: `M ${startX} ${startY} C ${startX + bend} ${startY + 14}, ${endX - bend} ${endY - 14}, ${endX} ${endY}`, class: 'overview-svg-adoption-edge' }));
+      // 入继记录的连接点放在卡片上边缘，视觉上明确指向“归入的那张卡”，
+      // 不再把线头落在卡片中心造成“连到了别处”的错觉。
+      const endY = to.y;
+      const dx = endX - startX;
+      const dy = endY - startY;
+      const direction = dx === 0 ? 1 : Math.sign(dx);
+      const curveX = Math.max(28, Math.abs(dx) * .32);
+      const curveY = Math.max(18, Math.abs(dy) * .24);
+      const verticalSign = dy >= 0 ? 1 : -1;
+      const path = makeSvg('path', {
+        d: `M ${startX} ${startY} C ${startX + direction * curveX} ${startY + verticalSign * curveY}, ${endX - direction * curveX} ${endY - verticalSign * curveY}, ${endX} ${endY}`,
+        class: 'overview-svg-adoption-edge'
+      });
+      edgeLayer.append(path);
+
+      if (label) {
+        // 三次贝塞尔曲线的中点用于放置旁注；用文字描边保证在网格、连线和卡片
+        // 之间仍然清楚可读。旁注不拦截卡片点击。
+        const t = .5;
+        const p0 = { x: startX, y: startY };
+        const p1 = { x: startX + direction * curveX, y: startY + verticalSign * curveY };
+        const p2 = { x: endX - direction * curveX, y: endY - verticalSign * curveY };
+        const p3 = { x: endX, y: endY };
+        const midX = ((1 - t) ** 3 * p0.x) + (3 * (1 - t) ** 2 * t * p1.x) + (3 * (1 - t) * t ** 2 * p2.x) + (t ** 3 * p3.x);
+        const midY = ((1 - t) ** 3 * p0.y) + (3 * (1 - t) ** 2 * t * p1.y) + (3 * (1 - t) * t ** 2 * p2.y) + (t ** 3 * p3.y);
+        const annotation = makeSvg('text', {
+          x: midX + (direction * 8),
+          y: midY - 6,
+          class: 'overview-svg-adoption-label',
+          'text-anchor': 'middle'
+        });
+        annotation.textContent = label;
+        adoptionAnnotationLayer.append(annotation);
+      }
     });
     // 全展开地图中也保留三大房派的视觉分区，避免只在普通树面上显示外框。
     const overviewZones = [
