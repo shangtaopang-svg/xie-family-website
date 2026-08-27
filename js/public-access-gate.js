@@ -12,13 +12,55 @@
       return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[ch];
     });
   }
-  function readSession() { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { return null; } }
-  function sessionValid(session) { return !!(session && session.expiresAt && Number(session.expiresAt) > Date.now()); }
-  function validSession() {
-    var session = readSession();
-    return !!(sessionValid(session) && session.consentVersion === CONSENT_VERSION && session.role);
+  function readSession() {
+    var session = null;
+    var persistent = null;
+    var cookieSession = null;
+    try { session = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch (e) {}
+    if (sessionUsable(session)) return session;
+    // 页面跳转通常会保留 sessionStorage；localStorage 作为同一浏览器的兜底，
+    // 避免重复打开族谱页或新标签页时再次要求验证。
+    try { persistent = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) {}
+    if (sessionUsable(persistent)) {
+      try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(persistent)); } catch (e) {}
+      return persistent;
+    }
+    try {
+      var cookieMatch = document.cookie.match(new RegExp('(?:^|;\\s*)' + SESSION_KEY.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&') + '=([^;]*)'));
+      if (cookieMatch) cookieSession = JSON.parse(decodeURIComponent(cookieMatch[1]));
+    } catch (e) {}
+    if (sessionUsable(cookieSession)) {
+      try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(cookieSession)); } catch (e) {}
+      try { localStorage.setItem(SESSION_KEY, JSON.stringify(cookieSession)); } catch (e) {}
+      return cookieSession;
+    }
+    return session || persistent || cookieSession;
   }
-  function saveSession(value) { try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(value)); } catch (e) {} }
+  function sessionValid(session) { return !!(session && session.expiresAt && Number(session.expiresAt) > Date.now()); }
+  function sessionUsable(session) { return !!(sessionValid(session) && session.consentVersion === CONSENT_VERSION && session.role); }
+  function validSession() {
+    return sessionUsable(readSession());
+  }
+  function saveSession(value) {
+    var serialized = JSON.stringify(value);
+    try { sessionStorage.setItem(SESSION_KEY, serialized); } catch (e) {}
+    try { localStorage.setItem(SESSION_KEY, serialized); } catch (e) {}
+    try {
+      var maxAge = Math.max(60, Math.floor((Number(value.expiresAt) - Date.now()) / 1000));
+      document.cookie = SESSION_KEY + '=' + encodeURIComponent(serialized) + '; Max-Age=' + maxAge + '; Path=/; SameSite=Lax';
+    } catch (e) {}
+  }
+  function clearSession() {
+    try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+    try {
+      localStorage.removeItem('ai_clan_token');
+      localStorage.removeItem('ai_clan_person');
+      localStorage.removeItem(AI_TOKEN_KEY);
+      localStorage.removeItem(ADMIN_TOKEN_KEY);
+    } catch (e) {}
+    try { document.cookie = SESSION_KEY + '=; Max-Age=0; Path=/; SameSite=Lax'; } catch (e) {}
+  }
   function api(path, options) {
     return fetch(path, options).then(function (response) {
       return response.json().catch(function () { return {}; }).then(function (data) {
@@ -97,7 +139,7 @@
     if (result.role === 'admin' && result.token) { try { localStorage.setItem(ADMIN_TOKEN_KEY, result.token); localStorage.setItem(AI_TOKEN_KEY, result.token); } catch (e) {} }
     var body = getBody();
     if (body) {
-      body.innerHTML = '<div class="public-access-success">' + (result.role === 'admin' ? '管理员身份验证通过，全部页面和 AI 咨询权限已开启。' : result.role === 'clan' ? '族人身份核验通过，欢迎回家。' : '普通访客登录成功。') + '</div><p>身份确认已保存到当前浏览器会话；后续族谱查询无需重复确认。</p><div class="public-access-actions"><button class="public-access-btn primary" type="button" data-access-action="close">开始浏览</button></div>';
+      body.innerHTML = '<div class="public-access-success">' + (result.role === 'admin' ? '管理员身份验证通过，全部页面和 AI 咨询权限已开启。' : result.role === 'clan' ? '族人身份核验通过，欢迎回家。' : '普通访客登录成功。') + '</div><p>身份确认已保存到当前浏览器，有效期内后续族谱查询无需重复确认。</p><div class="public-access-actions"><button class="public-access-btn primary" type="button" data-access-action="close">开始浏览</button></div>';
       var browseButton = body.querySelector('[data-access-action="close"]');
       if (browseButton) browseButton.addEventListener('click', function (event) {
         event.preventDefault();
@@ -185,7 +227,9 @@
     render();
   }
   function boot() {
-    if (!document.body || document.body.getAttribute('data-public-gate') === 'off') return;
+    if (!document.body) return;
+    if (document.body.getAttribute('data-public-access-reset') === 'entry') clearSession();
+    if (document.body.getAttribute('data-public-gate') === 'off') return;
     if (!isMobile() || document.body.getAttribute('data-public-gate') !== 'always') return;
     if (validSession()) return;
     launch(false);
@@ -204,6 +248,7 @@
     launch(false);
   });
   window.openPublicAccessGate = function () { launch(false); };
+  window.clearPublicAccessSession = clearSession;
   window.publicAccessSessionValid = validSession;
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 }());

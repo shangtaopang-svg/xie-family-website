@@ -4318,7 +4318,9 @@
   function spouseFullInfoHtml(spouses, rawValue, owner) {
     const raw = text(rawValue).trim();
     const linked = spouses.map((spouse) => `<article class="detail-spouse-card"><div class="detail-spouse-head"><button class="relation-chip" data-action="select-person" data-id="${escapeHtml(personId(spouse))}">${escapeHtml(text(spouse.name) || '未命名配偶')}</button><span>${escapeHtml(genderLabel(spouse))} · ${escapeHtml(lifeStatusLabel(spouse))}</span></div><dl class="detail-spouse-grid">${detailField('出生信息', spouse.birth_date)}${detailField('卒年 / 卒葬', spouse.death_date)}${detailField('寿命', lifespanLabel(spouse))}${detailField('葬地', spouse.burial_place)}${detailField('籍贯 / 居住地', [spouse.native_place, spouse.residence].filter((value) => text(value).trim()).join('；'))}${detailField('字 / 号', spouse.courtesy_name)}${detailField('支系', spouse.branch)}${detailField('出处', [spouse.source_pages, spouse.vital_source].filter((value) => text(value).trim()).join('；'))}</dl>${spouse.biography ? `<div class="detail-spouse-note"><span>配偶谱载</span>${displayValue(spouse.biography)}</div>` : ''}${spouse.book_record ? `<div class="detail-spouse-note"><span>配偶原始谱载</span>${displayValue(spouse.book_record)}</div>` : ''}</article>`).join('');
-    const source = raw ? `<div class="detail-spouse-source"><span>配偶原始谱载（${escapeHtml(text(owner && owner.name))}条目）</span><p>${displayValue(annotateGregorianYears(raw))}</p>${owner && owner.spouse_record ? `<p>${displayValue(annotateGregorianYears(owner.spouse_record))}</p>` : ''}</div>` : '';
+    const ownerRecord = text(owner && owner.spouse_record).trim();
+    const sourceValues = [raw, ownerRecord].filter((value, index, values) => value && values.indexOf(value) === index);
+    const source = sourceValues.length ? `<div class="detail-spouse-source"><span>配偶原始谱载（${escapeHtml(text(owner && owner.name))}条目）</span>${sourceValues.map((value) => `<p>${displayValue(annotateGregorianYears(value))}</p>`).join('')}</div>` : '';
     return linked || source || '<div class="detail-muted">配偶没有可显示的独立人物卡或原始谱载。</div>';
   }
 
@@ -4406,6 +4408,8 @@
     const parents = parentsOf(person);
     const spouses = spousesOf(person);
     const spouseRaw = formValue(person, 'spouse_ids');
+    // 未建立独立配偶人物卡时，也要把当前人物条目里的“配……”原谱记录显示在配偶关系区。
+    const spouseDisplayRaw = spouseRaw || text(person.spouse_record).trim();
     const children = childrenOf(person);
     const displayChildren = displayChildrenOf(person);
     const ancestors = ancestorsOf(person);
@@ -4420,7 +4424,7 @@
       ${IS_ADMIN ? '<div class="detail-actions"><button class="detail-btn primary" data-action="edit-person">直接编辑（实时保存）</button><button class="detail-btn" data-action="new-child">新增子女</button><button class="detail-btn" data-action="export-person">导出人物</button><button class="detail-btn danger" data-action="delete-person">删除</button></div>' : ''}
       <section class="detail-section"><h4>基本资料</h4><dl class="detail-grid">${detailField('姓名', person.name)}${detailField('性别', person.gender)}${detailField('本图世次', viewGenerationLabel(person))}${detailField('总谱世代', generationOf(person) ? `第${generationOf(person)}世` : person.generation)}${detailField('支系', person.branch)}${detailField('状态', lifeStatusLabel(person))}${detailField('状态依据', person.life_status_source || '待核验')}${detailField('重点标记', person.highlight ? '是' : '否')}</dl></section>
       <section class="detail-section"><h4>时间与地点</h4><dl class="detail-grid">${detailField('出生信息', person.birth_date)}${detailField('卒年 / 卒葬', person.death_date)}${detailField('籍贯', person.native_place)}${detailField('居住地', person.residence)}${detailField('葬地', person.burial_place)}${detailField('资料依据', person.vital_source)}</dl></section>
-      <section class="detail-section"><h4>亲属关系</h4><dl class="detail-grid"><div class="detail-field full"><dt>父母（原始谱系）</dt><dd class="relation-list">${relationChipList(parents, '父母未详')}</dd></div><div class="detail-field full"><dt>配偶</dt><dd class="relation-list">${sourceRelationList(spouses, spouseRaw, '配偶未详')}</dd></div><div class="detail-field full"><dt>子女（原始关联 ${children.length}）</dt><dd class="relation-list">${relationChipList(children, '暂无已关联子女')}</dd></div><div class="detail-field full"><dt>子女（本图归属 ${displayChildren.length}）</dt><dd class="relation-list">${relationChipList(displayChildren, '暂无本图归属子女')}</dd></div></dl></section>
+      <section class="detail-section"><h4>亲属关系</h4><dl class="detail-grid"><div class="detail-field full"><dt>父母（原始谱系）</dt><dd class="relation-list">${relationChipList(parents, '父母未详')}</dd></div><div class="detail-field full"><dt>配偶</dt><dd class="relation-list">${sourceRelationList(spouses, spouseDisplayRaw, '配偶未详')}</dd></div><div class="detail-field full"><dt>子女（原始关联 ${children.length}）</dt><dd class="relation-list">${relationChipList(children, '暂无已关联子女')}</dd></div><div class="detail-field full"><dt>子女（本图归属 ${displayChildren.length}）</dt><dd class="relation-list">${relationChipList(displayChildren, '暂无本图归属子女')}</dd></div></dl></section>
       <section class="detail-section detail-spouses-section"><h4>配偶完整信息</h4><div class="detail-spouses-list">${spouseFullInfoHtml(spouses, spouseRaw, person)}</div></section>
       ${adoptionDetailHtml(person)}
       <section class="detail-section"><h4>祖先路径</h4><div class="path-line">${ancestors.map((item, index) => `${index ? '<span class="path-arrow">›</span>' : ''}<span>${escapeHtml(item.name)}</span>`).join('')}</div></section>

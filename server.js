@@ -59,6 +59,48 @@ const BACKUP_DIR = path.join(__dirname, 'data', 'backups');
 const ACCESS_AUDIT_PATH = path.join(DATA_DIR, 'access-audit.json');
 if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
 
+// 下册第62页已核定的伟中一家资料。伟中(707)的配偶是金小块，
+// 张佳蕾是其子信科(829)的配偶，不能从子女条目反挂到伟中名下。
+function repairKnownGenealogyFacts(list) {
+  if (!Array.isArray(list)) return false;
+  let changed = false;
+  const person = list.find(item => String(item && item.id) === '707');
+  if (person) {
+    const birth = String(person.birth_date || '').trim();
+    if (!birth || birth === '未详') {
+      person.birth_date = '生一九五七年丁酉二月廿四日戌时';
+      changed = true;
+    }
+    const spouse = String(person.spouse_record || '').trim();
+    if (!spouse || spouse.includes('张佳蕾')) {
+      person.spouse_record = '配上金村金小块：生一九六○年庚子二月初五日酉时';
+      changed = true;
+    }
+  }
+  const son = list.find(item => String(item && item.id) === '829');
+  if (son && !String(son.spouse_record || '').trim()) {
+    son.spouse_record = '配张佳蕾：大学生，农信总行任职，邑城人';
+    changed = true;
+  }
+  return changed;
+}
+
+function repairCanonicalGenealogyFile() {
+  const filePath = path.join(DATA_DIR, 'genealogy.json');
+  if (!fs.existsSync(filePath)) return;
+  try {
+    const list = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    if (repairKnownGenealogyFacts(list)) {
+      fs.writeFileSync(filePath, JSON.stringify(list, null, 2), 'utf-8');
+      console.log('[genealogy] 已修复伟中/信科配偶与出生信息');
+    }
+  } catch (error) {
+    console.warn('[genealogy] 确定性资料修复失败:', error.message);
+  }
+}
+
+repairCanonicalGenealogyFile();
+
 // Periodic auto-backup every 30 minutes
 setInterval(() => {
   const modules = ['genealogy', 'members', 'news', 'activities', 'honors', 'reports', 'photos', 'videos', 'merit', 'merit-fundraising', 'merit-external', 'merit-social'];
@@ -260,9 +302,9 @@ function gzipSend(req, res, status, headers, data) {
 const AI_INJECT_BLACKLIST = new Set(['/admin.html', '/recover.html', '/entrance.html']);
 const AI_INJECT_MARK = '/js/ai-assistant.js';
 const PUBLIC_ACCESS_MARK = '/js/public-access-gate.js';
-const PUBLIC_ACCESS_SCRIPT_VERSION = '20260827-mobile-auth-04';
+const PUBLIC_ACCESS_SCRIPT_VERSION = '20260827-mobile-auth-06';
 function injectAiHtml(buf) {
-  const html = buf.toString('utf-8').replace(/\/js\/public-access-gate\.js\?v=[^"'\s>]+/g, '/js/public-access-gate.js?v=' + PUBLIC_ACCESS_SCRIPT_VERSION);
+  const html = buf.toString('utf-8').replace(/(?:\.\.\/|\/)js\/public-access-gate\.js\?v=[^"'\s>]+/g, '/js/public-access-gate.js?v=' + PUBLIC_ACCESS_SCRIPT_VERSION);
   const m = html.search(/<\/body>/i);
   if (m === -1) return buf; // 无 body（HTML 片段）则跳过
   const inject = [];
@@ -553,7 +595,10 @@ const server = http.createServer(async (req, res) => {
                 p.branch = '—';
               }
             });
-            if (module === 'genealogy') parsed = normalizeLifeStatus(parsed);
+            if (module === 'genealogy') {
+              repairKnownGenealogyFacts(parsed);
+              parsed = normalizeLifeStatus(parsed);
+            }
           }
           sendJson(req, res, 200, parsed);
         } catch (e) {
@@ -575,6 +620,7 @@ const server = http.createServer(async (req, res) => {
         const body = await collectBody(req);
         // Validate it's a valid JSON array (or object)
         const data = JSON.parse(body);
+        if (module === 'genealogy') repairKnownGenealogyFacts(data);
         // 数据安全：写入前先把当前文件备份到 backups/（带时间戳），防止覆盖失败/半途出错丢失原数据
         try {
           if (fs.existsSync(filePath)) {
