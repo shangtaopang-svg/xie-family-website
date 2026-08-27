@@ -2586,7 +2586,7 @@
     if (!result) return;
     const keyword = text(state.pdfBook.query).trim();
     if (!keyword) {
-      result.innerHTML = '<div class="query-book-empty">输入姓名后，系统只会打开已明确标注页码的原谱页面；没有页码的不自动猜测。</div>';
+      result.innerHTML = '<div class="query-book-empty">输入姓名后，系统只会打开管理后台明确标注的上册或下册原谱页；没有明确页码的不自动猜测。</div>';
       return;
     }
     const matches = pdfBookSearchResults(keyword);
@@ -2689,16 +2689,18 @@
       return;
     }
     const cards = matches.map((person) => {
-      // 电子族谱严格区分两类原谱页：世系页只打开上册，详情页只打开下册。
-      // 不能把所有页码混在一起取第一条，否则详情按钮可能误打开上册世系页。
-      // 页码必须来自管理后台的明确册别标注；没有明确页码时保持禁用，不猜测。
-      const detailRefs = pdfBookSourceRefs(person).filter((ref) => ref.book === 'lower');
+      // 世系页仍只使用明确标注的上册页；详情页支持明确标注的上册或下册页。
+      // 页码和册别必须来自管理后台的明确标注；没有明确页码时保持禁用，不猜测。
+      const detailRefs = pdfBookSourceRefs(person);
       const lineageRefs = pdfLineageSourceRefs(person);
       const sourceButton = (ref, kind, label, unavailable) => ref
         ? `<button type="button" class="query-person-source-action is-${kind}" data-action="query-person-source-open" data-book="${escapeHtml(ref.book || '')}" data-page="${ref.page}" data-source-kind="${kind}"><strong>${label}</strong><small>${escapeHtml(pdfBookDefinition(ref.book).label)} · 第 ${ref.page} 页</small></button>`
         : `<button type="button" class="query-person-source-action is-${kind} is-disabled" disabled aria-disabled="true" title="${escapeHtml(unavailable)}"><strong>${label}</strong><small>暂无明确页码</small></button>`;
+      const sourceButtons = (refs, kind, label, unavailable) => refs.length
+        ? refs.map((ref) => sourceButton(ref, kind, refs.length > 1 ? `${label}（${pdfBookDefinition(ref.book).label}）` : label, unavailable)).join('')
+        : sourceButton(null, kind, label, unavailable);
       const generation = generationOf(person);
-      return `<article class="query-person-source-card"><div class="query-person-source-person"><strong>${escapeHtml(text(person.name) || '未命名人物')}</strong><span>第${escapeHtml(generation || '—')}世 · ID ${escapeHtml(personId(person))}${text(person.courtesy_name).trim() ? ` · 字：${escapeHtml(text(person.courtesy_name))}` : ''}</span></div><div class="query-person-source-actions">${sourceButton(lineageRefs[0], 'lineage', '世系页', '数据中没有明确标注上册世系页')}${sourceButton(detailRefs[0], 'detail', '详情页', '数据中没有明确标注原谱详情页')}</div></article>`;
+      return `<article class="query-person-source-card"><div class="query-person-source-person"><strong>${escapeHtml(text(person.name) || '未命名人物')}</strong><span>第${escapeHtml(generation || '—')}世 · ID ${escapeHtml(personId(person))}${text(person.courtesy_name).trim() ? ` · 字：${escapeHtml(text(person.courtesy_name))}` : ''}</span></div><div class="query-person-source-actions">${sourceButton(lineageRefs[0], 'lineage', '世系页', '数据中没有明确标注上册世系页')}${sourceButtons(detailRefs, 'detail', '详情页', '数据中没有明确标注上册或下册原谱详情页')}</div></article>`;
     }).join('');
     container.innerHTML = `<div class="query-person-source-summary">找到 ${matches.length} 位匹配族人${matches.length === 30 ? '，仅显示前30位' : ''}；同名记录请按世次、支系和 ID 选择。</div>${cards}`;
   }
