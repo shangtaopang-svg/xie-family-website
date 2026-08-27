@@ -2689,8 +2689,10 @@
       return;
     }
     const cards = matches.map((person) => {
-      // 电子族谱只允许打开数据中明确标注了“上册/下册”的页码；没有册别的旧页码不猜测，避免按钮点击无反应。
-      const detailRefs = pdfBookSourceRefs(person).filter((ref) => PDF_BOOKS[ref.book]);
+      // 电子族谱严格区分两类原谱页：世系页只打开上册，详情页只打开下册。
+      // 不能把所有页码混在一起取第一条，否则详情按钮可能误打开上册世系页。
+      // 页码必须来自管理后台的明确册别标注；没有明确页码时保持禁用，不猜测。
+      const detailRefs = pdfBookSourceRefs(person).filter((ref) => ref.book === 'lower');
       const lineageRefs = pdfLineageSourceRefs(person);
       const sourceButton = (ref, kind, label, unavailable) => ref
         ? `<button type="button" class="query-person-source-action is-${kind}" data-action="query-person-source-open" data-book="${escapeHtml(ref.book || '')}" data-page="${ref.page}" data-source-kind="${kind}"><strong>${label}</strong><small>${escapeHtml(pdfBookDefinition(ref.book).label)} · 第 ${ref.page} 页</small></button>`
