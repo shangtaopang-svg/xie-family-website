@@ -57,6 +57,8 @@ const UPLOADS_DIR = path.join(__dirname, 'uploads');
 const DATA_DIR = path.join(__dirname, 'data');
 const BACKUP_DIR = path.join(__dirname, 'data', 'backups');
 const ACCESS_AUDIT_PATH = path.join(DATA_DIR, 'access-audit.json');
+const PUBLIC_ACCESS_COOKIE = 'xie_public_access_v2';
+const PUBLIC_ACCESS_CONSENT_VERSION = 'privacy-v4-20260827';
 if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
 
 // 下册第62页已核定的伟中一家资料。伟中(707)的配偶是金小块，
@@ -191,6 +193,26 @@ function sendJson(req, res, status, data) {
   gzipSend(req, res, status, { 'Content-Type': 'application/json' }, body);
 }
 
+// 入口验证成功后由服务端写入同源会话 Cookie。
+// 族谱页只需要读取这个非敏感会话标记，不再依赖某个页面的 sessionStorage。
+function sendPublicAccessJson(req, res, status, data, session) {
+  if (session && status >= 200 && status < 300) {
+    const expiresAt = Number(session.expiresAt) || (Date.now() + 12 * 3600e3);
+    const maxAge = Math.max(60, Math.floor((expiresAt - Date.now()) / 1000));
+    const cookieValue = encodeURIComponent(JSON.stringify({
+      role: session.role,
+      name: session.name || '',
+      personId: session.personId || null,
+      sessionId: session.sessionId || '',
+      consentVersion: PUBLIC_ACCESS_CONSENT_VERSION,
+      provider: session.provider || 'phone',
+      expiresAt
+    }));
+    res.setHeader('Set-Cookie', PUBLIC_ACCESS_COOKIE + '=' + cookieValue + '; Max-Age=' + maxAge + '; Path=/; SameSite=Lax');
+  }
+  return sendJson(req, res, status, data);
+}
+
 function publicAuthConfig() {
   return {
     phone: Boolean(process.env.SMS_PROVIDER_URL && process.env.SMS_PROVIDER_KEY),
@@ -302,7 +324,7 @@ function gzipSend(req, res, status, headers, data) {
 const AI_INJECT_BLACKLIST = new Set(['/admin.html', '/recover.html', '/entrance.html']);
 const AI_INJECT_MARK = '/js/ai-assistant.js';
 const PUBLIC_ACCESS_MARK = '/js/public-access-gate.js';
-const PUBLIC_ACCESS_SCRIPT_VERSION = '20260827-mobile-auth-06';
+const PUBLIC_ACCESS_SCRIPT_VERSION = '20260827-mobile-auth-07';
 function injectAiHtml(buf) {
   const html = buf.toString('utf-8').replace(/(?:\.\.\/|\/)js\/public-access-gate\.js\?v=[^"'\s>]+/g, '/js/public-access-gate.js?v=' + PUBLIC_ACCESS_SCRIPT_VERSION);
   const m = html.search(/<\/body>/i);
@@ -444,7 +466,8 @@ const server = http.createServer(async (req, res) => {
       const token = generateToken();
       adminTokens.add(token);
       appendAccessAudit({ role: 'admin', provider: 'phone' });
-      return sendJson(req, res, 200, { ok: true, role: 'admin', name: '管理员', token, method: 'phone', expiresAt: Date.now() + 12 * 3600e3 });
+      const session = { role: 'admin', name: '管理员', sessionId: token, provider: 'phone', expiresAt: Date.now() + 12 * 3600e3 };
+      return sendPublicAccessJson(req, res, 200, { ok: true, ...session, token, method: 'phone' }, session);
     } catch (e) {
       return sendJson(req, res, 400, { ok: false, error: '请求数据错误' });
     }
@@ -516,7 +539,8 @@ const server = http.createServer(async (req, res) => {
       const body = JSON.parse(await collectBody(req));
       const provider = body.provider === 'phone' || body.provider === 'wechat' ? body.provider : 'visitor';
       appendAccessAudit({ role: 'visitor', provider, consentVersion: String(body.consentVersion || 'v1') });
-      return sendJson(req, res, 200, { ok: true, role: 'visitor', sessionId: generateToken(), expiresAt: Date.now() + 12 * 3600e3 });
+      const session = { role: 'visitor', sessionId: generateToken(), provider, expiresAt: Date.now() + 12 * 3600e3 };
+      return sendPublicAccessJson(req, res, 200, { ok: true, ...session }, session);
     } catch (e) {
       return sendJson(req, res, 400, { ok: false, message: '请求数据错误' });
     }
@@ -534,7 +558,8 @@ const server = http.createServer(async (req, res) => {
       }
       const phoneHash = crypto.createHash('sha256').update(phone).digest('hex');
       appendAccessAudit({ role: 'visitor', provider: body.provider === 'wechat' ? 'wechat' : 'phone', phoneHash, consentVersion: String(body.consentVersion || 'v2') });
-      return sendJson(req, res, 200, { ok: true, role: 'visitor', sessionId: generateToken(), expiresAt: Date.now() + 12 * 3600e3 });
+      const session = { role: 'visitor', sessionId: generateToken(), provider: body.provider === 'wechat' ? 'wechat' : 'phone', expiresAt: Date.now() + 12 * 3600e3 };
+      return sendPublicAccessJson(req, res, 200, { ok: true, ...session }, session);
     } catch (e) {
       return sendJson(req, res, 400, { ok: false, message: '请求数据错误' });
     }
@@ -562,15 +587,16 @@ const server = http.createServer(async (req, res) => {
       }
       const person = result.matches[0];
       appendAccessAudit({ role: 'clan', provider: body.provider || 'lineage', personId: person.id, consentVersion: String(body.consentVersion || 'v1') });
-      return sendJson(req, res, 200, {
+      const session = { role: 'clan', name: person.name, personId: person.id, provider: body.provider || 'lineage', expiresAt: Date.now() + 7 * 864e5 };
+      return sendPublicAccessJson(req, res, 200, {
         verified: true,
         role: 'clan',
         message: '族人身份核验通过',
         personId: person.id,
         name: person.name,
         token: aiToken.signPersonToken(person),
-        expiresAt: Date.now() + 7 * 864e5
-      });
+        expiresAt: session.expiresAt
+      }, session);
     } catch (e) {
       return sendJson(req, res, 400, { verified: false, message: '请求数据错误' });
     }

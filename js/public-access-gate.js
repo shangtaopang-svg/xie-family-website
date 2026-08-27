@@ -62,6 +62,7 @@
     try { document.cookie = SESSION_KEY + '=; Max-Age=0; Path=/; SameSite=Lax'; } catch (e) {}
   }
   function api(path, options) {
+    options = Object.assign({ credentials: 'same-origin' }, options || {});
     return fetch(path, options).then(function (response) {
       return response.json().catch(function () { return {}; }).then(function (data) {
         if (!response.ok) throw new Error(data.message || data.error || '服务暂不可用');

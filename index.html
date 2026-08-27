@@ -153,7 +153,7 @@
       </div>
 
   <div class="mbh-pills">
-    <a href="pages/genealogy.html?chooser=1" class="mbh-pill mbh-pill-active">&#x1f4dc; 族谱查询</a>
+    <a href="pages/genealogy.html?chooser=1&access=20260827-07" class="mbh-pill mbh-pill-active">&#x1f4dc; 族谱查询</a>
     <a href="pages/news.html" class="mbh-pill">&#x1f4f0; 消息发布</a>
   </div>
 
@@ -233,7 +233,7 @@
     var q = input.value.trim();
     if (!q) { input.focus(); return; }
     // 标记入口来源：从首页搜索进入寻根直线世系后，关闭按钮应直接回到首页。
-    location.href = 'pages/genealogy.html?rootSearch=' + encodeURIComponent(q) + '&rootOrigin=home-search';
+    location.href = 'pages/genealogy.html?rootSearch=' + encodeURIComponent(q) + '&rootOrigin=home-search&access=20260827-07';
   }
   btn.addEventListener('click', go);
   input.addEventListener('keydown', function(e){ if (e.key === 'Enter') go(); });
@@ -270,7 +270,7 @@
           <li><a href="index.html" class="active" data-i18n="nav.home">首页</a></li>
           <li><a href="pages/history.html" data-i18n="nav.history">家族历史</a></li>
           <li><a href="pages/videos.html" style="color:var(--accent-orange);">🎬 视频</a></li>
-          <li><a href="pages/genealogy.html?chooser=1" data-i18n="nav.genealogy">族谱查询</a></li>
+          <li><a href="pages/genealogy.html?chooser=1&access=20260827-07" data-i18n="nav.genealogy">族谱查询</a></li>
           <li><a href="pages/celebrities.html" data-i18n="nav.celebrities">名人事迹</a></li>
           <li><a href="pages/merit-scroll.html" style="color:#c41e3a;">📜 功德卷轴</a></li>
           <li><a href="pages/news.html" data-i18n="nav.news">消息发布</a></li>
@@ -543,7 +543,7 @@
         <h4 data-i18n="footer.section2.title">快捷链接</h4>
         <a href="index.html" data-i18n="nav.home">首页</a>
         <a href="pages/history.html" data-i18n="nav.history">家族历史</a>
-        <a href="pages/genealogy.html?chooser=1">族谱查询</a>
+        <a href="pages/genealogy.html?chooser=1&access=20260827-07">族谱查询</a>
       </div>
       <div class="footer-section">
         <h4 data-i18n="footer.section.content">内容</h4>
@@ -605,7 +605,7 @@
     <a href="index.html" class="mb-item active">🏠<span>首页</span></a>
     <a href="pages/history.html" class="mb-item">📜<span>历史</span></a>
     <a href="pages/videos.html" class="mb-item" style="color:var(--accent-orange);">🎬<span>视频</span></a>
-    <a href="pages/genealogy.html" class="mb-item">🌳<span>族谱</span></a>
+    <a href="pages/genealogy.html?chooser=1&access=20260827-07" class="mb-item">🌳<span>族谱</span></a>
     <a href="pages/celebrities.html" class="mb-item">🏆<span>名人</span></a>
     <a href="pages/merit-scroll.html" class="mb-item">📜<span>功德</span></a>
     <a href="pages/news.html" class="mb-item">📰<span>消息</span></a>
@@ -651,5 +651,5 @@ window.toggleTheme=function(){var d=localStorage.getItem("theme")==="dark";var n
 <script src="/js/ai-assistant.js?v=92" defer></script>
 <script defer src="js/sidebar.js?v=13"></script>
 <link rel="stylesheet" href="/css/public-access-gate.css?v=20260826-access-04">
-<script src="/js/public-access-gate.js?v=20260827-mobile-auth-06" defer></script>
+<script src="/js/public-access-gate.js?v=20260827-mobile-auth-07" defer></script>
 </body>
