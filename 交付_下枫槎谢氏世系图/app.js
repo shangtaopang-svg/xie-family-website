@@ -3609,7 +3609,16 @@
         group.append(star);
       }
       const generation = makeSvg('text', { x: node.x + 6, y: node.y + 13, class: 'overview-svg-generation' });
-      generation.textContent = node.generation;
+      // 全景图卡片内只显示核心世次，完整的多套世次路径放入提示，避免长串文字溢出卡片后覆盖连线和其他人物。
+      const generationParts = String(node.generation || '').split('/').map((part) => part.trim()).filter(Boolean);
+      const generationDetail = generationParts.join(' / ');
+      generation.textContent = generationParts[0] || '世次未详';
+      if (generationDetail) {
+        generation.setAttribute('aria-label', generationDetail);
+        const generationTitle = makeSvg('title');
+        generationTitle.textContent = generationDetail;
+        group.append(generationTitle);
+      }
       group.append(generation);
       const name = makeSvg('text', { x: node.x + 6, y: node.y + Math.min(node.height - 7, Math.max(27, node.height * .58)), class: 'overview-svg-name' });
       name.textContent = node.name;
