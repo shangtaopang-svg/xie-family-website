@@ -4406,6 +4406,12 @@
     const displayChildren = displayChildrenOf(person);
     const ancestors = ancestorsOf(person);
     const raw = escapeHtml(JSON.stringify(person, null, 2));
+    // 将族谱中最容易被忽略、但用户最关心的原谱信息提升到详情顶部。
+    // 空白出生字段明确标为“未详”，不根据年代或姓名推测具体日期。
+    const evidenceBirth = text(person.birth_date).trim() || '未详（当前已核对页面未见明确出生日期）';
+    const evidenceSpouse = text(person.spouse_record).trim() || text(spouseRaw).trim() || (spouses.length ? spouses.map((item) => text(item.name)).filter(Boolean).join('、') : '未详');
+    const evidenceBiography = text(person.biography).trim() || text(person.book_record).trim() || '暂无人物介绍';
+    const evidenceSource = text(person.source_pages).trim() || '暂无明确页码记录';
     panel.innerHTML = `<div class="detail-head"><div><h3>${escapeHtml(person.name || '未命名人物')}</h3><p>${escapeHtml(viewGenerationLabel(person))} · 总谱第${generationOf(person) || '未详'}世 · ${escapeHtml(text(person.branch) || '未标注支系')} · ID ${escapeHtml(personId(person))}</p></div><div class="detail-head-actions">${!IS_ADMIN ? (state.detailOrigin === 'query' ? '<button class="detail-return-query" data-action="back-to-people-query">返回查族人</button>' : '<button class="detail-return-query" data-action="close-detail">返回世系图</button>') : ''}<button class="detail-close" data-action="close-detail" aria-label="关闭详情">×</button></div></div>
       ${IS_ADMIN ? '<div class="detail-actions"><button class="detail-btn primary" data-action="edit-person">直接编辑（实时保存）</button><button class="detail-btn" data-action="new-child">新增子女</button><button class="detail-btn" data-action="export-person">导出人物</button><button class="detail-btn danger" data-action="delete-person">删除</button></div>' : ''}
       <section class="detail-section"><h4>基本资料</h4><dl class="detail-grid">${detailField('姓名', person.name)}${detailField('性别', person.gender)}${detailField('本图世次', viewGenerationLabel(person))}${detailField('总谱世代', generationOf(person) ? `第${generationOf(person)}世` : person.generation)}${detailField('支系', person.branch)}${detailField('状态', lifeStatusLabel(person))}${detailField('状态依据', person.life_status_source || '待核验')}${detailField('重点标记', person.highlight ? '是' : '否')}</dl></section>
@@ -4419,6 +4425,12 @@
       ${person.book_record ? `<section class="detail-section book-record-section"><h4>本人上册 / 下册原始谱载</h4><div class="detail-copy">${displayValue(person.book_record)}</div></section>` : ''}
       ${person.pdf_source_excerpt ? `<section class="detail-section pdf-source-section"><h4>PDF 原页逐条核对</h4><dl class="detail-grid">${detailField('核对页码', person.pdf_source_page)}${detailField('核对状态', person.pdf_source_review_status || '待复核')}${detailField('核对置信度', person.pdf_source_confidence, true)}${detailField('批次', person.pdf_review_batch)}</dl><div class="detail-copy pdf-source-excerpt"><strong>原页摘录（仅作证据，不替代结构化字段）</strong><p>${displayValue(person.pdf_source_excerpt)}</p></div></section>` : ''}
       <details class="raw-data" open><summary>查看全部原始数据字段（含未在表单展示的字段）</summary><pre>${raw}</pre></details>`;
+    const evidenceSummary = document.createElement('section');
+    evidenceSummary.className = 'detail-evidence-summary';
+    evidenceSummary.setAttribute('aria-label', '原谱重点资料');
+    evidenceSummary.innerHTML = `<div class="detail-evidence-heading"><span>原谱重点资料</span><small>下册及统一主数据</small></div><div class="detail-evidence-grid"><div class="detail-evidence-item"><span>出生信息</span><strong>${displayValue(evidenceBirth)}</strong></div><div class="detail-evidence-item"><span>配偶信息</span><strong>${displayValue(evidenceSpouse)}</strong></div></div><div class="detail-evidence-copy"><span>人物介绍 / 任职经历</span><p>${displayValue(evidenceBiography)}</p></div><div class="detail-evidence-meta"><span>原谱页码</span><strong>${displayValue(evidenceSource)}</strong></div>`;
+    const firstDetailSection = panel.querySelector('.detail-section');
+    if (firstDetailSection) firstDetailSection.before(evidenceSummary);
     refreshDetailMotion(panel, true, false);
   }
 

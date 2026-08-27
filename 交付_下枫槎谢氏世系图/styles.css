@@ -3499,3 +3499,77 @@ body.query-book-overlay-open { overflow: hidden !important; }
 @media (max-width: 700px) {
   .query-book-reader-overlay .query-book-frame-wrap { padding: 6px 4px !important; }
 }
+
+/* 详情页原谱重点资料：让出生、配偶和人物经历进入页面即清楚可见。 */
+.detail-evidence-summary {
+  margin: 0 0 18px;
+  padding: 16px 18px 17px;
+  border: 1px solid rgba(184, 104, 72, .42);
+  border-left: 4px solid #b86848;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(255, 247, 238, .98), rgba(246, 251, 246, .98));
+  box-shadow: 0 8px 20px rgba(68, 79, 71, .08);
+}
+.detail-evidence-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: #8f4e39;
+  font-size: 17px;
+  font-weight: 800;
+}
+.detail-evidence-heading small {
+  color: #74847c;
+  font-size: 11px;
+  font-weight: 600;
+}
+.detail-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.detail-evidence-item,
+.detail-evidence-copy,
+.detail-evidence-meta {
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid rgba(117, 141, 128, .28);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, .65);
+}
+.detail-evidence-item span,
+.detail-evidence-copy > span,
+.detail-evidence-meta > span {
+  display: block;
+  margin-bottom: 5px;
+  color: #7b8a83;
+  font-size: 12px;
+  font-weight: 700;
+}
+.detail-evidence-item strong,
+.detail-evidence-meta strong {
+  display: block;
+  color: #304b40;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.detail-evidence-copy,
+.detail-evidence-meta { margin-top: 10px; }
+.detail-evidence-copy p {
+  margin: 0;
+  color: #3f5b50;
+  font-size: 14px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 700px) {
+  .detail-evidence-summary { margin: 0 0 14px; padding: 13px 12px 14px; }
+  .detail-evidence-heading { font-size: 16px; }
+  .detail-evidence-grid { grid-template-columns: 1fr; gap: 8px; }
+  .detail-evidence-item, .detail-evidence-copy, .detail-evidence-meta { padding: 10px; }
+  .detail-evidence-item strong, .detail-evidence-meta strong, .detail-evidence-copy p { font-size: 13px; }
+}
