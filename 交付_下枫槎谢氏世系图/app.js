@@ -11,8 +11,8 @@
   const IS_ADMIN = document.body.dataset.appMode === 'admin';
   const ADMIN_TOKEN_KEY = 'xie_admin_token';
   const PDF_BOOKS = Object.freeze({
-    upper: { label: '上册', url: '../assets/genealogy-books/upper.pdf' },
-    lower: { label: '下册', url: '../assets/genealogy-books/lower.pdf' }
+    upper: { label: '上册', pages: 115, url: '../assets/genealogy-books/upper.pdf' },
+    lower: { label: '下册', pages: 131, url: '../assets/genealogy-books/lower.pdf' }
   });
   let pdfBookAudioContext = null;
   const initialData = Array.isArray(window.GENEALOGY_DATA) ? window.GENEALOGY_DATA : [];
@@ -71,7 +71,8 @@
       book: 'upper',
       page: 1,
       query: '',
-      focus: null
+      focus: null,
+      fullscreenOpened: false
     },
     mode: 'view',
     draftId: null,
@@ -1397,9 +1398,12 @@
     const viewPeople = state.data.filter((person) => viewIncludes(person) && !isHiddenAdoptionRecord(person));
     const generations = viewPeople.map(generationOf).filter((value) => value !== null);
     const branches = new Set(viewPeople.map((person) => text(person.branch).trim()).filter(Boolean));
-    $('#stat-people').textContent = viewPeople.length.toLocaleString('zh-CN');
-    $('#stat-generation').textContent = generations.length ? `第${Math.max(...generations)}世` : '-';
-    $('#stat-branches').textContent = branches.size.toLocaleString('zh-CN');
+    const statPeople = $('#stat-people');
+    const statGeneration = $('#stat-generation');
+    const statBranches = $('#stat-branches');
+    if (statPeople) statPeople.textContent = viewPeople.length.toLocaleString('zh-CN');
+    if (statGeneration) statGeneration.textContent = generations.length ? `第${Math.max(...generations)}世` : '-';
+    if (statBranches) statBranches.textContent = branches.size.toLocaleString('zh-CN');
     const verifiedCount = viewPeople.filter((person) => state.verified.has(String(personId(person)))).length;
     const verifiedStat = $('#stat-verified');
     if (verifiedStat) verifiedStat.textContent = verifiedCount.toLocaleString('zh-CN');
@@ -1737,7 +1741,11 @@
     if (!person) return '';
     const status = lifeStatusLabel(person);
     const adoption = queryAdoptionLabel(person);
-    return `<article class="query-lineage7-family-card ${className || ''}"><div class="query-lineage7-card-top"><span>${escapeHtml(label || '')}</span><span class="query-lineage7-status">${escapeHtml(status)}</span></div><button class="query-lineage7-name" data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}</button><div class="query-lineage7-meta"><span>第${escapeHtml(generationOf(person) || '—')}世</span><span>${escapeHtml(text(person.branch) || '未标注支系')}</span>${genderLabel(person) !== '未知' ? `<span>${escapeHtml(genderLabel(person))}</span>` : ''}</div>${adoption ? `<div class="query-lineage7-badge">${escapeHtml(adoption)}</div>` : ''}</article>`;
+    const adoptionTag = adoptionTags(person).find((tag) => tag.className === 'adoption-out' || tag.className === 'adoption-in');
+    const adoptionBadge = adoptionTag
+      ? `<span class="query-lineage7-family-card-adoption-badge ${adoptionTag.className}">${escapeHtml(adoptionTag.label)}</span>`
+      : '';
+    return `<article class="query-lineage7-family-card ${className || ''}${adoptionTag ? ' has-adoption-badge' : ''}">${adoptionBadge}<div class="query-lineage7-card-top"><span>${escapeHtml(label || '')}</span><span class="query-lineage7-status">${escapeHtml(status)}</span></div><button class="query-lineage7-name" data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')}</button><div class="query-lineage7-meta"><span>第${escapeHtml(generationOf(person) || '—')}世</span><span>${escapeHtml(text(person.branch) || '未标注支系')}</span>${genderLabel(person) !== '未知' ? `<span>${escapeHtml(genderLabel(person))}</span>` : ''}</div>${adoption ? `<div class="query-lineage7-badge">${escapeHtml(adoption)}</div>` : ''}</article>`;
   }
 
   function queryLineage7AdoptionTreeHtml(context) {
@@ -1777,7 +1785,8 @@
       return `<div class="query-lineage7-family-child" style="left:${Math.round(childX(person) - cardWidth / 2)}px">${queryLineage7FamilyCard(person, label, className)}</div>`;
     }).join('');
     const source = context.relation.source || `谱载：${text(biological.name)}之子${text(context.adoptedPerson.name)}，出继给${text(adoptive.name)}为嗣`;
-    const lineSvg = `<svg class="query-lineage7-family-lines" viewBox="0 0 ${familyWidth} 410" preserveAspectRatio="none" aria-hidden="true"><path class="is-blood" d="M ${rootX} 108 V 126 H ${biologicalX} M ${biologicalX} 126 V 140"/><path class="is-blood" d="M ${rootX} 126 H ${childX(people[0])} M ${rootX} 126 H ${childX(people[people.length - 1])}"/><path class="is-blood" d="M ${people.map((person) => `M ${childX(person)} 126 V 140`).join(' ') }"/><path class="is-blood is-dashed" d="M ${biologicalX} 230 C ${biologicalX} 270 ${adoptedX + adoptedWidth * .34} 255 ${adoptedX + adoptedWidth * .34} 310"/><path class="is-adoption" d="M ${adoptiveX} 230 V 268 H ${adoptedX + adoptedWidth * .68} V 310"/></svg>`;
+    const adoptionArrowId = `query-lineage7-adoption-arrow-${String(personId(context.adoptedPerson)).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+    const lineSvg = `<svg class="query-lineage7-family-lines" viewBox="0 0 ${familyWidth} 410" preserveAspectRatio="none" aria-hidden="true"><defs><marker id="${adoptionArrowId}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M 0 0 L 8 4 L 0 8 Z" fill="#af6d56"/></marker></defs><path class="is-blood" d="M ${rootX} 108 V 126 H ${biologicalX} M ${biologicalX} 126 V 140"/><path class="is-blood" d="M ${rootX} 126 H ${childX(people[0])} M ${rootX} 126 H ${childX(people[people.length - 1])}"/><path class="is-blood" d="${people.map((person) => `M ${childX(person)} 126 V 140`).join(' ') }"/><path class="is-blood is-dashed" d="M ${biologicalX} 230 C ${biologicalX} 270 ${adoptedX + adoptedWidth * .34} 255 ${adoptedX + adoptedWidth * .34} 310"/><path class="is-adoption" marker-end="url(#${adoptionArrowId})" d="M ${adoptiveX} 230 V 268 H ${adoptedX + adoptedWidth * .68} V 310"/></svg>`;
     const labels = `<span class="query-lineage7-family-line-label is-blood-label" style="left:${Math.round((biologicalX + adoptedX + adoptedWidth * .34) / 2)}px;top:252px">亲生父子</span><span class="query-lineage7-family-line-label is-adoption-label" style="left:${Math.round((adoptiveX + adoptedX + adoptedWidth * .68) / 2)}px;top:268px">出继给${escapeHtml(text(adoptive.name))}为嗣</span>`;
     return `<section class="query-lineage7-adoption-tree" aria-label="${escapeHtml(text(context.adoptedPerson.name))}的出继入继树状关系"><div class="query-lineage7-adoption-tree-title">出继／入继关系</div><div class="query-lineage7-adoption-tree-subtitle">昌申下面同时保留亲生父亲与承嗣父的真实关系</div><div class="query-lineage7-family-canvas" style="width:${familyWidth}px"><div class="query-lineage7-family-root">${queryLineage7FamilyCard(context.commonParent, '共同父亲', 'is-common-parent')}</div><div class="query-lineage7-family-children">${childCards}</div><div class="query-lineage7-family-adopted" style="left:${Math.round(adoptedX)}px">${queryLineage7FamilyCard(context.adoptedPerson, '出继／入继', 'is-adopted-person')}</div>${lineSvg}${labels}</div><p class="query-lineage7-family-source">${escapeHtml(source)}</p></section>`;
   }
@@ -2301,7 +2310,11 @@
   }
 
   function rootTracePersonBox(person, extraClass = '', badge = '') {
-    return `<div class="root-trace-family-card ${extraClass}"><small>第${escapeHtml(generationOf(person) || '—')}世</small><strong>${escapeHtml(text(person.name) || '未命名')}</strong>${badge ? `<em>${escapeHtml(badge)}</em>` : ''}</div>`;
+    const adoptionTag = adoptionTags(person).find((tag) => tag.className === 'adoption-out' || tag.className === 'adoption-in');
+    const adoptionBadge = adoptionTag
+      ? `<span class="root-trace-adoption-badge ${adoptionTag.className}">${escapeHtml(adoptionTag.label)}</span>`
+      : '';
+    return `<div class="root-trace-family-card ${extraClass}${adoptionTag ? ' has-adoption-badge' : ''}">${adoptionBadge}<small>第${escapeHtml(generationOf(person) || '—')}世</small><strong>${escapeHtml(text(person.name) || '未命名')}</strong>${badge ? `<em>${escapeHtml(badge)}</em>` : ''}</div>`;
   }
 
   function rootTraceAdoptionTreeHtml(ancestor, relation, adoptedPerson) {
@@ -2318,14 +2331,16 @@
     const biologicalIndex = Math.max(0, ordered.findIndex((child) => biological && String(personId(child)) === String(personId(biological))));
     const adoptiveIndex = Math.max(0, ordered.findIndex((child) => adoptive && String(personId(child)) === String(personId(adoptive))));
     const childX = (index) => ((index + .5) / columns) * 100;
+    const adoptionArrowId = `root-trace-adoption-arrow-${String(personId(adoptedPerson)).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
     return `<article class="root-trace-family-tree" style="--family-columns:${columns}">
       <div class="root-trace-family-ancestor">${rootTracePersonBox(ancestor, 'is-family-root', '父')}</div>
       <div class="root-trace-family-children">${childCards}</div>
       <div class="root-trace-family-descendant">${rootTracePersonBox(adoptedPerson, 'is-adopted-child', '出继 / 入继')}</div>
       <svg class="root-trace-family-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <defs><marker id="${adoptionArrowId}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M 0 0 L 8 4 L 0 8 Z" fill="#b55243"/></marker></defs>
         <path class="family-sibling-line" d="M50 5 V20 M${childX(0)} 20 H${childX(columns - 1)} M${ordered.map((child, index) => `${childX(index)} 20 V38`).join(' M')}" />
         <path class="family-birth-line" d="M${childX(biologicalIndex)} 56 V76 H50 V91" />
-        <path class="family-adoption-line" d="M${childX(adoptiveIndex)} 56 C${childX(adoptiveIndex)} 72, 64 75, 52 88" />
+        <path class="family-adoption-line" marker-end="url(#${adoptionArrowId})" d="M${childX(adoptiveIndex)} 56 C${childX(adoptiveIndex)} 72, 64 75, 52 88" />
       </svg>
       <span class="family-birth-label">亲生父子</span><span class="family-adoption-label">出继给${escapeHtml(text(adoptive.name) || '承嗣父')}为嗣</span>
       ${relation.source ? `<p class="root-trace-family-source">谱载：${escapeHtml(relation.source)}</p>` : ''}
@@ -2615,18 +2630,88 @@
     const frameRight = $('#query-book-frame-right');
     if (!frameLeft || !frameRight) return;
     const book = state.pdfBook.book;
-    const page = Math.max(1, Number.parseInt(state.pdfBook.page, 10) || 1);
     const definition = pdfBookDefinition(book);
+    const totalPages = Math.max(1, Number(definition.pages) || 1);
+    const page = Math.min(totalPages, Math.max(1, Number.parseInt(state.pdfBook.page, 10) || 1));
+    state.pdfBook.page = page;
+    const nextPage = page + 1;
     const status = $('#query-book-page-status');
     const rightPanel = frameRight.closest('.query-book-page-panel');
     const spread = frameLeft.closest('.query-book-spread');
-    if (rightPanel) rightPanel.hidden = true;
-    if (spread) spread.setAttribute('aria-label', '原谱单页');
-    if (status) status.textContent = `${definition.label} · 第 ${page} 页`;
-    frameLeft.title = `${definition.label}第 ${page} 页`;
-    frameRight.title = '';
+    const rightPageVisible = nextPage <= totalPages;
+    if (rightPanel) rightPanel.hidden = !rightPageVisible;
+    if (spread) spread.setAttribute('aria-label', rightPageVisible ? `${definition.label}第 ${page}—${nextPage} 页` : `${definition.label}第 ${page} 页`);
+    if (status) status.textContent = rightPageVisible ? `${definition.label} · 第 ${page}—${nextPage} 页` : `${definition.label} · 第 ${page} 页`;
+    frameLeft.title = `${definition.label}第 ${page} 页（左页）`;
     frameLeft.src = pdfBookPageUrl(book, page);
-    frameRight.src = 'about:blank';
+    if (rightPageVisible) {
+      frameRight.title = `${definition.label}第 ${nextPage} 页（右页）`;
+      frameRight.src = pdfBookPageUrl(book, nextPage);
+    } else {
+      frameRight.title = '';
+      frameRight.src = 'about:blank';
+    }
+    const previousDisabled = page <= 1;
+    const nextDisabled = page >= totalPages;
+    $$('[data-action="query-book-prev"]').forEach((button) => { button.disabled = previousDisabled; });
+    $$('[data-action="query-book-next"]').forEach((button) => { button.disabled = nextDisabled; });
+    $$('[data-book-page-label]').forEach((label) => {
+      label.textContent = label.dataset.bookPageLabel === 'right' && rightPageVisible
+        ? `右页 · 第${nextPage}页`
+        : label.dataset.bookPageLabel === 'left'
+          ? `左页 · 第${page}页`
+          : '';
+    });
+  }
+
+  function turnPdfBook(direction) {
+    const definition = pdfBookDefinition(state.pdfBook.book);
+    const totalPages = Math.max(1, Number(definition.pages) || 1);
+    const currentPage = Math.max(1, Number.parseInt(state.pdfBook.page, 10) || 1);
+    const targetPage = currentPage + (direction < 0 ? -2 : 2);
+    if (targetPage < 1 || targetPage > totalPages) return;
+    state.pdfBook.page = targetPage;
+    const spread = $('#query-book-frame-left')?.closest('.query-book-spread');
+    if (spread) {
+      spread.classList.remove('is-turning');
+      void spread.offsetWidth;
+      spread.classList.add('is-turning');
+    }
+    renderPdfBookModule();
+  }
+
+  function requestBookLandscape() {
+    if (!isMobileViewport()) return;
+    document.body.classList.add('query-book-landscape-requested');
+    const lockOrientation = () => {
+      const orientation = window.screen?.orientation;
+      if (!orientation || typeof orientation.lock !== 'function') return;
+      Promise.resolve(orientation.lock('landscape')).catch(() => {});
+    };
+    try {
+      if (!document.fullscreenElement && typeof document.documentElement.requestFullscreen === 'function') {
+        state.pdfBook.fullscreenOpened = true;
+        const request = document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+        Promise.resolve(request).then(lockOrientation).catch(() => {
+          state.pdfBook.fullscreenOpened = false;
+          lockOrientation();
+        });
+        return;
+      }
+    } catch (error) {
+      state.pdfBook.fullscreenOpened = false;
+    }
+    lockOrientation();
+  }
+
+  function releaseBookLandscape() {
+    const orientation = window.screen?.orientation;
+    try { if (orientation && typeof orientation.unlock === 'function') orientation.unlock(); } catch (error) {}
+    if (state.pdfBook.fullscreenOpened && document.fullscreenElement && typeof document.exitFullscreen === 'function') {
+      Promise.resolve(document.exitFullscreen()).catch(() => {});
+    }
+    state.pdfBook.fullscreenOpened = false;
+    document.body.classList.remove('query-book-landscape-requested');
   }
 
   function openPdfBook(book, page) {
@@ -2637,6 +2722,7 @@
     if (reader) {
       reader.hidden = false;
       document.body.classList.add('query-book-overlay-open');
+      requestBookLandscape();
       window.setTimeout(() => reader.querySelector('.query-book-close')?.focus(), 0);
     }
   }
@@ -2646,6 +2732,7 @@
     if (!reader) return;
     reader.hidden = true;
     document.body.classList.remove('query-book-overlay-open');
+    releaseBookLandscape();
   }
 
   function runPdfBookSearch() {
@@ -2871,7 +2958,7 @@
     const lineage = $('.query-lineage-section');
     const lineage7 = $('.query-lineage7-section');
     const infoBooks = $('.query-info-books-section');
-    const stats = $('#query-stats');
+    const statsSection = $('#query-stats-section');
     const generationActions = $('#query-generation-actions');
     if (people) people.hidden = mode !== 'people';
     if (generation) generation.hidden = mode !== 'generation';
@@ -2882,7 +2969,7 @@
     // “上下7代”属于查族人的延伸查询，不再放在查世系图入口中。
     if (lineage7) lineage7.hidden = mode !== 'people';
     if (infoBooks) infoBooks.hidden = mode !== 'info';
-    if (stats) stats.hidden = mode === 'info';
+    if (statsSection) statsSection.hidden = mode !== 'generation';
     if (generationActions) generationActions.hidden = mode !== 'generation';
     renderQueryDashboard();
     if (mode === 'people') focusQueryField('query-search');
@@ -3455,6 +3542,9 @@
         name: card.querySelector('strong')?.textContent?.trim() || '未命名',
         generation: card.querySelector('.card-generation')?.textContent?.trim() || '',
         route: card.querySelector('.card-route')?.textContent?.trim() || card.querySelector('.card-branch')?.textContent?.trim() || '',
+        adoptionLabels: Array.from(card.querySelectorAll('.adoption-badge'))
+          .map((badge) => badge.textContent?.trim() || '')
+          .filter((label) => label === '出继' || label === '入继'),
         classes: Array.from(card.classList),
         isFemale: card.classList.contains('is-female-card'),
         isVerified: card.classList.contains('is-verified')
@@ -3490,8 +3580,17 @@
     });
     const right = nodes.reduce((max, node) => Math.max(max, node.x + node.width), 0);
     const bottom = nodes.reduce((max, node) => Math.max(max, node.y + node.height), 0);
+    // 出继/入继关系线必须落在两张卡片之外，给标签和箭头预留独立的底部通道。
+    // 否则远距离关系在手机全景图里会被 SVG 高度裁切，或反过来穿过人物卡片。
+    const adoptionBottom = adoptionEdges.reduce((max, relation) => {
+      const relationBottom = Math.max(
+        relation.from.y + relation.from.height,
+        relation.to.y + relation.to.height
+      ) + 36 + 18;
+      return Math.max(max, relationBottom);
+    }, 0);
     const baseWidth = Math.max(1, stage.scrollWidth, right + 44);
-    const baseHeight = Math.max(1, stage.scrollHeight, bottom + 44);
+    const baseHeight = Math.max(1, stage.scrollHeight, bottom + 44, adoptionBottom);
     const svgNS = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(svgNS, 'svg');
     svg.classList.add('overview-svg-layer');
@@ -3507,11 +3606,23 @@
       Object.entries(attrs).forEach(([key, value]) => element.setAttribute(key, String(value)));
       return element;
     };
+    const defs = makeSvg('defs');
+    const adoptionArrow = makeSvg('marker', {
+      id: 'overview-svg-adoption-arrow',
+      markerWidth: 8,
+      markerHeight: 8,
+      refX: 7,
+      refY: 4,
+      orient: 'auto',
+      markerUnits: 'userSpaceOnUse'
+    });
+    adoptionArrow.append(makeSvg('path', { d: 'M 0 0 L 8 4 L 0 8 Z', fill: '#b85a4a' }));
+    defs.append(adoptionArrow);
     const edgeLayer = makeSvg('g', { class: 'overview-svg-edges' });
     const zoneFrameLayer = makeSvg('g', { class: 'overview-svg-zone-frames' });
     const nodeLayer = makeSvg('g', { class: 'overview-svg-nodes' });
     const adoptionAnnotationLayer = makeSvg('g', { class: 'overview-svg-adoption-annotations', 'pointer-events': 'none' });
-    svg.append(edgeLayer, zoneFrameLayer, nodeLayer, adoptionAnnotationLayer);
+    svg.append(defs, edgeLayer, zoneFrameLayer, nodeLayer, adoptionAnnotationLayer);
     edges.forEach(({ parent, child }) => {
       const startX = parent.x + parent.width / 2;
       const startY = parent.y + parent.height;
@@ -3531,19 +3642,27 @@
       const toY = to.y + to.height;
       // 保持关系线落在 SVG 的可视高度内，避免远距离卡片之间的
       // 连接线被底部裁切；距离较大时仍通过横向线段保持辨识度。
-      const gap = Math.max(22, Math.min(32, 18 + Math.abs(toX - fromX) * .04));
+      const gap = 36;
       const laneY = Math.max(fromY, toY) + gap;
-      const leftX = Math.min(fromX, toX);
-      const rightX = Math.max(fromX, toX);
-      const path = makeSvg('path', {
-        d: `M ${fromX} ${fromY} V ${laneY} M ${toX} ${toY} V ${laneY} M ${leftX} ${laneY} H ${rightX}`,
+      const sourceLeg = makeSvg('path', {
+        d: `M ${fromX} ${fromY} V ${laneY}`,
         class: 'overview-svg-adoption-shared-line'
       });
-      edgeLayer.append(path);
+      const targetLeg = makeSvg('path', {
+        // 从关系通道向上指入承嗣卡片，箭头始终落在入继方，不受左右位置影响。
+        d: `M ${toX} ${laneY} V ${toY}`,
+        class: 'overview-svg-adoption-shared-line overview-svg-adoption-target-line',
+        'marker-end': 'url(#overview-svg-adoption-arrow)'
+      });
+      const horizontal = makeSvg('path', {
+        d: `M ${fromX} ${laneY} H ${toX}`,
+        class: 'overview-svg-adoption-shared-line'
+      });
+      edgeLayer.append(sourceLeg, horizontal, targetLeg);
 
       if (label) {
         const annotation = makeSvg('text', {
-          x: (leftX + rightX) / 2,
+          x: (fromX + toX) / 2,
           y: laneY - 9,
           class: 'overview-svg-adoption-shared-label',
           'text-anchor': 'middle'
@@ -3603,7 +3722,28 @@
         star.textContent = '★';
         group.append(star);
       }
-      const generation = makeSvg('text', { x: node.x + 6, y: node.y + 13, class: 'overview-svg-generation' });
+      const adoptionLabels = Array.isArray(node.adoptionLabels) ? node.adoptionLabels : [];
+      adoptionLabels.forEach((label, index) => {
+        const isIn = label === '入继';
+        const badgeY = node.y + 4 + index * 15;
+        const badge = makeSvg('rect', {
+          x: node.x + 4,
+          y: badgeY,
+          width: 27,
+          height: 12,
+          rx: 3,
+          class: `overview-svg-adoption-badge ${isIn ? 'is-in' : 'is-out'}`
+        });
+        const badgeText = makeSvg('text', {
+          x: node.x + 17.5,
+          y: badgeY + 9,
+          class: `overview-svg-adoption-badge-text ${isIn ? 'is-in' : 'is-out'}`,
+          'text-anchor': 'middle'
+        });
+        badgeText.textContent = label;
+        group.append(badge, badgeText);
+      });
+      const generation = makeSvg('text', { x: node.x + (adoptionLabels.length ? 37 : 6), y: node.y + 13, class: 'overview-svg-generation' });
       // 全景图卡片内只显示核心世次，完整的多套世次路径放入提示，避免长串文字溢出卡片后覆盖连线和其他人物。
       const generationParts = String(node.generation || '').split('/').map((part) => part.trim()).filter(Boolean);
       const generationDetail = generationParts.join(' / ');
@@ -3615,7 +3755,7 @@
         group.append(generationTitle);
       }
       group.append(generation);
-      const name = makeSvg('text', { x: node.x + 6, y: node.y + Math.min(node.height - 7, Math.max(27, node.height * .58)), class: 'overview-svg-name' });
+      const name = makeSvg('text', { x: node.x + 6, y: node.y + Math.min(node.height - 7, Math.max(adoptionLabels.length ? 37 : 27, node.height * .58)), class: 'overview-svg-name' });
       name.textContent = node.name;
       group.append(name);
       if (node.route && node.height > 34) {
@@ -7071,7 +7211,10 @@
       case 'query-lineage-view': openLineageViewFromQuery(element); break;
       case 'query-book-search': runPdfBookSearch(); break;
       case 'query-book-clear': clearPdfBookSearch(); break;
+      case 'query-book-open': openPdfBook(element.dataset.book); break;
       case 'query-book-open-source': openPdfBook(element.dataset.book || state.pdfBook.book, element.dataset.page); break;
+      case 'query-book-prev': turnPdfBook(-1); break;
+      case 'query-book-next': turnPdfBook(1); break;
       case 'query-book-close': closePdfBook(); break;
       case 'query-person-source-search': runPersonSourceSearch(); break;
       case 'query-person-source-clear': clearPersonSourceSearch(); break;

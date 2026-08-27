@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>枫槎谢氏宗谱 · 独立世系图</title>
   <meta name="description" content="枫槎谢氏宗谱族谱查询与只读世系图">
-  <link rel="stylesheet" href="styles.css?v=20260827-wz-detail-01">
+  <link rel="stylesheet" href="styles.css?v=20260828-electronic-book-01">
 </head>
 <body data-app-mode="public">
   <div id="app" class="app-shell">
@@ -47,14 +47,6 @@
           <button class="rail-action" data-action="expand-main">展开主脉</button>
           <button class="rail-action rail-action-advanced" data-action="expand-all" title="高级功能：展开当前视图全部人物，数据较多时可能需要等待">全部展开（高级）</button>
           <button class="rail-action" data-action="collapse-all">全部收起</button>
-        </div>
-
-        <div class="rail-section stats-section">
-          <div class="stat-line"><span>当前视图人物</span><strong id="stat-people">-</strong></div>
-          <div class="stat-line"><span>最高世代</span><strong id="stat-generation">-</strong></div>
-          <div class="stat-line"><span>支系数量</span><strong id="stat-branches">-</strong></div>
-          <div class="stat-line"><span>已核对人物</span><strong id="stat-verified">0</strong></div>
-          <div class="stat-line"><span>当前缩放</span><strong id="zoom-label">100%</strong></div>
         </div>
 
         <div class="rail-footer">
@@ -131,7 +123,12 @@
             <button class="query-close" data-action="toggle-query-drawer" aria-label="关闭族谱查询">×</button>
           </div>
 
-          <div id="query-stats" class="query-stat-grid" aria-label="族谱统计"></div>
+          <section id="query-stats-section" class="query-section query-stats-section" aria-label="族谱统计">
+            <div class="query-section-head">
+              <div><span class="query-kicker">RECORD SUMMARY</span><h4>族谱统计</h4><p class="query-muted">现有记录、世代、性别及出继入继数据汇总。</p></div>
+            </div>
+            <div id="query-stats" class="query-stat-grid" aria-label="族谱统计"></div>
+          </section>
 
           <section class="query-section query-adoption-section" aria-label="出继入继一览表">
             <div class="query-section-head query-adoption-head">
@@ -202,7 +199,7 @@
   </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=20260827-wz-detail-02"></script>
+  <script src="app.js?v=20260828-electronic-book-01"></script>
 <link rel="stylesheet" href="/css/ai.css?v=92">
 <script src="/js/ai-assistant.js?v=92" defer></script>
 <link rel="stylesheet" href="/css/public-access-gate.css?v=20260826-access-04">

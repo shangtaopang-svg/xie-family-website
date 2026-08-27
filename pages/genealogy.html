@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>枫槎谢氏宗谱 · 族谱查询</title>
   <meta name="description" content="枫槎谢氏宗谱族谱查询与只读世系图">
-  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260827-wz-detail-01">
+  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260828-electronic-book-01">
   <link rel="stylesheet" href="../css/public-access-gate.css?v=20260826-access-04">
   <script>
     if (new URLSearchParams(location.search).get('chooser') === '1' && window.matchMedia('(max-width: 760px)').matches) {
@@ -56,14 +56,6 @@
           <button class="rail-action" data-action="expand-main">展开主脉</button>
           <button class="rail-action" data-action="expand-all">展开全部</button>
           <button class="rail-action" data-action="collapse-all">全部收起</button>
-        </div>
-
-        <div class="rail-section stats-section">
-          <div class="stat-line"><span>当前视图人物</span><strong id="stat-people">-</strong></div>
-          <div class="stat-line"><span>最高世代</span><strong id="stat-generation">-</strong></div>
-          <div class="stat-line"><span>支系数量</span><strong id="stat-branches">-</strong></div>
-          <div class="stat-line"><span>已核对人物</span><strong id="stat-verified">0</strong></div>
-          <div class="stat-line"><span>当前缩放</span><strong id="zoom-label">100%</strong></div>
         </div>
 
         <div class="rail-footer">
@@ -141,35 +133,47 @@
                 <button type="button" class="query-primary" data-action="query-person-source-search">查询</button>
                 <button type="button" class="query-secondary" data-action="query-person-source-clear">清除</button>
               </div>
+              <div class="query-book-quick-launch" role="group" aria-label="选择电子族谱册次">
+                <span class="query-book-quick-kicker">选择电子族谱</span>
+                <div class="query-book-quick-actions">
+                  <button type="button" class="query-book-quick-button is-upper" data-action="query-book-open" data-book="upper"><strong>上册</strong><small>点击进入横屏双页阅读</small></button>
+                  <button type="button" class="query-book-quick-button is-lower" data-action="query-book-open" data-book="lower"><strong>下册</strong><small>点击进入横屏双页阅读</small></button>
+                </div>
+              </div>
               <div id="query-person-source-results" class="query-person-source-results" aria-live="polite"></div>
             </section>
-            <div class="query-book-launch-note" role="note">
-              <span class="query-kicker">ORIGINAL GENEALOGY BOOK</span>
-              <strong>按姓名直达原谱</strong>
-              <span>选择“世系页”或“详情页”，原封不动打开上册、下册对应页面。</span>
-            </div>
             <div id="query-book-reader" class="query-book-reader query-book-reader-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="query-book-reader-title">
               <div class="query-book-reader-shell">
                 <header class="query-book-reader-header">
                   <div>
                     <span class="query-kicker">ORIGINAL GENEALOGY BOOK</span>
-                    <h4 id="query-book-reader-title">原谱单页阅读</h4>
-                    <p id="query-book-focus-note" class="query-book-focus-note" aria-live="polite">请选择一位族人，再点击“世系页”或“详情页”。</p>
+                    <h4 id="query-book-reader-title">电子族谱</h4>
+                    <p id="query-book-focus-note" class="query-book-focus-note" aria-live="polite">左右显示连续两页；点击页面两侧或下方按钮翻页。</p>
                   </div>
                   <div class="query-book-reader-head-actions">
                     <span id="query-book-page-status" class="query-book-page-status" aria-live="polite">上册 · 第 1 页</span>
                     <button type="button" class="query-book-close" data-action="query-book-close" aria-label="关闭电子书">×</button>
                   </div>
                 </header>
-                <div class="query-book-landscape-hint" aria-live="polite">建议横屏观看 · 可缩放、可平移查看原谱原页</div>
+                <div class="query-book-landscape-hint" aria-live="polite">正在请求横屏阅读 · 左右为连续两页 · 点击左页返回、右页前进</div>
                 <div id="query-book-frame-wrap" class="query-book-frame-wrap">
-                  <div class="query-book-spread" aria-label="原谱单页">
-                    <div class="query-book-page-panel"><span class="query-book-page-label">左页</span><iframe id="query-book-frame-left" title="左侧原始 PDF 页面" loading="lazy"></iframe></div>
-                    <div class="query-book-page-panel" hidden><span class="query-book-page-label">右页</span><iframe id="query-book-frame-right" title="右侧原始 PDF 页面" loading="lazy"></iframe></div>
+                  <div class="query-book-spread" aria-label="原谱连续双页">
+                    <div class="query-book-page-panel is-left-page">
+                      <span class="query-book-page-label" data-book-page-label="left">左页</span>
+                      <iframe id="query-book-frame-left" title="左侧原始 PDF 页面" loading="lazy"></iframe>
+                      <button type="button" class="query-book-page-turn query-book-page-turn-prev" data-action="query-book-prev" aria-label="上一组双页">‹</button>
+                    </div>
+                    <div class="query-book-page-panel is-right-page" hidden>
+                      <span class="query-book-page-label" data-book-page-label="right">右页</span>
+                      <iframe id="query-book-frame-right" title="右侧原始 PDF 页面" loading="lazy"></iframe>
+                      <button type="button" class="query-book-page-turn query-book-page-turn-next" data-action="query-book-next" aria-label="下一组双页">›</button>
+                    </div>
                   </div>
                 </div>
                 <footer class="query-book-reader-footer">
+                  <button type="button" class="query-book-footer-button" data-action="query-book-prev">上一页</button>
                   <button type="button" class="query-book-footer-button is-return" data-action="query-book-close">返回电子族谱</button>
+                  <button type="button" class="query-book-footer-button" data-action="query-book-next">下一页</button>
                 </footer>
               </div>
             </div>
@@ -239,7 +243,12 @@
             </div>
           </div>
 
-          <div id="query-stats" class="query-stat-grid" aria-label="族谱统计"></div>
+          <section id="query-stats-section" class="query-section query-stats-section" aria-label="族谱统计">
+            <div class="query-section-head">
+              <div><span class="query-kicker">RECORD SUMMARY</span><h4>族谱统计</h4><p class="query-muted">现有记录、世代、性别及出继入继数据汇总。</p></div>
+            </div>
+            <div id="query-stats" class="query-stat-grid" aria-label="族谱统计"></div>
+          </section>
 
           <section class="query-section query-adoption-section" aria-label="出继入继一览表">
             <div class="query-section-head query-adoption-head">
@@ -323,7 +332,7 @@
     </section>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="../交付_下枫槎谢氏世系图/app.js?v=20260827-wz-detail-02"></script>
+  <script src="../交付_下枫槎谢氏世系图/app.js?v=20260828-electronic-book-01"></script>
 <link rel="stylesheet" href="/css/ai.css?v=92">
 <script src="/js/ai-assistant.js?v=92" defer></script>
 <link rel="stylesheet" href="/css/public-access-gate.css?v=20260826-access-04">

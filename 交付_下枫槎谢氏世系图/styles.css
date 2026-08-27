@@ -240,6 +240,12 @@ body[data-app-mode="public"] .query-generation-action-row button { min-height: 4
 .overview-svg-adoption-label { fill: #9b4338; font: 700 10px "Microsoft YaHei", sans-serif; paint-order: stroke; stroke: #f8f5ed; stroke-width: 5px; stroke-linejoin: round; letter-spacing: .02em; pointer-events: none; }
 .overview-svg-adoption-shared-line { fill: none; stroke: #b85a4a; stroke-width: 2.1; stroke-dasharray: 6 5; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
 .overview-svg-adoption-shared-label { fill: #9b4338; font: 700 11px "Microsoft YaHei", sans-serif; paint-order: stroke; stroke: #f8f5ed; stroke-width: 5px; stroke-linejoin: round; letter-spacing: .02em; pointer-events: none; }
+.overview-svg-adoption-badge { stroke-width: 1; vector-effect: non-scaling-stroke; }
+.overview-svg-adoption-badge.is-out { fill: #f2dcd6; stroke: #c77d70; }
+.overview-svg-adoption-badge.is-in { fill: #deede5; stroke: #79a58f; }
+.overview-svg-adoption-badge-text { font: 800 8px "Microsoft YaHei", sans-serif; pointer-events: none; }
+.overview-svg-adoption-badge-text.is-out { fill: #9a3f38; }
+.overview-svg-adoption-badge-text.is-in { fill: #2f6b55; }
 .overview-svg-generation { fill: #526a61; font: 600 11px "Microsoft YaHei", sans-serif; }
 .overview-svg-name { fill: #243d34; font: 700 15px "Microsoft YaHei", sans-serif; }
 .overview-svg-route { fill: #526a61; opacity: .78; font: 500 9px "Microsoft YaHei", sans-serif; }
@@ -253,6 +259,7 @@ body[data-app-mode="public"] .query-generation-action-row button { min-height: 4
 .overview-svg-layer.is-mobile-overview .overview-svg-name { font-size: 17px; }
 .overview-svg-layer.is-mobile-overview .overview-svg-adoption-label { font-size: 10px; stroke-width: 4px; }
 .overview-svg-layer.is-mobile-overview .overview-svg-adoption-shared-label { font-size: 10px; stroke-width: 4px; }
+.overview-svg-layer.is-mobile-overview .overview-svg-adoption-badge-text { font-size: 8px; }
 /* 世系卡在手机全景图中也必须保留世代；只隐藏过长的支系文字。 */
 .overview-svg-layer.is-mobile-overview .overview-svg-generation { display: block; font-size: 10px; }
 .tree-stage { transform-origin: top left; width: max-content; min-width: 0; padding: 22px 42px; transition: none; will-change: transform; }
@@ -1443,7 +1450,11 @@ button, input, select, textarea { color-scheme: light; }
 .query-lineage7-family-root { top: 8px; left: calc(50% - 120px); width: 240px; }
 .query-lineage7-family-child { top: 138px; width: 178px; }
 .query-lineage7-family-adopted { top: 308px; width: 230px; }
-.query-lineage7-family-card { min-height: 88px; padding: 10px 11px; box-sizing: border-box; border: 1px solid #b8cbbf; border-left: 4px solid #477966; border-radius: 9px; background: #f6faf5; box-shadow: 0 4px 12px rgba(43, 73, 59, .07); }
+.query-lineage7-family-card { position: relative; min-height: 88px; padding: 10px 11px; box-sizing: border-box; border: 1px solid #b8cbbf; border-left: 4px solid #477966; border-radius: 9px; background: #f6faf5; box-shadow: 0 4px 12px rgba(43, 73, 59, .07); }
+.query-lineage7-family-card.has-adoption-badge { padding-top: 28px; }
+.query-lineage7-family-card-adoption-badge { position: absolute; top: 6px; left: 8px; z-index: 2; padding: 2px 5px; border: 1px solid transparent; border-radius: 3px; font-size: 9px; font-weight: 800; line-height: 1.15; white-space: nowrap; }
+.query-lineage7-family-card-adoption-badge.adoption-out { color: #9a3f38; background: #f2dcd6; border-color: #c77d70; }
+.query-lineage7-family-card-adoption-badge.adoption-in { color: #2f6b55; background: #deede5; border-color: #79a58f; }
 .query-lineage7-family-card.is-common-parent { background: #eef6ef; border-color: #9ab9a7; }
 .query-lineage7-family-card.is-biological-parent { background: #fffdf5; border-left-color: #6d8f7c; }
 .query-lineage7-family-card.is-adoptive-parent { background: #f0f8f2; border-left-color: #477966; }
@@ -1454,7 +1465,7 @@ button, input, select, textarea { color-scheme: light; }
 .query-lineage7-family-lines path { fill: none; stroke-width: 2px; stroke-linecap: round; stroke-linejoin: round; }
 .query-lineage7-family-lines .is-blood { stroke: #6f9182; }
 .query-lineage7-family-lines .is-dashed { stroke: #af6d56; stroke-dasharray: 6 5; }
-.query-lineage7-family-lines .is-adoption { stroke: #af6d56; }
+.query-lineage7-family-lines .is-adoption { stroke: #af6d56; stroke-dasharray: 6 5; }
 .query-lineage7-family-line-label { position: absolute; z-index: 3; padding: 2px 5px; border-radius: 5px; background: rgba(255, 248, 243, .92); color: #8e5747; font-size: 10px; white-space: nowrap; }
 .query-lineage7-family-line-label.is-blood-label { color: #5e7e70; }
 .query-lineage7-family-source { margin: 2px 0 0; padding-top: 8px; border-top: 1px dashed #dfc5b7; color: #967265; font-size: 10px; line-height: 1.45; }
@@ -2047,7 +2058,7 @@ body[data-app-mode="public"] .tree-viewport {
   .person-card, .person-card[data-action="select-person"] { min-height: 70px; }
 }
 
-/* 手机端四项查询入口：统一在族谱查询页内切换，不拆出信息类页面。 */
+/* 手机端五项查询入口：统一在族谱查询页内切换，不拆出信息类页面。 */
 .mobile-query-menu { display: none; }
 .mobile-query-menu[hidden] { display: none !important; }
 .mobile-query-switcher,
@@ -2215,9 +2226,9 @@ body[data-app-mode="public"] .tree-viewport {
     font-size: 12px;
     font-weight: 700;
   }
-  body[data-app-mode="public"] .query-drawer[data-mobile-mode] .query-stat-grid { display: none; }
-  /* “族人信息”是信息总览入口，保留统计卡片；其他查询模式保持简洁。 */
-  body[data-app-mode="public"] .query-drawer[data-mobile-mode="info"] .query-stat-grid { display: grid; }
+  body[data-app-mode="public"] .query-drawer[data-mobile-mode] .query-stats-section { display: none; }
+  /* 统计数据归入“查世代”，不再在查询抽屉的公共区域或其他查询入口重复呈现。 */
+  body[data-app-mode="public"] .query-drawer[data-mobile-mode="generation"] .query-stats-section { display: block; }
   body[data-app-mode="public"] .query-drawer[data-mobile-mode="people"] .query-form-grid .query-field:not(.query-field-wide),
   body[data-app-mode="public"] .query-drawer[data-mobile-mode="generation"] .query-form-grid .query-field-wide,
   body[data-app-mode="public"] .query-drawer[data-mobile-mode="generation"] .query-form-grid .query-field select,
@@ -2605,6 +2616,45 @@ body.query-book-overlay-open { overflow: hidden !important; }
 }
 .query-person-source-form .query-primary,
 .query-person-source-form .query-secondary { min-height: 44px; white-space: nowrap; }
+.query-book-quick-launch {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(71, 118, 96, .18);
+}
+.query-book-quick-kicker {
+  color: #587266;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+.query-book-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.query-book-quick-button {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  min-height: 58px;
+  padding: 10px 13px;
+  border: 1px solid rgba(72, 111, 94, .38);
+  border-radius: 12px;
+  background: #f4fbf5;
+  color: #315e4d;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+.query-book-quick-button.is-lower { border-color: rgba(183, 111, 77, .42); background: #fff7f0; color: #92513b; }
+.query-book-quick-button:hover,
+.query-book-quick-button:focus-visible { border-color: #b76f4d; box-shadow: 0 6px 16px rgba(45, 78, 61, .13); transform: translateY(-1px); outline: none; }
+.query-book-quick-button strong { font-size: 17px; }
+.query-book-quick-button small { color: #71827a; font-size: 11px; line-height: 1.35; }
+.query-book-quick-button.is-lower small { color: #9a7668; }
 .query-person-source-results { display: grid; gap: 10px; margin-top: 14px; }
 .query-person-source-empty,
 .query-person-source-summary {
@@ -3492,15 +3542,41 @@ body[data-app-mode="public"] #tree-status[hidden] {
 .query-book-reader-overlay .query-book-reader-shell { display: flex; flex-direction: column; width: 100%; height: 100%; min-height: 0; }
 .query-book-reader-overlay .query-book-reader-header { flex: 0 0 auto; }
 .query-book-reader-overlay .query-book-frame-wrap { flex: 1 1 auto !important; height: auto !important; min-height: 0 !important; padding: clamp(8px, 1.7vw, 22px) clamp(8px, 3vw, 42px) !important; overflow: hidden !important; background: #263d31 !important; }
-.query-book-reader-overlay .query-book-spread { display: grid !important; grid-template-columns: minmax(0, 1fr) !important; gap: 0 !important; width: 100% !important; height: 100% !important; min-height: 0 !important; }
+.query-book-reader-overlay .query-book-spread { display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; gap: clamp(2px, .7vw, 10px) !important; width: 100% !important; height: 100% !important; min-height: 0 !important; }
 .query-book-reader-overlay .query-book-page-panel { min-width: 0 !important; min-height: 0 !important; height: 100% !important; overflow: hidden !important; background: #f9f5ec !important; }
 .query-book-reader-overlay .query-book-page-panel[hidden] { display: none !important; }
 .query-book-reader-overlay .query-book-page-panel iframe { display: block !important; width: 100% !important; height: 100% !important; min-height: 0 !important; border: 0 !important; }
+.query-book-page-turn {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  width: 38px;
+  height: 70px;
+  margin-top: -35px;
+  border: 1px solid rgba(255, 255, 255, .72);
+  border-radius: 10px;
+  background: rgba(24, 43, 34, .58);
+  color: #fffaf1;
+  font-size: 38px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: .84;
+  transition: opacity 160ms ease, background 160ms ease;
+}
+.query-book-page-turn:hover,
+.query-book-page-turn:focus-visible { background: rgba(183, 111, 77, .9); opacity: 1; outline: none; }
+.query-book-page-turn:disabled { opacity: .2; cursor: not-allowed; }
+.query-book-page-turn-prev { left: 10px; }
+.query-book-page-turn-next { right: 10px; }
+.query-book-footer-button:disabled { opacity: .36; cursor: not-allowed; }
 .query-book-reader-overlay .query-book-reader-footer { flex: 0 0 auto !important; justify-content: center !important; }
 .query-book-reader-overlay .query-book-reader-footer .query-book-footer-button.is-return { min-width: 168px; }
 body.query-book-overlay-open { overflow: hidden !important; }
 @media (max-width: 700px) {
   .query-book-reader-overlay .query-book-frame-wrap { padding: 6px 4px !important; }
+  .query-book-page-turn { width: 32px; height: 58px; margin-top: -29px; font-size: 31px; }
+  .query-book-page-turn-prev { left: 5px; }
+  .query-book-page-turn-next { right: 5px; }
 }
 
 /* 详情页原谱重点资料：让出生、配偶和人物经历进入页面即清楚可见。 */
@@ -3576,3 +3652,9 @@ body.query-book-overlay-open { overflow: hidden !important; }
   .detail-evidence-item, .detail-evidence-copy, .detail-evidence-meta { padding: 10px; }
   .detail-evidence-item strong, .detail-evidence-meta strong, .detail-evidence-copy p { font-size: 13px; }
 }
+
+/* 出继/入继标记固定在寻根关系卡左上角，关系说明和虚线箭头留在卡片外。 */
+.root-trace-family-card.has-adoption-badge { position: relative; padding-top: 26px; }
+.root-trace-adoption-badge { position: absolute; top: 5px; left: 10px; z-index: 2; padding: 2px 5px; border: 1px solid transparent; border-radius: 3px; font-size: 9px; font-weight: 800; line-height: 1.15; white-space: nowrap; }
+.root-trace-adoption-badge.adoption-out { color: #9a3f38; background: #f2dcd6; border-color: #c77d70; }
+.root-trace-adoption-badge.adoption-in { color: #2f6b55; background: #deede5; border-color: #79a58f; }
