@@ -3519,38 +3519,31 @@
       edgeLayer.append(makeSvg('path', { d: `M ${startX} ${startY} V ${middleY} H ${endX} V ${endY}`, class: 'overview-svg-parent-edge' }));
     });
     adoptionEdges.forEach(({ from, to, label }) => {
-      const startX = from.x + from.width / 2;
-      const startY = from.y + from.height;
-      const endX = to.x + to.width / 2;
-      // 入继记录的连接点放在卡片上边缘，视觉上明确指向“归入的那张卡”，
-      // 不再把线头落在卡片中心造成“连到了别处”的错觉。
-      const endY = to.y;
-      const dx = endX - startX;
-      const dy = endY - startY;
-      const direction = dx === 0 ? 1 : Math.sign(dx);
-      const curveX = Math.max(28, Math.abs(dx) * .32);
-      const curveY = Math.max(18, Math.abs(dy) * .24);
-      const verticalSign = dy >= 0 ? 1 : -1;
+      // 过继/入继不再把两张卡片直接用一条“跨图曲线”硬连起来。
+      // 按族谱原图的阅读方式：两张卡片各自向下引出虚线，汇入同一条
+      // 横向关系线；这样既能保留亲生父系和承嗣父系的实际位置，也不会
+      // 让人误以为两张卡片之间存在普通父子线。
+      const fromX = from.x + from.width / 2;
+      const toX = to.x + to.width / 2;
+      const fromY = from.y + from.height;
+      const toY = to.y + to.height;
+      // 保持关系线落在 SVG 的可视高度内，避免远距离卡片之间的
+      // 连接线被底部裁切；距离较大时仍通过横向线段保持辨识度。
+      const gap = Math.max(22, Math.min(32, 18 + Math.abs(toX - fromX) * .04));
+      const laneY = Math.max(fromY, toY) + gap;
+      const leftX = Math.min(fromX, toX);
+      const rightX = Math.max(fromX, toX);
       const path = makeSvg('path', {
-        d: `M ${startX} ${startY} C ${startX + direction * curveX} ${startY + verticalSign * curveY}, ${endX - direction * curveX} ${endY - verticalSign * curveY}, ${endX} ${endY}`,
-        class: 'overview-svg-adoption-edge'
+        d: `M ${fromX} ${fromY} V ${laneY} M ${toX} ${toY} V ${laneY} M ${leftX} ${laneY} H ${rightX}`,
+        class: 'overview-svg-adoption-shared-line'
       });
       edgeLayer.append(path);
 
       if (label) {
-        // 三次贝塞尔曲线的中点用于放置旁注；用文字描边保证在网格、连线和卡片
-        // 之间仍然清楚可读。旁注不拦截卡片点击。
-        const t = .5;
-        const p0 = { x: startX, y: startY };
-        const p1 = { x: startX + direction * curveX, y: startY + verticalSign * curveY };
-        const p2 = { x: endX - direction * curveX, y: endY - verticalSign * curveY };
-        const p3 = { x: endX, y: endY };
-        const midX = ((1 - t) ** 3 * p0.x) + (3 * (1 - t) ** 2 * t * p1.x) + (3 * (1 - t) * t ** 2 * p2.x) + (t ** 3 * p3.x);
-        const midY = ((1 - t) ** 3 * p0.y) + (3 * (1 - t) ** 2 * t * p1.y) + (3 * (1 - t) * t ** 2 * p2.y) + (t ** 3 * p3.y);
         const annotation = makeSvg('text', {
-          x: midX + (direction * 8),
-          y: midY - 6,
-          class: 'overview-svg-adoption-label',
+          x: (leftX + rightX) / 2,
+          y: laneY - 9,
+          class: 'overview-svg-adoption-shared-label',
           'text-anchor': 'middle'
         });
         annotation.textContent = label;
