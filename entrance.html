@@ -218,7 +218,7 @@
 
   <!-- Bottom buttons -->
   <div class="hc" id="hc">
-    <button class="eb" id="openBtn2">✦ 探索下枫槎</button>
+    <button class="eb" id="openBtn2" type="button">✦ 探索下枫槎</button>
     <a class="eb" href="intro.html">👤 开发者</a>
   </div>
   <div id="ent" style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
@@ -306,11 +306,27 @@ document.getElementById('openBtn2').addEventListener('click',function(event){
   if(window.matchMedia && window.matchMedia('(max-width: 768px)').matches && !(window.publicAccessSessionValid && window.publicAccessSessionValid())){
     event.preventDefault();
     event.stopImmediatePropagation();
+    if(window.__publicAccessExplorePending)return;
+    window.__publicAccessExplorePending=true;
     window.__publicAccessAfterClose=function(){
+      window.__publicAccessExplorePending=false;
+      window.__publicAccessAfterClose=null;
       var button=document.getElementById('openBtn2');
       if(button) button.click();
     };
-    if(window.openPublicAccessGate) window.openPublicAccessGate();
+    var attempts=0;
+    (function openGateWhenReady(){
+      if(window.openPublicAccessGate){
+        window.openPublicAccessGate();
+        return;
+      }
+      if(++attempts<40){
+        setTimeout(openGateWhenReady,50);
+        return;
+      }
+      window.__publicAccessExplorePending=false;
+      window.__publicAccessAfterClose=null;
+    }());
     return;
   }
   if(isAnim)return;isAnim=true;
