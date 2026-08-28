@@ -581,10 +581,10 @@
 
   // 个别原谱条目把子女的出继说明写在父亲条目旁边。它们不是
   // “本人出继 / 本人入继”记录，不能直接给这张人物卡片加关系标记。
-  // 学典、学雅、大春、锡中、锡财、明颖、学虎由用户逐一核对确认没有
+  // 学典、学雅、大春、锡中、锡财、锡铨、明颖、学虎由用户逐一核对确认没有
   // 出继、入继，作为人工校核例外处理；
   // 原始 adopt_note 仍保留，便于详情页追溯原谱文字。
-  const ADOPTION_UI_EXCLUDED_IDS = new Set(['154', '174', '220', '298', '320', '369', '374']);
+  const ADOPTION_UI_EXCLUDED_IDS = new Set(['154', '174', '220', '224', '298', '320', '369', '374']);
 
   function isAdoptionUiExcluded(person) {
     return Boolean(person) && ADOPTION_UI_EXCLUDED_IDS.has(String(personId(person)));
@@ -888,7 +888,7 @@
       if (!recordHasAdoption(person, 'out')) return;
       // 多数族谱条目是在父亲条目里记载“某子出继”，不能把这位父亲误判成出继本人。
       // 但如果 adopt_note / adoption_status 明确写在人物自身字段中，即使他有子女，
-      // 也必须按本人出继处理。锡铨就是这种情况：出继后仍有自己的子女记录。
+      // 也必须按本人出继处理；只有经过人工核对确认的例外才由排除表拦截。
       if (childrenOf(person).length && !hasDirectOutMarker(person)) return;
       const parent = rawFatherOf(person);
       const source = adoptionText(person);
@@ -1571,7 +1571,7 @@
 
   // 统计按“出继关系”计数，而不是按页面上是否存在两张同名卡片计数。
   // 一条真实的出继关系必然对应一条入继关系；有些谱载只有出继人的
-  // 独立卡片，没有另立一张同名入继卡片（例如锡铨），不能因此把数量算成 35/34，
+  // 独立卡片，不能因此把有效关系数量和人物卡片数量混算，
   // 也不能为了凑数虚造人物卡片。
   function adoptionSummary(people) {
     const scopeIds = new Set((people || []).map((person) => String(personId(person))));
