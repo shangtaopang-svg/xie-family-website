@@ -581,9 +581,10 @@
 
   // 个别原谱条目把子女的出继说明写在父亲条目旁边。它们不是
   // “本人出继 / 本人入继”记录，不能直接给这张人物卡片加关系标记。
-  // 学典、学雅由用户逐页核对确认没有出继、入继，作为人工校核例外处理；
+  // 学典、学雅、大春、锡中、锡财、明颖、学虎由用户逐一核对确认没有
+  // 出继、入继，作为人工校核例外处理；
   // 原始 adopt_note 仍保留，便于详情页追溯原谱文字。
-  const ADOPTION_UI_EXCLUDED_IDS = new Set(['320', '374']);
+  const ADOPTION_UI_EXCLUDED_IDS = new Set(['154', '174', '220', '298', '320', '369', '374']);
 
   function isAdoptionUiExcluded(person) {
     return Boolean(person) && ADOPTION_UI_EXCLUDED_IDS.has(String(personId(person)));
