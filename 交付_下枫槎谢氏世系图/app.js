@@ -381,6 +381,33 @@
         }
       }
     }
+    // 本宗图必须同时保留出继双方的可视节点。部分承嗣记录的原始父系与
+    // 亲生支系处在不同的展示路径上，单靠普通父子链会把承嗣方误裁掉，
+    // 结果就是出继卡片有了，却没有“出继给谁”的箭头目标。
+    if (!included && state.view === 'main') {
+      const relation = Array.from(state.adoption.outById.values()).find((item) => {
+        const ids = [item.outPerson, item.adoptiveRecord, item.biologicalParent, item.adoptiveParent]
+          .filter(Boolean).map((item) => String(personId(item)));
+        return ids.includes(personKey);
+      });
+      if (relation) {
+        const effectiveRootId = state.mainLineageRootId || view.rootId;
+        const relationPersonInMain = (candidate) => {
+          if (!candidate || generationOf(candidate) === null) return false;
+          if (view.generations && (generationOf(candidate) < view.generations[0] || generationOf(candidate) > view.generations[1])) return false;
+          if (state.mainSublineage && state.mainLineageRootId) {
+            const onRootPath = String(personId(candidate)) === String(toId(state.mainLineageRootId)) || isStrictDescendantOf(candidate, state.mainLineageRootId);
+            if (!onRootPath) return false;
+            if (state.mainLineageTargetId) return isWithinMainFocus(candidate, state.mainLineageTargetId);
+            return true;
+          }
+          if (state.mainFocusId) return isWithinMainFocus(candidate, state.mainFocusId);
+          return String(personId(candidate)) === String(toId(effectiveRootId)) || isStrictDescendantOf(candidate, effectiveRootId);
+        };
+        included = [relation.outPerson, relation.adoptiveRecord, relation.biologicalParent, relation.adoptiveParent]
+          .some((candidate) => String(personId(candidate)) !== personKey && relationPersonInMain(candidate));
+      }
+    }
     state.viewIncludeCache.set(personKey, included);
     return included;
   }
@@ -598,7 +625,14 @@
     return state.data
       .filter((candidate) => candidate && text(candidate.name).trim() && !excluded.has(String(personId(candidate))))
       .sort((a, b) => text(b.name).trim().length - text(a.name).trim().length)
-      .find((candidate) => tail.includes(text(candidate.name).trim())) || null;
+      .find((candidate) => {
+        const candidateName = text(candidate.name).trim();
+        if (candidateName.length > 1) return tail.includes(candidateName);
+        // 单字名必须紧跟“给 / 出继 / 入继 / 出祧 / 入祧”等明确语境，
+        // 不允许从“锡继宁公”这类复合尊称中误截出一个“宁”字。
+        const singleNamePattern = new RegExp(`(?:给|出继|入继|出祧|入祧)\\s*${escapeRegExp(candidateName)}\\s*(?:公?为嗣|公|为嗣)`);
+        return singleNamePattern.test(tail);
+      }) || null;
   }
 
   function buildAdoptionIndex() {
@@ -708,6 +742,11 @@
     // 使“明才（出继）→明才（入继）”和“学护（出继）→学护（入继）”都能闭合统计。
     registerExplicitPair(260, 261, 230, '锡铨之子明才，出继锡龄为嗣', true);
     registerExplicitPair(333, 332, 261, '明秀之子学护，出继明才为嗣', true);
+    // 上册第96、82、110页：明高、明坦、学潮也都是“亲生记录 + 入继记录”。
+    // 两张同名卡片都保留，才能在总世系图上明确显示出继方、入继方及其虚线箭头。
+    registerExplicitPair(301, 300, 197, '锡公次子明高，出继给锡昂公为嗣', true);
+    registerExplicitPair(251, 250, 202, '锡昌公之子明坦，出继给锡森公为嗣', true);
+    registerExplicitPair(353, 352, 300, '明淑公长子学潮，出继给明高公为嗣', true);
     // 善鸿是序缎之子：序缎的入继记录仍显示在令水名下，但善鸿应接在入继序缎卡片之后，不能直接跳到令水下面。
     const adoptedXuDuanRecord = getPerson(678);
     if (adoptedXuDuanRecord && text(adoptedXuDuanRecord.name).trim() === '序缎') {
@@ -761,7 +800,9 @@
       let adoptiveParent = rawFatherOf(adoptiveRecord);
       const source = [adoptionText(biologicalParent), adoptionText(outRecord), adoptionText(adoptiveRecord)].filter(Boolean).join(' ');
       if (!adoptiveParent) adoptiveParent = findNamedAdoptiveParent(source, outRecord, [personId(outRecord), personId(biologicalParent)]);
-      register(outRecord, adoptiveRecord, adoptiveParent, source);
+      // 只要数据里存在成对的亲生 / 入继记录，就保留入继卡片；否则关系线没有目标，
+      // 用户只能看到“出继”标签，却看不到出继给谁。
+      register(outRecord, adoptiveRecord, adoptiveParent, source, true);
     });
 
     state.data.forEach((person) => {
@@ -3569,7 +3610,10 @@
     const adoptionEdges = [];
     state.adoption.outById.forEach((relation) => {
       const from = nodeById.get(String(personId(relation.outPerson)));
-      const target = nodeById.get(String(personId(relation.adoptiveRecord || relation.adoptiveParent)));
+      // 优先指向入继记录；某些分段图只保留了承嗣父卡片时，回退到承嗣父，
+      // 避免因为入继记录被当前分段筛掉而整条关系线消失。
+      const target = nodeById.get(String(personId(relation.adoptiveRecord)))
+        || nodeById.get(String(personId(relation.adoptiveParent)));
       if (from && target && from !== target) {
         adoptionEdges.push({
           from,
@@ -3578,17 +3622,49 @@
         });
       }
     });
+    // 为每条关系线计算独立通道：不仅避开关系两端的卡片，也避开横跨路径上的
+    // 其他人物卡片。标签跟着同一通道走，避免说明文字压在人名或卡片边框上。
+    const adoptionLaneGap = 42;
+    const adoptionLaneSpacing = 30;
+    const adoptionLabelHeight = 18;
+    const adoptionRoutes = [];
+    const rangesOverlap = (leftA, rightA, leftB, rightB) => leftA < rightB && rightA > leftB;
+    adoptionEdges.forEach((relation) => {
+      const fromX = relation.from.x + relation.from.width / 2;
+      const toX = relation.to.x + relation.to.width / 2;
+      const fromY = relation.from.y + relation.from.height;
+      const toY = relation.to.y + relation.to.height;
+      const textWidth = Math.max(72, text(relation.label).length * 5.8);
+      const left = Math.min(fromX, toX) - textWidth / 2;
+      const right = Math.max(fromX, toX) + textWidth / 2;
+      let laneY = Math.max(fromY, toY) + adoptionLaneGap;
+      let guard = 0;
+      while (guard < nodes.length + adoptionRoutes.length + 4) {
+        guard += 1;
+        let nextLaneY = laneY;
+        nodes.forEach((node) => {
+          if (!rangesOverlap(left, right, node.x, node.x + node.width)) return;
+          const nodeTop = node.y - adoptionLabelHeight;
+          const nodeBottom = node.y + node.height;
+          // 只在通道已进入卡片或卡片下方安全区时下移；线在卡片上方时可直接通过。
+          if (laneY >= nodeTop && laneY < nodeBottom + adoptionLaneGap) {
+            nextLaneY = Math.max(nextLaneY, nodeBottom + adoptionLaneGap);
+          }
+        });
+        adoptionRoutes.forEach((route) => {
+          if (!rangesOverlap(left, right, route.left, route.right)) return;
+          if (laneY < route.laneY + adoptionLaneSpacing && laneY >= route.laneY - adoptionLaneSpacing) {
+            nextLaneY = Math.max(nextLaneY, route.laneY + adoptionLaneSpacing);
+          }
+        });
+        if (nextLaneY === laneY) break;
+        laneY = nextLaneY;
+      }
+      adoptionRoutes.push({ ...relation, fromX, toX, fromY, toY, left, right, laneY });
+    });
     const right = nodes.reduce((max, node) => Math.max(max, node.x + node.width), 0);
     const bottom = nodes.reduce((max, node) => Math.max(max, node.y + node.height), 0);
-    // 出继/入继关系线必须落在两张卡片之外，给标签和箭头预留独立的底部通道。
-    // 否则远距离关系在手机全景图里会被 SVG 高度裁切，或反过来穿过人物卡片。
-    const adoptionBottom = adoptionEdges.reduce((max, relation) => {
-      const relationBottom = Math.max(
-        relation.from.y + relation.from.height,
-        relation.to.y + relation.to.height
-      ) + 36 + 18;
-      return Math.max(max, relationBottom);
-    }, 0);
+    const adoptionBottom = adoptionRoutes.reduce((max, route) => Math.max(max, route.laneY + 22), 0);
     const baseWidth = Math.max(1, stage.scrollWidth, right + 44);
     const baseHeight = Math.max(1, stage.scrollHeight, bottom + 44, adoptionBottom);
     const svgNS = 'http://www.w3.org/2000/svg';
@@ -3631,19 +3707,11 @@
       const middleY = startY + Math.max(8, (endY - startY) / 2);
       edgeLayer.append(makeSvg('path', { d: `M ${startX} ${startY} V ${middleY} H ${endX} V ${endY}`, class: 'overview-svg-parent-edge' }));
     });
-    adoptionEdges.forEach(({ from, to, label }) => {
+    adoptionRoutes.forEach(({ from, to, label, fromX, toX, fromY, toY, laneY }) => {
       // 过继/入继不再把两张卡片直接用一条“跨图曲线”硬连起来。
       // 按族谱原图的阅读方式：两张卡片各自向下引出虚线，汇入同一条
       // 横向关系线；这样既能保留亲生父系和承嗣父系的实际位置，也不会
       // 让人误以为两张卡片之间存在普通父子线。
-      const fromX = from.x + from.width / 2;
-      const toX = to.x + to.width / 2;
-      const fromY = from.y + from.height;
-      const toY = to.y + to.height;
-      // 保持关系线落在 SVG 的可视高度内，避免远距离卡片之间的
-      // 连接线被底部裁切；距离较大时仍通过横向线段保持辨识度。
-      const gap = 36;
-      const laneY = Math.max(fromY, toY) + gap;
       const sourceLeg = makeSvg('path', {
         d: `M ${fromX} ${fromY} V ${laneY}`,
         class: 'overview-svg-adoption-shared-line'
@@ -3769,7 +3837,7 @@
     canvasWrap.appendChild(svg);
     canvasWrap.classList.add('overview-canvas-active');
     viewport.classList.add('overview-canvas-viewport');
-    const map = { active: true, layer: svg, svgNodeById, nodes, nodeById, edges, adoptionEdges, baseWidth, baseHeight, stageDisplay: stage.style.display || '' };
+    const map = { active: true, layer: svg, svgNodeById, nodes, nodeById, edges, adoptionEdges: adoptionRoutes, baseWidth, baseHeight, stageDisplay: stage.style.display || '' };
     state.overviewCanvas = map;
     state.overviewMetrics = { width: baseWidth, height: baseHeight };
     stage.style.display = 'none';
