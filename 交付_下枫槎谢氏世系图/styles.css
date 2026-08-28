@@ -1531,7 +1531,7 @@ button, input, select, textarea { color-scheme: light; }
 .adoption-table-summary em { justify-self: end; padding: 4px 9px; border-radius: 99px; background: #f4e2d7; color: #96533d; font-style: normal; white-space: nowrap; }
 .adoption-table-summary em.is-ok { background: #e3f0e8; color: #3f765c; }
 .adoption-table-scroll { overflow-x: auto; border: 1px solid #ded6cc; border-radius: 6px; background: #fffdf9; }
-.adoption-table-scroll table { width: 100%; min-width: 1120px; border-collapse: separate; border-spacing: 0; font-size: 11px; table-layout: fixed; }
+.adoption-table-scroll table { width: 100%; min-width: 960px; border-collapse: separate; border-spacing: 0; font-size: 11px; table-layout: fixed; }
 .adoption-table-scroll th { padding: 9px 10px; border-bottom: 1px solid #cfc4b8; background: #f1e9e1; color: #6b766f; text-align: left; white-space: nowrap; font-size: 11px; font-weight: 700; }
 .adoption-table-scroll th:nth-child(1) { width: 44px; text-align: center; }.adoption-table-scroll th:nth-child(2) { width: 76px; }.adoption-table-scroll th:nth-child(3) { width: 31%; }.adoption-table-scroll th:nth-child(4) { width: 30%; }.adoption-table-scroll th:nth-child(5) { width: auto; }
 .adoption-table-scroll td { padding: 9px 10px; border-bottom: 1px solid #eee7df; color: #4f635b; vertical-align: middle; line-height: 1.4; }
