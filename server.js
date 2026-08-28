@@ -84,6 +84,40 @@ function repairKnownGenealogyFacts(list) {
     son.spouse_record = '配张佳蕾：大学生，农信总行任职，邑城人';
     changed = true;
   }
+
+  // 上册核定关系：善尊之子道贤出继善美为嗣。
+  // 921 是亲生侧出继记录，922 是善美名下的入继记录，不能把 921
+  // 的亲生父亲误写成同名的善美（731/732）。
+  const daoXianOut = list.find(item => String(item && item.id) === '921');
+  if (daoXianOut && String(daoXianOut.name || '').trim() === '道贤') {
+    if (String(daoXianOut.father_id) !== '730') {
+      daoXianOut.father_id = 730;
+      changed = true;
+    }
+    if (String(daoXianOut.adoption_status || '').trim() !== 'out') {
+      daoXianOut.adoption_status = 'out';
+      changed = true;
+    }
+    if (String(daoXianOut.adopt_note || '').trim() !== '善尊之子道贤，出继善美为嗣') {
+      daoXianOut.adopt_note = '善尊之子道贤，出继善美为嗣';
+      changed = true;
+    }
+  }
+  const daoXianIn = list.find(item => String(item && item.id) === '922');
+  if (daoXianIn && String(daoXianIn.name || '').trim() === '道贤') {
+    if (String(daoXianIn.father_id) !== '732') {
+      daoXianIn.father_id = 732;
+      changed = true;
+    }
+    if (String(daoXianIn.adoption_status || '').trim() !== 'in') {
+      daoXianIn.adoption_status = 'in';
+      changed = true;
+    }
+    if (String(daoXianIn.adopt_note || '').trim() !== '善美之嗣道贤') {
+      daoXianIn.adopt_note = '善美之嗣道贤';
+      changed = true;
+    }
+  }
   return changed;
 }
 
