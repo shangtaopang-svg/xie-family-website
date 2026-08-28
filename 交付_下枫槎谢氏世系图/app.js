@@ -1569,26 +1569,20 @@
     return `<div class="query-stat${className ? ` ${className}` : ''}"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></div>`;
   }
 
-  // 统计必须以管理后台 canonical 数据中的结构化字段为准，不能再依赖
-  // 卡片标签的推断结果。这样同一组出继/入继记录始终按一对一对应统计。
+  // 统计按“出继关系”计数，而不是按页面上是否存在两张同名卡片计数。
+  // 一条真实的出继关系必然对应一条入继关系；有些谱载只有出继人的
+  // 独立卡片，没有另立一张同名入继卡片（例如锡铨），不能因此把数量算成 35/34，
+  // 也不能为了凑数虚造人物卡片。
   function adoptionSummary(people) {
-    const outIds = new Set();
-    const inIds = new Set();
-    const pairIds = new Set();
-    (people || []).forEach((person) => {
-      const id = String(personId(person));
-      const status = text(person.adoption_status).trim();
-      const pairId = text(person.adoption_pair_id).trim();
-      if (pairId) pairIds.add(pairId);
-      if (status === 'out') outIds.add(id);
-      else if (status === 'in') inIds.add(id);
-      else {
-        // 兼容后台尚未补结构化字段的旧记录，但只作为兜底。
-        if (adoptionTags(person).some((tag) => tag.className === 'adoption-out')) outIds.add(id);
-        if (adoptionTags(person).some((tag) => tag.className === 'adoption-in')) inIds.add(id);
-      }
+    const scopeIds = new Set((people || []).map((person) => String(personId(person))));
+    const relations = Array.from(state.adoption?.outById?.values?.() || []).filter((relation) => {
+      // 当前查询若命中出继卡或独立入继卡，都应显示这条完整关系。
+      return [relation.outPerson, relation.adoptiveRecord]
+        .filter(Boolean)
+        .some((person) => scopeIds.has(String(personId(person))));
     });
-    return { out: outIds.size, incoming: inIds.size, pairs: pairIds.size };
+    const count = relations.length;
+    return { out: count, incoming: count, pairs: count, relations };
   }
 
   function inLawRecords(people) {
@@ -1600,22 +1594,22 @@
   }
 
   function adoptionRows(people) {
-    const rows = new Map();
-    (people || []).forEach((person) => {
-      const pairId = text(person.adoption_pair_id).trim();
-      const status = text(person.adoption_status).trim();
-      if (!pairId || (status !== 'out' && status !== 'in')) return;
-      if (!rows.has(pairId)) rows.set(pairId, { pairId, out: null, incoming: null });
-      const row = rows.get(pairId);
-      if (status === 'out') row.out = person;
-      if (status === 'in') row.incoming = person;
-    });
-    return Array.from(rows.values())
+    const scopeIds = new Set((people || []).map((person) => String(personId(person))));
+    return Array.from(state.adoption?.outById?.values?.() || [])
+      .filter((relation) => [relation.outPerson, relation.adoptiveRecord]
+        .filter(Boolean)
+        .some((person) => scopeIds.has(String(personId(person)))))
+      .map((relation) => ({
+        pairId: `${personId(relation.outPerson)}:${personId(relation.adoptiveRecord || relation.adoptiveParent)}`,
+        out: relation.outPerson,
+        incoming: relation.adoptiveRecord || null,
+        relation
+      }))
       .sort((a, b) => (generationOf(a.out || a.incoming) || 9999) - (generationOf(b.out || b.incoming) || 9999) || Number(personId(a.out || a.incoming)) - Number(personId(b.out || b.incoming)));
   }
 
   function adoptionPersonLink(person, role) {
-    if (!person) return '<span class="adoption-table-muted">未找到记录</span>';
+    if (!person) return `<span class="adoption-table-muted">${role === 'in' ? '无独立入继卡' : '未找到记录'}</span>`;
     return `<button class="adoption-table-person" data-action="query-locate" data-id="${escapeHtml(personId(person))}" title="定位${escapeHtml(text(person.name))}"><strong>${escapeHtml(text(person.name) || '未命名')}</strong><small>ID ${escapeHtml(personId(person))} · 第${escapeHtml(generationOf(person) || '—')}世</small></button><span class="adoption-table-role ${role}">${role === 'out' ? '出继记录' : '入继记录'}</span>`;
   }
 
@@ -1636,19 +1630,24 @@
       toggle.textContent = opened ? '收起出继入继一览表' : '出继入继一览表';
     }
     if (!opened) return;
-    const complete = rows.filter((row) => row.out && row.incoming);
-    const incomplete = rows.length - complete.length;
     const tableRows = rows.map((row, index) => {
       const out = row.out;
       const incoming = row.incoming;
+      const relation = row.relation;
       const adoptiveFatherId = (incoming && (incoming.adoption_adoptive_parent_id || incoming.adoptive_parent_id)) || null;
       const biologicalFather = out ? getPerson(out.father_id) : null;
-      const adoptiveFather = getPerson(adoptiveFatherId) || (incoming ? getPerson(incoming.father_id) : null);
-      const source = text((out && (out.adoption_relation_source || out.adopt_note)) || (incoming && (incoming.adoption_relation_source || incoming.adopt_note))).trim();
+      const adoptiveFather = relation?.adoptiveParent || getPerson(adoptiveFatherId) || (incoming ? getPerson(incoming.father_id) : null);
+      const source = text(relation?.source || (out && (out.adoption_relation_source || out.adopt_note)) || (incoming && (incoming.adoption_relation_source || incoming.adopt_note))).trim();
       const generation = generationOf(out || incoming);
       return `<tr><td class="adoption-table-index" data-label="#">${index + 1}</td><td class="adoption-table-generation" data-label="世次">第${escapeHtml(generation || '—')}世</td><td class="adoption-table-pair" data-label="出继 / 入继"><div class="adoption-table-pair-line"><span class="adoption-table-cell-label">出继</span>${adoptionPersonLink(out, 'out')}<span class="adoption-table-arrow" aria-hidden="true">→</span><span class="adoption-table-cell-label">入继</span>${adoptionPersonLink(incoming, 'in')}</div></td><td class="adoption-table-parents" data-label="父亲关系"><div><span class="adoption-table-cell-label">亲生父亲</span>${adoptionParentLink(biologicalFather, '亲生父亲')}<span class="adoption-table-arrow" aria-hidden="true">→</span><span class="adoption-table-cell-label">承嗣父</span>${adoptionParentLink(adoptiveFather, '承嗣父')}</div></td><td class="adoption-table-source" data-label="谱载说明">${escapeHtml(source || '原始谱载未详')}</td></tr>`;
     }).join('');
-    container.innerHTML = `<div class="adoption-table-summary"><strong>共 ${complete.length} 组完整对应关系</strong><span>出继 ${complete.length} 人 · 入继 ${complete.length} 人 · 数据源：族谱管理后台</span>${incomplete ? `<em>另有 ${incomplete} 组资料未能成对，需复核</em>` : '<em class="is-ok">出继数量与入继数量相等</em>'}</div><div class="adoption-table-scroll"><table><thead><tr><th>#</th><th>世次</th><th>出继 → 入继</th><th>亲生父亲 → 承嗣父</th><th>谱载说明</th></tr></thead><tbody>${tableRows || '<tr><td colspan="5" class="adoption-table-empty">当前主数据暂无结构化出继／入继记录。</td></tr>'}</tbody></table></div>`;
+    const relationCount = rows.length;
+    const independentIncomingCount = rows.filter((row) => row.incoming).length;
+    const missingIncomingCount = relationCount - independentIncomingCount;
+    const incomingNote = missingIncomingCount
+      ? `<em class="is-ok">数量相等；其中 ${missingIncomingCount} 组按谱载保留关系，但没有独立同名入继卡</em>`
+      : '<em class="is-ok">出继数量与入继数量相等</em>';
+    container.innerHTML = `<div class="adoption-table-summary"><strong>共 ${relationCount} 组出继 / 入继关系</strong><span>出继 ${relationCount} 人 · 入继 ${relationCount} 项关系 · 独立入继卡 ${independentIncomingCount} 张 · 数据源：族谱管理后台</span>${incomingNote}</div><div class="adoption-table-scroll"><table><thead><tr><th>#</th><th>世次</th><th>出继 → 入继</th><th>亲生父亲 → 承嗣父</th><th>谱载说明</th></tr></thead><tbody>${tableRows || '<tr><td colspan="5" class="adoption-table-empty">当前主数据暂无结构化出继／入继记录。</td></tr>'}</tbody></table></div>`;
   }
 
   function renderQueryStats() {
@@ -1669,7 +1668,7 @@
       queryStatHtml(male.toLocaleString('zh-CN'), '男', ''),
       queryStatHtml(female.toLocaleString('zh-CN'), '女（已校正）', 'is-female'),
       queryStatHtml(unknown.toLocaleString('zh-CN'), '性别未标注', 'is-audit'),
-      queryStatHtml(`${adoption.out}/${adoption.incoming}`, '出继 / 入继记录', 'is-audit'),
+      queryStatHtml(`${adoption.out}/${adoption.incoming}`, '出继 / 入继关系', 'is-audit'),
       queryStatHtml(inLaw.toLocaleString('zh-CN'), '入赘记录', 'is-audit')
     ].join('');
   }
@@ -1692,7 +1691,7 @@
       item(`${SOURCE_AUDIT_SNAPSHOT.fieldDiffRecords}`, '两源字段差异', `后台${SOURCE_AUDIT_SNAPSHOT.backendApi} / 交付磁盘${SOURCE_AUDIT_SNAPSHOT.deliveryDisk}，仅作对照`, 'warn'),
       item(`${SOURCE_AUDIT_SNAPSHOT.fatherDiffRecords}`, '父系字段差异', '已按谱页与人工核定优先，不直接覆盖', 'warn'),
       item(`${unknownGender}`, '当前性别未标注', `父子关联${directFatherRefs}条${orphanRefs ? `，孤立父 ID ${orphanRefs} 条` : '，父 ID 可解析'}`, unknownGender ? 'warn' : 'ok'),
-      item(`${adoption.out} / ${adoption.incoming}`, '出继 / 入继核对', `${adoption.out === adoption.incoming ? `数量相等，共${adoption.pairs || adoption.out}组` : '存在数量差异，需按谱页逐项复核'}`, adoption.out === adoption.incoming ? 'ok' : 'warn'),
+      item(`${adoption.out} / ${adoption.incoming}`, '出继 / 入继关系核对', `${adoption.out === adoption.incoming ? `数量相等，共${adoption.pairs || adoption.out}组关系` : '存在数量差异，需按谱页逐项复核'}`, adoption.out === adoption.incoming ? 'ok' : 'warn'),
       item(`${inLaw}`, '入赘单独记录', `${inLaw ? inLawPeople.map((person) => text(person.name)).join('、') : '后台当前未记录'}；不并入出继 / 入继统计`, 'ok'),
       item(`${SOURCE_AUDIT_SNAPSHOT.upperTerms.out + SOURCE_AUDIT_SNAPSHOT.lowerTerms.out}`, '谱页“出继”词项', `上册${SOURCE_AUDIT_SNAPSHOT.upperTerms.out} / 下册${SOURCE_AUDIT_SNAPSHOT.lowerTerms.out}`, 'ok')
     ].join('');
