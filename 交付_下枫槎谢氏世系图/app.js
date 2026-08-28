@@ -220,6 +220,12 @@
     return VIEW_DEFS[state.view] || VIEW_DEFS.overview;
   }
 
+  function lineageParentOf(person) {
+    if (!person) return null;
+    const mappedParentId = state.adoption.displayParentById.get(String(personId(person)));
+    return mappedParentId !== undefined ? getPerson(mappedParentId) : rawFatherOf(person);
+  }
+
   function belongsToViewRoot(person, rootId) {
     const target = String(toId(rootId));
     const visited = new Set();
@@ -228,7 +234,7 @@
       const key = String(personId(current));
       if (key === target) return true;
       visited.add(key);
-      current = state.adoption.displayParentById.get(key) || rawFatherOf(current);
+      current = lineageParentOf(current);
     }
     return false;
   }
@@ -236,12 +242,12 @@
   function isStrictDescendantOf(person, ancestorId) {
     const target = String(toId(ancestorId));
     const visited = new Set();
-    let current = state.adoption.displayParentById.get(String(personId(person))) || rawFatherOf(person);
+    let current = lineageParentOf(person);
     while (current && !visited.has(String(personId(current)))) {
       const key = String(personId(current));
       if (key === target) return true;
       visited.add(key);
-      current = state.adoption.displayParentById.get(key) || rawFatherOf(current);
+      current = lineageParentOf(current);
     }
     return false;
   }
@@ -254,7 +260,7 @@
       const currentKey = String(personId(current));
       if (currentKey === personKey) return true;
       visited.add(currentKey);
-      current = state.adoption.displayParentById.get(currentKey) || rawFatherOf(current);
+      current = lineageParentOf(current);
     }
     return false;
   }
@@ -323,7 +329,7 @@
       const key = String(personId(current));
       if (key === personKey) return true;
       visited.add(key);
-      current = state.adoption.displayParentById.get(key) || rawFatherOf(current);
+      current = lineageParentOf(current);
     }
     return false;
   }
@@ -614,6 +620,29 @@
     return /入继|入祧|继子/.test(source) || text(person && person.branch).trim() === '入继';
   }
 
+  function hasDirectOutMarker(person) {
+    if (!person) return false;
+    // adopt_note / adoption_status 是人物自身的关系字段；父亲条目中的
+    // biography 往往只是叙述“某子出继”，不能据此把父亲本人当成出继人。
+    if (text(person.adoption_status).trim() === 'out') return true;
+    const source = text(person.adopt_note);
+    if (!/出继|出祧|出嗣/.test(source)) return false;
+    // 少数旧录入把“某子出继”写在父亲卡片的 adopt_note 中，
+    // 例如“昌秀出继学纯公为嗣”写在学雅名下。若出继关键词前最近的
+    // 明确子女名就是当前人物的子女，则这里是父亲叙述，不是父亲本人出继。
+    const firstOutIndex = source.search(/出继|出祧|出嗣/);
+    const childNames = childrenOf(person)
+      .map((child) => text(child.name).trim())
+      .filter(Boolean)
+      .sort((a, b) => b.length - a.length);
+    const childMention = childNames
+      .map((name) => ({ name, index: source.lastIndexOf(name, firstOutIndex) }))
+      .filter((item) => item.index >= 0)
+      .sort((a, b) => b.index - a.index)[0];
+    if (childMention && firstOutIndex - childMention.index <= Math.max(12, childMention.name.length + 6)) return false;
+    return true;
+  }
+
   function recordHasCollateral(person) {
     return /兼祧|兼顶|祀子/.test(adoptionText(person));
   }
@@ -792,7 +821,12 @@
     groups.forEach((records, groupKey) => {
       if (explicitAdoptionGroups.has(groupKey)) return;
       const outRecord = records.find((record) => mentionsAdoption(rawFatherOf(record), record, 'out'))
-        || (records.length === 1 ? records.find((record) => recordHasAdoption(record, 'out') && !childrenOf(record).length && !mentionsAdoption(rawFatherOf(record), record, 'in')) : null);
+        // 同名成对记录有时只在“出继记录”自身写明关系，父条目没有重复写子名。
+        // 例如明彩：257 是亲生侧出继记录，256 是锡宁名下的入继记录。
+        || records.find((record) => hasDirectOutMarker(record) && !recordHasAdoption(record, 'in'))
+        || (records.length === 1 ? records.find((record) => recordHasAdoption(record, 'out')
+          && (hasDirectOutMarker(record) || !childrenOf(record).length)
+          && !mentionsAdoption(rawFatherOf(record), record, 'in')) : null);
       if (!outRecord) return;
       const biologicalParent = rawFatherOf(outRecord);
       let adoptiveRecord = records.find((record) => String(personId(record)) !== String(personId(outRecord)) && mentionsAdoption(rawFatherOf(record), record, 'in'));
@@ -807,11 +841,14 @@
 
     state.data.forEach((person) => {
       const key = String(personId(person));
-      if (index.outById.has(key) || index.hiddenIds.has(key)) return;
+      // 入继记录的 adopt_note 中也常带“出继”原文；它已经由成对关系
+      // 注册为 inById，不能再次被末尾兜底逻辑反向登记成另一条出继关系。
+      if (index.outById.has(key) || index.inById.has(key) || index.hiddenIds.has(key)) return;
       if (!recordHasAdoption(person, 'out')) return;
       // 多数族谱条目是在父亲条目里记载“某子出继”，不能把这位父亲误判成出继本人。
-      // 有子女的条目优先按“子女出继”处理；真正的单人出继条目再走文本解析。
-      if (childrenOf(person).length) return;
+      // 但如果 adopt_note / adoption_status 明确写在人物自身字段中，即使他有子女，
+      // 也必须按本人出继处理。锡铨就是这种情况：出继后仍有自己的子女记录。
+      if (childrenOf(person).length && !hasDirectOutMarker(person)) return;
       const parent = rawFatherOf(person);
       const source = adoptionText(person);
       const adoptiveParent = findNamedAdoptiveParent(source, person, [personId(person), personId(parent)]);
@@ -871,7 +908,7 @@
     const tags = [];
     const manualStatus = text(person.adoption_status).trim();
     const directAdoptionNote = text(person.adopt_note).trim();
-    const directOut = /出继|出祧|出嗣/.test(directAdoptionNote);
+    const directOut = hasDirectOutMarker(person);
     const directIn = /入继|入祧|继子/.test(directAdoptionNote);
     // 只给实际的出继人 / 入继记录打标；亲生父亲、入继父亲只在详情关系区说明，卡片不打标。
     const relation = adoptionRelation(person);
