@@ -121,7 +121,8 @@
       inById: new Map(),
       hiddenIds: new Set(),
       displayParentById: new Map(),
-      receivingByParent: new Map()
+      receivingByParent: new Map(),
+      specialById: new Map()
     },
     childrenByParent: new Map(),
     personById: new Map(),
@@ -590,6 +591,59 @@
     return Boolean(person) && ADOPTION_UI_EXCLUDED_IDS.has(String(personId(person)));
   }
 
+  // 出继 / 入继以用户最终核对表为唯一业务依据。不要再从 biography、
+  // adopt_note 或同名记录自动猜测关系：父亲条目里的“某子出继”不是父亲
+  // 本人的出继，且原谱中的“继子”语序很容易把出继方、入继方判反。
+  // outId 是亲生父系下的出继卡，inId 是承嗣父系下的入继卡，
+  // adoptiveParentId 是箭头最终指向的承嗣父卡。
+  const AUTHORITATIVE_ADOPTION_RELATIONS = [
+    { order: 1, outId: 100, inId: 101, adoptiveParentId: 88, source: '延省之子寅卿，出继给延荐为嗣' },
+    { order: 2, outId: 145, inId: 144, adoptiveParentId: 104, source: '云生之子大性，出继给云先为嗣' },
+    { order: 3, outId: 150, inId: 151, adoptiveParentId: 113, source: '云良之子大文，出继给云美为嗣' },
+    { order: 4, outId: 169, inId: 170, adoptiveParentId: 107, source: '云良之子大顺，出继给云奇为嗣' },
+    { order: 5, outId: 239, inId: 238, adoptiveParentId: 189, source: '锡中之子明仲，出继给锡宗为嗣' },
+    { order: 6, outId: 248, inId: 249, adoptiveParentId: 211, source: '锡高之子明土，出继给锡疏为嗣' },
+    { order: 7, outId: 251, inId: 250, adoptiveParentId: 202, source: '锡昌之子明坦，出继给锡森为嗣' },
+    { order: 8, outId: 254, inId: 255, adoptiveParentId: 207, source: '锡莹之子明廉，出继给锡琢为嗣', note: '兼祧' },
+    { order: 9, outId: 257, inId: 256, adoptiveParentId: 187, adoptiveParentLabel: '锡继宁', source: '锡宇之子明彩，出继给锡继宁为嗣' },
+    { order: 10, outId: 260, inId: 261, adoptiveParentId: 230, source: '锡铨之子明才，出继给锡龄为嗣' },
+    { order: 11, outId: 273, inId: 272, adoptiveParentId: 222, source: '锡莹之子明洁，出继给锡金为嗣' },
+    { order: 12, outId: 295, inId: 294, adoptiveParentId: 194, source: '锡敬之子明远，出继给锡惠为嗣' },
+    { order: 13, outId: 301, inId: 300, adoptiveParentId: 197, source: '锡公之子明高，出继给锡昂为嗣' },
+    { order: 14, outId: 333, inId: 332, adoptiveParentId: 261, source: '明秀之子学护，出继给明才为嗣' },
+    { order: 15, outId: 339, inId: 338, adoptiveParentId: 233, source: '友松之子学林，出继给和松为嗣' },
+    { order: 16, outId: 353, inId: 352, adoptiveParentId: 300, source: '明淑之子学潮，出继给明高为嗣' },
+    { order: 17, outId: 441, inId: 440, adoptiveParentId: 361, source: '学雅之子昌秀，出继给学纯为嗣' },
+    { order: 18, outId: 478, inId: 479, adoptiveParentId: 456, source: '昌立之子丙进，出继给昌道为嗣' },
+    { order: 19, outId: 488, inId: 489, adoptiveParentId: 411, source: '昌有之子仲才，出继给昌庆为嗣' },
+    { order: 20, outId: 501, inId: 502, adoptiveParentId: 449, source: '昌发之子水财，出继给昌谊为嗣', note: '双祧' },
+    { order: 21, outId: 505, inId: 506, adoptiveParentId: 1263, source: '昌申之子绍乡，出继给昌鳌为嗣' },
+    { order: 22, outId: 549, inId: 548, adoptiveParentId: 421, source: '昌宗之子绍椿，出继给昌时为嗣' },
+    { order: 23, outId: 598, inId: 597, adoptiveParentId: 573, source: '绍尧之子世墙，出继给绍辉为嗣' },
+    { order: 24, outId: 604, inId: 603, adoptiveParentId: 569, source: '绍进之子世常，出继给绍让为嗣' },
+    { order: 25, outId: 607, inId: 606, adoptiveParentId: 518, source: '绍岳之子世彬，出继给绍印为嗣' },
+    { order: 26, outId: 627, inId: 626, adoptiveParentId: 548, source: '绍则之子世炉，出继给绍椿为嗣' },
+    { order: 27, outId: 653, inId: 652, adoptiveParentId: 568, source: '绍尧之子世铨，出继给绍虞为嗣' },
+    { order: 28, outId: 673, inId: 674, adoptiveParentId: 481, source: '绍基之子序禄，出继给令享为嗣' },
+    { order: 29, outId: 677, inId: 678, adoptiveParentId: 484, source: '令华之子序缎，出继给令水为嗣' },
+    { order: 30, outId: 731, inId: 732, adoptiveParentId: 675, source: '序绸之子善美，出继给序线为嗣' },
+    { order: 31, outId: 727, inId: 726, adoptiveParentId: 669, source: '序绸之子善全，出继给序佑为嗣' },
+    { order: 32, outId: 741, inId: 742, adoptiveParentId: 664, source: '谢平之女宁涵，出继给华标为嗣', note: '兼继' },
+    { order: 33, outId: 760, inId: 759, adoptiveParentId: 654, source: '世鹿之子德崇，出继给世锈为嗣' },
+    { order: 34, outId: 1260, inId: 728, adoptiveParentId: 671, source: '序赖之子善富，出继给序松为嗣' },
+    { order: 35, outId: 921, inId: 922, adoptiveParentId: 732, source: '善尊之子道贤，出继给善美为嗣' },
+    { order: 36, outId: 227, inId: 226, adoptiveParentId: 158, source: '大喜之子锡高，出继给大海为嗣' },
+    { order: 37, outId: 394, inId: 393, adoptiveParentId: 356, source: '学士之子昌信，出继给学知为嗣' },
+    { order: 38, outId: 1286, inId: 552, adoptiveParentId: 401, source: '昌信之子绍法，出继给昌回为嗣' },
+    { order: 39, outId: 986, inId: 985, adoptiveParentId: 918, source: '道标之子开辉，出继给道春为嗣' }
+  ];
+
+  // 道发不是独立的出继 / 入继双卡，而是随父善富出继；只标注事实，
+  // 不构造“善富 → 道发”的伪出继箭头。
+  const AUTHORITATIVE_FOLLOW_FATHER_RELATIONS = [
+    { order: 34.5, personId: 915, fatherId: 728, label: '随父出继', source: '善富之子道发，随父出继，随父兼祧序松为嗣' }
+  ];
+
   function escapeRegExp(value) {
     return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
@@ -706,34 +760,30 @@
       inById: new Map(),
       hiddenIds: new Set(),
       displayParentById: new Map(),
-      receivingByParent: new Map()
+      receivingByParent: new Map(),
+      specialById: new Map()
     };
-    const groups = new Map();
-    state.data.forEach((person) => {
-      const name = text(person.name).trim();
-      const generation = generationOf(person);
-      if (!name || generation === null || isAdoptionUiExcluded(person)) return;
-      const key = `${name}|${generation}`;
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(person);
-    });
 
-    const register = (outPerson, adoptiveRecord, adoptiveParent, source, keepAdoptiveRecord = false) => {
+    const register = (outPerson, adoptiveRecord, adoptiveParent, source, options = {}) => {
       if (!outPerson || !adoptiveParent) return;
       const biologicalParent = rawFatherOf(outPerson);
       if (!biologicalParent || String(personId(biologicalParent)) === String(personId(adoptiveParent))) return;
       const relation = {
+        order: options.order ?? 9999,
         outPerson,
         biologicalParent,
         adoptiveParent,
         adoptiveRecord: adoptiveRecord || null,
-        source: source || adoptionText(outPerson) || adoptionText(biologicalParent)
+        source: source || adoptionText(outPerson) || adoptionText(biologicalParent),
+        note: options.note || '',
+        collateral: Boolean(options.collateral),
+        adoptiveParentLabel: options.adoptiveParentLabel || text(adoptiveParent.name).trim()
       };
       index.outById.set(String(personId(outPerson)), relation);
       if (adoptiveRecord && String(personId(adoptiveRecord)) !== String(personId(outPerson))) {
         index.inById.set(String(personId(adoptiveRecord)), relation);
       }
-      if (!keepAdoptiveRecord && adoptiveRecord && String(personId(adoptiveRecord)) !== String(personId(outPerson))) {
+      if (!options.keepAdoptiveRecord && adoptiveRecord && String(personId(adoptiveRecord)) !== String(personId(outPerson))) {
         index.hiddenIds.add(String(personId(adoptiveRecord)));
       }
       const receivingKey = String(personId(adoptiveParent));
@@ -750,151 +800,48 @@
         });
       });
     };
-
-    // PDF 中这些记录是“亲生记录 + 入继记录”的明确写法：
-    // 寅卿、大顺、大文三组两张卡片都保留；大文的后代归入“云美名下的大文入继记录”。
-    // 分别在亲生父亲和入继父亲名下标注“出继 / 入继”，同时保持后代链条连续。
-    // 若交给通用推断，父亲条目里的“某子出继”会把两张记录的方向判断反。
-    const explicitAdoptionGroups = new Set();
-    const registerExplicitPair = (outId, adoptiveId, adoptiveParentId, source, keepAdoptiveRecord = false) => {
-      const outPerson = getPerson(outId);
-      const adoptiveRecord = getPerson(adoptiveId);
-      const adoptiveParent = getPerson(adoptiveParentId);
-      if (!outPerson || !adoptiveRecord || !adoptiveParent) return;
-      explicitAdoptionGroups.add(`${text(outPerson.name).trim()}|${generationOf(outPerson)}`);
-      register(outPerson, adoptiveRecord, adoptiveParent, source, keepAdoptiveRecord);
-    };
-    registerExplicitPair(100, 101, 88, '延省之子寅卿，出继给延荐为嗣', true);
-    registerExplicitPair(169, 170, 107, '大顺由云良房出继，入继云奇为嗣', true);
-    registerExplicitPair(248, 249, 211, '锡高公之子明土，出继锡疏公为嗣', true);
-    // 大文的入继记录必须保留在云美名下；锡昂是大文之子，不能直接跳挂到云美。
-    registerExplicitPair(150, 151, 113, '大文由云良房出继，入继云美为嗣', true);
-    // 善富的亲生记录在序赖名下，入继记录在序松名下；两张同名卡片都保留。
-    registerExplicitPair(1260, 728, 671, '序赖之子善富，出继给序松为嗣', true);
-    // 世缎由令华出继给令水，保留亲生 / 入继两张同名记录，后代归入令水支系。
-    registerExplicitPair(677, 678, 484, '世缎由令华出继，入继令水为嗣', true);
-    // 绍尧长子世墙入继绍辉；绍岳次子世彬入继绍印；两组都保留亲生记录与入继记录。
-    registerExplicitPair(598, 597, 573, '绍尧之子世墙，入继绍辉为嗣', true);
-    registerExplicitPair(607, 606, 518, '绍岳之子世彬，出继绍印为嗣', true);
-    // 序绸之子善美出继序线；绍尧之子世铨出继绍虞。
-    registerExplicitPair(731, 732, 675, '序绸之子善美，入继序线为嗣', true);
-    registerExplicitPair(653, 652, 568, '绍尧之子世铨，出继绍虞为嗣', true);
-    // 下册逐页核对出的其他出继 / 入继双记录。
-    registerExplicitPair(478, 479, 456, '昌立之子丙进，出祧昌道为嗣', true);
-    registerExplicitPair(488, 489, 411, '昌有之子仲才，出继昌庆为嗣', true);
-    registerExplicitPair(505, 506, 1263, '昌申之子绍乡，出继昌鳌为嗣', true);
-    registerExplicitPair(549, 548, 421, '昌宗之子绍椿，入继昌时为嗣', true);
-    registerExplicitPair(627, 626, 548, '绍则之子世炉，出继绍椿为嗣', true);
-    registerExplicitPair(604, 603, 569, '绍进之子世常，出继绍让为嗣', true);
-    registerExplicitPair(741, 742, 664, '谢平之女宁涵，入继华标为嗣', true);
-    registerExplicitPair(760, 759, 654, '世麓之子德崇，出继世锈为嗣', true);
-    registerExplicitPair(921, 922, 732, '善尊之子道贤，出继善美为嗣', true);
-    registerExplicitPair(501, 502, 449, '昌发之子水财，出继昌谊为嗣', true);
-    // 水财有亲生 / 入继两张同名卡片；世安、世和统一显示在入继水财卡片下，避免分散或找不到。
-    const shuiCaiDisplayRecord = getPerson(502) || getPerson(501);
-    if (shuiCaiDisplayRecord && text(shuiCaiDisplayRecord.name).trim() === '水财') {
-      [592, 600].forEach((childId) => {
-        const child = getPerson(childId);
-        if (child && ['世和', '世安'].includes(text(child.name).trim())) {
-          index.displayParentById.set(String(childId), personId(shuiCaiDisplayRecord));
-        }
-      });
-    }
-    registerExplicitPair(673, 674, 481, '绍基之子世禄，出继绍享为嗣', true);
-    // 上册第101页：明才、学护各保留亲生记录与入继记录；补齐两张亲生侧出继卡，
-    // 使“明才（出继）→明才（入继）”和“学护（出继）→学护（入继）”都能闭合统计。
-    registerExplicitPair(260, 261, 230, '锡铨之子明才，出继锡龄为嗣', true);
-    registerExplicitPair(333, 332, 261, '明秀之子学护，出继明才为嗣', true);
-    // 上册第89、100页：明廉是锡莹之子，兼祧（出继）给小叔锡琢；
-    // 254 为亲生侧记录，255 为锡琢名下的入继记录，两张卡片都保留。
-    registerExplicitPair(254, 255, 207, '锡莹之子明廉，出继（兼祧）给锡琢为嗣', true);
-    // 上册第96、82、110页：明高、明坦、学潮也都是“亲生记录 + 入继记录”。
-    // 两张同名卡片都保留，才能在总世系图上明确显示出继方、入继方及其虚线箭头。
-    registerExplicitPair(301, 300, 197, '锡公次子明高，出继给锡昂公为嗣', true);
-    registerExplicitPair(251, 250, 202, '锡昌公之子明坦，出继给锡森公为嗣', true);
-    registerExplicitPair(353, 352, 300, '明淑公长子学潮，出继给明高公为嗣', true);
-    // 善鸿是序缎之子：序缎的入继记录仍显示在令水名下，但善鸿应接在入继序缎卡片之后，不能直接跳到令水下面。
-    const adoptedXuDuanRecord = getPerson(678);
-    if (adoptedXuDuanRecord && text(adoptedXuDuanRecord.name).trim() === '序缎') {
-      [getPerson(677), adoptedXuDuanRecord].filter(Boolean).forEach((record) => {
-        childrenOf(record).forEach((child) => {
-          index.displayParentById.set(String(personId(child)), personId(adoptedXuDuanRecord));
-        });
-      });
-    }
-    const adoptedDaWenRecord = getPerson(151);
-    if (adoptedDaWenRecord && text(adoptedDaWenRecord.name).trim() === '大文') {
-      [getPerson(150), adoptedDaWenRecord].filter(Boolean).forEach((record) => {
-        childrenOf(record).forEach((child) => {
-          index.displayParentById.set(String(personId(child)), personId(adoptedDaWenRecord));
-        });
-      });
-    }
-    // 锡森是大顺的儿子，显示在云奇名下的大顺记录（ID 170）下面，而不是直接显示在云奇下面。
-    const bigShunRecord = getPerson(170);
-    if (bigShunRecord && text(bigShunRecord.name).trim() === '大顺') {
-      [getPerson(169), bigShunRecord].filter(Boolean).forEach((record) => {
-        childrenOf(record).forEach((child) => {
-          index.displayParentById.set(String(personId(child)), personId(bigShunRecord));
-        });
-      });
-    }
-    // 对所有已明确的“亲生记录—入继记录”统一处理后代落点：亲生卡保留在生父支系，
-    // 但其后代在树上接到入继卡片下，避免出现生父—入继本人—后代断链或跳代。
-    [
-      [501, 502], [549, 548], [598, 597], [607, 606],
-      [731, 732], [653, 652], [478, 479], [488, 489],
-      [505, 506], [760, 759], [921, 922]
-    ].forEach(([outId, adoptiveId]) => {
-      const outRecord = getPerson(outId);
-      const adoptiveRecord = getPerson(adoptiveId);
-      if (!outRecord || !adoptiveRecord) return;
-      childrenOf(outRecord).forEach((child) => {
-        if (String(personId(child)) === String(personId(adoptiveRecord))) return;
-        index.displayParentById.set(String(personId(child)), personId(adoptiveRecord));
+    // 下面的旧版自动推断逻辑已由权威名单替代，保留位置仅用于下一段统一注册。
+    const authorityErrors = [];
+    AUTHORITATIVE_ADOPTION_RELATIONS.forEach((config) => {
+      const outPerson = getPerson(config.outId);
+      const adoptiveRecord = getPerson(config.inId);
+      const adoptiveParent = getPerson(config.adoptiveParentId);
+      if (!outPerson || !adoptiveRecord || !adoptiveParent) {
+        authorityErrors.push(`缺少记录：${config.outId}/${config.inId}/${config.adoptiveParentId}`);
+        return;
+      }
+      if (text(outPerson.name).trim() !== text(adoptiveRecord.name).trim()) {
+        authorityErrors.push(`同名卡不一致：${config.outId}/${config.inId}`);
+        return;
+      }
+      register(outPerson, adoptiveRecord, adoptiveParent, config.source, {
+        order: config.order,
+        note: config.note,
+        collateral: config.note === '兼祧' || config.note === '双祧',
+        adoptiveParentLabel: config.adoptiveParentLabel,
+        keepAdoptiveRecord: true
       });
     });
 
-    groups.forEach((records, groupKey) => {
-      if (explicitAdoptionGroups.has(groupKey)) return;
-      const outRecord = records.find((record) => mentionsAdoption(rawFatherOf(record), record, 'out'))
-        // 同名成对记录有时只在“出继记录”自身写明关系，父条目没有重复写子名。
-        // 例如明彩：257 是亲生侧出继记录，256 是锡宁名下的入继记录。
-        || records.find((record) => hasDirectOutMarker(record) && !recordHasAdoption(record, 'in'))
-        || (records.length === 1 ? records.find((record) => recordHasAdoption(record, 'out')
-          && (hasDirectOutMarker(record) || !childrenOf(record).length)
-          && !mentionsAdoption(rawFatherOf(record), record, 'in')) : null);
-      if (!outRecord) return;
-      const biologicalParent = rawFatherOf(outRecord);
-      let adoptiveRecord = records.find((record) => String(personId(record)) !== String(personId(outRecord))
-        && hasDirectInMarker(record)
-        && !hasDirectOutMarker(record));
-      if (!adoptiveRecord) adoptiveRecord = records.find((record) => String(personId(record)) !== String(personId(outRecord)) && mentionsAdoption(rawFatherOf(record), record, 'in'));
-      if (!adoptiveRecord) adoptiveRecord = records.find((record) => String(personId(record)) !== String(personId(outRecord)));
-      let adoptiveParent = rawFatherOf(adoptiveRecord);
-      const source = [adoptionText(biologicalParent), adoptionText(outRecord), adoptionText(adoptiveRecord)].filter(Boolean).join(' ');
-      if (!adoptiveParent) adoptiveParent = findNamedAdoptiveParent(source, outRecord, [personId(outRecord), personId(biologicalParent)]);
-      // 只要数据里存在成对的亲生 / 入继记录，就保留入继卡片；否则关系线没有目标，
-      // 用户只能看到“出继”标签，却看不到出继给谁。
-      register(outRecord, adoptiveRecord, adoptiveParent, source, true);
+    // 道发只随父善富出继，卡片保留在善富之下，不生成同名入继卡或伪箭头。
+    AUTHORITATIVE_FOLLOW_FATHER_RELATIONS.forEach((config) => {
+      const person = getPerson(config.personId);
+      const father = getPerson(config.fatherId);
+      if (!person || !father) {
+        authorityErrors.push(`缺少随父出继记录：${config.personId}/${config.fatherId}`);
+        return;
+      }
+      index.specialById.set(String(config.personId), {
+        order: config.order,
+        person,
+        father,
+        label: config.label,
+        source: config.source
+      });
     });
-
-    state.data.forEach((person) => {
-      const key = String(personId(person));
-      if (isAdoptionUiExcluded(person)) return;
-      // 入继记录的 adopt_note 中也常带“出继”原文；它已经由成对关系
-      // 注册为 inById，不能再次被末尾兜底逻辑反向登记成另一条出继关系。
-      if (index.outById.has(key) || index.inById.has(key) || index.hiddenIds.has(key)) return;
-      if (!recordHasAdoption(person, 'out')) return;
-      // 多数族谱条目是在父亲条目里记载“某子出继”，不能把这位父亲误判成出继本人。
-      // 但如果 adopt_note / adoption_status 明确写在人物自身字段中，即使他有子女，
-      // 也必须按本人出继处理；只有经过人工核对确认的例外才由排除表拦截。
-      if (childrenOf(person).length && !hasDirectOutMarker(person)) return;
-      const parent = rawFatherOf(person);
-      const source = adoptionText(person);
-      const adoptiveParent = findNamedAdoptiveParent(source, person, [personId(person), personId(parent)]);
-      if (adoptiveParent) register(person, null, adoptiveParent, source);
-    });
+    if (authorityErrors.length && typeof console !== 'undefined' && console.warn) {
+      console.warn('[adoption authority] 未能注册的核对项', authorityErrors);
+    }
     state.adoption = index;
     rebuildChildrenIndex();
   }
@@ -940,7 +887,7 @@
     if (!relation) return '';
     const childName = text(relation.outPerson?.name).trim() || '此人';
     const biologicalName = text(relation.biologicalParent?.name).trim() || '亲生父亲';
-    const adoptiveName = text(relation.adoptiveParent?.name).trim() || '承嗣父';
+    const adoptiveName = relation.adoptiveParentLabel || text(relation.adoptiveParent?.name).trim() || '承嗣父';
     // 明才、学护等记录在亲生侧与入继侧使用同一个名字。
     // 不加区分时，页面上的两端都会显示成“明才”，容易被误认成重复
     // 虚线或方向错误；只在同名时补充角色，不改变普通关系的简洁显示。
@@ -954,24 +901,20 @@
     if (!person) return [];
     const tags = [];
     if (isAdoptionUiExcluded(person)) return tags;
-    const manualStatus = text(person.adoption_status).trim();
-    const directOut = hasDirectOutMarker(person);
-    // 只给实际的出继人 / 入继记录打标；亲生父亲、入继父亲只在详情关系区说明，卡片不打标。
-    const relation = adoptionRelation(person);
+    // 只依据权威关系索引打标，不读取原谱备注中的模糊关键词。
+    const personKey = String(personId(person));
+    const relation = state.adoption.outById.get(personKey) || null;
     const receivingRelation = state.adoption.inById.get(String(personId(person))) || null;
-    // 详情编辑中的明确标记优先于自动推断，适合逐张核对时直接修正卡片显示。
-    if (manualStatus === 'out') {
-      tags.push({ label: '出继', className: 'adoption-out' });
-    } else if (manualStatus === 'in') {
-      tags.push({ label: '入继', className: 'adoption-in' });
-    } else if (directOut) {
-      tags.push({ label: '出继', className: 'adoption-out' });
+    const followFather = state.adoption.specialById?.get(personKey) || null;
+    if (followFather) {
+      tags.push({ label: followFather.label, className: 'adoption-follow' });
     } else if (relation) {
       tags.push({ label: '出继', className: 'adoption-out' });
     } else if (receivingRelation) {
       tags.push({ label: '入继', className: 'adoption-in' });
     }
-    if (manualStatus === 'collateral' || recordHasCollateral(person)) tags.push({ label: '兼祧', className: 'adoption-collateral' });
+    if (relation?.collateral) tags.push({ label: relation.note || '兼祧', className: 'adoption-collateral' });
+    if (receivingRelation?.collateral && !relation) tags.push({ label: receivingRelation.note || '兼祧', className: 'adoption-collateral' });
     return tags;
   }
 
@@ -1595,17 +1538,29 @@
 
   function adoptionRows(people) {
     const scopeIds = new Set((people || []).map((person) => String(personId(person))));
-    return Array.from(state.adoption?.outById?.values?.() || [])
+    const pairRows = Array.from(state.adoption?.outById?.values?.() || [])
       .filter((relation) => [relation.outPerson, relation.adoptiveRecord]
         .filter(Boolean)
         .some((person) => scopeIds.has(String(personId(person)))))
       .map((relation) => ({
+        kind: 'pair',
+        order: relation.order ?? 9999,
         pairId: `${personId(relation.outPerson)}:${personId(relation.adoptiveRecord || relation.adoptiveParent)}`,
         out: relation.outPerson,
         incoming: relation.adoptiveRecord || null,
         relation
-      }))
-      .sort((a, b) => (generationOf(a.out || a.incoming) || 9999) - (generationOf(b.out || b.incoming) || 9999) || Number(personId(a.out || a.incoming)) - Number(personId(b.out || b.incoming)));
+      }));
+    const followRows = Array.from(state.adoption?.specialById?.values?.() || [])
+      .filter((relation) => scopeIds.has(String(personId(relation.person))))
+      .map((relation) => ({
+        kind: 'follow-father',
+        order: relation.order ?? 9999,
+        pairId: `follow:${personId(relation.person)}`,
+        out: relation.person,
+        incoming: null,
+        relation
+      }));
+    return [...pairRows, ...followRows].sort((a, b) => a.order - b.order || (generationOf(a.out || a.incoming) || 9999) - (generationOf(b.out || b.incoming) || 9999) || Number(personId(a.out || a.incoming)) - Number(personId(b.out || b.incoming)));
   }
 
   function adoptionPersonLink(person, role) {
@@ -1613,9 +1568,9 @@
     return `<button class="adoption-table-person" data-action="query-locate" data-id="${escapeHtml(personId(person))}" title="定位${escapeHtml(text(person.name))}"><strong>${escapeHtml(text(person.name) || '未命名')}</strong><small>ID ${escapeHtml(personId(person))} · 第${escapeHtml(generationOf(person) || '—')}世</small></button><span class="adoption-table-role ${role}">${role === 'out' ? '出继记录' : '入继记录'}</span>`;
   }
 
-  function adoptionParentLink(person, label) {
+  function adoptionParentLink(person, label, displayName) {
     if (!person) return `<span class="adoption-table-muted">${escapeHtml(label)}未详</span>`;
-    return `<button class="adoption-table-parent" data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(text(person.name) || '未命名')} <small>ID ${escapeHtml(personId(person))}</small></button>`;
+    return `<button class="adoption-table-parent" data-action="query-locate" data-id="${escapeHtml(personId(person))}">${escapeHtml(displayName || text(person.name) || '未命名')} <small>ID ${escapeHtml(personId(person))}</small></button>`;
   }
 
   function renderAdoptionTable() {
@@ -1634,20 +1589,23 @@
       const out = row.out;
       const incoming = row.incoming;
       const relation = row.relation;
+      if (row.kind === 'follow-father') {
+        const father = relation.father;
+        return `<tr><td class="adoption-table-index" data-label="#">34-1</td><td class="adoption-table-generation" data-label="世次">第${escapeHtml(generationOf(out) || '—')}世</td><td class="adoption-table-pair" data-label="出继 / 入继"><div class="adoption-table-follow"><strong>${adoptionPersonLink(out, 'out')}</strong><span class="adoption-table-follow-label">随父出继</span></div></td><td class="adoption-table-parents" data-label="父亲关系"><div><span class="adoption-table-cell-label">亲生父亲</span>${adoptionParentLink(father, '亲生父亲')}<span class="adoption-table-arrow" aria-hidden="true">＝</span><span class="adoption-table-cell-label">承嗣父</span>${adoptionParentLink(father, '承嗣父')}</div></td><td class="adoption-table-source" data-label="谱载说明">${escapeHtml(relation.source || '随父出继')}</td></tr>`;
+      }
       const adoptiveFatherId = (incoming && (incoming.adoption_adoptive_parent_id || incoming.adoptive_parent_id)) || null;
-      const biologicalFather = out ? getPerson(out.father_id) : null;
+      const biologicalFather = relation?.biologicalParent || (out ? getPerson(out.father_id) : null);
       const adoptiveFather = relation?.adoptiveParent || getPerson(adoptiveFatherId) || (incoming ? getPerson(incoming.father_id) : null);
-      const source = text(relation?.source || (out && (out.adoption_relation_source || out.adopt_note)) || (incoming && (incoming.adoption_relation_source || incoming.adopt_note))).trim();
+      const source = [relation?.source || (out && (out.adoption_relation_source || out.adopt_note)) || (incoming && (incoming.adoption_relation_source || incoming.adopt_note)), relation?.note].filter(Boolean).join('；').trim();
       const generation = generationOf(out || incoming);
-      return `<tr><td class="adoption-table-index" data-label="#">${index + 1}</td><td class="adoption-table-generation" data-label="世次">第${escapeHtml(generation || '—')}世</td><td class="adoption-table-pair" data-label="出继 / 入继"><div class="adoption-table-pair-line"><span class="adoption-table-cell-label">出继</span>${adoptionPersonLink(out, 'out')}<span class="adoption-table-arrow" aria-hidden="true">→</span><span class="adoption-table-cell-label">入继</span>${adoptionPersonLink(incoming, 'in')}</div></td><td class="adoption-table-parents" data-label="父亲关系"><div><span class="adoption-table-cell-label">亲生父亲</span>${adoptionParentLink(biologicalFather, '亲生父亲')}<span class="adoption-table-arrow" aria-hidden="true">→</span><span class="adoption-table-cell-label">承嗣父</span>${adoptionParentLink(adoptiveFather, '承嗣父')}</div></td><td class="adoption-table-source" data-label="谱载说明">${escapeHtml(source || '原始谱载未详')}</td></tr>`;
+      return `<tr><td class="adoption-table-index" data-label="#">${escapeHtml(relation.order || index + 1)}</td><td class="adoption-table-generation" data-label="世次">第${escapeHtml(generation || '—')}世</td><td class="adoption-table-pair" data-label="出继 / 入继"><div class="adoption-table-pair-line"><span class="adoption-table-cell-label">出继</span>${adoptionPersonLink(out, 'out')}<span class="adoption-table-arrow" aria-hidden="true">→</span><span class="adoption-table-cell-label">入继</span>${adoptionPersonLink(incoming, 'in')}</div></td><td class="adoption-table-parents" data-label="父亲关系"><div><span class="adoption-table-cell-label">亲生父亲</span>${adoptionParentLink(biologicalFather, '亲生父亲')}<span class="adoption-table-arrow" aria-hidden="true">→</span><span class="adoption-table-cell-label">承嗣父</span>${adoptionParentLink(adoptiveFather, '承嗣父', relation?.adoptiveParentLabel)}</div></td><td class="adoption-table-source" data-label="谱载说明">${escapeHtml(source || '原始谱载未详')}</td></tr>`;
     }).join('');
-    const relationCount = rows.length;
-    const independentIncomingCount = rows.filter((row) => row.incoming).length;
-    const missingIncomingCount = relationCount - independentIncomingCount;
-    const incomingNote = missingIncomingCount
-      ? `<em class="is-ok">数量相等；其中 ${missingIncomingCount} 组按谱载保留关系，但没有独立同名入继卡</em>`
-      : '<em class="is-ok">出继数量与入继数量相等</em>';
-    container.innerHTML = `<div class="adoption-table-summary"><strong>共 ${relationCount} 组出继 / 入继关系</strong><span>出继 ${relationCount} 人 · 入继 ${relationCount} 项关系 · 独立入继卡 ${independentIncomingCount} 张 · 数据源：族谱管理后台</span>${incomingNote}</div><div class="adoption-table-scroll"><table><thead><tr><th>#</th><th>世次</th><th>出继 → 入继</th><th>亲生父亲 → 承嗣父</th><th>谱载说明</th></tr></thead><tbody>${tableRows || '<tr><td colspan="5" class="adoption-table-empty">当前主数据暂无结构化出继／入继记录。</td></tr>'}</tbody></table></div>`;
+    const pairRows = rows.filter((row) => row.kind === 'pair');
+    const followRowsCount = rows.filter((row) => row.kind === 'follow-father').length;
+    const relationCount = pairRows.length;
+    const independentIncomingCount = pairRows.filter((row) => row.incoming).length;
+    const incomingNote = `<em class="is-ok">出继 ${relationCount} 人、入继 ${independentIncomingCount} 人，数量相等${followRowsCount ? `；另有 ${followRowsCount} 条随父出继` : ''}</em>`;
+    container.innerHTML = `<div class="adoption-table-summary"><strong>共 ${relationCount} 组出继 / 入继关系</strong><span>出继 ${relationCount} 人 · 入继 ${independentIncomingCount} 人 · 独立入继卡 ${independentIncomingCount} 张 · 数据源：用户核对表</span>${incomingNote}</div><div class="adoption-table-scroll"><table><thead><tr><th>#</th><th>世次</th><th>出继 → 入继</th><th>亲生父亲 → 承嗣父</th><th>谱载说明</th></tr></thead><tbody>${tableRows || '<tr><td colspan="5" class="adoption-table-empty">当前主数据暂无结构化出继／入继记录。</td></tr>'}</tbody></table></div>`;
   }
 
   function renderQueryStats() {
@@ -1905,10 +1863,11 @@
       const className = isBiological ? 'is-biological-parent' : isAdoptive ? 'is-adoptive-parent' : 'is-sibling';
       return `<div class="query-lineage7-family-child" style="left:${Math.round(childX(person) - cardWidth / 2)}px">${queryLineage7FamilyCard(person, label, className)}</div>`;
     }).join('');
-    const source = context.relation.source || `谱载：${text(biological.name)}之子${text(context.adoptedPerson.name)}，出继给${text(adoptive.name)}为嗣`;
+    const adoptiveLabel = context.relation.adoptiveParentLabel || text(adoptive.name);
+    const source = context.relation.source || `谱载：${text(biological.name)}之子${text(context.adoptedPerson.name)}，出继给${adoptiveLabel}为嗣`;
     const adoptionArrowId = `query-lineage7-adoption-arrow-${String(personId(context.adoptedPerson)).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
     const lineSvg = `<svg class="query-lineage7-family-lines" viewBox="0 0 ${familyWidth} 410" preserveAspectRatio="none" aria-hidden="true"><defs><marker id="${adoptionArrowId}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M 0 0 L 8 4 L 0 8 Z" fill="#af6d56"/></marker></defs><path class="is-blood" d="M ${rootX} 108 V 126 H ${biologicalX} M ${biologicalX} 126 V 140"/><path class="is-blood" d="M ${rootX} 126 H ${childX(people[0])} M ${rootX} 126 H ${childX(people[people.length - 1])}"/><path class="is-blood" d="${people.map((person) => `M ${childX(person)} 126 V 140`).join(' ') }"/><path class="is-blood is-dashed" d="M ${biologicalX} 230 C ${biologicalX} 270 ${adoptedX + adoptedWidth * .34} 255 ${adoptedX + adoptedWidth * .34} 310"/><path class="is-adoption" marker-end="url(#${adoptionArrowId})" d="M ${adoptiveX} 230 V 268 H ${adoptedX + adoptedWidth * .68} V 310"/></svg>`;
-    const labels = `<span class="query-lineage7-family-line-label is-blood-label" style="left:${Math.round((biologicalX + adoptedX + adoptedWidth * .34) / 2)}px;top:252px">亲生父子</span><span class="query-lineage7-family-line-label is-adoption-label" style="left:${Math.round((adoptiveX + adoptedX + adoptedWidth * .68) / 2)}px;top:268px">出继给${escapeHtml(text(adoptive.name))}为嗣</span>`;
+    const labels = `<span class="query-lineage7-family-line-label is-blood-label" style="left:${Math.round((biologicalX + adoptedX + adoptedWidth * .34) / 2)}px;top:252px">亲生父子</span><span class="query-lineage7-family-line-label is-adoption-label" style="left:${Math.round((adoptiveX + adoptedX + adoptedWidth * .68) / 2)}px;top:268px">出继给${escapeHtml(adoptiveLabel)}为嗣</span>`;
     return `<section class="query-lineage7-adoption-tree" aria-label="${escapeHtml(text(context.adoptedPerson.name))}的出继入继树状关系"><div class="query-lineage7-adoption-tree-title">出继／入继关系</div><div class="query-lineage7-adoption-tree-subtitle">昌申下面同时保留亲生父亲与承嗣父的真实关系</div><div class="query-lineage7-family-canvas" style="width:${familyWidth}px"><div class="query-lineage7-family-root">${queryLineage7FamilyCard(context.commonParent, '共同父亲', 'is-common-parent')}</div><div class="query-lineage7-family-children">${childCards}</div><div class="query-lineage7-family-adopted" style="left:${Math.round(adoptedX)}px">${queryLineage7FamilyCard(context.adoptedPerson, '出继／入继', 'is-adopted-person')}</div>${lineSvg}${labels}</div><p class="query-lineage7-family-source">${escapeHtml(source)}</p></section>`;
   }
 
@@ -1933,6 +1892,7 @@
     const outPerson = relation.outPerson;
     const adoptiveRecord = relation.adoptiveRecord || relation.outPerson;
     const adoptiveParent = relation.adoptiveParent;
+    const adoptiveParentLabel = relation.adoptiveParentLabel || text(adoptiveParent.name);
     const outLabel = adoptiveRecord && String(personId(adoptiveRecord)) !== String(personId(outPerson))
       ? `${text(outPerson.name)}（出继记录）`
       : `${text(outPerson.name)}（出继 / 入继）`;
@@ -1943,7 +1903,7 @@
         <div class="query-lineage7-adoption-edge is-biological" aria-hidden="true"><i></i><b>亲生</b><i></i></div>
         <div class="query-lineage7-adoption-node is-child"><span>出继人</span><button data-action="query-locate" data-id="${escapeHtml(personId(outPerson))}">${escapeHtml(outLabel)}</button><small>${escapeHtml(queryAdoptionLabel(outPerson) || '出继记录')}</small></div>
         <div class="query-lineage7-adoption-edge is-adoption" aria-hidden="true"><i></i><b>入继给</b><i></i></div>
-        <div class="query-lineage7-adoption-node is-adoptive"><span>承嗣父</span><button data-action="query-locate" data-id="${escapeHtml(personId(adoptiveParent))}">${escapeHtml(text(adoptiveParent.name))}</button><small>入继 / 承嗣父</small></div>
+        <div class="query-lineage7-adoption-node is-adoptive"><span>承嗣父</span><button data-action="query-locate" data-id="${escapeHtml(personId(adoptiveParent))}">${escapeHtml(adoptiveParentLabel)}</button><small>入继 / 承嗣父</small></div>
       </div>
       <p>${escapeHtml(relation.source || '族谱载有出继、入继关系；亲生父系与承嗣父系同时保留。')}</p>
     </article>`;
@@ -2407,12 +2367,17 @@
   function rootTraceRelationHtml(person, mainChain) {
     const key = String(personId(person));
     const relation = state.adoption.outById.get(key) || state.adoption.inById.get(key) || null;
+    const followFather = state.adoption.specialById?.get(key) || null;
     const rawFather = rawFatherOf(person);
     const displayParentId = state.adoption.displayParentById.get(key);
     const displayParent = displayParentId !== undefined ? getPerson(displayParentId) : rawFather;
+    if (followFather) {
+      return `<aside class="root-trace-adoption root-trace-follow-father"><strong>${escapeHtml(followFather.label)}</strong><span>亲生父亲：${escapeHtml(text(followFather.father.name))}（ID ${escapeHtml(personId(followFather.father))}）</span><small>随父出继；不单独计入出继 / 入继人数，也不生成伪箭头。</small></aside>`;
+    }
     if (!relation && (!rawFather || !displayParent || String(personId(rawFather)) === String(personId(displayParent)))) return '';
     const biological = relation ? relation.biologicalParent : rawFather;
     const adoptive = relation ? relation.adoptiveParent : displayParent;
+    const adoptiveName = relation?.adoptiveParentLabel || text(adoptive?.name);
     let biologicalBranch = '';
     if (biological) {
       const mainIds = new Set((mainChain || []).map((member) => String(personId(member))));
@@ -2427,11 +2392,11 @@
         biologicalBranch = `<div class="root-trace-bio-branch"><b>亲生父系支线${common ? `（由共同祖先“${escapeHtml(text(common.name))}”分出）` : ''}</b><div class="root-trace-bio-chain">${branch.map((member, index) => `<span class="root-trace-bio-node${index === 0 && common ? ' is-common' : ''}${index === branch.length - 1 ? ' is-biological-father' : ''}"><small>第${escapeHtml(generationOf(member) || '—')}世</small><strong>${escapeHtml(text(member.name) || '未命名')}</strong></span>`).join('<i aria-hidden="true">→</i>')}<i aria-hidden="true">→</i><span class="root-trace-bio-node is-adopted-person"><small>第${escapeHtml(generationOf(person) || '—')}世</small><strong>${escapeHtml(text(person.name))}</strong><em>出继</em></span></div></div>`;
       }
     }
-    return `<aside class="root-trace-adoption"><strong>出继 / 入继关系</strong><span>亲生父亲：${escapeHtml(biological ? text(biological.name) : '未详')}${biological ? `（ID ${escapeHtml(personId(biological))}）` : ''}</span><span>继父（承嗣父）：${escapeHtml(adoptive ? text(adoptive.name) : '未详')}${adoptive ? `（ID ${escapeHtml(personId(adoptive))}）` : ''}</span>${relation && relation.source ? `<small>谱载：${escapeHtml(relation.source)}</small>` : ''}${biologicalBranch}</aside>`;
+    return `<aside class="root-trace-adoption"><strong>出继 / 入继关系</strong><span>亲生父亲：${escapeHtml(biological ? text(biological.name) : '未详')}${biological ? `（ID ${escapeHtml(personId(biological))}）` : ''}</span><span>继父（承嗣父）：${escapeHtml(adoptive ? adoptiveName : '未详')}${adoptive ? `（ID ${escapeHtml(personId(adoptive))}）` : ''}</span>${relation && relation.source ? `<small>谱载：${escapeHtml(relation.source)}</small>` : ''}${biologicalBranch}</aside>`;
   }
 
   function rootTracePersonBox(person, extraClass = '', badge = '') {
-    const adoptionTag = adoptionTags(person).find((tag) => tag.className === 'adoption-out' || tag.className === 'adoption-in');
+    const adoptionTag = adoptionTags(person).find((tag) => ['adoption-out', 'adoption-in', 'adoption-follow'].includes(tag.className));
     const adoptionBadge = adoptionTag
       ? `<span class="root-trace-adoption-badge ${adoptionTag.className}">${escapeHtml(adoptionTag.label)}</span>`
       : '';
@@ -2463,7 +2428,7 @@
         <path class="family-birth-line" d="M${childX(biologicalIndex)} 56 V76 H50 V91" />
         <path class="family-adoption-line" marker-end="url(#${adoptionArrowId})" d="M${childX(adoptiveIndex)} 56 C${childX(adoptiveIndex)} 72, 64 75, 52 88" />
       </svg>
-      <span class="family-birth-label">亲生父子</span><span class="family-adoption-label">出继给${escapeHtml(text(adoptive.name) || '承嗣父')}为嗣</span>
+      <span class="family-birth-label">亲生父子</span><span class="family-adoption-label">出继给${escapeHtml(relation.adoptiveParentLabel || text(adoptive.name) || '承嗣父')}为嗣</span>
       ${relation.source ? `<p class="root-trace-family-source">谱载：${escapeHtml(relation.source)}</p>` : ''}
     </article>`;
   }
@@ -2513,7 +2478,8 @@
       const displayParentId = state.adoption.displayParentById.get(String(personId(child)));
       const displayParent = displayParentId !== undefined ? getPerson(displayParentId) : biological;
       const hasDifferentParent = biological && displayParent && String(personId(biological)) !== String(personId(displayParent));
-      return relation || hasDifferentParent ? rootTraceRelationHtml(child, mainChain) : '';
+      const followFather = state.adoption.specialById?.get(String(personId(child))) || null;
+      return relation || hasDifferentParent || followFather ? rootTraceRelationHtml(child, mainChain) : '';
     }).join('');
     return `<section class="root-trace-children" aria-labelledby="root-trace-children-title">
       <header class="root-trace-children-head"><div><span class="eyebrow">NEXT GENERATION</span><h4 id="root-trace-children-title">${escapeHtml(text(person.name) || '目标人物')}的直系子女</h4></div><span class="root-trace-children-count">${children.length} 人</span></header>
@@ -3665,7 +3631,7 @@
         route: card.querySelector('.card-route')?.textContent?.trim() || card.querySelector('.card-branch')?.textContent?.trim() || '',
         adoptionLabels: Array.from(card.querySelectorAll('.adoption-badge'))
           .map((badge) => badge.textContent?.trim() || '')
-          .filter((label) => label === '出继' || label === '入继'),
+          .filter((label) => label === '出继' || label === '入继' || label === '随父出继'),
         classes: Array.from(card.classList),
         isFemale: card.classList.contains('is-female-card'),
         isVerified: card.classList.contains('is-verified')
@@ -3873,25 +3839,28 @@
       const adoptionLabels = Array.isArray(node.adoptionLabels) ? node.adoptionLabels : [];
       adoptionLabels.forEach((label, index) => {
         const isIn = label === '入继';
+        const isFollow = label === '随父出继';
+        const badgeWidth = isFollow ? 46 : 27;
         const badgeY = node.y + 4 + index * 15;
         const badge = makeSvg('rect', {
           x: node.x + 4,
           y: badgeY,
-          width: 27,
+          width: badgeWidth,
           height: 12,
           rx: 3,
-          class: `overview-svg-adoption-badge ${isIn ? 'is-in' : 'is-out'}`
+          class: `overview-svg-adoption-badge ${isIn ? 'is-in' : isFollow ? 'is-follow' : 'is-out'}`
         });
         const badgeText = makeSvg('text', {
-          x: node.x + 17.5,
+          x: node.x + 4 + badgeWidth / 2,
           y: badgeY + 9,
-          class: `overview-svg-adoption-badge-text ${isIn ? 'is-in' : 'is-out'}`,
+          class: `overview-svg-adoption-badge-text ${isIn ? 'is-in' : isFollow ? 'is-follow' : 'is-out'}`,
           'text-anchor': 'middle'
         });
         badgeText.textContent = label;
         group.append(badge, badgeText);
       });
-      const generation = makeSvg('text', { x: node.x + (adoptionLabels.length ? 37 : 6), y: node.y + 13, class: 'overview-svg-generation' });
+      const generationOffset = adoptionLabels.length ? (adoptionLabels.some((label) => label === '随父出继') ? 55 : 37) : 6;
+      const generation = makeSvg('text', { x: node.x + generationOffset, y: node.y + 13, class: 'overview-svg-generation' });
       // 全景图卡片内只显示核心世次，完整的多套世次路径放入提示，避免长串文字溢出卡片后覆盖连线和其他人物。
       const generationParts = String(node.generation || '').split('/').map((part) => part.trim()).filter(Boolean);
       const generationDetail = generationParts.join(' / ');
@@ -4586,9 +4555,9 @@
     }, 360);
   }
 
-  function relationChip(person, fallback) {
+  function relationChip(person, fallback, displayName) {
     if (!person) return `<span class="relation-chip muted-chip">${escapeHtml(fallback || '未详')}</span>`;
-    return `<button class="relation-chip" data-action="select-person" data-id="${escapeHtml(personId(person))}">${escapeHtml(person.name || '未命名')}</button>`;
+    return `<button class="relation-chip" data-action="select-person" data-id="${escapeHtml(personId(person))}">${escapeHtml(displayName || person.name || '未命名')}</button>`;
   }
 
   function relationChipList(people, emptyText) {
@@ -4658,24 +4627,33 @@
 
   function adoptionDetailHtml(person) {
     const relation = adoptionRelation(person);
+    const incomingRelation = state.adoption.inById.get(String(personId(person))) || null;
     const receiving = state.adoption.receivingByParent.get(String(personId(person))) || [];
     const inRecord = !relation && !receiving.length && hasDirectInMarker(person);
-    const collateral = recordHasCollateral(person);
-    if (!relation && !receiving.length && !inRecord && !collateral) return '';
+    const followFather = state.adoption.specialById?.get(String(personId(person))) || null;
+    const collateral = Boolean(relation?.collateral || incomingRelation?.collateral);
+    if (!relation && !incomingRelation && !receiving.length && !inRecord && !collateral && !followFather) return '';
     const rows = [];
     if (relation) {
       rows.push(detailField('本图承嗣标记', '出继：卡片保留在亲生父亲支系', true));
       rows.push(`<div class="detail-field"><dt>亲生父亲</dt><dd class="relation-list">${relationChip(relation.biologicalParent)}</dd></div>`);
-      rows.push(`<div class="detail-field"><dt>入继 / 承嗣父</dt><dd class="relation-list">${relationChip(relation.adoptiveParent)}</dd></div>`);
-      rows.push(detailField('后代归属', `${text(relation.adoptiveParent.name)}名下（本图已将其后代归入该支系）`, true));
+      rows.push(`<div class="detail-field"><dt>入继 / 承嗣父</dt><dd class="relation-list">${relationChip(relation.adoptiveParent, '', relation.adoptiveParentLabel)}</dd></div>`);
+      rows.push(detailField('后代归属', `${relation.adoptiveParentLabel || text(relation.adoptiveParent.name)}名下（本图已将其后代归入该支系）`, true));
       rows.push(detailField('族谱依据', relation.source, true));
+    }
+    if (incomingRelation && !relation) {
+      rows.push(detailField('本图承嗣标记', '入继：卡片保留在承嗣父支系', true));
+      rows.push(`<div class="detail-field"><dt>亲生父亲</dt><dd class="relation-list">${relationChip(incomingRelation.biologicalParent)}</dd></div>`);
+      rows.push(`<div class="detail-field"><dt>入继 / 承嗣父</dt><dd class="relation-list">${relationChip(incomingRelation.adoptiveParent, '', incomingRelation.adoptiveParentLabel)}</dd></div>`);
+      rows.push(detailField('族谱依据', incomingRelation.source, true));
     }
     if (receiving.length) {
       rows.push(`<div class="detail-field full"><dt>入继人物</dt><dd class="relation-list">${receiving.map((item) => relationChip(item.outPerson)).join('')}</dd></div>`);
       rows.push(detailField('承嗣说明', '出继人物的后代在本图归入此承嗣父名下', true));
     }
-    if (inRecord) rows.push(detailField('本谱标记', '入继 / 继子', true));
-    if (collateral) rows.push(detailField('本谱标记', '兼祧 / 祀子', true));
+    if (followFather) rows.push(detailField('本图承嗣标记', `${followFather.label}：随父${text(followFather.father.name)}出继`, true));
+    if (inRecord && !incomingRelation) rows.push(detailField('本谱标记', '入继 / 继子', true));
+    if (collateral) rows.push(detailField('本谱标记', relation?.note || incomingRelation?.note || '兼祧', true));
     return `<section class="detail-section adoption-detail"><h4>出继 / 入继关系</h4><dl class="detail-grid">${rows.join('')}</dl></section>`;
   }
 
