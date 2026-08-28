@@ -5,6 +5,8 @@
   var SESSION_KEY = 'xie_public_access_v2';
   var ADMIN_TOKEN_KEY = 'xie_admin_token';
   var AI_TOKEN_KEY = 'ai_admin_token';
+  var TRUST_VERSION = 'trusted-device-v1';
+  var TRUSTED_DEVICE_TTL = 365 * 864e5;
   var state = { step: 'consent', role: '', provider: 'phone', authenticated: false };
 
   function escapeHtml(value) {
@@ -17,13 +19,13 @@
     var persistent = null;
     var cookieSession = null;
     try { session = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch (e) {}
-    if (sessionUsable(session)) return session;
+    if (sessionUsable(session)) return rememberTrustedSession(session);
     // 页面跳转通常会保留 sessionStorage；localStorage 作为同一浏览器的兜底，
     // 避免重复打开族谱页或新标签页时再次要求验证。
     try { persistent = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) {}
     if (sessionUsable(persistent)) {
       try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(persistent)); } catch (e) {}
-      return persistent;
+      return rememberTrustedSession(persistent);
     }
     try {
       var cookieMatch = document.cookie.match(new RegExp('(?:^|;\\s*)' + SESSION_KEY.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&') + '=([^;]*)'));
@@ -32,16 +34,51 @@
     if (sessionUsable(cookieSession)) {
       try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(cookieSession)); } catch (e) {}
       try { localStorage.setItem(SESSION_KEY, JSON.stringify(cookieSession)); } catch (e) {}
-      return cookieSession;
+      return rememberTrustedSession(cookieSession);
     }
     return session || persistent || cookieSession;
   }
-  function sessionValid(session) { return !!(session && session.expiresAt && Number(session.expiresAt) > Date.now()); }
+  function trustedRole(role) { return role === 'visitor' || role === 'clan'; }
+  function sessionValid(session) {
+    if (!session) return false;
+    var now = Date.now();
+    var normalValid = session.expiresAt && Number(session.expiresAt) > now;
+    var trustedValid = trustedRole(session.role)
+      && session.trusted === true
+      && session.trustVersion === TRUST_VERSION
+      && session.trustedUntil
+      && Number(session.trustedUntil) > now;
+    return !!(normalValid || trustedValid);
+  }
   function sessionUsable(session) { return !!(sessionValid(session) && session.consentVersion === CONSENT_VERSION && session.role); }
   function validSession() {
     return sessionUsable(readSession());
   }
+  function rememberTrustedSession(session) {
+    if (!sessionUsable(session) || !trustedRole(session.role)) return session;
+    var now = Date.now();
+    if (session.trusted === true && session.trustVersion === TRUST_VERSION && Number(session.trustedUntil) > now) return session;
+    var upgraded = Object.assign({}, session, {
+      trusted: true,
+      trustVersion: TRUST_VERSION,
+      trustedAt: session.trustedAt || now,
+      trustedUntil: now + TRUSTED_DEVICE_TTL,
+      expiresAt: Math.max(Number(session.expiresAt) || 0, now + TRUSTED_DEVICE_TTL)
+    });
+    saveSession(upgraded);
+    return upgraded;
+  }
   function saveSession(value) {
+    var now = Date.now();
+    var shouldTrust = trustedRole(value.role);
+    var trustedUntil = shouldTrust ? Math.max(Number(value.trustedUntil) || 0, now + TRUSTED_DEVICE_TTL) : null;
+    value = Object.assign({}, value, {
+      trusted: shouldTrust,
+      trustVersion: shouldTrust ? TRUST_VERSION : '',
+      trustedAt: shouldTrust ? (value.trustedAt || now) : null,
+      trustedUntil: trustedUntil,
+      expiresAt: shouldTrust ? Math.max(Number(value.expiresAt) || 0, trustedUntil) : value.expiresAt
+    });
     var serialized = JSON.stringify(value);
     try { sessionStorage.setItem(SESSION_KEY, serialized); } catch (e) {}
     try { localStorage.setItem(SESSION_KEY, serialized); } catch (e) {}
@@ -140,7 +177,11 @@
     if (result.role === 'admin' && result.token) { try { localStorage.setItem(ADMIN_TOKEN_KEY, result.token); localStorage.setItem(AI_TOKEN_KEY, result.token); } catch (e) {} }
     var body = getBody();
     if (body) {
-      body.innerHTML = '<div class="public-access-success">' + (result.role === 'admin' ? '管理员身份验证通过，全部页面和 AI 咨询权限已开启。' : result.role === 'clan' ? '族人身份核验通过，欢迎回家。' : '普通访客登录成功。') + '</div><p>身份确认已保存到当前浏览器，有效期内后续族谱查询无需重复确认。</p><div class="public-access-actions"><button class="public-access-btn primary" type="button" data-access-action="close">开始浏览</button></div>';
+       var trustHint = trustedRole(result.role)
+         ? '身份确认已保存到当前手机浏览器，今后进入网站和点击族谱查询都无需重复验证；本机信任有效期为一年。'
+         : '本次管理员会话已建立，关闭浏览器后可能需要重新验证。';
+       var forgetAction = trustedRole(result.role) ? '<button class="public-access-btn danger" type="button" data-access-action="forget">退出本机信任</button>' : '';
+       body.innerHTML = '<div class="public-access-success">' + (result.role === 'admin' ? '管理员身份验证通过，全部页面和 AI 咨询权限已开启。' : result.role === 'clan' ? '族人身份核验通过，欢迎回家。' : '普通访客登录成功。') + '</div><p>' + trustHint + '</p><div class="public-access-actions"><button class="public-access-btn primary" type="button" data-access-action="close">开始浏览</button>' + forgetAction + '</div>';
       var browseButton = body.querySelector('[data-access-action="close"]');
       if (browseButton) browseButton.addEventListener('click', function (event) {
         event.preventDefault();
@@ -198,6 +239,7 @@
       var name = action.getAttribute('data-access-action');
       if (name === 'close') close();
       else if (name === 'restart') { state.authenticated = false; state.step = 'consent'; state.role = ''; state.provider = 'phone'; render(); }
+      else if (name === 'forget') { clearSession(); state.authenticated = false; state.step = 'consent'; state.role = ''; state.provider = 'phone'; render(); }
       else if (name === 'decline') decline();
       else if (name === 'consent') { state.step = 'role'; render(); }
       else if (name === 'role-clan') { state.role = 'clan'; state.step = 'clan'; render(); }
@@ -229,7 +271,6 @@
   }
   function boot() {
     if (!document.body) return;
-    if (document.body.getAttribute('data-public-access-reset') === 'entry') clearSession();
     if (document.body.getAttribute('data-public-gate') === 'off') return;
     if (!isMobile() || document.body.getAttribute('data-public-gate') !== 'always') return;
     if (validSession()) return;
