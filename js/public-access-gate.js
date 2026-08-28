@@ -38,7 +38,9 @@
     }
     return session || persistent || cookieSession;
   }
-  function trustedRole(role) { return role === 'visitor' || role === 'clan'; }
+  // 管理员完成手机号校验后同样应记住本机，避免每次打开手机端都重复验证。
+  // 清除“本机信任”或主动退出后，才重新要求身份确认。
+  function trustedRole(role) { return role === 'visitor' || role === 'clan' || role === 'admin'; }
   function sessionValid(session) {
     if (!session) return false;
     var now = Date.now();
