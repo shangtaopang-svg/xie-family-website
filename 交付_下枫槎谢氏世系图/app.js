@@ -900,7 +900,13 @@
     const childName = text(relation.outPerson?.name).trim() || '此人';
     const biologicalName = text(relation.biologicalParent?.name).trim() || '亲生父亲';
     const adoptiveName = text(relation.adoptiveParent?.name).trim() || '承嗣父';
-    return `${childName}由${biologicalName}出继给${adoptiveName}为嗣`;
+    // 明才、学护等记录在亲生侧与入继侧使用同一个名字。
+    // 不加区分时，页面上的两端都会显示成“明才”，容易被误认成重复
+    // 虚线或方向错误；只在同名时补充角色，不改变普通关系的简洁显示。
+    const sameParentName = biologicalName === adoptiveName;
+    const biologicalLabel = sameParentName ? `${biologicalName}（亲生侧）` : biologicalName;
+    const adoptiveLabel = sameParentName ? `${adoptiveName}（入继侧）` : adoptiveName;
+    return `${childName}由${biologicalLabel}出继给${adoptiveLabel}为嗣`;
   }
 
   function adoptionTags(person) {
