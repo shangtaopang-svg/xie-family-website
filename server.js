@@ -360,7 +360,8 @@ const AI_INJECT_MARK = '/js/ai-assistant.js';
 const PUBLIC_ACCESS_MARK = '/js/public-access-gate.js';
 const PUBLIC_ACCESS_SCRIPT_VERSION = '20260828-trusted-device-01';
 function injectAiHtml(buf) {
-  const html = buf.toString('utf-8').replace(/(?:\.\.\/|\/)js\/public-access-gate\.js\?v=[^"'\s>]+/g, '/js/public-access-gate.js?v=' + PUBLIC_ACCESS_SCRIPT_VERSION);
+  const source = buf.toString('utf-8');
+  const html = source.replace(/(?:\.\.\/|\/)js\/public-access-gate\.js\?v=[^"'\s>]+/g, '/js/public-access-gate.js?v=' + PUBLIC_ACCESS_SCRIPT_VERSION);
   const m = html.search(/<\/body>/i);
   if (m === -1) return buf; // 无 body（HTML 片段）则跳过
   const inject = [];
@@ -372,7 +373,7 @@ function injectAiHtml(buf) {
     inject.push('<link rel="stylesheet" href="/css/public-access-gate.css?v=20260827-access-01">');
     inject.push('<script src="/js/public-access-gate.js?v=' + PUBLIC_ACCESS_SCRIPT_VERSION + '" defer></script>');
   }
-  if (!inject.length) return buf;
+  if (!inject.length && html === source) return buf;
   return Buffer.from(html.slice(0, m) + inject.join('\n') + '\n</body>' + html.slice(m + 7), 'utf-8');
 }
 
