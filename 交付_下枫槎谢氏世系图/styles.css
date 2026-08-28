@@ -2551,6 +2551,8 @@ body.query-book-overlay-open { overflow: hidden !important; }
   background: #f9f5ec;
   box-shadow: 0 12px 34px rgba(0, 0, 0, .2);
 }
+.query-book-page-panel[data-action] { cursor: pointer; }
+.query-book-page-panel[data-action].is-disabled { cursor: default; }
 .query-book-page-panel:first-child { border-radius: 8px 2px 2px 8px; }
 .query-book-page-panel:last-child { border-radius: 2px 8px 8px 2px; }
 .query-book-page-panel::after {
@@ -2580,6 +2582,7 @@ body.query-book-overlay-open { overflow: hidden !important; }
   min-height: 0;
   border: 0;
   background: #f9f5ec;
+  pointer-events: none;
 }
 .query-book-reader-footer {
   flex: 0 0 auto;
@@ -2625,6 +2628,39 @@ body.query-book-overlay-open { overflow: hidden !important; }
 }
 @media (orientation: portrait) and (max-width: 700px) {
   .query-book-landscape-hint { background: rgba(183, 111, 77, .2); color: #ffe2d3; }
+}
+
+/* 手机端电子族谱只保留上册、下册；进入阅读器后通过点击左右页翻页。 */
+.query-book-mobile-intro { display: none; }
+@media (max-width: 760px), (hover: none) and (pointer: coarse) {
+  .query-person-source-section {
+    margin: 0 10px 16px;
+    padding: 12px;
+    border-radius: 14px;
+  }
+  .query-book-mobile-intro {
+    display: block;
+    margin: 0 2px 12px;
+    padding: 4px 2px 0;
+  }
+  .query-book-mobile-intro .query-kicker { color: #b76f4d; }
+  .query-book-mobile-intro h4 { margin: 3px 0 4px; color: #315e4d; font-size: 24px; }
+  .query-book-mobile-intro p { margin: 0; color: #71827a; font-size: 13px; }
+  .query-person-source-head,
+  .query-person-source-form,
+  .query-person-source-results { display: none !important; }
+  .query-book-quick-launch { margin-top: 0; padding-top: 0; border-top: 0; }
+  .query-book-quick-kicker { display: none; }
+  .query-book-quick-actions { gap: 10px; }
+  .query-book-quick-button {
+    min-height: 76px;
+    align-content: center;
+    justify-items: center;
+    padding: 12px 8px;
+    text-align: center;
+  }
+  .query-book-quick-button strong { font-size: 20px; }
+  .query-book-quick-button small { display: none; }
 }
 
 /* 按姓名定位原谱：将“世系信息”和“族人详情”作为两个清晰、可验证的入口。 */
@@ -3573,7 +3609,7 @@ body[data-app-mode="public"] #tree-status[hidden] {
 .query-book-reader-overlay .query-book-spread { display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; gap: clamp(2px, .7vw, 10px) !important; width: 100% !important; height: 100% !important; min-height: 0 !important; }
 .query-book-reader-overlay .query-book-page-panel { min-width: 0 !important; min-height: 0 !important; height: 100% !important; overflow: hidden !important; background: #f9f5ec !important; }
 .query-book-reader-overlay .query-book-page-panel[hidden] { display: none !important; }
-.query-book-reader-overlay .query-book-page-panel iframe { display: block !important; width: 100% !important; height: 100% !important; min-height: 0 !important; border: 0 !important; }
+.query-book-reader-overlay .query-book-page-panel iframe { display: block !important; width: 100% !important; height: 100% !important; min-height: 0 !important; border: 0 !important; pointer-events: none !important; }
 .query-book-page-turn {
   position: absolute;
   top: 50%;
@@ -3598,8 +3634,23 @@ body[data-app-mode="public"] #tree-status[hidden] {
 .query-book-page-turn-next { right: 10px; }
 .query-book-footer-button:disabled { opacity: .36; cursor: not-allowed; }
 .query-book-reader-overlay .query-book-reader-footer { flex: 0 0 auto !important; justify-content: center !important; }
+.query-book-reader-overlay .query-book-page-panel[data-action] { cursor: pointer; }
+.query-book-reader-overlay .query-book-page-panel[data-action].is-disabled { cursor: default; }
 .query-book-reader-overlay .query-book-reader-footer .query-book-footer-button.is-return { min-width: 168px; }
 body.query-book-overlay-open { overflow: hidden !important; }
+@media (max-width: 760px), (hover: none) and (pointer: coarse) {
+  .query-info-books-section .query-person-source-section { margin: 0 10px 16px; padding: 12px; }
+  .query-info-books-section .query-book-quick-launch { margin-top: 0; padding-top: 0; border-top: 0; }
+  .query-info-books-section .query-book-quick-kicker { display: none; }
+  .query-info-books-section .query-book-quick-button {
+    min-height: 76px;
+    align-content: center;
+    justify-items: center;
+    padding: 12px 8px;
+    text-align: center;
+  }
+  .query-info-books-section .query-book-quick-button small { display: none; }
+}
 @media (max-width: 700px) {
   .query-book-reader-overlay .query-book-frame-wrap { padding: 6px 4px !important; }
   .query-book-page-turn { width: 32px; height: 58px; margin-top: -29px; font-size: 31px; }

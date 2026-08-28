@@ -2723,6 +2723,7 @@
     state.pdfBook.page = page;
     const nextPage = page + 1;
     const status = $('#query-book-page-status');
+    const leftPanel = frameLeft.closest('.query-book-page-panel');
     const rightPanel = frameRight.closest('.query-book-page-panel');
     const spread = frameLeft.closest('.query-book-spread');
     const rightPageVisible = nextPage <= totalPages;
@@ -2740,6 +2741,15 @@
     }
     const previousDisabled = page <= 1;
     const nextDisabled = page >= totalPages;
+    if (leftPanel) {
+      leftPanel.classList.toggle('is-disabled', previousDisabled);
+      leftPanel.setAttribute('aria-disabled', String(previousDisabled));
+    }
+    if (rightPanel) {
+      const rightPanelDisabled = !rightPageVisible || nextDisabled;
+      rightPanel.classList.toggle('is-disabled', rightPanelDisabled);
+      rightPanel.setAttribute('aria-disabled', String(rightPanelDisabled));
+    }
     $$('[data-action="query-book-prev"]').forEach((button) => { button.disabled = previousDisabled; });
     $$('[data-action="query-book-next"]').forEach((button) => { button.disabled = nextDisabled; });
     $$('[data-book-page-label]').forEach((label) => {
@@ -2751,6 +2761,40 @@
     });
   }
 
+  function playPdfBookTurnSound() {
+    try {
+      const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextCtor) return;
+      if (!pdfBookAudioContext) pdfBookAudioContext = new AudioContextCtor();
+      const context = pdfBookAudioContext;
+      if (context.state === 'suspended') context.resume().catch(() => {});
+      const duration = 0.16;
+      const length = Math.max(1, Math.floor(context.sampleRate * duration));
+      const buffer = context.createBuffer(1, length, context.sampleRate);
+      const samples = buffer.getChannelData(0);
+      for (let index = 0; index < samples.length; index += 1) {
+        const progress = index / samples.length;
+        const envelope = Math.pow(1 - progress, 2.15) * (0.55 + 0.45 * Math.sin(progress * Math.PI));
+        samples[index] = (Math.random() * 2 - 1) * envelope;
+      }
+      const source = context.createBufferSource();
+      const filter = context.createBiquadFilter();
+      const gain = context.createGain();
+      filter.type = 'bandpass';
+      filter.frequency.value = 2800;
+      filter.Q.value = 0.7;
+      gain.gain.setValueAtTime(0.0001, context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.12, context.currentTime + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration);
+      source.buffer = buffer;
+      source.connect(filter);
+      filter.connect(gain);
+      gain.connect(context.destination);
+      source.start();
+      source.stop(context.currentTime + duration + 0.02);
+    } catch (error) {}
+  }
+
   function turnPdfBook(direction) {
     const definition = pdfBookDefinition(state.pdfBook.book);
     const totalPages = Math.max(1, Number(definition.pages) || 1);
@@ -2758,6 +2802,7 @@
     const targetPage = currentPage + (direction < 0 ? -2 : 2);
     if (targetPage < 1 || targetPage > totalPages) return;
     state.pdfBook.page = targetPage;
+    playPdfBookTurnSound();
     const spread = $('#query-book-frame-left')?.closest('.query-book-spread');
     if (spread) {
       spread.classList.remove('is-turning');
@@ -7753,6 +7798,12 @@
       if (event.key === 'Enter' && event.target?.id === 'query-person-source-search') {
         event.preventDefault();
         runPersonSourceSearch();
+        return;
+      }
+      const bookPanel = event.target?.closest && event.target.closest('.query-book-page-panel[data-action]');
+      if (bookPanel && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault();
+        bookPanel.click();
         return;
       }
       const target = event.target.closest && event.target.closest('.verify-toggle, .person-card[data-action="select-person"]');
