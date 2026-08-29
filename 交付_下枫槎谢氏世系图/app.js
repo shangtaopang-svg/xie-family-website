@@ -1268,6 +1268,15 @@
     return typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 760px)').matches;
   }
 
+  function isBookPortraitDevice() {
+    const screenWidth = Number(window.screen?.width) || 0;
+    const screenHeight = Number(window.screen?.height) || 0;
+    if (screenWidth > 0 && screenHeight > 0) return screenWidth <= screenHeight;
+    const width = Number(window.visualViewport?.width || window.innerWidth) || 0;
+    const height = Number(window.visualViewport?.height || window.innerHeight) || 0;
+    return width <= height;
+  }
+
   function isBookLandscapeTarget() {
     const touchViewport = typeof window.matchMedia === 'function'
       && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
@@ -1277,7 +1286,7 @@
     const width = Number(window.visualViewport?.width || window.innerWidth) || 0;
     const height = Number(window.visualViewport?.height || window.innerHeight) || 0;
     // 兼容内置浏览器把手机 CSS 视口报告成桌面宽度的情况。
-    return isMobileViewport() || touchDevice || (width <= height && width <= 1100);
+    return isMobileViewport() || touchDevice || (isBookPortraitDevice() && width <= 1600) || (width <= height && width <= 1100);
   }
 
   // 手机端默认只展开目标人物附近的有限窗口，避免把上千张卡片一次性塞进小屏。
@@ -2834,7 +2843,7 @@
   function forceBookLandscape(reader) {
     // 某些手机内置 WebView 会把 CSS 视口报告成桌面宽度，导致 max-width
     // 媒体查询失效；只要当前视口仍是竖屏，就必须给电子书启用横屏兜底。
-    if (!reader || !isBookLandscapeTarget() || window.innerWidth > window.innerHeight) return;
+    if (!reader || !isBookLandscapeTarget() || !isBookPortraitDevice()) return;
     reader.dataset.bookLandscapeFallback = 'true';
     setBookLandscapeFallback(true);
   }
@@ -2842,7 +2851,7 @@
   function syncBookLandscapeFallback() {
     const reader = $('#query-book-reader');
     if (!reader || reader.hidden || !isBookLandscapeTarget()) return;
-    if (window.innerWidth > window.innerHeight) {
+    if (!isBookPortraitDevice()) {
       reader.removeAttribute('data-book-landscape-fallback');
       setBookLandscapeFallback(false);
     } else if (reader.dataset.bookLandscapeFallback === 'true') {
@@ -2884,10 +2893,10 @@
       return tryTarget(0);
     };
     const applyLandscapeResult = (locked) => {
-      if (!locked && window.innerWidth <= window.innerHeight) forceBookLandscape(reader);
+      if (!locked && isBookPortraitDevice()) forceBookLandscape(reader);
       window.setTimeout(() => {
         // 原生方向锁可能需要等待系统切换视口；若仍是竖屏，立即使用横屏布局兜底。
-        if (reader && !reader.hidden && window.innerWidth <= window.innerHeight) forceBookLandscape(reader);
+        if (reader && !reader.hidden && isBookPortraitDevice()) forceBookLandscape(reader);
         syncBookLandscapeFallback();
       }, 420);
     };
@@ -2902,7 +2911,7 @@
     }
     // HTTP 页面、微信内置 WebView 和 iOS 浏览器通常没有可用的原生接口，直接准备 CSS 横屏兜底。
     window.setTimeout(() => {
-      if (reader && !reader.hidden && window.innerWidth <= window.innerHeight) forceBookLandscape(reader);
+      if (reader && !reader.hidden && isBookPortraitDevice()) forceBookLandscape(reader);
     }, 120);
   }
 
@@ -2928,6 +2937,8 @@
     if (reader) {
       reader.hidden = false;
       document.body.classList.add('query-book-overlay-open');
+      // 先按物理屏幕方向切换，避免内置浏览器的方向锁 Promise 阻塞视觉布局。
+      forceBookLandscape(reader);
       requestBookLandscape(reader);
       window.setTimeout(() => reader.querySelector('.query-book-close')?.focus(), 0);
     }
@@ -7825,7 +7836,7 @@
       }
       const reader = $('#query-book-reader');
       if (reader && !reader.hidden) {
-        if (window.innerWidth <= window.innerHeight) forceBookLandscape(reader);
+        if (isBookPortraitDevice()) forceBookLandscape(reader);
         else syncBookLandscapeFallback();
       }
     });

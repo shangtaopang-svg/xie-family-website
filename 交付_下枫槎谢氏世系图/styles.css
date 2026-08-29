@@ -3757,7 +3757,7 @@ body.query-book-landscape-fallback .query-book-reader-overlay .query-book-reader
 body.query-book-landscape-fallback .query-book-reader-overlay .query-book-reader-footer .query-book-footer-button { pointer-events: auto; }
 
 /* 即使脚本被内置浏览器拦截，也要在手机竖屏打开电子书时直接使用横屏画布。 */
-@media (orientation: portrait) and (max-width: 1100px) {
+@media (max-aspect-ratio: 1/1) and (max-width: 1600px) {
   body.query-book-overlay-open .query-book-reader-overlay:not([hidden]) {
     position: fixed !important;
     inset: auto !important;
