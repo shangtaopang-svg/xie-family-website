@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-orientation" content="landscape">
   <title>枫槎谢氏宗谱 · 族谱查询</title>
   <meta name="description" content="枫槎谢氏宗谱族谱查询与只读世系图">
-  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260829-book-reader-10">
+  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260830-book-single-mobile-01">
   <link rel="stylesheet" href="../css/public-access-gate.css?v=20260826-access-04">
   <script>
     if (new URLSearchParams(location.search).get('chooser') === '1' && window.matchMedia('(max-width: 760px)').matches) {
@@ -134,7 +134,7 @@
               <div class="query-book-mobile-intro">
                 <span class="query-kicker">ORIGINAL GENEALOGY BOOK</span>
                 <h4>电子族谱</h4>
-                <p>请选择上册或下册，进入横屏双页阅读。</p>
+                <p>请选择上册或下册，手机端进入全屏单页阅读。</p>
               </div>
               <div class="query-section-head query-person-source-head">
                 <div><span class="query-kicker">PERSON SOURCE</span><h4>按姓名查看原谱</h4><p class="query-muted">输入姓名，选择查看世系信息或族人详情；系统只打开已明确标注的原谱页。</p></div>
@@ -147,8 +147,8 @@
               <div class="query-book-quick-launch" role="group" aria-label="选择电子族谱册次">
                 <span class="query-book-quick-kicker">选择电子族谱</span>
                 <div class="query-book-quick-actions">
-                  <button type="button" class="query-book-quick-button is-upper" data-action="query-book-open" data-book="upper"><strong>上册</strong><small>点击进入横屏双页阅读</small></button>
-                  <button type="button" class="query-book-quick-button is-lower" data-action="query-book-open" data-book="lower"><strong>下册</strong><small>点击进入横屏双页阅读</small></button>
+                  <button type="button" class="query-book-quick-button is-upper" data-action="query-book-open" data-book="upper"><strong>上册</strong><small>点击进入全屏阅读</small></button>
+                  <button type="button" class="query-book-quick-button is-lower" data-action="query-book-open" data-book="lower"><strong>下册</strong><small>点击进入全屏阅读</small></button>
                 </div>
               </div>
               <div id="query-person-source-results" class="query-person-source-results" aria-live="polite"></div>
@@ -159,14 +159,14 @@
                   <div>
                     <span class="query-kicker">ORIGINAL GENEALOGY BOOK</span>
                     <h4 id="query-book-reader-title">电子族谱</h4>
-                    <p id="query-book-focus-note" class="query-book-focus-note" aria-live="polite">左右显示连续两页；点击左页后退、右页前进。</p>
+                    <p id="query-book-focus-note" class="query-book-focus-note" aria-live="polite">手机端单页全屏阅读；点击页面两侧或底部按钮翻页。</p>
                   </div>
                   <div class="query-book-reader-head-actions">
                     <span id="query-book-page-status" class="query-book-page-status" aria-live="polite">上册 · 第 1 页</span>
                     <button type="button" class="query-book-close" data-action="query-book-close" aria-label="关闭电子书">×</button>
                   </div>
                 </header>
-                <div class="query-book-landscape-hint" aria-live="polite">正在请求横屏阅读 · 左右两页铺满屏幕 · 点击左页后退、右页前进；未自动旋转请手动横屏</div>
+                <div class="query-book-landscape-hint" aria-live="polite">正在准备全屏阅读 · 手机端每次显示一页 · 点击页面两侧翻页；未自动横屏请手动旋转手机</div>
                 <div id="query-book-frame-wrap" class="query-book-frame-wrap">
                   <div class="query-book-spread" aria-label="原谱连续双页">
                     <div class="query-book-page-panel is-left-page" data-action="query-book-prev" role="button" tabindex="0" aria-label="点击左页翻到上一组双页">
@@ -343,7 +343,7 @@
     </section>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="../交付_下枫槎谢氏世系图/app.js?v=20260829-book-reader-10"></script>
+  <script src="../交付_下枫槎谢氏世系图/app.js?v=20260830-book-single-mobile-01"></script>
 <link rel="stylesheet" href="/css/ai.css?v=92">
 <script src="/js/ai-assistant.js?v=92" defer></script>
 <link rel="stylesheet" href="/css/public-access-gate.css?v=20260826-access-04">

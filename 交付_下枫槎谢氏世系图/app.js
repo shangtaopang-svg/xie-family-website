@@ -1268,6 +1268,17 @@
     return typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 760px)').matches;
   }
 
+  // 手机端电子族谱采用单页模式：每次只加载一张原谱图，翻页步长为 1。
+  // 横屏后 CSS 视口可能大于 760px，因此同时识别触摸设备，避免又退回双页模式。
+  function isBookSinglePageMobile() {
+    const touchViewport = typeof window.matchMedia === 'function'
+      && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    return isMobileViewport()
+      || touchViewport
+      || (typeof navigator !== 'undefined' && Number(navigator.maxTouchPoints) > 0)
+      || ('ontouchstart' in window);
+  }
+
   function isBookPortraitDevice() {
     const screenWidth = Number(window.screen?.width) || 0;
     const screenHeight = Number(window.screen?.height) || 0;
@@ -2741,17 +2752,22 @@
     const totalPages = Math.max(1, Number(definition.pages) || 1);
     const page = Math.min(totalPages, Math.max(1, Number.parseInt(state.pdfBook.page, 10) || 1));
     state.pdfBook.page = page;
+    const singlePageMobile = isBookSinglePageMobile();
     const nextPage = page + 1;
     const status = $('#query-book-page-status');
     const leftPanel = frameLeft.closest('.query-book-page-panel');
     const rightPanel = frameRight.closest('.query-book-page-panel');
     const spread = frameLeft.closest('.query-book-spread');
-    const rightPageVisible = nextPage <= totalPages;
+    const rightPageVisible = !singlePageMobile && nextPage <= totalPages;
     if (rightPanel) rightPanel.hidden = !rightPageVisible;
     if (spread) spread.setAttribute('aria-label', rightPageVisible ? `${definition.label}第 ${page}—${nextPage} 页` : `${definition.label}第 ${page} 页`);
     if (status) status.textContent = rightPageVisible ? `${definition.label} · 第 ${page}—${nextPage} 页` : `${definition.label} · 第 ${page} 页`;
-    frameLeft.title = `${definition.label}第 ${page} 页（左页）`;
-    frameLeft.alt = `${definition.label}第 ${page} 页（左页）`;
+    const focusNote = $('#query-book-focus-note');
+    if (focusNote) focusNote.textContent = singlePageMobile
+      ? '手机端单页全屏阅读；点击页面两侧或底部按钮翻页。'
+      : '左右显示连续两页；点击左页后退、右页前进。';
+    frameLeft.title = singlePageMobile ? `${definition.label}第 ${page} 页` : `${definition.label}第 ${page} 页（左页）`;
+    frameLeft.alt = singlePageMobile ? `${definition.label}第 ${page} 页` : `${definition.label}第 ${page} 页（左页）`;
     frameLeft.src = pdfBookPageImageUrl(book, page);
     if (rightPageVisible) {
       frameRight.title = `${definition.label}第 ${nextPage} 页（右页）`;
@@ -2779,7 +2795,7 @@
       label.textContent = label.dataset.bookPageLabel === 'right' && rightPageVisible
         ? `右页 · 第${nextPage}页`
         : label.dataset.bookPageLabel === 'left'
-          ? `左页 · 第${page}页`
+          ? (singlePageMobile ? `第${page}页` : `左页 · 第${page}页`)
           : '';
     });
   }
@@ -2822,7 +2838,8 @@
     const definition = pdfBookDefinition(state.pdfBook.book);
     const totalPages = Math.max(1, Number(definition.pages) || 1);
     const currentPage = Math.max(1, Number.parseInt(state.pdfBook.page, 10) || 1);
-    const targetPage = currentPage + (direction < 0 ? -2 : 2);
+    const step = isBookSinglePageMobile() ? 1 : 2;
+    const targetPage = currentPage + (direction < 0 ? -step : step);
     if (targetPage < 1 || targetPage > totalPages) return;
     state.pdfBook.page = targetPage;
     playPdfBookTurnSound();

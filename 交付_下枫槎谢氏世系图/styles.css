@@ -3675,6 +3675,32 @@ body.query-book-overlay-open { overflow: hidden !important; }
   .query-book-reader-overlay .query-book-spread { gap: 4px !important; }
   .query-book-reader-overlay .query-book-page-image { object-fit: contain !important; }
 }
+
+/* 手机端电子族谱改为单页全屏：不再把同一张原谱扫描图重复放进左右两个面板。 */
+@media (max-width: 760px), (hover: none) and (pointer: coarse) {
+  .query-book-reader-overlay .query-book-frame-wrap {
+    padding: 0 !important;
+    background: #f9f5ec !important;
+  }
+  .query-book-reader-overlay .query-book-spread {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0 !important;
+  }
+  .query-book-reader-overlay .query-book-page-panel.is-left-page {
+    grid-column: 1 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  .query-book-reader-overlay .query-book-page-panel.is-right-page {
+    display: none !important;
+  }
+  .query-book-reader-overlay .query-book-page-image {
+    object-fit: contain !important;
+    object-position: center !important;
+  }
+}
+
 @media (orientation: landscape) {
   /* 横屏时图面占满整个视口，标题、页码和翻页按钮叠加在图面上，不再挤占页面高度。 */
   .query-book-reader-overlay .query-book-reader-shell { position: relative !important; }
@@ -3882,3 +3908,9 @@ body.query-book-landscape-fallback .query-book-reader-overlay .query-book-reader
 .root-trace-adoption-badge.adoption-out { color: #9a3f38; background: #f2dcd6; border-color: #c77d70; }
 .root-trace-adoption-badge.adoption-in { color: #2f6b55; background: #deede5; border-color: #79a58f; }
 .root-trace-adoption-badge.adoption-follow { color: #865c3e; background: #f2e4d2; border-color: #c9a47b; }
+
+/* 世系图谱背景保留浅绿色底色，移除影响阅读的方格网纹（手机端、电脑端统一）。 */
+html, body, .tree-viewport, .query-lineage7-map-viewport {
+  background-image: none !important;
+  background-size: auto !important;
+}
