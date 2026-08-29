@@ -1268,6 +1268,18 @@
     return typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 760px)').matches;
   }
 
+  function isBookLandscapeTarget() {
+    const touchViewport = typeof window.matchMedia === 'function'
+      && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    const touchDevice = touchViewport
+      || (typeof navigator !== 'undefined' && Number(navigator.maxTouchPoints) > 0)
+      || ('ontouchstart' in window);
+    const width = Number(window.visualViewport?.width || window.innerWidth) || 0;
+    const height = Number(window.visualViewport?.height || window.innerHeight) || 0;
+    // 兼容内置浏览器把手机 CSS 视口报告成桌面宽度的情况。
+    return isMobileViewport() || touchDevice || (width <= height && width <= 1100);
+  }
+
   // 手机端默认只展开目标人物附近的有限窗口，避免把上千张卡片一次性塞进小屏。
   // 祖先链必须完整展开，后代按层级和数量限制展开；用户仍可通过“显示全图（高级）”主动查看全量。
   function prepareMobileFocusWindow(person, radius = 4) {
@@ -2822,14 +2834,14 @@
   function forceBookLandscape(reader) {
     // 某些手机内置 WebView 会把 CSS 视口报告成桌面宽度，导致 max-width
     // 媒体查询失效；只要当前视口仍是竖屏，就必须给电子书启用横屏兜底。
-    if (!reader || window.innerWidth > window.innerHeight) return;
+    if (!reader || !isBookLandscapeTarget() || window.innerWidth > window.innerHeight) return;
     reader.dataset.bookLandscapeFallback = 'true';
     setBookLandscapeFallback(true);
   }
 
   function syncBookLandscapeFallback() {
     const reader = $('#query-book-reader');
-    if (!reader || reader.hidden) return;
+    if (!reader || reader.hidden || !isBookLandscapeTarget()) return;
     if (window.innerWidth > window.innerHeight) {
       reader.removeAttribute('data-book-landscape-fallback');
       setBookLandscapeFallback(false);
@@ -2839,7 +2851,7 @@
   }
 
   function requestBookLandscape(reader) {
-    if (!reader) return;
+    if (!reader || !isBookLandscapeTarget()) return;
     document.documentElement.classList.add('query-book-landscape-requested');
     document.body.classList.add('query-book-landscape-requested');
     const lockOrientation = () => {
