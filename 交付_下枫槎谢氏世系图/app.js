@@ -2865,22 +2865,34 @@
     document.body.classList.add('query-book-landscape-requested');
     const lockOrientation = () => {
       const orientation = window.screen?.orientation;
-      if (!orientation || typeof orientation.lock !== 'function') return Promise.resolve(false);
+      const lock = orientation && typeof orientation.lock === 'function'
+        ? orientation.lock.bind(orientation)
+        : (typeof window.screen?.lockOrientation === 'function' ? window.screen.lockOrientation.bind(window.screen) : null);
+      if (!lock) return Promise.resolve(false);
       try {
-        return Promise.resolve(orientation.lock('landscape')).then(() => true).catch(() => false);
+        return Promise.resolve(lock('landscape')).then(() => true).catch(() => false);
       } catch (error) {
         return Promise.resolve(false);
       }
     };
     const requestFullscreen = () => {
-      if (document.fullscreenElement) return Promise.resolve(true);
+      if (document.fullscreenElement || document.webkitFullscreenElement) return Promise.resolve(true);
       const targets = [reader, document.documentElement]
-        .filter((target, index, all) => target && typeof target.requestFullscreen === 'function' && all.indexOf(target) === index);
+        .filter((target, index, all) => target && (
+          typeof target.requestFullscreen === 'function'
+          || typeof target.webkitRequestFullscreen === 'function'
+          || typeof target.msRequestFullscreen === 'function'
+        ) && all.indexOf(target) === index);
       const tryTarget = (index) => {
         const target = targets[index];
         if (!target) return Promise.resolve(false);
+        const request = typeof target.requestFullscreen === 'function'
+          ? target.requestFullscreen.bind(target)
+          : (typeof target.webkitRequestFullscreen === 'function'
+            ? target.webkitRequestFullscreen.bind(target)
+            : target.msRequestFullscreen.bind(target));
         try {
-          return Promise.resolve(target.requestFullscreen({ navigationUI: 'hide' }))
+          return Promise.resolve(request({ navigationUI: 'hide' }))
             .then(() => {
               state.pdfBook.fullscreenOpened = true;
               return true;
@@ -2917,9 +2929,16 @@
 
   function releaseBookLandscape() {
     const orientation = window.screen?.orientation;
-    try { if (orientation && typeof orientation.unlock === 'function') orientation.unlock(); } catch (error) {}
-    if (state.pdfBook.fullscreenOpened && document.fullscreenElement && typeof document.exitFullscreen === 'function') {
-      Promise.resolve(document.exitFullscreen()).catch(() => {});
+    try {
+      if (orientation && typeof orientation.unlock === 'function') orientation.unlock();
+      else if (typeof window.screen?.unlockOrientation === 'function') window.screen.unlockOrientation();
+    } catch (error) {}
+    const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement;
+    const exitFullscreen = typeof document.exitFullscreen === 'function'
+      ? document.exitFullscreen.bind(document)
+      : (typeof document.webkitExitFullscreen === 'function' ? document.webkitExitFullscreen.bind(document) : null);
+    if (state.pdfBook.fullscreenOpened && fullscreenElement && exitFullscreen) {
+      Promise.resolve(exitFullscreen()).catch(() => {});
     }
     state.pdfBook.fullscreenOpened = false;
     document.documentElement.classList.remove('query-book-landscape-requested');
