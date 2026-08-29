@@ -2820,14 +2820,16 @@
   }
 
   function forceBookLandscape(reader) {
-    if (!reader || !isMobileViewport() || window.innerWidth > window.innerHeight) return;
+    // 某些手机内置 WebView 会把 CSS 视口报告成桌面宽度，导致 max-width
+    // 媒体查询失效；只要当前视口仍是竖屏，就必须给电子书启用横屏兜底。
+    if (!reader || window.innerWidth > window.innerHeight) return;
     reader.dataset.bookLandscapeFallback = 'true';
     setBookLandscapeFallback(true);
   }
 
   function syncBookLandscapeFallback() {
     const reader = $('#query-book-reader');
-    if (!reader || reader.hidden || !isMobileViewport()) return;
+    if (!reader || reader.hidden) return;
     if (window.innerWidth > window.innerHeight) {
       reader.removeAttribute('data-book-landscape-fallback');
       setBookLandscapeFallback(false);
@@ -2837,7 +2839,7 @@
   }
 
   function requestBookLandscape(reader) {
-    if (!isMobileViewport()) return;
+    if (!reader) return;
     document.documentElement.classList.add('query-book-landscape-requested');
     document.body.classList.add('query-book-landscape-requested');
     const lockOrientation = () => {

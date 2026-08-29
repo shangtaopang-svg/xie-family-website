@@ -3756,6 +3756,52 @@ body.query-book-landscape-fallback .query-book-reader-overlay .query-book-reader
 }
 body.query-book-landscape-fallback .query-book-reader-overlay .query-book-reader-footer .query-book-footer-button { pointer-events: auto; }
 
+/* 即使脚本被内置浏览器拦截，也要在手机竖屏打开电子书时直接使用横屏画布。 */
+@media (orientation: portrait) and (max-width: 1100px) {
+  body.query-book-overlay-open .query-book-reader-overlay:not([hidden]) {
+    position: fixed !important;
+    inset: auto !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 100vh !important;
+    height: 100vw !important;
+    transform: translate(-50%, -50%) rotate(90deg) !important;
+    transform-origin: center !important;
+  }
+  body.query-book-overlay-open .query-book-reader-overlay .query-book-reader-shell { position: relative !important; }
+  body.query-book-overlay-open .query-book-reader-overlay .query-book-reader-header {
+    position: absolute !important;
+    inset: 0 0 auto !important;
+    z-index: 4 !important;
+    padding: 8px 14px !important;
+    border-bottom: 0 !important;
+    background: linear-gradient(180deg, rgba(24, 43, 34, .78), rgba(24, 43, 34, 0)) !important;
+    pointer-events: none;
+  }
+  body.query-book-overlay-open .query-book-reader-overlay .query-book-reader-header > div:first-child { display: none !important; }
+  body.query-book-overlay-open .query-book-reader-overlay .query-book-reader-head-actions { margin-left: auto; pointer-events: auto; }
+  body.query-book-overlay-open .query-book-reader-overlay .query-book-landscape-hint { display: none !important; }
+  body.query-book-overlay-open .query-book-reader-overlay .query-book-frame-wrap {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+  }
+  body.query-book-overlay-open .query-book-reader-overlay .query-book-spread { width: 100% !important; height: 100% !important; gap: 4px !important; }
+  body.query-book-overlay-open .query-book-reader-overlay .query-book-page-panel { border-radius: 0 !important; }
+  body.query-book-overlay-open .query-book-reader-overlay .query-book-page-image { object-fit: contain !important; }
+  body.query-book-overlay-open .query-book-reader-overlay .query-book-reader-footer {
+    position: absolute !important;
+    inset: auto 0 0 !important;
+    z-index: 4 !important;
+    border-top: 0 !important;
+    background: linear-gradient(0deg, rgba(24, 43, 34, .78), rgba(24, 43, 34, 0)) !important;
+    pointer-events: none;
+  }
+  body.query-book-overlay-open .query-book-reader-overlay .query-book-reader-footer .query-book-footer-button { pointer-events: auto; }
+}
+
 /* 详情页原谱重点资料：让出生、配偶和人物经历进入页面即清楚可见。 */
 .detail-evidence-summary {
   margin: 0 0 18px;
