@@ -11,8 +11,8 @@
   const IS_ADMIN = document.body.dataset.appMode === 'admin';
   const ADMIN_TOKEN_KEY = 'xie_admin_token';
   const PDF_BOOKS = Object.freeze({
-    upper: { label: '上册', pages: 115, url: '../assets/genealogy-books/upper.pdf' },
-    lower: { label: '下册', pages: 131, url: '../assets/genealogy-books/lower.pdf' }
+    upper: { label: '上册', pages: 115, url: '../assets/genealogy-books/upper.pdf', pageDir: '../assets/genealogy-books/pages/upper' },
+    lower: { label: '下册', pages: 131, url: '../assets/genealogy-books/lower.pdf', pageDir: '../assets/genealogy-books/pages/lower' }
   });
   let pdfBookAudioContext = null;
   const initialData = Array.isArray(window.GENEALOGY_DATA) ? window.GENEALOGY_DATA : [];
@@ -2633,12 +2633,11 @@
     return PDF_BOOKS[book] || PDF_BOOKS.upper;
   }
 
-  function pdfBookPageUrl(book, page) {
+  function pdfBookPageImageUrl(book, page) {
     const definition = pdfBookDefinition(book);
-    const url = new URL(definition.url, window.location.href);
     const safePage = Math.max(1, Number.parseInt(page, 10) || 1);
-    url.hash = `page=${safePage}&zoom=page-width`;
-    return url.href;
+    const filename = `${String(safePage).padStart(3, '0')}.webp`;
+    return new URL(`${definition.pageDir}/${filename}`, window.location.href).href;
   }
 
   function pdfBookSourceRefs(person) {
@@ -2731,12 +2730,15 @@
     if (spread) spread.setAttribute('aria-label', rightPageVisible ? `${definition.label}第 ${page}—${nextPage} 页` : `${definition.label}第 ${page} 页`);
     if (status) status.textContent = rightPageVisible ? `${definition.label} · 第 ${page}—${nextPage} 页` : `${definition.label} · 第 ${page} 页`;
     frameLeft.title = `${definition.label}第 ${page} 页（左页）`;
-    frameLeft.src = pdfBookPageUrl(book, page);
+    frameLeft.alt = `${definition.label}第 ${page} 页（左页）`;
+    frameLeft.src = pdfBookPageImageUrl(book, page);
     if (rightPageVisible) {
       frameRight.title = `${definition.label}第 ${nextPage} 页（右页）`;
-      frameRight.src = pdfBookPageUrl(book, nextPage);
+      frameRight.alt = `${definition.label}第 ${nextPage} 页（右页）`;
+      frameRight.src = pdfBookPageImageUrl(book, nextPage);
     } else {
       frameRight.title = '';
+      frameRight.alt = '';
       frameRight.src = 'about:blank';
     }
     const previousDisabled = page <= 1;
