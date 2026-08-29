@@ -2814,28 +2814,42 @@
     renderPdfBookModule();
   }
 
-  function requestBookLandscape() {
+  function requestBookLandscape(reader) {
     if (!isMobileViewport()) return;
+    document.documentElement.classList.add('query-book-landscape-requested');
     document.body.classList.add('query-book-landscape-requested');
     const lockOrientation = () => {
       const orientation = window.screen?.orientation;
-      if (!orientation || typeof orientation.lock !== 'function') return;
-      Promise.resolve(orientation.lock('landscape')).catch(() => {});
+      if (!orientation || typeof orientation.lock !== 'function') return Promise.resolve(false);
+      return Promise.resolve(orientation.lock('landscape')).then(() => true).catch(() => false);
+    };
+    const requestFullscreen = () => {
+      if (document.fullscreenElement) return Promise.resolve(true);
+      const target = reader && typeof reader.requestFullscreen === 'function'
+        ? reader
+        : document.documentElement;
+      if (!target || typeof target.requestFullscreen !== 'function') return Promise.resolve(false);
+      try {
+        state.pdfBook.fullscreenOpened = true;
+        return Promise.resolve(target.requestFullscreen({ navigationUI: 'hide' }))
+          .then(() => true)
+          .catch(() => {
+            state.pdfBook.fullscreenOpened = false;
+            return false;
+          });
+      } catch (error) {
+        state.pdfBook.fullscreenOpened = false;
+        return Promise.resolve(false);
+      }
     };
     try {
-      if (!document.fullscreenElement && typeof document.documentElement.requestFullscreen === 'function') {
-        state.pdfBook.fullscreenOpened = true;
-        const request = document.documentElement.requestFullscreen({ navigationUI: 'hide' });
-        Promise.resolve(request).then(lockOrientation).catch(() => {
-          state.pdfBook.fullscreenOpened = false;
-          lockOrientation();
-        });
-        return;
-      }
+      requestFullscreen().then(lockOrientation).catch(lockOrientation);
     } catch (error) {
       state.pdfBook.fullscreenOpened = false;
+      lockOrientation();
     }
-    lockOrientation();
+    // 某些 Android WebView 要等进入全屏后的下一帧才接受方向锁定，再补一次请求。
+    window.setTimeout(lockOrientation, 180);
   }
 
   function releaseBookLandscape() {
@@ -2845,6 +2859,7 @@
       Promise.resolve(document.exitFullscreen()).catch(() => {});
     }
     state.pdfBook.fullscreenOpened = false;
+    document.documentElement.classList.remove('query-book-landscape-requested');
     document.body.classList.remove('query-book-landscape-requested');
   }
 
@@ -2856,7 +2871,7 @@
     if (reader) {
       reader.hidden = false;
       document.body.classList.add('query-book-overlay-open');
-      requestBookLandscape();
+      requestBookLandscape(reader);
       window.setTimeout(() => reader.querySelector('.query-book-close')?.focus(), 0);
     }
   }

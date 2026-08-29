@@ -3646,7 +3646,7 @@ body.query-book-overlay-open { overflow: hidden !important; }
 @media (orientation: landscape) {
   .query-book-reader-overlay .query-book-frame-wrap { padding: 0 4px !important; }
   .query-book-reader-overlay .query-book-spread { gap: 4px !important; }
-  .query-book-reader-overlay .query-book-page-image { object-fit: cover !important; }
+  .query-book-reader-overlay .query-book-page-image { object-fit: contain !important; }
 }
 @media (orientation: portrait) {
   .query-book-reader-overlay .query-book-page-image { object-fit: contain !important; }
@@ -3673,7 +3673,42 @@ body.query-book-overlay-open { overflow: hidden !important; }
 @media (max-width: 700px) and (orientation: landscape) {
   .query-book-reader-overlay .query-book-frame-wrap { padding: 0 4px !important; }
   .query-book-reader-overlay .query-book-spread { gap: 4px !important; }
-  .query-book-reader-overlay .query-book-page-image { object-fit: cover !important; }
+  .query-book-reader-overlay .query-book-page-image { object-fit: contain !important; }
+}
+@media (orientation: landscape) {
+  /* 横屏时图面占满整个视口，标题、页码和翻页按钮叠加在图面上，不再挤占页面高度。 */
+  .query-book-reader-overlay .query-book-reader-shell { position: relative !important; }
+  .query-book-reader-overlay .query-book-reader-header {
+    position: absolute !important;
+    inset: 0 0 auto !important;
+    z-index: 4 !important;
+    padding: max(8px, env(safe-area-inset-top)) 14px 8px !important;
+    border-bottom: 0 !important;
+    background: linear-gradient(180deg, rgba(24, 43, 34, .78), rgba(24, 43, 34, 0)) !important;
+    pointer-events: none;
+  }
+  .query-book-reader-overlay .query-book-reader-header > div:first-child { display: none !important; }
+  .query-book-reader-overlay .query-book-reader-head-actions { margin-left: auto; pointer-events: auto; }
+  .query-book-reader-overlay .query-book-landscape-hint { display: none !important; }
+  .query-book-reader-overlay .query-book-frame-wrap {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+  }
+  .query-book-reader-overlay .query-book-spread { width: 100% !important; height: 100% !important; }
+  .query-book-reader-overlay .query-book-page-panel { border-radius: 0 !important; }
+  .query-book-reader-overlay .query-book-page-image { object-fit: contain !important; }
+  .query-book-reader-overlay .query-book-reader-footer {
+    position: absolute !important;
+    inset: auto 0 0 !important;
+    z-index: 4 !important;
+    border-top: 0 !important;
+    background: linear-gradient(0deg, rgba(24, 43, 34, .78), rgba(24, 43, 34, 0)) !important;
+    pointer-events: none;
+  }
+  .query-book-reader-overlay .query-book-reader-footer .query-book-footer-button { pointer-events: auto; }
 }
 
 /* 详情页原谱重点资料：让出生、配偶和人物经历进入页面即清楚可见。 */
