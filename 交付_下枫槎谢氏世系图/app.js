@@ -14,6 +14,10 @@
     upper: { label: '上册', pages: 115, url: '../assets/genealogy-books/upper.pdf', pageDir: '../assets/genealogy-books/pages/upper' },
     lower: { label: '下册', pages: 131, url: '../assets/genealogy-books/lower.pdf', pageDir: '../assets/genealogy-books/pages/lower' }
   });
+  // 手机端“100%”定义为横屏满宽适配基准，而不是原始扫描像素的 1:1。
+  // 原谱页是横向扫描图，按视口高度 contain 时两侧会留下大面积空白；
+  // 以现有手机阅读基准放大到满宽后，再把这个适配基准显示为 100%。
+  const PDF_BOOK_MOBILE_FIT_SCALE = 1.8;
   let pdfBookAudioContext = null;
   const initialData = Array.isArray(window.GENEALOGY_DATA) ? window.GENEALOGY_DATA : [];
   const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -2909,7 +2913,7 @@
     if (status) status.textContent = rightPageVisible ? `${definition.label} · 第 ${page}—${nextPage} 页` : `${definition.label} · 第 ${page} 页`;
     const focusNote = $('#query-book-focus-note');
     if (focusNote) focusNote.textContent = singlePageMobile
-      ? '手机端单页全屏阅读；点击页面两侧或底部按钮翻页。'
+      ? '手机端100%为横屏满宽适配；点击页面两侧或底部按钮翻页，可放大、缩小和拖动。'
       : '左右显示连续两页；点击左页后退、右页前进。';
     frameLeft.title = singlePageMobile ? `${definition.label}第 ${page} 页` : `${definition.label}第 ${page} 页（左页）`;
     frameLeft.alt = singlePageMobile ? `${definition.label}第 ${page} 页` : `${definition.label}第 ${page} 页（左页）`;
@@ -2947,7 +2951,11 @@
   }
 
   function defaultPdfBookZoom() {
-    return isBookSinglePageMobile() ? 1.8 : 1;
+    return 1;
+  }
+
+  function pdfBookDisplayZoom(zoom) {
+    return isBookSinglePageMobile() ? zoom * PDF_BOOK_MOBILE_FIT_SCALE : zoom;
   }
 
   function clampPdfBookPan(value, min, max) {
@@ -2958,6 +2966,7 @@
   function applyPdfBookZoom() {
     const reader = $('#query-book-reader');
     const zoom = clamp(Number(state.pdfBook.zoom) || 1, 1, 3);
+    const displayZoom = pdfBookDisplayZoom(zoom);
     state.pdfBook.zoom = zoom;
     if (zoom <= 1.001) {
       state.pdfBook.pan = { x: 0, y: 0 };
@@ -2976,17 +2985,17 @@
       panel.dataset.bookZoomed = zoom > 1.001 ? 'true' : 'false';
       const panelWidth = panel.clientWidth || 0;
       const panelHeight = panel.clientHeight || 0;
-      const limitX = Math.max(0, (panelWidth * zoom - panelWidth) / 2);
-      const limitY = Math.max(0, (panelHeight * zoom - panelHeight) / 2);
+      const limitX = Math.max(0, (panelWidth * displayZoom - panelWidth) / 2);
+      const limitY = Math.max(0, (panelHeight * displayZoom - panelHeight) / 2);
       const x = clampPdfBookPan(pan.x, -limitX, limitX);
       const y = clampPdfBookPan(pan.y, -limitY, limitY);
       const image = panel.querySelector('.query-book-page-image');
       if (image) {
-        image.style.setProperty('--book-zoom', zoom.toFixed(2));
+        image.style.setProperty('--book-zoom', displayZoom.toFixed(2));
         image.style.setProperty('--book-pan-x', `${x}px`);
         image.style.setProperty('--book-pan-y', `${y}px`);
-        image.style.setProperty('--book-transform-x', `${(panelWidth - panelWidth * zoom) / 2 + x}px`);
-        image.style.setProperty('--book-transform-y', `${(panelHeight - panelHeight * zoom) / 2 + y}px`);
+        image.style.setProperty('--book-transform-x', `${(panelWidth - panelWidth * displayZoom) / 2 + x}px`);
+        image.style.setProperty('--book-transform-y', `${(panelHeight - panelHeight * displayZoom) / 2 + y}px`);
       }
     });
   }
@@ -3027,9 +3036,9 @@
       const session = state.pdfBook.panSession;
       if (!session || session.pointerId !== event.pointerId) return;
       const panel = session.panel;
-      const zoom = state.pdfBook.zoom;
-      const limitX = Math.max(0, (panel.clientWidth * zoom - panel.clientWidth) / 2);
-      const limitY = Math.max(0, (panel.clientHeight * zoom - panel.clientHeight) / 2);
+      const displayZoom = pdfBookDisplayZoom(state.pdfBook.zoom);
+      const limitX = Math.max(0, (panel.clientWidth * displayZoom - panel.clientWidth) / 2);
+      const limitY = Math.max(0, (panel.clientHeight * displayZoom - panel.clientHeight) / 2);
       const nextX = session.originX + event.clientX - session.startX;
       const nextY = session.originY + event.clientY - session.startY;
       if (Math.abs(event.clientX - session.startX) > 5 || Math.abs(event.clientY - session.startY) > 5) session.moved = true;

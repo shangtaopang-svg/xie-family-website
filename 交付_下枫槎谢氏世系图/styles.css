@@ -3971,7 +3971,7 @@ html.query-book-landscape-fallback .query-book-reader-overlay .query-book-page-p
   display: none !important;
 }
 
-/* 电子族谱缩放：手机横屏默认放大到接近满宽，复位可查看完整原页，放大后支持拖动。 */
+/* 电子族谱缩放：手机端100%为横屏满宽适配，继续放大后支持拖动。 */
 .query-book-zoom-controls {
   display: inline-flex;
   align-items: center;
