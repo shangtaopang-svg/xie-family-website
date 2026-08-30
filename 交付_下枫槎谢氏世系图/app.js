@@ -34,6 +34,9 @@
     immersive: false,
     // 手机端方向锁定失败时保留页面级横屏兜底，避免进入原生全屏后又退回竖屏。
     lineageLandscapeFallbackRequested: false,
+    // 仅在确实进入过原生 fullscreen 后，fullscreenchange 的退出事件才关闭沉浸模式。
+    // 部分 WebView 会在 requestFullscreen 被拒绝时也派发一次无 active 元素事件。
+    lineageNativeFullscreenActive: false,
     detailOnly: false,
     detailOrigin: null,
     // 从世系卡片进入移动端详情前保存的完整视图快照。
@@ -1512,6 +1515,7 @@
   function requestLineageLandscape() {
     const app = $('#app');
     if (!app) return;
+    state.lineageNativeFullscreenActive = false;
     const requestFullscreen = app.requestFullscreen
       ? app.requestFullscreen.bind(app)
       : (app.webkitRequestFullscreen ? app.webkitRequestFullscreen.bind(app) : null);
@@ -1540,6 +1544,7 @@
       else if (typeof window.screen?.unlockOrientation === 'function') window.screen.unlockOrientation();
     } catch (error) {}
     state.lineageLandscapeFallbackRequested = false;
+    state.lineageNativeFullscreenActive = false;
     setLineageLandscapeFallback(false);
     document.documentElement.classList.remove('lineage-landscape-requested');
     document.body.classList.remove('lineage-landscape-requested');
@@ -8279,7 +8284,9 @@
     const syncLineageFullscreenState = () => {
       // 用户按 Esc 退出浏览器原生全屏时，同步恢复页面工具栏，避免留下“只剩图面”的假死状态。
       const activeFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
-      if (state.immersive && !activeFullscreen) {
+      if (activeFullscreen) {
+        state.lineageNativeFullscreenActive = true;
+      } else if (state.immersive && state.lineageNativeFullscreenActive) {
         state.immersive = false;
         releaseLineageLandscape();
         applyImmersiveMode(true);
