@@ -2866,7 +2866,7 @@
   }
 
   function defaultPdfBookZoom() {
-    return isBookSinglePageMobile() ? 1.5 : 1;
+    return isBookSinglePageMobile() ? 1.8 : 1;
   }
 
   function clampPdfBookPan(value, min, max) {
