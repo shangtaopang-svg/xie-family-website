@@ -3745,7 +3745,9 @@ body.query-book-landscape-fallback .query-book-reader-overlay:not([hidden]) {
   right: auto !important;
   bottom: auto !important;
   width: 100vh !important;
+  width: 100dvh !important;
   height: 100vw !important;
+  height: 100dvw !important;
   transform: translate(-50%, -50%) rotate(90deg) !important;
   transform-origin: center !important;
 }
@@ -3790,7 +3792,9 @@ body.query-book-landscape-fallback .query-book-reader-overlay .query-book-reader
     top: 50% !important;
     left: 50% !important;
     width: 100vh !important;
+    width: 100dvh !important;
     height: 100vw !important;
+    height: 100dvw !important;
     transform: translate(-50%, -50%) rotate(90deg) !important;
     transform-origin: center !important;
   }

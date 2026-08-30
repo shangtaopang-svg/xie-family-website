@@ -1280,12 +1280,17 @@
   }
 
   function isBookPortraitDevice() {
+    // 部分手机 WebView 的 screen.width / screen.height 始终返回“设备自然方向”，
+    // 即使当前网页仍然是竖屏，也会误报成横屏。阅读器必须优先按当前 CSS 视口判断，
+    // 否则横屏兜底不会启用，横向原谱就会被 contain 缩成屏幕中间的一小块。
+    const width = Number(window.visualViewport?.width || window.innerWidth || document.documentElement?.clientWidth) || 0;
+    const height = Number(window.visualViewport?.height || window.innerHeight || document.documentElement?.clientHeight) || 0;
+    if (width > 0 && height > 0 && width !== height) return width < height;
+    const orientationType = text(window.screen?.orientation?.type).toLowerCase();
+    if (orientationType) return orientationType.includes('portrait');
     const screenWidth = Number(window.screen?.width) || 0;
     const screenHeight = Number(window.screen?.height) || 0;
-    if (screenWidth > 0 && screenHeight > 0) return screenWidth <= screenHeight;
-    const width = Number(window.visualViewport?.width || window.innerWidth) || 0;
-    const height = Number(window.visualViewport?.height || window.innerHeight) || 0;
-    return width <= height;
+    return screenWidth > 0 && screenHeight > 0 ? screenWidth < screenHeight : true;
   }
 
   function isBookLandscapeTarget() {
@@ -2920,7 +2925,9 @@
     if (!isBookPortraitDevice()) {
       reader.removeAttribute('data-book-landscape-fallback');
       setBookLandscapeFallback(false);
-    } else if (reader.dataset.bookLandscapeFallback === 'true') {
+    } else {
+      // 方向锁被浏览器拒绝时，仍然立刻使用横向画布兜底，不依赖 screen.orientation 的返回值。
+      reader.dataset.bookLandscapeFallback = 'true';
       setBookLandscapeFallback(true);
     }
   }
