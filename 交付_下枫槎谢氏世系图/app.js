@@ -3161,7 +3161,7 @@
     document.addEventListener('pointercancel', endPan);
   }
 
-  function playPdfBookTurnSound() {
+  function playPdfBookTurnSound(direction) {
     try {
       const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
       if (!AudioContextCtor) return;
@@ -3169,45 +3169,52 @@
       const context = pdfBookAudioContext;
       const play = () => {
         const now = context.currentTime;
-        // 清脆的“咔”声：短促三角波下滑，避免只有很轻的白噪声而听不出翻页。
-        const click = context.createOscillator();
-        const clickGain = context.createGain();
-        click.type = 'triangle';
-        click.frequency.setValueAtTime(1650, now);
-        click.frequency.exponentialRampToValueAtTime(560, now + 0.075);
-        clickGain.gain.setValueAtTime(0.0001, now);
-        clickGain.gain.exponentialRampToValueAtTime(0.2, now + 0.006);
-        clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.095);
-        click.connect(clickGain);
-        clickGain.connect(context.destination);
-        click.start(now);
-        click.stop(now + 0.11);
-
-        // 叠加很短的纸张摩擦声，让翻页声音更像真实书页。
-        const duration = 0.19;
-        const length = Math.max(1, Math.floor(context.sampleRate * duration));
-        const buffer = context.createBuffer(1, length, context.sampleRate);
-        const samples = buffer.getChannelData(0);
-        for (let index = 0; index < samples.length; index += 1) {
-          const progress = index / samples.length;
-          const envelope = Math.pow(1 - progress, 2.35) * (0.6 + 0.4 * Math.sin(progress * Math.PI));
-          samples[index] = (Math.random() * 2 - 1) * envelope;
+        const output = context.createGain();
+        const pan = context.createStereoPanner ? context.createStereoPanner() : null;
+        if (pan) {
+          pan.pan.value = direction < 0 ? -0.1 : 0.1;
+          pan.connect(output);
+        } else {
+          // 旧版 WebView 不支持立体声平移时，仍保留单声道翻页声。
+          output.connect(context.destination);
         }
-        const rustle = context.createBufferSource();
-        const filter = context.createBiquadFilter();
-        const rustleGain = context.createGain();
-        filter.type = 'bandpass';
-        filter.frequency.value = 3600;
-        filter.Q.value = 0.75;
-        rustleGain.gain.setValueAtTime(0.0001, now);
-        rustleGain.gain.exponentialRampToValueAtTime(0.16, now + 0.01);
-        rustleGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-        rustle.buffer = buffer;
-        rustle.connect(filter);
-        filter.connect(rustleGain);
-        rustleGain.connect(context.destination);
-        rustle.start(now);
-        rustle.stop(now + duration + 0.02);
+        output.gain.setValueAtTime(0.72, now);
+        if (pan) output.connect(context.destination);
+
+        const playPaperLayer = ({ duration, start, end, filterType, frequency, q, peak, attack }) => {
+          const length = Math.max(1, Math.floor(context.sampleRate * duration));
+          const buffer = context.createBuffer(1, length, context.sampleRate);
+          const samples = buffer.getChannelData(0);
+          for (let index = 0; index < samples.length; index += 1) {
+            const progress = index / samples.length;
+            // 轻微的连续变化比纯白噪声更像纸面摩擦，尾部自然收掉。
+            const texture = 0.72 + 0.28 * Math.sin(progress * Math.PI * 5.5);
+            samples[index] = (Math.random() * 2 - 1) * texture;
+          }
+          const source = context.createBufferSource();
+          const filter = context.createBiquadFilter();
+          const gain = context.createGain();
+          filter.type = filterType;
+          filter.frequency.value = frequency;
+          filter.Q.value = q;
+          const at = now + start;
+          gain.gain.setValueAtTime(0.0001, at);
+          gain.gain.exponentialRampToValueAtTime(peak, at + attack);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + end);
+          source.buffer = buffer;
+          source.connect(filter);
+          filter.connect(gain);
+          gain.connect(pan || output);
+          source.start(at);
+          source.stop(now + end + 0.025);
+        };
+
+        // 真实翻页的主体是“呼”的纸张摩擦声，而不是电子音高。
+        playPaperLayer({ duration: 0.3, start: 0, end: 0.3, filterType: 'bandpass', frequency: 1900, q: 0.55, peak: 0.16, attack: 0.018 });
+        // 页角掠过指尖时的短促摩擦，形成自然的“刷—”尾音。
+        playPaperLayer({ duration: 0.13, start: 0.018, end: 0.145, filterType: 'highpass', frequency: 1250, q: 0.45, peak: 0.11, attack: 0.006 });
+        // 很轻的低频页边弹动，增加纸本质感，不再出现刺耳的“滴”声。
+        playPaperLayer({ duration: 0.09, start: 0, end: 0.09, filterType: 'lowpass', frequency: 480, q: 0.5, peak: 0.055, attack: 0.004 });
       };
       if (context.state === 'suspended') {
         context.resume().then(play).catch(() => {});
@@ -3227,7 +3234,7 @@
     if (targetPage < firstPage || targetPage > totalPages) return;
     state.pdfBook.page = targetPage;
     resetPdfBookPan();
-    playPdfBookTurnSound();
+    playPdfBookTurnSound(direction);
     const spread = $('#query-book-frame-left')?.closest('.query-book-spread');
     if (spread) {
       spread.classList.remove('is-turning');
