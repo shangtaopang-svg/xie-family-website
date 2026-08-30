@@ -2435,23 +2435,64 @@
     return `<div class="root-trace-family-card ${extraClass}${adoptionTag ? ' has-adoption-badge' : ''}">${adoptionBadge}<small>第${escapeHtml(generationOf(person) || '—')}世</small><strong>${escapeHtml(text(person.name) || '未命名')}</strong>${badge ? `<em>${escapeHtml(badge)}</em>` : ''}</div>`;
   }
 
+  function rootTraceFatherChain(person) {
+    const chain = [];
+    const visited = new Set();
+    let current = person;
+    while (current && !visited.has(String(personId(current))) && chain.length < 300) {
+      chain.push(current);
+      visited.add(String(personId(current)));
+      current = rawFatherOf(current);
+    }
+    return chain;
+  }
+
+  function rootTraceCommonAncestor(first, second) {
+    if (!first || !second) return null;
+    const secondIds = new Set(rootTraceFatherChain(second).map((member) => String(personId(member))));
+    return rootTraceFatherChain(first).find((member) => secondIds.has(String(personId(member)))) || null;
+  }
+
+  function rootTraceIsFatherOf(child, parent) {
+    const father = rawFatherOf(child);
+    return Boolean(father && parent && String(personId(father)) === String(personId(parent)));
+  }
+
   function rootTraceAdoptionTreeHtml(ancestor, relation, adoptedPerson) {
     const biological = relation.biologicalParent;
     const adoptive = relation.adoptiveParent;
-    const children = childrenOf(ancestor).filter((child) => generationOf(child) === generationOf(biological));
-    const ordered = children.length ? children : [biological, adoptive].filter(Boolean);
+    if (!ancestor || !biological || !adoptive || !adoptedPerson) return '';
+    const directChildren = childrenOf(ancestor).filter((child) => rootTraceIsFatherOf(child, ancestor));
+    const hasBothDirectParents = directChildren.some((child) => String(personId(child)) === String(personId(biological)))
+      && directChildren.some((child) => String(personId(child)) === String(personId(adoptive)));
+    // 共同上代不一定就是两位父亲的直接父亲。只有确实是同一父亲的直接子女时，
+    // 才把同辈人物一起铺开；否则只展示两条明确的亲生/承嗣父系，避免把远房支系
+    // 误画成兄弟，也避免把不相关的卡片挤到关系线上。
+    const familyPeers = hasBothDirectParents && directChildren.length <= 5 ? directChildren : [biological, adoptive];
+    const ordered = [];
+    familyPeers.filter(Boolean).forEach((child) => {
+      const key = String(personId(child));
+      if (!ordered.some((item) => String(personId(item)) === key)) ordered.push(child);
+    });
+    [biological, adoptive].filter(Boolean).forEach((child) => {
+      const key = String(personId(child));
+      if (!ordered.some((item) => String(personId(item)) === key)) ordered.push(child);
+    });
     const columns = Math.max(2, ordered.length);
     const childCards = ordered.map((child) => {
       const isBiological = biological && String(personId(child)) === String(personId(biological));
       const isAdoptive = adoptive && String(personId(child)) === String(personId(adoptive));
-      return rootTracePersonBox(child, `${isBiological ? 'is-biological-father' : ''}${isAdoptive ? ' is-adoptive-father' : ''}`, isBiological ? '亲生父亲' : isAdoptive ? '继父（承嗣父）' : '昌申之子');
+      const cardClass = [isBiological ? 'is-biological-father' : '', isAdoptive ? 'is-adoptive-father' : ''].filter(Boolean).join(' ');
+      return rootTracePersonBox(child, cardClass, isBiological ? '亲生父亲' : isAdoptive ? '继父（承嗣父）' : '同父系支脉');
     }).join('');
-    const biologicalIndex = Math.max(0, ordered.findIndex((child) => biological && String(personId(child)) === String(personId(biological))));
-    const adoptiveIndex = Math.max(0, ordered.findIndex((child) => adoptive && String(personId(child)) === String(personId(adoptive))));
+    const biologicalIndex = Math.max(0, ordered.findIndex((child) => String(personId(child)) === String(personId(biological))));
+    const adoptiveIndex = Math.max(0, ordered.findIndex((child) => String(personId(child)) === String(personId(adoptive))));
     const childX = (index) => ((index + .5) / columns) * 100;
     const adoptionArrowId = `root-trace-adoption-arrow-${String(personId(adoptedPerson)).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+    const ancestorBadge = hasBothDirectParents ? '父' : '共同上代';
+    const receivingName = relation.adoptiveParentLabel || text(adoptive.name) || '承嗣父';
     return `<article class="root-trace-family-tree" style="--family-columns:${columns}">
-      <div class="root-trace-family-ancestor">${rootTracePersonBox(ancestor, 'is-family-root', '父')}</div>
+      <div class="root-trace-family-ancestor">${rootTracePersonBox(ancestor, 'is-family-root', ancestorBadge)}</div>
       <div class="root-trace-family-children">${childCards}</div>
       <div class="root-trace-family-descendant">${rootTracePersonBox(adoptedPerson, 'is-adopted-child', '出继 / 入继')}</div>
       <svg class="root-trace-family-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
@@ -2460,7 +2501,7 @@
         <path class="family-birth-line" d="M${childX(biologicalIndex)} 56 V76 H50 V91" />
         <path class="family-adoption-line" marker-end="url(#${adoptionArrowId})" d="M${childX(adoptiveIndex)} 56 C${childX(adoptiveIndex)} 72, 64 75, 52 88" />
       </svg>
-      <span class="family-birth-label">亲生父子</span><span class="family-adoption-label">出继给${escapeHtml(relation.adoptiveParentLabel || text(adoptive.name) || '承嗣父')}为嗣</span>
+      <span class="family-birth-label">亲生父子</span><span class="family-adoption-label">出继给${escapeHtml(receivingName)}为嗣</span>
       ${relation.source ? `<p class="root-trace-family-source">谱载：${escapeHtml(relation.source)}</p>` : ''}
     </article>`;
   }
@@ -2552,19 +2593,27 @@
     chain.forEach((member) => {
       const relation = state.adoption.inById.get(String(personId(member))) || state.adoption.outById.get(String(personId(member))) || null;
       if (!relation || !relation.biologicalParent || !relation.adoptiveParent) return;
-      const biologicalFather = rawFatherOf(relation.biologicalParent);
-      const adoptiveFather = rawFatherOf(relation.adoptiveParent);
-      if (!biologicalFather || !adoptiveFather || String(personId(biologicalFather)) !== String(personId(adoptiveFather))) return;
-      adoptionTrees.set(String(personId(biologicalFather)), { ancestor: biologicalFather, relation, person: member });
+      const commonAncestor = rootTraceCommonAncestor(relation.biologicalParent, relation.adoptiveParent);
+      if (!commonAncestor) return;
+      const memberKey = String(personId(member));
+      if (!adoptionTrees.has(memberKey)) adoptionTrees.set(memberKey, []);
+      adoptionTrees.get(memberKey).push({
+        ancestor: commonAncestor,
+        relation,
+        // 寻根的关系终点固定展示承嗣侧的独立入继卡，箭头才会真正指向“入继”方。
+        person: relation.adoptiveRecord || member
+      });
       skipTreeNodes.add(String(personId(relation.biologicalParent)));
       skipTreeNodes.add(String(personId(relation.adoptiveParent)));
+      skipTreeNodes.add(String(personId(relation.outPerson)));
+      if (relation.adoptiveRecord) skipTreeNodes.add(String(personId(relation.adoptiveRecord)));
       skipTreeNodes.add(String(personId(member)));
     });
     const startsAtYandi = chain.length && text(chain[0].name).trim().includes('炎帝');
     if (summary) summary.textContent = `${startsAtYandi ? '炎帝始祖' : '当前数据可追溯始祖'} → ${text(person.name)} · 共 ${chain.length} 代节点`;
     content.innerHTML = `${!startsAtYandi ? '<div class="root-trace-warning">当前数据链未直接抵达“炎帝”记录，以下展示现有数据能够完整追溯的最早世系。</div>' : ''}<div class="root-trace-line">${chain.map((member, index) => {
-      const tree = adoptionTrees.get(String(personId(member)));
-      if (tree) return rootTraceAdoptionTreeHtml(tree.ancestor, tree.relation, tree.person);
+      const trees = adoptionTrees.get(String(personId(member)));
+      if (trees?.length) return trees.map((tree) => rootTraceAdoptionTreeHtml(tree.ancestor, tree.relation, tree.person)).join('');
       if (skipTreeNodes.has(String(personId(member)))) return '';
       const tags = adoptionTags(member).map((tag) => tag.label).join(' / ');
       return `<article class="root-trace-node${index === 0 ? ' is-root' : ''}${index === chain.length - 1 ? ' is-target' : ''}"><div class="root-trace-card"><span>第${escapeHtml(generationOf(member) || '—')}世</span><strong>${escapeHtml(text(member.name) || '未命名')}</strong>${tags ? `<em>${escapeHtml(tags)}</em>` : ''}<small>${escapeHtml(text(member.branch) || '')}</small></div>${rootTraceRelationHtml(member, chain)}</article>`;
