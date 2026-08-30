@@ -3212,6 +3212,9 @@ function pageTreeFullscreen(forceCss) {
     // Enter fullscreen
     section.classList.add('genealogy-tree-section-fullscreen');
     document.body.style.overflow = 'hidden';
+    // 先立即启用 CSS 横屏兜底，再尝试系统方向锁。部分 HarmonyOS/微信 WebView
+    // 的 screen.orientation.lock() 会一直 pending，不能等它返回后才旋转页面。
+    if (isMobileTree() && window.innerWidth <= window.innerHeight) mblForceLandscape();
     // forceCss=true：自动进入（lineage-tree.html 无用户手势）。requestFullscreen / screen.orientation.lock
     // 都要求用户手势，无手势必被拒或挂起 → 手机端直接 CSS 强制横屏（任何浏览器零手势生效），
     // 保证「一进世系图谱就是横屏」。真全屏/系统锁横屏仅在有手势的按钮路径（forceCss=false）走。
@@ -3375,6 +3378,8 @@ function mblFsRedraw() {
 }
 
 function mblLockLandscape() {
+  // 方向锁是增强能力，不是横屏显示的前置条件；锁定等待期间也必须保持 CSS 兜底。
+  if (isMobileTree() && window.innerWidth <= window.innerHeight) mblForceLandscape();
   if (_mblOrientationLocked) return;
   var so = window.screen && screen.orientation;
   if (!so || !so.lock) { mblForceLandscape(); return; }   // iOS/微信内核无 API → CSS 强制横屏
@@ -3383,6 +3388,8 @@ function mblLockLandscape() {
     if (p && p.then) {
       p.then(function() {
         _mblOrientationLocked = true;
+        // 若系统已经真的切到横屏，mblForceLandscape 的轮询会移除 CSS 旋转；
+        // 若仍是竖屏，则继续保留兜底，避免出现“只全屏、不横屏”。
         mblFsRedraw();                                  // 旋转落定后按横屏视口重绘 canvas/卡片
       }).catch(function() { mblForceLandscape(); });    // 锁失败（部分机型/系统禁止）→ CSS 强制横屏
     } else {

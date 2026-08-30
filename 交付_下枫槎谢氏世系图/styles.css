@@ -4081,11 +4081,33 @@ html.query-book-landscape-fallback .query-book-reader-overlay .query-book-page-p
   .app-shell.is-immersive .tree-immersive-hud .immersive-hud-btn { min-height: 34px; font-size: 12px; }
 }
 
+/* 手机端方向锁定被微信/HarmonyOS WebView 拒绝时，使用内部 workspace 旋转兜底。
+   不旋转 #app 本身：#app 可能正是浏览器的 fullscreen 元素，部分内核会用 UA
+   fullscreen 样式覆盖它的 transform，结果就会出现“只全屏、没有横屏”。 */
+html.lineage-landscape-fallback,
 body.lineage-landscape-fallback { overflow: hidden !important; }
+html.lineage-landscape-fallback #app,
 body.lineage-landscape-fallback #app {
   position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  width: 100dvw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  transform: none !important;
+  z-index: 3000 !important;
+}
+html.lineage-landscape-fallback #app.is-immersive .workspace,
+body.lineage-landscape-fallback #app.is-immersive .workspace {
+  position: absolute !important;
   top: 50% !important;
   left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
   width: 100vh !important;
   width: 100dvh !important;
   height: 100vw !important;
@@ -4094,17 +4116,13 @@ body.lineage-landscape-fallback #app {
   max-width: none !important;
   transform: translate(-50%, -50%) rotate(90deg) !important;
   transform-origin: center !important;
-  z-index: 3000 !important;
+  overflow: hidden !important;
 }
-body.lineage-landscape-fallback #app.is-immersive .workspace {
-  display: flex !important;
-  flex-direction: column !important;
-  width: 100% !important;
-  height: 100% !important;
-  min-height: 0 !important;
-}
+html.lineage-landscape-fallback #app.is-immersive .tree-area,
+html.lineage-landscape-fallback #app.is-immersive .tree-viewport,
 body.lineage-landscape-fallback #app.is-immersive .tree-area,
 body.lineage-landscape-fallback #app.is-immersive .tree-viewport {
+  width: 100% !important;
   height: 100% !important;
   min-height: 0 !important;
 }

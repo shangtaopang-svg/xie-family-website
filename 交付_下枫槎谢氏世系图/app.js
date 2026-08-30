@@ -32,6 +32,8 @@
     compact: true,
     overviewMode: false,
     immersive: false,
+    // 手机端方向锁定失败时保留页面级横屏兜底，避免进入原生全屏后又退回竖屏。
+    lineageLandscapeFallbackRequested: false,
     detailOnly: false,
     detailOrigin: null,
     // 从世系卡片进入移动端详情前保存的完整视图快照。
@@ -1471,24 +1473,41 @@
   }
 
   function isLineagePortraitViewport() {
+    const orientationType = text(window.screen?.orientation?.type).toLowerCase();
+    if (orientationType.includes('portrait')) return true;
+    if (orientationType.includes('landscape')) return false;
+
+    // 某些手机 WebView 在进入 fullscreen 后会把 innerWidth/innerHeight
+    // 报成横向，但设备实际仍是竖屏；没有 Screen Orientation API 时优先看屏幕尺寸。
+    const screenWidth = Number(window.screen?.width) || 0;
+    const screenHeight = Number(window.screen?.height) || 0;
+    if (screenWidth && screenHeight && screenWidth !== screenHeight) return screenWidth < screenHeight;
+
     const width = Number(window.innerWidth || document.documentElement?.clientWidth) || 0;
     const height = Number(window.innerHeight || document.documentElement?.clientHeight) || 0;
     if (width && height && width !== height) return width < height;
-    const orientationType = text(window.screen?.orientation?.type).toLowerCase();
-    return orientationType ? orientationType.includes('portrait') : true;
+    return true;
   }
 
   function setLineageLandscapeFallback(active) {
-    document.documentElement.classList.toggle('lineage-landscape-fallback', Boolean(active));
-    document.body.classList.toggle('lineage-landscape-fallback', Boolean(active));
+    const enabled = Boolean(active);
+    document.documentElement.classList.toggle('lineage-landscape-fallback', enabled);
+    document.body.classList.toggle('lineage-landscape-fallback', enabled);
   }
 
-  function syncLineageLandscapeFallback() {
+  function syncLineageLandscapeFallback(allowNativeLandscape = false) {
     if (!state.immersive || !isLineageTouchDevice()) {
+      state.lineageLandscapeFallbackRequested = false;
       setLineageLandscapeFallback(false);
       return;
     }
-    setLineageLandscapeFallback(isLineagePortraitViewport());
+
+    // 只有确认系统已经切到横屏时才撤掉 CSS 兜底。这样 fullscreen 造成的
+    // 视口尺寸变化不会把旋转布局误清除，正是微信/HarmonyOS WebView 的常见情况。
+    if (allowNativeLandscape && state.lineageLandscapeFallbackRequested && !isLineagePortraitViewport()) {
+      state.lineageLandscapeFallbackRequested = false;
+    }
+    setLineageLandscapeFallback(state.lineageLandscapeFallbackRequested || isLineagePortraitViewport());
   }
 
   function requestLineageLandscape() {
@@ -1501,17 +1520,18 @@
     const lock = orientation && typeof orientation.lock === 'function'
       ? orientation.lock.bind(orientation)
       : (typeof window.screen?.lockOrientation === 'function' ? window.screen.lockOrientation.bind(window.screen) : null);
-    setLineageLandscapeFallback(isLineageTouchDevice() && isLineagePortraitViewport());
+    state.lineageLandscapeFallbackRequested = isLineageTouchDevice() && isLineagePortraitViewport();
+    setLineageLandscapeFallback(state.lineageLandscapeFallbackRequested);
     const fullscreenTask = requestFullscreen
       ? Promise.resolve().then(() => requestFullscreen()).catch(() => false)
       : Promise.resolve(false);
     const orientationTask = lock
       ? fullscreenTask.then(() => Promise.resolve(lock('landscape')).then(() => true).catch(() => false))
       : fullscreenTask.then(() => false);
-    orientationTask.finally(() => {
-      window.setTimeout(syncLineageLandscapeFallback, 180);
-      window.setTimeout(syncLineageLandscapeFallback, 650);
-    });
+    orientationTask.finally(() => syncLineageLandscapeFallback(true));
+    // lock() 在部分 WebView 会长时间 pending；不依赖 Promise 结束也做一次方向确认。
+    window.setTimeout(() => syncLineageLandscapeFallback(true), 180);
+    window.setTimeout(() => syncLineageLandscapeFallback(true), 650);
   }
 
   function releaseLineageLandscape() {
@@ -1520,6 +1540,7 @@
       if (orientation && typeof orientation.unlock === 'function') orientation.unlock();
       else if (typeof window.screen?.unlockOrientation === 'function') window.screen.unlockOrientation();
     } catch (error) {}
+    state.lineageLandscapeFallbackRequested = false;
     setLineageLandscapeFallback(false);
     document.documentElement.classList.remove('lineage-landscape-requested');
     document.body.classList.remove('lineage-landscape-requested');
@@ -1530,8 +1551,12 @@
     applyImmersiveMode(true);
     if (state.immersive) {
       requestLineageLandscape();
-    } else if (document.fullscreenElement && document.exitFullscreen) {
-      document.exitFullscreen().catch(() => {});
+    } else if ((document.fullscreenElement || document.webkitFullscreenElement)
+      && (document.exitFullscreen || document.webkitExitFullscreen)) {
+      const exitFullscreen = document.exitFullscreen
+        ? document.exitFullscreen.bind(document)
+        : document.webkitExitFullscreen.bind(document);
+      Promise.resolve(exitFullscreen()).catch(() => {});
       releaseLineageLandscape();
     } else {
       releaseLineageLandscape();
@@ -8252,23 +8277,29 @@
         focusMiniMapPoint(x, y);
       }
     });
-    document.addEventListener('fullscreenchange', () => {
+    const syncLineageFullscreenState = () => {
       // 用户按 Esc 退出浏览器原生全屏时，同步恢复页面工具栏，避免留下“只剩图面”的假死状态。
-      if (state.immersive && !document.fullscreenElement) {
+      const activeFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+      if (state.immersive && !activeFullscreen) {
         state.immersive = false;
         releaseLineageLandscape();
         applyImmersiveMode(true);
+      } else if (state.immersive) {
+        // 原生全屏进入后再次同步，确保方向锁失败时仍保留页面级横屏兜底。
+        syncLineageLandscapeFallback();
       }
       const reader = $('#query-book-reader');
       if (reader && !reader.hidden) {
         if (isBookPortraitDevice()) forceBookLandscape(reader);
         else syncBookLandscapeFallback();
       }
-    });
+    };
+    document.addEventListener('fullscreenchange', syncLineageFullscreenState);
+    document.addEventListener('webkitfullscreenchange', syncLineageFullscreenState);
     window.addEventListener('resize', syncBookLandscapeFallback, { passive: true });
     window.addEventListener('orientationchange', syncBookLandscapeFallback, { passive: true });
     window.addEventListener('resize', syncLineageLandscapeFallback, { passive: true });
-    window.addEventListener('orientationchange', syncLineageLandscapeFallback, { passive: true });
+    window.addEventListener('orientationchange', () => syncLineageLandscapeFallback(true), { passive: true });
     window.addEventListener('pagehide', persistSessionView);
     window.addEventListener('beforeunload', persistSessionView);
     document.addEventListener('click', (event) => {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 世系图谱独立页：手机端从族谱查询进入，正常竖屏显示（不自动横屏，可手动 ⛶ 全屏横屏，桌面端也可访问） -->
+<!-- 世系图谱独立页：手机端从族谱查询进入，默认竖屏；点击 ⛶ 后全屏并立即横屏，桌面端也可访问。 -->
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -11,7 +11,7 @@
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 
   <link rel="stylesheet" href="../css/style.css?v=20260860">
-  <link rel="stylesheet" href="../css/genealogy-tree.css?v=4">
+  <link rel="stylesheet" href="../css/genealogy-tree.css?v=20260830-lineage-landscape-05">
   <!-- 实时同步关键：supabase.js 提供 window.dbGetAll，共享 JS 内 tryLoadLiveGenealogy 据此从后台拉最新数据 -->
   <script defer src="../js/i18n.js"></script>
   <script defer src="../js/supabase.js?v=3"></script>
@@ -99,9 +99,9 @@
   </div>
 
   <!-- 共享世系图谱 JS（数据/渲染/全屏横屏）必须先于 admin.js onload 执行。
-       ★手机端不再自动横屏（用户 2026-08-15 要求「不要直接进入横屏」）：进入页面正常竖屏显示，
-       需要横屏时手动点 ⛶ 全屏/横屏 按钮（pageTreeFullscreen）。 -->
-  <script src="../js/genealogy-tree.js?v=20260824-02"></script>
+       手机端进入页面保持竖屏；点击 ⛶ 全屏/横屏按钮后立即启用 CSS 横屏兜底，
+       同时尝试系统方向锁（pageTreeFullscreen）。 -->
+  <script src="../js/genealogy-tree.js?v=20260830-lineage-landscape-05"></script>
   <script src="../js/admin.js?v=110" onload="if(window.renderTreeSVG&&window.getGenealogyData)setTimeout(function(){renderTreeSVG(getGenealogyData())},100)"></script>
 <link rel="stylesheet" href="/css/ai.css?v=78">
 <script src="/js/ai-assistant.js?v=78" defer></script>
