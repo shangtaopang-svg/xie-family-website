@@ -2918,10 +2918,18 @@
 
   function clearBookLandscapeCanvas(reader) {
     if (!reader) return;
-    [
+    const readerProperties = [
       'position', 'inset', 'top', 'left', 'right', 'bottom', 'width', 'height',
       'max-width', 'max-height', 'transform', 'transform-origin'
-    ].forEach((property) => reader.style.removeProperty(property));
+    ];
+    readerProperties.forEach((property) => reader.style.removeProperty(property));
+    const shell = reader.querySelector('.query-book-reader-shell');
+    if (shell) {
+      [
+        'position', 'inset', 'top', 'left', 'right', 'bottom', 'width', 'height',
+        'max-width', 'max-height', 'transform', 'transform-origin'
+      ].forEach((property) => shell.style.removeProperty(property));
+    }
     reader.removeAttribute('data-book-viewport');
     reader.removeAttribute('data-book-landscape-fallback');
   }
@@ -2935,22 +2943,38 @@
       return false;
     }
 
-    // 方向锁失败时，直接把阅读器变成“横屏画布”再旋转回当前视口。
-    // 使用内联 important 是为了压过不同 WebView 对 100vh/100vw 和 orientation
-    // 媒体查询的差异；画布本身仍然保持横向比例，原谱图即可按高度最大化显示。
+    // 原生全屏会强制全屏元素本身回到当前视口尺寸，直接旋转 reader 会被浏览器
+    // 的 fullscreen UA 样式压掉。因此 reader 保持全屏视口，只旋转内部 shell，
+    // 让横向阅读画布在原生全屏和普通 WebView 两种模式下都能铺满屏幕。
     const setImportant = (property, value) => reader.style.setProperty(property, value, 'important');
     setImportant('position', 'fixed');
-    setImportant('inset', 'auto');
-    setImportant('top', '50%');
-    setImportant('left', '50%');
+    setImportant('inset', '0');
+    setImportant('top', '0');
+    setImportant('left', '0');
     setImportant('right', 'auto');
     setImportant('bottom', 'auto');
-    setImportant('width', `${height}px`);
-    setImportant('height', `${width}px`);
+    setImportant('width', `${width}px`);
+    setImportant('height', `${height}px`);
     setImportant('max-width', 'none');
     setImportant('max-height', 'none');
-    setImportant('transform', 'translate(-50%, -50%) rotate(90deg)');
+    setImportant('transform', 'none');
     setImportant('transform-origin', 'center');
+    const shell = reader.querySelector('.query-book-reader-shell');
+    if (shell) {
+      const setShellImportant = (property, value) => shell.style.setProperty(property, value, 'important');
+      setShellImportant('position', 'absolute');
+      setShellImportant('inset', 'auto');
+      setShellImportant('top', '50%');
+      setShellImportant('left', '50%');
+      setShellImportant('right', 'auto');
+      setShellImportant('bottom', 'auto');
+      setShellImportant('width', `${height}px`);
+      setShellImportant('height', `${width}px`);
+      setShellImportant('max-width', 'none');
+      setShellImportant('max-height', 'none');
+      setShellImportant('transform', 'translate(-50%, -50%) rotate(90deg)');
+      setShellImportant('transform-origin', 'center');
+    }
     reader.dataset.bookViewport = `${Math.round(width)}x${Math.round(height)}`;
     reader.dataset.bookLandscapeFallback = 'true';
     setBookLandscapeFallback(true);
