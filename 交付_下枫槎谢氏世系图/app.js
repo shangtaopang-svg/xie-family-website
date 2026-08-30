@@ -56,6 +56,10 @@
       width: 0,
       height: 0
     },
+    lineageCameraMetrics: {
+      width: 0,
+      height: 0
+    },
     overviewCanvas: null,
     branch: '',
     generation: '',
@@ -160,6 +164,7 @@
   let disambiguationCallback = null;
   let fullExpandBusy = false;
   let domSelectedId = null;
+  let miniMapRenderTimer = null;
 
   const VIEW_DEFS = {
     overview: { label: '总览世系图', rootId: 1 },
@@ -1577,6 +1582,14 @@
       };
       if (typeof requestAnimationFrame === 'function') requestAnimationFrame(run);
       else setTimeout(run, 0);
+    } else {
+      // 进出手机全屏相机后，把同一份缩放/平移状态重新应用到正确的渲染路径。
+      const refresh = () => {
+        applyZoom();
+        renderMiniMap();
+      };
+      if (typeof requestAnimationFrame === 'function') requestAnimationFrame(refresh);
+      else setTimeout(refresh, 0);
     }
     showToast(state.immersive
       ? '已进入全屏浏览；滚轮缩放、拖拽平移，按 Esc 显示界面'
@@ -3810,12 +3823,56 @@
     if (readout) readout.textContent = formatZoom();
   }
 
+  // 手机横屏全屏时，图面会在 CSS 中旋转 90°。统一使用图面变换，避免
+  // 原生滚动条、CSS zoom 和旋转坐标叠加后产生拖动延迟、方向错乱和跳动。
+  function isLineageTouchCameraMode() {
+    return Boolean(state.immersive && isLineageTouchDevice());
+  }
+
+  function lineageViewportPoint(viewport, clientX, clientY, useClientAnchor) {
+    if (!viewport || !useClientAnchor) {
+      return {
+        x: viewport ? viewport.clientWidth / 2 : 0,
+        y: viewport ? viewport.clientHeight / 2 : 0
+      };
+    }
+    const rotated = document.body?.classList.contains('lineage-landscape-fallback');
+    if (!rotated) {
+      const rect = viewport.getBoundingClientRect();
+      return {
+        x: Math.max(0, Math.min(viewport.clientWidth, clientX - rect.left)),
+        y: Math.max(0, Math.min(viewport.clientHeight, clientY - rect.top))
+      };
+    }
+    // 旋转后的视觉坐标映射回 viewport 未旋转前的本地坐标。
+    const rect = viewport.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    return {
+      x: Math.max(0, Math.min(viewport.clientWidth, viewport.clientWidth / 2 + clientY - centerY)),
+      y: Math.max(0, Math.min(viewport.clientHeight, viewport.clientHeight / 2 - clientX + centerX))
+    };
+  }
+
+  function lineageDragVector(deltaX, deltaY) {
+    return document.body?.classList.contains('lineage-landscape-fallback')
+      ? { x: deltaY, y: -deltaX }
+      : { x: deltaX, y: deltaY };
+  }
+
   function applyZoom() {
     const stage = $('#tree-stage');
     if (!stage) return;
     const viewport = $('#tree-viewport');
     const canvas = $('#tree-canvas');
     const overviewCanvas = state.overviewCanvas && state.overviewCanvas.active ? state.overviewCanvas : null;
+    const touchCameraMode = isLineageTouchCameraMode();
+    viewport?.classList.toggle('is-lineage-camera', touchCameraMode);
+    if (touchCameraMode && viewport) {
+      // 切入图面相机后不再混用原生滚动位置，避免进入横屏全屏时画面突然跳位。
+      viewport.scrollLeft = 0;
+      viewport.scrollTop = 0;
+    }
     if (overviewCanvas) {
       canvas.style.width = `${Math.ceil(overviewCanvas.baseWidth)}px`;
       canvas.style.height = `${Math.ceil(overviewCanvas.baseHeight)}px`;
@@ -3826,7 +3883,18 @@
     const overviewFastPath = state.overviewMode;
     let baseWidth;
     let baseHeight;
-    if (overviewFastPath) {
+    if (touchCameraMode) {
+      // 手机全屏图面由 transform 负责缩放，避免 pinch 时反复触发布局重排。
+      stage.style.zoom = 1;
+      if (!state.lineageCameraMetrics.width || !state.lineageCameraMetrics.height) {
+        state.lineageCameraMetrics = {
+          width: Math.max(1, stage.scrollWidth, viewport ? viewport.clientWidth : 0),
+          height: Math.max(1, stage.scrollHeight, viewport ? viewport.clientHeight : 0)
+        };
+      }
+      baseWidth = state.lineageCameraMetrics.width;
+      baseHeight = state.lineageCameraMetrics.height;
+    } else if (overviewFastPath) {
       // 全部展开时尺寸在内容不变期间保持不变，避免每一帧切换 CSS zoom 触发整棵树重排。
       if (!state.overviewMetrics.width || !state.overviewMetrics.height) {
         stage.style.zoom = 1;
@@ -3848,15 +3916,15 @@
     }
     applyMapPan();
     if (canvas) {
-      canvas.style.width = `${Math.ceil(baseWidth * state.zoom)}px`;
-      canvas.style.height = `${Math.ceil(baseHeight * state.zoom)}px`;
+      canvas.style.width = `${Math.ceil(touchCameraMode ? baseWidth : baseWidth * state.zoom)}px`;
+      canvas.style.height = `${Math.ceil(touchCameraMode ? baseHeight : baseHeight * state.zoom)}px`;
     }
     // 滚轮缩放时只更新读数，避免每一帧重复计算侧栏布局。
     updateZoomReadouts();
   }
 
   // 全部展开后的“全景图”通常被缩放到刚好塞进视口，单纯修改 scrollLeft / scrollTop 没有可滚动空间。
-  // 因此在没有滚动余量时，允许拖拽直接移动树面本身；放大后仍沿用原生滚动，兼顾全景与局部查看。
+  // 因此在没有滚动余量时，允许拖拽直接移动树面本身；手机相机模式始终使用合成层变换，兼顾全景与局部查看。
   function applyMapPan() {
     const stage = $('#tree-stage');
     if (!stage) return;
@@ -3867,6 +3935,10 @@
     const overviewCanvas = state.overviewCanvas && state.overviewCanvas.active ? state.overviewCanvas : null;
     if (overviewCanvas && overviewCanvas.layer) {
       overviewCanvas.layer.style.transform = `translate3d(${x}px, ${y}px, 0) scale3d(${zoom}, ${zoom}, 1)`;
+      return;
+    }
+    if (isLineageTouchCameraMode()) {
+      stage.style.transform = `translate3d(${x}px, ${y}px, 0) scale3d(${zoom}, ${zoom}, 1)`;
       return;
     }
     if (state.overviewMode) {
@@ -4499,6 +4571,7 @@
     const contentHeight = Math.max(1, canvasMap?.baseHeight || stage.scrollHeight);
     const mapWidth = 184;
     const mapHeight = 112;
+    const stageRect = canvasMap ? null : stage.getBoundingClientRect();
     const fragment = document.createDocumentFragment();
     cards.forEach((card) => {
       let left;
@@ -4517,7 +4590,6 @@
         female = card.isFemale;
         title = card.name;
       } else {
-        const stageRect = stage.getBoundingClientRect();
         const rect = card.getBoundingClientRect();
         left = (rect.left - stageRect.left) / zoom;
         top = (rect.top - stageRect.top) / zoom;
@@ -4546,10 +4618,11 @@
     visibleRect.className = 'minimap-viewport';
     const viewWidth = Math.min(100, viewport.clientWidth / Math.max(1, contentWidth * zoom) * 100);
     const viewHeight = Math.min(100, viewport.clientHeight / Math.max(1, contentHeight * zoom) * 100);
-    const viewLeft = state.overviewMode
+    const cameraMode = isLineageTouchCameraMode();
+    const viewLeft = state.overviewMode || cameraMode
       ? Math.max(0, Math.min(100 - viewWidth, (-Number(state.mapPan?.x || 0) / zoom) / contentWidth * 100))
       : Math.max(0, Math.min(100 - viewWidth, viewport.scrollLeft / zoom / contentWidth * 100));
-    const viewTop = state.overviewMode
+    const viewTop = state.overviewMode || cameraMode
       ? Math.max(0, Math.min(100 - viewHeight, (-Number(state.mapPan?.y || 0) / zoom) / contentHeight * 100))
       : Math.max(0, Math.min(100 - viewHeight, viewport.scrollTop / zoom / contentHeight * 100));
     visibleRect.style.left = `${viewLeft}%`;
@@ -4559,13 +4632,30 @@
     plot.appendChild(visibleRect);
   }
 
+  // 缩放/平移的主画面必须优先拿到每一帧；缩略图只做低频跟随，并在手势结束时立即对齐。
+  function scheduleMiniMapRender(immediate = false) {
+    if (immediate) {
+      if (miniMapRenderTimer) {
+        clearTimeout(miniMapRenderTimer);
+        miniMapRenderTimer = null;
+      }
+      renderMiniMap();
+      return;
+    }
+    if (miniMapRenderTimer) return;
+    miniMapRenderTimer = setTimeout(() => {
+      miniMapRenderTimer = null;
+      renderMiniMap();
+    }, 120);
+  }
+
   function focusMiniMapPoint(x, y) {
     const viewport = $('#tree-viewport');
     if (!viewport) return;
     const contentX = Number(x) || 0;
     const contentY = Number(y) || 0;
     const zoom = Math.max(.001, Number(state.zoom) || 1);
-    if (state.overviewMode) {
+    if (state.overviewMode || isLineageTouchCameraMode()) {
       state.mapPan = {
         x: viewport.clientWidth / 2 - contentX * zoom,
         y: viewport.clientHeight / 2 - contentY * zoom
@@ -4647,10 +4737,10 @@
   function zoomAroundPoint(factor, clientX, clientY, useClientAnchor = false) {
     const viewport = $('#tree-viewport');
     if (!viewport) return;
-    const rect = viewport.getBoundingClientRect();
-    // 鼠标滚轮固定以视口中心缩放；手机双指缩放则以两指中心为锚点，手感更自然。
-    const offsetX = useClientAnchor ? Math.max(0, Math.min(rect.width, clientX - rect.left)) : rect.width / 2;
-    const offsetY = useClientAnchor ? Math.max(0, Math.min(rect.height, clientY - rect.top)) : rect.height / 2;
+    // 鼠标滚轮和手机双指缩放都以操作点为锚点，手指下的卡片不会突然跳走。
+    const point = lineageViewportPoint(viewport, clientX, clientY, useClientAnchor);
+    const offsetX = point.x;
+    const offsetY = point.y;
     const oldZoom = state.zoom;
     const mapPan = state.mapPan || { x: 0, y: 0 };
     const canvasMap = state.overviewCanvas && state.overviewCanvas.active ? state.overviewCanvas : null;
@@ -4664,7 +4754,20 @@
         y: offsetY - focusY * state.zoom
       };
       applyZoom();
-      renderMiniMap();
+      scheduleMiniMapRender();
+      return;
+    }
+    if (isLineageTouchCameraMode()) {
+      const focusX = (offsetX - (Number(mapPan.x) || 0)) / oldZoom;
+      const focusY = (offsetY - (Number(mapPan.y) || 0)) / oldZoom;
+      state.zoom = Math.max(.005, Math.min(1.8, +(state.zoom * factor).toFixed(4)));
+      if (state.zoom === oldZoom) return;
+      state.mapPan = {
+        x: offsetX - focusX * state.zoom,
+        y: offsetY - focusY * state.zoom
+      };
+      applyZoom();
+      scheduleMiniMapRender();
       return;
     }
     // 计算时扣除全景平移量，缩放后鼠标指向的卡片保持在原位置，不再出现跳图。
@@ -5000,6 +5103,7 @@
     if (!stage) return;
     if (state.overviewCanvas && state.overviewCanvas.active) deactivateOverviewCanvas();
     state.overviewMetrics = { width: 0, height: 0 };
+    state.lineageCameraMetrics = { width: 0, height: 0 };
     stage.classList.toggle('is-compact', state.compact);
     stage.classList.toggle('is-overview-map', state.overviewMode);
     stage.classList.toggle('is-mobile-overview-index', mobileOverviewIndex);
@@ -8101,7 +8205,7 @@
       state.pan.startY = event.clientY;
       state.pan.scrollLeft = viewport.scrollLeft;
       state.pan.scrollTop = viewport.scrollTop;
-      const cameraMode = Boolean(state.overviewCanvas?.active);
+      const cameraMode = Boolean(state.overviewCanvas?.active) || isLineageTouchCameraMode();
       panCanScrollX = !cameraMode && viewport.scrollWidth - viewport.clientWidth > 2;
       panCanScrollY = !cameraMode && viewport.scrollHeight - viewport.clientHeight > 2;
       state.pan.originMapX = Number(state.mapPan && state.mapPan.x) || 0;
@@ -8136,17 +8240,18 @@
         return;
       }
       if (!state.pan.active || event.pointerId !== state.pan.pointerId) return;
-      const deltaX = event.clientX - state.pan.startX;
-      const deltaY = event.clientY - state.pan.startY;
-      if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) state.pan.dragged = true;
+      const screenDeltaX = event.clientX - state.pan.startX;
+      const screenDeltaY = event.clientY - state.pan.startY;
+      const dragDelta = lineageDragVector(screenDeltaX, screenDeltaY);
+      if (Math.abs(screenDeltaX) > 4 || Math.abs(screenDeltaY) > 4) state.pan.dragged = true;
       if (!state.pan.dragged) return;
       // 超过拖动阈值后再捕获指针，普通点击人物卡片仍会正常触发详情。
       if (viewport.setPointerCapture && !viewport.hasPointerCapture(event.pointerId)) viewport.setPointerCapture(event.pointerId);
       event.preventDefault();
-      pendingLeft = panCanScrollX ? state.pan.scrollLeft - deltaX : state.pan.scrollLeft;
-      pendingTop = panCanScrollY ? state.pan.scrollTop - deltaY : state.pan.scrollTop;
-      pendingMapX = panCanScrollX ? state.pan.originMapX : state.pan.originMapX + deltaX;
-      pendingMapY = panCanScrollY ? state.pan.originMapY : state.pan.originMapY + deltaY;
+      pendingLeft = panCanScrollX ? state.pan.scrollLeft - dragDelta.x : state.pan.scrollLeft;
+      pendingTop = panCanScrollY ? state.pan.scrollTop - dragDelta.y : state.pan.scrollTop;
+      pendingMapX = panCanScrollX ? state.pan.originMapX : state.pan.originMapX + dragDelta.x;
+      pendingMapY = panCanScrollY ? state.pan.originMapY : state.pan.originMapY + dragDelta.y;
       if (!panFrame) {
         const commitPan = () => {
           panFrame = 0;
@@ -8156,6 +8261,7 @@
           if (mapChanged) {
             state.mapPan = { x: pendingMapX, y: pendingMapY };
             applyMapPan();
+            scheduleMiniMapRender();
           }
         };
         if (typeof requestAnimationFrame === 'function') panFrame = requestAnimationFrame(commitPan);
@@ -8172,6 +8278,7 @@
         state.pan.active = false;
         state.pan.pointerId = null;
         state.pan.suppressClick = true;
+        scheduleMiniMapRender(true);
         clearTimeout(state.pan.suppressTimer);
         state.pan.suppressTimer = setTimeout(() => { state.pan.suppressClick = false; }, 350);
         return;
@@ -8184,6 +8291,7 @@
       if (event.pointerId !== undefined && viewport.hasPointerCapture && viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
       if (dragged) {
         state.pan.suppressClick = true;
+        scheduleMiniMapRender(true);
         clearTimeout(state.pan.suppressTimer);
         state.pan.suppressTimer = setTimeout(() => { state.pan.suppressClick = false; }, 350);
       }
@@ -8203,8 +8311,7 @@
           wheelFrame = 0;
           const nextFactor = pendingWheelFactor;
           pendingWheelFactor = 1;
-          const wheelRect = viewport.getBoundingClientRect();
-          zoomAroundPoint(nextFactor, wheelRect.left + wheelRect.width / 2, wheelRect.top + wheelRect.height / 2);
+          zoomAroundPoint(nextFactor, pendingWheelX, pendingWheelY, true);
         };
         if (typeof requestAnimationFrame === 'function') wheelFrame = requestAnimationFrame(commitWheel);
         else commitWheel();
@@ -8269,7 +8376,7 @@
     wireCanvasPan();
     wireBookZoomPan();
     const treeViewport = $('#tree-viewport');
-    if (treeViewport) treeViewport.addEventListener('scroll', () => renderMiniMap(), { passive: true });
+    if (treeViewport) treeViewport.addEventListener('scroll', () => scheduleMiniMapRender(), { passive: true });
     const minimapPlot = $('#tree-minimap-plot');
     if (minimapPlot) minimapPlot.addEventListener('click', (event) => {
       const node = event.target.closest('.minimap-node');
@@ -8294,6 +8401,15 @@
         state.immersive = false;
         releaseLineageLandscape();
         applyImmersiveMode(true);
+        // 系统退出原生全屏不会经过 toggleImmersive；这里必须把手机相机变换
+        // 还原为普通树面，否则返回页面后仍可能保留旧的 transform。
+        state.lineageCameraMetrics = { width: 0, height: 0 };
+        const refresh = () => {
+          applyZoom();
+          renderMiniMap();
+        };
+        if (typeof requestAnimationFrame === 'function') requestAnimationFrame(refresh);
+        else setTimeout(refresh, 0);
       } else if (state.immersive) {
         // 原生全屏进入后再次同步，确保方向锁失败时仍保留页面级横屏兜底。
         syncLineageLandscapeFallback();
