@@ -1440,22 +1440,97 @@
       toggle.title = state.immersive ? '恢复顶部工具和说明区域' : '全屏查看世系图；可用浮动按钮恢复界面';
       toggle.setAttribute('aria-pressed', String(state.immersive));
     }
+    const mobileToggle = document.querySelector('.mobile-lineage-screen-toggle');
+    if (mobileToggle) {
+      mobileToggle.textContent = state.immersive ? '退出全屏' : '⛶ 横屏全屏';
+      mobileToggle.title = state.immersive ? '退出横屏全屏查看' : '横屏全屏查看世系图';
+      mobileToggle.setAttribute('aria-label', state.immersive ? '退出横屏全屏查看世系图' : '横屏全屏查看世系图');
+      mobileToggle.setAttribute('aria-pressed', String(state.immersive));
+    }
     const hud = $('#immersive-hud');
     if (hud) {
       hud.hidden = !state.immersive;
       hud.setAttribute('aria-hidden', String(!state.immersive));
     }
+    if (state.immersive) syncLineageLandscapeFallback();
+    else setLineageLandscapeFallback(false);
     if (save) persistSessionView();
+  }
+
+  function isLineageTouchDevice() {
+    const touchViewport = typeof window.matchMedia === 'function'
+      && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    return isMobileViewport()
+      || touchViewport
+      || (typeof navigator !== 'undefined' && Number(navigator.maxTouchPoints) > 0)
+      || ('ontouchstart' in window);
+  }
+
+  function isLineagePortraitViewport() {
+    const width = Number(window.innerWidth || document.documentElement?.clientWidth) || 0;
+    const height = Number(window.innerHeight || document.documentElement?.clientHeight) || 0;
+    if (width && height && width !== height) return width < height;
+    const orientationType = text(window.screen?.orientation?.type).toLowerCase();
+    return orientationType ? orientationType.includes('portrait') : true;
+  }
+
+  function setLineageLandscapeFallback(active) {
+    document.documentElement.classList.toggle('lineage-landscape-fallback', Boolean(active));
+    document.body.classList.toggle('lineage-landscape-fallback', Boolean(active));
+  }
+
+  function syncLineageLandscapeFallback() {
+    if (!state.immersive || !isLineageTouchDevice()) {
+      setLineageLandscapeFallback(false);
+      return;
+    }
+    setLineageLandscapeFallback(isLineagePortraitViewport());
+  }
+
+  function requestLineageLandscape() {
+    const app = $('#app');
+    if (!app) return;
+    const requestFullscreen = app.requestFullscreen
+      ? app.requestFullscreen.bind(app)
+      : (app.webkitRequestFullscreen ? app.webkitRequestFullscreen.bind(app) : null);
+    const orientation = window.screen?.orientation;
+    const lock = orientation && typeof orientation.lock === 'function'
+      ? orientation.lock.bind(orientation)
+      : (typeof window.screen?.lockOrientation === 'function' ? window.screen.lockOrientation.bind(window.screen) : null);
+    setLineageLandscapeFallback(isLineageTouchDevice() && isLineagePortraitViewport());
+    const fullscreenTask = requestFullscreen
+      ? Promise.resolve().then(() => requestFullscreen()).catch(() => false)
+      : Promise.resolve(false);
+    const orientationTask = lock
+      ? fullscreenTask.then(() => Promise.resolve(lock('landscape')).then(() => true).catch(() => false))
+      : fullscreenTask.then(() => false);
+    orientationTask.finally(() => {
+      window.setTimeout(syncLineageLandscapeFallback, 180);
+      window.setTimeout(syncLineageLandscapeFallback, 650);
+    });
+  }
+
+  function releaseLineageLandscape() {
+    const orientation = window.screen?.orientation;
+    try {
+      if (orientation && typeof orientation.unlock === 'function') orientation.unlock();
+      else if (typeof window.screen?.unlockOrientation === 'function') window.screen.unlockOrientation();
+    } catch (error) {}
+    setLineageLandscapeFallback(false);
+    document.documentElement.classList.remove('lineage-landscape-requested');
+    document.body.classList.remove('lineage-landscape-requested');
   }
 
   function toggleImmersive() {
     state.immersive = !state.immersive;
     applyImmersiveMode(true);
     if (state.immersive) {
-      const app = $('#app');
-      if (app && app.requestFullscreen) app.requestFullscreen().catch(() => { /* 浏览器不支持时使用页面沉浸模式 */ });
+      requestLineageLandscape();
     } else if (document.fullscreenElement && document.exitFullscreen) {
       document.exitFullscreen().catch(() => {});
+      releaseLineageLandscape();
+    } else {
+      releaseLineageLandscape();
     }
     if (state.immersive && state.overviewMode) {
       // 隐藏顶部区域后视口变高，重新适配一次全景图，避免图面仍按旧高度缩放。
@@ -8115,6 +8190,7 @@
       // 用户按 Esc 退出浏览器原生全屏时，同步恢复页面工具栏，避免留下“只剩图面”的假死状态。
       if (state.immersive && !document.fullscreenElement) {
         state.immersive = false;
+        releaseLineageLandscape();
         applyImmersiveMode(true);
       }
       const reader = $('#query-book-reader');
@@ -8125,6 +8201,8 @@
     });
     window.addEventListener('resize', syncBookLandscapeFallback, { passive: true });
     window.addEventListener('orientationchange', syncBookLandscapeFallback, { passive: true });
+    window.addEventListener('resize', syncLineageLandscapeFallback, { passive: true });
+    window.addEventListener('orientationchange', syncLineageLandscapeFallback, { passive: true });
     window.addEventListener('pagehide', persistSessionView);
     window.addEventListener('beforeunload', persistSessionView);
     document.addEventListener('click', (event) => {

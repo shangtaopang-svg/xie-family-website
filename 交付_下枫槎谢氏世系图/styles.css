@@ -4018,3 +4018,82 @@ html.query-book-landscape-fallback .query-book-reader-overlay .query-book-page-p
   .query-book-zoom-button.is-reset { min-width: 38px; }
   .query-book-zoom-status { min-width: 38px; font-size: 11px; }
 }
+
+/* 手机端世系图：入口可切换横屏全屏，方向锁不可用时自动旋转图面兜底。 */
+@media (max-width: 760px), (hover: none) and (pointer: coarse) {
+  body[data-app-mode="public"] .mobile-lineage-controls {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    padding: 7px 10px;
+    border-bottom: 1px solid #d2dfd5;
+    background: rgba(244, 248, 245, .98);
+  }
+  body[data-app-mode="public"] .mobile-lineage-controls button {
+    min-width: 0;
+    min-height: 42px;
+    padding: 6px 4px;
+    border: 1px solid #c7d5ca;
+    border-radius: 8px;
+    background: #fbfdf9;
+    color: #315b4c;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  body[data-app-mode="public"] .mobile-lineage-controls .mobile-lineage-screen-toggle {
+    display: inline-flex;
+    grid-column: 1 / -1;
+    align-items: center;
+    justify-content: center;
+    border-color: #789f8b;
+    background: #e6f1e9;
+    color: #285844;
+  }
+  body[data-app-mode="public"] .mobile-lineage-controls .mobile-lineage-screen-toggle[aria-pressed="true"] {
+    border-color: #9e5c3e;
+    background: #fff0e6;
+    color: #8d4d38;
+  }
+  body[data-app-mode="public"] .mobile-lineage-controls button:active { transform: translateY(1px); }
+  .app-shell.is-immersive .mobile-lineage-controls { display: none !important; }
+  .app-shell.is-immersive .tree-immersive-hud {
+    top: max(8px, env(safe-area-inset-top));
+    left: max(8px, env(safe-area-inset-left));
+    right: max(8px, env(safe-area-inset-right));
+    width: max-content;
+    max-width: calc(100% - 16px);
+    flex-wrap: wrap;
+    padding: 6px;
+  }
+  .app-shell.is-immersive .tree-immersive-hud span { display: none; }
+  .app-shell.is-immersive .tree-immersive-hud .immersive-hud-btn { min-height: 34px; font-size: 12px; }
+}
+
+body.lineage-landscape-fallback { overflow: hidden !important; }
+body.lineage-landscape-fallback #app {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  width: 100vh !important;
+  width: 100dvh !important;
+  height: 100vw !important;
+  height: 100dvw !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  transform: translate(-50%, -50%) rotate(90deg) !important;
+  transform-origin: center !important;
+  z-index: 3000 !important;
+}
+body.lineage-landscape-fallback #app.is-immersive .workspace {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+}
+body.lineage-landscape-fallback #app.is-immersive .tree-area,
+body.lineage-landscape-fallback #app.is-immersive .tree-viewport {
+  height: 100% !important;
+  min-height: 0 !important;
+}
