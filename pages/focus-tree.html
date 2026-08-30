@@ -12,9 +12,21 @@ body{background:#0f0f13;color:#e0e0e0;font-family:"Noto Serif SC","SimSun",serif
 .si:hover{background:rgba(251,146,60,0.1);}
 .si .sg{color:rgba(255,255,255,0.4);font-size:11px;margin-left:8px;}
 .sr-box{position:relative;max-width:400px;margin:0 auto;}
+@media(max-width:600px){
+  body.focus-tree-page{padding:16px 12px calc(88px + env(safe-area-inset-bottom,0px));}
+  body.focus-tree-page #tree-wrap{height:calc(100svh - 190px);min-height:420px;touch-action:none;}
+  body.focus-tree-page #tree-wrap > div:last-child{right:12px !important;bottom:12px !important;}
+  body.focus-tree-page #tree-wrap > div:last-child button{width:40px !important;height:40px !important;}
+  body.focus-tree-page #ai-fab .ai-bubble{display:none !important;}
+  body.focus-tree-page nav.mb-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:1000;display:flex;align-items:stretch;justify-content:space-around;height:64px;padding:6px 2px calc(6px + env(safe-area-inset-bottom,0px));box-sizing:border-box;background:rgba(15,15,19,.96);border-top:1px solid rgba(255,255,255,.12);}
+  body.focus-tree-page nav.mb-tabbar .mb-tab{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:rgba(255,255,255,.62);font:10px/1.2 system-ui,sans-serif;text-decoration:none;}
+  body.focus-tree-page nav.mb-tabbar .mb-tab-icon{font-size:18px;line-height:1;}
+  body.focus-tree-page nav.mb-tabbar .mb-tab-label{font-size:9px;white-space:nowrap;}
+  body.focus-tree-page #backTopBtn{right:84px !important;bottom:calc(82px + env(safe-area-inset-bottom,0px)) !important;}
+}
 </style>
 </head>
-<body><script>
+<body class="focus-tree-page"><script>
 (function(){
   var ptKey = 'pt_go';
   var pt = document.getElementById('page-transition');

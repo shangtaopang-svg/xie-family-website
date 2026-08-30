@@ -8,6 +8,7 @@
  */
 'use strict';
 const deliverySource = require('./delivery-source.js');
+const facts = require('./facts.js');
 
 let byId = null;
 let byName = null;
@@ -16,51 +17,16 @@ let loadedSource = '';
 let adoptionPairs = [];
 
 function loadAdoptionPairs(list) {
-  adoptionPairs = [];
-  const people = Array.isArray(list) ? list : [];
-  const byName = new Map();
-  const byId = new Map(people.map((p) => [Number(p.id), p]));
-  const structuredPairs = new Map();
-  for (const person of people) {
-    const outId = Number(person.adoption_pair_out_id ?? person.adoption_out_id);
-    const inId = Number(person.adoption_pair_in_id ?? person.adoption_in_id);
-    const parentId = Number(person.adoption_adoptive_parent_id);
-    if (!Number.isFinite(outId) || !Number.isFinite(inId) || !Number.isFinite(parentId)) continue;
-    const key = String(person.adoption_pair_id || `${outId}:${inId}:${parentId}`);
-    structuredPairs.set(key, {
-      outId,
-      adoptiveId: inId,
-      adoptiveParentId: parentId,
-      source: String(person.adoption_relation_source || person.adopt_note || '').trim()
-    });
-  }
-  structuredPairs.forEach((pair) => {
-    if (byId.has(pair.outId) && byId.has(pair.adoptiveId) && byId.has(pair.adoptiveParentId)) adoptionPairs.push(pair);
-  });
-  const structuredIds = new Set(adoptionPairs.map((pair) => `${pair.outId}:${pair.adoptiveId}:${pair.adoptiveParentId}`));
-  for (const person of people) {
-    const name = String(person.name || '').trim();
-    if (!name) continue;
-    (byName.get(name) || byName.set(name, []).get(name)).push(person);
-  }
-  for (const person of people) {
-    const source = [person.adopt_note, person.biography].filter(Boolean).join(' ');
-    const match = source.match(/(?:过继给?|入继给?|出继给?|出祧|入祧)([\u4e00-\u9fff]{1,6})/);
-    if (!match) continue;
-    const parentName = match[1];
-    const parentCandidates = (byName.get(parentName) || []).filter((p) => Number(p.id) !== Number(person.id));
-    const parent = parentCandidates
-      .filter((p) => Number(p.generation_num) === Number(person.generation_num) - 1)
-      .sort((a, b) => Number(a.id) - Number(b.id))[0] || parentCandidates[0];
-    if (!parent) continue;
-    const adoptivePerson = (byName.get(String(person.name || '').trim()) || [])
-      .find((p) => Number(p.id) !== Number(person.id) && Number(p.father_id) === Number(parent.id));
-    if (!adoptivePerson) continue;
-    const sourceLabel = source.replace(/\s+/g, ' ').trim();
-    const candidateKey = `${Number(person.id)}:${Number(adoptivePerson.id)}:${Number(parent.id)}`;
-    if (!byId.has(Number(person.id)) || structuredIds.has(candidateKey) || adoptionPairs.some((pair) => pair.outId === Number(person.id))) continue;
-    adoptionPairs.push({ outId: Number(person.id), adoptiveId: Number(adoptivePerson.id), adoptiveParentId: Number(parent.id), source: sourceLabel });
-  }
+  // 图形关系与文字咨询共用 facts.js 的严格配对校验：
+  // 必须同时有 adoption_pair_id、out/in 两端及承嗣父，且 ID 互相吻合。
+  // 不再从 biography/adopt_note 文字猜测关系，避免两条入口给出不同答案。
+  const canonical = facts.loadFacts();
+  adoptionPairs = canonical.pairs.map((pair) => ({
+    outId: Number(pair.out.id),
+    adoptiveId: Number(pair.incoming.id),
+    adoptiveParentId: Number(pair.adoptiveParent.id),
+    source: pair.source
+  }));
 }
 
 function ensureLoaded() {

@@ -9,22 +9,14 @@
   <title data-i18n="site.title">宁海下枫槎村 · 谢氏家族</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="css/style.css?v=20260861">
+  <link rel="stylesheet" href="css/style.css?v=20260830-mobile-nav-03">
   <style>
     /* Carousel mobile fix - ensure slides have height */
     .carousel-container { aspect-ratio: 21/9; overflow: hidden; }
     .carousel-slide { height: 100%; }
   </style>
   <style>
-    /* 手机底部导航（横向滚动，所有栏目可见） */
-    .mobile-bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; z-index:99999; background:#fff; border-top:1px solid #f0ede8; padding:6px 0; box-shadow:0 -2px 12px rgba(0,0,0,0.06); overflow-x:auto; -webkit-overflow-scrolling:touch; white-space:nowrap; }
-    .mobile-bottom-nav::-webkit-scrollbar { display:none; }
-    .mobile-bottom-nav .mb-item { display:inline-flex; flex-direction:column; align-items:center; gap:1px; text-decoration:none; font-size:10px; color:#999; padding:2px 12px; min-width:56px; transition:color 0.2s; -webkit-tap-highlight-color:transparent; vertical-align:top; }
-    .mobile-bottom-nav .mb-item:active { color:#c4a050; background:#fefcf5; border-radius:6px; }
-    .mobile-bottom-nav .mb-item span { font-size:9px; font-weight:500; display:block; text-align:center; white-space:nowrap; }
     @media (max-width: 900px) {
-    .mobile-bottom-nav { display:flex; }
-    body { padding-bottom: 68px; }
       .hero-stats { gap: 8px !important; bottom: 35px !important; flex-wrap: wrap; padding: 0 10px; }
       .hero-stat-num { font-size: 16px !important; }
       .hero-stat-label { font-size: 9px !important; }
@@ -263,7 +255,7 @@
           <span id="themeIcon2Top" style="font-size:12px;opacity:0.4">🌙</span>
         </div>
         <a href="entrance.html" style="font-size:11px;color:#999;text-decoration:none;padding:4px 10px;border-radius:12px;border:1px solid #eee;white-space:nowrap">⛩ 返回石门</a>
-        <button class="nav-toggle" onclick="document.getElementById('mobileBottomNav').scrollIntoView({behavior:'smooth'});document.getElementById('mobileBottomNav').scrollLeft=0" aria-label="菜单">☰</button>
+        <button class="nav-toggle" aria-label="打开手机导航">☰</button>
       </div>
       <nav class="main-nav">
         <ul>
@@ -589,6 +581,19 @@
     <a href="pages/my.html" class="mb-tab"><span class="mb-tab-icon">👤</span><span class="mb-tab-label">我的</span></a>
   </nav>
 
+  <script>
+  // 首页与正式首页共用同一套底部导航，按当前入口同步高亮状态。
+  (function () {
+    var isMain = new URLSearchParams(location.search).has('main');
+    document.querySelectorAll('.mb-tabbar .mb-tab').forEach(function (tab) {
+      var active = isMain ? tab.getAttribute('href') === 'index.html?main' : tab.getAttribute('href') === 'index.html';
+      tab.classList.toggle('active', active);
+      if (active) tab.setAttribute('aria-current', 'page');
+      else tab.removeAttribute('aria-current');
+    });
+  })();
+  </script>
+
   <audio id="bg-music" loop></audio>
 
   <script defer src="js/main.js?v=20260826-transition-layer-03"></script>
@@ -598,25 +603,6 @@
 
   <!-- ===== 动态加载 ===== -->
   <script defer src="js/dynamic-content.js?v=8"></script>
-
-
-  <!-- ===== 手机底部导航 ===== -->
-  <nav class="mobile-bottom-nav" id="mobileBottomNav">
-    <a href="index.html" class="mb-item active">🏠<span>首页</span></a>
-    <a href="pages/history.html" class="mb-item">📜<span>历史</span></a>
-    <a href="pages/videos.html" class="mb-item" style="color:var(--accent-orange);">🎬<span>视频</span></a>
-    <a href="pages/genealogy.html?chooser=1&access=20260827-07" class="mb-item">🌳<span>族谱</span></a>
-    <a href="pages/celebrities.html" class="mb-item">🏆<span>名人</span></a>
-    <a href="pages/merit-scroll.html" class="mb-item">📜<span>功德</span></a>
-    <a href="pages/news.html" class="mb-item">📰<span>消息</span></a>
-    <a href="pages/activities.html" class="mb-item">🎪<span>活动</span></a>
-    <a href="pages/today.html" class="mb-item">📸<span>今日</span></a>
-    <a href="pages/reports.html" class="mb-item">📋<span>报道</span></a>
-    <a href="pages/audio.html" class="mb-item">🎧<span>听枫槎</span></a>
-    <a href="pages/vinyl-player.html" class="mb-item">🎵<span>留声机</span></a>
-    <a href="pages/xie-collection.html" class="mb-item" style="color:#c9a84c;">📚<span>集萃</span></a>
-    <a href="pages/contact.html" class="mb-item">✉️<span>联系</span></a>
-  </nav>
 
 
 <script>

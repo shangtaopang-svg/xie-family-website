@@ -444,9 +444,21 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
     box-shadow: 0 6px 24px rgba(212, 255, 58, 0.45), 0 0 0 1px rgba(212, 255, 58, 0.2);
     font-size: 24px;
   }
+
+  /* 给统一底部导航和页面返回按钮让出独立区域，问候气泡移到悬浮球上方。 */
+  #ai-fab {
+    bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+  }
+  #ai-fab .ai-bubble {
+    right: 0;
+    top: auto;
+    bottom: calc(100% + 10px);
+    transform: none;
+    animation: none;
+  }
   /* 手机端问候气泡：暗色卡片，几秒后收起为小圆点 */
   #ai-fab .ai-bubble {
-    right: calc(100% + 10px);
+    right: 0;
     background: var(--mb-card, #141414) !important;
     border-color: var(--mb-border, #2a2a2a) !important;
     color: #eee !important;
@@ -454,6 +466,9 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
     max-width: min(200px, calc(100vw - 120px));
     padding: 7px 10px;
   }
+  /* 沉浸式入口页底部有主操作按钮，手机端不让问候气泡压住 CTA；AI 圆形入口仍保留。 */
+  body[data-public-gate="off"] #ai-fab .ai-bubble { display: none !important; }
+  html.public-access-open #ai-fab { display: none !important; }
   #ai-fab .ai-bubble::after { background: var(--mb-card, #141414) !important; border-color: var(--mb-border, #2a2a2a) !important; }
   #ai-fab .ai-bubble.collapsed {
     width: 8px;

@@ -43,6 +43,13 @@
 .public-access-body { padding: 0 28px 28px; }
 .public-access-body p { margin: 0 0 16px; color: #63766d; line-height: 1.8; }
 .public-access-note { padding: 16px; border-left: 3px solid #b2674c; background: rgba(255, 247, 240, .82); color: #53665d; line-height: 1.75; }
+.public-access-privacy { margin-top: 18px; border: 1px solid #d5e1d8; border-radius: 14px; background: rgba(255, 255, 255, .42); overflow: hidden; }
+.public-access-privacy > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 0 16px; color: #45695a; font-weight: 700; cursor: pointer; list-style: none; }
+.public-access-privacy > summary::-webkit-details-marker { display: none; }
+.public-access-privacy > summary::after { content: '＋'; flex: 0 0 auto; color: #b2674c; font-size: 20px; line-height: 1; }
+.public-access-privacy[open] > summary::after { content: '－'; }
+.public-access-privacy > summary small { margin-left: auto; color: #78877f; font-size: 12px; font-weight: 400; }
+.public-access-privacy .public-access-note { margin: 0 16px 16px; }
 .public-access-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 22px; }
 .public-access-btn { min-height: 46px; padding: 0 20px; border: 1px solid #9ab5a8; border-radius: 12px; background: #fff; color: #28614e; font: 700 15px/1.2 inherit; cursor: pointer; }
 .public-access-btn.primary { border-color: #28614e; background: #28614e; color: #fff; }
@@ -77,4 +84,8 @@
   .public-access-role-grid { grid-template-columns: 1fr; }
   .public-access-actions { display: grid; grid-template-columns: 1fr 1fr; }
   .public-access-btn { width: 100%; padding: 0 10px; }
+  .public-access-privacy { margin-top: 14px; }
+  .public-access-privacy > summary { min-height: 50px; padding: 0 14px; }
+  .public-access-privacy > summary small { font-size: 11px; }
+  .public-access-privacy .public-access-note { margin: 0 12px 12px; padding: 14px; }
 }

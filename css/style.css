@@ -5728,3 +5728,188 @@ li:has(> a[href*="admin.html"]) {
   border-color: rgba(179,59,53,.48) !important;
   border-left-color: #b33b35 !important;
 }
+
+/* ===== 手机端统一底部导航（最终覆盖层） =====
+   旧版导航样式曾同时存在 .mb-tabbar 与 .mobile-bottom-nav，且
+   nav.mb-tabbar 的隐藏规则优先级更高，导致普通内容页看不到导航。
+   这里只保留页面现有的 .mb-tabbar 作为唯一手机导航。 */
+@media (max-width: 768px) {
+  nav.mb-tabbar,
+  .mb-show-main nav.mb-tabbar {
+    display: flex !important;
+    position: fixed !important;
+    inset: auto 0 0;
+    box-sizing: border-box;
+    min-height: 64px;
+    height: auto;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+    gap: 2px;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    justify-content: stretch;
+    align-items: stretch;
+    background: rgba(8, 8, 8, .96);
+    border-top: 1px solid #2a2a2a;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, .28);
+    z-index: 100000;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  nav.mb-tabbar::-webkit-scrollbar { display: none; }
+  nav.mb-tabbar .mb-tab {
+    flex: 1 1 0;
+    width: 0;
+    min-width: 0;
+    min-height: 48px;
+    box-sizing: border-box;
+    padding: 5px 2px;
+    border-radius: 10px;
+    justify-content: center;
+    white-space: nowrap;
+  }
+  nav.mb-tabbar .mb-tab-icon { font-size: 18px; line-height: 1.2; }
+  nav.mb-tabbar .mb-tab-label { color: #8c8c8c; font-size: 10px; line-height: 1.2; }
+  nav.mb-tabbar .mb-tab.active { background: rgba(212, 255, 58, .1); }
+  nav.mb-tabbar .mb-tab.active .mb-tab-label { color: #D4FF3A; }
+
+  /* 320px 左右的小屏仍保持六项可见，进一步收紧图标与文字但不压缩触控高度。 */
+  @media (max-width: 360px) {
+    nav.mb-tabbar .mb-tab { padding-left: 1px; padding-right: 1px; }
+    nav.mb-tabbar .mb-tab-icon { font-size: 17px; }
+    nav.mb-tabbar .mb-tab-label { font-size: 9px; }
+  }
+
+  body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important; }
+  .content,
+  .page-wrap { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)) !important; }
+  .mb-home { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)) !important; }
+
+  /* 首页不是“返回上一页”的深层页面，避免出现多余的悬浮返回按钮。 */
+  .mb-home ~ a.back-page-btn { display: none !important; }
+  .mb-show-main a.back-page-btn { display: none !important; }
+
+  /* 底部操作区分层：返回在左，回顶在中右，AI 在最右，避免按钮互相遮挡。 */
+  a.back-page-btn {
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  #backTopBtn {
+    right: calc(84px + env(safe-area-inset-right, 0px)) !important;
+    bottom: calc(82px + env(safe-area-inset-bottom, 0px)) !important;
+    width: 42px !important;
+    height: 42px !important;
+    z-index: 2147482999 !important;
+  }
+
+  /* AI 悬浮球避开底部导航；气泡移到悬浮球上方，不遮挡页面底部。 */
+  #ai-fab {
+    bottom: calc(82px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  #ai-fab .ai-bubble {
+    right: 0 !important;
+    top: auto !important;
+    bottom: calc(100% + 10px) !important;
+    transform: none !important;
+    animation: none !important;
+  }
+
+  /* 隐私验证弹窗打开时，隐藏底部悬浮操作，避免抢焦点或压住弹窗。 */
+  html.public-access-open #ai-fab,
+  html.public-access-open #backTopBtn {
+    display: none !important;
+  }
+}
+
+/* ===== 手机端内容卡片：多列改为可读的单列 ===== */
+@media (max-width: 600px) {
+  .mobile-stack-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .mobile-stack-grid > * {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .mobile-stack-grid > .glass-card {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+}
+
+/* 族谱树页面保留圆球作为入口，但不让问候气泡遮住树区、缩放控件和图例。 */
+@media (max-width: 600px) {
+  body.legacy-tree-page #ai-fab .ai-bubble {
+    display: none !important;
+  }
+}
+
+/* ===== 手机端表格与详情弹层 ===== */
+@media (max-width: 600px) {
+  .admin-table-wrap,
+  #genealogy-table-section > div[style*="overflow-x:auto"],
+  #lineage-table .glass-card {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+
+  .admin-table,
+  .gen-table,
+  #lineage-table table {
+    font-size: 12px !important;
+  }
+
+  .admin-table th,
+  .admin-table td,
+  .gen-table th,
+  .gen-table td,
+  #lineage-table table th,
+  #lineage-table table td {
+    padding: 7px 8px !important;
+    white-space: nowrap;
+  }
+
+  .admin-modal-overlay,
+  .person-detail-modal,
+  .lineage-modal {
+    align-items: flex-end !important;
+    padding: 10px !important;
+  }
+
+  .admin-modal,
+  .person-detail-box,
+  .lineage-modal-box {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: 560px !important;
+    max-height: calc(100dvh - 20px) !important;
+    overflow-y: auto;
+    padding: 20px 16px calc(20px + env(safe-area-inset-bottom, 0px)) !important;
+    border-radius: 18px 18px 10px 10px !important;
+  }
+
+  .admin-modal .form-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-modal .form-actions .btn,
+  .person-detail-box .btn,
+  .lineage-modal-box .btn {
+    min-height: 42px;
+  }
+
+  .lightbox-overlay img {
+    max-width: calc(100vw - 32px) !important;
+    max-height: calc(100dvh - 120px) !important;
+  }
+
+  .lightbox-btn {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 28px !important;
+  }
+}

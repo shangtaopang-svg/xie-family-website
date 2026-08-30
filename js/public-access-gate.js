@@ -149,7 +149,8 @@
     var body = getBody();
     if (!body) return;
     if (state.step === 'consent') {
-      body.innerHTML = '<p>欢迎访问下枫槎谢氏数字宗谱。本网站包含家族世系、历史资料及部分近现代族人信息。</p><div class="public-access-note"><b>隐私保护说明</b><p>为保护族谱资料及族人隐私，本网站将根据您的选择收集必要的登录信息，用于身份认证、访问权限管理和族谱服务。</p><p>族谱中的历史资料、世系关系等信息仅用于文化传承与查询，不得擅自复制、传播、商业使用或用于其他用途。对于在世族人的出生日期、联系方式、居住地等个人信息，网站将进行权限控制，未经本人或管理授权不会公开展示。</p><p>您可以选择“族人”或“普通访客”身份访问。族人身份需要经过核验，普通访客无需提交族谱内部信息。您可以申请查询、更正或删除与本人相关的信息。</p><p>点击“同意并继续”，表示您已阅读并同意本说明；点击“不同意”，将退出登录流程。</p></div><div class="public-access-actions"><button class="public-access-btn danger" type="button" data-access-action="decline">不同意</button><button class="public-access-btn primary" type="button" data-access-action="consent">同意并继续</button></div>';
+      var privacyOpen = window.matchMedia && window.matchMedia('(min-width: 601px)').matches ? ' open' : '';
+      body.innerHTML = '<p>欢迎访问下枫槎谢氏数字宗谱。本网站包含家族世系、历史资料及部分近现代族人信息。</p><details class="public-access-privacy"' + privacyOpen + '><summary><span>隐私保护说明</span><small>点击展开完整说明</small></summary><div class="public-access-note"><p>为保护族谱资料及族人隐私，本网站将根据您的选择收集必要的登录信息，用于身份认证、访问权限管理和族谱服务。</p><p>族谱中的历史资料、世系关系等信息仅用于文化传承与查询，不得擅自复制、传播、商业使用或用于其他用途。对于在世族人的出生日期、联系方式、居住地等个人信息，网站将进行权限控制，未经本人或管理授权不会公开展示。</p><p>您可以选择“族人”或“普通访客”身份访问。族人身份需要经过核验，普通访客无需提交族谱内部信息。您可以申请查询、更正或删除与本人相关的信息。</p><p>点击“同意并继续”，表示您已阅读并同意本说明；点击“不同意”，将退出登录流程。</p></div></details><div class="public-access-actions"><button class="public-access-btn danger" type="button" data-access-action="decline">不同意</button><button class="public-access-btn primary" type="button" data-access-action="consent">同意并继续</button></div>';
       return;
     }
     if (state.step === 'role') {

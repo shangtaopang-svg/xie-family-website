@@ -10,8 +10,8 @@
   <title>世系图谱 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="../css/style.css?v=20260860">
-  <link rel="stylesheet" href="../css/genealogy-tree.css?v=20260830-lineage-landscape-05">
+  <link rel="stylesheet" href="../css/style.css?v=20260830-mobile-nav-03">
+  <link rel="stylesheet" href="../css/genealogy-tree.css?v=20260830-lineage-landscape-06">
   <!-- 实时同步关键：supabase.js 提供 window.dbGetAll，共享 JS 内 tryLoadLiveGenealogy 据此从后台拉最新数据 -->
   <script defer src="../js/i18n.js"></script>
   <script defer src="../js/supabase.js?v=3"></script>
@@ -55,7 +55,7 @@
     .apt-btn-expand:hover{transform:scale(1.2);}
   </style>
 </head>
-<body>
+<body class="genealogy-tree-page">
   <div class="lineage-back-bar">
     <a href="genealogy.html">← 返回族谱查询</a>
     <span class="sep"></span>
@@ -64,7 +64,7 @@
 
   <!-- ===== 世系图谱（与 genealogy.html 同一 section DOM，共享 JS/CSS） ===== -->
   <div class="glass-card" style="padding:24px;margin-bottom:30px;opacity:0;" id="genealogy-tree-section">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+    <div class="lineage-tree-toolbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
       <h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:17px;font-weight:500;margin:0;">🌳 世系图谱 <a href="focus-tree.html" style="font-size:11px;font-weight:400;color:var(--accent-orange);text-decoration:none;margin-left:8px;">🌳 世系树</a></h3>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <span style="font-size:12px;color:var(--text-tertiary);">点击姓名查看详情</span>
@@ -79,7 +79,7 @@
       </div>
     </div>
     <!-- 视图切换标签 -->
-    <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center;padding:6px 0;">
+    <div class="lineage-tree-filters" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center;padding:6px 0;">
       <span style="font-size:12px;color:var(--text-tertiary);font-weight:500;">分支：</span>
       <button class="btn btn-xs" id="filter-continuous" onclick="filterBranch('连续完整世系')" style="background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;border:none;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;box-shadow:0 1px 4px rgba(234,88,12,0.35);">连续完整世系（炎帝→后枫槎）</button>
       <button class="btn btn-xs" id="filter-allsystem" onclick="filterBranch('全世系总览')" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;box-shadow:0 1px 4px rgba(16,185,129,0.35);">全世系总览（炎帝→现在）</button>

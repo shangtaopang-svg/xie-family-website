@@ -337,3 +337,76 @@
 }
 .source-relation-chip { border-color: #c9d8d1; background: #f4f8f5; color: #466b5b; }
 .book-record-section .detail-copy { white-space: pre-wrap; line-height: 1.8; }
+
+/* ===== 族谱独立页手机操作优化 ===== */
+@media (max-width: 600px) {
+  body.genealogy-tree-page {
+    padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  }
+
+  body.genealogy-tree-page .lineage-back-bar {
+    flex-wrap: wrap;
+    gap: 5px 10px;
+    padding: 10px 16px 8px;
+  }
+
+  body.genealogy-tree-page .lineage-back-bar .hint {
+    flex-basis: 100%;
+    padding-left: 2px;
+    font-size: 11px;
+  }
+
+  body.genealogy-tree-page #genealogy-tree-section {
+    margin: 0 0 20px !important;
+    padding: 14px 10px !important;
+  }
+
+  body.genealogy-tree-page .lineage-tree-toolbar {
+    align-items: flex-start !important;
+    margin-bottom: 10px !important;
+  }
+
+  body.genealogy-tree-page .lineage-tree-toolbar > h3 {
+    max-width: 100%;
+  }
+
+  body.genealogy-tree-page .lineage-tree-toolbar > div {
+    width: 100%;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    padding: 2px 0 5px;
+    scrollbar-width: thin;
+  }
+
+  body.genealogy-tree-page .lineage-tree-toolbar > div > button {
+    flex: 0 0 auto;
+    min-width: 42px;
+    min-height: 36px;
+  }
+
+  body.genealogy-tree-page .lineage-tree-filters {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    margin: 0 -2px 10px;
+    padding: 6px 2px 10px;
+    scrollbar-width: thin;
+    overscroll-behavior-x: contain;
+  }
+
+  body.genealogy-tree-page .lineage-tree-filters > button {
+    flex: 0 0 auto;
+    min-height: 36px;
+    padding: 6px 12px !important;
+    white-space: nowrap;
+  }
+
+  body.genealogy-tree-page .genealogy-tree-scroll {
+    min-height: min(560px, calc(100dvh - 250px)) !important;
+    height: min(62vh, 560px) !important;
+  }
+
+  /* 树区需要保持安静，AI 圆球仍保留但问候气泡不遮住树和图例。 */
+  body.genealogy-tree-page #ai-fab .ai-bubble {
+    display: none !important;
+  }
+}

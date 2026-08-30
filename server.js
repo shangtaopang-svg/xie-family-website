@@ -358,20 +358,36 @@ function gzipSend(req, res, status, headers, data) {
 const AI_INJECT_BLACKLIST = new Set(['/admin.html', '/recover.html', '/entrance.html']);
 const AI_INJECT_MARK = '/js/ai-assistant.js';
 const PUBLIC_ACCESS_MARK = '/js/public-access-gate.js';
-const PUBLIC_ACCESS_SCRIPT_VERSION = '20260828-trusted-device-01';
+const PUBLIC_ACCESS_SCRIPT_VERSION = '20260830-access-mobile-01';
+const PUBLIC_ACCESS_STYLE_VERSION = '20260830-access-mobile-01';
+const MEDIA_PERFORMANCE_MARK = '/js/media-performance.js';
+const MEDIA_PERFORMANCE_VERSION = '20260830-media-01';
+const PWA_MARK = '/js/pwa.js';
+const PWA_VERSION = '20260830-pwa-01';
 function injectAiHtml(buf) {
   const source = buf.toString('utf-8');
-  const html = source.replace(/(?:\.\.\/|\/)js\/public-access-gate\.js\?v=[^"'\s>]+/g, '/js/public-access-gate.js?v=' + PUBLIC_ACCESS_SCRIPT_VERSION);
+  const html = source
+    .replace(/(?:\.\.\/|\/)js\/public-access-gate\.js\?v=[^"'\s>]+/g, '/js/public-access-gate.js?v=' + PUBLIC_ACCESS_SCRIPT_VERSION)
+    .replace(/(?:\.\.\/|\/)?css\/public-access-gate\.css(?:\?v=[^"'\s>]+)?/g, '/css/public-access-gate.css?v=' + PUBLIC_ACCESS_STYLE_VERSION)
+    // CSS 使用 immutable 缓存；每次移动端公共样式调整都必须切换版本，避免手机继续使用旧导航布局。
+    .replace(/(?:\.\.\/|\/)?css\/style\.css(?:\?v=[^"'\s>]+)?/g, '/css/style.css?v=20260830-mobile-nav-05')
+    .replace(/(?:\.\.\/|\/)?css\/ai\.css(?:\?v=[^"'\s>]+)?/g, '/css/ai.css?v=20260830-mobile-nav-03');
   const m = html.search(/<\/body>/i);
   if (m === -1) return buf; // 无 body（HTML 片段）则跳过
   const inject = [];
   if (html.indexOf(AI_INJECT_MARK) === -1) {
-    inject.push('<link rel="stylesheet" href="/css/ai.css">');
+    inject.push('<link rel="stylesheet" href="/css/ai.css?v=20260830-mobile-nav-03">');
     inject.push('<script src="/js/ai-assistant.js" defer></script>');
   }
   if (html.indexOf(PUBLIC_ACCESS_MARK) === -1) {
-    inject.push('<link rel="stylesheet" href="/css/public-access-gate.css?v=20260827-access-01">');
+    inject.push('<link rel="stylesheet" href="/css/public-access-gate.css?v=' + PUBLIC_ACCESS_STYLE_VERSION + '">');
     inject.push('<script src="/js/public-access-gate.js?v=' + PUBLIC_ACCESS_SCRIPT_VERSION + '" defer></script>');
+  }
+  if (html.indexOf(MEDIA_PERFORMANCE_MARK) === -1) {
+    inject.push('<script src="/js/media-performance.js?v=' + MEDIA_PERFORMANCE_VERSION + '" defer></script>');
+  }
+  if (html.indexOf(PWA_MARK) === -1) {
+    inject.push('<script src="/js/pwa.js?v=' + PWA_VERSION + '" defer></script>');
   }
   if (!inject.length && html === source) return buf;
   return Buffer.from(html.slice(0, m) + inject.join('\n') + '\n</body>' + html.slice(m + 7), 'utf-8');

@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title data-i18n="page.activities.title">家族活动 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../css/style.css?v=20260858">
+  <link rel="stylesheet" href="../css/style.css?v=20260830-mobile-nav-03">
   <script defer src="../js/i18n.js"></script>
   <style>
     /* Activity card photo carousel */
@@ -343,7 +343,7 @@
       if (upcomingActivities.length > 0) {
         html += '<section id="upcoming" style="margin-bottom:50px;">';
         html += '<div class="section-title"><h2>活动预告</h2><div class="divider"></div></div>';
-        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">';
+        html += '<div class="mobile-stack-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">';
         for (var ui = 0; ui < upcomingActivities.length; ui++) {
           var ua = upcomingActivities[ui];
           var sc = ua.status === '即将举行' ? 'var(--accent-orange)' : 'var(--accent-orange-dim)';

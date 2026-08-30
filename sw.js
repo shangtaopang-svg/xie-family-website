@@ -1,8 +1,17 @@
-const CACHE = 'xie-clan-v7';
+const CACHE = 'xie-clan-v8';
 const STATIC = [
-  '/css/style.css?v=5',
-  '/js/i18n.js?v=9',
+  '/',
+  '/index.html',
+  '/offline.html',
+  '/manifest.json',
+  '/css/style.css?v=20260830-mobile-nav-05',
+  '/css/ai.css?v=20260830-mobile-nav-03',
+  '/css/public-access-gate.css?v=20260830-access-mobile-01',
+  '/js/i18n.js?v=5',
   '/js/main.js?v=10',
+  '/js/ai-assistant.js',
+  '/js/public-access-gate.js?v=20260830-access-mobile-01',
+  '/js/media-performance.js?v=20260830-media-01',
   '/favicon.svg',
   '/favicon.ico'
 ];
@@ -23,6 +32,10 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (url.origin !== location.origin) return;
@@ -32,7 +45,10 @@ self.addEventListener('fetch', e => {
   if (url.pathname.startsWith('/uploads/')) return;
 
   // Skip HTML navigation - let them go directly to network (no SW delay)
-  if (e.request.mode === 'navigate') return;
+  if (e.request.mode === 'navigate') {
+    e.respondWith(fetch(e.request).catch(() => caches.match('/offline.html')));
+    return;
+  }
 
   const path = url.pathname;
 
@@ -42,8 +58,10 @@ self.addEventListener('fetch', e => {
     e.respondWith(
       fetch(e.request)
         .then(res => {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
+          if (res.ok) {
+            const clone = res.clone();
+            caches.open(CACHE).then(c => c.put(e.request, clone));
+          }
           return res;
         })
         .catch(() => caches.match(e.request).then(r => r || Response.error()))
@@ -55,7 +73,7 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     caches.match(e.request).then(r => r || fetch(e.request).then(res => {
       const ct = res.headers.get('Content-Type') || '';
-      if (ct.match(/image|font/)) {
+      if (res.ok && ct.match(/image|font/)) {
         const clone = res.clone();
         caches.open(CACHE).then(c => c.put(e.request, clone));
       }

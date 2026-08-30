@@ -775,6 +775,60 @@
       }) || null;
   }
 
+  // 咨询入口、查询统计和世系图统一读取 canonical 数据里的配对字段。
+  // 只有同时存在出继端、入继端和承嗣父，才注册为有效关系；不再仅凭 biography
+  // 或 adopt_note 的文字顺序猜测，避免页面与 AI 对同一关系出现不同答案。
+  function canonicalAdoptionRelations() {
+    const groups = new Map();
+    state.data.forEach((person) => {
+      const pairId = text(person.adoption_pair_id).trim();
+      if (!pairId) return;
+      if (!groups.has(pairId)) groups.set(pairId, []);
+      groups.get(pairId).push(person);
+    });
+    const relations = [];
+    groups.forEach((records, pairId) => {
+      const outPerson = records.find((person) => text(person.adoption_status).trim() === 'out');
+      const adoptiveRecord = records.find((person) => text(person.adoption_status).trim() === 'in');
+      const outId = toId(outPerson && (outPerson.adoption_pair_out_id ?? outPerson.adoption_out_id));
+      const inId = toId(adoptiveRecord && (adoptiveRecord.adoption_pair_in_id ?? adoptiveRecord.adoption_in_id));
+      const adoptiveParentId = toId(outPerson && outPerson.adoption_adoptive_parent_id);
+      if (!outPerson || !adoptiveRecord || outId === null || inId === null || adoptiveParentId === null) return;
+      if (String(personId(outPerson)) !== String(outId) || String(personId(adoptiveRecord)) !== String(inId)) return;
+      if (String(toId(adoptiveRecord.adoption_adoptive_parent_id)) !== String(adoptiveParentId)) return;
+      const biologicalParent = getPerson(outPerson.father_id);
+      const adoptiveParent = getPerson(adoptiveParentId);
+      if (!biologicalParent || !adoptiveParent || String(personId(biologicalParent)) === String(personId(adoptiveParent))) return;
+      relations.push({
+        order: relations.length + 1,
+        outId,
+        inId,
+        adoptiveParentId,
+        adoptiveParentLabel: (() => {
+          const canonicalName = text(adoptiveParent.name).trim();
+          const sourceText = text(outPerson.adoption_relation_source || adoptiveRecord.adoption_relation_source || outPerson.adopt_note || adoptiveRecord.adopt_note);
+          const sourceParent = sourceText.match(/给\s*([\u4e00-\u9fff]{1,8})为嗣/);
+          return sourceParent && sourceParent[1] !== canonicalName
+            ? `${sourceParent[1]}（canonical记录：${canonicalName}）`
+            : canonicalName;
+        })(),
+        source: text(outPerson.adoption_relation_source || adoptiveRecord.adoption_relation_source || outPerson.adopt_note || adoptiveRecord.adopt_note),
+        note: text(outPerson.adopt_note || adoptiveRecord.adopt_note),
+        outPerson,
+        adoptiveRecord,
+        adoptiveParent
+      });
+    });
+    relations.sort((a, b) => {
+      const ag = Number(a.outPerson?.generation_num);
+      const bg = Number(b.outPerson?.generation_num);
+      return (Number.isFinite(ag) ? ag : 9999) - (Number.isFinite(bg) ? bg : 9999)
+        || Number(personId(a.outPerson) || 0) - Number(personId(b.outPerson) || 0);
+    });
+    relations.forEach((relation, index) => { relation.order = index + 1; });
+    return relations;
+  }
+
   function buildAdoptionIndex() {
     // 所有父子查询先走内存索引；编辑、导入、修正关系后会在这里重新建立一次。
     rebuildDataIndexes();
@@ -825,7 +879,11 @@
     };
     // 下面的旧版自动推断逻辑已由权威名单替代，保留位置仅用于下一段统一注册。
     const authorityErrors = [];
-    AUTHORITATIVE_ADOPTION_RELATIONS.forEach((config) => {
+    const canonicalRelations = canonicalAdoptionRelations();
+    if (!canonicalRelations.length && state.data.length) {
+      authorityErrors.push('canonical 数据没有可用的出继／入继配对字段');
+    }
+    canonicalRelations.forEach((config) => {
       const outPerson = getPerson(config.outId);
       const adoptiveRecord = getPerson(config.inId);
       const adoptiveParent = getPerson(config.adoptiveParentId);
@@ -1763,12 +1821,14 @@
       const relation = row.relation;
       if (row.kind === 'follow-father') {
         const father = relation.father;
-        return `<tr><td class="adoption-table-index" data-label="#">34-1</td><td class="adoption-table-generation" data-label="世次">第${escapeHtml(generationOf(out) || '—')}世</td><td class="adoption-table-pair" data-label="出继 / 入继"><div class="adoption-table-follow"><strong>${adoptionPersonLink(out, 'out')}</strong><span class="adoption-table-follow-label">随父出继</span></div></td><td class="adoption-table-parents" data-label="父亲关系"><div><span class="adoption-table-cell-label">亲生父亲</span>${adoptionParentLink(father, '亲生父亲')}<span class="adoption-table-arrow" aria-hidden="true">＝</span><span class="adoption-table-cell-label">承嗣父</span>${adoptionParentLink(father, '承嗣父')}</div></td><td class="adoption-table-source" data-label="谱载说明">${escapeHtml(relation.source || '随父出继')}</td></tr>`;
+        return `<tr><td class="adoption-table-index" data-label="#">随父</td><td class="adoption-table-generation" data-label="世次">第${escapeHtml(generationOf(out) || '—')}世</td><td class="adoption-table-pair" data-label="出继 / 入继"><div class="adoption-table-follow"><strong>${adoptionPersonLink(out, 'out')}</strong><span class="adoption-table-follow-label">随父出继</span></div></td><td class="adoption-table-parents" data-label="父亲关系"><div><span class="adoption-table-cell-label">亲生父亲</span>${adoptionParentLink(father, '亲生父亲')}<span class="adoption-table-arrow" aria-hidden="true">—</span><span class="adoption-table-cell-label">承嗣父</span><span class="adoption-table-muted">无独立承嗣父记录</span></div></td><td class="adoption-table-source" data-label="谱载说明">${escapeHtml(relation.source || '随父出继')}</td></tr>`;
       }
       const adoptiveFatherId = (incoming && (incoming.adoption_adoptive_parent_id || incoming.adoptive_parent_id)) || null;
       const biologicalFather = relation?.biologicalParent || (out ? getPerson(out.father_id) : null);
       const adoptiveFather = relation?.adoptiveParent || getPerson(adoptiveFatherId) || (incoming ? getPerson(incoming.father_id) : null);
-      const source = [relation?.source || (out && (out.adoption_relation_source || out.adopt_note)) || (incoming && (incoming.adoption_relation_source || incoming.adopt_note)), relation?.note].filter(Boolean).join('；').trim();
+      const rawNote = text(relation?.note);
+      const specialNote = rawNote.match(/兼祧|兼顶|双祧|兼继/);
+      const source = [relation?.source || (out && (out.adoption_relation_source || out.adopt_note)) || (incoming && (incoming.adoption_relation_source || incoming.adopt_note)), specialNote ? `备注：${specialNote[0]}` : ''].filter(Boolean).join('；').trim();
       const generation = generationOf(out || incoming);
       return `<tr><td class="adoption-table-index" data-label="#">${escapeHtml(relation.order || index + 1)}</td><td class="adoption-table-generation" data-label="世次">第${escapeHtml(generation || '—')}世</td><td class="adoption-table-pair" data-label="出继 / 入继"><div class="adoption-table-pair-line"><span class="adoption-table-cell-label">出继</span>${adoptionPersonLink(out, 'out')}<span class="adoption-table-arrow" aria-hidden="true">→</span><span class="adoption-table-cell-label">入继</span>${adoptionPersonLink(incoming, 'in')}</div></td><td class="adoption-table-parents" data-label="父亲关系"><div><span class="adoption-table-cell-label">亲生父亲</span>${adoptionParentLink(biologicalFather, '亲生父亲')}<span class="adoption-table-arrow" aria-hidden="true">→</span><span class="adoption-table-cell-label">承嗣父</span>${adoptionParentLink(adoptiveFather, '承嗣父', relation?.adoptiveParentLabel)}</div></td><td class="adoption-table-source" data-label="谱载说明">${escapeHtml(source || '原始谱载未详')}</td></tr>`;
     }).join('');
@@ -1777,7 +1837,7 @@
     const relationCount = pairRows.length;
     const independentIncomingCount = pairRows.filter((row) => row.incoming).length;
     const incomingNote = `<em class="is-ok">出继 ${relationCount} 人、入继 ${independentIncomingCount} 人，数量相等${followRowsCount ? `；另有 ${followRowsCount} 条随父出继` : ''}</em>`;
-    container.innerHTML = `<div class="adoption-table-summary"><strong>共 ${relationCount} 组出继 / 入继关系</strong><span>出继 ${relationCount} 人 · 入继 ${independentIncomingCount} 人 · 独立入继卡 ${independentIncomingCount} 张 · 数据源：用户核对表</span>${incomingNote}</div><div class="adoption-table-scroll"><table><thead><tr><th>#</th><th>世次</th><th>出继 → 入继</th><th>亲生父亲 → 承嗣父</th><th>谱载说明</th></tr></thead><tbody>${tableRows || '<tr><td colspan="5" class="adoption-table-empty">当前主数据暂无结构化出继／入继记录。</td></tr>'}</tbody></table></div>`;
+    container.innerHTML = `<div class="adoption-table-summary"><strong>共 ${relationCount} 组出继 / 入继关系</strong><span>出继 ${relationCount} 人 · 入继 ${independentIncomingCount} 人 · 独立入继卡 ${independentIncomingCount} 张 · 数据源：族谱管理后台 canonical 数据</span>${incomingNote}</div><div class="adoption-table-scroll"><table><thead><tr><th>#</th><th>世次</th><th>出继 → 入继</th><th>亲生父亲 → 承嗣父</th><th>谱载说明</th></tr></thead><tbody>${tableRows || '<tr><td colspan="5" class="adoption-table-empty">当前主数据暂无结构化出继／入继记录。</td></tr>'}</tbody></table></div>`;
   }
 
   function renderQueryStats() {
