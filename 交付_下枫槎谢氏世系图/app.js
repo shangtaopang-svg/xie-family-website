@@ -2880,7 +2880,11 @@
     const pan = state.pdfBook.panActive ? (state.pdfBook.pan || { x: 0, y: 0 }) : { x: 0, y: 0 };
     const zoomStatus = $('#query-book-zoom-status');
     if (zoomStatus) zoomStatus.textContent = `${Math.round(zoom * 100)}%`;
-    if (reader) reader.dataset.bookZoom = String(Math.round(zoom * 100));
+    if (reader) {
+      reader.dataset.bookZoom = String(Math.round(zoom * 100));
+      reader.dataset.bookPanActive = state.pdfBook.panActive ? 'true' : 'false';
+      reader.dataset.bookPan = `${Number(pan.x) || 0},${Number(pan.y) || 0}`;
+    }
     $$('[data-action="query-book-zoom-out"]').forEach((button) => { button.disabled = zoom <= 1.001; });
     $$('[data-action="query-book-zoom-in"]').forEach((button) => { button.disabled = zoom >= 2.999; });
     $$('[data-action="query-book-zoom-reset"]').forEach((button) => { button.disabled = zoom <= 1.001 && !pan.x && !pan.y; });
