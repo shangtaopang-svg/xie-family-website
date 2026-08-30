@@ -2869,6 +2869,11 @@
     return isBookSinglePageMobile() ? 1.5 : 1;
   }
 
+  function clampPdfBookPan(value, min, max) {
+    const numeric = Number(value);
+    return Math.max(min, Math.min(max, Number.isFinite(numeric) ? numeric : 0));
+  }
+
   function applyPdfBookZoom() {
     const reader = $('#query-book-reader');
     const zoom = clamp(Number(state.pdfBook.zoom) || 1, 1, 3);
@@ -2882,8 +2887,6 @@
     if (zoomStatus) zoomStatus.textContent = `${Math.round(zoom * 100)}%`;
     if (reader) {
       reader.dataset.bookZoom = String(Math.round(zoom * 100));
-      reader.dataset.bookPanActive = state.pdfBook.panActive ? 'true' : 'false';
-      reader.dataset.bookPan = `${Number(pan.x) || 0},${Number(pan.y) || 0}`;
     }
     $$('[data-action="query-book-zoom-out"]').forEach((button) => { button.disabled = zoom <= 1.001; });
     $$('[data-action="query-book-zoom-in"]').forEach((button) => { button.disabled = zoom >= 2.999; });
@@ -2894,8 +2897,8 @@
       const panelHeight = panel.clientHeight || 0;
       const limitX = Math.max(0, (panelWidth * zoom - panelWidth) / 2);
       const limitY = Math.max(0, (panelHeight * zoom - panelHeight) / 2);
-      const x = clamp(Number(pan.x) || 0, -limitX, limitX);
-      const y = clamp(Number(pan.y) || 0, -limitY, limitY);
+      const x = clampPdfBookPan(pan.x, -limitX, limitX);
+      const y = clampPdfBookPan(pan.y, -limitY, limitY);
       const image = panel.querySelector('.query-book-page-image');
       if (image) {
         image.style.setProperty('--book-zoom', zoom.toFixed(2));
@@ -2950,7 +2953,7 @@
       const nextY = session.originY + event.clientY - session.startY;
       if (Math.abs(event.clientX - session.startX) > 5 || Math.abs(event.clientY - session.startY) > 5) session.moved = true;
       if (session.moved) state.pdfBook.panActive = true;
-      state.pdfBook.pan = { x: clamp(nextX, -limitX, limitX), y: clamp(nextY, -limitY, limitY) };
+      state.pdfBook.pan = { x: clampPdfBookPan(nextX, -limitX, limitX), y: clampPdfBookPan(nextY, -limitY, limitY) };
       applyPdfBookZoom();
       event.preventDefault();
     }, { passive: false });
