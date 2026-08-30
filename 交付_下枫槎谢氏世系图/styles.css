@@ -3682,6 +3682,15 @@ body.query-book-overlay-open { overflow: hidden !important; }
     padding: 0 !important;
     background: #f9f5ec !important;
   }
+  .query-book-reader-overlay .query-book-page-panel {
+    /* 双指缩放由电子族谱脚本处理，不能让浏览器先接管手势。 */
+    touch-action: none !important;
+  }
+  .query-book-reader-overlay .query-book-zoom-controls {
+    position: relative;
+    z-index: 5;
+    pointer-events: auto;
+  }
   .query-book-reader-overlay .query-book-spread {
     grid-template-columns: minmax(0, 1fr) !important;
     gap: 0 !important;
