@@ -1473,19 +1473,18 @@
   }
 
   function isLineagePortraitViewport() {
-    const orientationType = text(window.screen?.orientation?.type).toLowerCase();
-    if (orientationType.includes('portrait')) return true;
-    if (orientationType.includes('landscape')) return false;
-
-    // 某些手机 WebView 在进入 fullscreen 后会把 innerWidth/innerHeight
-    // 报成横向，但设备实际仍是竖屏；没有 Screen Orientation API 时优先看屏幕尺寸。
-    const screenWidth = Number(window.screen?.width) || 0;
-    const screenHeight = Number(window.screen?.height) || 0;
-    if (screenWidth && screenHeight && screenWidth !== screenHeight) return screenWidth < screenHeight;
-
+    // 先看当前页面视口。浏览器响应式测试、桌面端模拟手机以及部分 WebView
+    // 可能让 screen.orientation 仍报桌面横屏，不能用它覆盖当前的竖向页面视口。
     const width = Number(window.innerWidth || document.documentElement?.clientWidth) || 0;
     const height = Number(window.innerHeight || document.documentElement?.clientHeight) || 0;
     if (width && height && width !== height) return width < height;
+
+    const orientationType = text(window.screen?.orientation?.type).toLowerCase();
+    if (orientationType.includes('portrait')) return true;
+    if (orientationType.includes('landscape')) return false;
+    const screenWidth = Number(window.screen?.width) || 0;
+    const screenHeight = Number(window.screen?.height) || 0;
+    if (screenWidth && screenHeight && screenWidth !== screenHeight) return screenWidth < screenHeight;
     return true;
   }
 
@@ -1528,10 +1527,10 @@
     const orientationTask = lock
       ? fullscreenTask.then(() => Promise.resolve(lock('landscape')).then(() => true).catch(() => false))
       : fullscreenTask.then(() => false);
-    orientationTask.finally(() => syncLineageLandscapeFallback(true));
+    orientationTask.finally(() => syncLineageLandscapeFallback());
     // lock() 在部分 WebView 会长时间 pending；不依赖 Promise 结束也做一次方向确认。
-    window.setTimeout(() => syncLineageLandscapeFallback(true), 180);
-    window.setTimeout(() => syncLineageLandscapeFallback(true), 650);
+    window.setTimeout(() => syncLineageLandscapeFallback(), 180);
+    window.setTimeout(() => syncLineageLandscapeFallback(), 650);
   }
 
   function releaseLineageLandscape() {
