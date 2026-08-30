@@ -4009,6 +4009,8 @@ html.query-book-landscape-fallback .query-book-reader-overlay .query-book-page-p
 }
 .query-book-page-panel[data-book-zoomed="true"] { cursor: grab !important; touch-action: none; }
 .query-book-page-panel[data-book-zoomed="true"] .query-book-page-image { cursor: grab; }
+.query-book-page-panel.is-book-pinch-zooming,
+.query-book-page-panel.is-book-pinch-zooming .query-book-page-image { cursor: zoom-in !important; touch-action: none; }
 .query-book-page-panel.is-book-panning,
 .query-book-page-panel.is-book-panning .query-book-page-image { cursor: grabbing !important; }
 .query-book-page-panel.is-book-panning .query-book-page-image { transition: none; }

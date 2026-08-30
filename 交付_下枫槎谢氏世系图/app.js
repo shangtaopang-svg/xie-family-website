@@ -3016,9 +3016,44 @@
   }
 
   function wireBookZoomPan() {
+    const pointers = new Map();
+    let pinchSession = null;
+
+    const pinchMetrics = () => {
+      const pair = Array.from(pointers.values()).slice(0, 2);
+      if (pair.length < 2 || pair[0].panel !== pair[1].panel) return null;
+      const dx = pair[1].x - pair[0].x;
+      const dy = pair[1].y - pair[0].y;
+      return {
+        panel: pair[0].panel,
+        distance: Math.max(1, Math.hypot(dx, dy))
+      };
+    };
+
     document.addEventListener('pointerdown', (event) => {
       const panel = event.target.closest && event.target.closest('.query-book-page-panel');
-      if (!panel || panel.hidden || state.pdfBook.zoom <= 1.001 || event.target.closest('button')) return;
+      if (!panel || panel.hidden || event.target.closest('button')) return;
+      if (event.pointerType === 'touch') {
+        pointers.set(event.pointerId, { panel, x: event.clientX, y: event.clientY });
+        const metrics = pinchMetrics();
+        if (metrics) {
+          pinchSession = {
+            panel: metrics.panel,
+            startDistance: metrics.distance,
+            startZoom: state.pdfBook.zoom
+          };
+          if (state.pdfBook.panSession) {
+            state.pdfBook.panSession.panel.classList.remove('is-book-panning');
+            state.pdfBook.panSession = null;
+          }
+          pinchSession.panel.classList.add('is-book-pinch-zooming');
+          state.pdfBook.suppressTurnClick = true;
+          try { panel.setPointerCapture(event.pointerId); } catch (error) {}
+          event.preventDefault();
+          return;
+        }
+      }
+      if (state.pdfBook.zoom <= 1.001) return;
       state.pdfBook.panSession = {
         pointerId: event.pointerId,
         panel,
@@ -3033,6 +3068,18 @@
       event.preventDefault();
     }, { passive: false });
     document.addEventListener('pointermove', (event) => {
+      if (event.pointerType === 'touch' && pointers.has(event.pointerId)) {
+        const pointer = pointers.get(event.pointerId);
+        pointer.x = event.clientX;
+        pointer.y = event.clientY;
+        const metrics = pinchMetrics();
+        if (pinchSession && metrics && metrics.panel === pinchSession.panel) {
+          const factor = metrics.distance / pinchSession.startDistance;
+          setPdfBookZoom(pinchSession.startZoom * factor);
+          event.preventDefault();
+          return;
+        }
+      }
       const session = state.pdfBook.panSession;
       if (!session || session.pointerId !== event.pointerId) return;
       const panel = session.panel;
@@ -3048,6 +3095,16 @@
       event.preventDefault();
     }, { passive: false });
     const endPan = (event) => {
+      if (event.pointerId != null && pointers.has(event.pointerId)) pointers.delete(event.pointerId);
+      if (pinchSession && pointers.size < 2) {
+        pinchSession.panel.classList.remove('is-book-pinch-zooming');
+        pinchSession = null;
+        state.pdfBook.panSession = null;
+        state.pdfBook.panActive = false;
+        state.pdfBook.pan = { x: 0, y: 0 };
+        applyPdfBookZoom();
+        return;
+      }
       const session = state.pdfBook.panSession;
       if (!session || (event.pointerId != null && session.pointerId !== event.pointerId)) return;
       session.panel.classList.remove('is-book-panning');
