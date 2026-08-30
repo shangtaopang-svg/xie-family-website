@@ -4123,6 +4123,7 @@ html.lineage-landscape-fallback #app.is-immersive .tree-viewport,
 body.lineage-landscape-fallback #app.is-immersive .tree-area,
 body.lineage-landscape-fallback #app.is-immersive .tree-viewport {
   width: 100% !important;
+  max-width: none !important;
   height: 100% !important;
   min-height: 0 !important;
 }
