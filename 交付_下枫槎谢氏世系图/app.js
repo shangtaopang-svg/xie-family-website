@@ -3167,31 +3167,53 @@
       if (!AudioContextCtor) return;
       if (!pdfBookAudioContext) pdfBookAudioContext = new AudioContextCtor();
       const context = pdfBookAudioContext;
-      if (context.state === 'suspended') context.resume().catch(() => {});
-      const duration = 0.16;
-      const length = Math.max(1, Math.floor(context.sampleRate * duration));
-      const buffer = context.createBuffer(1, length, context.sampleRate);
-      const samples = buffer.getChannelData(0);
-      for (let index = 0; index < samples.length; index += 1) {
-        const progress = index / samples.length;
-        const envelope = Math.pow(1 - progress, 2.15) * (0.55 + 0.45 * Math.sin(progress * Math.PI));
-        samples[index] = (Math.random() * 2 - 1) * envelope;
+      const play = () => {
+        const now = context.currentTime;
+        // 清脆的“咔”声：短促三角波下滑，避免只有很轻的白噪声而听不出翻页。
+        const click = context.createOscillator();
+        const clickGain = context.createGain();
+        click.type = 'triangle';
+        click.frequency.setValueAtTime(1650, now);
+        click.frequency.exponentialRampToValueAtTime(560, now + 0.075);
+        clickGain.gain.setValueAtTime(0.0001, now);
+        clickGain.gain.exponentialRampToValueAtTime(0.2, now + 0.006);
+        clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.095);
+        click.connect(clickGain);
+        clickGain.connect(context.destination);
+        click.start(now);
+        click.stop(now + 0.11);
+
+        // 叠加很短的纸张摩擦声，让翻页声音更像真实书页。
+        const duration = 0.19;
+        const length = Math.max(1, Math.floor(context.sampleRate * duration));
+        const buffer = context.createBuffer(1, length, context.sampleRate);
+        const samples = buffer.getChannelData(0);
+        for (let index = 0; index < samples.length; index += 1) {
+          const progress = index / samples.length;
+          const envelope = Math.pow(1 - progress, 2.35) * (0.6 + 0.4 * Math.sin(progress * Math.PI));
+          samples[index] = (Math.random() * 2 - 1) * envelope;
+        }
+        const rustle = context.createBufferSource();
+        const filter = context.createBiquadFilter();
+        const rustleGain = context.createGain();
+        filter.type = 'bandpass';
+        filter.frequency.value = 3600;
+        filter.Q.value = 0.75;
+        rustleGain.gain.setValueAtTime(0.0001, now);
+        rustleGain.gain.exponentialRampToValueAtTime(0.16, now + 0.01);
+        rustleGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+        rustle.buffer = buffer;
+        rustle.connect(filter);
+        filter.connect(rustleGain);
+        rustleGain.connect(context.destination);
+        rustle.start(now);
+        rustle.stop(now + duration + 0.02);
+      };
+      if (context.state === 'suspended') {
+        context.resume().then(play).catch(() => {});
+      } else {
+        play();
       }
-      const source = context.createBufferSource();
-      const filter = context.createBiquadFilter();
-      const gain = context.createGain();
-      filter.type = 'bandpass';
-      filter.frequency.value = 2800;
-      filter.Q.value = 0.7;
-      gain.gain.setValueAtTime(0.0001, context.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.12, context.currentTime + 0.012);
-      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration);
-      source.buffer = buffer;
-      source.connect(filter);
-      filter.connect(gain);
-      gain.connect(context.destination);
-      source.start();
-      source.stop(context.currentTime + duration + 0.02);
     } catch (error) {}
   }
 
