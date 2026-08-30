@@ -2893,6 +2893,8 @@
         image.style.setProperty('--book-zoom', zoom.toFixed(2));
         image.style.setProperty('--book-pan-x', `${x}px`);
         image.style.setProperty('--book-pan-y', `${y}px`);
+        image.style.setProperty('--book-transform-x', `${(panelWidth - panelWidth * zoom) / 2 + x}px`);
+        image.style.setProperty('--book-transform-y', `${(panelHeight - panelHeight * zoom) / 2 + y}px`);
       }
     });
   }
@@ -3076,6 +3078,7 @@
   function forceBookLandscape(reader) {
     if (!reader || !isBookLandscapeTarget()) return;
     applyBookLandscapeCanvas(reader);
+    applyPdfBookZoom();
   }
 
   function syncBookLandscapeFallback() {
@@ -3083,6 +3086,7 @@
     if (!reader || reader.hidden || !isBookLandscapeTarget()) return;
     // 每次尺寸变化都重新计算，兼容地址栏收起、全屏切换和系统旋转。
     applyBookLandscapeCanvas(reader);
+    applyPdfBookZoom();
   }
 
   function requestBookLandscape(reader) {
@@ -3186,6 +3190,7 @@
     if (reader) {
       reader.hidden = false;
       document.body.classList.add('query-book-overlay-open');
+      applyPdfBookZoom();
       // 先按物理屏幕方向切换，避免内置浏览器的方向锁 Promise 阻塞视觉布局。
       forceBookLandscape(reader);
       requestBookLandscape(reader);

@@ -4002,8 +4002,8 @@ html.query-book-landscape-fallback .query-book-reader-overlay .query-book-page-p
   text-align: center;
 }
 .query-book-page-panel .query-book-page-image {
-  transform: translate3d(var(--book-pan-x, 0px), var(--book-pan-y, 0px), 0) scale(var(--book-zoom, 1)) !important;
-  transform-origin: center center !important;
+  transform: translate3d(var(--book-transform-x, 0px), var(--book-transform-y, 0px), 0) scale(var(--book-zoom, 1)) !important;
+  transform-origin: top left !important;
   transition: transform 180ms ease;
   will-change: transform;
 }
