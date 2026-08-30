@@ -2729,6 +2729,11 @@
     return PDF_BOOKS[book] || PDF_BOOKS.upper;
   }
 
+  function pdfBookFirstPage(book) {
+    // 下册第 1 页为空白页，电子阅读从实际内容页第 2 页开始。
+    return book === 'lower' ? 2 : 1;
+  }
+
   function pdfBookPageImageUrl(book, page) {
     const definition = pdfBookDefinition(book);
     const safePage = Math.max(1, Number.parseInt(page, 10) || 1);
@@ -2814,7 +2819,8 @@
     const book = state.pdfBook.book;
     const definition = pdfBookDefinition(book);
     const totalPages = Math.max(1, Number(definition.pages) || 1);
-    const page = Math.min(totalPages, Math.max(1, Number.parseInt(state.pdfBook.page, 10) || 1));
+    const firstPage = pdfBookFirstPage(book);
+    const page = Math.min(totalPages, Math.max(firstPage, Number.parseInt(state.pdfBook.page, 10) || firstPage));
     state.pdfBook.page = page;
     const singlePageMobile = isBookSinglePageMobile();
     const nextPage = page + 1;
@@ -2842,7 +2848,7 @@
       frameRight.alt = '';
       frameRight.src = 'about:blank';
     }
-    const previousDisabled = page <= 1;
+    const previousDisabled = page <= firstPage;
     const nextDisabled = page >= totalPages;
     if (leftPanel) {
       leftPanel.classList.toggle('is-disabled', previousDisabled);
@@ -3005,10 +3011,11 @@
   function turnPdfBook(direction) {
     const definition = pdfBookDefinition(state.pdfBook.book);
     const totalPages = Math.max(1, Number(definition.pages) || 1);
-    const currentPage = Math.max(1, Number.parseInt(state.pdfBook.page, 10) || 1);
+    const firstPage = pdfBookFirstPage(state.pdfBook.book);
+    const currentPage = Math.max(firstPage, Number.parseInt(state.pdfBook.page, 10) || firstPage);
     const step = isBookSinglePageMobile() ? 1 : 2;
     const targetPage = currentPage + (direction < 0 ? -step : step);
-    if (targetPage < 1 || targetPage > totalPages) return;
+    if (targetPage < firstPage || targetPage > totalPages) return;
     state.pdfBook.page = targetPage;
     resetPdfBookPan();
     playPdfBookTurnSound();
@@ -3196,7 +3203,8 @@
 
   function openPdfBook(book, page) {
     state.pdfBook.book = PDF_BOOKS[book] ? book : 'upper';
-    state.pdfBook.page = Math.max(1, Number.parseInt(page, 10) || 1);
+    const firstPage = pdfBookFirstPage(state.pdfBook.book);
+    state.pdfBook.page = Math.max(firstPage, Number.parseInt(page, 10) || firstPage);
     state.pdfBook.zoom = defaultPdfBookZoom();
     state.pdfBook.pan = { x: 0, y: 0 };
     state.pdfBook.panActive = false;
