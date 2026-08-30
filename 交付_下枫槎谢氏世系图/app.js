@@ -72,7 +72,11 @@
       page: 1,
       query: '',
       focus: null,
-      fullscreenOpened: false
+      fullscreenOpened: false,
+      zoom: 1.5,
+      pan: { x: 0, y: 0 },
+      panSession: null,
+      suppressTurnClick: false
     },
     mode: 'view',
     draftId: null,
@@ -2857,6 +2861,93 @@
           ? (singlePageMobile ? `第${page}页` : `左页 · 第${page}页`)
           : '';
     });
+    applyPdfBookZoom();
+  }
+
+  function defaultPdfBookZoom() {
+    return isBookSinglePageMobile() ? 1.5 : 1;
+  }
+
+  function applyPdfBookZoom() {
+    const reader = $('#query-book-reader');
+    const zoom = clamp(Number(state.pdfBook.zoom) || 1, 1, 3);
+    state.pdfBook.zoom = zoom;
+    if (zoom <= 1.001) state.pdfBook.pan = { x: 0, y: 0 };
+    const pan = state.pdfBook.pan || { x: 0, y: 0 };
+    const zoomStatus = $('#query-book-zoom-status');
+    if (zoomStatus) zoomStatus.textContent = `${Math.round(zoom * 100)}%`;
+    if (reader) reader.dataset.bookZoom = String(Math.round(zoom * 100));
+    $$('[data-action="query-book-zoom-out"]').forEach((button) => { button.disabled = zoom <= 1.001; });
+    $$('[data-action="query-book-zoom-in"]').forEach((button) => { button.disabled = zoom >= 2.999; });
+    $$('[data-action="query-book-zoom-reset"]').forEach((button) => { button.disabled = zoom <= 1.001 && !pan.x && !pan.y; });
+    $$('.query-book-page-panel').forEach((panel) => {
+      panel.dataset.bookZoomed = zoom > 1.001 ? 'true' : 'false';
+      const panelWidth = panel.clientWidth || 0;
+      const panelHeight = panel.clientHeight || 0;
+      const limitX = Math.max(0, (panelWidth * zoom - panelWidth) / 2);
+      const limitY = Math.max(0, (panelHeight * zoom - panelHeight) / 2);
+      const x = clamp(Number(pan.x) || 0, -limitX, limitX);
+      const y = clamp(Number(pan.y) || 0, -limitY, limitY);
+      const image = panel.querySelector('.query-book-page-image');
+      if (image) {
+        image.style.setProperty('--book-zoom', zoom.toFixed(2));
+        image.style.setProperty('--book-pan-x', `${x}px`);
+        image.style.setProperty('--book-pan-y', `${y}px`);
+      }
+    });
+  }
+
+  function setPdfBookZoom(value) {
+    state.pdfBook.zoom = clamp(Number(value) || 1, 1, 3);
+    if (state.pdfBook.zoom <= 1.001) state.pdfBook.pan = { x: 0, y: 0 };
+    applyPdfBookZoom();
+  }
+
+  function resetPdfBookPan() {
+    state.pdfBook.pan = { x: 0, y: 0 };
+    applyPdfBookZoom();
+  }
+
+  function wireBookZoomPan() {
+    document.addEventListener('pointerdown', (event) => {
+      const panel = event.target.closest && event.target.closest('.query-book-page-panel');
+      if (!panel || panel.hidden || state.pdfBook.zoom <= 1.001 || event.target.closest('button')) return;
+      state.pdfBook.panSession = {
+        pointerId: event.pointerId,
+        panel,
+        startX: event.clientX,
+        startY: event.clientY,
+        originX: Number(state.pdfBook.pan?.x) || 0,
+        originY: Number(state.pdfBook.pan?.y) || 0,
+        moved: false
+      };
+      panel.classList.add('is-book-panning');
+      try { panel.setPointerCapture(event.pointerId); } catch (error) {}
+      event.preventDefault();
+    }, { passive: false });
+    document.addEventListener('pointermove', (event) => {
+      const session = state.pdfBook.panSession;
+      if (!session || session.pointerId !== event.pointerId) return;
+      const panel = session.panel;
+      const zoom = state.pdfBook.zoom;
+      const limitX = Math.max(0, (panel.clientWidth * zoom - panel.clientWidth) / 2);
+      const limitY = Math.max(0, (panel.clientHeight * zoom - panel.clientHeight) / 2);
+      const nextX = session.originX + event.clientX - session.startX;
+      const nextY = session.originY + event.clientY - session.startY;
+      if (Math.abs(event.clientX - session.startX) > 5 || Math.abs(event.clientY - session.startY) > 5) session.moved = true;
+      state.pdfBook.pan = { x: clamp(nextX, -limitX, limitX), y: clamp(nextY, -limitY, limitY) };
+      applyPdfBookZoom();
+      event.preventDefault();
+    }, { passive: false });
+    const endPan = (event) => {
+      const session = state.pdfBook.panSession;
+      if (!session || (event.pointerId != null && session.pointerId !== event.pointerId)) return;
+      session.panel.classList.remove('is-book-panning');
+      state.pdfBook.suppressTurnClick = session.moved;
+      state.pdfBook.panSession = null;
+    };
+    document.addEventListener('pointerup', endPan);
+    document.addEventListener('pointercancel', endPan);
   }
 
   function playPdfBookTurnSound() {
@@ -2901,6 +2992,7 @@
     const targetPage = currentPage + (direction < 0 ? -step : step);
     if (targetPage < 1 || targetPage > totalPages) return;
     state.pdfBook.page = targetPage;
+    resetPdfBookPan();
     playPdfBookTurnSound();
     const spread = $('#query-book-frame-left')?.closest('.query-book-spread');
     if (spread) {
@@ -3085,6 +3177,10 @@
   function openPdfBook(book, page) {
     state.pdfBook.book = PDF_BOOKS[book] ? book : 'upper';
     state.pdfBook.page = Math.max(1, Number.parseInt(page, 10) || 1);
+    state.pdfBook.zoom = defaultPdfBookZoom();
+    state.pdfBook.pan = { x: 0, y: 0 };
+    state.pdfBook.panSession = null;
+    state.pdfBook.suppressTurnClick = false;
     renderPdfBookModule();
     const reader = $('#query-book-reader');
     if (reader) {
@@ -7624,6 +7720,9 @@
       case 'query-book-open-source': openPdfBook(element.dataset.book || state.pdfBook.book, element.dataset.page); break;
       case 'query-book-prev': turnPdfBook(-1); break;
       case 'query-book-next': turnPdfBook(1); break;
+      case 'query-book-zoom-out': setPdfBookZoom(state.pdfBook.zoom - 0.25); break;
+      case 'query-book-zoom-in': setPdfBookZoom(state.pdfBook.zoom + 0.25); break;
+      case 'query-book-zoom-reset': setPdfBookZoom(1); break;
       case 'query-book-close': closePdfBook(); break;
       case 'query-person-source-search': runPersonSourceSearch(); break;
       case 'query-person-source-clear': clearPersonSourceSearch(); break;
@@ -7964,6 +8063,7 @@
   function wireEvents() {
     wirePanelResize();
     wireCanvasPan();
+    wireBookZoomPan();
     const treeViewport = $('#tree-viewport');
     if (treeViewport) treeViewport.addEventListener('scroll', () => renderMiniMap(), { passive: true });
     const minimapPlot = $('#tree-minimap-plot');
@@ -7998,6 +8098,11 @@
     window.addEventListener('pagehide', persistSessionView);
     window.addEventListener('beforeunload', persistSessionView);
     document.addEventListener('click', (event) => {
+      if (state.pdfBook.suppressTurnClick) {
+        state.pdfBook.suppressTurnClick = false;
+        event.preventDefault();
+        return;
+      }
       if (state.pan.suppressClick) {
         const pendingTarget = event.target.closest && event.target.closest('[data-action]');
         // 拖拽结束后，卡片仍应允许明确点击打开详情；其他操作继续避免误触。
