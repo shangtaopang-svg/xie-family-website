@@ -1279,12 +1279,17 @@
       || ('ontouchstart' in window);
   }
 
+  function bookViewportSize() {
+    // 以布局视口为准。部分手机 WebView 的 visualViewport 会返回设备自然方向，
+    // 这会让一个实际仍为竖屏的页面被错误判断成横屏，导致横向原谱缩成中间一条。
+    const root = document.documentElement;
+    const width = Number(root?.clientWidth || window.innerWidth || window.visualViewport?.width) || 0;
+    const height = Number(root?.clientHeight || window.innerHeight || window.visualViewport?.height) || 0;
+    return { width, height };
+  }
+
   function isBookPortraitDevice() {
-    // 部分手机 WebView 的 screen.width / screen.height 始终返回“设备自然方向”，
-    // 即使当前网页仍然是竖屏，也会误报成横屏。阅读器必须优先按当前 CSS 视口判断，
-    // 否则横屏兜底不会启用，横向原谱就会被 contain 缩成屏幕中间的一小块。
-    const width = Number(window.visualViewport?.width || window.innerWidth || document.documentElement?.clientWidth) || 0;
-    const height = Number(window.visualViewport?.height || window.innerHeight || document.documentElement?.clientHeight) || 0;
+    const { width, height } = bookViewportSize();
     if (width > 0 && height > 0 && width !== height) return width < height;
     const orientationType = text(window.screen?.orientation?.type).toLowerCase();
     if (orientationType) return orientationType.includes('portrait');
@@ -2911,25 +2916,57 @@
     document.body.classList.toggle('query-book-landscape-fallback', Boolean(active));
   }
 
-  function forceBookLandscape(reader) {
-    // 某些手机内置 WebView 会把 CSS 视口报告成桌面宽度，导致 max-width
-    // 媒体查询失效；只要当前视口仍是竖屏，就必须给电子书启用横屏兜底。
-    if (!reader || !isBookLandscapeTarget() || !isBookPortraitDevice()) return;
+  function clearBookLandscapeCanvas(reader) {
+    if (!reader) return;
+    [
+      'position', 'inset', 'top', 'left', 'right', 'bottom', 'width', 'height',
+      'max-width', 'max-height', 'transform', 'transform-origin'
+    ].forEach((property) => reader.style.removeProperty(property));
+    reader.removeAttribute('data-book-viewport');
+    reader.removeAttribute('data-book-landscape-fallback');
+  }
+
+  function applyBookLandscapeCanvas(reader) {
+    if (!reader || reader.hidden || !isBookLandscapeTarget()) return false;
+    const { width, height } = bookViewportSize();
+    if (!(width > 0 && height > 0) || width >= height) {
+      clearBookLandscapeCanvas(reader);
+      setBookLandscapeFallback(false);
+      return false;
+    }
+
+    // 方向锁失败时，直接把阅读器变成“横屏画布”再旋转回当前视口。
+    // 使用内联 important 是为了压过不同 WebView 对 100vh/100vw 和 orientation
+    // 媒体查询的差异；画布本身仍然保持横向比例，原谱图即可按高度最大化显示。
+    const setImportant = (property, value) => reader.style.setProperty(property, value, 'important');
+    setImportant('position', 'fixed');
+    setImportant('inset', 'auto');
+    setImportant('top', '50%');
+    setImportant('left', '50%');
+    setImportant('right', 'auto');
+    setImportant('bottom', 'auto');
+    setImportant('width', `${height}px`);
+    setImportant('height', `${width}px`);
+    setImportant('max-width', 'none');
+    setImportant('max-height', 'none');
+    setImportant('transform', 'translate(-50%, -50%) rotate(90deg)');
+    setImportant('transform-origin', 'center');
+    reader.dataset.bookViewport = `${Math.round(width)}x${Math.round(height)}`;
     reader.dataset.bookLandscapeFallback = 'true';
     setBookLandscapeFallback(true);
+    return true;
+  }
+
+  function forceBookLandscape(reader) {
+    if (!reader || !isBookLandscapeTarget()) return;
+    applyBookLandscapeCanvas(reader);
   }
 
   function syncBookLandscapeFallback() {
     const reader = $('#query-book-reader');
     if (!reader || reader.hidden || !isBookLandscapeTarget()) return;
-    if (!isBookPortraitDevice()) {
-      reader.removeAttribute('data-book-landscape-fallback');
-      setBookLandscapeFallback(false);
-    } else {
-      // 方向锁被浏览器拒绝时，仍然立刻使用横向画布兜底，不依赖 screen.orientation 的返回值。
-      reader.dataset.bookLandscapeFallback = 'true';
-      setBookLandscapeFallback(true);
-    }
+    // 每次尺寸变化都重新计算，兼容地址栏收起、全屏切换和系统旋转。
+    applyBookLandscapeCanvas(reader);
   }
 
   function requestBookLandscape(reader) {
@@ -3017,7 +3054,7 @@
     document.documentElement.classList.remove('query-book-landscape-requested');
     document.body.classList.remove('query-book-landscape-requested');
     const reader = $('#query-book-reader');
-    if (reader) reader.removeAttribute('data-book-landscape-fallback');
+    if (reader) clearBookLandscapeCanvas(reader);
     setBookLandscapeFallback(false);
   }
 
