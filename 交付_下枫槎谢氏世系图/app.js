@@ -75,6 +75,7 @@
       fullscreenOpened: false,
       zoom: 1.5,
       pan: { x: 0, y: 0 },
+      panActive: false,
       panSession: null,
       suppressTurnClick: false
     },
@@ -2872,8 +2873,11 @@
     const reader = $('#query-book-reader');
     const zoom = clamp(Number(state.pdfBook.zoom) || 1, 1, 3);
     state.pdfBook.zoom = zoom;
-    if (zoom <= 1.001) state.pdfBook.pan = { x: 0, y: 0 };
-    const pan = state.pdfBook.pan || { x: 0, y: 0 };
+    if (zoom <= 1.001) {
+      state.pdfBook.pan = { x: 0, y: 0 };
+      state.pdfBook.panActive = false;
+    }
+    const pan = state.pdfBook.panActive ? (state.pdfBook.pan || { x: 0, y: 0 }) : { x: 0, y: 0 };
     const zoomStatus = $('#query-book-zoom-status');
     if (zoomStatus) zoomStatus.textContent = `${Math.round(zoom * 100)}%`;
     if (reader) reader.dataset.bookZoom = String(Math.round(zoom * 100));
@@ -2901,12 +2905,16 @@
 
   function setPdfBookZoom(value) {
     state.pdfBook.zoom = clamp(Number(value) || 1, 1, 3);
-    if (state.pdfBook.zoom <= 1.001) state.pdfBook.pan = { x: 0, y: 0 };
+    if (state.pdfBook.zoom <= 1.001) {
+      state.pdfBook.pan = { x: 0, y: 0 };
+      state.pdfBook.panActive = false;
+    }
     applyPdfBookZoom();
   }
 
   function resetPdfBookPan() {
     state.pdfBook.pan = { x: 0, y: 0 };
+    state.pdfBook.panActive = false;
     applyPdfBookZoom();
   }
 
@@ -2937,6 +2945,7 @@
       const nextX = session.originX + event.clientX - session.startX;
       const nextY = session.originY + event.clientY - session.startY;
       if (Math.abs(event.clientX - session.startX) > 5 || Math.abs(event.clientY - session.startY) > 5) session.moved = true;
+      if (session.moved) state.pdfBook.panActive = true;
       state.pdfBook.pan = { x: clamp(nextX, -limitX, limitX), y: clamp(nextY, -limitY, limitY) };
       applyPdfBookZoom();
       event.preventDefault();
@@ -3183,6 +3192,7 @@
     state.pdfBook.page = Math.max(1, Number.parseInt(page, 10) || 1);
     state.pdfBook.zoom = defaultPdfBookZoom();
     state.pdfBook.pan = { x: 0, y: 0 };
+    state.pdfBook.panActive = false;
     state.pdfBook.panSession = null;
     state.pdfBook.suppressTurnClick = false;
     renderPdfBookModule();
