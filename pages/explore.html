@@ -3,67 +3,175 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#101814">
+  <meta name="theme-color" content="#f7f8f7" id="navhubThemeColor">
   <title>探索栏目 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../css/style.css?v=20260831-explore-01">
+  <link rel="stylesheet" href="../css/style.css?v=20260831-explore-02">
   <script>
     try { sessionStorage.removeItem('pt_go'); } catch (e) {}
+    try { if ((localStorage.getItem('xie_theme') || localStorage.getItem('theme')) === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {}
   </script>
 </head>
-<body class="explore-page-body">
-  <div class="explore-page">
-    <header class="explore-top">
-      <a class="explore-back" href="../index.html"><span>←</span> 返回开启页</a>
-      <span class="explore-brand">下枫槎 · 谢氏家族</span>
-    </header>
+<body class="navhub-page-body">
+  <div class="navhub-page">
+    <aside class="navhub-sidebar" aria-label="网站栏目导航">
+      <div class="navhub-brand">
+        <span class="navhub-brand-mark">谢</span>
+        <span><b>下枫槎谢氏</b><small>家族网站</small></span>
+      </div>
+      <label class="navhub-search"><span>⌕</span><input id="navhubFilter" type="search" placeholder="快速查找栏目…" aria-label="快速查找栏目"><kbd>⌘ K</kbd></label>
+      <div class="navhub-nav-title" id="navhubNavTitle">栏目导航</div>
+      <nav class="navhub-nav" id="navhubNav">
+        <a href="history.html" class="active" aria-current="page" data-index="0" data-title="家族历史" data-desc="从谢氏源流、迁徙脉络，到下枫槎村的家族记忆。" data-note="了解家族从哪里来，也看看我们如何走到今天。"><span>01</span><b>家族历史</b><i>›</i></a>
+        <a href="today.html" data-index="1" data-title="今日下枫槎" data-desc="看看今天的下枫槎，村庄风景、生活记录与当下变化。" data-note="家园没有停留在历史里，它正在每一天继续生长。"><span>02</span><b>今日下枫槎</b><i>›</i></a>
+        <a href="activities.html" data-index="2" data-title="家族活动" data-desc="记录祭祖、团聚与家族共同参与的每一次活动。" data-note="把相聚留下来，让家族记忆有迹可循。"><span>03</span><b>家族活动</b><i>›</i></a>
+        <a href="news.html" data-index="3" data-title="消息发布" data-desc="村务通知、家族公告与重要动态。" data-note="重要消息集中发布，方便宗亲随时查看。"><span>04</span><b>消息发布</b><i>›</i></a>
+        <a href="reports.html" data-index="4" data-title="新闻报道" data-desc="与下枫槎谢氏有关的新闻报道与外部记录。" data-note="从不同视角，认识家族与村庄被记录下来的片段。"><span>05</span><b>新闻报道</b><i>›</i></a>
+        <a href="videos.html" data-index="5" data-title="影像记录" data-desc="用照片与视频保存村景、人物和家族活动。" data-note="有些记忆适合用影像保存，也适合和家人一起重看。"><span>06</span><b>影像记录</b><i>›</i></a>
+        <a href="celebrities.html" data-index="6" data-title="名人事迹" data-desc="认识谢氏家族中值得铭记的人物与事迹。" data-note="以人物为线索，读懂一脉家风如何传承。"><span>07</span><b>名人事迹</b><i>›</i></a>
+        <a href="xie-collection.html" data-index="7" data-title="谢氏集萃" data-desc="汇集家族资料、文献、故事与文化收藏。" data-note="把散落在各处的家族资料，慢慢收拢成一处。"><span>08</span><b>谢氏集萃</b><i>›</i></a>
+        <a href="genealogy.html?chooser=1&amp;access=20260827-07" data-index="8" data-title="族谱查询" data-desc="查询谢氏世系，查找家族成员之间的血缘关系。" data-note="输入姓名，沿着族谱找到与家族的连接。"><span>09</span><b>族谱查询</b><i>›</i></a>
+        <a href="merit-scroll.html" data-index="9" data-title="功德卷轴" data-desc="记录修祠、修谱与家族公益中的功德与心意。" data-note="每一份付出，都是留给后人的一笔家族记忆。"><span>10</span><b>功德卷轴</b><i>›</i></a>
+        <a href="audio.html" data-index="10" data-title="听下枫槎" data-desc="用声音讲述村庄故事、家族历史与乡土记忆。" data-note="戴上耳机，听一段属于下枫槎的声音。"><span>11</span><b>听下枫槎</b><i>›</i></a>
+        <a href="contact.html" data-index="11" data-title="联系我们" data-desc="投稿、建议与家族联络入口。" data-note="如果你有故事、资料或建议，欢迎与我们联系。"><span>12</span><b>联系我们</b><i>›</i></a>
+      </nav>
+      <div class="navhub-settings" aria-label="页面设置">
+        <button type="button" class="navhub-setting-row" id="navhubThemeControl"><span class="navhub-setting-icon">◐</span><span class="navhub-setting-label" id="navhubThemeLabel">主题</span><span class="navhub-setting-value" id="navhubThemeValue">浅色</span><span class="navhub-setting-arrow">›</span></button>
+        <button type="button" class="navhub-setting-row" id="navhubLanguageControl"><span class="navhub-setting-icon">文</span><span class="navhub-setting-label" id="navhubLanguageLabel">语言</span><span class="navhub-setting-value" id="navhubLanguageValue">简体中文</span><span class="navhub-setting-arrow">›</span></button>
+      </div>
+      <a class="navhub-back" href="../index.html"><span>←</span> <span id="navhubBackText">返回开启页</span></a>
+    </aside>
 
-    <main class="explore-main">
-      <section class="explore-intro" aria-labelledby="explore-title">
-        <span class="explore-eyebrow">EXPLORE THE VILLAGE</span>
-        <h1 id="explore-title">探索家族与村庄</h1>
-        <p>从历史、今日到家族消息，选择一个栏目继续。</p>
+    <main class="navhub-content">
+      <header class="navhub-content-top">
+        <span id="navhubTopBrand">下枫槎 · 谢氏家族</span>
+        <a href="../index.html?main"><span id="navhubHomeText">进入主首页</span> <b>↗</b></a>
+      </header>
+      <section class="navhub-detail" aria-live="polite">
+        <div class="navhub-detail-top"><span class="navhub-eyebrow" id="navhubEyebrow">FAMILY NAVIGATION</span><span id="navhubCount">01 / 12</span></div>
+        <div class="navhub-detail-mark" id="navhubMark">史</div>
+        <h1 id="navhubTitle">家族历史</h1>
+        <p class="navhub-detail-desc" id="navhubDesc">从谢氏源流、迁徙脉络，到下枫槎村的家族记忆。</p>
+        <p class="navhub-detail-note" id="navhubNote">了解家族从哪里来，也看看我们如何走到今天。</p>
+        <a class="navhub-enter" id="navhubEnter" href="history.html"><span id="navhubEnterText">进入家族历史</span> <span>→</span></a>
+        <div class="navhub-detail-foot"><span id="navhubDetailHint">选择左侧栏目查看内容</span><span id="navhubDetailTag">ONE VILLAGE · ONE FAMILY</span></div>
       </section>
-
-      <section class="explore-section" aria-labelledby="explore-focus-title">
-        <div class="explore-section-head"><h2 id="explore-focus-title">重点入口</h2><span>01</span></div>
-        <div class="explore-feature-grid">
-          <a class="explore-card explore-card-feature" href="history.html">
-            <span class="explore-icon">史</span><span class="explore-card-copy"><b>家族历史</b><small>从源流到下枫槎</small></span><span class="explore-arrow">↗</span>
-          </a>
-          <a class="explore-card explore-card-feature" href="today.html">
-            <span class="explore-icon">今</span><span class="explore-card-copy"><b>今日下枫槎</b><small>看看家园现在的样子</small></span><span class="explore-arrow">↗</span>
-          </a>
-          <a class="explore-card explore-card-feature" href="activities.html">
-            <span class="explore-icon">聚</span><span class="explore-card-copy"><b>家族活动</b><small>记录每一次相聚</small></span><span class="explore-arrow">↗</span>
-          </a>
-        </div>
-      </section>
-
-      <section class="explore-section" aria-labelledby="explore-news-title">
-        <div class="explore-section-head"><h2 id="explore-news-title">家族动态</h2><span>02</span></div>
-        <div class="explore-link-grid">
-          <a class="explore-card" href="news.html"><span class="explore-icon">告</span><span class="explore-card-copy"><b>消息发布</b><small>村务通知 · 家族公告</small></span><span class="explore-arrow">→</span></a>
-          <a class="explore-card" href="reports.html"><span class="explore-icon">闻</span><span class="explore-card-copy"><b>新闻报道</b><small>外界报道与家族记录</small></span><span class="explore-arrow">→</span></a>
-          <a class="explore-card" href="videos.html"><span class="explore-icon">影</span><span class="explore-card-copy"><b>影像记录</b><small>视频与村景影像</small></span><span class="explore-arrow">→</span></a>
-          <a class="explore-card" href="celebrities.html"><span class="explore-icon">人</span><span class="explore-card-copy"><b>名人事迹</b><small>认识家族中的人物</small></span><span class="explore-arrow">→</span></a>
-        </div>
-      </section>
-
-      <section class="explore-section" aria-labelledby="explore-tools-title">
-        <div class="explore-section-head"><h2 id="explore-tools-title">家族工具与收藏</h2><span>03</span></div>
-        <div class="explore-link-grid explore-link-grid-wide">
-          <a class="explore-card" href="xie-collection.html"><span class="explore-icon">萃</span><span class="explore-card-copy"><b>谢氏集萃</b><small>家族资料与文化收藏</small></span><span class="explore-arrow">→</span></a>
-          <a class="explore-card" href="genealogy.html?chooser=1&amp;access=20260827-07"><span class="explore-icon">谱</span><span class="explore-card-copy"><b>族谱查询</b><small>查找家族世系</small></span><span class="explore-arrow">→</span></a>
-          <a class="explore-card" href="merit-scroll.html"><span class="explore-icon">卷</span><span class="explore-card-copy"><b>功德卷轴</b><small>记录家族善行</small></span><span class="explore-arrow">→</span></a>
-          <a class="explore-card" href="audio.html"><span class="explore-icon">听</span><span class="explore-card-copy"><b>听下枫槎</b><small>用声音认识村庄</small></span><span class="explore-arrow">→</span></a>
-          <a class="explore-card" href="vinyl-player.html"><span class="explore-icon">声</span><span class="explore-card-copy"><b>枫槎留声机</b><small>播放家族声音</small></span><span class="explore-arrow">→</span></a>
-          <a class="explore-card" href="contact.html"><span class="explore-icon">联</span><span class="explore-card-copy"><b>联系我们</b><small>投稿 · 建议 · 联络</small></span><span class="explore-arrow">→</span></a>
-        </div>
-      </section>
-
-      <a class="explore-home-link" href="../index.html?main">进入主首页 <span>→</span></a>
     </main>
   </div>
+  <script>
+    (function(){
+      var nav = document.getElementById('navhubNav');
+      var links = nav ? Array.prototype.slice.call(nav.querySelectorAll('a')) : [];
+      var title = document.getElementById('navhubTitle');
+      var desc = document.getElementById('navhubDesc');
+      var note = document.getElementById('navhubNote');
+      var count = document.getElementById('navhubCount');
+      var mark = document.getElementById('navhubMark');
+      var enter = document.getElementById('navhubEnter');
+      var enterText = document.getElementById('navhubEnterText');
+      var filter = document.getElementById('navhubFilter');
+      var currentLang = localStorage.getItem('xie_lang') === 'en' ? 'en' : 'zh';
+      var marks = ['史','今','聚','告','闻','影','人','萃','谱','卷','听','联'];
+      var english = [
+        ['Family History','From the Xie family origin and migrations to the shared memory of Xiafengcha Village.','Learn where the family came from and how we arrived here today.'],
+        ['Today at Xiafengcha','Explore today’s Xiafengcha through village views, daily life and recent changes.','The home village is not only history; it continues to grow every day.'],
+        ['Family Activities','Records of ancestor ceremonies, reunions and family activities.','Keep every gathering close, so family memories have a place to return to.'],
+        ['News','Village notices, family announcements and important updates.','Important messages are collected here for every family member.'],
+        ['Reports','News coverage and outside records connected with Xiafengcha and the Xie family.','See the village and family through different recorded perspectives.'],
+        ['Media Archive','Photos and videos preserving village views, people and family activities.','Some memories are best kept in images and revisited together.'],
+        ['Notable Figures','People and stories from the Xie family that are worth remembering.','Follow the people who carry the family spirit forward.'],
+        ['Xie Collection','Family documents, literature, stories and cultural materials gathered in one place.','Bring scattered family materials together, one piece at a time.'],
+        ['Genealogy','Search the Xie family tree and discover connections between relatives.','Enter a name and follow the family tree to your connection.'],
+        ['Merit Scroll','A record of contributions to the ancestral hall, genealogy and family community.','Every contribution becomes a memory passed on to the next generation.'],
+        ['Listen to Xiafengcha','Audio stories of the village, family history and local memories.','Put on your headphones and hear a story from Xiafengcha.'],
+        ['Contact Us','A place for submissions, suggestions and family contact.','Have a story, document or suggestion? We would love to hear from you.']
+      ];
+      var ui = {
+        zh: { brand:'下枫槎谢氏', sub:'家族网站', search:'快速查找栏目…', nav:'栏目导航', back:'返回开启页', top:'下枫槎 · 谢氏家族', home:'进入主首页', eyebrow:'FAMILY NAVIGATION', hint:'选择左侧栏目查看内容', theme:'主题', language:'语言', light:'浅色', dark:'深色', langValue:'简体中文', enter:'进入' },
+        en: { brand:'Xie Family of Xiafengcha', sub:'Family Website', search:'Search sections…', nav:'Navigation', back:'Back to opening', top:'Xiafengcha · Xie Family', home:'Main home', eyebrow:'FAMILY NAVIGATION', hint:'Select a section on the left', theme:'Theme', language:'Language', light:'Light', dark:'Dark', langValue:'English', enter:'Open ' }
+      };
+      function value(link, field) {
+        var index = Number(link.getAttribute('data-index')) || 0;
+        if (currentLang === 'en') return english[index] ? english[index][field === 'title' ? 0 : field === 'desc' ? 1 : 2] : '';
+        return link.getAttribute('data-' + field) || '';
+      }
+      function select(link) {
+        links.forEach(function(item){
+          var active = item === link;
+          item.classList.toggle('active', active);
+          if (active) item.setAttribute('aria-current', 'page'); else item.removeAttribute('aria-current');
+          item.querySelector('b').textContent = value(item, 'title');
+        });
+        var index = Number(link.getAttribute('data-index')) || 0;
+        title.textContent = value(link, 'title');
+        desc.textContent = value(link, 'desc');
+        note.textContent = value(link, 'note');
+        count.textContent = String(index + 1).padStart(2, '0') + ' / ' + String(links.length).padStart(2, '0');
+        mark.textContent = marks[index] || '谢';
+        enter.href = link.getAttribute('href');
+        enterText.textContent = ui[currentLang].enter + value(link, 'title');
+      }
+      links.forEach(function(link){ link.addEventListener('click', function(e){ e.preventDefault(); select(link); }); });
+      function applyFilter() {
+        var query = filter ? filter.value.trim().toLowerCase() : '';
+        links.forEach(function(link){
+          var index = Number(link.getAttribute('data-index')) || 0;
+          var searchText = (value(link, 'title') + ' ' + value(link, 'desc') + ' ' + (currentLang === 'en' && english[index] ? english[index][0] : '')).toLowerCase();
+          link.hidden = !!query && searchText.indexOf(query) === -1;
+        });
+      }
+      if (filter) {
+        filter.addEventListener('input', applyFilter);
+        document.addEventListener('keydown', function(e){ if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); filter.focus(); } });
+      }
+      function syncLanguage() {
+        var text = ui[currentLang];
+        document.documentElement.lang = currentLang === 'en' ? 'en' : 'zh-CN';
+        document.title = currentLang === 'en' ? 'Explore · Xie Family of Xiafengcha' : '探索栏目 · 下枫槎谢氏';
+        document.querySelector('.navhub-brand b').textContent = text.brand;
+        document.querySelector('.navhub-brand small').textContent = text.sub;
+        filter.placeholder = text.search;
+        filter.setAttribute('aria-label', text.search);
+        document.getElementById('navhubNavTitle').textContent = text.nav;
+        document.getElementById('navhubBackText').textContent = text.back;
+        document.getElementById('navhubTopBrand').textContent = text.top;
+        document.getElementById('navhubHomeText').textContent = text.home;
+        document.getElementById('navhubEyebrow').textContent = text.eyebrow;
+        document.getElementById('navhubDetailHint').textContent = text.hint;
+        document.getElementById('navhubThemeLabel').textContent = text.theme;
+        document.getElementById('navhubLanguageLabel').textContent = text.language;
+        document.getElementById('navhubLanguageValue').textContent = currentLang === 'en' ? 'English' : '简体中文';
+        var active = links.find(function(link){ return link.classList.contains('active'); }) || links[0];
+        if (active) select(active);
+        applyFilter();
+      }
+      var themeControl = document.getElementById('navhubThemeControl');
+      var themeValue = document.getElementById('navhubThemeValue');
+      var languageControl = document.getElementById('navhubLanguageControl');
+      var languageValue = document.getElementById('navhubLanguageValue');
+      var themeMeta = document.getElementById('navhubThemeColor');
+      function syncTheme() {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        themeValue.textContent = isDark ? ui[currentLang].dark : ui[currentLang].light;
+        themeControl.setAttribute('aria-label', currentLang === 'en' ? (isDark ? 'Switch to light mode' : 'Switch to dark mode') : (isDark ? '切换到白天模式' : '切换到黑夜模式'));
+        languageValue.textContent = currentLang === 'en' ? 'English' : '简体中文';
+        if (themeMeta) themeMeta.setAttribute('content', isDark ? '#0f1110' : '#f7f8f7');
+      }
+      themeControl.addEventListener('click', function(){
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (isDark) document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', 'dark');
+        try { localStorage.setItem('xie_theme', isDark ? 'light' : 'dark'); localStorage.setItem('theme', isDark ? 'light' : 'dark'); } catch (e) {}
+        syncTheme();
+      });
+      languageControl.addEventListener('click', function(){
+        currentLang = currentLang === 'en' ? 'zh' : 'en';
+        try { localStorage.setItem('xie_lang', currentLang); } catch (e) {}
+        syncLanguage();
+        syncTheme();
+      });
+      syncLanguage();
+      syncTheme();
+    })();
+  </script>
 </body>
 </html>
