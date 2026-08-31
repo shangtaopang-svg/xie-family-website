@@ -5891,3 +5891,21 @@ li:has(> a[href*="admin.html"]) {
   .mbh-li,
   .mbh-qb { color: var(--mb-text); }
 }
+
+/* 手机首页：快捷入口固定为四项，通用返回按钮不覆盖首页内容。 */
+@media (max-width: 768px) {
+  .mbh-quick {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    justify-content: initial;
+    gap: 4px;
+  }
+
+  .mbh-quick .mbh-qitem {
+    min-width: 0;
+  }
+
+  .mb-home ~ a.back-page-btn {
+    display: none !important;
+  }
+}
