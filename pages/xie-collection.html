@@ -125,6 +125,23 @@ button.collect-card { width:100%; padding:0; border:0; color:inherit; font:inher
 .bilibili-viewer:-webkit-full-screen { width:100vw; height:100vh; }
 .bilibili-viewer:fullscreen .bilibili-viewer-stage,
 .bilibili-viewer:-webkit-full-screen .bilibili-viewer-stage { padding:12px; }
+.bilibili-viewer.is-player-max .bilibili-viewer-head {
+  position:fixed; inset:0 0 auto; z-index:4;
+  padding-top:calc(10px + env(safe-area-inset-top,0px));
+  background:linear-gradient(180deg,rgba(0,0,0,.78),rgba(0,0,0,0));
+  border-bottom:0;
+}
+.bilibili-viewer.is-player-max .bilibili-viewer-stage {
+  position:fixed; inset:0; z-index:1; padding:0;
+}
+.bilibili-viewer.is-player-max .bilibili-viewer-frame {
+  width:100vw; max-width:none; height:100vh; height:100dvh; aspect-ratio:auto;
+}
+.bilibili-viewer.is-player-max .bilibili-viewer-actions {
+  position:fixed; inset:auto 0 0; z-index:4;
+  background:linear-gradient(0deg,rgba(0,0,0,.78),rgba(0,0,0,0));
+  border-top:0;
+}
   .bilibili-viewer-actions { display:flex; justify-content:center; gap:10px; padding:12px 18px calc(14px + env(safe-area-inset-bottom,0px)); background:#111; border-top:1px solid #292929; }
 .bilibili-viewer-action { min-height:36px; padding:0 15px; }
 .bilibili-viewer-action.primary { color:#0b0b0b; background:#d4ff3a; border-color:#d4ff3a; }
@@ -549,6 +566,7 @@ document.addEventListener('click', function(e){
 var bilibiliViewer = null;
 var bilibiliViewerFrame = null;
 var bilibiliViewerTitle = null;
+var bilibiliViewerFullscreenButton = null;
 var bilibiliViewerBvid = '';
 var bilibiliViewerHistoryPushed = false;
 var bilibiliViewerPreviousHash = '';
@@ -563,13 +581,24 @@ function ensureBilibiliViewer() {
   bilibiliViewer.setAttribute('role', 'dialog');
   bilibiliViewer.setAttribute('aria-modal', 'true');
   bilibiliViewer.setAttribute('aria-label', 'B站视频播放器');
-  bilibiliViewer.innerHTML = '<div class="bilibili-viewer-head"><button type="button" class="bilibili-viewer-close" aria-label="返回谢氏集萃">← 返回集萃</button><strong class="bilibili-viewer-title"></strong></div><div class="bilibili-viewer-stage"><iframe class="bilibili-viewer-frame" title="B站视频播放器" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div><div class="bilibili-viewer-actions"><button type="button" class="bilibili-viewer-action primary viewer-fullscreen">⛶ 放大播放器</button></div>';
+  bilibiliViewer.innerHTML = '<div class="bilibili-viewer-head"><button type="button" class="bilibili-viewer-close" aria-label="返回谢氏集萃">← 返回集萃</button><strong class="bilibili-viewer-title"></strong></div><div class="bilibili-viewer-stage"><iframe class="bilibili-viewer-frame" title="B站视频播放器" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div><div class="bilibili-viewer-actions"><button type="button" class="bilibili-viewer-action primary viewer-fullscreen">⛶ 全屏播放</button></div>';
   document.body.appendChild(bilibiliViewer);
   bilibiliViewerFrame = bilibiliViewer.querySelector('.bilibili-viewer-frame');
   bilibiliViewerTitle = bilibiliViewer.querySelector('.bilibili-viewer-title');
   bilibiliViewer.querySelector('.bilibili-viewer-close').addEventListener('click', function(){ closeBilibiliViewer(false); });
-  bilibiliViewer.querySelector('.viewer-fullscreen').addEventListener('click', function(){
-    // 整个站内播放器进入全屏，顶部“返回集萃”按钮始终保留，避免 iframe 抢占整个屏幕。
+  bilibiliViewerFullscreenButton = bilibiliViewer.querySelector('.viewer-fullscreen');
+  bilibiliViewerFullscreenButton.addEventListener('click', function(){
+    var entering = !bilibiliViewer.classList.contains('is-player-max');
+    bilibiliViewer.classList.toggle('is-player-max', entering);
+    bilibiliViewerFullscreenButton.textContent = entering ? '↙ 退出全屏' : '⛶ 全屏播放';
+    if (!entering) {
+      try {
+        if (document.fullscreenElement === bilibiliViewer && document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitFullscreenElement === bilibiliViewer && document.webkitExitFullscreen) document.webkitExitFullscreen();
+      } catch (err) {}
+      return;
+    }
+    // 优先请求系统全屏；不支持时保留 is-player-max 的站内全屏布局作为兜底。
     var target = bilibiliViewer;
     var request = target && (target.requestFullscreen || target.webkitRequestFullscreen || target.msRequestFullscreen);
     try {
@@ -615,6 +644,8 @@ function closeBilibiliViewer(fromHistory) {
     if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
     else if (document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen();
   } catch (err) {}
+  bilibiliViewer.classList.remove('is-player-max');
+  if (bilibiliViewerFullscreenButton) bilibiliViewerFullscreenButton.textContent = '⛶ 全屏播放';
   bilibiliViewer.hidden = true;
   bilibiliViewerFrame.src = 'about:blank';
   bilibiliViewerBvid = '';
