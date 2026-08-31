@@ -98,6 +98,7 @@
 .collect-card.local-video .card-cover { cursor:pointer; }
 .collect-card.local-video:hover .card-cover{opacity:1 !important}
 .collect-card.local-video .card-hover-wrap{aspect-ratio:16/9 !important}
+.mobile-video-fullscreen { display:none; }
 
 /* ===== No Data ===== */
 .no-data-hint { text-align:center; margin-top:60px; padding:40px; }
@@ -197,9 +198,28 @@
     content:'打开内容  ›'; display:block; margin-top:5px; color:#d4ff3a;
     font-size:10px; line-height:1;
   }
-  .collect-card.local-video { grid-template-columns:118px minmax(0,1fr); }
-  .collect-card.local-video .card-cover video { width:100% !important; height:94px !important; object-fit:cover; }
-  .collect-card.local-video .info .title { -webkit-line-clamp:3; }
+  /* 本地视频不再缩进清单：手机端用接近 16:9 的大画面观看。 */
+  .collect-card.local-video {
+    display:block; min-height:0; border-radius:16px !important;
+  }
+  .collect-card.local-video .card-hover-wrap,
+  .collect-card.local-video .card-cover {
+    width:100%; height:clamp(180px, 54vw, 232px); min-height:180px;
+  }
+  .collect-card.local-video .card-cover video {
+    width:100% !important; height:100% !important; object-fit:cover;
+  }
+  .collect-card.local-video .info { min-height:0; padding:11px 13px 13px !important; }
+  .collect-card.local-video .info .title { font-size:14px; -webkit-line-clamp:2; }
+  .mobile-video-fullscreen {
+    display:flex; align-items:center; justify-content:center; gap:4px;
+    position:absolute; right:10px; bottom:10px; z-index:6;
+    min-width:64px; height:34px; padding:0 10px;
+    border:1px solid rgba(255,255,255,.28); border-radius:999px;
+    background:rgba(0,0,0,.68); color:#fff; font:600 11px/1 -apple-system,"PingFang SC",sans-serif;
+    -webkit-tap-highlight-color:transparent; cursor:pointer;
+  }
+  .mobile-video-fullscreen:active { transform:scale(.96); background:rgba(0,0,0,.84); }
 
   .no-data-hint { margin-top:28px; padding:30px 20px; }
 }
@@ -379,7 +399,7 @@ function render(cat) {
     var bvid = bvMatch ? bvMatch[1] : null;
     var isLocal = item.local;
     if (isLocal) {
-      return '<div class="collect-card local-video" style="text-decoration:none;cursor:default"><div class="card-hover-wrap"><div class="card-cover" style="background:#1a1410;display:flex;align-items:center;justify-content:center;overflow:hidden"><video src="' + url + '" style="width:100%;height:100%;object-fit:cover" controls preload="none" playsinline webkit-playsinline' + (item.poster ? ' poster="' + item.poster + '"' : '') + '></video></div></div><div class="info"><div class="title">' + (item.title||'') + '</div><div class="meta"><span class="tag video">📹 本地视频</span></div></div></div>';
+      return '<div class="collect-card local-video" style="text-decoration:none;cursor:default"><div class="card-hover-wrap"><div class="card-cover" style="background:#1a1410;display:flex;align-items:center;justify-content:center;overflow:hidden"><video src="' + url + '" style="width:100%;height:100%;object-fit:cover" controls preload="none" playsinline webkit-playsinline' + (item.poster ? ' poster="' + item.poster + '"' : '') + '></video><button type="button" class="mobile-video-fullscreen" aria-label="全屏播放">⛶ 全屏</button></div></div><div class="info"><div class="title">' + (item.title||'') + '</div><div class="meta"><span class="tag video">📹 本地视频</span></div></div></div>';
     }
     return '<a href="' + url + '" target="_blank" rel="noopener" class="collect-card" style="text-decoration:none">' +
       '<div class="card-hover-wrap">' +
@@ -446,6 +466,27 @@ document.addEventListener('mouseover', function(e){
   iframe.loading = 'lazy';
   iframe.style.cssText = 'width:100%;height:100%;border:none;';
   inner.appendChild(iframe);
+}, true);
+
+// 手机端本地视频使用原生全屏能力；iOS 优先调用 webkitEnterFullscreen。
+document.addEventListener('click', function(e){
+  var button = e.target && e.target.closest ? e.target.closest('.mobile-video-fullscreen') : null;
+  if (!button) return;
+  e.preventDefault();
+  e.stopPropagation();
+  var video = button.parentNode && button.parentNode.querySelector('video');
+  if (!video) return;
+  try {
+    if (typeof video.webkitEnterFullscreen === 'function') {
+      video.webkitEnterFullscreen();
+      return;
+    }
+    var request = video.requestFullscreen || video.webkitRequestFullscreen || video.msRequestFullscreen;
+    if (typeof request === 'function') {
+      var result = request.call(video);
+      if (result && typeof result.catch === 'function') result.catch(function(){});
+    }
+  } catch (err) {}
 }, true);
 
 loadData(function(){ render('all'); });
