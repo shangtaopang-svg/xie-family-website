@@ -5186,36 +5186,29 @@ section a[href*="audio"] {
   margin: 0 16px 12px; height: clamp(166px, 46vw, 204px);
   border-radius: 20px; overflow: hidden;
   background: linear-gradient(135deg, #1a2a1a, #0a1a0a);
-  background-image: url('/images/22.jpg');
-  background-size: cover; background-position: center;
+  background-image: url('/images/bg-left.jpg');
+  background-size: cover; background-position: center 42%;
   position: relative; isolation: isolate;
   border: 1px solid rgba(232, 201, 122, .18);
   box-shadow: 0 10px 26px rgba(0, 0, 0, .22);
 }
 
-/* 黑白村景保留为“历史层”，以低透明度现实村景和暖色光晕增加层次。 */
+/* 真实彩色村景做主视觉，保留轻盈的暖色光感，避免把照片压成暗黑卡片。 */
 .mbh-hero::before {
   content: '';
-  position: absolute; inset: -5%;
-  background-image:
-    linear-gradient(115deg, rgba(229, 188, 96, .36), rgba(29, 116, 95, .38)),
-    url('/images/22-colorized-v2.webp');
-  background-size: cover;
-  background-position: center;
-  filter: saturate(.86) contrast(.98);
-  opacity: 0;
-  transform: scale(1.06) translate3d(-1%, 0, 0);
-  animation: mbhHeroReveal 2.6s cubic-bezier(.22, 1, .36, 1) .2s forwards;
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 82% 14%, rgba(255, 222, 128, .42), transparent 25%),
+    linear-gradient(120deg, rgba(12, 72, 57, .16), transparent 48%, rgba(255, 205, 94, .12));
+  opacity: .9;
+  animation: mbhHeroLight 8s ease-in-out infinite alternate;
   pointer-events: none;
 }
 .mbh-hero::after {
   content: '';
   position: absolute; inset: 0;
   background:
-    radial-gradient(circle at 84% 18%, rgba(247, 205, 96, .18), transparent 28%),
-    linear-gradient(90deg, rgba(7, 20, 17, .24) 0%, rgba(7, 20, 17, .06) 52%, rgba(212, 173, 82, .08) 100%),
-    linear-gradient(180deg, rgba(7, 10, 8, 0) 25%, rgba(7, 10, 8, .18) 100%);
-  animation: mbhHeroLight 8s ease-in-out infinite alternate;
+    linear-gradient(90deg, rgba(7, 20, 17, .34) 0%, rgba(7, 20, 17, .08) 58%, rgba(212, 173, 82, .04) 100%),
+    linear-gradient(180deg, rgba(7, 10, 8, 0) 34%, rgba(7, 10, 8, .34) 100%);
   pointer-events: none;
 }
 .mbh-hero-caption {
@@ -5231,17 +5224,12 @@ section a[href*="audio"] {
 }
 .mbh-hero-kicker::before { content: '✦'; margin-right: 4px; color: #f7d36a; }
 .mbh-hero-title { font-size: 16px; font-weight: 700; letter-spacing: 1px; }
-@keyframes mbhHeroReveal {
-  from { opacity: 0; filter: saturate(.72) contrast(.96); transform: scale(1.06) translate3d(-1%, 0, 0); }
-  to { opacity: .96; filter: saturate(1.08) contrast(.98); transform: scale(1.02) translate3d(1%, -1%, 0); }
-}
 @keyframes mbhHeroLight {
   from { opacity: .78; }
   to { opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .mbh-hero::before { animation: none; opacity: .96; filter: saturate(1.04) contrast(.98); transform: scale(1.03); }
-  .mbh-hero::after { animation: none; opacity: .9; }
+  .mbh-hero::before { animation: none; opacity: .9; }
 }
 
 .mbh-pills { display: flex; gap: 8px; margin: 0 16px 12px; }
