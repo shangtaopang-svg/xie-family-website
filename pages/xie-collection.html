@@ -121,6 +121,10 @@ button.collect-card { width:100%; padding:0; border:0; color:inherit; font:inher
 .bilibili-viewer-close { min-width:112px; height:38px; padding:0 12px; font-size:13px; font-weight:600; }
 .bilibili-viewer-stage { flex:1; display:flex; align-items:center; justify-content:center; padding:18px; min-height:0; }
 .bilibili-viewer-frame { width:min(1120px,100%); aspect-ratio:16/9; border:0; background:#000; }
+.bilibili-viewer:fullscreen,
+.bilibili-viewer:-webkit-full-screen { width:100vw; height:100vh; }
+.bilibili-viewer:fullscreen .bilibili-viewer-stage,
+.bilibili-viewer:-webkit-full-screen .bilibili-viewer-stage { padding:12px; }
   .bilibili-viewer-actions { display:flex; justify-content:center; gap:10px; padding:12px 18px calc(14px + env(safe-area-inset-bottom,0px)); background:#111; border-top:1px solid #292929; }
 .bilibili-viewer-action { min-height:36px; padding:0 15px; }
 .bilibili-viewer-action.primary { color:#0b0b0b; background:#d4ff3a; border-color:#d4ff3a; }
@@ -565,7 +569,8 @@ function ensureBilibiliViewer() {
   bilibiliViewerTitle = bilibiliViewer.querySelector('.bilibili-viewer-title');
   bilibiliViewer.querySelector('.bilibili-viewer-close').addEventListener('click', function(){ closeBilibiliViewer(false); });
   bilibiliViewer.querySelector('.viewer-fullscreen').addEventListener('click', function(){
-    var target = bilibiliViewerFrame;
+    // 整个站内播放器进入全屏，顶部“返回集萃”按钮始终保留，避免 iframe 抢占整个屏幕。
+    var target = bilibiliViewer;
     var request = target && (target.requestFullscreen || target.webkitRequestFullscreen || target.msRequestFullscreen);
     try {
       if (typeof request === 'function') {
