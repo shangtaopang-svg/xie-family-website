@@ -6557,3 +6557,25 @@ html[data-theme="dark"] .navhub-page-body {
   --navhub-line: #2a2a2a;
 }
 html[data-theme="dark"] .navhub-sidebar { background: #101010 !important; }
+
+/* ===== 家族历史页：白天模式文字对比度 ===== */
+html:not([data-theme="dark"]) .history-page-body .page-title h2,
+html:not([data-theme="dark"]) .history-page-body .section-title h2 {
+  color: #8f641f !important;
+  text-shadow: none !important;
+}
+html:not([data-theme="dark"]) .history-page-body .page-title p,
+html:not([data-theme="dark"]) .history-page-body .section-title p {
+  color: #52616a !important;
+}
+html:not([data-theme="dark"]) .history-page-body .section-title h2 span {
+  color: #a65d1d !important;
+}
+
+@media (max-width: 768px) {
+  html:not([data-theme="dark"]) .history-page-body,
+  html:not([data-theme="dark"]) .history-page-body .content {
+    background: #f6f7f8 !important;
+    color: #24313a !important;
+  }
+}
