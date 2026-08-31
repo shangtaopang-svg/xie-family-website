@@ -559,7 +559,7 @@ function ensureBilibiliViewer() {
   bilibiliViewer.setAttribute('role', 'dialog');
   bilibiliViewer.setAttribute('aria-modal', 'true');
   bilibiliViewer.setAttribute('aria-label', 'B站视频播放器');
-  bilibiliViewer.innerHTML = '<div class="bilibili-viewer-head"><button type="button" class="bilibili-viewer-close" aria-label="返回谢氏集萃">← 返回集萃</button><strong class="bilibili-viewer-title"></strong></div><div class="bilibili-viewer-stage"><iframe class="bilibili-viewer-frame" title="B站视频播放器" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div><div class="bilibili-viewer-actions"><button type="button" class="bilibili-viewer-action primary viewer-fullscreen">⛶ 放大播放器</button><a class="bilibili-viewer-action viewer-open" target="_blank" rel="noopener">在 B站新窗口打开</a></div>';
+  bilibiliViewer.innerHTML = '<div class="bilibili-viewer-head"><button type="button" class="bilibili-viewer-close" aria-label="返回谢氏集萃">← 返回集萃</button><strong class="bilibili-viewer-title"></strong></div><div class="bilibili-viewer-stage"><iframe class="bilibili-viewer-frame" title="B站视频播放器" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div><div class="bilibili-viewer-actions"><button type="button" class="bilibili-viewer-action primary viewer-fullscreen">⛶ 放大播放器</button></div>';
   document.body.appendChild(bilibiliViewer);
   bilibiliViewerFrame = bilibiliViewer.querySelector('.bilibili-viewer-frame');
   bilibiliViewerTitle = bilibiliViewer.querySelector('.bilibili-viewer-title');
@@ -576,14 +576,13 @@ function ensureBilibiliViewer() {
   });
 }
 
-function openBilibiliViewer(bvid, title, sourceUrl) {
+function openBilibiliViewer(bvid, title) {
   if (!bvid) return;
   if (bilibiliViewer && !bilibiliViewer.hidden && bilibiliViewerBvid === bvid) return;
   ensureBilibiliViewer();
   bilibiliViewerBvid = bvid;
   bilibiliViewerTitle.textContent = title || '谢氏集萃视频';
   bilibiliViewerFrame.src = 'https://player.bilibili.com/player.html?bvid=' + encodeURIComponent(bvid) + '&autoplay=0&high_quality=1';
-  bilibiliViewer.querySelector('.viewer-open').href = sourceUrl || ('https://www.bilibili.com/video/' + bvid + '/');
   bilibiliViewer.hidden = false;
   bilibiliViewerPreviousOverflow = document.body.style.overflow;
   document.body.style.overflow = 'hidden';
@@ -601,7 +600,7 @@ function openBilibiliViewer(bvid, title, sourceUrl) {
 
 function openBilibiliViewerFromCard(card) {
   if (!card) return false;
-  openBilibiliViewer(card.getAttribute('data-bvid'), (card.querySelector('.title') || {}).textContent || '', card.getAttribute('data-source-url'));
+  openBilibiliViewer(card.getAttribute('data-bvid'), (card.querySelector('.title') || {}).textContent || '');
   return false;
 }
 
