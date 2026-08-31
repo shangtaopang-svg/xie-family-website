@@ -52,7 +52,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v93'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v94'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -235,7 +235,8 @@
     }
     if (isMb()) {
       fab.style.right = '16px';
-      fab.style.bottom = 'calc(66px + env(safe-area-inset-bottom))';
+      // 底部导航已移除：悬浮球靠近右下角，避开回到顶部按钮和正文操作区。
+      fab.style.bottom = 'calc(16px + env(safe-area-inset-bottom, 0px))';
       fab.style.left = 'auto';
       fab.style.top = 'auto';
     } else {
@@ -1693,6 +1694,8 @@
     var st = document.createElement('style');
     st.id = 'ai-color-guard';
     st.textContent = '@media (max-width:768px){' +
+      '#ai-fab{bottom:calc(16px + env(safe-area-inset-bottom, 0px)) !important}' +
+      'body.ai-sub-on #ai-fab{bottom:calc(78px + env(safe-area-inset-bottom, 0px)) !important}' +
       '.ai-msg.ai-user{background:linear-gradient(135deg,#f5a623,#d97706) !important;color:#fff !important}' +
       '.ai-msg.ai-bot{background:#1c1c1c !important;border:1px solid #333 !important;color:#f5f5f5 !important}' +
       '#ai-fab .ai-bubble{background:#141414 !important;color:#eee !important;border-color:#2a2a2a !important}' +

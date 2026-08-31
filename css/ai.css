@@ -436,7 +436,7 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
 @media (max-width: 768px) {
   #ai-fab {
     right: 16px;
-    bottom: calc(66px + env(safe-area-inset-bottom));
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
     width: 56px;
     height: 56px;
     background: var(--mb-brand, #D4FF3A);
@@ -445,9 +445,9 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
     font-size: 24px;
   }
 
-  /* 给统一底部导航和页面返回按钮让出独立区域，问候气泡移到悬浮球上方。 */
+  /* 底部导航已移除：悬浮球下移到右下角，避开回到顶部按钮；问候气泡仍在悬浮球上方。 */
   #ai-fab {
-    bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   }
   #ai-fab .ai-bubble {
     right: 0;
@@ -528,7 +528,7 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   #ai-input:focus { border-color: var(--mb-brand, #D4FF3A); }
   #ai-send { background: var(--mb-brand, #D4FF3A); color: var(--mb-bg, #0a0a0a); }
   .ai-subtitle-layer {
-    /* 移到屏幕最底部，避开悬浮球(FAB bottom:66px)；口播时由 body.ai-sub-on 让树/面板让出该条带 */
+    /* 移到屏幕最底部；口播时由 body.ai-sub-on 让树/面板让出该条带 */
     bottom: calc(12px + env(safe-area-inset-bottom));
     width: 92vw;
   }
@@ -554,7 +554,8 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
     max-height: calc(100vh - 64px - env(safe-area-inset-bottom));
   }
   body.ai-sub-on .ai-input-row { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
-  /* FAB 保持默认 bottom:66px 即可：字幕已在屏幕最底(12px)，FAB 天然高于字幕，无需再抬高 */
+  /* 朗读时字幕占用底部区域，悬浮球临时上移，避免遮住当前字幕。 */
+  body.ai-sub-on #ai-fab { bottom: calc(78px + env(safe-area-inset-bottom, 0px)) !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {
