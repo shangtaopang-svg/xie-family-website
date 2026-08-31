@@ -105,6 +105,9 @@
 .no-data-hint p { font-size:14px; color:#bbb; }
 .no-data-hint .link { display:inline-block; margin-top:12px; padding:8px 20px; border:2px solid #c4a050; border-radius:6px; color:#c4a050; text-decoration:none; font-weight:600; font-size:13px; }
 
+/* ===== Mobile collection library ===== */
+.collection-mobile-summary { display:none; }
+
 /* ===== Dark mode ===== */
 [data-theme="dark"] .collect-card { background:#16213e; box-shadow:0 1px 3px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.04); }
 [data-theme="dark"] .collect-card .info { background:#16213e; }
@@ -116,11 +119,89 @@
 [data-theme="dark"] .page-header .sub { color:#666; }
 
 /* ===== Responsive ===== */
-@media (max-width: 600px) {
-  .page-wrap { padding:28px 14px 40px; }
-  .page-header h1 { font-size:24px; }
-  .card-grid { grid-template-columns:1fr; gap:14px; }
-  .cat-tab { padding:6px 14px; font-size:12px; }
+@media (max-width: 768px) {
+  /* 页面首屏只保留标题、统计和筛选，内容卡片尽快进入视线。 */
+  .page-wrap { padding:18px 14px 86px !important; }
+  .page-header { margin-bottom:12px; }
+  .page-header .title-wrap { display:block; }
+  .page-header h1 { font-size:24px !important; letter-spacing:1px; line-height:1.25; }
+  .page-header .sub { display:block; margin-top:7px; font-size:12px; line-height:1.5; letter-spacing:0; }
+  .page-header .header-line { width:42px; height:2px; margin-top:12px; }
+
+  .collection-mobile-summary {
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    margin:0 0 12px; padding:10px 12px;
+    background:linear-gradient(135deg, #151515, #1c1c1c);
+    border:1px solid #2b2b2b; border-radius:14px;
+  }
+  .collection-mobile-summary .count { display:flex; align-items:baseline; gap:5px; min-width:0; }
+  .collection-mobile-summary strong { color:#d4ff3a !important; font-size:20px; line-height:1; }
+  .collection-mobile-summary .unit { color:#f5f5f5 !important; font-size:12px; white-space:nowrap; }
+  .collection-mobile-summary .note { color:#888 !important; font-size:11px; text-align:right; white-space:nowrap; }
+
+  /* 分类按钮变成单行横滑胶囊，避免在窄屏换成两三行挤压内容。 */
+  .cat-tabs {
+    position:sticky; top:0; z-index:20;
+    margin:0 -14px 12px; padding:8px 14px;
+    flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden;
+    background:rgba(10,10,10,.94); border-top:1px solid rgba(255,255,255,.04);
+    border-bottom:1px solid #242424; scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  .cat-tabs::-webkit-scrollbar { display:none; }
+  .cat-tab {
+    flex:0 0 auto; min-height:34px; padding:7px 12px !important;
+    border-radius:999px !important; border:1px solid #303030 !important;
+    background:#151515 !important; color:#aaa !important; font-size:12px;
+    white-space:nowrap; box-shadow:none !important;
+  }
+  .cat-tab.active { background:#d4ff3a !important; border-color:#d4ff3a !important; color:#0b0b0b !important; }
+  .cat-tab .badge { background:rgba(255,255,255,.09); color:#999; padding:1px 6px; }
+  .cat-tab.active .badge { background:rgba(0,0,0,.12); color:#0b0b0b; }
+
+  /* 采用“资料库清单”卡片：缩略图固定、标题留足宽度，长标题不再撑高页面。 */
+  .card-grid { display:flex; flex-direction:column; gap:10px; }
+  .collect-card,
+  .collect-card:hover {
+    display:grid; grid-template-columns:118px minmax(0,1fr); gap:0;
+    min-height:94px; overflow:hidden; transform:none;
+    background:#141414 !important; border:1px solid #2a2a2a !important;
+    border-radius:16px !important; box-shadow:none !important;
+  }
+  .collect-card .card-hover-wrap,
+  .collect-card .card-cover,
+  .collect-card .card-preview {
+    width:auto; height:94px; min-height:94px; aspect-ratio:auto !important;
+    padding:0 !important; border:0 !important; border-radius:0 !important;
+    background:#1c1c1c !important; box-shadow:none !important;
+  }
+  .collect-card .card-cover img { width:100%; height:100%; object-fit:cover; }
+  .collect-card .card-cover .placeholder { font-size:30px; }
+  .collect-card .card-cover .play-overlay { opacity:1; background:linear-gradient(90deg,rgba(0,0,0,.08),rgba(0,0,0,.28)); }
+  .collect-card .card-cover .play-circle { width:34px; height:34px; font-size:14px; }
+  .collect-card .card-cover .duration-badge { right:6px; bottom:6px; padding:2px 5px; font-size:9px; }
+  .collect-card .card-preview { display:none !important; }
+  .collect-card .info {
+    min-width:0; min-height:94px; padding:10px 10px 10px 12px !important;
+    display:flex; flex-direction:column; justify-content:center; background:#141414 !important;
+    border:0 !important; border-radius:0 !important; box-shadow:none !important;
+  }
+  .collect-card .info .meta { min-width:0; margin-bottom:5px; gap:4px; flex-wrap:nowrap; overflow:hidden; }
+  .collect-card .info .meta .tag,
+  .collect-card .info .meta .cat { flex:0 0 auto; padding:2px 6px; font-size:9px; border-radius:4px; }
+  .collect-card .info .title {
+    color:#f5f5f5 !important; font-size:13px; line-height:1.45;
+    -webkit-line-clamp:3; overflow:hidden;
+  }
+  .collect-card:not(.local-video) .info::after {
+    content:'打开内容  ›'; display:block; margin-top:5px; color:#d4ff3a;
+    font-size:10px; line-height:1;
+  }
+  .collect-card.local-video { grid-template-columns:118px minmax(0,1fr); }
+  .collect-card.local-video .card-cover video { width:100% !important; height:94px !important; object-fit:cover; }
+  .collect-card.local-video .info .title { -webkit-line-clamp:3; }
+
+  .no-data-hint { margin-top:28px; padding:30px 20px; }
 }
 .collect-card.local-video:hover .card-cover{opacity:1 !important}
 .collect-card.local-video .card-hover-wrap{aspect-ratio:16/9 !important}.collect-card.local-video video{width:100%;height:100%;object-fit:cover}
@@ -192,6 +273,10 @@
     <a href="../index.html" class="back-home-desktop">← 返回首页</a>
   </div>
 
+  <div class="collection-mobile-summary" aria-label="谢氏集萃内容统计">
+    <div class="count"><strong id="collectionTotal">0</strong><span class="unit">项内容</span></div>
+    <span class="note" id="collectionTopicNote">正在整理主题</span>
+  </div>
   <div class="cat-tabs" id="catTabs"></div>
   <div class="card-grid" id="cardGrid"></div>
 
@@ -216,6 +301,7 @@ function loadData(callback) {
       var raw = localStorage.getItem('xie_admin_xieCollection');
       if (raw) { collectionData = JSON.parse(raw); }
     } catch(e2) {}
+    addLocalVideos();
     if (callback) callback();
   };
   xhr.onerror = function() {
@@ -223,6 +309,7 @@ function loadData(callback) {
       var raw = localStorage.getItem('xie_admin_xieCollection');
       if (raw) { collectionData = JSON.parse(raw); }
     } catch(e) {}
+    addLocalVideos();
     if (callback) callback();
   };
   xhr.send();
@@ -231,6 +318,7 @@ function loadData(callback) {
 
 // 本地视频
 function addLocalVideos() {
+  if (collectionData.some(function(item){ return item && item.id === 'loc1'; })) return;
   collectionData.unshift(
     { title:'谢氏起源专题', url:'/video/1_comp.mp4', source:'本地', cat:'家族起源', poster:'../images/carousel/123.jpg', desc:'', id:'loc1', local:true },
     { title:'谢氏历史名人', url:'/video/2_comp.mp4', source:'本地', cat:'历史名人', poster:'../images/carousel/38.jpg', desc:'', id:'loc2', local:true },
@@ -253,6 +341,12 @@ function render(cat) {
   cat = cat || 'all';
   var grid = document.getElementById('cardGrid');
   var noData = document.getElementById('noDataHint');
+  var total = document.getElementById('collectionTotal');
+  var topicNote = document.getElementById('collectionTopicNote');
+  var topicSet = {};
+  collectionData.forEach(function(item){ if (item && item.cat) topicSet[item.cat] = true; });
+  if (total) total.textContent = collectionData.length;
+  if (topicNote) topicNote.textContent = Object.keys(topicSet).length + ' 个主题 · 随时更新';
 
   if (!collectionData.length) {
     grid.innerHTML = ''; noData.style.display = 'block';
@@ -265,7 +359,7 @@ function render(cat) {
   var tabsHtml = '';
   TABS.forEach(function(t){
     var cnt = t.id==='all' ? collectionData.length : collectionData.filter(function(i){ return (CAT_MAP[i.cat]||i.cat)===t.id; }).length;
-    tabsHtml += '<button class="cat-tab' + (t.id===cat?' active':'') + '" onclick="render(' + "'" + t.id + "'" + ')">' + t.icon + ' ' + t.label + ' <span class="badge">' + cnt + '</span></button>';
+    tabsHtml += '<button class="cat-tab' + (t.id===cat?' active':'') + '" data-cat="' + t.id + '" onclick="render(' + "'" + t.id + "'" + ')">' + t.icon + ' ' + t.label + ' <span class="badge">' + cnt + '</span></button>';
   });
   document.getElementById('catTabs').innerHTML = tabsHtml;
 
