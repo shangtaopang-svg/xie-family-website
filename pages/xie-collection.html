@@ -534,6 +534,7 @@ var bilibiliViewerFrame = null;
 var bilibiliViewerTitle = null;
 var bilibiliViewerBvid = '';
 var bilibiliViewerHistoryPushed = false;
+var bilibiliViewerPreviousHash = '';
 var bilibiliViewerPreviousOverflow = '';
 
 function ensureBilibiliViewer() {
@@ -572,10 +573,15 @@ function openBilibiliViewer(bvid, title, sourceUrl) {
   bilibiliViewer.hidden = false;
   bilibiliViewerPreviousOverflow = document.body.style.overflow;
   document.body.style.overflow = 'hidden';
+  bilibiliViewerPreviousHash = window.location.hash || '';
   try {
-    history.pushState(Object.assign({}, history.state || {}, { xieCollectionViewer: true }), '');
+    var cleanUrl = window.location.pathname + window.location.search + '#xie-bilibili-player';
+    history.pushState(Object.assign({}, history.state || {}, { xieCollectionViewer: true }), '', cleanUrl);
     bilibiliViewerHistoryPushed = true;
-  } catch (err) { bilibiliViewerHistoryPushed = false; }
+  } catch (err) {
+    bilibiliViewerHistoryPushed = false;
+    try { window.location.hash = 'xie-bilibili-player'; bilibiliViewerHistoryPushed = true; } catch (hashErr) {}
+  }
 }
 
 function openBilibiliViewerFromCard(card) {
@@ -613,6 +619,10 @@ document.addEventListener('click', function(e){
 
 window.addEventListener('popstate', function(){
   if (bilibiliViewer && !bilibiliViewer.hidden) closeBilibiliViewer(true);
+});
+
+window.addEventListener('hashchange', function(){
+  if (bilibiliViewer && !bilibiliViewer.hidden && window.location.hash !== '#xie-bilibili-player') closeBilibiliViewer(true);
 });
 
 loadData(function(){ render('all'); });
