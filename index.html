@@ -9,7 +9,7 @@
   <title data-i18n="site.title">宁海下枫槎村 · 谢氏家族</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="css/style.css?v=20260831-mobile-hero-04">
+  <link rel="stylesheet" href="css/style.css?v=20260831-mobile-palette-01">
   <style>
     /* Carousel mobile fix - ensure slides have height */
     .carousel-container { aspect-ratio: 21/9; overflow: hidden; }
@@ -59,7 +59,7 @@
   var d = document.createElement('div');
   d.id = 'mb-clan-dialog';
   d.style.cssText = 'position:fixed;inset:0;z-index:9999999;background:rgba(0,0,0,0.5);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;';
-  d.innerHTML = '<div style="background:#fff;border-radius:24px;padding:36px 28px 28px;max-width:340px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative;"><div style="font-size:56px;margin-bottom:12px;">🏛️</div><div style="font-size:22px;font-weight:700;color:#1a1a1a;margin-bottom:6px;">您是否下枫槎族人？</div><div style="font-size:13px;color:#888;margin-bottom:20px;line-height:1.6;">如果是谢氏族人，请登记信息加入<br>如不是，可继续浏览网站</div><div style="display:flex;flex-direction:column;gap:10px;"><button id="clan-yes" style="padding:14px;background:#D4FF3A;color:#000;border:none;border-radius:999px;font-size:16px;font-weight:700;cursor:pointer;">✅ 我是族人，立即登记</button><button id="clan-no" style="padding:10px;background:transparent;color:#999;border:none;font-size:14px;cursor:pointer;">暂不登记，继续浏览</button></div></div>';
+  d.innerHTML = '<div style="background:#fff;border-radius:24px;padding:36px 28px 28px;max-width:340px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative;"><div style="font-size:56px;margin-bottom:12px;">🏛️</div><div style="font-size:22px;font-weight:700;color:#1a1a1a;margin-bottom:6px;">您是否下枫槎族人？</div><div style="font-size:13px;color:#888;margin-bottom:20px;line-height:1.6;">如果是谢氏族人，请登记信息加入<br>如不是，可继续浏览网站</div><div style="display:flex;flex-direction:column;gap:10px;"><button id="clan-yes" style="padding:14px;background:#A8B89A;color:#000;border:none;border-radius:999px;font-size:16px;font-weight:700;cursor:pointer;">✅ 我是族人，立即登记</button><button id="clan-no" style="padding:10px;background:transparent;color:#999;border:none;font-size:14px;cursor:pointer;">暂不登记，继续浏览</button></div></div>';
   document.body.appendChild(d);
   document.getElementById('clan-no').addEventListener('click',function(){d.remove();localStorage.setItem('mb_clan_asked','1');});
   document.getElementById('clan-yes').addEventListener('click',function(){d.remove();localStorage.setItem('mb_clan_asked','1');window.location.href='pages/clan-register.html';});
@@ -613,8 +613,8 @@ window.toggleTheme=function(){var d=localStorage.getItem("theme")==="dark";var n
 })();
 </script>
 <script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();window.history.go(-1)});</script>
-<script>(function(){var b=document.createElement("div");b.id="backTopBtn";b.innerHTML="\u2191";b.style.cssText="position:fixed;bottom:80px;right:16px;z-index:9999;width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.85);color:#0a0806;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;opacity:0.9;transition:opacity 0.3s;";b.onclick=function(){window.scrollTo({top:0,behavior:"smooth"})};window.addEventListener("scroll",function(){b.style.opacity=window.scrollY>50?"0.9":"0.3"});document.body.appendChild(b);})();</script><link rel="stylesheet" href="/css/ai.css?v=95">
-<script src="/js/ai-assistant.js?v=95" defer></script>
+<script>(function(){var b=document.createElement("div");b.id="backTopBtn";b.innerHTML="\u2191";b.style.cssText="position:fixed;bottom:80px;right:16px;z-index:9999;width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.85);color:#0a0806;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;opacity:0.9;transition:opacity 0.3s;";b.onclick=function(){window.scrollTo({top:0,behavior:"smooth"})};window.addEventListener("scroll",function(){b.style.opacity=window.scrollY>50?"0.9":"0.3"});document.body.appendChild(b);})();</script><link rel="stylesheet" href="/css/ai.css?v=96">
+<script src="/js/ai-assistant.js?v=96" defer></script>
 <script defer src="js/sidebar.js?v=13"></script>
 <link rel="stylesheet" href="/css/public-access-gate.css?v=20260826-access-04">
 <script src="/js/public-access-gate.js?v=20260828-trusted-device-02" defer></script>

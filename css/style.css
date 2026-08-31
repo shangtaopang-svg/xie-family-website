@@ -4772,12 +4772,12 @@ body {
 /* ===== Mobile Only (黑底霓虹黄 · 完全覆写) ===== */
 @media (max-width: 768px) {
   :root {
-    --mb-bg: #0a0a0a;
-    --mb-brand: #D4FF3A;
-    --mb-card: #141414;
-    --mb-border: #2a2a2a;
-    --mb-text: #f5f5f5;
-    --mb-sub: #888888;
+    --mb-bg: #101814;
+    --mb-brand: #A8B89A;
+    --mb-card: #151e1a;
+    --mb-border: #2e3d33;
+    --mb-text: #f3f0e7;
+    --mb-sub: #a5aaa0;
     /* v: 手机端黑底必须浅色文字 —— 重定义浅色主题的文字变量，避免 var(--text-primary) 等仍解析为深色(#0a0a0a)导致「黑字黑底」看不见 */
     --text-primary: #f5f5f5;
     --text-secondary: #c9c5bf;
@@ -4844,15 +4844,16 @@ body {
 
 /* ===== 变量 ===== */
 :root {
-  --mb-bg: #0a0a0a;
-  --mb-brand: #D4FF3A;
-  --mb-brand-dim: #1a2200;
-  --mb-card: #141414;
-  --mb-card2: #1c1c1c;
-  --mb-border: #2a2a2a;
-  --mb-text: #f5f5f5;
-  --mb-sub: #888888;
-  --mb-muted: #555555;
+  --mb-bg: #101814;
+  --mb-brand: #A8B89A;
+  --mb-brand-dim: #1b2820;
+  --mb-brand-strong: #C9A84C;
+  --mb-card: #151e1a;
+  --mb-card2: #1d2922;
+  --mb-border: #2e3d33;
+  --mb-text: #f3f0e7;
+  --mb-sub: #a5aaa0;
+  --mb-muted: #777d73;
   --mb-radius: 12px;
   --mb-radius-lg: 20px;
   --mb-radius-pill: 999px;
@@ -5170,7 +5171,7 @@ section a[href*="audio"] {
 }
 .mbh-search-input::placeholder { color: #555; }
 .mbh-search-btn {
-  background: #D4FF3A; color: #000; font-size: 13px;
+  background: #A8B89A; color: #000; font-size: 13px;
   font-weight: 700; padding: 8px 20px; border-radius: 999px;
   flex-shrink: 0; cursor: pointer; border: 0; font-family: inherit;
   -webkit-appearance: none; appearance: none; line-height: 1;
@@ -5242,8 +5243,8 @@ section a[href*="audio"] {
 }
 
 .mbh-pill:active { opacity: 0.8; transform: scale(0.98); }
-.mbh-pill-active { background: #D4FF3A; color: #000 !important; }
-.mbh-pill:not(.mbh-pill-active) { background: #000; border: 1.5px solid #D4FF3A; color: #D4FF3A !important; }
+.mbh-pill-active { background: #A8B89A; color: #000 !important; }
+.mbh-pill:not(.mbh-pill-active) { background: #000; border: 1.5px solid #A8B89A; color: #A8B89A !important; }
 .mbh-pill-members { border-color: #8fd2ad !important; color: #bcebd0 !important; }
 
 @media (max-width: 380px) {
@@ -5264,7 +5265,7 @@ section a[href*="audio"] {
 .mbh-qitem:active { opacity: 0.6; }
 .mbh-qicon {
   width: 40px; height: 40px; border-radius: 50%;
-  background: #D4FF3A; color: #000;
+  background: #A8B89A; color: #000;
   display: flex; align-items: center; justify-content: center;
   font-size: 18px;
 }
@@ -5280,7 +5281,7 @@ section a[href*="audio"] {
 .mbh-li:active { opacity: 0.7; }
 .mbh-li-icon { font-size: 17px; width: 22px; text-align: center; flex-shrink: 0; }
 .mbh-li-text { flex: 1; min-width: 0; font-size: 13px; color: #fff; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mbh-li-arrow { font-size: 12px; color: #D4FF3A; opacity: 0.5; }
+.mbh-li-arrow { font-size: 12px; color: #A8B89A; opacity: 0.5; }
 
 .mbh-quick-bar {
   display: flex; align-items: stretch;
@@ -5299,7 +5300,7 @@ section a[href*="audio"] {
 .mbh-qb-text { flex: 1; min-width: 0; }
 .mbh-qb-label { font-size: 13px; font-weight: 600; color: #fff; }
 .mbh-qb-sub { font-size: 10px; color: #888; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mbh-qb-arrow { font-size: 14px; color: #D4FF3A; opacity: 0.5; }
+.mbh-qb-arrow { font-size: 14px; color: #A8B89A; opacity: 0.5; }
 
 
 
@@ -5325,7 +5326,7 @@ section a[href*="audio"] {
   box-sizing: border-box !important;
 }
 .genealogy-tools button {
-  background: #D4FF3A !important;
+  background: #A8B89A !important;
   color: #000 !important;
   border: none !important;
   border-radius: 999px !important;
@@ -5377,7 +5378,7 @@ section a[href*="audio"] {
   .mb-show-main .carousel-next { right: 8px; }
   .mb-show-main .carousel-dots { display: flex !important; justify-content: center; gap: 6px; padding: 8px 0; }
   .mb-show-main .carousel-dots .carousel-dot { width: 6px; height: 6px; border-radius: 50%; background: #444; }
-  .mb-show-main .carousel-dots .carousel-dot.active { background: #D4FF3A; width: 20px; border-radius: 3px; }
+  .mb-show-main .carousel-dots .carousel-dot.active { background: #A8B89A; width: 20px; border-radius: 3px; }
   .mb-show-main [style*="display:flex;gap:10px;max-width:780px"] { flex-wrap: wrap !important; }
   .mb-show-main .hero-motto { font-size: 24px !important; color: #e8c97a !important; font-weight: 700 !important; text-align: left !important; letter-spacing: 2px !important; margin-bottom: 4px !important; text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; }
   .mb-show-main .hero-sub { font-size: 13px !important; color: #888 !important; text-align: left !important; margin-bottom: 12px !important; }
@@ -5418,26 +5419,26 @@ section a[href*="audio"] {
     transition: all 0.2s;
   }
   .mb-show-main .hbg-btn.active {
-    background: #D4FF3A !important;
+    background: #A8B89A !important;
     color: #000 !important;
     font-weight: 600;
   }
   .mb-show-main .hbg-btn:active { opacity: 0.7; }
   .mb-show-main .hero-stats { position: relative !important; transform: none !important; left: auto !important; bottom: auto !important; margin-top: 8px !important; flex-wrap: wrap !important; gap: 8px !important; }
-  .mb-show-main .hero-stat-num { color: #D4FF3A !important; font-size: 18px !important; }
+  .mb-show-main .hero-stat-num { color: #A8B89A !important; font-size: 18px !important; }
   .mb-show-main .hero-stat-label { color: #888 !important; font-size: 10px !important; }
   .mb-show-main .fade-in-section { margin: 0 !important; padding: 0 16px !important; }
   .mb-show-main .fade-in-section .glass-card { background: #141414 !important; border-color: #2a2a2a !important; border-radius: 16px !important; padding: 16px !important; }
   .mb-show-main .fade-in-section .glass-card p { color: #888 !important; font-size: 13px !important; line-height: 1.8 !important; }
   .mb-show-main .stat-card { background: #141414 !important; border-color: #2a2a2a !important; border-radius: 12px !important; padding: 12px 8px !important; }
-  .mb-show-main .stat-card div:first-child { color: #D4FF3A !important; }
+  .mb-show-main .stat-card div:first-child { color: #A8B89A !important; }
   .mb-show-main .section-title { text-align: left !important; margin-bottom: 12px !important; }
   .mb-show-main .section-title h2 { font-size: 20px !important; color: #e8c97a !important;
   text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; font-weight: 700 !important; }
   .mb-show-main .section-title p { font-size: 12px !important; color: #888 !important; }
   .mb-show-main .section-title .divider { display: none !important; }
   .mb-show-main .fullwidth-quote { padding: 20px 16px !important; }
-  .mb-show-main .quote-text { color: #D4FF3A !important; font-size: 16px !important; }
+  .mb-show-main .quote-text { color: #A8B89A !important; font-size: 16px !important; }
   .mb-show-main .quote-author { color: #888 !important; font-size: 12px !important; }
   .mb-show-main .quote-line { background: #2a2a2a !important; }
   .mb-show-main .site-footer { display: none !important; }
@@ -5453,7 +5454,7 @@ section a[href*="audio"] {
     justify-content: center;
     gap: 8px;
     padding: 12px;
-    background: #D4FF3A;
+    background: #A8B89A;
     border: none;
     border-radius: 999px;
     color: #000;
@@ -5473,7 +5474,7 @@ section a[href*="audio"] {
   .mbh-enter-btn {
     display: flex; align-items: center; justify-content: center;
     gap: 8px; margin: 0 16px 14px; padding: 14px;
-    background: #D4FF3A; color: #000 !important;
+    background: #A8B89A; color: #000 !important;
     border-radius: 999px; font-size: 16px; font-weight: 700;
     text-decoration: none; -webkit-tap-highlight-color: transparent;
   }
@@ -5570,7 +5571,7 @@ section a[href*="audio"] {
   text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; font-size: 16px !important; }
   .activity-card p, .activity-card div:not([class*="ac-"]) { color: #888 !important; font-size: 13px !important; }
   .activity-card [class*="tag"], .activity-card [class*="label"], .activity-card .status {
-    background: #D4FF3A !important;
+    background: #A8B89A !important;
     color: #000 !important;
     border-radius: 999px !important;
     padding: 2px 12px !important;
@@ -5844,4 +5845,49 @@ li:has(> a[href*="admin.html"]) {
     transform: none !important;
     animation: none !important;
   }
+}
+
+/* ===== 手机端低饱和墨绿配色 =====
+   荧光黄绿只保留给少量重点操作，普通品牌色改为柔和鼠尾草绿，重点 CTA 使用暖金。 */
+@media (max-width: 768px) {
+  :root {
+    --mb-brand: #A8B89A;
+    --mb-brand-strong: #C9A84C;
+    --mb-bg: #101814;
+    --mb-card: #151e1a;
+    --mb-card2: #1d2922;
+    --mb-border: #2e3d33;
+    --mb-text: #f3f0e7;
+    --mb-sub: #a5aaa0;
+  }
+
+  html,
+  body { background: var(--mb-bg) !important; color: var(--mb-text) !important; }
+  .mbh-search,
+  .mbh-quick,
+  .mbh-list .mbh-li,
+  .mbh-quick-bar { background: var(--mb-card) !important; }
+  .mbh-search,
+  .mbh-quick-bar { border-color: var(--mb-border) !important; }
+
+  .mbh-search-btn,
+  .mbh-pill-active,
+  .mbh-enter-btn,
+  .genealogy-tools button,
+  #clan-yes,
+  .mb-show-main .hbg-btn.active,
+  .mb-show-main .mb-back-entrance {
+    background: var(--mb-brand-strong) !important;
+    color: #1a180f !important;
+  }
+  .mbh-pill:not(.mbh-pill-active) {
+    background: transparent !important;
+    border-color: rgba(168, 184, 154, .58) !important;
+    color: var(--mb-brand) !important;
+  }
+  .mbh-qicon { background: var(--mb-brand); color: #1a180f; }
+  .mbh-li-arrow,
+  .mbh-qb-arrow { color: var(--mb-brand); }
+  .mbh-li,
+  .mbh-qb { color: var(--mb-text); }
 }
