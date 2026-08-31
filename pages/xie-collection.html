@@ -459,6 +459,15 @@ function render(cat) {
       '</div></a>';
   }).join('');
 
+  // 给每个B站按钮绑定独立点击事件，避免悬停预览或其他页面监听影响入口。
+  document.querySelectorAll('.bilibili-card[data-bvid]').forEach(function(card){
+    card.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      openBilibiliViewerFromCard(card);
+    });
+  });
+
   // 没封面的B站视频自动获取
   setTimeout(function(){
     document.querySelectorAll('.collect-card').forEach(function(card){
@@ -490,6 +499,7 @@ function render(cat) {
 
 // 悬浮懒加载 B站 iframe
 document.addEventListener('mouseover', function(e){
+  if (window.matchMedia && window.matchMedia('(hover: none)').matches) return;
   var el = e.target;
   if (!el || !el.closest) return;
   var card = el.closest('.collect-card');
