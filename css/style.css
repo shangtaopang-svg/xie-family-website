@@ -5183,7 +5183,7 @@ section a[href*="audio"] {
 }
 
 .mbh-hero {
-  margin: 0 16px 12px; height: 138px;
+  margin: 0 16px 12px; height: clamp(166px, 46vw, 204px);
   border-radius: 20px; overflow: hidden;
   background: linear-gradient(135deg, #1a2a1a, #0a1a0a);
   background-image: url('/images/22.jpg');
@@ -5204,7 +5204,8 @@ section a[href*="audio"] {
   background-position: center 46%;
   background-blend-mode: multiply, normal;
   mix-blend-mode: multiply;
-  opacity: .42;
+  filter: saturate(1.16) contrast(.94);
+  opacity: .56;
   transform: scale(1.06) translate3d(-1%, 0, 0);
   animation: mbhHeroColor 9s ease-in-out infinite alternate;
   pointer-events: none;
@@ -5213,8 +5214,10 @@ section a[href*="audio"] {
   content: '';
   position: absolute; inset: 0;
   background:
-    linear-gradient(90deg, rgba(7, 20, 17, .82) 0%, rgba(7, 20, 17, .28) 52%, rgba(212, 173, 82, .12) 100%),
-    linear-gradient(180deg, rgba(7, 10, 8, .04) 35%, rgba(7, 10, 8, .68) 100%);
+    radial-gradient(circle at 84% 18%, rgba(247, 205, 96, .24), transparent 28%),
+    linear-gradient(90deg, rgba(7, 20, 17, .48) 0%, rgba(7, 20, 17, .12) 52%, rgba(212, 173, 82, .12) 100%),
+    linear-gradient(180deg, rgba(7, 10, 8, 0) 25%, rgba(7, 10, 8, .32) 100%);
+  animation: mbhHeroLight 8s ease-in-out infinite alternate;
   pointer-events: none;
 }
 .mbh-hero-caption {
@@ -5225,16 +5228,22 @@ section a[href*="audio"] {
 .mbh-hero-kicker {
   width: fit-content; padding: 3px 8px;
   border: 1px solid rgba(232, 201, 122, .38); border-radius: 999px;
-  background: rgba(8, 22, 18, .34); backdrop-filter: blur(4px);
+  background: rgba(8, 22, 18, .24); backdrop-filter: blur(4px);
   color: #e8c97a; font-size: 10px; letter-spacing: 1px;
 }
+.mbh-hero-kicker::before { content: '✦'; margin-right: 4px; color: #f7d36a; }
 .mbh-hero-title { font-size: 16px; font-weight: 700; letter-spacing: 1px; }
 @keyframes mbhHeroColor {
-  from { opacity: .24; transform: scale(1.06) translate3d(-1%, 0, 0); }
-  to { opacity: .48; transform: scale(1.11) translate3d(1%, -1%, 0); }
+  from { opacity: .36; transform: scale(1.06) translate3d(-1%, 0, 0); }
+  to { opacity: .62; transform: scale(1.11) translate3d(1%, -1%, 0); }
+}
+@keyframes mbhHeroLight {
+  from { opacity: .78; }
+  to { opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .mbh-hero::before { animation: none; opacity: .36; transform: scale(1.06); }
+  .mbh-hero::before { animation: none; opacity: .48; transform: scale(1.06); }
+  .mbh-hero::after { animation: none; opacity: .9; }
 }
 
 .mbh-pills { display: flex; gap: 8px; margin: 0 16px 12px; }
