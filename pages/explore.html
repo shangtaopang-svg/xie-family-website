@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f7f8f7" id="navhubThemeColor">
   <title>探索栏目 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../css/style.css?v=20260831-explore-02">
+  <link rel="stylesheet" href="../css/style.css?v=20260831-explore-03">
   <script>
     try { sessionStorage.removeItem('pt_go'); } catch (e) {}
     try { if ((localStorage.getItem('xie_theme') || localStorage.getItem('theme')) === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {}
@@ -162,6 +162,9 @@
         if (isDark) document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', 'dark');
         try { localStorage.setItem('xie_theme', isDark ? 'light' : 'dark'); localStorage.setItem('theme', isDark ? 'light' : 'dark'); } catch (e) {}
         syncTheme();
+      });
+      enter.addEventListener('click', function(){
+        try { sessionStorage.setItem('back_to', window.location.href); } catch (e) {}
       });
       languageControl.addEventListener('click', function(){
         currentLang = currentLang === 'en' ? 'zh' : 'en';

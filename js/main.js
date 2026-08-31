@@ -168,10 +168,13 @@ document.addEventListener('DOMContentLoaded', function() {
   // 的 .site-header 变深色。之后主题完全由用户开关决定，不再自动覆盖。
   if (localStorage.getItem('theme_fix_v3') !== '1') {
     localStorage.setItem('theme_fix_v3', '1');
-    localStorage.setItem('theme', 'light');
-    localStorage.setItem('xie_theme', 'light');
+    // 只在用户没有明确选择时初始化浅色，不能覆盖开启页/目录页刚保存的深色选择。
+    if (!localStorage.getItem('theme') && !localStorage.getItem('xie_theme')) {
+      localStorage.setItem('theme', 'light');
+      localStorage.setItem('xie_theme', 'light');
+    }
   }
-  var currentTheme = localStorage.getItem('xie_theme') || 'light';
+  var currentTheme = localStorage.getItem('xie_theme') || localStorage.getItem('theme') || 'light';
   if (currentTheme === 'dark') {
     document.documentElement.setAttribute('data-theme', 'dark');
     if (themeToggle) themeToggle.textContent = '🌙';

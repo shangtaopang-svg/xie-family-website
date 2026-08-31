@@ -9,7 +9,7 @@
   <title data-i18n="site.title">宁海下枫槎村 · 谢氏家族</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="css/style.css?v=20260831-mobile-home-nav-07">
+  <link rel="stylesheet" href="css/style.css?v=20260831-mobile-home-nav-09">
   <style>
     /* Carousel mobile fix - ensure slides have height */
     .carousel-container { aspect-ratio: 21/9; overflow: hidden; }
@@ -49,6 +49,7 @@
   <script defer src="js/file-store.js?v=6"></script>
   <link rel="manifest" href="/manifest.json">
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");</script>
+  <script>try { if ((localStorage.getItem('xie_theme') || localStorage.getItem('theme')) === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {}</script>
 <script>if(location.search.includes('main')){document.documentElement.classList.add('mb-show-main');}</script>
 <script>// 首页不自动弹出身份确认；统一由“探索下枫槎”入口触发。
 (function(){
@@ -131,7 +132,7 @@
 <div class="mb-home mb-story-home" aria-label="下枫槎谢氏家族开启页">
   <div class="mbs-top">
     <div class="mbs-brand"><span class="mbs-mark">谢</span><span>下枫槎谢氏</span></div>
-    <span class="mbs-location">宁海 · 下枫槎村</span>
+    <div class="mbs-top-right"><button type="button" class="mbs-theme-toggle" id="mbsThemeToggle" aria-label="切换到黑夜模式"><span id="mbsThemeIcon">☾</span><span id="mbsThemeText">黑夜</span></button><span class="mbs-location">宁海 · 下枫槎村</span></div>
   </div>
 
   <main class="mbs-stage-wrap">
@@ -152,7 +153,7 @@
 
     <div class="mbs-actions">
       <a class="mbs-primary" href="pages/explore.html">开始探索 <span>→</span></a>
-      <a class="mbs-secondary" href="pages/genealogy.html?chooser=1&access=20260827-07">查找族人 <span>⌕</span></a>
+      <a class="mbs-secondary" href="pages/genealogy.html?chooser=1&access=20260827-07">寻根问祖 <span>⌕</span></a>
     </div>
 
     <div class="mbs-dots" id="mbsDots" aria-label="切换村景图片">
@@ -163,7 +164,6 @@
       <button type="button" aria-label="第5张村景"></button>
       <button type="button" aria-label="第6张村景"></button>
     </div>
-    <button type="button" class="mbs-scroll-note" id="mbsScrollNext">向上滑动，继续阅读家族故事　⌃</button>
   </main>
 </div>
 
@@ -207,14 +207,33 @@
   function stop(){ if (timer) { clearInterval(timer); timer = null; } }
   scenes.slice(1).forEach(function(scene){ var img = new Image(); img.src = scene.src; });
   dots.forEach(function(dot, i){ dot.addEventListener('click', function(){ show(i); stop(); start(); }); });
-  var scrollNext = document.getElementById('mbsScrollNext');
-  var nextContent = document.querySelector('.mb-story-home ~ .content');
-  if (scrollNext && nextContent) {
-    scrollNext.addEventListener('click', function(){ nextContent.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
-  }
   document.addEventListener('visibilitychange', function(){ if (document.hidden) stop(); else start(); });
   show(0);
   start();
+})();
+</script>
+
+<script>
+// 开启页主题：与栏目目录和具体内容页共用 xie_theme。
+(function(){
+  var toggle = document.getElementById('mbsThemeToggle');
+  var icon = document.getElementById('mbsThemeIcon');
+  var text = document.getElementById('mbsThemeText');
+  if (!toggle) return;
+  function sync(){
+    var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    icon.textContent = dark ? '☀' : '☾';
+    text.textContent = dark ? '白天' : '黑夜';
+    toggle.setAttribute('aria-label', dark ? '切换到白天模式' : '切换到黑夜模式');
+  }
+  toggle.addEventListener('click', function(){
+    var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (dark) document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', 'dark');
+    try { localStorage.setItem('xie_theme', dark ? 'light' : 'dark'); localStorage.setItem('theme', dark ? 'light' : 'dark'); } catch (e) {}
+    sync();
+  });
+  sync();
 })();
 </script>
 
