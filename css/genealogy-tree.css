@@ -106,7 +106,7 @@
 @media (max-width:900px) {
   /* ① 全屏整树大面白底改暖淡黄（用户：全部白底刺眼，改淡黄；卡片仍白，黄底白卡自然分层；连接线保留，
      字体改深暖棕见 ④——黄底上橙字对比弱）。section 用 #id 提特异性：style.css 手机端
-     [class*="card"]:not(.mb-tab) 会把 .glass-card 压成深底(--mb-card)，全屏 20px padding 会在黄树四周露深色框，必须一并压成黄底 */
+     [class*="card"] 会把 .glass-card 压成深底(--mb-card)，全屏 20px padding 会在黄树四周露深色框，必须一并压成黄底 */
   #genealogy-tree-section.genealogy-tree-section-fullscreen,
   .genealogy-tree-section-fullscreen .genealogy-tree-scroll { background:#f8ecd1 !important; }
   /* ② 弹层卡片（详情页 person-detail-box + 祖先树弹层）白底改淡黄；内嵌 var(--glass-bg) 信息面板暖化 */
@@ -187,7 +187,7 @@
     --glass-border: rgba(120,105,60,0.25);
     --accent-orange-dim: rgba(214,158,46,0.16);
   }
-  /* 手机端 style.css 全局规则 [class*="card"]:not(.mb-tab){background:var(--mb-card)!important} 会把树内所有
+  /* 手机端 style.css 全局规则 [class*="card"]{background:var(--mb-card)!important} 会把树内所有
      class 含 "card" 的元素（卡片、卡片层、card-name/card-meta）都压成深色 #141414；用户要求底色纯白，
      故用 !important 反压（页面内 <style> 在 style.css 之后加载，等权 !important 后者生效） */
   .genealogy-tree-scroll .apt-card, .gz-tree-viewport .apt-card { background: #ffffff !important; }
@@ -217,7 +217,7 @@
   .genealogy-tree-section-fullscreen .genealogy-tree-scroll:not(.mbl-fs-landscape) #tree-container { margin:auto !important; }
   /* 中和 style.css 强制卡片尺寸，对齐 JS 布局常量 CARD_W=104/CARD_H=60 */
   .tree-html-card { width:104px !important; height:60px !important; border-radius:6px; padding:3px 4px; }
-  /* 反压 style.css 4932 `[class*="card"]:not(.mb-tab)`（特异性 0,2,0）给所有 class 含 "card" 的元素
+  /* 反压 style.css 4932 `[class*="card"]`（特异性 0,1,0）给所有 class 含 "card" 的元素
      padding:16px!important——压过上面 0,1,0 的 3px 4px，导致卡片/名字/元信息四周 16px 内边距、
      内容挤出 60px 卡高（用户「不能超出椭圆形大小」）。用 0,2,0 前缀 + 页面 <style> 在 style.css 之后加载
      （同特异性 !important 后者生效）→ 反压回小内边距。 */
@@ -237,7 +237,7 @@
   .tree-html-card .mb-hx { display:flex; align-items:center; justify-content:center; gap:4px; margin-top:2px; }
   .mb-hx-badge { font-size:9.5px; font-weight:600; line-height:14px; padding:0 5px; border-radius:7px; white-space:nowrap; border:1px solid; }
   /* 兴旺分档配色（灰0 蓝1 绿2 橙3 红4）：仅卡片边框着色；徽章统一中性灰（内容已是「第N代」世代）。
-     前缀提 specificity 反压 style.css 全局 [class*="card"]:not(.mb-tab) 的深色边框 #2a2a2a */
+     前缀提 specificity 反压 style.css 全局 [class*="card"] 的深色边框 #2a2a2a */
   .genealogy-tree-scroll .tree-html-card, .gz-tree-viewport .tree-html-card { border-color:#9a9690 !important; }
   .tree-html-card .mb-hx-badge { color:#9a9690; border-color:rgba(154,150,144,.5); background:rgba(154,150,144,.07); }
   .tree-html-card.mb-t1 { border-color:#3b82f6 !important; box-shadow:inset 0 0 0 1px rgba(59,130,246,.18); }
@@ -330,7 +330,7 @@
 /* 手机端：族谱统计卡片缩小（桌面端>768px不命中，零影响） */
 @media (max-width: 768px) {
   #stats-container { gap: 6px !important; grid-template-columns: repeat(5, 1fr) !important; }
-  /* 用 #stats-container 前缀提升特异性 + !important，压过全站 [class*="card"]:not(.mb-tab) 的 16px padding / --mb-radius-lg 圆角 */
+  /* 用 #stats-container 前缀提升特异性 + !important，压过全站 [class*="card"] 的 16px padding / --mb-radius-lg 圆角 */
   #stats-container .stat-card-anim { padding: 6px 2px !important; border-radius: 8px !important; }
   #stats-container .stat-card-anim .stat-num { font-size: 14px !important; }
   #stats-container .stat-card-anim .stat-label { font-size: 9px !important; margin-top: 0 !important; }

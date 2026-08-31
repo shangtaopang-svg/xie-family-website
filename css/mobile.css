@@ -33,7 +33,7 @@ body {
 .hero-marquee, .hero-bg-toggle, .main-nav,
 .header-actions, .nav-toggle, .nav-links,
 .site-footer, .footer-inner, .footer-bottom,
-.mobile-bottom-nav, #bg-canvas,
+#bg-canvas,
 .photo-wrapper, .carousel-container, .carousel-dots,
 .reels-wrapper, .reels-hint, .media-row-section,
 .hc, .hc-card, .hc .arrow,
@@ -63,7 +63,7 @@ body {
 }
 
 /* ===== 通用卡片 ===== */
-[class*="card"]:not(.mb-tab) {
+[class*="card"] {
   background: var(--mb-card) !important;
   border: 1px solid var(--mb-border) !important;
   border-radius: var(--mb-radius-lg) !important;
@@ -79,34 +79,6 @@ p, li, td, th, span, div, label { color: var(--mb-text); }
 .text-secondary, .text-tertiary, .text-muted { color: var(--mb-sub) !important; }
 a { color: var(--mb-brand); }
 .divider, hr { background: var(--mb-border) !important; }
-
-/* ===== 底部导航 ===== */
-.mb-tabbar {
-  display: flex !important;
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  height: 56px;
-  background: #0f0f0f;
-  border-top: 1px solid #222;
-  z-index: 999999;
-  justify-content: space-around;
-  align-items: center;
-  padding-bottom: env(safe-area-inset-bottom, 0);
-}
-.mb-tab {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  text-decoration: none;
-  padding: 4px 12px;
-  min-width: 44px;
-  -webkit-tap-highlight-color: transparent;
-}
-.mb-tab:active { opacity: 0.6; }
-.mb-tab-icon { font-size: 20px; line-height: 1; }
-.mb-tab-label { font-size: 10px; color: #555; font-weight: 500; letter-spacing: 0; }
-.mb-tab.active .mb-tab-label { color: var(--mb-brand); }
 
 /* ===== 首页 Hero ===== */
 .hero-section {

@@ -52,7 +52,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v90'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v93'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -74,6 +74,37 @@
   function isMb() { return window.matchMedia('(max-width:768px)').matches; }
   function getToken() { try { return localStorage.getItem(LS_ADMIN_TOKEN) || localStorage.getItem(LS_TOKEN) || ''; } catch (e) { return ''; } }
   function getPerson() { try { return JSON.parse(localStorage.getItem(LS_PERSON) || 'null'); } catch (e) { return null; } }
+
+  /* 手机端内容页入口：底部导航已移除，入口统一放在内容顶部，避免遮挡正文。 */
+  function addMobilePageActions() {
+    var path = window.location.pathname.replace(/\\/g, '/');
+    var file = path.split('/').pop() || 'index.html';
+    if (/\/mahjong\//.test(path) || /\/admin(?:\/|$)/.test(path)) return;
+    if (file === 'index.html' || file === 'entrance.html' || file === 'genealogy.html') return;
+    if (document.querySelector('.mobile-page-actions')) return;
+
+    var host = document.querySelector('.page-wrap, main, #app, .content');
+    if (!host && /\/pages\//.test(path)) host = document.body;
+    if (!host) return;
+
+    /* 即使旧版 ai.css 仍在浏览器缓存中，也保证新入口立即可读可点。 */
+    if (!document.getElementById('mobile-page-actions-style')) {
+      var style = document.createElement('style');
+      style.id = 'mobile-page-actions-style';
+      style.textContent = '.mobile-page-actions{display:none}@media(max-width:768px){.mobile-page-actions{display:flex;align-items:center;gap:8px;width:100%;box-sizing:border-box;margin:0 0 4px;padding:10px 16px 2px;position:relative;z-index:2}.mobile-page-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 14px;border:1px solid rgba(212,255,58,.35);border-radius:999px;background:rgba(212,255,58,.08);color:#D4FF3A!important;font-size:13px;line-height:1;text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:transparent}.mobile-page-actions a:active{opacity:.72;transform:scale(.98)}.mobile-page-actions .mobile-page-genealogy{border-color:rgba(255,193,7,.4);background:rgba(255,193,7,.08);color:#FFC107!important}#app>.mobile-page-actions,body.focus-tree-page>.mobile-page-actions{padding-left:12px;padding-right:12px}}';
+      document.head.appendChild(style);
+    }
+
+    var inPages = /\/pages\//.test(path);
+    var homeHref = inPages ? '../index.html?main' : 'index.html?main';
+    var genealogyHref = inPages ? 'genealogy.html?chooser=1' : 'pages/genealogy.html?chooser=1';
+    var actions = document.createElement('div');
+    actions.className = 'mobile-page-actions';
+    actions.setAttribute('aria-label', '手机端页面入口');
+    actions.innerHTML = '<a class="mobile-page-home" href="' + homeHref + '">⌂ 首页</a>' +
+      '<a class="mobile-page-genealogy" href="' + genealogyHref + '">🌳 族谱查询</a>';
+    host.insertBefore(actions, host.firstChild);
+  }
 
   function $(sel, root) { return (root || document).querySelector(sel); }
 
@@ -1793,6 +1824,7 @@
     if (!Array.isArray(hist)) hist = [];
     try { fabPos = JSON.parse(localStorage.getItem(LS_FAB_POS) || 'null'); } catch (e) { fabPos = null; }
     try { panelPos = JSON.parse(localStorage.getItem(LS_PANEL_POS) || 'null'); } catch (e) { panelPos = null; }
+    addMobilePageActions();
     buildUI();
     bindEvents();
     setupFabDrag();

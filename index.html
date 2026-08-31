@@ -9,7 +9,7 @@
   <title data-i18n="site.title">宁海下枫槎村 · 谢氏家族</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="css/style.css?v=20260831-no-mobile-nav-01">
+  <link rel="stylesheet" href="css/style.css?v=20260831-mobile-entry-01">
   <style>
     /* Carousel mobile fix - ensure slides have height */
     .carousel-container { aspect-ratio: 21/9; overflow: hidden; }
@@ -571,29 +571,6 @@
     </div>
   </div>
 
-  <!-- ===== 手机底部TabBar ===== -->
-    <nav class="mb-tabbar">
-    <a href="index.html" class="mb-tab active"><span class="mb-tab-icon">🚪</span><span class="mb-tab-label">开启页</span></a>
-    <a href="index.html?main" class="mb-tab"><span class="mb-tab-icon">🏠</span><span class="mb-tab-label">根首页</span></a>
-    <a href="pages/reports.html" class="mb-tab"><span class="mb-tab-icon">📰</span><span class="mb-tab-label">新闻报道</span></a>
-    <a href="pages/xie-collection.html" class="mb-tab"><span class="mb-tab-icon">📜</span><span class="mb-tab-label">谢氏集萃</span></a>
-    <a href="pages/activities.html" class="mb-tab"><span class="mb-tab-icon">🎪</span><span class="mb-tab-label">活动</span></a>
-    <a href="pages/my.html" class="mb-tab"><span class="mb-tab-icon">👤</span><span class="mb-tab-label">我的</span></a>
-  </nav>
-
-  <script>
-  // 首页与正式首页共用同一套底部导航，按当前入口同步高亮状态。
-  (function () {
-    var isMain = new URLSearchParams(location.search).has('main');
-    document.querySelectorAll('.mb-tabbar .mb-tab').forEach(function (tab) {
-      var active = isMain ? tab.getAttribute('href') === 'index.html?main' : tab.getAttribute('href') === 'index.html';
-      tab.classList.toggle('active', active);
-      if (active) tab.setAttribute('aria-current', 'page');
-      else tab.removeAttribute('aria-current');
-    });
-  })();
-  </script>
-
   <audio id="bg-music" loop></audio>
 
   <script defer src="js/main.js?v=20260826-transition-layer-03"></script>
@@ -634,7 +611,7 @@ window.toggleTheme=function(){var d=localStorage.getItem("theme")==="dark";var n
 </script>
 <script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();window.history.go(-1)});</script>
 <script>(function(){var b=document.createElement("div");b.id="backTopBtn";b.innerHTML="\u2191";b.style.cssText="position:fixed;bottom:80px;right:16px;z-index:9999;width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.85);color:#0a0806;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;opacity:0.9;transition:opacity 0.3s;";b.onclick=function(){window.scrollTo({top:0,behavior:"smooth"})};window.addEventListener("scroll",function(){b.style.opacity=window.scrollY>50?"0.9":"0.3"});document.body.appendChild(b);})();</script><link rel="stylesheet" href="/css/ai.css?v=78">
-<script src="/js/ai-assistant.js?v=92" defer></script>
+<script src="/js/ai-assistant.js?v=93" defer></script>
 <script defer src="js/sidebar.js?v=13"></script>
 <link rel="stylesheet" href="/css/public-access-gate.css?v=20260826-access-04">
 <script src="/js/public-access-gate.js?v=20260828-trusted-device-02" defer></script>

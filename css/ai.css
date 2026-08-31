@@ -1180,3 +1180,49 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
   min-height: 0;
   overflow-y: auto;
 }
+
+/* 手机端页面入口：与内容同流，不占用底部固定空间。 */
+.mobile-page-actions { display: none; }
+@media (max-width: 768px) {
+  .mobile-page-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 0 4px;
+    padding: 10px 16px 2px;
+    position: relative;
+    z-index: 2;
+  }
+  .mobile-page-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid rgba(212, 255, 58, .35);
+    border-radius: 999px;
+    background: rgba(212, 255, 58, .08);
+    color: #D4FF3A !important;
+    font-size: 13px;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mobile-page-actions a:active {
+    opacity: .72;
+    transform: scale(.98);
+  }
+  .mobile-page-actions .mobile-page-genealogy {
+    border-color: rgba(255, 193, 7, .4);
+    background: rgba(255, 193, 7, .08);
+    color: #FFC107 !important;
+  }
+  #app > .mobile-page-actions,
+  body.focus-tree-page > .mobile-page-actions {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}

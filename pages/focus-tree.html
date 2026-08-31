@@ -13,16 +13,12 @@ body{background:#0f0f13;color:#e0e0e0;font-family:"Noto Serif SC","SimSun",serif
 .si .sg{color:rgba(255,255,255,0.4);font-size:11px;margin-left:8px;}
 .sr-box{position:relative;max-width:400px;margin:0 auto;}
 @media(max-width:600px){
-  body.focus-tree-page{padding:16px 12px calc(88px + env(safe-area-inset-bottom,0px));}
+  body.focus-tree-page{padding:16px 12px calc(24px + env(safe-area-inset-bottom,0px));}
   body.focus-tree-page #tree-wrap{height:calc(100svh - 190px);min-height:420px;touch-action:none;}
   body.focus-tree-page #tree-wrap > div:last-child{right:12px !important;bottom:12px !important;}
   body.focus-tree-page #tree-wrap > div:last-child button{width:40px !important;height:40px !important;}
   body.focus-tree-page #ai-fab .ai-bubble{display:none !important;}
-  body.focus-tree-page nav.mb-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:1000;display:flex;align-items:stretch;justify-content:space-around;height:64px;padding:6px 2px calc(6px + env(safe-area-inset-bottom,0px));box-sizing:border-box;background:rgba(15,15,19,.96);border-top:1px solid rgba(255,255,255,.12);}
-  body.focus-tree-page nav.mb-tabbar .mb-tab{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:rgba(255,255,255,.62);font:10px/1.2 system-ui,sans-serif;text-decoration:none;}
-  body.focus-tree-page nav.mb-tabbar .mb-tab-icon{font-size:18px;line-height:1;}
-  body.focus-tree-page nav.mb-tabbar .mb-tab-label{font-size:9px;white-space:nowrap;}
-  body.focus-tree-page #backTopBtn{right:84px !important;bottom:calc(82px + env(safe-area-inset-bottom,0px)) !important;}
+  body.focus-tree-page #backTopBtn{right:12px !important;bottom:calc(16px + env(safe-area-inset-bottom,0px)) !important;}
 }
 </style>
 </head>
@@ -432,7 +428,7 @@ try{
   <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
 <script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();try{var u=sessionStorage.getItem("back_to");if(u&&u!==window.location.href&&!u.includes(location.host+"/?")){location.href=u;return}}catch(ex){}if(window.history.length>1)window.history.go(-1);else location.href="../entrance.html"});</script>
 <script>(function(){var b=document.createElement("div");b.id="backTopBtn";b.innerHTML="↑";b.style.cssText="position:fixed;bottom:80px;right:16px;z-index:9999;width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.85);color:#0a0806;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;opacity:0.9;transition:opacity 0.3s;";b.onclick=function(){window.scrollTo({top:0,behavior:"smooth"})};window.addEventListener("scroll",function(){b.style.opacity=window.scrollY>50?"0.9":"0.3"});document.body.appendChild(b);})();</script><link rel="stylesheet" href="/css/ai.css?v=78">
-<script src="/js/ai-assistant.js?v=78" defer></script>
+<script src="/js/ai-assistant.js?v=93" defer></script>
 <link rel="stylesheet" href="/css/public-access-gate.css?v=20260826-access-04">
 <script src="/js/public-access-gate.js?v=20260828-trusted-device-02" defer></script>
 </body>
