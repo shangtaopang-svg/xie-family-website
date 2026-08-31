@@ -52,12 +52,13 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v96'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v97'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
-  var fab, panel, msgs, chipsEl, input, sendBtn, statusEl, goBottom, header, bubble, soundBtn, stopBtn, maxBtn, subEl, quickName;
+  var fab, panel, msgs, chipsEl, input, sendBtn, statusEl, goBottom, header, bubble, soundBtn, stopBtn, maxBtn, clearBtn, subEl, quickName;
   var hist = [];
+  var historyGeneration = 0;
   var isOpen = false;
   var ttsMuted = true; // 语音朗读开关（v17 起默认关闭：回答不自动念，用户可点 🔊 开启）
   var audioEl = null;   // 复用的 <audio> 播放器
@@ -174,13 +175,14 @@
       '    <button type="button" class="ai-sound ai-max" id="ai-max" aria-label="放大到整屏" title="放大到整屏">⛶</button>' +
       '    <button type="button" class="ai-sound" id="ai-sound" aria-label="语音朗读开关" title="语音朗读">🔊</button>' +
       '    <button type="button" class="ai-sound" id="ai-stop" aria-label="暂停口播" title="暂停口播" hidden>⏸</button>' +
+      '    <button type="button" class="ai-clear" id="ai-clear" aria-label="清空咨询记录" title="清空咨询记录">清空</button>' +
       '    <button type="button" class="ai-close" id="ai-close" aria-label="关闭">✕</button>' +
       '  </div>' +
       '</div>' +
       '<div class="ai-msgs" id="ai-msgs"></div>' +
       '<div class="ai-chips" id="ai-chips"></div>' +
       '<div class="ai-quick-query" aria-label="快捷族谱查询">' +
-      '  <div class="ai-quick-label"><b>快捷族谱查询</b><span>只填姓名即可</span></div>' +
+      '  <div class="ai-quick-label"><b>一键查族谱</b><span>只填姓名，不用提问</span></div>' +
       '  <div class="ai-quick-main">' +
       '    <input id="ai-quick-name" maxlength="12" placeholder="输入族人姓名，如：伟中" autocomplete="off">' +
       '    <button type="button" class="ai-quick-btn lineage" data-quick="lineage">🌳 炎帝至此人</button>' +
@@ -189,8 +191,13 @@
       '  <div class="ai-quick-error" id="ai-quick-error" aria-live="polite"></div>' +
       '</div>' +
       '<div class="ai-input-row">' +
-      '  <textarea id="ai-input" rows="1" placeholder="输入问题，如：谢氏家族是怎么迁徙来的？" enterkeyhint="send"></textarea>' +
-      '  <button type="button" class="ai-send" id="ai-send" disabled>发送</button>' +
+      '  <div class="ai-input-main">' +
+      '    <div class="ai-input-label"><b>AI 问答</b><span>输入村史、族谱、字辈等问题</span></div>' +
+      '    <div class="ai-input-controls">' +
+      '      <textarea id="ai-input" rows="1" placeholder="例如：谢氏家族是如何迁徙到宁海的？" enterkeyhint="send"></textarea>' +
+      '      <button type="button" class="ai-send" id="ai-send" disabled>发送</button>' +
+      '    </div>' +
+      '  </div>' +
       '</div>';
     panel.appendChild((goBottom = document.createElement('button')));
     goBottom.className = 'ai-gobottom';
@@ -218,6 +225,7 @@
     soundBtn = $('#ai-sound', panel);
     stopBtn = $('#ai-stop', panel);
     maxBtn = $('#ai-max', panel);
+    clearBtn = $('#ai-clear', panel);
     subEl = $('#ai-subtitle', subLayer);
 
     // 预设问题 chips
@@ -400,6 +408,24 @@
     scrollBottom(true);
   }
 
+  function clearHistory() {
+    if (hist.length && !window.confirm('确定清空全部咨询记录吗？清空后无法恢复。')) return;
+    historyGeneration += 1;
+    hist = [];
+    queuedMsg = null;
+    queuedVisualMode = false;
+    stopSpeak();
+    if (panel) panel.classList.remove('ai-selection-mode');
+    try { localStorage.removeItem(LS_HIST); } catch (e) {}
+    if (msgs) {
+      msgs.innerHTML = '';
+      appendMessage('bot', WELCOME);
+      scrollBottom(true);
+    }
+    updateStatus();
+    if (clearBtn) clearBtn.blur();
+  }
+
   function persist() {
     try {
       hist = hist.slice(-MAX_HIST);
@@ -465,6 +491,7 @@
 
   /* ---------------- 与后端通信（SSE） ---------------- */
   function chat(text, resolvedId, visualMode) {
+    var requestGeneration = historyGeneration;
     var botEl = appendMessage('bot', '思考中…');
     var body = botEl.querySelector('.ai-txt') || botEl.lastChild;
     var done = false;
@@ -476,7 +503,7 @@
 
     // 同名确认：提问中的人名有多个同名族人 → 弹候选按钮，点击后带选中 personId（resolvedId）重发
     var showNameSelect = function (j) {
-      if (done) return;
+      if (done || requestGeneration !== historyGeneration) return;
       panel.classList.add('ai-selection-mode');
       done = true;
       body.textContent = '';
@@ -540,7 +567,7 @@
     };
 
     var finish = function (answer, sources, tree, ownerIsSelf, closest, closestTree) {
-      if (done) return;
+      if (done || requestGeneration !== historyGeneration) return;
       done = true;
       body.textContent = answer || '（无回答）';
       // 血缘最亲：口播按呈现的「家族血缘关系图」沿树朗读（closestTree 存在时），
@@ -588,7 +615,7 @@
     };
 
     var fail = function (err) {
-      if (done) return;
+      if (done || requestGeneration !== historyGeneration) return;
       if (err && err.code === 'AUTH_REQUIRED') {
         botEl.remove();
         showVerify(text, err.message);
@@ -793,7 +820,7 @@
     header.addEventListener('pointerdown', function (e) {
       if (isMb()) return;                                            // 手机全屏不拖动
       if (panel.classList.contains('ai-fullscreen')) return;         // 放大到整屏时不拖动
-      if (e.target && e.target.closest && e.target.closest('.ai-close, .ai-sound')) return; // 点按钮不算拖动
+      if (e.target && e.target.closest && e.target.closest('.ai-close, .ai-sound, .ai-clear')) return; // 点按钮不算拖动
       if (e.button !== undefined && e.button !== 0 && e.pointerType === 'mouse') return;
       dragging = true;
       startX = e.clientX; startY = e.clientY;
@@ -1746,6 +1773,7 @@
     });
 
     $('#ai-close', panel).addEventListener('click', function () { closePanel(false, 'close-btn'); });
+    if (clearBtn) clearBtn.addEventListener('click', function (e) { e.stopPropagation(); clearHistory(); });
     if (maxBtn) maxBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleMaximize(); });
     if (soundBtn) soundBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleTts(); });
     if (stopBtn) stopBtn.addEventListener('click', function (e) {
