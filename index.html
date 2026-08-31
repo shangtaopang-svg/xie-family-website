@@ -9,7 +9,7 @@
   <title data-i18n="site.title">宁海下枫槎村 · 谢氏家族</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="css/style.css?v=20260831-mobile-home-nav-04">
+  <link rel="stylesheet" href="css/style.css?v=20260831-mobile-home-nav-05">
   <style>
     /* Carousel mobile fix - ensure slides have height */
     .carousel-container { aspect-ratio: 21/9; overflow: hidden; }
@@ -127,110 +127,89 @@
 })();
 </script>
 
-<!-- ===== 手机端首页 ===== -->
-<div class="mb-home">
-  <div class="mbh-top">
-    <div class="mbh-title">宁海下枫槎村谢氏</div>
+<!-- ===== 手机端开启页：家族故事引导型 ===== -->
+<div class="mb-home mb-story-home" aria-label="下枫槎谢氏家族开启页">
+  <div class="mbs-top">
+    <div class="mbs-brand"><span class="mbs-mark">谢</span><span>下枫槎谢氏</span></div>
+    <span class="mbs-location">宁海 · 下枫槎村</span>
   </div>
 
-  <div class="mbh-search" role="search" aria-label="族谱搜索">
-    <span class="mbh-search-icon">&#x1f50d;</span>
-    <input class="mbh-search-input" type="search" placeholder="搜索族人姓名..." id="mbSearchInput" aria-label="输入族人姓名">
-    <button class="mbh-search-btn" id="mbSearchBtn" type="button">搜索</button>
-  </div>
-
-  <!-- 首屏优先放置两个核心入口：搜索之后即可进入族谱或查看消息。 -->
-  <div class="mbh-pills">
-    <a href="pages/genealogy.html?chooser=1&access=20260827-07" class="mbh-pill mbh-pill-active">&#x1f4dc; 族谱查询</a>
-    <a href="pages/news.html" class="mbh-pill">&#x1f4f0; 消息发布</a>
-  </div>
-
-  <div class="mbh-hero" style="background-image:url('images/bg-left.jpg')" role="img" aria-label="下枫槎村谢氏家族真实村景">
-    <div class="mbh-hero-caption">
-      <span class="mbh-hero-kicker">历史线稿 · 今日村景</span>
-      <span class="mbh-hero-title">从一页族谱，走进下枫槎</span>
+  <main class="mbs-stage-wrap">
+    <div class="mbs-hero" id="mbsHero" role="img" aria-label="下枫槎村谢氏家族真实村景">
+      <div class="mbs-hero-copy">
+        <span class="mbs-hero-kicker" id="mbsSceneKicker">历史线稿 · 今日村景</span>
+        <h1 id="mbsSceneTitle">山水相依，<br>家园在此</h1>
+        <p id="mbsSceneDesc">远山、田野与村庄相望</p>
+      </div>
+      <span class="mbs-scene-count"><b id="mbsSceneIndex">01</b> / 06</span>
     </div>
-  </div>
 
-  <div class="mbh-quick">
-    <a href="pages/history.html" class="mbh-qitem">
-      <span class="mbh-qicon">&#x1f4dc;</span>
-      <span class="mbh-qlabel">家族历史</span>
-    </a>
-    <a href="pages/today.html" class="mbh-qitem">
-      <span class="mbh-qicon">&#x1f4f8;</span>
-      <span class="mbh-qlabel">今日</span>
-    </a>
-    <a href="pages/activities.html" class="mbh-qitem">
-      <span class="mbh-qicon">&#x1f3aa;</span>
-      <span class="mbh-qlabel">活动</span>
-    </a>
-    <a href="pages/contact.html" class="mbh-qitem">
-      <span class="mbh-qicon">&#x2709;&#xfe0f;</span>
-      <span class="mbh-qlabel">联系我们</span>
-    </a>
-  </div>
+    <section class="mbs-story-copy">
+      <div class="mbs-story-label">ONE VILLAGE · ONE FAMILY</div>
+      <h2>一页族谱，<br>一座村庄，一脉家风</h2>
+      <p>从这里开始，慢慢认识下枫槎谢氏。</p>
+    </section>
 
-  <div class="mbh-list">
-    <a href="pages/xie-collection.html" class="mbh-li">
-      <span class="mbh-li-icon">&#x1f4da;</span>
-      <span class="mbh-li-text">谢氏集萃</span>
-      <span class="mbh-li-arrow">&#x25b6;</span>
-    </a>
-    <a href="pages/celebrities.html" class="mbh-li">
-      <span class="mbh-li-icon">&#x1f3c6;</span>
-      <span class="mbh-li-text">名人事迹</span>
-      <span class="mbh-li-arrow">&#x25b6;</span>
-    </a>
-    <a href="pages/videos.html" class="mbh-li">
-      <span class="mbh-li-icon">&#x1f3ac;</span>
-      <span class="mbh-li-text">影像记录</span>
-      <span class="mbh-li-arrow">&#x25b6;</span>
-    </a>
-    <a href="pages/merit-scroll.html" class="mbh-li">
-      <span class="mbh-li-icon">&#x1f4dc;</span>
-      <span class="mbh-li-text">功德卷轴</span>
-      <span class="mbh-li-arrow">&#x25b6;</span>
-    </a>
-  </div>
+    <div class="mbs-actions">
+      <a class="mbs-primary" href="index.html?main">开始探索 <span>→</span></a>
+      <a class="mbs-secondary" href="pages/genealogy.html?chooser=1&access=20260827-07">查找族人 <span>⌕</span></a>
+    </div>
 
-    <a href="index.html?main" class="mbh-enter-btn">✦ 进入主站</a>
-
-  <div class="mbh-quick-bar">
-    <a href="tel:+8613685877064" class="mbh-qb">
-      <span class="mbh-qb-icon">&#x1f4de;</span>
-      <div class="mbh-qb-text">
-        <div class="mbh-qb-label">联系电话</div>
-        <div class="mbh-qb-sub">13685877064</div>
-      </div>
-      <span class="mbh-qb-arrow">&#x25b6;</span>
-    </a>
-    <div class="mbh-qb-divider"></div>
-    <a href="mailto:shangtaopang@gmail.com" class="mbh-qb">
-      <span class="mbh-qb-icon">&#x2709;</span>
-      <div class="mbh-qb-text">
-        <div class="mbh-qb-label">电子邮箱</div>
-        <div class="mbh-qb-sub">shangtaopang@gmail.com</div>
-      </div>
-      <span class="mbh-qb-arrow">&#x25b6;</span>
-    </a>
-  </div>
+    <div class="mbs-dots" id="mbsDots" aria-label="切换村景图片">
+      <button type="button" class="active" aria-label="第1张村景"></button>
+      <button type="button" aria-label="第2张村景"></button>
+      <button type="button" aria-label="第3张村景"></button>
+      <button type="button" aria-label="第4张村景"></button>
+      <button type="button" aria-label="第5张村景"></button>
+      <button type="button" aria-label="第6张村景"></button>
+    </div>
+    <p class="mbs-scroll-note">向上滑动，继续阅读家族故事　⌃</p>
+  </main>
 </div>
 
 <script>
-// ===== 首页搜索：搜族人姓名 → 直接打开炎帝至本人及子女的直线世系 =====
+// ===== 开启页村景轮播：真实本地素材，每 5 秒切换；页面不可见时暂停。 =====
 (function(){
-  var input = document.getElementById('mbSearchInput');
-  var btn = document.getElementById('mbSearchBtn');
-  if (!input || !btn) return;
-  function go() {
-    var q = input.value.trim();
-    if (!q) { input.focus(); return; }
-    // 标记入口来源：从首页搜索进入寻根直线世系后，关闭按钮应直接回到首页。
-    location.href = 'pages/genealogy.html?rootSearch=' + encodeURIComponent(q) + '&rootOrigin=home-search&access=20260827-07';
+  var hero = document.getElementById('mbsHero');
+  var dots = document.querySelectorAll('#mbsDots button');
+  if (!hero || !dots.length) return;
+  var scenes = [
+    { src: 'images/bg-left.jpg', kicker: '历史线稿 · 今日村景', title: '山水相依，<br>家园在此', desc: '远山、田野与村庄相望' },
+    { src: 'images/bg-right.jpg', kicker: '村庄一隅 · 文化礼堂', title: '乡情有处安放', desc: '一座礼堂，连接村庄的日常' },
+    { src: 'images/carousel/W020230307562241110405.jpg', kicker: '今日村景 · 田野水岸', title: '山村今日，<br>生活在继续', desc: '溪水、田野与村落相连' },
+    { src: 'images/carousel/W020230307562239043622.jpg', kicker: '乡土记忆 · 一墙一瓦', title: '一笔一画，<br>写着家园故事', desc: '熟悉的风景，留住共同记忆' },
+    { src: 'images/carousel/W020230307562236561236.jpg', kicker: '村口见山 · 抬头见家', title: '走过村口，<br>便认得回家的路', desc: '亭台、山色与树影相伴' },
+    { src: 'images/carousel/11.jpg', kicker: '暮色村景 · 灯火相连', title: '暮色里的<br>下枫槎', desc: '日落之后，村庄仍有温度' }
+  ];
+  var index = 0;
+  var timer = null;
+  var title = document.getElementById('mbsSceneTitle');
+  var kicker = document.getElementById('mbsSceneKicker');
+  var desc = document.getElementById('mbsSceneDesc');
+  var count = document.getElementById('mbsSceneIndex');
+  var overlay = 'linear-gradient(90deg, rgba(7, 20, 17, .38), rgba(7, 20, 17, .08) 65%, rgba(7, 10, 8, .16)), linear-gradient(180deg, rgba(7, 10, 8, 0) 30%, rgba(7, 10, 8, .78) 100%), ';
+
+  function show(next) {
+    index = (next + scenes.length) % scenes.length;
+    var scene = scenes[index];
+    hero.classList.add('is-switching');
+    setTimeout(function(){
+      hero.style.backgroundImage = overlay + "url('" + scene.src + "')";
+      kicker.textContent = scene.kicker;
+      title.innerHTML = scene.title;
+      desc.textContent = scene.desc;
+      count.textContent = String(index + 1).padStart(2, '0');
+      dots.forEach(function(dot, i){ dot.classList.toggle('active', i === index); });
+      hero.classList.remove('is-switching');
+    }, 180);
   }
-  btn.addEventListener('click', go);
-  input.addEventListener('keydown', function(e){ if (e.key === 'Enter') go(); });
+  function start(){ if (!timer) timer = setInterval(function(){ show(index + 1); }, 5000); }
+  function stop(){ if (timer) { clearInterval(timer); timer = null; } }
+  scenes.slice(1).forEach(function(scene){ var img = new Image(); img.src = scene.src; });
+  dots.forEach(function(dot, i){ dot.addEventListener('click', function(){ show(i); stop(); start(); }); });
+  document.addEventListener('visibilitychange', function(){ if (document.hidden) stop(); else start(); });
+  show(0);
+  start();
 })();
 </script>
 
