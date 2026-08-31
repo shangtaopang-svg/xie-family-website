@@ -119,8 +119,8 @@ function formatXieCumulative(stats, generations) {
   });
   const xieRecords = rangeRecords.filter((person) => String(person.branch || '').trim() !== '仍姓姜');
   return [
-    `按谢氏得姓起点（统一第${start}世申伯）计算，连续${generations}世为第${start}世至第${end}世，族谱共记录 ${rangeRecords.length} 人。`,
-    `其中“申甫”在原始数据中标注为“仍姓姜”，若只统计谢氏支系，则为 ${xieRecords.length} 人。`,
+    `按谢氏得姓起点（统一第${start}世申伯）计算，连续${generations}世为第${start}世至第${end}世，谢氏支系共记录 ${xieRecords.length} 人。`,
+    `同一世次区间的全部族谱记录为 ${rangeRecords.length} 条；其中“申甫”标注为“仍姓姜”，不计入谢氏支系。`,
     `这不是“统一第${generations}世”的人数；若你问的是第${generations}世本身，请按该世次统计。`,
     `数据来源：${stats.source}。`
   ].join('\n');
