@@ -12,8 +12,33 @@
   <link rel="manifest" href="../manifest.json">
   <title>枫槎谢氏宗谱 · 族谱查询</title>
   <meta name="description" content="枫槎谢氏宗谱族谱查询与只读世系图">
-<link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260830-book-sound-24">
+  <link rel="stylesheet" href="../交付_下枫槎谢氏世系图/styles.css?v=20260830-book-sound-24">
   <link rel="stylesheet" href="/css/public-access-gate.css?v=20260830-access-mobile-01">
+  <script>try { if ((localStorage.getItem('xie_theme') || localStorage.getItem('theme')) === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {}</script>
+  <style>
+    html[data-theme="dark"] {
+      --surface: #101010;
+      --surface-soft: #080808;
+      --surface-blue: #181818;
+      --ink: #d8d6d0;
+      --ink-strong: #f3f1eb;
+      --muted: #92979a;
+      --line: #2a2a2a;
+      --primary: #d7a36a;
+      --primary-dark: #e1b27d;
+    }
+    html[data-theme="dark"] body {
+      background-color: #000 !important;
+      background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px) !important;
+      color: var(--ink);
+    }
+    html[data-theme="dark"] .app-header,
+    html[data-theme="dark"] .tree-toolbar,
+    html[data-theme="dark"] .view-tabs { background: #101010 !important; border-color: #2a2a2a !important; }
+    html[data-theme="dark"] .control-rail { background: #080808 !important; border-color: #2a2a2a !important; }
+    html[data-theme="dark"] .tree-area,
+    html[data-theme="dark"] .tree-viewport { background-color: #000 !important; }
+  </style>
   <script>
     if (new URLSearchParams(location.search).get('chooser') === '1' && window.matchMedia('(max-width: 760px)').matches) {
       document.documentElement.classList.add('is-chooser-pending');
@@ -40,6 +65,20 @@
         <span id="data-count-badge">加载中</span>
       </div>
     </header>
+    <script>
+      (function(){
+        var link = document.querySelector('.mobile-home-link');
+        if (!link) return;
+        try {
+          var previous = sessionStorage.getItem('back_to') || '';
+          if (/\/pages\/explore\.html(?:[?#]|$)/.test(previous)) {
+            link.href = previous;
+            link.textContent = '返回栏目';
+            link.setAttribute('aria-label', '返回栏目导航');
+          }
+        } catch (e) {}
+      })();
+    </script>
 
     <div class="workspace">
       <aside class="control-rail" aria-label="世系图控制区">

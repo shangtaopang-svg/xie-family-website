@@ -9,7 +9,7 @@
   <title data-i18n="site.title">宁海下枫槎村 · 谢氏家族</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="css/style.css?v=20260831-mobile-home-nav-09">
+  <link rel="stylesheet" href="css/style.css?v=20260901-mobile-home-nav-10">
   <style>
     /* Carousel mobile fix - ensure slides have height */
     .carousel-container { aspect-ratio: 21/9; overflow: hidden; }
@@ -152,8 +152,11 @@
     </section>
 
     <div class="mbs-actions">
-      <a class="mbs-primary" href="pages/explore.html">开始探索 <span>→</span></a>
-      <a class="mbs-secondary" href="pages/genealogy.html?chooser=1&access=20260827-07">寻根问祖 <span>⌕</span></a>
+      <button type="button" class="mbs-entry-switch" id="mbsEntrySwitch" data-choice="explore" aria-label="当前选择开始探索，可左右滑动切换入口">
+        <span class="mbs-entry-labels" aria-hidden="true"><span>开始探索</span><span>寻根问祖</span></span>
+        <span class="mbs-entry-thumb" id="mbsEntryThumb"><b id="mbsEntryLabel">开始探索</b><i id="mbsEntryIcon">→</i></span>
+      </button>
+      <span class="mbs-entry-hint" id="mbsEntryHint">左右滑动选择入口，点击进入</span>
     </div>
 
     <div class="mbs-dots" id="mbsDots" aria-label="切换村景图片">
@@ -232,6 +235,74 @@
     else document.documentElement.setAttribute('data-theme', 'dark');
     try { localStorage.setItem('xie_theme', dark ? 'light' : 'dark'); localStorage.setItem('theme', dark ? 'light' : 'dark'); } catch (e) {}
     sync();
+  });
+  sync();
+})();
+</script>
+
+<script>
+// 开启页入口选择：单一滑动控件，在“开始探索”和“寻根问祖”之间左右切换。
+(function(){
+  var control = document.getElementById('mbsEntrySwitch');
+  var label = document.getElementById('mbsEntryLabel');
+  var icon = document.getElementById('mbsEntryIcon');
+  var hint = document.getElementById('mbsEntryHint');
+  if (!control) return;
+  var choices = [
+    { label: '开始探索', icon: '→', url: 'pages/explore.html', aria: '当前选择开始探索，可左右滑动切换入口' },
+    { label: '寻根问祖', icon: '⌕', url: 'pages/genealogy.html?chooser=1&access=20260827-07', aria: '当前选择寻根问祖，可左右滑动切换入口' }
+  ];
+  var choice = 0;
+  var startX = 0;
+  var startY = 0;
+  var pointerId = null;
+  function sync(){
+    var item = choices[choice];
+    control.dataset.choice = choice === 1 ? 'genealogy' : 'explore';
+    control.setAttribute('aria-label', item.aria);
+    label.textContent = item.label;
+    icon.textContent = item.icon;
+    hint.textContent = choice === 1 ? '已选择寻根问祖 · 点击进入' : '已选择开始探索 · 点击进入';
+  }
+  function setChoice(next){
+    choice = next === 1 ? 1 : 0;
+    sync();
+  }
+  function openChoice(){
+    try { sessionStorage.setItem('back_to', window.location.href); } catch (e) {}
+    window.location.href = choices[choice].url;
+  }
+  control.addEventListener('pointerdown', function(e){
+    pointerId = e.pointerId;
+    startX = e.clientX;
+    startY = e.clientY;
+    control.setPointerCapture(pointerId);
+  });
+  control.addEventListener('pointerup', function(e){
+    if (pointerId !== e.pointerId) return;
+    var dx = e.clientX - startX;
+    var dy = e.clientY - startY;
+    var wasSwipe = Math.abs(dx) >= 24 && Math.abs(dx) >= Math.abs(dy);
+    var wasTap = Math.abs(dx) < 12 && Math.abs(dy) < 12;
+    if (wasSwipe) {
+      setChoice(dx < 0 ? 1 : 0);
+    } else if (wasTap) {
+      var rect = control.getBoundingClientRect();
+      setChoice(e.clientX - rect.left > rect.width / 2 ? 1 : 0);
+      openChoice();
+    }
+    pointerId = null;
+    try { control.releasePointerCapture(e.pointerId); } catch (_) {}
+  });
+  control.addEventListener('pointercancel', function(){ pointerId = null; });
+  control.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      setChoice(e.key === 'ArrowRight' ? 1 : 0);
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openChoice();
+    }
   });
   sync();
 })();
@@ -559,8 +630,6 @@
       <p data-i18n="footer.copyright">© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p>
     </div>
   </footer>
-
-  <div class="mb-back-entrance-wrap"><a href="index.html" class="mb-back-entrance">← 返回开启页</a></div>
 
 </div>
 

@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f7f8f7" id="navhubThemeColor">
   <title>探索栏目 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../css/style.css?v=20260831-explore-03">
+  <link rel="stylesheet" href="../css/style.css?v=20260901-explore-04">
   <script>
     try { sessionStorage.removeItem('pt_go'); } catch (e) {}
     try { if ((localStorage.getItem('xie_theme') || localStorage.getItem('theme')) === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {}
@@ -155,7 +155,7 @@
         themeValue.textContent = isDark ? ui[currentLang].dark : ui[currentLang].light;
         themeControl.setAttribute('aria-label', currentLang === 'en' ? (isDark ? 'Switch to light mode' : 'Switch to dark mode') : (isDark ? '切换到白天模式' : '切换到黑夜模式'));
         languageValue.textContent = currentLang === 'en' ? 'English' : '简体中文';
-        if (themeMeta) themeMeta.setAttribute('content', isDark ? '#0f1110' : '#f7f8f7');
+        if (themeMeta) themeMeta.setAttribute('content', isDark ? '#000000' : '#f7f8f7');
       }
       themeControl.addEventListener('click', function(){
         var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
