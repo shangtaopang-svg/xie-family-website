@@ -14,6 +14,7 @@ let cacheMtime = -1;
 const ADOPTION_TERMS = /出继|入继|过继|出祧|入祧|兼祧|兼顶|随父出继/;
 const COUNT_TERMS = /多少|几(?:个|组|处|人|条)?|统计|总共|合计|数量|人数|数目|共有/;
 const LIST_TERMS = /列出|哪些|名单|一览|明细|详情|具体|全部|所有/;
+const PUBLIC_LIST_TERMS = /列出|罗列|名单|一览|清单|名录|全部.*(?:出继|入继)|所有.*(?:出继|入继)/;
 const DEFINITION_TERMS = /什么是|含义|意思|区别|怎么理解/;
 const PERSON_TERMS = /的?(?:出继|入继|过继|出祧|入祧|兼祧|兼顶|随父出继)(?:情况|关系|记录|说明|状态)?/;
 
@@ -143,6 +144,24 @@ function adoptionSummary(facts, pairs, followFather, scopeLabel) {
   ].join('\n');
 }
 
+function adoptionNameList(facts) {
+  const lines = facts.pairs.map((pair, index) => {
+    const generation = pair.generation ? `第${pair.generation}世` : '世次未录入';
+    return `${index + 1}. ${pair.out.name}（${generation}）`;
+  });
+  return [
+    `按后台 canonical 数据，当前共 ${facts.pairs.length} 组有效出继／入继配对；以下为对应的 ${facts.pairs.length} 位族人名单：`,
+    ...lines,
+    `说明：每位名单人物同时有 1 条出继记录和 1 条入继记录；另有 ${facts.followFather.length} 条“随父出继”说明，不列入这 ${facts.pairs.length} 组配对。`,
+    `数据来源：${facts.source}。`
+  ].join('\n');
+}
+
+function hasAdoptionContext(history) {
+  if (!Array.isArray(history)) return false;
+  return history.slice(-12).some((item) => item && typeof item.content === 'string' && ADOPTION_TERMS.test(item.content));
+}
+
 function adoptionPersonAnswer(query, names, facts) {
   const matches = facts.pairs.filter((pair) => {
     const namesInPair = pairPersonNames(pair);
@@ -155,15 +174,21 @@ function adoptionPersonAnswer(query, names, facts) {
 
 /**
  * 返回 null 表示不是本模块负责的问题；返回对象表示必须走确定性结果。
- * aggregate 统计可供未验证访客查看；涉及姓名或名单的关系详情要求身份验证。
+ * aggregate 统计和全体名单可供未验证访客查看；涉及具体姓名的关系详情要求身份验证。
  */
 function answerAdoption(query, options) {
   const q = text(query);
-  if (!ADOPTION_TERMS.test(q)) return null;
+  const opts = options || {};
+  const asksList = LIST_TERMS.test(q);
+  const asksPublicList = PUBLIC_LIST_TERMS.test(q);
+  // AI 窗口会把最近几轮一并提交。允许“列出这39条名单”这种承接上一轮
+  // 出继/入继统计的短句进入本模块，同时不把普通名单问题误判成族谱事实。
+  const adoptionListFollowup = asksPublicList && hasAdoptionContext(opts.history);
+  const numberedAdoptionList = asksPublicList && /(?:39|三十九)/.test(q) && /名单|名录|清单|列出|罗列/.test(q);
+  if (!ADOPTION_TERMS.test(q) && !adoptionListFollowup && !numberedAdoptionList) return null;
   const facts = loadFacts();
   const names = mentionedNames(q, facts);
   const asksCount = COUNT_TERMS.test(q);
-  const asksList = LIST_TERMS.test(q);
   const asksPerson = names.length > 0 && (PERSON_TERMS.test(q) || !asksCount || asksList);
 
   if (!asksCount && !asksList && !names.length && DEFINITION_TERMS.test(q)) {
@@ -191,6 +216,17 @@ function answerAdoption(query, options) {
       ok: true,
       factType: 'adoption-scoped-summary',
       answer: adoptionSummary(facts, matches, followMatches, names.join('、')),
+      sources: [facts.source]
+    };
+  }
+
+  // 全体出继／入继名单是公开的结构化汇总，只返回姓名和世次；
+  // 具体某人的亲生父、承嗣父及原文关系仍由下方身份门禁保护。
+  if (asksPublicList && !names.length) {
+    return {
+      ok: true,
+      factType: 'adoption-public-list',
+      answer: adoptionNameList(facts),
       sources: [facts.source]
     };
   }
