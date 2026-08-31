@@ -285,7 +285,7 @@
     var wasSwipe = Math.abs(dx) >= 24 && Math.abs(dx) >= Math.abs(dy);
     var wasTap = Math.abs(dx) < 12 && Math.abs(dy) < 12;
     if (wasSwipe) {
-      setChoice(dx < 0 ? 1 : 0);
+      setChoice(dx > 0 ? 1 : 0);
     } else if (wasTap) {
       var rect = control.getBoundingClientRect();
       setChoice(e.clientX - rect.left > rect.width / 2 ? 1 : 0);
