@@ -52,7 +52,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v94'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v95'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -91,7 +91,7 @@
     if (!document.getElementById('mobile-page-actions-style')) {
       var style = document.createElement('style');
       style.id = 'mobile-page-actions-style';
-      style.textContent = '.mobile-page-actions{display:none}@media(max-width:768px){.mobile-page-actions{display:flex;align-items:center;gap:8px;width:100%;box-sizing:border-box;margin:0 0 4px;padding:10px 16px 2px;position:relative;z-index:2}.mobile-page-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 14px;border:1px solid rgba(212,255,58,.35);border-radius:999px;background:rgba(212,255,58,.08);color:#D4FF3A!important;font-size:13px;line-height:1;text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:transparent}.mobile-page-actions a:active{opacity:.72;transform:scale(.98)}.mobile-page-actions .mobile-page-genealogy{border-color:rgba(255,193,7,.4);background:rgba(255,193,7,.08);color:#FFC107!important}#app>.mobile-page-actions,body.focus-tree-page>.mobile-page-actions{padding-left:12px;padding-right:12px}}';
+      style.textContent = '.mobile-page-actions{display:none}@media(max-width:768px){.mobile-page-actions{display:flex;align-items:center;gap:8px;width:100%;box-sizing:border-box;margin:0 0 4px;padding:10px 16px 2px;position:relative;z-index:2}.mobile-page-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 14px;border:1px solid rgba(212,255,58,.35);border-radius:999px;background:rgba(212,255,58,.08);color:#D4FF3A!important;font-size:13px;line-height:1;text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:transparent}.mobile-page-actions a:active{opacity:.72;transform:scale(.98)}.mobile-page-actions .mobile-page-back{border-color:rgba(255,255,255,.24);background:rgba(255,255,255,.07);color:#F2F2F2!important}.mobile-page-actions .mobile-page-genealogy{border-color:rgba(255,193,7,.4);background:rgba(255,193,7,.08);color:#FFC107!important}#app>.mobile-page-actions,body.focus-tree-page>.mobile-page-actions{padding-left:12px;padding-right:12px}}.has-mobile-page-actions a.back-page-btn{display:none!important}';
       document.head.appendChild(style);
     }
 
@@ -101,9 +101,35 @@
     var actions = document.createElement('div');
     actions.className = 'mobile-page-actions';
     actions.setAttribute('aria-label', '手机端页面入口');
-    actions.innerHTML = '<a class="mobile-page-home" href="' + homeHref + '">⌂ 首页</a>' +
+    actions.innerHTML = '<a class="mobile-page-back" href="' + homeHref + '" aria-label="返回上一页">← 返回</a>' +
+      '<a class="mobile-page-home" href="' + homeHref + '">⌂ 首页</a>' +
       '<a class="mobile-page-genealogy" href="' + genealogyHref + '">🌳 族谱查询</a>';
     host.insertBefore(actions, host.firstChild);
+    document.body.classList.add('has-mobile-page-actions');
+
+    var back = actions.querySelector('.mobile-page-back');
+    if (back) back.addEventListener('click', function (e) {
+      e.preventDefault();
+      var current = window.location.href;
+      try {
+        var saved = sessionStorage.getItem('back_to');
+        var savedUrl = saved ? new URL(saved, current) : null;
+        if (savedUrl && savedUrl.origin === window.location.origin && savedUrl.href !== current) {
+          window.location.href = savedUrl.href;
+          return;
+        }
+      } catch (ex) {}
+
+      try {
+        var refUrl = document.referrer ? new URL(document.referrer, current) : null;
+        if (refUrl && refUrl.origin === window.location.origin && window.history.length > 1) {
+          window.history.back();
+          return;
+        }
+      } catch (ex2) {}
+
+      window.location.href = homeHref;
+    });
   }
 
   function $(sel, root) { return (root || document).querySelector(sel); }

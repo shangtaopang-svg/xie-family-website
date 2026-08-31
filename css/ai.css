@@ -1216,6 +1216,11 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
     opacity: .72;
     transform: scale(.98);
   }
+  .mobile-page-actions .mobile-page-back {
+    border-color: rgba(255, 255, 255, .24);
+    background: rgba(255, 255, 255, .07);
+    color: #F2F2F2 !important;
+  }
   .mobile-page-actions .mobile-page-genealogy {
     border-color: rgba(255, 193, 7, .4);
     background: rgba(255, 193, 7, .08);
@@ -1226,4 +1231,7 @@ body.ai-sub-on #ai-panel.ai-fullscreen .ai-input-row {
     padding-left: 12px;
     padding-right: 12px;
   }
+}
+.has-mobile-page-actions a.back-page-btn {
+  display: none !important;
 }
