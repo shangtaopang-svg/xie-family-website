@@ -100,6 +100,30 @@
 .collect-card.local-video .card-hover-wrap{aspect-ratio:16/9 !important}
 .mobile-video-fullscreen { display:none; }
 
+/* ===== B站站内播放器 ===== */
+.bilibili-viewer[hidden] { display:none !important; }
+.bilibili-viewer {
+  position:fixed; inset:0; z-index:1000001; display:flex; flex-direction:column;
+  background:#050505; color:#fff;
+}
+.bilibili-viewer-head {
+  min-height:58px; display:flex; align-items:center; gap:12px;
+  padding:10px 18px; background:#111; border-bottom:1px solid #292929;
+}
+.bilibili-viewer-title { flex:1; min-width:0; color:#fff !important; font-size:15px; line-height:1.4; font-weight:600; }
+.bilibili-viewer-close,
+.bilibili-viewer-action {
+  border:1px solid #3a3a3a; border-radius:999px; background:#1d1d1d;
+  color:#fff; font:600 12px/1 -apple-system,"PingFang SC",sans-serif;
+  cursor:pointer; white-space:nowrap;
+}
+.bilibili-viewer-close { width:34px; height:34px; padding:0; font-size:22px; font-weight:400; }
+.bilibili-viewer-stage { flex:1; display:flex; align-items:center; justify-content:center; padding:18px; min-height:0; }
+.bilibili-viewer-frame { width:min(1120px,100%); aspect-ratio:16/9; border:0; background:#000; }
+.bilibili-viewer-actions { display:flex; justify-content:center; gap:10px; padding:12px 18px calc(14px + env(safe-area-inset-bottom,0px)); background:#111; border-top:1px solid #292929; }
+.bilibili-viewer-action { min-height:36px; padding:0 15px; }
+.bilibili-viewer-action.primary { color:#0b0b0b; background:#d4ff3a; border-color:#d4ff3a; }
+
 /* ===== No Data ===== */
 .no-data-hint { text-align:center; margin-top:60px; padding:40px; }
 .no-data-hint .icon { font-size:48px; display:block; margin-bottom:10px; }
@@ -401,7 +425,7 @@ function render(cat) {
     if (isLocal) {
       return '<div class="collect-card local-video" style="text-decoration:none;cursor:default"><div class="card-hover-wrap"><div class="card-cover" style="background:#1a1410;display:flex;align-items:center;justify-content:center;overflow:hidden"><video src="' + url + '" style="width:100%;height:100%;object-fit:cover" controls preload="none" playsinline webkit-playsinline' + (item.poster ? ' poster="' + item.poster + '"' : '') + '></video><button type="button" class="mobile-video-fullscreen" aria-label="全屏播放">⛶ 全屏</button></div></div><div class="info"><div class="title">' + (item.title||'') + '</div><div class="meta"><span class="tag video">📹 本地视频</span></div></div></div>';
     }
-    return '<a href="' + url + '" target="_blank" rel="noopener" class="collect-card" style="text-decoration:none">' +
+    return '<a href="' + url + '" target="_blank" rel="noopener"' + (bvid ? ' data-bvid="' + bvid + '"' : '') + ' class="collect-card" style="text-decoration:none">' +
       '<div class="card-hover-wrap">' +
         '<div class="card-cover">' +
           (hasPoster ? '<img src="' + item.poster + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '<span style="font-size:42px;color:#d0ccc5">🎬</span>') +
@@ -488,6 +512,79 @@ document.addEventListener('click', function(e){
     }
   } catch (err) {}
 }, true);
+
+var bilibiliViewer = null;
+var bilibiliViewerFrame = null;
+var bilibiliViewerTitle = null;
+var bilibiliViewerHistoryPushed = false;
+var bilibiliViewerPreviousOverflow = '';
+
+function ensureBilibiliViewer() {
+  if (bilibiliViewer) return;
+  bilibiliViewer = document.createElement('section');
+  bilibiliViewer.className = 'bilibili-viewer';
+  bilibiliViewer.hidden = true;
+  bilibiliViewer.setAttribute('role', 'dialog');
+  bilibiliViewer.setAttribute('aria-modal', 'true');
+  bilibiliViewer.setAttribute('aria-label', 'B站视频播放器');
+  bilibiliViewer.innerHTML = '<div class="bilibili-viewer-head"><strong class="bilibili-viewer-title"></strong><button type="button" class="bilibili-viewer-close" aria-label="关闭视频">×</button></div><div class="bilibili-viewer-stage"><iframe class="bilibili-viewer-frame" title="B站视频播放器" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div><div class="bilibili-viewer-actions"><button type="button" class="bilibili-viewer-action primary viewer-fullscreen">⛶ 放大播放器</button><a class="bilibili-viewer-action viewer-open" target="_blank" rel="noopener">在 B站打开</a></div>';
+  document.body.appendChild(bilibiliViewer);
+  bilibiliViewerFrame = bilibiliViewer.querySelector('.bilibili-viewer-frame');
+  bilibiliViewerTitle = bilibiliViewer.querySelector('.bilibili-viewer-title');
+  bilibiliViewer.querySelector('.bilibili-viewer-close').addEventListener('click', function(){ closeBilibiliViewer(false); });
+  bilibiliViewer.querySelector('.viewer-fullscreen').addEventListener('click', function(){
+    var target = bilibiliViewerFrame;
+    var request = target && (target.requestFullscreen || target.webkitRequestFullscreen || target.msRequestFullscreen);
+    try {
+      if (typeof request === 'function') {
+        var result = request.call(target);
+        if (result && typeof result.catch === 'function') result.catch(function(){});
+      }
+    } catch (err) {}
+  });
+}
+
+function openBilibiliViewer(bvid, title, sourceUrl) {
+  if (!bvid) return;
+  ensureBilibiliViewer();
+  bilibiliViewerTitle.textContent = title || '谢氏集萃视频';
+  bilibiliViewerFrame.src = 'https://player.bilibili.com/player.html?bvid=' + encodeURIComponent(bvid) + '&autoplay=0&high_quality=1';
+  bilibiliViewer.querySelector('.viewer-open').href = sourceUrl || ('https://www.bilibili.com/video/' + bvid + '/');
+  bilibiliViewer.hidden = false;
+  bilibiliViewerPreviousOverflow = document.body.style.overflow;
+  document.body.style.overflow = 'hidden';
+  try {
+    history.pushState(Object.assign({}, history.state || {}, { xieCollectionViewer: true }), '');
+    bilibiliViewerHistoryPushed = true;
+  } catch (err) { bilibiliViewerHistoryPushed = false; }
+}
+
+function closeBilibiliViewer(fromHistory) {
+  if (!bilibiliViewer || bilibiliViewer.hidden) return;
+  bilibiliViewer.hidden = true;
+  bilibiliViewerFrame.src = 'about:blank';
+  document.body.style.overflow = bilibiliViewerPreviousOverflow;
+  if (!fromHistory && bilibiliViewerHistoryPushed) {
+    bilibiliViewerHistoryPushed = false;
+    try { history.back(); } catch (err) {}
+  } else {
+    bilibiliViewerHistoryPushed = false;
+  }
+}
+
+// 点击B站卡片时留在本站；手机返回键优先关闭播放器，不退出当前页面。
+document.addEventListener('click', function(e){
+  var card = e.target && e.target.closest ? e.target.closest('.collect-card[data-bvid]') : null;
+  if (!card || (e.target && e.target.closest && e.target.closest('.bilibili-viewer'))) return;
+  e.preventDefault();
+  e.stopPropagation();
+  var title = card.querySelector('.title');
+  openBilibiliViewer(card.getAttribute('data-bvid'), title ? title.textContent : '', card.getAttribute('href'));
+}, true);
+
+window.addEventListener('popstate', function(){
+  if (bilibiliViewer && !bilibiliViewer.hidden) closeBilibiliViewer(true);
+});
 
 loadData(function(){ render('all'); });
 
