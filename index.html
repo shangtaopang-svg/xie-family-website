@@ -9,7 +9,7 @@
   <title data-i18n="site.title">宁海下枫槎村 · 谢氏家族</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="css/style.css?v=20260831-mobile-home-nav-05">
+  <link rel="stylesheet" href="css/style.css?v=20260831-mobile-home-nav-06">
   <style>
     /* Carousel mobile fix - ensure slides have height */
     .carousel-container { aspect-ratio: 21/9; overflow: hidden; }
@@ -163,7 +163,7 @@
       <button type="button" aria-label="第5张村景"></button>
       <button type="button" aria-label="第6张村景"></button>
     </div>
-    <p class="mbs-scroll-note">向上滑动，继续阅读家族故事　⌃</p>
+    <button type="button" class="mbs-scroll-note" id="mbsScrollNext">向上滑动，继续阅读家族故事　⌃</button>
   </main>
 </div>
 
@@ -207,6 +207,11 @@
   function stop(){ if (timer) { clearInterval(timer); timer = null; } }
   scenes.slice(1).forEach(function(scene){ var img = new Image(); img.src = scene.src; });
   dots.forEach(function(dot, i){ dot.addEventListener('click', function(){ show(i); stop(); start(); }); });
+  var scrollNext = document.getElementById('mbsScrollNext');
+  var nextContent = document.querySelector('.mb-story-home ~ .content');
+  if (scrollNext && nextContent) {
+    scrollNext.addEventListener('click', function(){ nextContent.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+  }
   document.addEventListener('visibilitychange', function(){ if (document.hidden) stop(); else start(); });
   show(0);
   start();

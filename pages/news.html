@@ -9,7 +9,7 @@
   <title data-i18n="page.news.title">消息发布 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="../css/style.css?v=20260831-mobile-palette-01">
+  <link rel="stylesheet" href="../css/style.css?v=20260831-news-board-01">
   <script defer src="../js/i18n.js?v=5"></script>
   <script defer src="../js/file-store.js?v=3"></script>
   <script defer src="../js/supabase.js?v=3"></script>
@@ -113,12 +113,12 @@
   <!-- weather moved to hero on index -->
 
   <div class="page-wrap">
-    <div class="page-title">
+    <div class="page-title news-page-title">
       <h2 data-i18n="nav.news">消息发布</h2>
       <p data-i18n="page.news">村务通知 · 家族公告</p>
     </div>
 
-    <div id="news-container" style="display:grid;grid-template-columns:2fr 1fr;gap:36px;">
+    <div id="news-container" class="news-board" aria-live="polite">
       <!-- 由 JS 动态渲染 -->
     </div>
   </div>
@@ -156,58 +156,87 @@
       // Count categories
       var catCount = {};
       data.forEach(function(item) {
-        catCount[item.category] = (catCount[item.category] || 0) + 1;
+        var category = item.category || '家族消息';
+        catCount[category] = (catCount[category] || 0) + 1;
       });
 
-      // Store global reference
+      // Store a date-descending copy so the newest message is always first.
+      data = data.slice().sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
       window._newsData = data;
-      // Sort by date ascending
-      data.sort(function(a, b) { return (a.date || '').localeCompare(b.date || ''); });
 
-      // Build main list + aside
-      var listHtml = '<div>';
-      listHtml += '<div class="section-title" style="text-align:left;"><h2 style="font-size:22px;">最新消息</h2><div class="divider" style="margin:8px 0;"></div></div>';
+      var categories = Object.keys(catCount);
+      var listHtml = '<section class="news-feed" aria-label="最新消息">';
+      listHtml += '<div class="news-feed-head">';
+      listHtml += '<div><span class="news-eyebrow">NEWS BOARD</span><h2>最新消息</h2><p>先看摘要，需要时再展开全文。</p></div>';
+      listHtml += '<div class="news-total"><b>' + data.length + '</b><span>条消息</span></div>';
+      listHtml += '</div>';
+      listHtml += '<div class="news-filter" role="tablist" aria-label="消息分类">';
+      listHtml += '<button type="button" class="news-filter-btn active" data-category-key="all" role="tab" aria-selected="true">全部 <span>' + data.length + '</span></button>';
+      categories.forEach(function(cat) {
+        var key = encodeURIComponent(cat);
+        listHtml += '<button type="button" class="news-filter-btn" data-category-key="' + key + '" role="tab" aria-selected="false">' + escapeHtml(cat) + ' <span>' + catCount[cat] + '</span></button>';
+      });
+      listHtml += '</div>';
+      listHtml += '<div class="news-list">';
 
-      data.forEach(function(item) {
-        var hasUrl = item.url && item.url.trim() !== '';
+      data.forEach(function(item, index) {
         var fullContent = item.content || '';
-        var excerpt = fullContent.length > 120 ? fullContent.substring(0, 120) + '…' : fullContent;
+        var category = item.category || '家族消息';
+        var categoryKey = encodeURIComponent(category);
+        var compactContent = fullContent.replace(/\s+/g, ' ').trim();
+        var excerpt = compactContent.length > 96 ? compactContent.substring(0, 96) + '…' : compactContent;
+        var dateParts = splitNewsDate(item.date || '');
+        var author = item.author || '家族理事会';
 
-        listHtml += '<div class="article-card fade-in" data-fullcontent="' + encodeURIComponent(fullContent) + '" data-title="' + escapeAttr(item.title) + '" data-author="' + escapeAttr(item.author || '') + '" data-date="' + (item.date || '') + '">';
-        listHtml += '<span class="category">' + escapeHtml(item.category) + '</span>';
-        listHtml += '<h3>' + escapeHtml(item.title) + '</h3>';
-        listHtml += '<div class="meta">' + (item.date || '') + ' · 发布人：' + escapeHtml(item.author || '') + '</div>';
-        listHtml += '<p>' + escapeHtml(excerpt) + '</p>';
-        // 查看全文链接
-        if (hasUrl) {
-          listHtml += '<a href="' + escapeAttr(item.url) + '" target="_blank" rel="noopener" class="read-more-link">查看全文 →</a>';
-        } else {
-          listHtml += '<a href="#" class="read-more-link" onclick="showFullArticle(this);return false;">阅读全文 →</a>';
-        }
-        listHtml += '</div>';
+        listHtml += '<article class="news-item fade-in" data-category-key="' + categoryKey + '">';
+        listHtml += '<div class="news-date-badge"><span>' + escapeHtml(dateParts.month) + '</span><b>' + escapeHtml(dateParts.day) + '</b><small>' + escapeHtml(dateParts.year) + '</small></div>';
+        listHtml += '<div class="news-item-main">';
+        listHtml += '<div class="news-item-top"><span class="news-category">' + escapeHtml(category) + '</span><time datetime="' + escapeAttr(item.date || '') + '">' + escapeHtml(item.date || '待定') + '</time></div>';
+        listHtml += '<h3>' + escapeHtml(item.title || '未命名消息') + '</h3>';
+        listHtml += '<p class="news-excerpt">' + escapeHtml(excerpt || '这条消息暂未添加摘要。') + '</p>';
+        listHtml += '<div class="news-item-foot"><span class="news-author">发布人：' + escapeHtml(author) + '</span><button type="button" class="news-read-btn" data-news-index="' + index + '">阅读全文 <span>→</span></button></div>';
+        listHtml += '</div></article>';
       });
 
-      listHtml += '<div style="text-align:center;margin-top:24px;">';
-      listHtml += '<button class="btn" onclick="alert(' + "'" + '更多历史消息正在加载...' + "'" + ')">加载更多 →</button>';
-      listHtml += '</div></div>';
+      listHtml += '<div class="news-filter-empty" hidden>这个分类暂时没有消息。</div>';
+      listHtml += '</div></section>';
 
-      // Sidebar
-      var asideHtml = '<div>';
-      asideHtml += '<div class="glass-card" style="padding:20px;margin-bottom:20px;">';
-      asideHtml += '<h4 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:12px;font-size:15px;font-weight:500;">📂 文章分类</h4>';
-      asideHtml += '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
-      for (var cat in catCount) {
-        asideHtml += '<span style="padding:4px 12px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:20px;font-size:12px;color:var(--text-tertiary);">' + escapeHtml(cat) + ' (' + catCount[cat] + ')</span>';
-      }
-      asideHtml += '</div></div>';
-
-      asideHtml += '<div class="glass-card" style="padding:20px;margin-bottom:20px;">';
-      asideHtml += '<h4 style="font-family:var(--font-title);color:var(--text-primary);margin-bottom:12px;font-size:15px;font-weight:500;">📝 投稿专栏</h4>';
-      asideHtml += '<p style="font-size:13px;color:var(--text-tertiary);margin-bottom:12px;">欢迎家族成员投稿分享文章、诗词、摄影作品等。</p>';
-      asideHtml += '<a href="contact.html" class="btn btn-accent" style="font-size:12px;padding:8px 20px;">我要投稿 →</a>';
-      asideHtml += '</div></div>';
+      var asideHtml = '<aside class="news-aside" aria-label="消息说明">';
+      asideHtml += '<div class="news-aside-card news-archive-card"><span class="news-eyebrow">ARCHIVE</span><strong>' + data.length + '</strong><h3>家族消息</h3><p>村务通知、家族公告与重要动态，集中留存于此。</p></div>';
+      asideHtml += '<div class="news-aside-card news-contribute-card"><span class="news-aside-icon">✦</span><h3>分享家族故事</h3><p>欢迎投稿文章、诗词、影像和村景记录。</p><a href="contact.html">联系投稿 <span>→</span></a></div>';
+      asideHtml += '</aside>';
 
       document.getElementById('news-container').innerHTML = listHtml + asideHtml;
+      document.querySelectorAll('.news-filter-btn').forEach(function(button) {
+        button.addEventListener('click', function() { filterNews(button.getAttribute('data-category-key'), button); });
+      });
+      document.querySelectorAll('.news-read-btn').forEach(function(button) {
+        button.addEventListener('click', function() { showFullArticle(Number(button.getAttribute('data-news-index'))); });
+      });
+    }
+
+    function splitNewsDate(date) {
+      var parts = (date || '').split('-');
+      if (parts.length === 3) return { year: parts[0], month: parts[1], day: parts[2] };
+      return { year: '', month: '—', day: '—' };
+    }
+
+    function filterNews(categoryKey, button) {
+      var items = document.querySelectorAll('.news-item');
+      var buttons = document.querySelectorAll('.news-filter-btn');
+      var visible = 0;
+      buttons.forEach(function(btn) {
+        var active = btn === button;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+      items.forEach(function(item) {
+        var show = categoryKey === 'all' || item.getAttribute('data-category-key') === categoryKey;
+        item.hidden = !show;
+        if (show) visible++;
+      });
+      var empty = document.querySelector('.news-filter-empty');
+      if (empty) empty.hidden = visible !== 0;
     }
 
     function escapeHtml(text) {
@@ -219,34 +248,52 @@
 
     function escapeAttr(text) {
       if (!text) return '';
-      return text.replace(/'/g, "\'").replace(/"/g, '&quot;');
+      return String(text).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
     // ===== 阅读全文弹窗 =====
-    function showFullArticle(link) {
-      var card = link.closest('.article-card');
-      var content = card ? decodeURIComponent(card.getAttribute('data-fullcontent') || '') : '';
-      var title = card ? card.getAttribute('data-title') : '';
-      var author = card ? card.getAttribute('data-author') : '';
-      var date = card ? card.getAttribute('data-date') : '';
+    function showFullArticle(index) {
+      var item = window._newsData && window._newsData[index];
+      if (!item) return;
+      var content = item.content || '这条消息暂未添加正文。';
+      var title = item.title || '未命名消息';
+      var author = item.author || '家族理事会';
+      var date = item.date || '';
       var overlay = document.createElement('div');
       overlay.className = 'article-modal-overlay';
-      overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.setAttribute('aria-label', title);
 
       var box = document.createElement('div');
-      box.style.cssText = 'background:var(--bg-primary);border:1px solid var(--glass-border);border-radius:12px;max-width:720px;width:100%;max-height:80vh;overflow-y:auto;padding:36px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
-
-      box.innerHTML = '<button onclick="this.parentElement.parentElement.remove()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-tertiary);">✕</button>'
-        + '<h2 style="font-family:var(--font-title);color:var(--text-primary);font-size:20px;font-weight:600;margin-bottom:12px;padding-right:30px;">' + escapeHtml(title) + '</h2>'
-        + '<div style="font-size:13px;color:var(--text-tertiary);margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--divider);">'
-        + (date ? '<span>' + date + '</span>' : '')
-        + (author ? ' · 发布人：' + escapeHtml(author) : '')
-        + '</div>'
-        + '<div style="font-size:14px;color:var(--text-secondary);line-height:2;">' + escapeHtml(content).replace(/\n/g, '<br>') + '</div>';
+      box.className = 'article-modal-box';
+      box.innerHTML = '<button type="button" class="article-modal-close" aria-label="关闭全文">×</button><span class="article-modal-label">消息全文</span><h2></h2><div class="article-modal-meta"></div><div class="article-modal-content"></div><div class="article-modal-actions"></div>';
+      box.querySelector('h2').textContent = title;
+      box.querySelector('.article-modal-meta').textContent = (date ? date : '日期待定') + ' · 发布人：' + author;
+      box.querySelector('.article-modal-content').textContent = content;
+      if (item.url && item.url.trim()) {
+        var sourceLink = document.createElement('a');
+        sourceLink.className = 'article-modal-source';
+        sourceLink.href = item.url;
+        sourceLink.target = '_blank';
+        sourceLink.rel = 'noopener';
+        sourceLink.textContent = '查看来源原文 →';
+        box.querySelector('.article-modal-actions').appendChild(sourceLink);
+      }
 
       overlay.appendChild(box);
-      overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+      var close = function() {
+        overlay.remove();
+        document.body.classList.remove('news-modal-open');
+        document.removeEventListener('keydown', onKeydown);
+      };
+      var onKeydown = function(e) { if (e.key === 'Escape') close(); };
+      box.querySelector('.article-modal-close').addEventListener('click', close);
+      overlay.onclick = function(e) { if (e.target === overlay) close(); };
+      document.addEventListener('keydown', onKeydown);
+      document.body.classList.add('news-modal-open');
       document.body.appendChild(overlay);
+      box.querySelector('.article-modal-close').focus();
     }
 
     renderNews();
