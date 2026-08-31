@@ -516,6 +516,7 @@ document.addEventListener('click', function(e){
 var bilibiliViewer = null;
 var bilibiliViewerFrame = null;
 var bilibiliViewerTitle = null;
+var bilibiliViewerBvid = '';
 var bilibiliViewerHistoryPushed = false;
 var bilibiliViewerPreviousOverflow = '';
 
@@ -546,7 +547,9 @@ function ensureBilibiliViewer() {
 
 function openBilibiliViewer(bvid, title, sourceUrl) {
   if (!bvid) return;
+  if (bilibiliViewer && !bilibiliViewer.hidden && bilibiliViewerBvid === bvid) return;
   ensureBilibiliViewer();
+  bilibiliViewerBvid = bvid;
   bilibiliViewerTitle.textContent = title || '谢氏集萃视频';
   bilibiliViewerFrame.src = 'https://player.bilibili.com/player.html?bvid=' + encodeURIComponent(bvid) + '&autoplay=0&high_quality=1';
   bilibiliViewer.querySelector('.viewer-open').href = sourceUrl || ('https://www.bilibili.com/video/' + bvid + '/');
@@ -573,6 +576,7 @@ function closeBilibiliViewer(fromHistory) {
   } catch (err) {}
   bilibiliViewer.hidden = true;
   bilibiliViewerFrame.src = 'about:blank';
+  bilibiliViewerBvid = '';
   document.body.style.overflow = bilibiliViewerPreviousOverflow;
   if (!fromHistory && bilibiliViewerHistoryPushed) {
     bilibiliViewerHistoryPushed = false;
