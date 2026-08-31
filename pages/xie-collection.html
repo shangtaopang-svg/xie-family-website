@@ -45,6 +45,7 @@
   box-shadow:0 1px 3px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02);
   transition:transform 0.25s cubic-bezier(0.22,1,0.36,1), box-shadow 0.25s;
 }
+button.collect-card { width:100%; padding:0; border:0; color:inherit; font:inherit; text-align:left; }
 .collect-card:hover {
   transform:translateY(-6px);
   box-shadow:0 12px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(196,160,80,0.15);
@@ -191,7 +192,7 @@
     display:grid; grid-template-columns:118px minmax(0,1fr); gap:0;
     min-height:94px; overflow:hidden; transform:none;
     background:#141414 !important; border:1px solid #2a2a2a !important;
-    border-radius:16px !important; box-shadow:none !important;
+    border-radius:16px !important; box-shadow:none !important; padding:0 !important;
   }
   .collect-card .card-hover-wrap,
   .collect-card .card-cover,
@@ -425,14 +426,29 @@ function render(cat) {
     if (isLocal) {
       return '<div class="collect-card local-video" style="text-decoration:none;cursor:default"><div class="card-hover-wrap"><div class="card-cover" style="background:#1a1410;display:flex;align-items:center;justify-content:center;overflow:hidden"><video src="' + url + '" style="width:100%;height:100%;object-fit:cover" controls preload="none" playsinline webkit-playsinline' + (item.poster ? ' poster="' + item.poster + '"' : '') + '></video><button type="button" class="mobile-video-fullscreen" aria-label="全屏播放">⛶ 全屏</button></div></div><div class="info"><div class="title">' + (item.title||'') + '</div><div class="meta"><span class="tag video">📹 本地视频</span></div></div></div>';
     }
-    return '<a href="' + url + '" target="_blank" rel="noopener"' + (bvid ? ' data-bvid="' + bvid + '" onclick="return openBilibiliViewerFromCard(this)"' : '') + ' class="collect-card" style="text-decoration:none">' +
+    if (bvid) return '<button type="button" data-bvid="' + bvid + '" data-source-url="' + url + '" class="collect-card bilibili-card" aria-label="打开B站视频">' +
       '<div class="card-hover-wrap">' +
         '<div class="card-cover">' +
           (hasPoster ? '<img src="' + item.poster + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '<span style="font-size:42px;color:#d0ccc5">🎬</span>') +
           '<div class="play-overlay"><span class="play-circle">▶</span></div>' +
           '<span class="duration-badge">B站</span>' +
         '</div>' +
-        (bvid ? '<div class="card-preview"><div class="preview-inner" data-bvid="' + bvid + '"></div></div>' : '') +
+        '<div class="card-preview"><div class="preview-inner" data-bvid="' + bvid + '"></div></div>' +
+      '</div>' +
+      '<div class="info">' +
+        '<div class="meta">' +
+          '<span class="tag ' + srcClass + '">' + source + '</span>' +
+          (catLabel ? '<span class="cat">' + catLabel + '</span>' : '') +
+        '</div>' +
+        '<div class="title">' + title + '</div>' +
+      '</div></button>';
+    return '<a href="' + url + '" target="_blank" rel="noopener" class="collect-card" style="text-decoration:none">' +
+      '<div class="card-hover-wrap">' +
+        '<div class="card-cover">' +
+          (hasPoster ? '<img src="' + item.poster + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '<span style="font-size:42px;color:#d0ccc5">🎬</span>') +
+          '<div class="play-overlay"><span class="play-circle">▶</span></div>' +
+          '<span class="duration-badge">视频</span>' +
+        '</div>' +
       '</div>' +
       '<div class="info">' +
         '<div class="meta">' +
@@ -448,7 +464,7 @@ function render(cat) {
     document.querySelectorAll('.collect-card').forEach(function(card){
       var poster = card.querySelector('.card-cover img');
       if (poster && poster.src && poster.src.indexOf('hdslb.com')>0) return; // 已有封面
-      var link = card.href || '';
+      var link = card.getAttribute('data-source-url') || card.href || '';
       var bv = (link.match(/bilibili\.com\/video\/(BV[a-zA-Z0-9]+)/i)||[])[1];
       if (!bv) return;
       var xhr = new XMLHttpRequest();
@@ -564,7 +580,7 @@ function openBilibiliViewer(bvid, title, sourceUrl) {
 
 function openBilibiliViewerFromCard(card) {
   if (!card) return false;
-  openBilibiliViewer(card.getAttribute('data-bvid'), (card.querySelector('.title') || {}).textContent || '', card.getAttribute('href'));
+  openBilibiliViewer(card.getAttribute('data-bvid'), (card.querySelector('.title') || {}).textContent || '', card.getAttribute('data-source-url'));
   return false;
 }
 
