@@ -614,6 +614,14 @@ function closeBilibiliViewer(fromHistory) {
     bilibiliViewerHistoryPushed = false;
     try { history.back(); } catch (err) {}
   } else {
+    // 部分手机浏览器返回时只触发 popstate，地址栏可能暂时仍保留播放器锚点。
+    // 播放器已经关闭后，把地址恢复为集萃页面，避免下一次返回误退出网站。
+    if (fromHistory && window.location.hash === '#xie-bilibili-player') {
+      try {
+        var restoredHash = bilibiliViewerPreviousHash && bilibiliViewerPreviousHash !== '#xie-bilibili-player' ? bilibiliViewerPreviousHash : '';
+        history.replaceState(history.state, '', window.location.pathname + window.location.search + restoredHash);
+      } catch (err) {}
+    }
     bilibiliViewerHistoryPushed = false;
   }
 }
