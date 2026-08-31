@@ -5825,6 +5825,25 @@ li:has(> a[href*="admin.html"]) {
     padding-bottom: 24px !important;
   }
 
+  /* 正式主站的“返回开启页”固定可见；底部预留空间，避免遮住最后一项内容。 */
+  .mb-show-main .content {
+    padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .mb-show-main .mb-back-entrance-wrap {
+    position: fixed !important;
+    left: 16px !important;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+    z-index: 10000 !important;
+    width: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .mb-show-main .mb-back-entrance {
+    width: fit-content;
+    min-width: 118px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .28);
+  }
+
   a.back-page-btn {
     bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
   }
@@ -5892,7 +5911,7 @@ li:has(> a[href*="admin.html"]) {
   .mbh-qb { color: var(--mb-text); }
 }
 
-/* 手机首页：快捷入口固定为四项，通用返回按钮不覆盖首页内容。 */
+/* 手机首页：快捷入口固定为四项；返回按钮固定在视口底部，避免必须滑到底才能找到。 */
 @media (max-width: 768px) {
   .mbh-quick {
     display: grid !important;
@@ -5906,14 +5925,20 @@ li:has(> a[href*="admin.html"]) {
   }
 
   html:not(.mb-show-main) .mb-home ~ a.back-page-btn {
-    position: static !important;
+    position: fixed !important;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 16px !important;
     display: flex !important;
     width: fit-content;
     max-width: calc(100vw - 32px);
     margin: 0 auto 16px;
     justify-content: center;
+    z-index: 10000 !important;
     background: var(--mb-brand-strong, #C9A84C) !important;
     color: #1a180f !important;
     box-shadow: 0 4px 12px rgba(201, 168, 76, .24) !important;
+  }
+  html:not(.mb-show-main) .mb-home {
+    padding-bottom: 88px !important;
   }
 }
