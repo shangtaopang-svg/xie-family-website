@@ -5188,7 +5188,53 @@ section a[href*="audio"] {
   background: linear-gradient(135deg, #1a2a1a, #0a1a0a);
   background-image: url('/images/22.jpg');
   background-size: cover; background-position: center;
-  position: relative;
+  position: relative; isolation: isolate;
+  border: 1px solid rgba(232, 201, 122, .18);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .22);
+}
+
+/* 黑白村景保留为“历史层”，以低透明度现实村景和暖色光晕增加层次。 */
+.mbh-hero::before {
+  content: '';
+  position: absolute; inset: -5%;
+  background-image:
+    linear-gradient(115deg, rgba(229, 188, 96, .36), rgba(29, 116, 95, .38)),
+    url('/images/bg-left.jpg');
+  background-size: cover;
+  background-position: center 46%;
+  background-blend-mode: multiply, normal;
+  mix-blend-mode: multiply;
+  opacity: .42;
+  transform: scale(1.06) translate3d(-1%, 0, 0);
+  animation: mbhHeroColor 9s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+.mbh-hero::after {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(90deg, rgba(7, 20, 17, .82) 0%, rgba(7, 20, 17, .28) 52%, rgba(212, 173, 82, .12) 100%),
+    linear-gradient(180deg, rgba(7, 10, 8, .04) 35%, rgba(7, 10, 8, .68) 100%);
+  pointer-events: none;
+}
+.mbh-hero-caption {
+  position: absolute; left: 16px; right: 16px; bottom: 14px;
+  z-index: 1; display: flex; flex-direction: column; gap: 4px;
+  color: #fff6df; text-shadow: 0 2px 10px rgba(0, 0, 0, .72);
+}
+.mbh-hero-kicker {
+  width: fit-content; padding: 3px 8px;
+  border: 1px solid rgba(232, 201, 122, .38); border-radius: 999px;
+  background: rgba(8, 22, 18, .34); backdrop-filter: blur(4px);
+  color: #e8c97a; font-size: 10px; letter-spacing: 1px;
+}
+.mbh-hero-title { font-size: 16px; font-weight: 700; letter-spacing: 1px; }
+@keyframes mbhHeroColor {
+  from { opacity: .24; transform: scale(1.06) translate3d(-1%, 0, 0); }
+  to { opacity: .48; transform: scale(1.11) translate3d(1%, -1%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mbh-hero::before { animation: none; opacity: .36; transform: scale(1.06); }
 }
 
 .mbh-pills { display: flex; gap: 8px; margin: 0 16px 12px; }
