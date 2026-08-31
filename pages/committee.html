@@ -10,7 +10,7 @@
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 
   <meta name="description" content="下枫槎村村委会组织架构、两委成员介绍、党员风采展示">
-  
+
   <link rel="stylesheet" href="../css/style.css?v=20260831-mobile-palette-01">
   <script src="../js/i18n.js"></script>
 </head>
@@ -18,7 +18,7 @@
 (function(){
   var ptKey = 'pt_go';
   var pt = document.getElementById('page-transition');
-  
+
   // If arriving from transition (sessionStorage flag)
   if (sessionStorage.getItem(ptKey)) {
     sessionStorage.removeItem(ptKey);
@@ -33,10 +33,10 @@
     setTimeout(function(){ pt.style.transition='opacity 0.5s ease'; pt.style.opacity='0'; setTimeout(function(){ pt.style.display='none'; },500); },1000);
     return;
   }
-  
+
   // If overlay HTML exists on page (from index.html), ensure it's hidden
   if (pt) pt.style.display = 'none';
-  
+
   // Intercept nav clicks directly (inline, reliable)
   document.addEventListener('click', function(e){
     var a = e.target.closest('a');
@@ -342,7 +342,7 @@
     </section>
 
     <!-- 村务监督 -->
-    
+
 
   </div>
 
@@ -361,7 +361,7 @@
   </footer>
 
   <a id="backBtn" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
-  <button class="back-top">↑</button>
+
   <script src="../js/main.js?v=20260812"></script>
   <style>
     .org-chart { display:flex;flex-direction:column;align-items:center;gap:8px;padding:30px 0; }
@@ -423,7 +423,7 @@
     <audio id="bg-music" loop></audio>
 
 <script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();try{var u=sessionStorage.getItem("back_to");if(u&&u!==window.location.href&&!u.includes(location.host+"/?")){location.href=u;return}}catch(ex){}if(window.history.length>1)window.history.go(-1);else location.href="../entrance.html"});</script>
-<script>(function(){var b=document.createElement("div");b.id="backTopBtn";b.innerHTML="↑";b.style.cssText="position:fixed;bottom:80px;right:16px;z-index:9999;width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.85);color:#0a0806;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;opacity:0.9;transition:opacity 0.3s;";b.onclick=function(){window.scrollTo({top:0,behavior:"smooth"})};window.addEventListener("scroll",function(){b.style.opacity=window.scrollY>50?"0.9":"0.3"});document.body.appendChild(b);})();</script><link rel="stylesheet" href="/css/ai.css?v=96">
+<link rel="stylesheet" href="/css/ai.css?v=96">
 <script src="/js/ai-assistant.js?v=96" defer></script>
 <link rel="stylesheet" href="/css/public-access-gate.css?v=20260826-access-04">
 <script src="/js/public-access-gate.js?v=20260828-trusted-device-02" defer></script>

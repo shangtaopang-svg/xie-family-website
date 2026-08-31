@@ -18,7 +18,6 @@ body{background:#0f0f13;color:#e0e0e0;font-family:"Noto Serif SC","SimSun",serif
   body.focus-tree-page #tree-wrap > div:last-child{right:12px !important;bottom:12px !important;}
   body.focus-tree-page #tree-wrap > div:last-child button{width:40px !important;height:40px !important;}
   body.focus-tree-page #ai-fab .ai-bubble{display:none !important;}
-  body.focus-tree-page #backTopBtn{right:12px !important;bottom:calc(16px + env(safe-area-inset-bottom,0px)) !important;}
 }
 </style>
 </head>
@@ -26,7 +25,7 @@ body{background:#0f0f13;color:#e0e0e0;font-family:"Noto Serif SC","SimSun",serif
 (function(){
   var ptKey = 'pt_go';
   var pt = document.getElementById('page-transition');
-  
+
   // If arriving from transition (sessionStorage flag)
   if (sessionStorage.getItem(ptKey)) {
     sessionStorage.removeItem(ptKey);
@@ -41,10 +40,10 @@ body{background:#0f0f13;color:#e0e0e0;font-family:"Noto Serif SC","SimSun",serif
     setTimeout(function(){ pt.style.transition='opacity 0.5s ease'; pt.style.opacity='0'; setTimeout(function(){ pt.style.display='none'; },500); },1000);
     return;
   }
-  
+
   // If overlay HTML exists on page (from index.html), ensure it's hidden
   if (pt) pt.style.display = 'none';
-  
+
   // Intercept nav clicks directly (inline, reliable)
   document.addEventListener('click', function(e){
     var a = e.target.closest('a');
@@ -425,9 +424,9 @@ try{
 }catch(e){document.getElementById('tree').innerHTML='<div style="padding:40px;color:#ef4444;">JS Error: '+e.message+'</div>';}
 </script>
   <a id="backBtn" class="back-page-btn" data-i18n-aria="back.page" aria-label="返回上一页">← 返回</a>
-  <button class="back-top" data-i18n-aria="back.top" aria-label="回到顶部">↑</button>
+
 <script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();try{var u=sessionStorage.getItem("back_to");if(u&&u!==window.location.href&&!u.includes(location.host+"/?")){location.href=u;return}}catch(ex){}if(window.history.length>1)window.history.go(-1);else location.href="../entrance.html"});</script>
-<script>(function(){var b=document.createElement("div");b.id="backTopBtn";b.innerHTML="↑";b.style.cssText="position:fixed;bottom:80px;right:16px;z-index:9999;width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.85);color:#0a0806;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;opacity:0.9;transition:opacity 0.3s;";b.onclick=function(){window.scrollTo({top:0,behavior:"smooth"})};window.addEventListener("scroll",function(){b.style.opacity=window.scrollY>50?"0.9":"0.3"});document.body.appendChild(b);})();</script><link rel="stylesheet" href="/css/ai.css?v=96">
+<link rel="stylesheet" href="/css/ai.css?v=96">
 <script src="/js/ai-assistant.js?v=96" defer></script>
 <link rel="stylesheet" href="/css/public-access-gate.css?v=20260826-access-04">
 <script src="/js/public-access-gate.js?v=20260828-trusted-device-02" defer></script>

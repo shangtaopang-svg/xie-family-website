@@ -5905,7 +5905,15 @@ li:has(> a[href*="admin.html"]) {
     min-width: 0;
   }
 
-  .mb-home ~ a.back-page-btn {
-    display: none !important;
+  html:not(.mb-show-main) .mb-home ~ a.back-page-btn {
+    position: static !important;
+    display: flex !important;
+    width: fit-content;
+    max-width: calc(100vw - 32px);
+    margin: 0 auto 16px;
+    justify-content: center;
+    background: var(--mb-brand-strong, #C9A84C) !important;
+    color: #1a180f !important;
+    box-shadow: 0 4px 12px rgba(201, 168, 76, .24) !important;
   }
 }
