@@ -5253,6 +5253,7 @@ section a[href*="audio"] {
   white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
 }
+
 .mbh-pill:active { opacity: 0.8; transform: scale(0.98); }
 .mbh-pill-active { background: #D4FF3A; color: #000 !important; }
 .mbh-pill:not(.mbh-pill-active) { background: #000; border: 1.5px solid #D4FF3A; color: #D4FF3A !important; }
@@ -5911,5 +5912,35 @@ li:has(> a[href*="admin.html"]) {
     width: 44px !important;
     height: 44px !important;
     font-size: 28px !important;
+  }
+}
+
+/* ===== 全站关闭手机端底部导航 =====
+   页面已有顶部返回、分类入口和内容内导航，底部固定栏会重复占位并遮挡内容。 */
+@media (max-width: 768px) {
+  nav.mb-tabbar,
+  .mb-tabbar,
+  nav.mobile-bottom-nav,
+  .mobile-bottom-nav {
+    display: none !important;
+  }
+
+  body {
+    padding-bottom: 0 !important;
+  }
+
+  .content,
+  .page-wrap,
+  .mb-home {
+    padding-bottom: 24px !important;
+  }
+
+  a.back-page-btn {
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  #backTopBtn {
+    right: 16px !important;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
