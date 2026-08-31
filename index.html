@@ -9,7 +9,7 @@
   <title data-i18n="site.title">宁海下枫槎村 · 谢氏家族</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="css/style.css?v=20260831-mobile-entry-01">
+  <link rel="stylesheet" href="css/style.css?v=20260831-mobile-entry-02">
   <style>
     /* Carousel mobile fix - ensure slides have height */
     .carousel-container { aspect-ratio: 21/9; overflow: hidden; }
@@ -133,21 +133,20 @@
     <div class="mbh-title">宁海下枫槎村谢氏</div>
   </div>
 
-  <div class="mbh-search">
+  <div class="mbh-search" role="search" aria-label="族谱搜索">
     <span class="mbh-search-icon">&#x1f50d;</span>
-    <input class="mbh-search-input" type="text" placeholder="搜索族人姓名..." id="mbSearchInput">
-    <div class="mbh-search-btn" id="mbSearchBtn">搜索</div>
+    <input class="mbh-search-input" type="search" placeholder="搜索族人姓名..." id="mbSearchInput" aria-label="输入族人姓名">
+    <button class="mbh-search-btn" id="mbSearchBtn" type="button">搜索</button>
   </div>
 
-  <div class="mbh-welcome">Welcome to Xia Feng Cha Village</div>
-
-  <div class="mbh-hero" style="background-image:url('images/22.jpg')">
-      </div>
-
+  <!-- 首屏优先放置两个核心入口：搜索之后即可进入族谱或查看消息。 -->
   <div class="mbh-pills">
     <a href="pages/genealogy.html?chooser=1&access=20260827-07" class="mbh-pill mbh-pill-active">&#x1f4dc; 族谱查询</a>
     <a href="pages/news.html" class="mbh-pill">&#x1f4f0; 消息发布</a>
   </div>
+
+  <div class="mbh-hero" style="background-image:url('images/22.jpg')" role="img" aria-label="下枫槎村谢氏家族">
+      </div>
 
   <div class="mbh-quick">
     <a href="pages/history.html" class="mbh-qitem">
