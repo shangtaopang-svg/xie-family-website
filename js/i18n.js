@@ -3125,6 +3125,10 @@ function translateTextNode(node, lang) {
   if (!node || !node.nodeValue) return;
   var parent = node.parentElement;
   if (!parent || /^(SCRIPT|STYLE|NOSCRIPT|TEMPLATE)$/i.test(parent.tagName)) return;
+  // The navigation hub owns its bilingual copy, and language controls are
+  // controls rather than page prose. Keep the generic translator away from
+  // both so it cannot concatenate or replace their labels.
+  if (parent.closest && (parent.closest('.navhub-page-body') || parent.closest('[data-i18n-ignore="1"]'))) return;
   if (lang === 'en') {
     if (node.__xieOriginalText === undefined) node.__xieOriginalText = node.nodeValue;
     var next = translateString(node.__xieOriginalText, lang);
@@ -3137,6 +3141,7 @@ function translateTextNode(node, lang) {
 
 function translateElementAttributes(el, lang) {
   if (!el || el.nodeType !== 1 || /^(SCRIPT|STYLE|NOSCRIPT|TEMPLATE)$/i.test(el.tagName)) return;
+  if (el.closest && (el.closest('.navhub-page-body') || el.closest('[data-i18n-ignore="1"]'))) return;
   ['title', 'aria-label', 'placeholder', 'alt'].forEach(function(attr) {
     if (!el.hasAttribute(attr)) return;
     if (!el.__xieOriginalAttrs) el.__xieOriginalAttrs = {};
@@ -3161,32 +3166,116 @@ function translateUnmarkedDocument(lang) {
 var languageObserver = null;
 function startLanguageObserver() {
   if (languageObserver || !window.MutationObserver) return;
-  languageObserver = new MutationObserver(function() {
-    // 兼容旧页面或缓存脚本，清理可能被异步注入的语言入口。
+  languageObserver = new MutationObserver(function(records) {
     ensureLanguageToggle();
+    if (getLang() !== 'en') return;
+    document.querySelectorAll('#lang-toggle, .language-toggle').forEach(function(toggle) {
+      toggle.textContent = '中';
+      toggle.classList.add('active');
+    });
+    records.forEach(function(record) {
+      Array.prototype.forEach.call(record.addedNodes || [], function(node) {
+        if (node.nodeType === 3) {
+          translateTextNode(node, 'en');
+        } else if (node.nodeType === 1) {
+          var walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+          var child;
+          while ((child = walker.nextNode())) translateTextNode(child, 'en');
+          translateElementAttributes(node, 'en');
+          node.querySelectorAll('[title],[aria-label],[placeholder],[alt]').forEach(function(el) {
+            translateElementAttributes(el, 'en');
+          });
+        }
+      });
+    });
   });
   languageObserver.observe(document.body || document.documentElement, { childList: true, subtree: true });
 }
 
 function ensureLanguageToggle() {
-  // 语言切换入口已取消。保留这里作为旧缓存/旧页面的兼容清理点，避免旧脚本再次显示按钮。
-  document.querySelectorAll('#site-language-dock, #site-language-toggle, #mbsLanguageToggle, #lang-toggle, #lang-btn, .language-toggle, .site-language-toggle').forEach(function(toggle) {
-    if (toggle && toggle.parentNode) toggle.parentNode.removeChild(toggle);
+  if (!document.getElementById('xie-language-style')) {
+    var style = document.createElement('style');
+    style.id = 'xie-language-style';
+    style.textContent = '.site-language-dock{display:flex;align-items:center;justify-content:flex-end;flex:0 0 auto;min-height:52px;width:100%;padding:9px 14px;box-sizing:border-box;background:var(--bg-primary,var(--navhub-bg,#f6f7f8));border-bottom:1px solid rgba(35,49,58,.1);position:relative;z-index:1000}.site-language-dock .site-language-toggle{position:relative!important;top:auto!important;right:auto!important;z-index:1;flex:0 0 auto}.site-language-toggle{min-width:46px;height:34px;padding:0 11px;border:1px solid rgba(128,128,128,.35);border-radius:999px;background:rgba(255,255,255,.96);color:#26343c;font:700 12px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;cursor:pointer;box-shadow:0 5px 18px rgba(0,0,0,.14);-webkit-tap-highlight-color:transparent}.site-language-toggle:hover,.site-language-toggle.active{color:#995b24;border-color:#995b24}.site-language-toggle:focus-visible{outline:3px solid rgba(153,91,36,.22);outline-offset:2px}.site-language-dock--toolbar{width:auto;min-height:0;padding:0;background:transparent;border:0;box-shadow:none;position:static}.site-language-dock--opening{width:auto;min-height:0;padding:0;background:transparent;border:0;box-shadow:none;position:static}.news-source-toolbar{flex-wrap:wrap}.site-language-dock--card{width:100%;min-height:38px;margin:0 0 12px;padding:0;background:transparent;border:0;box-shadow:none;position:static}.site-language-dock--entrance{position:absolute;top:12px;right:12px;width:auto;min-height:0;padding:0;background:transparent;border:0;box-shadow:none;z-index:60}.site-language-dock--entrance .site-language-toggle{box-shadow:0 5px 18px rgba(0,0,0,.32)}.site-language-dock--fullscreen{position:absolute;top:16px;left:50%;width:auto;min-height:0;padding:0;background:transparent;border:0;box-shadow:none;transform:translateX(-50%);z-index:60}.site-language-dock--fullscreen .site-language-toggle{box-shadow:0 5px 18px rgba(0,0,0,.32)}#stage #clk{top:60px!important}#pv-overlay.show ~ .site-language-dock--entrance{display:none!important}[data-theme="dark"] .site-language-dock{background:var(--mb-bg,#101214);border-bottom-color:rgba(255,255,255,.1)}[data-theme="dark"] .site-language-dock--toolbar,[data-theme="dark"] .site-language-dock--card,[data-theme="dark"] .site-language-dock--opening,[data-theme="dark"] .site-language-dock--entrance,[data-theme="dark"] .site-language-dock--fullscreen{background:transparent;border-bottom-color:transparent}@media(max-width:768px){.site-language-dock{min-height:48px;padding:7px 10px}.site-language-dock--toolbar,.site-language-dock--opening{min-height:0;padding:0}.site-language-dock--card{min-height:34px;margin-bottom:10px}.site-language-dock--entrance{top:10px;right:10px}.site-language-dock--fullscreen{top:10px}.site-language-toggle{min-width:44px;height:32px}.site-language-dock--entrance + #clk{top:56px!important}#stage #clk{top:56px!important}}';
+    document.head.appendChild(style);
+  }
+
+  // Reuse a page-provided control when one exists; otherwise create exactly
+  // one canonical button and place it in a real toolbar/heading region.
+  var canonical = document.getElementById('site-language-toggle');
+  var isOpeningMobile = !!(document.querySelector('.mb-story-home') &&
+    !document.documentElement.classList.contains('mb-show-main') &&
+    window.matchMedia && window.matchMedia('(max-width: 768px)').matches);
+  if (!canonical && isOpeningMobile) canonical = document.getElementById('mbsLanguageToggle');
+  if (!canonical && document.body) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'site-language-toggle';
+    btn.className = 'language-toggle site-language-toggle';
+    btn.textContent = 'EN';
+    btn.setAttribute('aria-label', 'Switch to English');
+    btn.title = 'Switch to English';
+    btn.setAttribute('data-i18n-ignore', '1');
+    canonical = btn;
+  }
+  if (canonical && canonical.id === 'site-language-toggle' && !document.getElementById('site-language-dock')) {
+    var dock = document.createElement('div');
+    dock.id = 'site-language-dock';
+    dock.className = 'site-language-dock';
+    dock.setAttribute('aria-label', 'Language switch');
+    dock.setAttribute('data-i18n-ignore', '1');
+    dock.appendChild(canonical);
+
+    var openingTopRight = document.querySelector('.mbs-top-right');
+    var toolbar = document.querySelector('.news-source-toolbar');
+    var offlineCard = document.querySelector('.offline-card');
+    var entranceStage = document.getElementById('stage');
+    var content = document.querySelector('.content');
+    var main = document.querySelector('main');
+    var fullscreenStage = document.querySelector('.video-container');
+    if (openingTopRight) {
+      dock.classList.add('site-language-dock--opening');
+      openingTopRight.appendChild(dock);
+    } else if (toolbar) {
+      dock.classList.add('site-language-dock--toolbar');
+      toolbar.appendChild(dock);
+    } else if (offlineCard) {
+      dock.classList.add('site-language-dock--card');
+      offlineCard.insertBefore(dock, offlineCard.firstChild);
+    } else if (entranceStage) {
+      dock.classList.add('site-language-dock--entrance');
+      entranceStage.appendChild(dock);
+    } else if (fullscreenStage) {
+      dock.classList.add('site-language-dock--fullscreen');
+      fullscreenStage.appendChild(dock);
+    } else if (content) {
+      content.insertBefore(dock, content.firstChild);
+    } else if (main) {
+      main.insertBefore(dock, main.firstChild);
+    } else {
+      document.body.insertBefore(dock, document.body.firstChild);
+    }
+  }
+  document.querySelectorAll('#lang-toggle, .language-toggle').forEach(function(toggle) {
+    toggle.classList.add('language-toggle');
+    if (toggle !== canonical) toggle.classList.add('site-language-legacy');
+    if (toggle.dataset.i18nBound === '1') return;
+    toggle.dataset.i18nBound = '1';
+    toggle.setAttribute('data-i18n-ignore', '1');
+    toggle.addEventListener('click', toggleLanguage);
   });
 }
 
 function getLang() {
-  return 'zh';
+  try { return localStorage.getItem('xie_lang') === 'en' ? 'en' : 'zh'; } catch (e) { return 'zh'; }
 }
 
 function setLang(lang) {
-  // 语言切换入口已关闭，清除历史偏好，确保刷新后仍使用简体中文。
-  try { localStorage.removeItem('xie_lang'); } catch (e) {}
+  try { localStorage.setItem('xie_lang', lang === 'en' ? 'en' : 'zh'); } catch (e) {}
 }
 
 function applyLanguage(lang) {
-  // 语言切换入口已关闭，任何旧脚本调用也统一回到简体中文。
-  lang = 'zh';
+  lang = lang === 'en' ? 'en' : 'zh';
   document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
   // Pages created before the keyed translation table may still have a plain
   // Chinese <title>. Preserve it once so switching back to Chinese is lossless.
@@ -3228,8 +3317,14 @@ function applyLanguage(lang) {
     }
   });
 
-  // 清理旧页面或缓存脚本可能留下的语言控件，不再创建新的入口。
+  // Keep one safe language switch on every supported page.
   ensureLanguageToggle();
+  document.querySelectorAll('#lang-toggle, .language-toggle').forEach(function(toggle) {
+    toggle.textContent = lang === 'en' ? '中' : 'EN';
+    toggle.classList.toggle('active', lang === 'en');
+    toggle.setAttribute('aria-label', lang === 'en' ? 'Switch to Chinese' : 'Switch to English');
+    toggle.title = lang === 'en' ? 'Switch to Chinese' : 'Switch to English';
+  });
 
   // Translate legacy/unmarked DOM and refresh page-specific dynamic widgets.
   translateUnmarkedDocument(lang);
@@ -3242,13 +3337,23 @@ function applyLanguage(lang) {
 }
 
 function toggleLanguage() {
-  // 保留全局函数以兼容旧缓存脚本，但不再允许切换语言。
-  setLang('zh');
+  var current = getLang();
+  var next = current === 'zh' ? 'en' : 'zh';
+  setLang(next);
+  applyLanguage(next);
+  var descEl = document.getElementById('hero-weather-desc');
+  if (descEl) {
+    var cache = localStorage.getItem('xie_weather_cache');
+    if (cache) { try { var c = JSON.parse(cache); descEl.textContent = translateString(c.condition, next); } catch (e) {} }
+  }
+  var locEl = document.getElementById('weather-location');
+  if (locEl) locEl.textContent = TRANSLATIONS['weather.location'][next] || (next === 'en' ? 'Ninghai' : '宁波宁海');
+  if (window.syncOpeningPageLanguage) window.syncOpeningPageLanguage();
+  if (window.syncOpeningEntryLanguage) window.syncOpeningEntryLanguage();
   return false;
 }
 
 function initLanguage() {
-  try { localStorage.removeItem('xie_lang'); } catch (e) {}
   if (document.documentElement.dataset.i18nInitialized === '1') {
     ensureLanguageToggle();
     applyLanguage(getLang());

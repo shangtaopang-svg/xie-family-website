@@ -4891,7 +4891,7 @@ body {
 }
 
 /* ===== 通用卡片 ===== */
-[class*="card"] {
+[class*="card"]:not(.card2):not(.card-title):not(.card-sub) {
   background: var(--mb-card) !important;
   border: 1px solid var(--mb-border) !important;
   border-radius: var(--mb-radius-lg) !important;
@@ -6558,8 +6558,8 @@ html[data-theme="dark"] .navhub-page-body {
 .navhub-setting-row { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto 14px; align-items: center; gap: 7px; width: 100%; min-height: 36px; padding: 0 8px; border: 0; border-radius: 8px; background: transparent; color: var(--navhub-sub); cursor: pointer; font-family: var(--font-body); text-align: left; }
 .navhub-setting-row:hover { background: var(--navhub-surface-soft); color: var(--navhub-text); }
 .navhub-setting-icon { color: var(--navhub-muted); font-size: 15px; text-align: center; }
-.navhub-setting-label { color: var(--navhub-sub); font-size: var(--navhub-nav-size); }
-.navhub-setting-value { color: var(--navhub-muted); font-size: 10px; white-space: nowrap; }
+.navhub-setting-label { min-width: 0; overflow: hidden; color: var(--navhub-sub); font-size: var(--navhub-nav-size); text-overflow: ellipsis; white-space: nowrap; }
+.navhub-setting-value { max-width: 86px; overflow: hidden; color: var(--navhub-muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .navhub-setting-arrow { color: var(--navhub-muted); font-size: 17px; line-height: 1; text-align: right; }
 .navhub-back { display: flex; align-items: center; gap: 7px; min-height: 38px; margin: 9px 1px 0; padding: 0 8px; border-top: 1px solid var(--navhub-line); color: var(--navhub-sub); font-size: var(--navhub-nav-size); text-decoration: none; white-space: nowrap; }
 .navhub-back > span:first-child { flex: 0 0 auto; color: var(--navhub-accent); font-size: 17px; line-height: 1; }
@@ -6812,7 +6812,6 @@ html:not([data-theme="dark"]) .history-page-body .section-title h2 span {
 
   /* 卡片和输入区域改成清晰的白色表面，避免白天模式出现“浅字浅底”。 */
   html:not([data-theme="dark"]) body .glass-card,
-  html:not([data-theme="dark"]) body [class*="card"],
   html:not([data-theme="dark"]) body .mbh-search,
   html:not([data-theme="dark"]) body .mbh-quick,
   html:not([data-theme="dark"]) body .mbh-list .mbh-li,
