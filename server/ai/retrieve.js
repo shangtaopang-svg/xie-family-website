@@ -59,15 +59,25 @@ function isPublicForVisitor(doc) {
 // 上册/下册现在与交付版独立世系图同为原始依据。保留该过滤能力供特殊内部调用，
 // 但正常世系问答不再传入 excludePdf，因此会同时检索交付版结构化记录和谱书原文。
 const PDF_LINEAGE_PREFIXES = ['book1', 'book2', 'extract', 'analysis'];
+// 族谱/氏族关系问题只允许使用后台 canonical 人物记录、上册、下册、
+// 谱书分代整理和基于谱书/后台数据的分析，不能混入其它宣传或新闻文案。
+const GENEALOGY_PREFIXES = ['bio', 'book1', 'book2', 'extract', 'analysis'];
 
 function isPdfDerived(doc) {
   const p = String(doc.id).slice(0, String(doc.id).indexOf(':'));
   return PDF_LINEAGE_PREFIXES.includes(p);
 }
 
+function isGenealogySource(doc) {
+  const id = String(doc && doc.id || '');
+  const separator = id.indexOf(':');
+  const prefix = separator === -1 ? '' : id.slice(0, separator);
+  return GENEALOGY_PREFIXES.includes(prefix);
+}
+
 /**
  * @param {string} query
- * @param {{top?:number, maxChars?:number, publicOnly?:boolean, excludePdf?:boolean}} opts
+ * @param {{top?:number, maxChars?:number, publicOnly?:boolean, excludePdf?:boolean, lineageOnly?:boolean}} opts
  *   publicOnly=true：只返回访客可见文档（公开前缀白名单内，且非世系链图谱），
  *   用于未验证访客——保证其 AI 上下文不含任何族人的个人信息（含世系脉络）。
  *   excludePdf=true：仅在特殊内部调用时剔除 PDF 文档；正常世系问答不使用该选项。
@@ -81,6 +91,7 @@ function search(query, opts) {
   const maxChars = (opts && opts.maxChars) || 3000;
   const publicOnly = !!(opts && opts.publicOnly);
   const excludePdf = !!(opts && opts.excludePdf);
+  const lineageOnly = !!(opts && opts.lineageOnly);
 
   const qBigrams = bigramsOf(q);
   const scores = new Map(); // docId -> score
@@ -122,6 +133,7 @@ function search(query, opts) {
     .filter(r => r.doc)
     .filter(r => !publicOnly || isPublicForVisitor(r.doc))
     .filter(r => !excludePdf || !isPdfDerived(r.doc))
+    .filter(r => !lineageOnly || isGenealogySource(r.doc))
     .sort((a, b) => b.score - a.score);
 
   const out = [];
@@ -135,4 +147,4 @@ function search(query, opts) {
   return out;
 }
 
-module.exports = { search, ensureLoaded, isPdfDerived, PDF_LINEAGE_PREFIXES };
+module.exports = { search, ensureLoaded, isPdfDerived, isGenealogySource, PDF_LINEAGE_PREFIXES, GENEALOGY_PREFIXES };

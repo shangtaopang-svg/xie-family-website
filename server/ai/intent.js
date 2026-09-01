@@ -87,19 +87,18 @@ function isPersonPrivacyRequest(msg, nameIndex) {
 }
 
 /**
- * 判定提问是否「与世系/族人世系信息相关」——用于检索来源过滤（比 isLineageRequest 更宽，
- * 不含身份语义，纯历史问题如「始祖源流」也会命中而剔除 PDF，由公开村史种子作答）。
- * 命中 → document/general 检索路径须剔除 上册/下册 PDF 派生文档，
- * 保证世系图、最亲的人、炎帝到你世系等问题的唯一来源是管理后台-族谱管理数据。
+ * 判定提问是否「与族谱/世系/氏族关系资料相关」——用于检索来源过滤。
+ * 命中后，document/general 检索路径只允许后台 canonical 人物记录、上册/下册、
+ * 族谱整理和族谱分析，不得混入村史宣传文案、纪录片脚本、新闻或文化礼堂资料。
  */
 function isLineageRelated(msg) {
   const m = String(msg || '').trim();
   if (!m) return false;
   if (LINEAGE_KEYWORDS.some(k => m.includes(k))) return true;
+  if (/族谱|宗谱|家谱|世次|世代|辈分|谢氏|谢家|氏族|分支|父系|母系|申伯|东山|下渡|石马|下谢|枫槎本宗|出继|入继|承嗣|炎帝|神农氏|起源|源流|始迁祖|迁徙|字辈/.test(m)) return true;
+  if (/(?:第\s*[0-9零〇一二两三四五六七八九十百]+\s*[世代])/.test(m)) return true;
   // 亲属关系式："A 和 B 什么关系" / "A 和 B 的关系"
   if (/关系/.test(m)) return true;
-  // 炎帝/神农 + 世系脉络（即使没写"世系"二字）
-  if (/炎帝|神农/.test(m) && /世系|一脉|传承|后代|直系|谱系/.test(m)) return true;
   return false;
 }
 

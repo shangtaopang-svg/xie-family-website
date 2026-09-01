@@ -13,6 +13,7 @@ const OVERALL_TERMS = /总人数|从(?:炎帝|神农氏?)(?:到|至).*(?:现在|
 const ALIVE_TERMS = /目前在世|在世|健在|尚在|仍健|生存|未卒/;
 const DEAD_TERMS = /已故|去世|死亡|逝世|亡故|卒|殁/;
 const UNKNOWN_STATUS_TERMS = /待核验|待确认|状态不明|未标注|未知/;
+const LIST_TERMS = /列出|列出来|列一下|名单|名录|清单|哪些人|哪几人|哪几位|人名|具体人员|是谁/;
 const EXPLICIT_GLOBAL_TERMS = /炎帝|神农|统一世次|全族统一|全谱统一/;
 
 // 族谱页面同时保存“炎帝统一世次”（generation_num）和各支系局部世次
@@ -168,6 +169,40 @@ function formatGeneration(stats, generation) {
   return lines.join('\n');
 }
 
+function matchesStatus(person, requestedStatus) {
+  if (!requestedStatus) return true;
+  const status = lifeStatus(person);
+  if (requestedStatus === 'alive') return status === '是';
+  if (requestedStatus === 'dead') return status === '否';
+  if (requestedStatus === 'unknown') return !status || status === '冲突';
+  return true;
+}
+
+function formatGenerationList(stats, generation, requestedStatus) {
+  const bucket = stats.generationStats.get(generation) || emptyGenerationStats();
+  const records = bucket.records.filter((person) => matchesStatus(person, requestedStatus));
+  const statusLabel = requestedStatus === 'alive' ? '目前明确标记为“在世”的'
+    : (requestedStatus === 'dead' ? '明确标记为“已故”的' : (requestedStatus === 'unknown' ? '状态待核验的' : ''));
+  const lines = [
+    `按${stats.source}的全族统一世次字段（generation_num，从炎帝神农氏第1世起算）统计：第${generation}世${statusLabel}共 ${records.length} 人，名单如下：`
+  ];
+  if (records.length) records.forEach((person, index) => lines.push(`${index + 1}. ${person.name}`));
+  else lines.push('当前没有符合条件的 canonical 人物记录。');
+  lines.push(`数据来源：${stats.source}；名单按 canonical 人物 ID 逐条读取，不使用模型推断。`);
+  return lines.join('\n');
+}
+
+function followupGeneration(query, history) {
+  if (!LIST_TERMS.test(query) || !Array.isArray(history)) return null;
+  for (let i = history.length - 1; i >= 0; i -= 1) {
+    const item = history[i];
+    if (!item || typeof item.content !== 'string') continue;
+    const generation = parseGeneration(item.content);
+    if (generation !== null) return generation;
+  }
+  return null;
+}
+
 function formatGenerationStatus(stats, generation, scope, requestedStatus) {
   const bucket = stats.generationStats.get(generation) || emptyGenerationStats();
   const scopeLabel = scope
@@ -210,11 +245,14 @@ function formatXieCumulative(stats, generations) {
 }
 
 /** 返回 null 表示不是本模块负责的问题。 */
-function answer(query) {
+function answer(query, options) {
   const q = text(query);
-  if (!q || !COUNT_TERMS.test(q)) return null;
+  const isListQuestion = LIST_TERMS.test(q);
+  if (!q || (!COUNT_TERMS.test(q) && !isListQuestion)) return null;
 
-  const generation = parseGeneration(q);
+  const directGeneration = parseGeneration(q);
+  const generation = directGeneration === null ? followupGeneration(q, options && options.history) : directGeneration;
+  const isList = isListQuestion && generation !== null;
   const isOverall = OVERALL_TERMS.test(q) || (/炎帝|神农/.test(q) && /多少人|总共|一共|共有|人数|数量/.test(q) && !generation);
   if (!isOverall && generation === null) return null;
 
@@ -228,10 +266,12 @@ function answer(query) {
   const scopedGeneration = localGeneration !== null ? localGeneration + localScope.offset : generation;
   return {
     ok: true,
-    factType: isOverall ? 'genealogy-total' : (isXieCumulative ? 'genealogy-generation-range-count' : (requestedStatus ? 'genealogy-generation-status-count' : 'genealogy-generation-count')),
-    answer: isOverall ? formatOverall(stats) : (isXieCumulative
-      ? formatXieCumulative(stats, generation)
-      : (requestedStatus || localScope ? formatGenerationStatus(stats, scopedGeneration, localScope && { ...localScope, localGeneration }, requestedStatus) : formatGeneration(stats, generation))),
+    factType: isOverall ? 'genealogy-total' : (isList ? 'genealogy-generation-list' : (isXieCumulative ? 'genealogy-generation-range-count' : (requestedStatus ? 'genealogy-generation-status-count' : 'genealogy-generation-count'))),
+    answer: isOverall ? formatOverall(stats) : (isList
+      ? formatGenerationList(stats, scopedGeneration, requestedStatus)
+      : (isXieCumulative
+        ? formatXieCumulative(stats, generation)
+        : (requestedStatus || localScope ? formatGenerationStatus(stats, scopedGeneration, localScope && { ...localScope, localGeneration }, requestedStatus) : formatGeneration(stats, generation)))),
     sources: [stats.source]
   };
 }

@@ -37,6 +37,7 @@ setTimeout(() => {
       path.join(DATA_DIR, 'genealogy_analysis.txt'),
       path.join(__dirname, '上册_竖排提取.txt'),
       path.join(__dirname, '下册_竖排提取.txt'),
+      path.join(__dirname, 'scripts', 'build-ai-knowledge.js'),
       path.join(__dirname, 'scripts', 'ai-seeds.js'),
     ];
     const need = !fs.existsSync(kbPath)

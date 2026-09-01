@@ -140,7 +140,7 @@ function buildKnowledge() {
     ].filter(Boolean).join('；');
     if (details) {
       bioCount++;
-      documents.push({ id: 'bio:' + p.id, ref: '交付版独立世系图·' + p.name, text: details });
+      documents.push({ id: 'bio:' + p.id, ref: '族谱管理后台 canonical 数据·' + p.name, text: details });
     }
   }
 
