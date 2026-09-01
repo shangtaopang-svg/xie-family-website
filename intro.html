@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script defer src="js/i18n.js?v=20260901-lang-05"></script>
   <title>下枫槎 · 数字乡村</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -291,7 +292,7 @@
           </div>
           <input type="text" placeholder="宗族/村庄名称" class="form-input">
           <textarea placeholder="您的需求..." class="form-input form-textarea"></textarea>
-          <button type="button" class="form-btn" onclick="alert('感谢您的咨询！请直接发送邮件至 shangtaopang@gmail.com')">发送咨询 ✉</button>
+          <button type="button" class="form-btn" id="intro-contact-submit">发送咨询 ✉</button>
         </form>
       </div>
       <div class="contact-side fade-right">
@@ -332,8 +333,19 @@ document.addEventListener('DOMContentLoaded', function() {
   if (el && typeof L !== 'undefined') {
     var m = L.map(el, { zoomControl: false }).setView([29.292, 121.431], 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(m);
-    L.marker([29.292, 121.431]).addTo(m).bindPopup('宁海县北斗北路81弄11号');
+    var popupText = window.getLang && window.getLang() === 'en' ? 'No. 11, Lane 81, Beidou North Road, Ninghai, Zhejiang' : '宁海县北斗北路81弄11号';
+    L.marker([29.292, 121.431]).addTo(m).bindPopup(popupText);
   }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  var submit = document.getElementById('intro-contact-submit');
+  if (submit) submit.addEventListener('click', function() {
+    var message = window.getLang && window.getLang() === 'en'
+      ? 'Thank you for your inquiry! Please email shangtaopang@gmail.com directly.'
+      : '感谢您的咨询！请直接发送邮件至 shangtaopang@gmail.com';
+    alert(message);
+  });
 });
 
 // Scroll animations
