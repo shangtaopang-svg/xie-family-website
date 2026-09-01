@@ -6581,3 +6581,211 @@ html:not([data-theme="dark"]) .history-page-body .section-title h2 span {
     color: #24313a !important;
   }
 }
+
+/* ===== 手机端白天模式：全站文字可读性统一 =====
+   原移动端规则为夜间模式设计，标题仍使用浅金色、辅助文字仍使用灰白色；
+   切换到白天模式后会与浅色背景混在一起。这里在所有页面的最后统一收口，
+   只作用于白天模式，夜间模式保持原有黑底浅字层次。 */
+@media (max-width: 768px) {
+  html:not([data-theme="dark"]) {
+    --mb-bg: #f6f7f8;
+    --mb-brand: #8d4e1f;
+    --mb-brand-dim: #f3e9df;
+    --mb-brand-strong: #8d4e1f;
+    --mb-card: #ffffff;
+    --mb-card2: #f1f4f6;
+    --mb-border: #d6dee3;
+    --mb-text: #23313a;
+    --mb-sub: #4f5d66;
+    --mb-muted: #687780;
+    --text-primary: #23313a;
+    --text-secondary: #4f5d66;
+    --text-tertiary: #687780;
+    --text-muted: #7b878e;
+    --accent-orange: #a45d1f;
+    --accent-orange-dim: rgba(164, 93, 31, .12);
+    --glass-bg: #ffffff;
+    --glass-border: rgba(35, 49, 58, .14);
+    --glass-hover: #f1f4f6;
+    --divider: rgba(35, 49, 58, .12);
+  }
+
+  html:not([data-theme="dark"]),
+  html:not([data-theme="dark"]) body,
+  html:not([data-theme="dark"]) body .content,
+  html:not([data-theme="dark"]) body .mb-home,
+  html:not([data-theme="dark"]) body .mb-story-home {
+    background: #f6f7f8 !important;
+    color: #23313a !important;
+    background-image: none !important;
+  }
+
+  /* 标题、正文、表格与说明文字：不再使用浅金和近白灰。 */
+  html:not([data-theme="dark"]) body h1,
+  html:not([data-theme="dark"]) body h2,
+  html:not([data-theme="dark"]) body h3,
+  html:not([data-theme="dark"]) body h4,
+  html:not([data-theme="dark"]) body h5,
+  html:not([data-theme="dark"]) body h6,
+  html:not([data-theme="dark"]) body .mbh-title,
+  html:not([data-theme="dark"]) body .page-title h2,
+  html:not([data-theme="dark"]) body .section-title h2 {
+    color: #7d481d !important;
+    text-shadow: none !important;
+  }
+  html:not([data-theme="dark"]) body p,
+  html:not([data-theme="dark"]) body li,
+  html:not([data-theme="dark"]) body td,
+  html:not([data-theme="dark"]) body th,
+  html:not([data-theme="dark"]) body label,
+  html:not([data-theme="dark"]) body small,
+  html:not([data-theme="dark"]) body .text-secondary,
+  html:not([data-theme="dark"]) body .text-tertiary,
+  html:not([data-theme="dark"]) body .text-muted {
+    color: #4f5d66 !important;
+  }
+  html:not([data-theme="dark"]) body strong,
+  html:not([data-theme="dark"]) body b,
+  html:not([data-theme="dark"]) body em {
+    color: #23313a !important;
+  }
+  html:not([data-theme="dark"]) body a {
+    color: #8d4e1f !important;
+  }
+  /* 探索页导航沿用其自己的黑色/灰色文字体系，不被全站链接色覆盖。 */
+  html:not([data-theme="dark"]) body .navhub-brand > span:last-child,
+  html:not([data-theme="dark"]) body .navhub-brand b,
+  html:not([data-theme="dark"]) body .navhub-nav a,
+  html:not([data-theme="dark"]) body .navhub-nav a b,
+  html:not([data-theme="dark"]) body .navhub-back,
+  html:not([data-theme="dark"]) body .navhub-back > span:last-child,
+  html:not([data-theme="dark"]) body .navhub-content-top a,
+  html:not([data-theme="dark"]) body .navhub-content-top a > span {
+    color: var(--navhub-sub) !important;
+  }
+  html:not([data-theme="dark"]) body .navhub-detail h1 {
+    color: var(--navhub-text) !important;
+  }
+  html:not([data-theme="dark"]) body input,
+  html:not([data-theme="dark"]) body textarea,
+  html:not([data-theme="dark"]) body select {
+    color: #23313a !important;
+    background: #ffffff !important;
+    border-color: #cbd5da !important;
+  }
+  html:not([data-theme="dark"]) body input::placeholder,
+  html:not([data-theme="dark"]) body textarea::placeholder {
+    color: #687780 !important;
+    opacity: 1;
+  }
+
+  /* 卡片和输入区域改成清晰的白色表面，避免白天模式出现“浅字浅底”。 */
+  html:not([data-theme="dark"]) body .glass-card,
+  html:not([data-theme="dark"]) body [class*="card"],
+  html:not([data-theme="dark"]) body .mbh-search,
+  html:not([data-theme="dark"]) body .mbh-quick,
+  html:not([data-theme="dark"]) body .mbh-list .mbh-li,
+  html:not([data-theme="dark"]) body .mbh-quick-bar,
+  html:not([data-theme="dark"]) body .activity-card,
+  html:not([data-theme="dark"]) body .doc-card,
+  html:not([data-theme="dark"]) body .committee-card,
+  html:not([data-theme="dark"]) body .party-card,
+  html:not([data-theme="dark"]) body .tl-item,
+  html:not([data-theme="dark"]) body .ancestor-card,
+  html:not([data-theme="dark"]) body .member-card {
+    background: #ffffff !important;
+    border-color: #d6dee3 !important;
+    box-shadow: 0 4px 16px rgba(35, 49, 58, .06) !important;
+  }
+
+  /* 按钮使用深暖棕作为主色，白字在手机屏幕上更稳定。 */
+  html:not([data-theme="dark"]) body .mbh-search-btn,
+  html:not([data-theme="dark"]) body .mbh-pill-active,
+  html:not([data-theme="dark"]) body .mbh-enter-btn,
+  html:not([data-theme="dark"]) body .genealogy-tools button,
+  html:not([data-theme="dark"]) body #clan-yes,
+  html:not([data-theme="dark"]) body .mb-show-main .hbg-btn.active,
+  html:not([data-theme="dark"]) body .mb-show-main .mb-back-entrance,
+  html:not([data-theme="dark"]) body .mb-btn-primary,
+  html:not([data-theme="dark"]) body .navhub-enter {
+    background: #8d4e1f !important;
+    color: #ffffff !important;
+  }
+  html:not([data-theme="dark"]) body .mbh-pill:not(.mbh-pill-active) {
+    background: #ffffff !important;
+    border-color: #8d4e1f !important;
+    color: #8d4e1f !important;
+  }
+  html:not([data-theme="dark"]) body .mbh-pill-members {
+    border-color: #73b795 !important;
+    color: #2d6a4b !important;
+  }
+  html:not([data-theme="dark"]) body .mbh-qicon {
+    background: #8d4e1f !important;
+    color: #ffffff !important;
+  }
+  html:not([data-theme="dark"]) body .mbh-li-arrow,
+  html:not([data-theme="dark"]) body .mbh-qb-arrow,
+  html:not([data-theme="dark"]) body .mbs-hero-kicker,
+  html:not([data-theme="dark"]) body .mbs-story-label {
+    color: #8d4e1f !important;
+    opacity: 1 !important;
+  }
+
+  /* 首页与开启页的辅助文字。 */
+  html:not([data-theme="dark"]) body .mbh-welcome,
+  html:not([data-theme="dark"]) body .mbh-search-input,
+  html:not([data-theme="dark"]) body .mbh-qlabel,
+  html:not([data-theme="dark"]) body .mbh-qb-sub,
+  html:not([data-theme="dark"]) body .hero-sub,
+  html:not([data-theme="dark"]) body .hero-stat-label,
+  html:not([data-theme="dark"]) body .mbs-location,
+  html:not([data-theme="dark"]) body .mbs-entry-hint,
+  html:not([data-theme="dark"]) body .mbs-scroll-note {
+    color: #4f5d66 !important;
+  }
+  html:not([data-theme="dark"]) body .mbh-search-input::placeholder {
+    color: #687780 !important;
+  }
+  html:not([data-theme="dark"]) body .mbs-theme-toggle span:first-child {
+    color: #8d4e1f !important;
+  }
+  html:not([data-theme="dark"]) body .mbs-entry-labels,
+  html:not([data-theme="dark"]) body .mbs-entry-labels span {
+    color: #43515a !important;
+  }
+  html:not([data-theme="dark"]) body .mb-show-main .hbg-btn {
+    background: #ffffff !important;
+    color: #4f5d66 !important;
+  }
+  html:not([data-theme="dark"]) body .mbh-hero-title,
+  html:not([data-theme="dark"]) body .mbh-hero-caption,
+  html:not([data-theme="dark"]) body .mbs-hero-copy h1,
+  html:not([data-theme="dark"]) body .mbs-hero-copy p,
+  html:not([data-theme="dark"]) body .mbs-scene-count,
+  html:not([data-theme="dark"]) body .mbs-entry-thumb,
+  html:not([data-theme="dark"]) body .mbs-entry-thumb b,
+  html:not([data-theme="dark"]) body .mbs-entry-thumb i {
+    color: #ffffff !important;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, .72) !important;
+  }
+  html:not([data-theme="dark"]) body .mbh-hero-kicker,
+  html:not([data-theme="dark"]) body .mbs-hero-kicker {
+    background: rgba(255, 255, 255, .82) !important;
+    border-color: rgba(141, 78, 31, .42) !important;
+    text-shadow: none !important;
+  }
+
+  /* 既有移动端页面中直接写死的灰色辅助文字也统一提升对比度。 */
+  html:not([data-theme="dark"]) body .activity-card p,
+  html:not([data-theme="dark"]) body .activity-card div:not([class*="ac-"]),
+  html:not([data-theme="dark"]) body .doc-card p,
+  html:not([data-theme="dark"]) body .committee-card p,
+  html:not([data-theme="dark"]) body .party-card p,
+  html:not([data-theme="dark"]) body .tl-item,
+  html:not([data-theme="dark"]) body #members-grid .member-card .info,
+  html:not([data-theme="dark"]) body .ancestor-card .info,
+  html:not([data-theme="dark"]) body .ancestor-card span:not(.name) {
+    color: #4f5d66 !important;
+  }
+}
