@@ -6057,8 +6057,8 @@ li:has(> a[href*="admin.html"]) {
   .mbs-entry-switch:active { cursor: grabbing; }
   .mbs-entry-labels { display: grid; grid-template-columns: 1fr 1fr; align-items: center; min-height: 46px; color: rgba(243, 240, 231, .62); font-size: 12px; font-weight: 650; }
   .mbs-entry-labels span { overflow: hidden; padding: 0 7px; text-overflow: ellipsis; white-space: nowrap; }
-  .mbs-entry-labels span:first-child { text-align: left; }
-  .mbs-entry-labels span:last-child { text-align: right; }
+  .mbs-entry-labels span:first-child,
+  .mbs-entry-labels span:last-child { text-align: center; }
   .mbs-entry-thumb { position: absolute; inset: 0 auto 0 0; display: flex; align-items: center; justify-content: center; gap: 8px; width: 50%; height: auto; border-radius: 17px; background: var(--mb-brand-strong, #c9a84c); color: #1a180f; box-shadow: 0 7px 15px rgba(201, 168, 76, .2); pointer-events: none; transition: transform .28s cubic-bezier(.22, 1, .36, 1), background .2s ease; }
   /* 滑块贴合外框内沿，避免左右和上下出现黑色缝隙。 */
   .mbs-entry-switch[data-choice="genealogy"] .mbs-entry-thumb { transform: translateX(100%); }
