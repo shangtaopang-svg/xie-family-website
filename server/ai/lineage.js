@@ -703,10 +703,14 @@ function resolveNameCandidates(query, selfId) {
     let biologicalFatherName = '';
     let adoptiveFatherName = '';
     let relationSource = '';
+    // 普通族人没有出继/入继配对时，这两个变量也必须保持为 null；
+    // 候选返回结构会统一读取它们，不能只在 adoption 分支内声明。
+    let biologicalFather = null;
+    let adoptiveFather = null;
     if (adoption) {
       const outPerson = byId.get(adoption.outId);
-      const biologicalFather = outPerson && outPerson.father_id ? byId.get(Number(outPerson.father_id)) : null;
-      const adoptiveFather = byId.get(adoption.adoptiveParentId);
+      biologicalFather = outPerson && outPerson.father_id ? byId.get(Number(outPerson.father_id)) : null;
+      adoptiveFather = byId.get(adoption.adoptiveParentId);
       adoptionRole = adoption.outId === Number(p.id) ? 'biological' : 'adoptive';
       biologicalFatherName = biologicalFather ? biologicalFather.name : '';
       adoptiveFatherName = adoptiveFather ? adoptiveFather.name : '';
