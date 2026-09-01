@@ -5793,6 +5793,104 @@ li:has(> a[href*="admin.html"]) {
   }
 }
 
+/* ===== 开启页：墨绿色入口与更明确的滑动反馈 ===== */
+@media (max-width: 768px) {
+  body:has(.mb-story-home) {
+    --mb-ink: #205645;
+    --mb-ink-deep: #173d32;
+    --mb-ink-border: #83a997;
+  }
+
+  body:has(.mb-story-home) .mbs-mark {
+    background: linear-gradient(145deg, #2f6d57, #1b493a) !important;
+    border-color: #7da892 !important;
+    color: #ffffff !important;
+    box-shadow: 0 5px 12px rgba(32, 86, 69, .2);
+  }
+  body:has(.mb-story-home) .mbs-story-label,
+  body:has(.mb-story-home) .mbs-scroll-note,
+  html:not([data-theme="dark"]) body:has(.mb-story-home) .mbs-story-label {
+    color: var(--mb-ink) !important;
+    -webkit-text-fill-color: var(--mb-ink) !important;
+  }
+  body:has(.mb-story-home) .mbs-hero-kicker {
+    border-color: rgba(126, 169, 147, .72) !important;
+  }
+  body:has(.mb-story-home) .mbs-entry-switch {
+    border-color: var(--mb-ink-border) !important;
+    background: linear-gradient(110deg, rgba(255,255,255,.98), rgba(239,247,243,.98)) !important;
+    box-shadow: 0 8px 20px rgba(32, 86, 69, .12), inset 0 0 0 1px rgba(255,255,255,.72);
+    transition: border-color .24s ease, box-shadow .24s ease, transform .18s ease;
+  }
+  body:has(.mb-story-home) .mbs-entry-switch:hover,
+  body:has(.mb-story-home) .mbs-entry-switch:focus-visible {
+    border-color: var(--mb-ink) !important;
+    box-shadow: 0 10px 24px rgba(32, 86, 69, .18), 0 0 0 3px rgba(32, 86, 69, .1);
+    outline: none;
+  }
+  body:has(.mb-story-home) .mbs-entry-switch:active {
+    transform: scale(.985);
+  }
+  body:has(.mb-story-home) .mbs-entry-thumb {
+    --mbs-thumb-progress: 0;
+    overflow: hidden;
+    transform: translateX(calc(var(--mbs-thumb-progress) * 100%)) !important;
+    border-radius: 17px;
+    background: linear-gradient(135deg, #32735b 0%, #205645 54%, #173d32 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 18px rgba(23, 61, 50, .25), inset 0 1px 0 rgba(255,255,255,.2);
+    transition: transform .38s cubic-bezier(.22, 1, .36, 1), filter .22s ease, box-shadow .22s ease;
+  }
+  body:has(.mb-story-home) .mbs-entry-thumb::after {
+    content: '';
+    position: absolute;
+    top: -35%;
+    left: -42%;
+    width: 30%;
+    height: 170%;
+    background: linear-gradient(105deg, transparent, rgba(255,255,255,.34), transparent);
+    transform: skewX(-18deg);
+    animation: mbsThumbSheen 4.2s ease-in-out infinite;
+    pointer-events: none;
+  }
+  body:has(.mb-story-home) .mbs-entry-thumb.is-dragging {
+    filter: brightness(1.08) saturate(1.08);
+    box-shadow: 0 10px 22px rgba(23, 61, 50, .32), inset 0 1px 0 rgba(255,255,255,.26);
+    transition: none;
+  }
+  body:has(.mb-story-home) .mbs-entry-thumb b,
+  body:has(.mb-story-home) .mbs-entry-thumb i {
+    position: relative;
+    z-index: 1;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
+  body:has(.mb-story-home) .mbs-dots button.active {
+    background: var(--mb-ink) !important;
+    box-shadow: 0 0 0 3px rgba(32, 86, 69, .12);
+  }
+  body:has(.mb-story-home) #ai-fab {
+    background: linear-gradient(145deg, #3b7c63, #1b493a) !important;
+    box-shadow: 0 7px 22px rgba(23, 61, 50, .3), 0 0 0 1px rgba(126, 169, 147, .4) !important;
+  }
+  body:has(.mb-story-home) #ai-fab .ai-bubble {
+    color: var(--mb-ink) !important;
+  }
+  body:has(.mb-story-home) #ai-fab .ai-bubble-close {
+    background: linear-gradient(145deg, #3b7c63, #1b493a) !important;
+  }
+}
+
+@keyframes mbsThumbSheen {
+  0%, 22% { transform: translateX(-160%) skewX(-18deg); opacity: 0; }
+  35% { opacity: .8; }
+  58%, 100% { transform: translateX(470%) skewX(-18deg); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body:has(.mb-story-home) .mbs-entry-thumb::after { animation: none; }
+}
+
 /* 族谱树页面保留圆球作为入口，但不让问候气泡遮住树区、缩放控件和图例。 */
 @media (max-width: 600px) {
   body.legacy-tree-page #ai-fab .ai-bubble {
@@ -7251,5 +7349,47 @@ html:not([data-theme="dark"]) body a.back-page-btn:focus-visible {
     color: #85501f !important;
     -webkit-text-fill-color: #85501f !important;
     text-shadow: none !important;
+  }
+}
+
+/* 开启页墨绿色主题的最终覆盖：放在全站白天模式规则之后，确保棕色旧样式不再抢回优先级。 */
+@media (max-width: 768px) {
+  body:has(.mb-story-home) .mbs-mark {
+    background: linear-gradient(145deg, #2f6d57, #1b493a) !important;
+    border-color: #7da892 !important;
+    color: #ffffff !important;
+  }
+  body:has(.mb-story-home) .mbs-story-label,
+  body:has(.mb-story-home) .mbs-scroll-note {
+    color: #205645 !important;
+    -webkit-text-fill-color: #205645 !important;
+  }
+  body:has(.mb-story-home) .mbs-hero-kicker {
+    border-color: rgba(126, 169, 147, .72) !important;
+  }
+  body:has(.mb-story-home) .mbs-entry-switch {
+    border-color: #83a997 !important;
+    background: linear-gradient(110deg, rgba(255,255,255,.98), rgba(239,247,243,.98)) !important;
+    box-shadow: 0 8px 20px rgba(32,86,69,.12), inset 0 0 0 1px rgba(255,255,255,.72) !important;
+  }
+  body:has(.mb-story-home) .mbs-entry-switch:hover,
+  body:has(.mb-story-home) .mbs-entry-switch:focus-visible {
+    border-color: #205645 !important;
+    box-shadow: 0 10px 24px rgba(32,86,69,.18), 0 0 0 3px rgba(32,86,69,.1) !important;
+  }
+  body:has(.mb-story-home) .mbs-entry-thumb {
+    background: linear-gradient(135deg, #32735b 0%, #205645 54%, #173d32 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 18px rgba(23,61,50,.25), inset 0 1px 0 rgba(255,255,255,.2) !important;
+  }
+  body:has(.mb-story-home) .mbs-dots button.active {
+    background: #205645 !important;
+  }
+  body:has(.mb-story-home) #ai-fab {
+    background: linear-gradient(145deg, #3b7c63, #1b493a) !important;
+    box-shadow: 0 7px 22px rgba(23,61,50,.3), 0 0 0 1px rgba(126,169,147,.4) !important;
+  }
+  body:has(.mb-story-home) #ai-fab .ai-bubble-close {
+    background: linear-gradient(145deg, #3b7c63, #1b493a) !important;
   }
 }

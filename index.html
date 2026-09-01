@@ -9,7 +9,7 @@
   <title data-i18n="site.title">宁海下枫槎村 · 谢氏家族</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="css/style.css?v=20260901-entry-switch-05">
+  <link rel="stylesheet" href="css/style.css?v=20260901-entry-switch-06">
   <style>
     /* Carousel mobile fix - ensure slides have height */
     .carousel-container { aspect-ratio: 21/9; overflow: hidden; }
@@ -242,6 +242,7 @@
   var startX = 0;
   var startY = 0;
   var pointerId = null;
+  var thumb = document.getElementById('mbsEntryThumb');
   function sync(){
     var item = choices[choice];
     var lang = 'zh';
@@ -258,6 +259,20 @@
     choice = next === 1 ? 1 : 0;
     sync();
   }
+  function updateDrag(clientX){
+    if (!thumb) return;
+    var rect = control.getBoundingClientRect();
+    var half = Math.max(1, rect.width / 2);
+    var base = choice * half;
+    var next = Math.max(0, Math.min(rect.width - half, base + clientX - startX));
+    thumb.style.setProperty('--mbs-thumb-progress', (next / half).toFixed(4));
+    thumb.classList.add('is-dragging');
+  }
+  function clearDrag(){
+    if (!thumb) return;
+    thumb.classList.remove('is-dragging');
+    thumb.style.removeProperty('--mbs-thumb-progress');
+  }
   function openChoice(){
     try { sessionStorage.setItem('back_to', window.location.href); } catch (e) {}
     window.location.href = choices[choice].url;
@@ -267,6 +282,9 @@
     startX = e.clientX;
     startY = e.clientY;
     control.setPointerCapture(pointerId);
+  });
+  control.addEventListener('pointermove', function(e){
+    if (pointerId === e.pointerId) updateDrag(e.clientX);
   });
   control.addEventListener('pointerup', function(e){
     if (pointerId !== e.pointerId) return;
@@ -281,10 +299,11 @@
       setChoice(e.clientX - rect.left > rect.width / 2 ? 1 : 0);
       openChoice();
     }
+    clearDrag();
     pointerId = null;
     try { control.releasePointerCapture(e.pointerId); } catch (_) {}
   });
-  control.addEventListener('pointercancel', function(){ pointerId = null; });
+  control.addEventListener('pointercancel', function(){ clearDrag(); pointerId = null; });
   control.addEventListener('keydown', function(e){
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       e.preventDefault();
