@@ -93,7 +93,6 @@
         '<button onclick="window.changeVolume&&changeVolume(-0.2)" title="音量-">🔉</button>' +
         '<button onclick="window.changeVolume&&changeVolume(0.2)" title="音量+">🔊</button>' +
         '<span class="sep"></span>' +
-        '<button class="language-toggle" onclick="window.toggleLanguage&&toggleLanguage()" title="English/中文">EN</button>' +
       '</div>' +
       '<a href="' + root() + 'index.html">✦ 返回首页</a>' +
     '</div>';

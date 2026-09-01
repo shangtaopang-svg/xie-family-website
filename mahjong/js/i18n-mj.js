@@ -1,5 +1,5 @@
 /* ============================================
-   宁海三中98届麻将交流群 — 中英文切换
+   宁海三中98届麻将交流群 — 翻译兼容层
    ============================================ */
 
 const MJ_TRANSLATIONS = {
@@ -25,14 +25,16 @@ const MJ_TRANSLATIONS = {
   'weekday.6': { zh: '星期六', en: 'Saturday' },
 };
 
-var mjLang = localStorage.getItem('xie_lang') || 'zh';
+// 语言切换入口已取消，麻将页面统一使用简体中文。
+var mjLang = 'zh';
 
 function getMjLang() { return mjLang; }
 
 function toggleMjLang() {
-  mjLang = mjLang === 'zh' ? 'en' : 'zh';
-  localStorage.setItem('xie_lang', mjLang);
-  applyMjLang();
+  // 保留全局函数以兼容旧缓存脚本，但不再允许切换语言。
+  mjLang = 'zh';
+  try { localStorage.removeItem('xie_lang'); } catch (e) {}
+  return false;
 }
 
 function applyMjLang() {
@@ -53,8 +55,6 @@ function applyMjLang() {
     }
   });
   document.title = MJ_TRANSLATIONS['site.title'][lang] || '宁海三中98届麻将交流群';
-  var btn = document.getElementById('lang-btn');
-  if (btn) btn.textContent = lang === 'zh' ? 'EN' : '中';
   updateHeroDate(lang);
 }
 

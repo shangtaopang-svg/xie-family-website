@@ -205,13 +205,6 @@ body {
   background: var(--glass-hover);
   color: var(--text-primary);
 }
-.sidebar-btn.lang-btn {
-  width: auto;
-  padding: 0 8px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
 .sidebar-btn.active {
   color: var(--accent-orange);
   border-color: rgba(212,119,58,0.3);
