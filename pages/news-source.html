@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f6f7f8" id="source-theme-color">
   <title>原文查看 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-  <script defer src="../js/i18n.js?v=20260901-lang-02"></script>
+  <script defer src="../js/i18n.js?v=20260901-lang-03"></script>
   <script>
     try {
       if ((localStorage.getItem('xie_theme') || localStorage.getItem('theme')) === 'dark') {
@@ -80,7 +80,70 @@
       font-size: 12px;
       line-height: 1.5;
     }
-    .news-source-frame { display: block; flex: 1 1 auto; width: 100%; min-height: 0; border: 0; background: #fff; }
+    .news-source-preview {
+      flex: 0 0 auto;
+      margin: 18px 24px 16px;
+      padding: 20px 22px 22px;
+      border: 1px solid rgba(184,135,84,.32);
+      border-radius: 14px;
+      background: var(--bg-card, #fff);
+      box-shadow: 0 8px 24px rgba(35,49,58,.06);
+    }
+    .news-source-preview-kicker {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: #85501f;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .news-source-preview-badge {
+      color: #687780;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    .news-source-preview h1 {
+      margin: 12px 0 8px;
+      color: var(--text-primary, #23313a);
+      font: 700 clamp(20px, 3vw, 30px)/1.35 var(--font-title, sans-serif);
+    }
+    .news-source-preview-meta {
+      margin-bottom: 16px;
+      color: var(--text-tertiary, #687780);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .news-source-preview-content {
+      color: var(--text-secondary, #45545d);
+      font-size: 15px;
+      line-height: 2;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .news-source-preview-note {
+      margin-top: 18px;
+      padding-top: 12px;
+      border-top: 1px solid var(--divider, rgba(35,49,58,.1));
+      color: var(--text-tertiary, #687780);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .news-source-frame-section {
+      flex: 0 0 auto;
+      padding: 0 24px 24px;
+    }
+    .news-source-frame-label {
+      margin: 0 0 8px;
+      color: var(--text-secondary, #45545d);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .news-source-frame { display: block; width: 100%; height: min(58vh, 680px); min-height: 320px; border: 1px solid var(--glass-border, rgba(35,49,58,.14)); border-radius: 12px; background: #fff; }
     .news-source-empty { padding: 24px; color: #687780; font-size: 14px; text-align: center; }
     [data-theme="dark"] body.news-source-page { background: #000; color: #f2f0ea; }
     [data-theme="dark"] .news-source-toolbar { border-bottom-color: #2b2b2b; background: #101010; box-shadow: none; }
@@ -91,6 +154,10 @@
     [data-theme="dark"] .news-source-empty { color: #a5aaa0; }
     [data-theme="dark"] .news-source-open { color: #e8c97a; }
     [data-theme="dark"] .news-source-notice { border-bottom-color: #2b2b2b; background: #0b0b0b; }
+    [data-theme="dark"] .news-source-preview { border-color: #5f4929; background: #111; box-shadow: none; }
+    [data-theme="dark"] .news-source-preview-kicker { color: #e8c97a; }
+    [data-theme="dark"] .news-source-preview-content { color: #d8d8d2; }
+    [data-theme="dark"] .news-source-frame-label { color: #c6cbc4; }
     @media (max-width: 768px) {
       .news-source-toolbar { gap: 9px; min-height: 60px; padding: 9px 12px; }
       .news-source-back { min-height: 36px; padding: 0 12px; font-size: 13px; }
@@ -98,6 +165,11 @@
       .news-source-title span { font-size: 11px; }
       .news-source-open { font-size: 12px; }
       .news-source-notice { padding: 7px 12px; font-size: 11px; }
+      .news-source-preview { margin: 12px 12px 12px; padding: 16px 15px 18px; border-radius: 12px; }
+      .news-source-preview h1 { margin-top: 9px; font-size: 20px; }
+      .news-source-preview-content { font-size: 14px; line-height: 1.85; }
+      .news-source-frame-section { padding: 0 12px 18px; }
+      .news-source-frame { height: 52vh; min-height: 260px; border-radius: 10px; }
     }
   </style>
 </head>
@@ -109,11 +181,21 @@
         <strong>新闻原文</strong>
         <span id="news-source-host">正在加载…</span>
       </div>
-      <a class="news-source-open" id="news-source-open" href="#">打开原网站 ↗</a>
+      <a class="news-source-open" id="news-source-open" href="#" target="_blank" rel="noopener noreferrer">打开原网站 ↗</a>
     </header>
     <main class="news-source-main">
       <div class="news-source-notice">原文由来源网站提供；如页面未显示，请点击右上角“打开原网站”。</div>
-      <iframe class="news-source-frame" id="news-source-frame" title="新闻原文" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      <section class="news-source-preview" id="news-source-preview" hidden>
+        <div class="news-source-preview-kicker"><span>本站保存的报道内容</span><span class="news-source-preview-badge">后台新闻数据</span></div>
+        <h1 id="news-source-preview-title"></h1>
+        <div class="news-source-preview-meta" id="news-source-preview-meta"></div>
+        <div class="news-source-preview-content" id="news-source-preview-content"></div>
+        <div class="news-source-preview-note">以下内容来自本站后台保存的报道资料；右侧“打开原网站”可查看来源页面。</div>
+      </section>
+      <section class="news-source-frame-section">
+        <div class="news-source-frame-label">原文页面</div>
+        <iframe class="news-source-frame" id="news-source-frame" title="新闻原文" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      </section>
       <div class="news-source-empty" id="news-source-empty" hidden>没有找到有效的原文链接。</div>
     </main>
   </div>
@@ -122,11 +204,17 @@
       var params = new URLSearchParams(window.location.search);
       var sourceUrl = params.get('url') || '';
       var from = params.get('from') === 'news' ? 'news.html' : 'reports.html';
+      var sourceId = params.get('id') || '';
       var backBtn = document.getElementById('news-source-back');
       var frame = document.getElementById('news-source-frame');
       var openLink = document.getElementById('news-source-open');
       var host = document.getElementById('news-source-host');
       var empty = document.getElementById('news-source-empty');
+      var preview = document.getElementById('news-source-preview');
+      var previewTitle = document.getElementById('news-source-preview-title');
+      var previewMeta = document.getElementById('news-source-preview-meta');
+      var previewContent = document.getElementById('news-source-preview-content');
+      var frameSection = document.querySelector('.news-source-frame-section');
 
       function isHttpUrl(value) {
         try {
@@ -153,15 +241,61 @@
         window.location.replace(target);
       });
 
-      // 外部原文在当前标签页打开，保留浏览器返回历史：
-      // 原文网站没有权限显示本站按钮，不能再用新标签页把用户带离本站返回链路。
+      // 外部原文在新标签页打开，当前本站页面保持不变，用户可直接返回新闻报道。
       openLink.addEventListener('click', function () {
         try { sessionStorage.setItem('news_source_return', getReturnUrl()); } catch (e) {}
       });
 
+      function normalisePreview(item) {
+        if (!item || typeof item !== 'object') return null;
+        return {
+          id: item.id,
+          title: item.title || '',
+          date: item.date || '',
+          source: item.source || '',
+          author: item.author || '',
+          content: item.content || '',
+          url: item.url || ''
+        };
+      }
+
+      function isMatchingPreview(item) {
+        if (!item) return false;
+        if (sourceId && item.id != null && String(item.id) === sourceId) return true;
+        return !!sourceUrl && item.url === sourceUrl;
+      }
+
+      function renderPreview(item) {
+        item = normalisePreview(item);
+        if (!item || (!item.title && !item.content)) return false;
+        previewTitle.textContent = item.title || '新闻报道';
+        var meta = [item.date, item.source, item.author ? '发布人：' + item.author : ''].filter(Boolean);
+        previewMeta.textContent = meta.join(' · ');
+        previewContent.textContent = item.content || '这篇报道暂未保存正文。';
+        preview.hidden = false;
+        return true;
+      }
+
+      function loadPreview() {
+        var cached = null;
+        try { cached = normalisePreview(JSON.parse(sessionStorage.getItem('news_source_preview') || 'null')); } catch (e) {}
+        if (isMatchingPreview(cached) && renderPreview(cached)) return;
+        if (!sourceId) return;
+        var endpoint = from === 'news.html' ? '/api/data/news' : '/api/data/reports';
+        fetch(endpoint, { cache: 'no-store' }).then(function (response) {
+          if (!response.ok) throw new Error('preview request failed');
+          return response.json();
+        }).then(function (items) {
+          if (!Array.isArray(items)) return;
+          var item = items.find(function (candidate) { return candidate && String(candidate.id) === sourceId; });
+          renderPreview(item);
+        }).catch(function () {});
+      }
+
       if (!isHttpUrl(sourceUrl)) {
         frame.hidden = true;
         openLink.hidden = true;
+        if (frameSection) frameSection.hidden = true;
         empty.hidden = false;
         host.textContent = '链接无效';
         return;
@@ -171,6 +305,7 @@
       host.textContent = parsedSource.hostname;
       frame.src = sourceUrl;
       openLink.href = sourceUrl;
+      loadPreview();
       try {
         var themeColor = document.getElementById('source-theme-color');
         if (themeColor && document.documentElement.getAttribute('data-theme') === 'dark') themeColor.content = '#000000';

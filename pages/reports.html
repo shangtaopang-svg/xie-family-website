@@ -240,12 +240,26 @@
       return text.replace(/'/g, "\'").replace(/"/g, '&quot;');
     }
 
-    function newsSourceHref(url) {
-      return 'news-source.html?from=reports&v=20260901-news-source-02&url=' + encodeURIComponent(url);
+    function newsSourceHref(url, id) {
+      var href = 'news-source.html?from=reports&v=20260901-news-source-03&url=' + encodeURIComponent(url);
+      return id == null ? href : href + '&id=' + encodeURIComponent(id);
     }
 
-    function rememberNewsSourceReturn() {
-      try { sessionStorage.setItem('news_source_return', window.location.href); } catch (e) {}
+    function rememberNewsSourceReturn(item) {
+      try {
+        sessionStorage.setItem('news_source_return', window.location.href);
+        if (item) {
+          sessionStorage.setItem('news_source_preview', JSON.stringify({
+            id: item.id,
+            title: item.title || '',
+            date: item.date || '',
+            source: item.source || '',
+            author: item.author || '',
+            content: item.content || '',
+            url: item.url || ''
+          }));
+        }
+      } catch (e) {}
     }
 
     function showReportModal(item) {
@@ -262,12 +276,12 @@
         + (item.source ? ' 来源：' + escapeHtml(item.source) : '')
         + '</div>'
         + '<div style="font-size:14px;color:var(--text-secondary);line-height:2;">' + escapeHtml(fullContent).replace(/\n/g, '<br>') + '</div>'
-        + (hasUrl ? '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--divider);"><a href="' + escapeAttr(newsSourceHref(item.url)) + '" class="report-source-reader-link" style="color:#d4793a;color:var(--accent-orange);font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:2px;">\u67e5\u770b\u539f\u6587\u94fe\u63a5 \u2192</a></div>' : '');
+        + (hasUrl ? '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--divider);"><a href="' + escapeAttr(newsSourceHref(item.url, item.id)) + '" class="report-source-reader-link" style="color:#d4793a;color:var(--accent-orange);font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:2px;">\u67e5\u770b\u539f\u6587\u94fe\u63a5 \u2192</a></div>' : '');
       overlay.appendChild(box);
       overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
       document.body.appendChild(overlay);
       var sourceReaderLink = box.querySelector('.report-source-reader-link');
-      if (sourceReaderLink) sourceReaderLink.addEventListener('click', rememberNewsSourceReturn);
+      if (sourceReaderLink) sourceReaderLink.addEventListener('click', function() { rememberNewsSourceReturn(item); });
     }
 
     function renderReports() {
@@ -302,13 +316,16 @@
       var start = (currentPage - 1) * pageSize;
       var pageData = data.slice(start, start + pageSize);
       var html = '';
-      pageData.forEach(function(item) {
+      window._reportSourceItems = {};
+      pageData.forEach(function(item, pageIndex) {
         var hasUrl = item.url && item.url.trim() !== '';
+        var sourceKey = item.id != null ? String(item.id) : String(start + pageIndex);
+        window._reportSourceItems[sourceKey] = item;
         html += '<div class="report-item" onclick="showReportModal(' + JSON.stringify(item).replace(/"/g, '&quot;') + ')">'
           + '<span class="report-date">' + (item.date || '') + '</span>'
           + '<span class="report-title">' + escapeHtml(item.title) + '</span>'
           + '<span class="report-source">' + escapeHtml(item.source || '') + '</span>'
-          + (hasUrl ? '<a href="' + escapeAttr(newsSourceHref(item.url)) + '" class="report-external-link">原文 →</a>' : '')
+          + (hasUrl ? '<a href="' + escapeAttr(newsSourceHref(item.url, sourceKey)) + '" class="report-external-link" data-report-source-key="' + escapeAttr(sourceKey) + '">原文 →</a>' : '')
           + '</div>';
       });
       if (!html) {
@@ -323,7 +340,8 @@
       document.querySelectorAll('.report-external-link').forEach(function(link) {
         link.addEventListener('click', function(event) {
           event.stopPropagation();
-          rememberNewsSourceReturn();
+          var sourceKey = link.getAttribute('data-report-source-key');
+          rememberNewsSourceReturn(window._reportSourceItems && window._reportSourceItems[sourceKey]);
         });
       });
 

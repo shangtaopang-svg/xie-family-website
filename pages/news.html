@@ -251,12 +251,26 @@
       return String(text).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    function newsSourceHref(url) {
-      return 'news-source.html?from=news&v=20260901-news-source-02&url=' + encodeURIComponent(url);
+    function newsSourceHref(url, id) {
+      var href = 'news-source.html?from=news&v=20260901-news-source-03&url=' + encodeURIComponent(url);
+      return id == null ? href : href + '&id=' + encodeURIComponent(id);
     }
 
-    function rememberNewsSourceReturn() {
-      try { sessionStorage.setItem('news_source_return', window.location.href); } catch (e) {}
+    function rememberNewsSourceReturn(item) {
+      try {
+        sessionStorage.setItem('news_source_return', window.location.href);
+        if (item) {
+          sessionStorage.setItem('news_source_preview', JSON.stringify({
+            id: item.id,
+            title: item.title || '',
+            date: item.date || '',
+            source: item.source || '',
+            author: item.author || '',
+            content: item.content || '',
+            url: item.url || ''
+          }));
+        }
+      } catch (e) {}
     }
 
     // ===== 阅读全文弹窗 =====
@@ -282,8 +296,8 @@
       if (item.url && item.url.trim()) {
         var sourceLink = document.createElement('a');
         sourceLink.className = 'article-modal-source';
-        sourceLink.href = newsSourceHref(item.url);
-        sourceLink.addEventListener('click', rememberNewsSourceReturn);
+        sourceLink.href = newsSourceHref(item.url, item.id);
+        sourceLink.addEventListener('click', function() { rememberNewsSourceReturn(item); });
         sourceLink.textContent = '查看来源原文 →';
         box.querySelector('.article-modal-actions').appendChild(sourceLink);
       }
