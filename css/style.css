@@ -6835,3 +6835,194 @@ html:not([data-theme="dark"]) .history-page-body .section-title h2 span {
     color: #4f5d66 !important;
   }
 }
+
+/* ===== 手机端白天模式：内容文字最终对比度封口 =====
+   新闻列表和部分动态卡片使用 span/div 生成内容，不能只依赖 h/p 标签的通用规则；
+   同时将文字变量落到 body，保证页面内联的 var(--text-*) 也不会回到浅色旧值。 */
+@media (max-width: 768px) {
+  html:not([data-theme="dark"]) body {
+    --text-primary: #26343c;
+    --text-secondary: #4f5d66;
+    --text-tertiary: #64737b;
+    --text-muted: #687780;
+    --mb-text: #26343c;
+    --mb-sub: #4f5d66;
+    --mb-muted: #687780;
+    color: #26343c !important;
+  }
+
+  /* 页面级标题：白天模式不再使用浅金色。 */
+  html:not([data-theme="dark"]) body .page-title h2,
+  html:not([data-theme="dark"]) body .section-title h2,
+  html:not([data-theme="dark"]) body .media-item-title h2,
+  html:not([data-theme="dark"]) body .news-page-title h2,
+  html:not([data-theme="dark"]) body .news-feed-head h2,
+  html:not([data-theme="dark"]) body .explore-intro h1,
+  html:not([data-theme="dark"]) body .explore-section-head h2 {
+    color: #7b4a20 !important;
+    text-shadow: none !important;
+    opacity: 1 !important;
+  }
+  html:not([data-theme="dark"]) body .page-title p,
+  html:not([data-theme="dark"]) body .section-title p,
+  html:not([data-theme="dark"]) body .news-feed-head p,
+  html:not([data-theme="dark"]) body .explore-intro p {
+    color: #4f5d66 !important;
+    opacity: 1 !important;
+  }
+
+  /* 新闻报道页：列表实际是 span，单独锁定主标题、日期、来源和原文入口。 */
+  html:not([data-theme="dark"]) body .report-item {
+    color: #26343c !important;
+    opacity: 1 !important;
+  }
+  html:not([data-theme="dark"]) body .report-title {
+    color: #26343c !important;
+    opacity: 1 !important;
+  }
+  html:not([data-theme="dark"]) body .report-date,
+  html:not([data-theme="dark"]) body .report-source,
+  html:not([data-theme="dark"]) body .page-info {
+    color: #64737b !important;
+    opacity: 1 !important;
+  }
+  html:not([data-theme="dark"]) body .report-external-link {
+    color: #85501f !important;
+    opacity: 1 !important;
+  }
+
+  /* 消息、文章、活动、人物和联系方式卡片。 */
+  html:not([data-theme="dark"]) body .news-item h3,
+  html:not([data-theme="dark"]) body .news-content h4,
+  html:not([data-theme="dark"]) body .news-aside-card h3,
+  html:not([data-theme="dark"]) body .celebrity-card-sm h3,
+  html:not([data-theme="dark"]) body .celebrity-info h3,
+  html:not([data-theme="dark"]) body .activity-details h3,
+  html:not([data-theme="dark"]) body .article-card h3,
+  html:not([data-theme="dark"]) body .article-card h3 a,
+  html:not([data-theme="dark"]) body .contact-item h4,
+  html:not([data-theme="dark"]) body .member-info h4,
+  html:not([data-theme="dark"]) body .genealogy-lock h3,
+  html:not([data-theme="dark"]) body .timeline-item h3 {
+    color: #26343c !important;
+    opacity: 1 !important;
+  }
+  html:not([data-theme="dark"]) body .news-item p,
+  html:not([data-theme="dark"]) body .news-item-top time,
+  html:not([data-theme="dark"]) body .news-author,
+  html:not([data-theme="dark"]) body .news-aside-card p,
+  html:not([data-theme="dark"]) body .celebrity-card-sm p,
+  html:not([data-theme="dark"]) body .celebrity-info p,
+  html:not([data-theme="dark"]) body .activity-details p,
+  html:not([data-theme="dark"]) body .article-card .meta,
+  html:not([data-theme="dark"]) body .article-card p,
+  html:not([data-theme="dark"]) body .contact-item p,
+  html:not([data-theme="dark"]) body .member-info .branch,
+  html:not([data-theme="dark"]) body .timeline-item p {
+    color: #4f5d66 !important;
+    opacity: 1 !important;
+  }
+  html:not([data-theme="dark"]) body .news-eyebrow,
+  html:not([data-theme="dark"]) body .news-category,
+  html:not([data-theme="dark"]) body .news-read-btn,
+  html:not([data-theme="dark"]) body .article-card .read-more-link,
+  html:not([data-theme="dark"]) body .celebrity-info .era {
+    color: #85501f !important;
+    opacity: 1 !important;
+  }
+
+  /* 今日页面、组织信息、荣誉和谱系卡片。 */
+  html:not([data-theme="dark"]) body .doc-card h3,
+  html:not([data-theme="dark"]) body .committee-card h3,
+  html:not([data-theme="dark"]) body .party-card h3,
+  html:not([data-theme="dark"]) body .committee-info h3,
+  html:not([data-theme="dark"]) body .party-name,
+  html:not([data-theme="dark"]) body .section-subtitle h3,
+  html:not([data-theme="dark"]) body .ancestor-name,
+  html:not([data-theme="dark"]) body .card-name,
+  html:not([data-theme="dark"]) body .h-card-name,
+  html:not([data-theme="dark"]) body .lineage-header h3,
+  html:not([data-theme="dark"]) body .lineage-modal-name,
+  html:not([data-theme="dark"]) body .m-title,
+  html:not([data-theme="dark"]) body .scroll-title,
+  html:not([data-theme="dark"]) body .ltree-card .lname {
+    color: #26343c !important;
+    opacity: 1 !important;
+    text-shadow: none !important;
+  }
+  html:not([data-theme="dark"]) body .doc-card p,
+  html:not([data-theme="dark"]) body .committee-card p,
+  html:not([data-theme="dark"]) body .party-card p,
+  html:not([data-theme="dark"]) body .committee-desc,
+  html:not([data-theme="dark"]) body .committee-meta,
+  html:not([data-theme="dark"]) body .party-slogan,
+  html:not([data-theme="dark"]) body .tl-item,
+  html:not([data-theme="dark"]) body .tl-desc,
+  html:not([data-theme="dark"]) body .ancestor-meta,
+  html:not([data-theme="dark"]) body .ancestor-gen,
+  html:not([data-theme="dark"]) body .card-meta,
+  html:not([data-theme="dark"]) body .card-count,
+  html:not([data-theme="dark"]) body .card-mother,
+  html:not([data-theme="dark"]) body .card-spouse,
+  html:not([data-theme="dark"]) body .gen-label,
+  html:not([data-theme="dark"]) body .m-desc,
+  html:not([data-theme="dark"]) body .m-era,
+  html:not([data-theme="dark"]) body .m-year,
+  html:not([data-theme="dark"]) body .m-loc,
+  html:not([data-theme="dark"]) body .m-flood-text,
+  html:not([data-theme="dark"]) body .lineage-modal-body,
+  html:not([data-theme="dark"]) body .lineage-modal-body .lm-label,
+  html:not([data-theme="dark"]) body .ltree-card .lgen,
+  html:not([data-theme="dark"]) body .lbranch {
+    color: #4f5d66 !important;
+    opacity: 1 !important;
+  }
+  html:not([data-theme="dark"]) body .doc-card .num,
+  html:not([data-theme="dark"]) body .doc-card .level,
+  html:not([data-theme="dark"]) body .tl-year,
+  html:not([data-theme="dark"]) body .tl-era-tag {
+    color: #85501f !important;
+    opacity: 1 !important;
+  }
+
+  /* 常见动态元素和分页/状态提示，避免继承旧移动端的白色或浅金色。 */
+  html:not([data-theme="dark"]) body .activity-card h3,
+  html:not([data-theme="dark"]) body .activity-card p,
+  html:not([data-theme="dark"]) body .empty-state,
+  html:not([data-theme="dark"]) body .loading,
+  html:not([data-theme="dark"]) body .hint,
+  html:not([data-theme="dark"]) body .apt-meta,
+  html:not([data-theme="dark"]) body .apt-children-count {
+    color: #4f5d66 !important;
+    opacity: 1 !important;
+  }
+  html:not([data-theme="dark"]) body .activity-card h3 {
+    color: #26343c !important;
+  }
+
+  /* 进入主首页后的旧版内容区也使用同一套白天文字层级。 */
+  html:not([data-theme="dark"]) body .mb-show-main .hero-motto,
+  html:not([data-theme="dark"]) body .mb-show-main .section-title h2,
+  html:not([data-theme="dark"]) body .mb-show-main .stat-card div:first-child {
+    color: #7b4a20 !important;
+    text-shadow: none !important;
+    opacity: 1 !important;
+  }
+  html:not([data-theme="dark"]) body .mb-show-main .hero-sub,
+  html:not([data-theme="dark"]) body .mb-show-main .hero-stat-label,
+  html:not([data-theme="dark"]) body .mb-show-main .section-title p,
+  html:not([data-theme="dark"]) body .mb-show-main .quote-author,
+  html:not([data-theme="dark"]) body .mb-show-main .stat-card div:last-child {
+    color: #4f5d66 !important;
+    opacity: 1 !important;
+  }
+  html:not([data-theme="dark"]) body .mb-show-main .quote-text {
+    color: #85501f !important;
+    opacity: 1 !important;
+  }
+
+  html:not([data-theme="dark"]) body button:not(.mbs-theme-toggle),
+  html:not([data-theme="dark"]) body .page-btn {
+    text-shadow: none !important;
+  }
+}
