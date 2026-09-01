@@ -5028,7 +5028,7 @@ a { color: var(--mb-brand); }
 .quote-line { background: var(--mb-border) !important; }
 
 /* ===== 音频入口 ===== */
-section a[href*="audio"] {
+section a[href*="audio"]:not(.navhub-enter) {
   background: var(--mb-card) !important;
   border-color: var(--mb-border) !important;
   border-radius: 16px !important;
