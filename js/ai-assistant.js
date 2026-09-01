@@ -437,20 +437,7 @@
   function appendMessage(role, text, opts) {
     var el = document.createElement('div');
     el.className = 'ai-msg ' + (role === 'user' ? 'ai-user' : 'ai-bot');
-    // 移动端内联样式强制配色（终极兜底）：绕过任何陈旧 CSS 缓存，保证 bot 深底浅字、user 绿底黑字清晰可读
-    if (IS_MOBILE) {
-      if (role === 'user') {
-        // 提问气泡：品牌橙渐变 + 白字（区别于 AI 回答的深灰底）
-        el.style.setProperty('background', 'linear-gradient(135deg,#f5a623,#d97706)', 'important');
-        el.style.setProperty('color', '#ffffff', 'important');
-        el.style.setProperty('font-weight', '600', 'important');
-      } else {
-        el.style.setProperty('background', '#1c1c1c', 'important');
-        el.style.setProperty('border', '1px solid #333', 'important');
-        el.style.setProperty('color', '#f5f5f5', 'important');
-      }
-    }
-    // 头像（美化）：bot 机器人 / user 族人人形，位于气泡外侧
+    // 头像（美化）：bot 机器人 / user 族人人形，位于气泡外侧；颜色交给主题 CSS 控制。
     var ava = document.createElement('span');
     ava.className = 'ai-ava';
     ava.setAttribute('aria-hidden', 'true');
