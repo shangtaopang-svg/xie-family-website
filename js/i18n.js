@@ -3192,11 +3192,11 @@ function ensureLanguageToggle() {
   if (!document.getElementById('xie-language-style')) {
     var style = document.createElement('style');
     style.id = 'xie-language-style';
-    style.textContent = '.site-language-toggle{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:14px;z-index:2147483000;min-width:46px;height:34px;padding:0 11px;border:1px solid rgba(128,128,128,.35);border-radius:999px;background:rgba(255,255,255,.96);color:#26343c;font:700 12px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;cursor:pointer;box-shadow:0 5px 18px rgba(0,0,0,.14);-webkit-tap-highlight-color:transparent}.site-language-toggle:hover,.site-language-toggle.active{color:#995b24;border-color:#995b24}.site-language-toggle:focus-visible{outline:3px solid rgba(153,91,36,.22);outline-offset:2px}[data-theme="dark"] .site-language-toggle{background:rgba(20,20,20,.96);color:#f2eee7;border-color:rgba(232,201,122,.45)}.site-language-legacy{display:none!important}@media(max-width:768px){.site-language-toggle{top:calc(10px + env(safe-area-inset-top,0px));right:10px}}';
+    style.textContent = '.site-language-dock{display:flex;align-items:center;justify-content:flex-end;flex:0 0 auto;min-height:52px;width:100%;padding:9px 14px;box-sizing:border-box;background:var(--bg-primary,var(--navhub-bg,#f6f7f8));border-bottom:1px solid rgba(35,49,58,.1);position:relative;z-index:1000}.site-language-dock .site-language-toggle{position:relative!important;top:auto!important;right:auto!important;z-index:1;flex:0 0 auto}.site-language-toggle{min-width:46px;height:34px;padding:0 11px;border:1px solid rgba(128,128,128,.35);border-radius:999px;background:rgba(255,255,255,.96);color:#26343c;font:700 12px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;cursor:pointer;box-shadow:0 5px 18px rgba(0,0,0,.14);-webkit-tap-highlight-color:transparent}.site-language-toggle:hover,.site-language-toggle.active{color:#995b24;border-color:#995b24}.site-language-toggle:focus-visible{outline:3px solid rgba(153,91,36,.22);outline-offset:2px}.site-language-dock--toolbar{width:auto;min-height:0;padding:0;background:transparent;border:0;box-shadow:none;position:static}.news-source-toolbar{flex-wrap:wrap}.site-language-dock--card{width:100%;min-height:38px;margin:0 0 12px;padding:0;background:transparent;border:0;box-shadow:none;position:static}.site-language-dock--entrance{position:absolute;top:12px;right:12px;width:auto;min-height:0;padding:0;background:transparent;border:0;box-shadow:none;z-index:60}.site-language-dock--entrance .site-language-toggle{box-shadow:0 5px 18px rgba(0,0,0,.32)}.site-language-dock--fullscreen{position:absolute;top:16px;left:50%;width:auto;min-height:0;padding:0;background:transparent;border:0;box-shadow:none;transform:translateX(-50%);z-index:60}.site-language-dock--fullscreen .site-language-toggle{box-shadow:0 5px 18px rgba(0,0,0,.32)}#stage #clk{top:60px!important}#pv-overlay.show ~ .site-language-dock--entrance{display:none!important}[data-theme="dark"] .site-language-dock{background:var(--mb-bg,#101214);border-bottom-color:rgba(255,255,255,.1)}[data-theme="dark"] .site-language-dock--toolbar,[data-theme="dark"] .site-language-dock--card,[data-theme="dark"] .site-language-dock--entrance,[data-theme="dark"] .site-language-dock--fullscreen{background:transparent;border-bottom-color:transparent}.site-language-legacy{display:none!important}@media(max-width:768px){.site-language-dock{min-height:48px;padding:7px 10px}.site-language-dock--toolbar{min-height:0;padding:0}.site-language-dock--card{min-height:34px;margin-bottom:10px}.site-language-dock--entrance{top:10px;right:10px}.site-language-dock--fullscreen{top:10px}.site-language-toggle{min-width:44px;height:32px}.site-language-dock--entrance + #clk{top:56px!important}#stage #clk{top:56px!important}}';
     document.head.appendChild(style);
   }
-  // 每个页面都保留一个固定在顶部的统一入口。开启页在手机端已有顶部按钮，
-  // 直接复用它；正式主首页或其他页面则创建统一的固定按钮。
+  // 开启页在手机端已有顶部按钮，直接复用它；其他页面把按钮放进有真实占位的安全区域，
+  // 避免固定悬浮层遮住页面原有的按钮和正文。
   var canonical = document.getElementById('site-language-toggle');
   var isOpeningMobile = !!(document.querySelector('.mb-story-home') &&
     !document.documentElement.classList.contains('mb-show-main') &&
@@ -3210,8 +3210,45 @@ function ensureLanguageToggle() {
     btn.textContent = 'EN';
     btn.setAttribute('aria-label', 'Switch language');
     btn.title = 'Switch language';
-    document.body.appendChild(btn);
     canonical = btn;
+  }
+  if (canonical && canonical.id === 'site-language-toggle' && !document.getElementById('site-language-dock')) {
+    var dock = document.createElement('div');
+    dock.id = 'site-language-dock';
+    dock.className = 'site-language-dock';
+    dock.setAttribute('aria-label', 'Language');
+    dock.appendChild(canonical);
+
+    var toolbar = document.querySelector('.news-source-toolbar');
+    var offlineCard = document.querySelector('.offline-card');
+    var entranceStage = document.getElementById('stage');
+    var navhubContent = document.querySelector('.navhub-content');
+    var content = document.querySelector('.content');
+    var main = document.querySelector('main');
+    var fullscreenStage = document.querySelector('.video-container');
+    if (toolbar) {
+      dock.classList.add('site-language-dock--toolbar');
+      toolbar.appendChild(dock);
+    } else if (offlineCard) {
+      dock.classList.add('site-language-dock--card');
+      offlineCard.insertBefore(dock, offlineCard.firstChild);
+    } else if (entranceStage) {
+      // 全屏入口页的内容层是 fixed，按钮放入 stage 并避开时钟；图片查看器打开时自动让位给关闭按钮。
+      dock.classList.add('site-language-dock--entrance');
+      entranceStage.appendChild(dock);
+    } else if (fullscreenStage) {
+      // 宣传片也是全屏 fixed 画布，按钮放在画面上方中央，避开左上角标识、右上角场景名和底部播放控件。
+      dock.classList.add('site-language-dock--fullscreen');
+      fullscreenStage.appendChild(dock);
+    } else if (navhubContent) {
+      navhubContent.insertBefore(dock, navhubContent.firstChild);
+    } else if (content) {
+      content.insertBefore(dock, content.firstChild);
+    } else if (main) {
+      main.insertBefore(dock, main.firstChild);
+    } else {
+      document.body.insertBefore(dock, document.body.firstChild);
+    }
   }
   document.querySelectorAll('#lang-toggle, .language-toggle').forEach(function(toggle) {
     toggle.classList.add('language-toggle');
