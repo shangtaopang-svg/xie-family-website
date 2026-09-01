@@ -371,13 +371,14 @@ function injectAiHtml(buf) {
     .replace(/(?:\.\.\/|\/)?css\/public-access-gate\.css(?:\?v=[^"'\s>]+)?/g, '/css/public-access-gate.css?v=' + PUBLIC_ACCESS_STYLE_VERSION)
     // CSS 使用 immutable 缓存；每次移动端公共样式调整都必须切换版本，避免手机继续使用旧导航布局。
     .replace(/(?:\.\.\/|\/)?css\/style\.css(?:\?v=[^"'\s>]+)?/g, '/css/style.css?v=20260901-entry-switch-05')
-    .replace(/(?:\.\.\/|\/)?css\/ai\.css(?:\?v=[^"'\s>]+)?/g, '/css/ai.css?v=20260830-mobile-nav-03');
+    .replace(/(?:\.\.\/|\/)?css\/ai\.css(?:\?v=[^"'\s>]+)?/g, '/css/ai.css?v=20260901-ai-contrast-01')
+    .replace(/(?:\.\.\/|\/)?js\/ai-assistant\.js(?:\?v=[^"'\s>]+)?/g, '/js/ai-assistant.js?v=20260901-ai-contrast-01');
   const m = html.search(/<\/body>/i);
   if (m === -1) return buf; // 无 body（HTML 片段）则跳过
   const inject = [];
   if (html.indexOf(AI_INJECT_MARK) === -1) {
-    inject.push('<link rel="stylesheet" href="/css/ai.css?v=20260830-mobile-nav-03">');
-    inject.push('<script src="/js/ai-assistant.js" defer></script>');
+    inject.push('<link rel="stylesheet" href="/css/ai.css?v=20260901-ai-contrast-01">');
+    inject.push('<script src="/js/ai-assistant.js?v=20260901-ai-contrast-01" defer></script>');
   }
   if (html.indexOf(PUBLIC_ACCESS_MARK) === -1) {
     inject.push('<link rel="stylesheet" href="/css/public-access-gate.css?v=' + PUBLIC_ACCESS_STYLE_VERSION + '">');
