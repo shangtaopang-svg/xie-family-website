@@ -5355,6 +5355,7 @@ section a[href*="audio"] {
 
 
 /* ===== 手机端：正式首页（开启页之后） ===== */
+.mb-main-nav-back { display: none; }
 @media (max-width: 768px) {
   .mb-show-main .mb-home { display: none !important; }
   .mb-show-main .content { display: block !important; margin-left: 0 !important; padding: 0 0 70px !important; }
@@ -5464,6 +5465,34 @@ section a[href*="audio"] {
     -webkit-tap-highlight-color: transparent;
   }
   .mb-show-main .mb-back-entrance:active { opacity: 0.8; transform: scale(0.98); }
+
+  /* 正式主首页隐藏了桌面导航，移动端必须保留一个始终可见的返回栏目导航入口。 */
+  .mb-show-main .mb-main-nav-back {
+    display: inline-flex !important;
+    position: fixed !important;
+    top: calc(10px + env(safe-area-inset-top, 0px));
+    left: 14px;
+    z-index: 10001;
+    align-items: center;
+    gap: 5px;
+    min-height: 32px;
+    padding: 0 11px;
+    border: 1px solid var(--mb-border, #2b2b2b);
+    border-radius: 999px;
+    background: var(--mb-card, #101010);
+    color: var(--mb-text, #f3f0e7) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .22);
+    font-size: 11px;
+    line-height: 1;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mb-show-main .mb-main-nav-back > span:first-child {
+    color: var(--mb-brand-strong, #c9a84c);
+    font-size: 18px;
+    line-height: 1;
+  }
+  .mb-show-main .mb-main-nav-back:active { opacity: .78; transform: scale(.97); }
   
   /* TabBar on main page */
 }
@@ -6723,6 +6752,7 @@ html:not([data-theme="dark"]) .history-page-body .section-title h2 span {
   html:not([data-theme="dark"]) body #clan-yes,
   html:not([data-theme="dark"]) body .mb-show-main .hbg-btn.active,
   html:not([data-theme="dark"]) body .mb-show-main .mb-back-entrance,
+  html:not([data-theme="dark"]) body .mb-show-main .mb-main-nav-back,
   html:not([data-theme="dark"]) body .mb-btn-primary,
   html:not([data-theme="dark"]) body .navhub-enter {
     background: #8d4e1f !important;
