@@ -7153,3 +7153,48 @@ html:not([data-theme="dark"]) body .navhub-detail-mark {
   color: var(--navhub-accent) !important;
   -webkit-text-fill-color: var(--navhub-accent) !important;
 }
+
+/* ===== 白天模式：所有栏目页返回入口高对比 =====
+   顶部“返回石门”、桌面集萃返回、世系树返回以及移动端固定返回按钮
+   使用同一套深色文字和浅色表面，避免被旧的白字/浅灰内联样式覆盖。 */
+html:not([data-theme="dark"]) body .site-header a[href*="entrance.html"],
+html:not([data-theme="dark"]) body .back-home-desktop,
+html:not([data-theme="dark"]) body .lineage-back-bar a,
+html:not([data-theme="dark"]) body .navhub-back,
+html:not([data-theme="dark"]) body .navhub-back > span:last-child,
+html:not([data-theme="dark"]) body a.back-page-btn {
+  color: #5c351d !important;
+  -webkit-text-fill-color: #5c351d !important;
+  text-shadow: none !important;
+}
+
+html:not([data-theme="dark"]) body .site-header a[href*="entrance.html"],
+html:not([data-theme="dark"]) body .back-home-desktop {
+  background: #fffaf4 !important;
+  border-color: rgba(133, 80, 31, .38) !important;
+  box-shadow: 0 3px 10px rgba(73, 45, 25, .08) !important;
+  font-weight: 650 !important;
+}
+
+html:not([data-theme="dark"]) body .lineage-back-bar a,
+html:not([data-theme="dark"]) body .navhub-back > span:first-child {
+  color: #85501f !important;
+  -webkit-text-fill-color: #85501f !important;
+}
+
+html:not([data-theme="dark"]) body a.back-page-btn {
+  background: #fffaf4 !important;
+  border: 1px solid #b88754 !important;
+  box-shadow: 0 4px 14px rgba(73, 45, 25, .14) !important;
+  font-weight: 700 !important;
+}
+
+html:not([data-theme="dark"]) body .site-header a[href*="entrance.html"]:hover,
+html:not([data-theme="dark"]) body .back-home-desktop:hover,
+html:not([data-theme="dark"]) body a.back-page-btn:hover,
+html:not([data-theme="dark"]) body a.back-page-btn:focus-visible {
+  color: #432411 !important;
+  -webkit-text-fill-color: #432411 !important;
+  background: #fff2e4 !important;
+  border-color: #85501f !important;
+}
