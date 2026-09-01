@@ -590,7 +590,7 @@ function buildClosestTree(rows, self, targetName) {
   var slot = function (pred) {
     return rows.filter(pred).map(function (r) {
       var p = byId.get(r.id);
-      return { name: r.name, alive: !!(p && p.is_alive === '是') };
+      return { id: Number(r.id), name: r.name, alive: !!(p && p.is_alive === '是') };
     });
   };
   var s = {
@@ -621,7 +621,7 @@ function buildClosestTree(rows, self, targetName) {
             children: [
               { rel: '亲姐妹', shared: 50, tier: 1, people: s.jiemei },
               {
-                rel: selfLabel, tier: 0, self: true, people: [{ name: self.name, alive: true }],
+                rel: selfLabel, tier: 0, self: true, people: [{ id: Number(self.id), name: self.name, alive: true }],
                 children: [{
                   rel: '女儿 / 儿子', shared: 50, tier: 1, people: s.nver.concat(s.erzi),
                   children: [{ rel: '孙女 / 孙子', shared: 25, tier: 2, people: s.sunnv.concat(s.sunzi) }]
@@ -818,6 +818,7 @@ function answerClosestZh(personId, limit, targetName) {
   const text = `与${displayName}血缘最近的 ${list.length} 位族人（基因共享率越高越亲，最高 50%）：\n${lines.join('\n')}`;
   const tree = buildClosestTree(rows, self, displayName);
   tree.targetName = displayName;
+  tree.targetId = selfId;
   tree.adoptions = adoptionContextsFor(personId);
   return { text, list, tree };
 }
@@ -831,6 +832,11 @@ function answerClosestZh(personId, limit, targetName) {
  */
 const LINEAGE_CJK_RE = /[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]+/g;
 const LINEAGE_EN_REPLACEMENTS = [
+  ['本人', 'you'],
+  ['基因共享率越高越亲', 'higher shared DNA means closer'],
+  ['基因共享', 'shared DNA'],
+  ['血缘最近', 'closest by shared DNA'],
+  ['最高', 'maximum'],
   ['未找到您的族谱记录，请重新验证身份。', 'Your genealogy record was not found. Please verify your identity again.'],
   ['族谱中未找到您想查询的族人，请确认姓名是否正确', 'The requested member was not found in the genealogy. Please check the name'],
   ['未找到该族人的族谱记录，请重新验证身份。', 'That member’s genealogy record was not found. Please verify your identity again.'],
@@ -843,6 +849,7 @@ const LINEAGE_EN_REPLACEMENTS = [
   ['始宁东山', 'Shining Dongshan'],
   ['临海下渡', 'Linhai Xiadu'],
   ['石马（下谢）', 'Shima (Lower Xie)'],
+  ['石马(下谢)', 'Shima (Lower Xie)'],
   ['直系世系', 'direct lineage'],
   ['世系记录', 'lineage records'],
   ['世系', 'lineage'],
@@ -890,6 +897,7 @@ const LINEAGE_EN_REPLACEMENTS = [
   ['高祖父', 'great-great-grandfather'],
   ['曾祖父', 'great-grandfather'],
   ['爷爷（祖父）', 'grandfather'],
+  ['祖父', 'grandfather'],
   ['太爷爷（曾祖父）', 'great-grandfather'],
   ['高祖', 'great-great-grandfather'],
   ['父亲', 'father'],
@@ -930,7 +938,95 @@ function englishNameFor(name) {
 }
 
 function englishizeLineageText(value) {
-  let output = String(value == null ? '' : value);
+  const input = String(value == null ? '' : value);
+  let output = input;
+  const fixedNames = {
+    '炎帝神农氏': 'Emperor Yan, Shennong',
+    '炎帝': 'Emperor Yan',
+    '神农氏': 'Shennong',
+    '申伯': 'Shenbo',
+  };
+  const nameFor = (name) => {
+    const clean = String(name || '').trim();
+    if (clean === '您' || clean === '本人') return 'you';
+    return fixedNames[clean] || englishNameFor(clean);
+  };
+  const relationFor = {
+    '亲兄弟': 'brothers',
+    '亲姐妹': 'sisters',
+    '儿子': 'son',
+    '女儿': 'daughter',
+    '孙子': 'grandson',
+    '孙女': 'granddaughter',
+    '父亲': 'father',
+    '母亲': 'mother',
+    '叔伯辈': 'uncle’s generation',
+    '姑辈': 'aunt’s generation',
+    '亲伯父 / 叔父': 'paternal uncle',
+    '亲姑妈': 'paternal aunt',
+    '堂兄弟/堂姐妹': 'cousins',
+    '亲侄女 / 亲侄子': 'nieces / nephews',
+    '祖父': 'grandfather',
+    '爷爷（祖父）': 'grandfather',
+    '曾祖父': 'great-grandfather',
+    '高祖父': 'great-great-grandfather',
+  };
+
+  const simpleTerms = {
+    '本人': 'you',
+    '您': 'you',
+    '父亲': 'father',
+    '母亲': 'mother',
+    '祖父': 'grandfather',
+    '爷爷（祖父）': 'grandfather',
+    '曾祖父': 'great-grandfather',
+    '高祖父': 'great-great-grandfather',
+    '亲兄弟': 'brothers',
+    '亲姐妹': 'sisters',
+    '儿子': 'son',
+    '女儿': 'daughter',
+    '孙子': 'grandson',
+    '孙女': 'granddaughter',
+    '未查到共同祖先': 'No common ancestor found',
+    '远古世系': 'ancient lineage',
+    '炎帝世系': 'Emperor Yan lineage',
+    '申伯世系': 'Shenbo lineage',
+    '始宁东山': 'Shining Dongshan',
+    '临海下渡': 'Linhai Xiadu',
+    '石马（下谢）': 'Shima (Lower Xie)',
+    '石马(下谢)': 'Shima (Lower Xie)',
+  };
+  const trimmed = output.trim();
+  if (simpleTerms[trimmed]) return simpleTerms[trimmed];
+  if (byName.has(trimmed)) return nameFor(trimmed);
+
+  const scopeFor = (scope) => String(scope || '')
+    .replace(/第\s*(\d+)\s*世/g, 'Generation $1')
+    .replace(/远古世系/g, 'ancient lineage');
+
+  // These headings are generated as complete sentences. Translate their
+  // structure first; otherwise generic word replacement can leave fragments
+  // such as “from”, “total” and a person name attached to one another.
+  output = output
+    .replace(/您的世系图（自(.+?)起，共\s*(\d+)\s*世）：/g, (_, start, count) => `Your lineage chart (from ${nameFor(start.trim())} onward; total ${count} generations):`)
+    .replace(/——\s*(.+?)\s*的直系世系（共\s*(\d+)\s*世）——/g, (_, name, count) => `— ${nameFor(name.trim())}'s direct lineage (total ${count} generations) —`)
+    .replace(/(.+?)\s*的世系图（自(.+?)起，共\s*(\d+)\s*世）：/g, (_, name, start, count) => `${nameFor(name.trim())}'s lineage chart (from ${nameFor(start.trim())} onward; total ${count} generations):`)
+    .replace(/(.+?)\s*的后代（每代最多列前若干）：/g, (_, name) => `${nameFor(name.trim())}'s descendants (up to the first several from each generation):`)
+    .replace(/与(.+?)血缘最近的\s*(\d+)\s*位族人（基因共享率越高越亲，最高\s*(\d+)%）：/g, (_, name, count, max) => `Closest relatives to ${nameFor(name.trim())} by shared DNA: ${count} people (higher shared DNA means closer; maximum ${max}%):`)
+    .replace(/^(\d+)\.\s*(.+?)（(.+?)，基因共享\s*(\d+)%）$/gm, (_, rank, name, relation, pct) => `${rank}. ${nameFor(name.trim())} (${relationFor[relation.trim()] || 'related member'}; shared DNA ${pct}%)`)
+    .replace(/与\s*(.+?)\s*同辈（(.+?)）的族人共\s*(\d+)\s*位，示例：\s*/g, (_, name, scope, count) => `${nameFor(name.trim())}'s same-generation relatives (${scopeFor(scope)}) total ${count} people. Examples: `)
+    .replace(/(.+?)与(.+?)为同父兄弟\/姐妹，彼此称兄弟或姐妹（共同父亲：(.+?)）/g, (_, a, b, father) => `${nameFor(a)} and ${nameFor(b)} are siblings with the same father and are brothers or sisters to each other (common father: ${nameFor(father)}).`)
+    .replace(/(.+?)称(.+?)为叔伯\/姑母辈（共同父系：(.+?)）/g, (_, subject, relative, ancestor) => `${nameFor(subject)} considers ${nameFor(relative)} to be in the uncle/aunt generation (common paternal line: ${nameFor(ancestor)}).`)
+    .replace(/(.+?)与(.+?)为同辈旁系亲属，彼此称堂兄弟\/堂姐妹（共同父系：(.+?)）/g, (_, a, b, ancestor) => `${nameFor(a)} and ${nameFor(b)} are same-generation collateral relatives and cousins (common paternal line: ${nameFor(ancestor)}).`)
+    .replace(/(.+?)与(.+?)为旁系亲属，不能仅凭世次数字确定具体称谓（共同父系：(.+?)，父系链距离(\d+)\/(\d+)层）/g, (_, a, b, ancestor, da, db) => `${nameFor(a)} and ${nameFor(b)} are collateral relatives. The exact kinship cannot be determined from generation numbers alone (common paternal line: ${nameFor(ancestor)}; paternal-line distance ${da}/${db} levels).`)
+    .replace(/(.+?)称(.+?)为(祖父|父亲|母亲|高祖父|曾祖父|儿子|女儿|孙子|孙女)（实际父系链相隔(\d+)层）/g, (_, subject, relative, relation, distance) => `${nameFor(subject)} calls ${nameFor(relative)} ${relationFor[relation] || relation} (actual paternal-line distance: ${distance} levels).`)
+    .replace(/(.+?)的(父亲|母亲|爷爷（祖父）|曾祖父|高祖父|儿子|女儿|孙子|孙女)是：(.+?)。/g, (_, subject, relation, people) => `${nameFor(subject)}'s ${relationFor[relation] || relation} is: ${people}.`)
+    .replace(/(.+?)属远古世系（比始祖早\s*(\d+)\s*世）。/g, (_, name, count) => `${nameFor(name)} belongs to the ancient lineage, ${count} generations before the founding ancestor.`)
+    .replace(/(.+?)代数未录入。/g, (_, name) => `${nameFor(name)}'s generation is not recorded.`)
+    .replace(/(.+?)\s*第\s*(\d+)\s*世。/g, (_, name, generation) => `${nameFor(name)} is in Generation ${generation}.`)
+    .replace(/^第\s*(\d+)\s*代：/gm, 'Generation $1: ')
+    .replace(/^(\d+)\s*世\s+/gm, 'Generation $1 · ');
+
   output = output
     .replace(/第\s*(\d+)\s*世/g, 'Generation $1')
     .replace(/第\s*(\d+)\s*代/g, 'Generation $1')
@@ -938,6 +1034,9 @@ function englishizeLineageText(value) {
     .replace(/(\d+)\s*位/g, '$1 people')
     .replace(/(\d+)\s*人/g, '$1 people');
   LINEAGE_EN_REPLACEMENTS.forEach(([from, to]) => {
+    // Short structural words are only safe inside the sentence patterns
+    // above; replacing them globally creates broken text such as “you’sfatheris”.
+    if (from.length === 1 && !['人', '位', '层'].includes(from)) return;
     output = output.split(from).join(to);
   });
   output = output.replace(/[（）]/g, (mark) => mark === '（' ? '(' : ')');
@@ -945,14 +1044,24 @@ function englishizeLineageText(value) {
   // person name such as “直” can corrupt the word “直系” before it is read.
   const names = Array.from(byName.keys()).filter(Boolean).sort((a, b) => b.length - a.length);
   names.forEach((name) => {
-    if (name.length > 1 && output.indexOf(name) !== -1) output = output.split(name).join(englishNameFor(name));
+    if (name.length > 1 && output.indexOf(name) !== -1) output = output.split(name).join(nameFor(name));
   });
   names.filter((name) => name.length === 1).forEach((name) => {
     const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const boundary = new RegExp(`(^|[\\s\\n·：:（）()，,。；;])${escaped}(?=$|[\\s\\n·：:（）()，,。；;])`, 'g');
-    output = output.replace(boundary, (_, prefix) => prefix + englishNameFor(name));
+    const boundary = new RegExp(`(^|[\\s\\n·：:（）()，,、。；;])${escaped}(?=$|[\\s\\n·：:（）()，,、。；;])`, 'g');
+    output = output.replace(boundary, (_, prefix) => prefix + nameFor(name));
   });
-  return output.replace(LINEAGE_CJK_RE, 'Source text pending translation');
+  return output
+    .replace(/未详|未录入|未知/g, 'not recorded')
+    .replace(/自/g, 'from')
+    .replace(/起/g, 'onward')
+    .replace(/共/g, 'total')
+    .replace(/[：]/g, ': ')
+    .replace(/[、，]/g, ', ')
+    .replace(/。/g, '.')
+    .replace(/[（）]/g, (mark) => mark === '（' ? '(' : ')')
+    .replace(/\s+([,.:;])/g, '$1')
+    .replace(LINEAGE_CJK_RE, 'Member');
 }
 
 function englishizeLineageValue(value) {

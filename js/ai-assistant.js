@@ -52,7 +52,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v97'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v99'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -87,7 +87,12 @@
   }
   function aiPersonName(person) {
     if (!person) return isEnglishUi() ? 'Family member' : '';
-    return isEnglishUi() ? (person.id != null ? 'Member ' + person.id : 'Family member') : (person.name || '');
+    if (!isEnglishUi()) return person.name || '';
+    if (window.englishPersonName) return window.englishPersonName(person, person.id != null ? 'Member ' + person.id : 'Family member');
+    return person.id != null ? 'Member ' + person.id : 'Family member';
+  }
+  function aiGeneration(value) {
+    return isEnglishUi() ? 'Generation ' + String(value == null ? '' : value) : '第' + String(value == null ? '' : value) + '世';
   }
 
   /* 手机端内容页入口：底部导航已移除，入口统一放在内容顶部，避免遮挡正文。 */
@@ -95,7 +100,7 @@
     var path = window.location.pathname.replace(/\\/g, '/');
     var file = path.split('/').pop() || 'index.html';
     if (/\/mahjong\//.test(path) || /\/admin(?:\/|$)/.test(path)) return;
-    if (file === 'index.html' || file === 'entrance.html' || file === 'genealogy.html') return;
+    if (file === 'index.html' || file === 'entrance.html' || file === 'genealogy.html' || file === 'merit-scroll.html') return;
     if (document.querySelector('.mobile-page-actions')) return;
 
     var host = document.querySelector('.page-wrap, main, #app, .content');
@@ -215,7 +220,7 @@
       '</div>';
     panel.appendChild((goBottom = document.createElement('button')));
     goBottom.className = 'ai-gobottom';
-    goBottom.textContent = '↓ 回到最新';
+    goBottom.textContent = isEnglishUi() ? '↓ Latest' : '↓ 回到最新';
     goBottom.hidden = true;
 
     document.body.appendChild(fab);
@@ -304,7 +309,9 @@
 
   function updateStatus() {
     var p = getPerson();
-    statusEl.textContent = ((getToken() && p) ? '已验证 · ' + p.name : '未验证 · 仅公开问题') + ' · ' + APP_VERSION;
+    statusEl.textContent = isEnglishUi()
+      ? ((getToken() && p) ? 'Verified · ' + aiPersonName(p) : 'Not verified · Public questions only') + ' · ' + APP_VERSION
+      : ((getToken() && p) ? '已验证 · ' + p.name : '未验证 · 仅公开问题') + ' · ' + APP_VERSION;
   }
 
   /* ---------------- 悬浮球问候气泡 ---------------- */
@@ -459,7 +466,10 @@
     el.appendChild(ava);
     var body = document.createElement('div');
     body.className = 'ai-txt';
-    body.textContent = text;
+    // Bot history can contain replies created before the English server path
+    // was added. Translate known UI messages here, while leaving the user's
+    // own Chinese question intact as user-entered content.
+    body.textContent = role === 'bot' && isEnglishUi() ? aiText(text, 'The response is not available in English yet.') : text;
     el.appendChild(body);
     if (opts && opts.id) el.dataset.mid = opts.id;
     msgs.appendChild(el);
@@ -559,7 +569,9 @@
         var fullBtn = document.createElement('button');
         fullBtn.type = 'button';
         fullBtn.className = 'ai-adoption-full-btn';
-        fullBtn.innerHTML = '🔗 <b>全面展示出继 / 入继关系</b><small>同时显示亲生父亲、继父及两条世系关系线</small>';
+        fullBtn.innerHTML = isEnglishUi()
+          ? '🔗 <b>Show complete adoption / inheritance</b><small>Show the biological father, adoptive father and both lineage lines</small>'
+          : '🔗 <b>全面展示出继 / 入继关系</b><small>同时显示亲生父亲、继父及两条世系关系线</small>';
         fullBtn.addEventListener('click', function () {
           panel.classList.remove('ai-selection-mode');
           body.textContent = isEnglishUi() ? 'Generating the complete adoption / inheritance relationship chart…' : '正在生成完整的出继 / 入继关系图…';
@@ -581,11 +593,11 @@
     var finish = function (answer, sources, tree, ownerIsSelf, closest, closestTree) {
       if (done || requestGeneration !== historyGeneration) return;
       done = true;
-      body.textContent = answer || '（无回答）';
+      body.textContent = answer || (isEnglishUi() ? '(No answer)' : '（无回答）');
       // 血缘最亲：口播按呈现的「家族血缘关系图」沿树朗读（closestTree 存在时），
       // 而非照读聊天框里的排名清单（用户 2026-08-12 要求）；聊天框仍显示排名清单
       var spokenText = (closestTree && closestTree.root) ? spokenFromClosestTree(closestTree.root, closestTree.targetName) : answer;
-      if (spokenText && spokenText !== '（无回答）') { lastAnswer = spokenText; speak(spokenText); } // 自动朗读每次回复
+      if (spokenText && spokenText !== '（无回答）' && spokenText !== '(No answer)') { lastAnswer = spokenText; speak(spokenText); } // 自动朗读每次回复
       if (sources && sources.length) {
         var src = document.createElement('div');
         src.className = 'ai-src';
@@ -598,7 +610,9 @@
         var treeBtn = document.createElement('button');
         treeBtn.type = 'button';
         treeBtn.className = 'ai-result-visual';
-        treeBtn.innerHTML = '<span>🌳</span><b>查看树状世系图</b><small>炎帝神农氏 → ' + esc(tree[tree.length - 1].name) + '</small>';
+        treeBtn.innerHTML = isEnglishUi()
+          ? '<span>🌳</span><b>View lineage tree</b><small>Emperor Yan, Shennong → ' + esc(aiPersonName(tree[tree.length - 1])) + '</small>'
+          : '<span>🌳</span><b>查看树状世系图</b><small>炎帝神农氏 → ' + esc(tree[tree.length - 1].name) + '</small>';
         treeBtn.addEventListener('click', function () { showTreeOverlay(tree, ownerIsSelf); });
         body.appendChild(treeBtn);
       }
@@ -606,7 +620,9 @@
         var fullAdoptBtn = document.createElement('button');
         fullAdoptBtn.type = 'button';
         fullAdoptBtn.className = 'ai-result-visual adoption';
-        fullAdoptBtn.innerHTML = '<span>🔗</span><b>全面展示出继 / 入继关系图</b><small>亲生父亲、继父及关系线同时呈现</small>';
+        fullAdoptBtn.innerHTML = isEnglishUi()
+          ? '<span>🔗</span><b>Show adoption / inheritance chart</b><small>Show the biological father, adoptive father and both relationship lines</small>'
+          : '<span>🔗</span><b>全面展示出继 / 入继关系图</b><small>亲生父亲、继父及关系线同时呈现</small>';
         fullAdoptBtn.addEventListener('click', function () { showFullLineageAdoptionOverlay(tree, ownerIsSelf); });
         body.appendChild(fullAdoptBtn);
       }
@@ -614,7 +630,9 @@
         var adoptBtn = document.createElement('button');
         adoptBtn.type = 'button';
         adoptBtn.className = 'ai-result-visual adoption';
-        adoptBtn.innerHTML = '<span>🔗</span><b>查看出继 / 入继详情图</b><small>亲生父系与承嗣父系同时呈现</small>';
+        adoptBtn.innerHTML = isEnglishUi()
+          ? '<span>🔗</span><b>View adoption / inheritance details</b><small>Show both biological and adoptive paternal lines</small>'
+          : '<span>🔗</span><b>查看出继 / 入继详情图</b><small>亲生父系与承嗣父系同时呈现</small>';
         adoptBtn.addEventListener('click', function () { showClosestOverlay(closest || [], closestTree); });
         body.appendChild(adoptBtn);
       }
@@ -712,7 +730,7 @@
         return reader.read().then(function (r) {
           if (r.done) {
             // 桌面端偶发漏收 done 时，使用 meta 中已提前送达的树数据完成回答和永久入口。
-            if (!done && metaVisual) finish(collect || '查询完成，请查看世系图。', [], metaVisual.tree, metaVisual.ownerIsSelf !== false, metaVisual.closest || [], metaVisual.closestTree || null);
+            if (!done && metaVisual) finish(collect || (isEnglishUi() ? 'The query is complete. See the lineage chart.' : '查询完成，请查看世系图。'), [], metaVisual.tree, metaVisual.ownerIsSelf !== false, metaVisual.closest || [], metaVisual.closestTree || null);
             return;
           }
           buf += dec.decode(r.value, { stream: true });
@@ -738,14 +756,18 @@
 
     var wrap = document.createElement('div');
     wrap.className = 'ai-msg ai-msg-verify';
+    var en = isEnglishUi();
+    var verifyHint = hint
+      ? (en ? aiText(hint, 'This question concerns private genealogy information. Please verify your identity first.') : hint)
+      : (en ? '🔒 This question concerns a personal lineage chart. Please verify your identity first by entering your name, father and grandfather.' : '该问题涉及个人世系图谱，请先完成族人身份验证（与站内验证一致，填姓名、父亲、祖父）。');
     wrap.innerHTML =
       '<div class="ai-verify">' +
-      '  <div class="ai-verify-tip">🔒 ' + (hint || '该问题涉及个人世系图谱，请先完成族人身份验证（与站内验证一致，填姓名、父亲、祖父）。') + '</div>' +
-      '  <input id="ai-v-name" placeholder="您的姓名" autocomplete="off">' +
-      '  <input id="ai-v-father" placeholder="父亲名字" autocomplete="off">' +
-      '  <input id="ai-v-grandpa" placeholder="祖父名字（可留空）" autocomplete="off">' +
+      '  <div class="ai-verify-tip">' + esc(verifyHint) + '</div>' +
+      '  <input id="ai-v-name" placeholder="' + esc(en ? 'Your name' : '您的姓名') + '" autocomplete="off">' +
+      '  <input id="ai-v-father" placeholder="' + esc(en ? "Father’s name" : '父亲名字') + '" autocomplete="off">' +
+      '  <input id="ai-v-grandpa" placeholder="' + esc(en ? "Grandfather’s name (optional)" : '祖父名字（可留空）') + '" autocomplete="off">' +
       '  <div class="ai-verify-err" id="ai-v-err"></div>' +
-      '  <button type="button" class="ai-send" id="ai-v-submit">验证身份</button>' +
+      '  <button type="button" class="ai-send" id="ai-v-submit">' + (en ? 'Verify identity' : '验证身份') + '</button>' +
       '</div>';
     msgs.appendChild(wrap);
     scrollBottom(true);
@@ -756,8 +778,8 @@
       var name = $('#ai-v-name', wrap).value.trim();
       var father = $('#ai-v-father', wrap).value.trim();
       var grandpa = $('#ai-v-grandpa', wrap).value.trim();
-      if (!name || !father) { errEl.textContent = '请填写姓名和父亲名字'; return; }
-      errEl.textContent = '验证中…';
+      if (!name || !father) { errEl.textContent = en ? 'Please enter your name and father’s name' : '请填写姓名和父亲名字'; return; }
+      errEl.textContent = en ? 'Verifying…' : '验证中…';
       fetch('/api/verify-member', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -773,11 +795,11 @@
           var q = queuedMsg; queuedMsg = null;
           var qVisual = queuedVisualMode; queuedVisualMode = false;
           if (q) chat(q, null, qVisual);
-          else appendMessage('bot', '✅ 身份验证通过，现在可以查询您的个人世系了。');
+          else appendMessage('bot', en ? '✅ Identity verified. You can now query your personal lineage.' : '✅ 身份验证通过，现在可以查询您的个人世系了。');
         } else {
-          errEl.textContent = res.message || '信息不符，请核对';
+          errEl.textContent = en ? aiText(res.message, 'The information does not match. Please check it.') : (res.message || '信息不符，请核对');
         }
-      }).catch(function () { errEl.textContent = '网络错误，请重试'; });
+      }).catch(function () { errEl.textContent = en ? 'Network error. Please try again.' : '网络错误，请重试'; });
     });
   }
 
@@ -1225,6 +1247,7 @@
   function renderInlineAdoptionGraph(n) {
     var d = n && n.adoptionDetail;
     if (!d) return null;
+    var en = isEnglishUi();
     var ctx = d.context || {
       person: { name: n.name, shi: n.shi },
       biologicalParent: d.biologicalParent || null,
@@ -1237,26 +1260,26 @@
     var parentCards = (ctx.siblings || []).map(function (p) {
       var cls = ctx.biologicalParent && Number(p.id) === Number(ctx.biologicalParent.id) ? ' biological' :
         (ctx.adoptiveParent && Number(p.id) === Number(ctx.adoptiveParent.id) ? ' adoptive' : '');
-      return '<div class="ai-adopt-node' + cls + '"><small>第' + esc(p.shi) + '世</small><strong>' + esc(p.name) + '</strong>' +
-        (cls === ' biological' ? '<em>亲生父亲 · 血缘50%</em>' : (cls === ' adoptive' ? '<em>继父（承嗣父） · 血缘0%</em>' : '')) + '</div>';
+      return '<div class="ai-adopt-node' + cls + '"><small>' + esc(aiGeneration(p.shi)) + '</small><strong>' + esc(aiPersonName(p)) + '</strong>' +
+        (cls === ' biological' ? '<em>' + (en ? 'Biological father · 50% blood relation' : '亲生父亲 · 血缘50%') + '</em>' : (cls === ' adoptive' ? '<em>' + (en ? 'Adoptive father · 0% blood relation' : '继父（承嗣父） · 血缘0%') + '</em>' : '')) + '</div>';
     }).join('');
     if (!parentCards) {
-      parentCards = (ctx.biologicalParent ? '<div class="ai-adopt-node biological"><small>第' + esc(ctx.biologicalParent.shi) + '世</small><strong>' + esc(ctx.biologicalParent.name) + '</strong><em>亲生父亲 · 血缘50%</em></div>' : '') +
-        (ctx.adoptiveParent ? '<div class="ai-adopt-node adoptive"><small>第' + esc(ctx.adoptiveParent.shi) + '世</small><strong>' + esc(ctx.adoptiveParent.name) + '</strong><em>继父（承嗣父） · 血缘0%</em></div>' : '');
+      parentCards = (ctx.biologicalParent ? '<div class="ai-adopt-node biological"><small>' + esc(aiGeneration(ctx.biologicalParent.shi)) + '</small><strong>' + esc(aiPersonName(ctx.biologicalParent)) + '</strong><em>' + (en ? 'Biological father · 50% blood relation' : '亲生父亲 · 血缘50%') + '</em></div>' : '') +
+        (ctx.adoptiveParent ? '<div class="ai-adopt-node adoptive"><small>' + esc(aiGeneration(ctx.adoptiveParent.shi)) + '</small><strong>' + esc(aiPersonName(ctx.adoptiveParent)) + '</strong><em>' + (en ? 'Adoptive father · 0% blood relation' : '继父（承嗣父） · 血缘0%') + '</em></div>' : '');
     }
     var section = document.createElement('section');
     section.className = 'ai-adoption-map ai-inline-adoption-graph';
     section.innerHTML =
-      '<div class="ai-adoption-title"><b>出继 / 入继关系</b><span>以下为该人物实际承嗣关系</span></div>' +
-      (ctx.commonAncestor ? '<div class="ai-adopt-root ai-adopt-node"><small>第' + esc(ctx.commonAncestor.shi) + '世</small><strong>' + esc(ctx.commonAncestor.name) + '</strong></div>' : '') +
+      '<div class="ai-adoption-title"><b>' + (en ? 'Adoption / inheritance relationship' : '出继 / 入继关系') + '</b><span>' + (en ? 'Recorded adoption relationship for this member' : '以下为该人物实际承嗣关系') + '</span></div>' +
+      (ctx.commonAncestor ? '<div class="ai-adopt-root ai-adopt-node"><small>' + esc(aiGeneration(ctx.commonAncestor.shi)) + '</small><strong>' + esc(aiPersonName(ctx.commonAncestor)) + '</strong></div>' : '') +
       '<div class="ai-adopt-parent-row">' + parentCards + '</div>' +
       '<div class="ai-adopt-connection-grid">' +
-      '  <div class="ai-adopt-connection biological"><i></i><span>亲生父子 · 血缘50%</span></div>' +
-      '  <div class="ai-adopt-connection adoptive"><i></i><span>出继给 / 入继为嗣 · 血缘0%</span></div>' +
+      '  <div class="ai-adopt-connection biological"><i></i><span>' + (en ? 'Biological father and son · 50% blood relation' : '亲生父子 · 血缘50%') + '</span></div>' +
+      '  <div class="ai-adopt-connection adoptive"><i></i><span>' + (en ? 'Given out / adopted as heir · 0% blood relation' : '出继给 / 入继为嗣 · 血缘0%') + '</span></div>' +
       '</div>' +
-      '<div class="ai-adopt-person ai-adopt-node"><small>第' + esc(ctx.person && ctx.person.shi || n.shi) + '世</small><strong>' + esc(ctx.person && ctx.person.name || n.name) + '</strong><em>出继 / 入继</em></div>' +
-      (ctx.target ? '<div class="ai-adopt-down"></div><div class="ai-adopt-target ai-adopt-node"><small>第' + esc(ctx.target.shi) + '世</small><strong>' + esc(ctx.target.name) + '</strong></div>' : '') +
-      '<div class="ai-adoption-source">' + esc(ctx.source || '') + '</div>';
+      '<div class="ai-adopt-person ai-adopt-node"><small>' + esc(aiGeneration(ctx.person && ctx.person.shi || n.shi)) + '</small><strong>' + esc(aiPersonName(ctx.person || n)) + '</strong><em>' + (en ? 'Adoption / inheritance' : '出继 / 入继') + '</em></div>' +
+      (ctx.target ? '<div class="ai-adopt-down"></div><div class="ai-adopt-target ai-adopt-node"><small>' + esc(aiGeneration(ctx.target.shi)) + '</small><strong>' + esc(aiPersonName(ctx.target)) + '</strong></div>' : '') +
+      '<div class="ai-adoption-source">' + esc(en ? aiText(ctx.source, 'Adoption / inheritance relationship') : (ctx.source || '')) + '</div>';
     return section;
   }
 
@@ -1264,17 +1287,18 @@
     if (!nodes || !nodes.length) return;
     closeTreeOverlay();
     var last = nodes[nodes.length - 1];
+    var en = isEnglishUi();
     var ov = document.createElement('div');
     ov.id = 'ai-tree-overlay';
     ov.innerHTML =
       '<div class="ai-tree-modal">' +
-      '  <div class="ai-tree-head"><span class="ai-tree-title">🌳 世系图 · 从炎帝神农氏到' + esc(last.name) + '</span>' +
+      '  <div class="ai-tree-head"><span class="ai-tree-title">' + (en ? '🌳 Lineage chart · Emperor Yan, Shennong → ' + esc(aiPersonName(last)) : '🌳 世系图 · 从炎帝神农氏到' + esc(last.name)) + '</span>' +
       '    <span class="ai-tree-headbtns">' +
-      '      <button type="button" class="ai-tree-back" aria-label="返回族谱查询" title="返回族谱查询">↩ 返回族谱查询</button>' +
-      '      <button type="button" class="ai-tree-fs" aria-label="全屏查看世系图" title="全屏查看世系图">⛶</button>' +
-      '      <button type="button" class="ai-tree-stop" aria-label="暂停口播" title="暂停口播" hidden>⏸</button>' +
-      '      <button type="button" class="ai-tree-sound" aria-label="' + (ttsMuted ? '打开声音' : '静音') + '" title="' + (ttsMuted ? '打开声音' : '静音') + '">' + (ttsMuted ? '🔇' : '🔊') + '</button>' +
-      '      <button type="button" class="ai-tree-close" aria-label="关闭">✕</button>' +
+      '      <button type="button" class="ai-tree-back" aria-label="' + (en ? 'Back to Genealogy' : '返回族谱查询') + '" title="' + (en ? 'Back to Genealogy' : '返回族谱查询') + '">↩ ' + (en ? 'Back to Genealogy' : '返回族谱查询') + '</button>' +
+      '      <button type="button" class="ai-tree-fs" aria-label="' + (en ? 'View lineage chart fullscreen' : '全屏查看世系图') + '" title="' + (en ? 'View lineage chart fullscreen' : '全屏查看世系图') + '">⛶</button>' +
+      '      <button type="button" class="ai-tree-stop" aria-label="' + (en ? 'Pause narration' : '暂停口播') + '" title="' + (en ? 'Pause narration' : '暂停口播') + '" hidden>⏸</button>' +
+      '      <button type="button" class="ai-tree-sound" aria-label="' + (ttsMuted ? (en ? 'Turn sound on' : '打开声音') : (en ? 'Mute' : '静音')) + '" title="' + (ttsMuted ? (en ? 'Turn sound on' : '打开声音') : (en ? 'Mute' : '静音')) + '">' + (ttsMuted ? '🔇' : '🔊') + '</button>' +
+      '      <button type="button" class="ai-tree-close" aria-label="' + (en ? 'Close' : '关闭') + '">✕</button>' +
       '    </span></div>' +
       '  <div class="ai-tree-body"></div>' +
       '</div>';
@@ -1286,13 +1310,13 @@
       var row = document.createElement('div');
       row.className = 'ai-tree-node' + (n.isSelf ? ' self' : '');
       var badges = '';
-      if (n.adopt) badges += '<span class="ai-tree-badge adopt" title="' + esc(n.adopt) + '">⚠ ' + esc(n.adopt) + '</span>';
-      if (n.branch) badges += '<span class="ai-tree-badge ' + branchCls(n.branch) + '">' + esc(n.branch) + '</span>';
+      if (n.adopt) badges += '<span class="ai-tree-badge adopt" title="' + esc(en ? aiText(n.adopt, 'Adoption / inheritance') : n.adopt) + '">⚠ ' + esc(en ? aiText(n.adopt, 'Adoption / inheritance') : n.adopt) + '</span>';
+      if (n.branch) badges += '<span class="ai-tree-badge ' + branchCls(n.branch) + '">' + esc(en ? aiText(n.branch, 'Branch') : n.branch) + '</span>';
       var note = n.adopt ? '' : (n.note ? n.note : '');
       row.innerHTML =
-        '<div class="ai-tree-sh"><span class="ai-tree-shi">第' + esc(n.shi) + '世</span>' + (n.isSelf ? '<span class="ai-tree-you">' + esc(ownerIsSelf ? '您' : n.name) + '</span>' : '') + '</div>' +
-        '<div class="ai-tree-name">' + esc(n.name) + '</div>' +
-        (note ? '<div class="ai-tree-note">' + esc(note) + '</div>' : '') +
+        '<div class="ai-tree-sh"><span class="ai-tree-shi">' + esc(aiGeneration(n.shi)) + '</span>' + (n.isSelf ? '<span class="ai-tree-you">' + esc(en ? (ownerIsSelf ? 'You' : aiPersonName(n)) : (ownerIsSelf ? '您' : n.name)) + '</span>' : '') + '</div>' +
+        '<div class="ai-tree-name">' + esc(en ? aiPersonName(n) : n.name) + '</div>' +
+        (note ? '<div class="ai-tree-note">' + esc(en ? aiText(note, 'Genealogy note') : note) + '</div>' : '') +
         (badges ? '<div class="ai-tree-badges">' + badges + '</div>' : '');
       // 第三项已在弹层顶部单独展示完整关系图；其他直线世系则在关系节点处直接展开图二式分支。
       if (inlineAdoptionGraph !== false && n.adoptionDetail) {
@@ -1339,9 +1363,10 @@
     var fs = ov.classList.toggle('ai-tree-fs');
     var btn = ov.querySelector('.ai-tree-fs');
     if (btn) {
+      var en = isEnglishUi();
       btn.textContent = fs ? '🗗' : '⛶';
-      btn.title = fs ? '退出全屏' : '全屏查看世系图';
-      btn.setAttribute('aria-label', fs ? '退出全屏' : '全屏查看世系图');
+      btn.title = fs ? (en ? 'Exit fullscreen' : '退出全屏') : (en ? 'View lineage chart fullscreen' : '全屏查看世系图');
+      btn.setAttribute('aria-label', btn.title);
       btn.setAttribute('aria-pressed', String(fs));
     }
   }
@@ -1368,11 +1393,14 @@
   // 并在同一张图的末端追加图示化的亲生父亲/继父分叉关系。
   function showFullLineageAdoptionOverlay(nodes, ownerIsSelf) {
     if (!nodes || !nodes.length) return;
+    var en = isEnglishUi();
     showTreeOverlay(nodes, ownerIsSelf, false);
     var target = nodes.find(function (n) { return n && n.adoptionDetail; });
     if (!target || !treeOverlay) return;
     var fullTitle = treeOverlay.querySelector('.ai-tree-title');
-    if (fullTitle) fullTitle.textContent = '🌳 世系图 · 从炎帝神农氏到' + target.name + '（完整出继 / 入继关系）';
+    if (fullTitle) fullTitle.textContent = en
+      ? '🌳 Lineage chart · Emperor Yan, Shennong → ' + aiPersonName(target) + ' (complete adoption / inheritance)'
+      : '🌳 世系图 · 从炎帝神农氏到' + target.name + '（完整出继 / 入继关系）';
     var d = target.adoptionDetail || {};
     var ctx = d.context || {
       person: { name: target.name, shi: target.shi },
@@ -1388,24 +1416,24 @@
     var siblingNodes = (ctx.siblings || []).map(function (p) {
       var cls = ctx.biologicalParent && p.name === ctx.biologicalParent.name ? ' biological' :
         (ctx.adoptiveParent && p.name === ctx.adoptiveParent.name ? ' adoptive' : '');
-      return '<div class="ai-adopt-node' + cls + '"><small>第' + esc(p.shi) + '世</small><strong>' + esc(p.name) + '</strong>' +
-        (cls === ' biological' ? '<em>亲生父亲 · 血缘50%</em>' : (cls === ' adoptive' ? '<em>继父（承嗣父） · 血缘0%</em>' : '')) + '</div>';
+      return '<div class="ai-adopt-node' + cls + '"><small>' + esc(aiGeneration(p.shi)) + '</small><strong>' + esc(aiPersonName(p)) + '</strong>' +
+        (cls === ' biological' ? '<em>' + (en ? 'Biological father · 50% blood relation' : '亲生父亲 · 血缘50%') + '</em>' : (cls === ' adoptive' ? '<em>' + (en ? 'Adoptive father · 0% blood relation' : '继父（承嗣父） · 血缘0%') + '</em>' : '')) + '</div>';
     }).join('');
     if (!siblingNodes) {
-      siblingNodes = (ctx.biologicalParent ? '<div class="ai-adopt-node biological"><small>第' + esc(ctx.biologicalParent.shi) + '世</small><strong>' + esc(ctx.biologicalParent.name) + '</strong><em>亲生父亲 · 血缘50%</em></div>' : '') +
-        (ctx.adoptiveParent ? '<div class="ai-adopt-node adoptive"><small>第' + esc(ctx.adoptiveParent.shi) + '世</small><strong>' + esc(ctx.adoptiveParent.name) + '</strong><em>继父（承嗣父） · 血缘0%</em></div>' : '');
+      siblingNodes = (ctx.biologicalParent ? '<div class="ai-adopt-node biological"><small>' + esc(aiGeneration(ctx.biologicalParent.shi)) + '</small><strong>' + esc(aiPersonName(ctx.biologicalParent)) + '</strong><em>' + (en ? 'Biological father · 50% blood relation' : '亲生父亲 · 血缘50%') + '</em></div>' : '') +
+        (ctx.adoptiveParent ? '<div class="ai-adopt-node adoptive"><small>' + esc(aiGeneration(ctx.adoptiveParent.shi)) + '</small><strong>' + esc(aiPersonName(ctx.adoptiveParent)) + '</strong><em>' + (en ? 'Adoptive father · 0% blood relation' : '继父（承嗣父） · 血缘0%') + '</em></div>' : '');
     }
     map.innerHTML =
-      '<div class="ai-adoption-title"><b>出继 / 入继关系详图</b><span>完整直线世系末端关系</span></div>' +
-      (ctx.commonAncestor ? '<div class="ai-adopt-root ai-adopt-node"><small>第' + esc(ctx.commonAncestor.shi) + '世</small><strong>' + esc(ctx.commonAncestor.name) + '</strong></div>' : '') +
+      '<div class="ai-adoption-title"><b>' + (en ? 'Adoption / inheritance details' : '出继 / 入继关系详图') + '</b><span>' + (en ? 'Relationship at the end of the direct lineage' : '完整直线世系末端关系') + '</span></div>' +
+      (ctx.commonAncestor ? '<div class="ai-adopt-root ai-adopt-node"><small>' + esc(aiGeneration(ctx.commonAncestor.shi)) + '</small><strong>' + esc(aiPersonName(ctx.commonAncestor)) + '</strong></div>' : '') +
       '<div class="ai-adopt-parent-row">' + siblingNodes + '</div>' +
       '<div class="ai-adopt-connection-grid">' +
-      '  <div class="ai-adopt-connection biological"><i></i><span>亲生父子 · 血缘50%</span></div>' +
-      '  <div class="ai-adopt-connection adoptive"><i></i><span>出继给 / 入继为嗣 · 血缘0%</span></div>' +
+      '  <div class="ai-adopt-connection biological"><i></i><span>' + (en ? 'Biological father and son · 50% blood relation' : '亲生父子 · 血缘50%') + '</span></div>' +
+      '  <div class="ai-adopt-connection adoptive"><i></i><span>' + (en ? 'Given out / adopted as heir · 0% blood relation' : '出继给 / 入继为嗣 · 血缘0%') + '</span></div>' +
       '</div>' +
-      '<div class="ai-adopt-person ai-adopt-node"><small>第' + esc(ctx.person && ctx.person.shi || target.shi) + '世</small><strong>' + esc(ctx.person && ctx.person.name || target.name) + '</strong><em>出继 / 入继</em></div>' +
-      (ctx.target ? '<div class="ai-adopt-down"></div><div class="ai-adopt-target ai-adopt-node"><small>第' + esc(ctx.target.shi) + '世</small><strong>' + esc(ctx.target.name) + '</strong></div>' : '') +
-      '<div class="ai-adoption-source">' + esc(ctx.source || '') + '</div>';
+      '<div class="ai-adopt-person ai-adopt-node"><small>' + esc(aiGeneration(ctx.person && ctx.person.shi || target.shi)) + '</small><strong>' + esc(aiPersonName(ctx.person || target)) + '</strong><em>' + (en ? 'Adoption / inheritance' : '出继 / 入继') + '</em></div>' +
+      (ctx.target ? '<div class="ai-adopt-down"></div><div class="ai-adopt-target ai-adopt-node"><small>' + esc(aiGeneration(ctx.target.shi)) + '</small><strong>' + esc(aiPersonName(ctx.target)) + '</strong></div>' : '') +
+      '<div class="ai-adoption-source">' + esc(en ? aiText(ctx.source, 'Adoption / inheritance relationship') : (ctx.source || '')) + '</div>';
     var body = treeOverlay.querySelector('.ai-tree-body');
     // 关系图先呈现，打开后立即看到类似参考图一的出继/入继分叉；
     // 下方继续保留炎帝→目标人物的完整直线世系，避免用户还要翻到页面底部才看到关系图。
@@ -1417,21 +1445,22 @@
   var closestOverlay = null;
   /* 血缘树节点（#82）：递归生成 <li> 结构，ul/li 经典 CSS 树连接线由 .ai-cl-tree 控制 */
   function renderClosestNode(node) {
+    var en = isEnglishUi();
     var tierCls = node.self ? ' self' : (node.tier ? ' t' + node.tier : '');
     var shared = node.shared ? '<em>' + node.shared + '%</em>' : '';
     var people = (node.people && node.people.length)
       ? node.people.map(function (p) {
-          return '<span class="ai-cl-p' + (p.alive ? '' : ' dead') + '">' + esc(p.name) + '</span>';
+          return '<span class="ai-cl-p' + (p.alive ? '' : ' dead') + '">' + esc(en ? aiPersonName(p) : p.name) + '</span>';
         }).join('')
-      : '<span class="ai-cl-p empty">暂无记录</span>';
-    var note = node.note ? '<div class="ai-cl-note">' + esc(node.note) + '</div>' : '';
+      : '<span class="ai-cl-p empty">' + (en ? 'No record' : '暂无记录') + '</span>';
+    var note = node.note ? '<div class="ai-cl-note">' + esc(en ? aiText(node.note, 'Genealogy note') : node.note) + '</div>' : '';
     var children = '';
     if (node.children && node.children.length) {
       children = '<ul>' + node.children.map(renderClosestNode).join('') + '</ul>';
     }
     return '<li>' +
       '<div class="ai-cl-node' + tierCls + '">' +
-        '<div class="ai-cl-rel">' + esc(node.rel) + shared + '</div>' +
+        '<div class="ai-cl-rel">' + esc(en ? aiText(node.rel, 'Relative') : node.rel) + shared + '</div>' +
         '<div class="ai-cl-ppl">' + people + '</div>' +
         note +
       '</div>' + children +
@@ -1492,7 +1521,13 @@
       if (!ov) return;
       var fs = ov.classList.toggle('ai-closest-fs');
       var btn = ov.querySelector('.ai-cl-fsbtn');
-      if (btn) { btn.textContent = fs ? '🗗' : '⛶'; btn.title = fs ? '退出全屏' : '全屏'; }
+      if (btn) {
+        btn.textContent = fs ? '🗗' : '⛶';
+        btn.title = fs
+          ? (isEnglishUi() ? 'Exit fullscreen' : '退出全屏')
+          : (isEnglishUi() ? 'Fullscreen' : '全屏');
+        btn.setAttribute('aria-label', btn.title);
+      }
       // 全屏/退出后视口尺寸变化，重新适配并居中到「您本人」
       requestAnimationFrame(function () {
         z = 1; applyZoom(1);
@@ -1575,21 +1610,22 @@
     closeClosestOverlay();
     var ov = document.createElement('div');
     ov.id = 'ai-closest-overlay';
+    var en = isEnglishUi();
     // 查任意族人时（如「和沦最亲的10个人」），标题带上被查者姓名
     var tName = (tree && tree.targetName) || '';
     var title = (tree && tree.adoptions && tree.adoptions.length && !(tree && tree.root))
-      ? '出继 / 入继关系图' + (tName ? ' · ' + tName : '')
+      ? (en ? 'Adoption / inheritance chart' + (tName ? ' · ' + aiPersonName({ id: tree.targetId }) : '') : '出继 / 入继关系图' + (tName ? ' · ' + tName : ''))
       : (tree && tree.root)
-      ? '家族血缘关系图' + (tName && tName !== '您' ? ' · ' + tName : '')
-      : ('❤️ 与您血缘最近的 ' + list.length + ' 位族人');
+      ? (en ? 'Family relationship chart' + (tName && tName !== '您' ? ' · ' + aiPersonName({ id: tree.targetId }) : '') : '家族血缘关系图' + (tName && tName !== '您' ? ' · ' + tName : ''))
+      : (en ? '❤️ Closest relatives by shared DNA · ' + list.length + ' members' : '❤️ 与您血缘最近的 ' + list.length + ' 位族人');
     ov.innerHTML =
       '<div class="ai-closest-modal">' +
       '  <div class="ai-tree-head"><span class="ai-tree-title">' + title + '</span>' +
       '    <span class="ai-tree-headbtns">' +
-      '      <button type="button" class="ai-closest-back" aria-label="返回族谱查询" title="返回族谱查询">↩ 返回族谱查询</button>' +
-      '      <button type="button" class="ai-closest-sound" aria-label="' + (ttsMuted ? '打开声音' : '静音') + '" title="' + (ttsMuted ? '打开声音' : '静音') + '">' + (ttsMuted ? '🔇' : '🔊') + '</button>' +
-      '      <button type="button" class="ai-closest-stop" aria-label="暂停口播" title="暂停口播" hidden>⏸</button>' +
-      '      <button type="button" class="ai-closest-close" aria-label="关闭">✕</button>' +
+      '      <button type="button" class="ai-closest-back" aria-label="' + (en ? 'Back to Genealogy' : '返回族谱查询') + '" title="' + (en ? 'Back to Genealogy' : '返回族谱查询') + '">↩ ' + (en ? 'Back to Genealogy' : '返回族谱查询') + '</button>' +
+      '      <button type="button" class="ai-closest-sound" aria-label="' + (ttsMuted ? (en ? 'Turn sound on' : '打开声音') : (en ? 'Mute' : '静音')) + '" title="' + (ttsMuted ? (en ? 'Turn sound on' : '打开声音') : (en ? 'Mute' : '静音')) + '">' + (ttsMuted ? '🔇' : '🔊') + '</button>' +
+      '      <button type="button" class="ai-closest-stop" aria-label="' + (en ? 'Pause narration' : '暂停口播') + '" title="' + (en ? 'Pause narration' : '暂停口播') + '" hidden>⏸</button>' +
+      '      <button type="button" class="ai-closest-close" aria-label="' + (en ? 'Close' : '关闭') + '">✕</button>' +
       '    </span></div>' +
       '  <div class="ai-closest-body"></div>' +
       '</div>';
@@ -1603,20 +1639,20 @@
         var siblingNodes = (ctx.siblings || []).map(function (p) {
           var cls = ctx.biologicalParent && p.name === ctx.biologicalParent.name ? ' biological' :
             (ctx.adoptiveParent && p.name === ctx.adoptiveParent.name ? ' adoptive' : '');
-          return '<div class="ai-adopt-node' + cls + '"><small>第' + esc(p.shi) + '世</small><strong>' + esc(p.name) + '</strong>' +
-            (cls === ' biological' ? '<em>亲生父亲 · 血缘50%</em>' : (cls === ' adoptive' ? '<em>继父（承嗣父） · 血缘0%</em>' : '')) + '</div>';
+          return '<div class="ai-adopt-node' + cls + '"><small>' + esc(aiGeneration(p.shi)) + '</small><strong>' + esc(aiPersonName(p)) + '</strong>' +
+            (cls === ' biological' ? '<em>' + (en ? 'Biological father · 50% blood relation' : '亲生父亲 · 血缘50%') + '</em>' : (cls === ' adoptive' ? '<em>' + (en ? 'Adoptive father · 0% blood relation' : '继父（承嗣父） · 血缘0%') + '</em>' : '')) + '</div>';
         }).join('');
         if (!siblingNodes) {
-          siblingNodes = (ctx.biologicalParent ? '<div class="ai-adopt-node biological"><small>第' + esc(ctx.biologicalParent.shi) + '世</small><strong>' + esc(ctx.biologicalParent.name) + '</strong><em>亲生父亲 · 血缘50%</em></div>' : '') +
-            (ctx.adoptiveParent ? '<div class="ai-adopt-node adoptive"><small>第' + esc(ctx.adoptiveParent.shi) + '世</small><strong>' + esc(ctx.adoptiveParent.name) + '</strong><em>继父（承嗣父） · 血缘0%</em></div>' : '');
+          siblingNodes = (ctx.biologicalParent ? '<div class="ai-adopt-node biological"><small>' + esc(aiGeneration(ctx.biologicalParent.shi)) + '</small><strong>' + esc(aiPersonName(ctx.biologicalParent)) + '</strong><em>' + (en ? 'Biological father · 50% blood relation' : '亲生父亲 · 血缘50%') + '</em></div>' : '') +
+            (ctx.adoptiveParent ? '<div class="ai-adopt-node adoptive"><small>' + esc(aiGeneration(ctx.adoptiveParent.shi)) + '</small><strong>' + esc(aiPersonName(ctx.adoptiveParent)) + '</strong><em>' + (en ? 'Adoptive father · 0% blood relation' : '继父（承嗣父） · 血缘0%') + '</em></div>' : '');
         }
         card.innerHTML =
-          '<div class="ai-adoption-title"><b>出继 / 入继关系详图</b><span>' + esc(ctx.source || '') + '</span></div>' +
-          (ctx.commonAncestor ? '<div class="ai-adopt-root ai-adopt-node"><small>第' + esc(ctx.commonAncestor.shi) + '世</small><strong>' + esc(ctx.commonAncestor.name) + '</strong></div>' : '') +
+          '<div class="ai-adoption-title"><b>' + (en ? 'Adoption / inheritance details' : '出继 / 入继关系详图') + '</b><span>' + esc(en ? aiText(ctx.source, 'Adoption / inheritance relationship') : (ctx.source || '')) + '</span></div>' +
+          (ctx.commonAncestor ? '<div class="ai-adopt-root ai-adopt-node"><small>' + esc(aiGeneration(ctx.commonAncestor.shi)) + '</small><strong>' + esc(aiPersonName(ctx.commonAncestor)) + '</strong></div>' : '') +
           '<div class="ai-adopt-parent-row">' + siblingNodes + '</div>' +
-          '<div class="ai-adopt-links"><i class="bio"></i><span>亲生父子</span><i class="adopt"></i><span>出继入嗣</span></div>' +
-          '<div class="ai-adopt-person ai-adopt-node"><small>第' + esc(ctx.person.shi) + '世</small><strong>' + esc(ctx.person.name) + '</strong><em>出继 / 入继</em></div>' +
-          (ctx.target ? '<div class="ai-adopt-down"></div><div class="ai-adopt-target ai-adopt-node"><small>第' + esc(ctx.target.shi) + '世</small><strong>' + esc(ctx.target.name) + '</strong></div>' : '');
+          '<div class="ai-adopt-links"><i class="bio"></i><span>' + (en ? 'Biological father and son' : '亲生父子') + '</span><i class="adopt"></i><span>' + (en ? 'Adoption as heir' : '出继入嗣') + '</span></div>' +
+          '<div class="ai-adopt-person ai-adopt-node"><small>' + esc(aiGeneration(ctx.person.shi)) + '</small><strong>' + esc(aiPersonName(ctx.person)) + '</strong><em>' + (en ? 'Adoption / inheritance' : '出继 / 入继') + '</em></div>' +
+          (ctx.target ? '<div class="ai-adopt-down"></div><div class="ai-adopt-target ai-adopt-node"><small>' + esc(aiGeneration(ctx.target.shi)) + '</small><strong>' + esc(aiPersonName(ctx.target)) + '</strong></div>' : '');
         body.appendChild(card);
       });
     }
@@ -1641,9 +1677,9 @@
         '  </div>' +
         '</div>' +
         '<div class="ai-cl-legend">' +
-        '  <span class="ai-cl-lg t1"><i></i>第一梯队（50%）</span>' +
-        '  <span class="ai-cl-lg t2"><i></i>第二梯队（25%）</span>' +
-        '  <span class="ai-cl-lg t3"><i></i>第三梯队（12.5%）</span>' +
+        '  <span class="ai-cl-lg t1"><i></i>' + (en ? 'Tier 1 (50%)' : '第一梯队（50%）') + '</span>' +
+        '  <span class="ai-cl-lg t2"><i></i>' + (en ? 'Tier 2 (25%)' : '第二梯队（25%）') + '</span>' +
+        '  <span class="ai-cl-lg t3"><i></i>' + (en ? 'Tier 3 (12.5%)' : '第三梯队（12.5%）') + '</span>' +
         '</div>';
       body.appendChild(treeWrap);
       initClosestZoom(treeWrap);
@@ -1654,15 +1690,15 @@
       var pct = Math.round((r.shared || 0) * 100);
       var row = document.createElement('div');
       row.className = 'ai-closest-row' + ((r.shared || 0) >= 0.25 ? ' hot' : '');
-      var shi = (r.shi && Number(r.shi) >= 1) ? ' · 第' + esc(r.shi) + '世' : '';
-      var b = (r.branch && r.branch !== '—') ? '<span class="ai-closest-branch">' + esc(r.branch) + '</span>' : '';
+      var shi = (r.shi && Number(r.shi) >= 1) ? ' · ' + (en ? 'Generation ' + esc(r.shi) : '第' + esc(r.shi) + '世') : '';
+      var b = (r.branch && r.branch !== '—') ? '<span class="ai-closest-branch">' + esc(en ? aiText(r.branch, 'Branch') : r.branch) + '</span>' : '';
       row.innerHTML =
         '<span class="ai-closest-rank">' + (r.rank || (i + 1)) + '</span>' +
         '<div class="ai-closest-info">' +
-        '  <div class="ai-closest-name">' + esc(r.name) + '</div>' +
-        '  <div class="ai-closest-rel">' + esc(r.rel) + shi + '</div>' +
+        '  <div class="ai-closest-name">' + esc(en ? aiPersonName(r) : r.name) + '</div>' +
+        '  <div class="ai-closest-rel">' + esc(en ? aiText(r.rel, 'Relative') : r.rel) + shi + '</div>' +
         '</div>' +
-        '<span class="ai-closest-coef" title="基因共享率：最高 50%（父母/子女/亲兄弟姐妹），越高越亲">' + pct + '%</span>' + b;
+        '<span class="ai-closest-coef" title="' + (en ? 'Shared DNA: up to 50% for parents, children and full siblings; higher means closer' : '基因共享率：最高 50%（父母/子女/亲兄弟姐妹），越高越亲') + '">' + pct + '%</span>' + b;
         frag.appendChild(row);
       });
       body.appendChild(frag);
@@ -1811,7 +1847,7 @@
       var name = String(quickName && quickName.value || '').trim();
       var err = $('#ai-quick-error', panel);
       if (!name) {
-        if (err) err.textContent = '请先填写要查询的族人姓名';
+        if (err) err.textContent = isEnglishUi() ? 'Please enter a family member name to search' : '请先填写要查询的族人姓名';
         if (quickName) quickName.focus();
         return;
       }

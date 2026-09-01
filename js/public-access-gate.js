@@ -111,6 +111,13 @@
   }
   function getBackdrop() { return document.getElementById('public-access-backdrop'); }
   function getBody() { return document.getElementById('public-access-body'); }
+  function localizedAccessText(value) {
+    if (!(window.getLang && window.getLang() === 'en') || !window.translateString) return value;
+    var translated = window.translateString(value, 'en');
+    return translated.indexOf('[Source text pending translation]') === -1
+      ? translated
+      : 'The request could not be completed. Please try again.';
+  }
   function close() {
     if (!state.authenticated) {
       var body = getBody();
@@ -122,7 +129,7 @@
           note.className = 'public-access-message';
           body.appendChild(note);
         }
-        note.textContent = '请先完成隐私确认和身份核验，才能进入网站。';
+        note.textContent = localizedAccessText('请先完成隐私确认和身份核验，才能进入网站。');
       }
       return;
     }
@@ -140,7 +147,7 @@
   }
   function showMessage(message, success) {
     var el = document.getElementById('public-access-message');
-    if (el) { el.textContent = message || ''; el.classList.toggle('success', !!success); }
+    if (el) { el.textContent = localizedAccessText(message || ''); el.classList.toggle('success', !!success); }
   }
   function actions(backLabel) {
     return '<div class="public-access-actions"><button class="public-access-btn" type="button" data-access-action="back">' + (backLabel || '上一步') + '</button><button class="public-access-btn primary" type="button" data-access-action="submit">确认进入</button></div>';
@@ -222,7 +229,7 @@
     state.provider = provider;
     if (state.step === 'role') {
       var status = document.getElementById('public-access-provider-status');
-      if (status) status.textContent = provider === 'wechat' ? '已选择微信登录；服务器配置官方授权参数后将进入微信授权。' : '已选择手机号登录；族人仍需完成三代信息核验。';
+      if (status) status.textContent = localizedAccessText(provider === 'wechat' ? '已选择微信登录；服务器配置官方授权参数后将进入微信授权。' : '已选择手机号登录；族人仍需完成三代信息核验。');
       return;
     }
     render();

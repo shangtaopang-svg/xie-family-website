@@ -6,6 +6,11 @@
 (function () {
   'use strict';
 
+  function localizedRouteText(value) {
+    if (!(window.getLang && window.getLang() === 'en') || !window.translateString) return value;
+    return window.translateString(value, 'en');
+  }
+
   var ROUTE = [
     { lng: 112.454, lat: 34.620, name: '谢邑',       fullName: '河南洛阳',                  year: '前806年', era: '周代', desc: '周宣王封申伯于谢邑，谢氏得姓' },
     { lng: 120.883, lat: 29.775, name: '东山会稽',   fullName: '浙江绍兴·上虞区上浦镇东山村', year: '东汉-东晋', era: '六朝', desc: '传36世，乌衣巷王谢世家' },
@@ -313,12 +318,12 @@
       var segStyle = SEGMENT_STYLES[Math.min(i, SEGMENT_STYLES.length - 1)] || { color: '#888' };
       var popupHtml = '<div style="font-family:sans-serif;min-width:220px;max-width:280px;">' +
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,0.1);">' +
-        '<span style="background:' + segStyle.color + ';color:#fff;font-size:11px;font-weight:700;padding:2px 10px;border-radius:4px;letter-spacing:1px;">' + wp.era + '</span>' +
-        '<span style="font-size:12px;color:#555;">' + wp.year + '</span>' +
+        '<span style="background:' + segStyle.color + ';color:#fff;font-size:11px;font-weight:700;padding:2px 10px;border-radius:4px;letter-spacing:1px;">' + localizedRouteText(wp.era) + '</span>' +
+        '<span style="font-size:12px;color:#555;">' + localizedRouteText(wp.year) + '</span>' +
         '</div>' +
-        '<div style="font-size:17px;font-weight:700;margin-bottom:3px;">节点' + (i+1) + ': ' + wp.name + '</div>' +
-        '<div style="font-size:12px;color:#888;margin-bottom:6px;">' + wp.fullName + '</div>' +
-        '<div style="font-size:13px;color:#555;line-height:1.6;">' + wp.desc + '</div>' +
+        '<div style="font-size:17px;font-weight:700;margin-bottom:3px;">' + (window.getLang && window.getLang() === 'en' ? 'Node ' + (i + 1) : '节点' + (i + 1)) + ': ' + localizedRouteText(wp.name) + '</div>' +
+        '<div style="font-size:12px;color:#888;margin-bottom:6px;">' + localizedRouteText(wp.fullName) + '</div>' +
+        '<div style="font-size:13px;color:#555;line-height:1.6;">' + localizedRouteText(wp.desc) + '</div>' +
         '</div>';
       var cm = L.circleMarker([wp.lat, wp.lng], {
         radius: 22,
@@ -396,12 +401,12 @@
 
     if (infoPanel) {
       infoPanel.querySelector('.n-num').textContent = '节点' + (idx + 1);
-      infoPanel.querySelector('.n-era').textContent = wp.era;
+      infoPanel.querySelector('.n-era').textContent = localizedRouteText(wp.era);
       infoPanel.querySelector('.n-era').style.background = segStyle.color;
-      infoPanel.querySelector('.n-year').textContent = wp.year;
-      infoPanel.querySelector('.n-name').textContent = wp.name;
-      infoPanel.querySelector('.n-addr').textContent = wp.fullName;
-      infoPanel.querySelector('.n-desc').textContent = wp.desc;
+      infoPanel.querySelector('.n-year').textContent = localizedRouteText(wp.year);
+      infoPanel.querySelector('.n-name').textContent = localizedRouteText(wp.name);
+      infoPanel.querySelector('.n-addr').textContent = localizedRouteText(wp.fullName);
+      infoPanel.querySelector('.n-desc').textContent = localizedRouteText(wp.desc);
       infoPanel.classList.add('show');
     }
   }

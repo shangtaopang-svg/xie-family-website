@@ -6,6 +6,11 @@
 (function () {
   'use strict';
 
+  function localizedRouteText(value) {
+    if (!(window.getLang && window.getLang() === 'en') || !window.translateString) return value;
+    return window.translateString(value, 'en');
+  }
+
   var ROUTE = [
     {
       lng: 112.454, lat: 34.620,
@@ -175,7 +180,7 @@
       // 地名标注
       var labelIcon = L.divIcon({
         className: 'gm-label',
-        html: '<div style="color:#fff;font-size:13px;font-weight:600;text-shadow:0 1px 6px rgba(0,0,0,0.9),0 0 12px rgba(0,0,0,0.6);white-space:nowrap;pointer-events:none;text-align:center;">' + wp.name + '</div>',
+        html: '<div style="color:#fff;font-size:13px;font-weight:600;text-shadow:0 1px 6px rgba(0,0,0,0.9),0 0 12px rgba(0,0,0,0.6);white-space:nowrap;pointer-events:none;text-align:center;">' + localizedRouteText(wp.name) + '</div>',
         iconSize: [80, 18], iconAnchor: [40, -8]
       });
       L.marker([wp.lat, wp.lng], { icon: labelIcon, interactive: false }).addTo(map);
@@ -252,12 +257,12 @@
     currentHighlightIdx = idx;
     var wp = ROUTE[idx];
     var colors = ['#d4a037','#22d3ee','#a78bfa','#fb923c','#fb923c','#ef4444'];
-    infoPanel.querySelector('.gm-info-era').textContent = wp.era;
+    infoPanel.querySelector('.gm-info-era').textContent = localizedRouteText(wp.era);
     infoPanel.querySelector('.gm-info-era').style.background = colors[idx];
-    infoPanel.querySelector('.gm-info-year').textContent = wp.year;
-    infoPanel.querySelector('.gm-info-name').textContent = wp.icon + ' ' + wp.name;
-    infoPanel.querySelector('.gm-info-addr').textContent = '📍 ' + wp.fullName;
-    infoPanel.querySelector('.gm-info-desc').textContent = wp.desc;
+    infoPanel.querySelector('.gm-info-year').textContent = localizedRouteText(wp.year);
+    infoPanel.querySelector('.gm-info-name').textContent = wp.icon + ' ' + localizedRouteText(wp.name);
+    infoPanel.querySelector('.gm-info-addr').textContent = '📍 ' + localizedRouteText(wp.fullName);
+    infoPanel.querySelector('.gm-info-desc').textContent = localizedRouteText(wp.desc);
 
     // 距离信息
     var distText = '';

@@ -1823,25 +1823,35 @@ function compareGeneration() {
   var nameA = document.getElementById('gen-compare-a').value.trim();
   var nameB = document.getElementById('gen-compare-b').value.trim();
   var resultEl = document.getElementById('gen-compare-result');
-  if (!nameA || !nameB) { resultEl.textContent = '请输入两人姓名'; resultEl.style.color = 'var(--accent-red)'; return; }
+  var isEnglish = window.getLang && window.getLang() === 'en';
+  if (!nameA || !nameB) { resultEl.textContent = isEnglish ? 'Enter two names' : '请输入两人姓名'; resultEl.style.color = 'var(--accent-red)'; return; }
   var pA = null, pB = null;
   for (var i = 0; i < data.length; i++) {
     if (data[i].name === nameA) pA = data[i];
     if (data[i].name === nameB) pB = data[i];
   }
-  if (!pA || !pB) { resultEl.textContent = '未找到「' + (!pA ? nameA : nameB) + '」'; resultEl.style.color = 'var(--accent-red)'; return; }
+  if (!pA || !pB) { resultEl.textContent = isEnglish ? 'Person not found' : '未找到「' + (!pA ? nameA : nameB) + '」'; resultEl.style.color = 'var(--accent-red)'; return; }
   var genA = parseInt(pA.generation_num) || 0;
   var genB = parseInt(pB.generation_num) || 0;
   var diff = Math.abs(genA - genB);
-  var elder = genA < genB ? pA.name : pB.name;
-  var younger = genA < genB ? pB.name : pA.name;
-  var genDiff = genA < genB ? genB - genA : genA - genB;
+  var displayA = displayGenealogyName(pA);
+  var displayB = displayGenealogyName(pB);
+  var elder = genA < genB ? displayA : displayB;
+  var younger = genA < genB ? displayB : displayA;
   var relation = '';
-  if (diff === 0) relation = '同辈（兄弟/姐妹）';
-  else if (diff === 1) relation = elder + ' 是 ' + younger + ' 的父/母辈';
-  else if (diff === 2) relation = elder + ' 是 ' + younger + ' 的祖父母辈';
-  else relation = elder + ' 是 ' + younger + ' 的上' + diff + '世祖辈';
-  resultEl.innerHTML = '<span style="color:var(--accent-orange);font-weight:600;">' + escapeHtml(pA.name) + '</span>（第' + genA + '世） vs <span style="color:var(--accent-orange);font-weight:600;">' + escapeHtml(pB.name) + '</span>（第' + genB + '世）<br><span style="font-weight:600;">相差 ' + diff + ' 代 · ' + relation + '</span>';
+  if (isEnglish) {
+    if (diff === 0) relation = 'Same generation (siblings)';
+    else if (diff === 1) relation = elder + ' is a parent of ' + younger;
+    else if (diff === 2) relation = elder + ' is a grandparent of ' + younger;
+    else relation = elder + ' is ' + diff + ' generations above ' + younger;
+    resultEl.innerHTML = '<span style="color:var(--accent-orange);font-weight:600;">' + escapeHtml(displayA) + '</span> (Generation ' + genA + ') vs <span style="color:var(--accent-orange);font-weight:600;">' + escapeHtml(displayB) + '</span> (Generation ' + genB + ')<br><span style="font-weight:600;">Difference: ' + diff + ' generations · ' + relation + '</span>';
+  } else {
+    if (diff === 0) relation = '同辈（兄弟/姐妹）';
+    else if (diff === 1) relation = elder + ' 是 ' + younger + ' 的父/母辈';
+    else if (diff === 2) relation = elder + ' 是 ' + younger + ' 的祖父母辈';
+    else relation = elder + ' 是 ' + younger + ' 的上' + diff + '世祖辈';
+    resultEl.innerHTML = '<span style="color:var(--accent-orange);font-weight:600;">' + escapeHtml(pA.name) + '</span>（第' + genA + '世） vs <span style="color:var(--accent-orange);font-weight:600;">' + escapeHtml(pB.name) + '</span>（第' + genB + '世）<br><span style="font-weight:600;">相差 ' + diff + ' 代 · ' + relation + '</span>';
+  }
   resultEl.style.color = 'var(--text-primary)';
   // Also locate both in tree
   var cardA = document.querySelector('.tree-html-card[data-id="' + pA.id + '"]');
@@ -2971,10 +2981,11 @@ function locateInTree(personId) {
     var name2 = document.getElementById('relation-p2').value;
     var resultEl = document.getElementById('relation-result');
     var pathEl = document.getElementById('relation-ancestor-path');
+    var isEnglish = window.getLang && window.getLang() === 'en';
 
     if (!name1 || !name2) {
       resultEl.style.display = 'block';
-      resultEl.innerHTML = '<div style="padding:12px;background:var(--glass-bg);border-radius:8px;text-align:center;color:var(--text-tertiary);">请输入两个人的姓名</div>';
+      resultEl.innerHTML = '<div style="padding:12px;background:var(--glass-bg);border-radius:8px;text-align:center;color:var(--text-tertiary);">' + (isEnglish ? 'Enter two names' : '请输入两个人的姓名') + '</div>';
       pathEl.style.display = 'none';
       return;
     }
@@ -2984,14 +2995,14 @@ function locateInTree(personId) {
 
     if (!p1 || !p2) {
       resultEl.style.display = 'block';
-      resultEl.innerHTML = '<div style="padding:12px;background:var(--glass-bg);border-radius:8px;text-align:center;color:var(--text-tertiary);">未找到 "' + (!p1 ? name1 : name2) + '"</div>';
+      resultEl.innerHTML = '<div style="padding:12px;background:var(--glass-bg);border-radius:8px;text-align:center;color:var(--text-tertiary);">' + (isEnglish ? 'Person not found' : '未找到 "' + (!p1 ? name1 : name2) + '"') + '</div>';
       pathEl.style.display = 'none';
       return;
     }
 
     if (p1.id === p2.id) {
       resultEl.style.display = 'block';
-      resultEl.innerHTML = '<div style="padding:16px;background:var(--glass-bg);border-radius:8px;text-align:center;font-size:16px;color:var(--text-primary);">是同一个人</div>';
+      resultEl.innerHTML = '<div style="padding:16px;background:var(--glass-bg);border-radius:8px;text-align:center;font-size:16px;color:var(--text-primary);">' + (isEnglish ? 'The same person' : '是同一个人') + '</div>';
       pathEl.style.display = 'none';
       return;
     }
@@ -3009,7 +3020,7 @@ function locateInTree(personId) {
     if (isSpouse(p1, p2) || isSpouse(p2, p1)) {
       resultEl.style.display = 'block';
       pathEl.style.display = 'none';
-      resultEl.innerHTML = '<div style="padding:20px;background:var(--glass-bg);border-radius:12px;text-align:center;"><div style="font-size:28px;font-weight:700;color:#ef4444;margin-bottom:8px;">💑 夫妻关系</div><div style="font-size:14px;color:var(--text-secondary);">' + escapeHtml(p1.name) + ' 与 ' + escapeHtml(p2.name) + ' 是夫妻</div></div>';
+      resultEl.innerHTML = '<div style="padding:20px;background:var(--glass-bg);border-radius:12px;text-align:center;"><div style="font-size:28px;font-weight:700;color:#ef4444;margin-bottom:8px;">💑 ' + (isEnglish ? 'Spousal relationship' : '夫妻关系') + '</div><div style="font-size:14px;color:var(--text-secondary);">' + escapeHtml(displayGenealogyName(p1)) + (isEnglish ? ' and ' : ' 与 ') + escapeHtml(displayGenealogyName(p2)) + (isEnglish ? ' are spouses' : ' 是夫妻') + '</div></div>';
       return;
     }
 
@@ -3043,7 +3054,21 @@ function locateInTree(personId) {
     var genDiff = Math.abs(gen1 - gen2);
     var genMin = Math.min(gen1, gen2);
 
-    if (genMin === 0) {
+    if (isEnglish) {
+      var enP1 = displayGenealogyName(p1), enP2 = displayGenealogyName(p2);
+      if (genMin === 0) {
+        if (genDiff === 1) relation = gen1 === 0 ? (enP1 + ' is a parent of ' + enP2) : (enP2 + ' is a parent of ' + enP1);
+        else if (genDiff === 2) relation = gen1 === 0 ? (enP1 + ' is a grandparent of ' + enP2) : (enP2 + ' is a grandparent of ' + enP1);
+        else relation = gen1 === 0 ? (enP1 + ' is ' + genDiff + ' generations above ' + enP2) : (enP2 + ' is ' + genDiff + ' generations above ' + enP1);
+      } else if (genMin === 1) {
+        if (genDiff === 0) relation = 'Siblings';
+        else if (genDiff === 1) relation = 'Uncle/aunt and niece/nephew';
+        else relation = 'Extended family relationship';
+      } else {
+        if (genDiff === 0) relation = 'Cousins (shared ancestor: Generation ' + commonAncestor.generation_num + ')';
+        else relation = 'Distant relatives';
+      }
+    } else if (genMin === 0) {
       if (genDiff === 1) relation = gen1 === 0 ? (escapeHtml(p1.name) + ' 是 ' + escapeHtml(p2.name) + ' 的父/母') : (escapeHtml(p2.name) + ' 是 ' + escapeHtml(p1.name) + ' 的父/母');
       else if (genDiff === 2) relation = gen1 === 0 ? (escapeHtml(p1.name) + ' 是 ' + escapeHtml(p2.name) + ' 的祖父母') : (escapeHtml(p2.name) + ' 是 ' + escapeHtml(p1.name) + ' 的祖父母');
       else relation = gen1 === 0 ? (escapeHtml(p1.name) + ' 是 ' + escapeHtml(p2.name) + ' 的上' + genDiff + '世祖') : (escapeHtml(p2.name) + ' 是 ' + escapeHtml(p1.name) + ' 的上' + genDiff + '世祖');
@@ -3059,23 +3084,23 @@ function locateInTree(personId) {
     var html = '<div style="padding:20px;background:var(--glass-bg);border-radius:12px;text-align:center;">';
     html += '<div style="font-size:28px;font-weight:700;color:var(--accent-orange);margin-bottom:8px;">' + escapeHtml(relation) + '</div>';
     html += '<div style="font-size:14px;color:var(--text-secondary);">';
-    html += escapeHtml(p1.name) + ' 与 ' + escapeHtml(p2.name);
+    html += escapeHtml(displayGenealogyName(p1)) + (isEnglish ? ' and ' : ' 与 ') + escapeHtml(displayGenealogyName(p2));
     html += '</div>';
     html += '<div style="font-size:12px;color:var(--text-tertiary);margin-top:6px;">';
-    html += '共同祖先：' + escapeHtml(displayGenealogyName(commonAncestor)) + '（第' + commonAncestor.generation_num + '世）';
+    html += isEnglish ? 'Common ancestor: ' + escapeHtml(displayGenealogyName(commonAncestor)) + ' (Generation ' + commonAncestor.generation_num + ')' : '共同祖先：' + escapeHtml(displayGenealogyName(commonAncestor)) + '（第' + commonAncestor.generation_num + '世）';
     html += '</div></div>';
     resultEl.innerHTML = html;
 
     var pathHtml = '<div style="padding:12px;background:var(--glass-bg);border-radius:8px;font-size:12px;margin-top:8px;">';
-    pathHtml += '<div style="font-weight:600;color:var(--text-primary);margin-bottom:6px;">⬆ 直系路径</div>';
+    pathHtml += '<div style="font-weight:600;color:var(--text-primary);margin-bottom:6px;">' + (isEnglish ? '⬆ Direct lineage path' : '⬆ 直系路径') + '</div>';
     pathHtml += '<div style="display:flex;flex-wrap:wrap;gap:3px;align-items:center;">';
     for (var i = 0; i < a1.length && i <= gen1; i++) {
-      pathHtml += '<span style="color:var(--accent-orange);font-weight:600;">' + escapeHtml(a1[i].name) + '</span>';
+      pathHtml += '<span style="color:var(--accent-orange);font-weight:600;">' + escapeHtml(displayGenealogyName(a1[i])) + '</span>';
       if (i < gen1) pathHtml += '<span style="color:var(--text-muted);font-size:10px;"> → </span>';
     }
     if (gen1 > 0) pathHtml += '<span style="color:var(--text-muted);font-size:12px;margin:0 6px;">|</span>';
     for (var i = 0; i < a2.length && i <= gen2; i++) {
-      pathHtml += '<span style="color:var(--accent-orange);font-weight:600;">' + escapeHtml(a2[i].name) + '</span>';
+      pathHtml += '<span style="color:var(--accent-orange);font-weight:600;">' + escapeHtml(displayGenealogyName(a2[i])) + '</span>';
       if (i < gen2) pathHtml += '<span style="color:var(--text-muted);font-size:10px;"> → </span>';
     }
     pathHtml += '</div></div>';
@@ -3116,7 +3141,7 @@ function locateInTree(personId) {
     if (children.length > 0) {
       h += '<div><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px;">\u2B07 子女（' + children.length + '\u4EBA\uFF09</div><div style="display:flex;gap:6px;flex-wrap:wrap;">';
       children.forEach(function(c) {
-        h += '<span class="locate-btn" onclick="showPersonDetail(' + c.id + ', curDetailData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC66 ' + escapeHtml(c.name) + '</span>';
+        h += '<span class="locate-btn" onclick="showPersonDetail(' + c.id + ', curDetailData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC66 ' + escapeHtml(displayGenealogyName(c)) + '</span>';
       });
       h += '</div></div>';
     }
