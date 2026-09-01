@@ -254,7 +254,7 @@
         + (item.source ? ' 来源：' + escapeHtml(item.source) : '')
         + '</div>'
         + '<div style="font-size:14px;color:var(--text-secondary);line-height:2;">' + escapeHtml(fullContent).replace(/\n/g, '<br>') + '</div>'
-        + (hasUrl ? '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--divider);"><a href="' + escapeAttr(item.url) + '" style="color:#d4793a;color:var(--accent-orange);font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:2px;">\u67e5\u770b\u539f\u6587\u94fe\u63a5 \u2192</a></div>' : '');
+        + (hasUrl ? '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--divider);"><a href="' + escapeAttr(item.url) + '" target="_self" style="color:#d4793a;color:var(--accent-orange);font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:2px;">\u67e5\u770b\u539f\u6587\u94fe\u63a5 \u2192</a></div>' : '');
       overlay.appendChild(box);
       overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
       document.body.appendChild(overlay);
@@ -298,7 +298,7 @@
           + '<span class="report-date">' + (item.date || '') + '</span>'
           + '<span class="report-title">' + escapeHtml(item.title) + '</span>'
           + '<span class="report-source">' + escapeHtml(item.source || '') + '</span>'
-          + (hasUrl ? '<a href="' + escapeAttr(item.url) + '" class="report-external-link" onclick="event.stopPropagation()">原文 →</a>' : '')
+          + (hasUrl ? '<a href="' + escapeAttr(item.url) + '" target="_self" class="report-external-link" onclick="event.stopPropagation()">原文 →</a>' : '')
           + '</div>';
       });
       if (!html) {

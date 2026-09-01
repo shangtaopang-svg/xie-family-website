@@ -275,8 +275,8 @@
         var sourceLink = document.createElement('a');
         sourceLink.className = 'article-modal-source';
         sourceLink.href = item.url;
-        sourceLink.target = '_blank';
-        sourceLink.rel = 'noopener';
+        // 原文在当前窗口打开，保留浏览器历史，这样可以直接返回消息发布页。
+        sourceLink.target = '_self';
         sourceLink.textContent = '查看来源原文 →';
         box.querySelector('.article-modal-actions').appendChild(sourceLink);
       }
