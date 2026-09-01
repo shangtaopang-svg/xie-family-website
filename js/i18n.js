@@ -3185,7 +3185,8 @@ function setLang(lang) {
 }
 
 function applyLanguage(lang) {
-  lang = lang || getLang();
+  // 语言切换入口已关闭，任何旧脚本调用也统一回到简体中文。
+  lang = 'zh';
   document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
   // Pages created before the keyed translation table may still have a plain
   // Chinese <title>. Preserve it once so switching back to Chinese is lossless.

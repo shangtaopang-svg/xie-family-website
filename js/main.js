@@ -199,8 +199,8 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 })();
 
-// ===== 中英文切换 =====
-// Handled by i18n.js (initLanguage + toggleLanguage)
+// ===== 语言设置 =====
+// 当前站点固定使用简体中文；i18n.js 仅保留旧数据兼容层。
 
 // ===== 宁海天气 + 日期 =====
 (function() {
