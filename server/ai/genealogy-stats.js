@@ -10,7 +10,20 @@ const deliverySource = require('./delivery-source.js');
 
 const COUNT_TERMS = /多少|几(?:个|位|名|人)?|总共|一共|共有|合计|人数|数量|统计/;
 const OVERALL_TERMS = /总人数|从(?:炎帝|神农氏?)(?:到|至).*(?:现在|当前|今天|如今|目前)|(?:炎帝|神农氏?).*(?:到|至).*(?:现在|当前|今天|如今|目前)|全族|全谱|整个族谱|所有世次/;
-const CUMULATIVE_TERMS = /总共|一共|合计|累计|历经|连续|共/;
+const ALIVE_TERMS = /目前在世|在世|健在|尚在|仍健|生存|未卒/;
+const DEAD_TERMS = /已故|去世|死亡|逝世|亡故|卒|殁/;
+const UNKNOWN_STATUS_TERMS = /待核验|待确认|状态不明|未标注|未知/;
+const EXPLICIT_GLOBAL_TERMS = /炎帝|神农|统一世次|全族统一|全谱统一/;
+
+// 族谱页面同时使用“炎帝统一世次”和各支系本地世次。下枫槎用户说“31代”时，
+// 通常指本宗的枫槎第31世，而不是炎帝统一编号的第31世。
+const LOCAL_GENERATION_SCOPES = [
+  { key: 'shenbo', label: '申伯', offset: 64, terms: /申伯/ },
+  { key: 'dongshan', label: '始宁东山', offset: 98, terms: /始宁|东山/ },
+  { key: 'linhai', label: '临海下渡', offset: 121, terms: /临海|下渡/ },
+  { key: 'shima', label: '石马（下谢）', offset: 129, terms: /石马|下谢/ },
+  { key: 'fengcha', label: '枫槎（下枫槎本宗）', offset: 131, terms: /枫槎|下枫槎/ }
+];
 
 function text(value) {
   return String(value == null ? '' : value).trim();
@@ -47,10 +60,55 @@ function parseGeneration(query) {
   return Number.isInteger(generation) && generation > 0 ? generation : null;
 }
 
+function lifeStatus(person) {
+  const status = text(person && (person.life_status || person.is_alive));
+  if (status === '是' || status === '否' || status === '冲突') return status;
+  return '';
+}
+
+function emptyGenerationStats() {
+  return { total: 0, alive: 0, dead: 0, unknown: 0, conflict: 0, records: [] };
+}
+
+function addPersonToGenerationStats(bucket, person) {
+  bucket.total += 1;
+  bucket.records.push(person);
+  const status = lifeStatus(person);
+  if (status === '是') bucket.alive += 1;
+  else if (status === '否') bucket.dead += 1;
+  else if (status === '冲突') bucket.conflict += 1;
+  else bucket.unknown += 1;
+}
+
+function statusFilter(query) {
+  const q = text(query);
+  if (UNKNOWN_STATUS_TERMS.test(q)) return 'unknown';
+  if (DEAD_TERMS.test(q)) return 'dead';
+  if (ALIVE_TERMS.test(q)) return 'alive';
+  return '';
+}
+
+function resolveLocalScope(query, hasExplicitGenerationPrefix) {
+  const q = text(query);
+  for (const scope of LOCAL_GENERATION_SCOPES) {
+    if (scope.terms.test(q)) return scope;
+  }
+  // “谢氏家族中31代”“目前在世的31代”均按本网站主题默认理解为下枫槎本宗的枫槎世次。
+  // 用户若明确说“炎帝第31世/统一第31世”，则走全族统一世次，不作本地世次换算。
+  if (!EXPLICIT_GLOBAL_TERMS.test(q) && !hasExplicitGenerationPrefix && /(?:代|世)/.test(q)) {
+    return LOCAL_GENERATION_SCOPES.find((scope) => scope.key === 'fengcha');
+  }
+  if (!EXPLICIT_GLOBAL_TERMS.test(q) && /谢氏|谢家|家族/.test(q) && /(?:代|世)/.test(q)) {
+    return LOCAL_GENERATION_SCOPES.find((scope) => scope.key === 'fengcha');
+  }
+  return null;
+}
+
 function loadStats() {
   const people = deliverySource.ensureLoaded();
   const records = Array.isArray(people) ? people.filter((person) => text(person && person.name)) : [];
   const generations = new Map();
+  const generationStats = new Map();
   const legacyGenerations = new Map();
   let minGeneration = Infinity;
   let maxGeneration = 0;
@@ -59,6 +117,8 @@ function loadStats() {
     const generation = Number(person.generation_num);
     if (Number.isInteger(generation) && generation > 0) {
       generations.set(generation, (generations.get(generation) || 0) + 1);
+      if (!generationStats.has(generation)) generationStats.set(generation, emptyGenerationStats());
+      addPersonToGenerationStats(generationStats.get(generation), person);
       minGeneration = Math.min(minGeneration, generation);
       maxGeneration = Math.max(maxGeneration, generation);
     }
@@ -71,6 +131,7 @@ function loadStats() {
   return {
     records,
     generations,
+    generationStats,
     legacyGenerations,
     minGeneration: Number.isFinite(minGeneration) ? minGeneration : null,
     maxGeneration,
@@ -109,8 +170,32 @@ function formatGeneration(stats, generation) {
   return lines.join('\n');
 }
 
+function formatGenerationStatus(stats, generation, scope, requestedStatus) {
+  const bucket = stats.generationStats.get(generation) || emptyGenerationStats();
+  const scopeLabel = scope
+    ? `${scope.label}第${scope.localGeneration}世（对应炎帝统一第${generation}世）`
+    : `全族统一第${generation}世`;
+  const lines = [];
+  if (requestedStatus === 'alive') {
+    lines.push(`${scopeLabel}目前明确标记为“在世”的人数：${bucket.alive} 人。`);
+  } else if (requestedStatus === 'dead') {
+    lines.push(`${scopeLabel}明确标记为“已故”的人数：${bucket.dead} 人。`);
+  } else if (requestedStatus === 'unknown') {
+    lines.push(`${scopeLabel}状态为“待核验”的人数：${bucket.unknown} 人。`);
+  } else {
+    lines.push(`${scopeLabel}当前共记录 ${bucket.total} 人。`);
+  }
+  lines.push(`状态拆分：在世 ${bucket.alive} 人；已故 ${bucket.dead} 人；待核验 ${bucket.unknown} 人${bucket.conflict ? `；状态冲突 ${bucket.conflict} 人` : ''}。`);
+  if (requestedStatus === 'alive' && bucket.unknown > 0) {
+    lines.push(`注意：待核验的 ${bucket.unknown} 人不能直接算作在世，因此现有后台数据无法据此确认“实际目前在世总人数”是否等于 ${bucket.alive} 人。`);
+    lines.push(`若仅按“尚未标注已故”作候选口径，最多可纳入 ${bucket.unknown} 人；这不是已核实的在世人数。`);
+  }
+  lines.push(`统计口径：每个 canonical 人物 ID 计 1 人；数据来源：${stats.source}。`);
+  return lines.join('\n');
+}
+
 function formatXieCumulative(stats, generations) {
-  // 申伯于统一第65世得谢氏之姓；“谢氏家族31代”按第65世起连续31个统一世次解释。
+  // 兼容旧问法：只有明确出现“连续/历经/从……到……”时，才按世次区间累计。
   const start = 65;
   const end = start + generations - 1;
   const rangeRecords = stats.records.filter((person) => {
@@ -137,12 +222,18 @@ function answer(query) {
 
   const stats = loadStats();
   const hasExplicitGenerationPrefix = /第\s*(?:\d{1,3}|[零〇一二两三四五六七八九十百]{1,6})\s*(?:世|代)/.test(q);
+  const requestedStatus = statusFilter(q);
+  const localScope = generation !== null ? resolveLocalScope(q, hasExplicitGenerationPrefix) : null;
   const isXieCumulative = generation !== null && !hasExplicitGenerationPrefix &&
-    /谢氏|谢家|谢氏家族/.test(q) && CUMULATIVE_TERMS.test(q);
+    /谢氏|谢家|谢氏家族/.test(q) && /(?:连续|历经|从.*到)/.test(q);
+  const localGeneration = localScope && generation !== null ? generation : null;
+  const scopedGeneration = localGeneration !== null ? localGeneration + localScope.offset : generation;
   return {
     ok: true,
-    factType: isOverall ? 'genealogy-total' : (isXieCumulative ? 'genealogy-generation-range-count' : 'genealogy-generation-count'),
-    answer: isOverall ? formatOverall(stats) : (isXieCumulative ? formatXieCumulative(stats, generation) : formatGeneration(stats, generation)),
+    factType: isOverall ? 'genealogy-total' : (isXieCumulative ? 'genealogy-generation-range-count' : (requestedStatus ? 'genealogy-generation-status-count' : 'genealogy-generation-count')),
+    answer: isOverall ? formatOverall(stats) : (isXieCumulative
+      ? formatXieCumulative(stats, generation)
+      : (requestedStatus || localScope ? formatGenerationStatus(stats, scopedGeneration, localScope && { ...localScope, localGeneration }, requestedStatus) : formatGeneration(stats, generation))),
     sources: [stats.source]
   };
 }
