@@ -6043,7 +6043,7 @@ li:has(> a[href*="admin.html"]) {
     display: block;
     width: 100%;
     min-height: 58px;
-    padding: 2px;
+    padding: 0;
     overflow: hidden;
     border: 1px solid rgba(232, 201, 122, .42);
     border-radius: 18px;
@@ -6059,8 +6059,8 @@ li:has(> a[href*="admin.html"]) {
   .mbs-entry-labels span { overflow: hidden; padding: 0 7px; text-overflow: ellipsis; white-space: nowrap; }
   .mbs-entry-labels span:first-child { text-align: left; }
   .mbs-entry-labels span:last-child { text-align: right; }
-  .mbs-entry-thumb { position: absolute; top: 2px; bottom: 2px; left: 2px; display: flex; align-items: center; justify-content: center; gap: 8px; width: calc(50% - 2px); height: auto; border-radius: 16px; background: var(--mb-brand-strong, #c9a84c); color: #1a180f; box-shadow: 0 7px 15px rgba(201, 168, 76, .2); pointer-events: none; transition: transform .28s cubic-bezier(.22, 1, .36, 1), background .2s ease; }
-  /* 滑块与外框只保留 2px 内缩，左右切换时两侧间距完全一致。 */
+  .mbs-entry-thumb { position: absolute; inset: 0 auto 0 0; display: flex; align-items: center; justify-content: center; gap: 8px; width: 50%; height: auto; border-radius: 17px; background: var(--mb-brand-strong, #c9a84c); color: #1a180f; box-shadow: 0 7px 15px rgba(201, 168, 76, .2); pointer-events: none; transition: transform .28s cubic-bezier(.22, 1, .36, 1), background .2s ease; }
+  /* 滑块贴合外框内沿，避免左右和上下出现黑色缝隙。 */
   .mbs-entry-switch[data-choice="genealogy"] .mbs-entry-thumb { transform: translateX(100%); }
   .mbs-entry-thumb b { font-size: 14px; font-weight: 750; }
   .mbs-entry-thumb i { font-size: 18px; font-style: normal; line-height: 1; }
