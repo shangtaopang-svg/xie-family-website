@@ -149,6 +149,95 @@ function formatOverall(stats) {
   ].join('\n');
 }
 
+function englishName(person, index) {
+  const name = text(person && person.name);
+  // The canonical dataset has no reliable Latin-name field. Keep ASCII names;
+  // otherwise use a stable English record label so English mode never leaks
+  // Chinese characters or invents a transliteration.
+  return /^[\x00-\x7F]+$/.test(name) ? name : `Member ${Number(person && person.id) || index + 1}`;
+}
+
+function formatOverallEnglish(stats) {
+  const range = stats.minGeneration && stats.maxGeneration
+    ? `Generation ${stats.minGeneration} to Generation ${stats.maxGeneration}`
+    : 'the generation range is not recorded';
+  return [
+    `According to the canonical genealogy data (data/genealogy.json), the records from Emperor Yan, Shennong to the present contain ${stats.records.length} people.`,
+    'Counting rule: each canonical person ID counts as one person; records with the same name but different IDs are counted separately. No model estimate is used.',
+    `The recorded unified-generation range is ${range}.`
+  ].join('\n');
+}
+
+function formatGenerationEnglish(stats, generation) {
+  const official = stats.generations.get(generation) || 0;
+  const legacy = stats.legacyGenerations.get(generation) || 0;
+  const lines = [
+    `According to the unified-generation field (generation_num, counted from Generation 1 of Emperor Yan, Shennong) in the canonical genealogy data: Generation ${generation} contains ${official} people.`
+  ];
+  if (legacy !== official) {
+    lines.push(`Note: the source data has ${legacy} records whose local branch generation field (generation) is ${generation}; this is not the unified generation and must not be mixed with Generation ${generation}.`);
+  }
+  if (official === 0 && legacy > 0) {
+    const legacyPeople = stats.records
+      .filter((person) => Number(person.generation) === generation)
+      .map((person, index) => `${englishName(person, index)} (unified Generation ${person.generation_num})`)
+      .join(', ');
+    lines.push(`Those local-generation records are: ${legacyPeople}.`);
+  }
+  lines.push('Source: canonical genealogy data (data/genealogy.json).');
+  return lines.join('\n');
+}
+
+function formatGenerationListEnglish(stats, generation, requestedStatus) {
+  const bucket = stats.generationStats.get(generation) || emptyGenerationStats();
+  const records = bucket.records.filter((person) => matchesStatus(person, requestedStatus));
+  const statusLabel = requestedStatus === 'alive' ? 'explicitly marked as living '
+    : (requestedStatus === 'dead' ? 'explicitly marked as deceased ' : (requestedStatus === 'unknown' ? 'awaiting status verification ' : ''));
+  const lines = [
+    `According to the unified-generation field (counted from Generation 1 of Emperor Yan, Shennong), Generation ${generation} has ${records.length} ${statusLabel}people. List:`
+  ];
+  if (records.length) records.forEach((person, index) => lines.push(`${index + 1}. ${englishName(person, index)}`));
+  else lines.push('No matching canonical person records are currently available.');
+  lines.push('Source: canonical genealogy data; names are read one by one from canonical person IDs without model inference.');
+  return lines.join('\n');
+}
+
+function formatGenerationStatusEnglish(stats, generation, scope, requestedStatus) {
+  const bucket = stats.generationStats.get(generation) || emptyGenerationStats();
+  const scopeNames = { shenbo: 'Shenbo', dongshan: 'Shining Dongshan', linhai: 'Linhai Xiadu', shima: 'Shima (Lower Xie)', fengcha: 'Fengcha' };
+  const scopeLabel = scope
+    ? `${scopeNames[scope.key] || 'Local branch'} Generation ${scope.localGeneration} (unified Generation ${generation} counted from Emperor Yan)`
+    : `Unified Generation ${generation} counted from Emperor Yan`;
+  const lines = [];
+  if (requestedStatus === 'alive') lines.push(`${scopeLabel} — explicitly living: ${bucket.alive} people.`);
+  else if (requestedStatus === 'dead') lines.push(`${scopeLabel} — explicitly deceased: ${bucket.dead} people.`);
+  else if (requestedStatus === 'unknown') lines.push(`${scopeLabel} — status awaiting verification: ${bucket.unknown} people.`);
+  else lines.push(`${scopeLabel}: ${bucket.total} people currently recorded.`);
+  lines.push(`Status breakdown: living ${bucket.alive}; deceased ${bucket.dead}; awaiting verification ${bucket.unknown}${bucket.conflict ? `; conflicting status ${bucket.conflict}` : ''}.`);
+  if (requestedStatus === 'alive' && bucket.unknown > 0) {
+    lines.push(`The ${bucket.unknown} records awaiting verification cannot be counted as living, so the current data cannot confirm that the actual living total is ${bucket.alive}.`);
+    lines.push(`If records not marked deceased are treated as candidates, up to ${bucket.unknown} more could be included; this is not a verified living-person count.`);
+  }
+  lines.push('Counting rule: each canonical person ID counts as one person. Source: canonical genealogy data (data/genealogy.json).');
+  return lines.join('\n');
+}
+
+function formatXieCumulativeEnglish(stats, generations) {
+  const start = 65;
+  const end = start + generations - 1;
+  const rangeRecords = stats.records.filter((person) => {
+    const generation = Number(person.generation_num);
+    return Number.isInteger(generation) && generation >= start && generation <= end;
+  });
+  const xieRecords = rangeRecords.filter((person) => String(person.branch || '').trim() !== '仍姓姜');
+  return [
+    `Using the Xie surname origin (unified Generation ${start}, Shenbo), ${generations} consecutive generations from Generation ${start} to Generation ${end} contain ${xieRecords.length} Xie-branch records.`,
+    `All genealogy records in this unified-generation range: ${rangeRecords.length}; the record marked as remaining Jiang surname is excluded from the Xie branch.`,
+    `This is not the count for unified Generation ${generations} itself.`,
+    'Source: canonical genealogy data (data/genealogy.json).'
+  ].join('\n');
+}
+
 function formatGeneration(stats, generation) {
   const official = stats.generations.get(generation) || 0;
   const legacy = stats.legacyGenerations.get(generation) || 0;
@@ -264,15 +353,22 @@ function answer(query, options) {
     /谢氏|谢家|谢氏家族/.test(q) && /(?:连续|历经|从.*到)/.test(q);
   const localGeneration = localScope && generation !== null ? generation : null;
   const scopedGeneration = localGeneration !== null ? localGeneration + localScope.offset : generation;
+  const language = options && options.language === 'en' ? 'en' : 'zh';
   return {
     ok: true,
     factType: isOverall ? 'genealogy-total' : (isList ? 'genealogy-generation-list' : (isXieCumulative ? 'genealogy-generation-range-count' : (requestedStatus ? 'genealogy-generation-status-count' : 'genealogy-generation-count'))),
-    answer: isOverall ? formatOverall(stats) : (isList
-      ? formatGenerationList(stats, scopedGeneration, requestedStatus)
-      : (isXieCumulative
-        ? formatXieCumulative(stats, generation)
-        : (requestedStatus || localScope ? formatGenerationStatus(stats, scopedGeneration, localScope && { ...localScope, localGeneration }, requestedStatus) : formatGeneration(stats, generation)))),
-    sources: [stats.source]
+    answer: language === 'en'
+      ? (isOverall ? formatOverallEnglish(stats) : (isList
+        ? formatGenerationListEnglish(stats, scopedGeneration, requestedStatus)
+        : (isXieCumulative
+          ? formatXieCumulativeEnglish(stats, generation)
+          : (requestedStatus || localScope ? formatGenerationStatusEnglish(stats, scopedGeneration, localScope && { ...localScope, localGeneration }, requestedStatus) : formatGenerationEnglish(stats, generation)))))
+      : (isOverall ? formatOverall(stats) : (isList
+        ? formatGenerationList(stats, scopedGeneration, requestedStatus)
+        : (isXieCumulative
+          ? formatXieCumulative(stats, generation)
+          : (requestedStatus || localScope ? formatGenerationStatus(stats, scopedGeneration, localScope && { ...localScope, localGeneration }, requestedStatus) : formatGeneration(stats, generation))))),
+    sources: [language === 'en' ? 'Canonical genealogy data (data/genealogy.json)' : stats.source]
   };
 }
 

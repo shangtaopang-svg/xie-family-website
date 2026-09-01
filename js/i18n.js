@@ -633,8 +633,524 @@ const TRANSLATIONS = {
   'genealogy.ancestors': { zh: '⬆ 祖先', en: '⬆ Ancestors' },
   'genealogy.gen': { zh: '世', en: 'Gen' },
   'visit.label': { zh: '访问人数', en: 'Visitors' },
+  'mobile.story.title': { zh: '一页族谱，<br>一座村庄，一脉家风', en: 'One genealogy,<br>one village, one family legacy' },
+  'mobile.story.desc': { zh: '从这里开始，慢慢认识下枫槎谢氏。', en: 'Begin here and get to know the Xie family of Xiafengcha.' },
+  'mobile.entry.explore': { zh: '开始探索', en: 'Explore' },
+  'mobile.entry.genealogy': { zh: '寻根问祖', en: 'Find Your Roots' },
+  'mobile.entry.hint': { zh: '左右滑动选择入口，点击进入', en: 'Swipe to choose an entrance, then tap to enter' },
 
 };
+
+/*
+ * Legacy pages contain a number of unmarked text nodes and dynamically-created
+ * labels. Keep these translations here so the language switch is consistent
+ * even when an older page has not yet been converted to data-i18n markup.
+ */
+const EXTRA_TRANSLATIONS = {
+  '谢': 'Xie',
+  '下枫槎谢氏': 'Xie Family of Xiafengcha',
+  '家族网站': 'Family Website',
+  '宁海 · 下枫槎村': 'Ninghai · Xiafengcha Village',
+  '宁海下枫槎村': 'Xiafengcha Village, Ninghai',
+  '下枫槎': 'Xiafengcha',
+  '宁海': 'Ninghai',
+  '谢氏': 'Xie family',
+  '谢家': 'Xie family',
+  '家族': 'family',
+  '宗祠': 'ancestral hall',
+  '族谱': 'genealogy',
+  '宗谱': 'genealogy',
+  '村史': 'village history',
+  '村庄': 'village',
+  '历史': 'history',
+  '文化': 'culture',
+  '传承': 'heritage',
+  '源流': 'origins',
+  '迁徙': 'migration',
+  '世次': 'generation',
+  '世代': 'generations',
+  '始祖': 'founding ancestor',
+  '先祖': 'ancestors',
+  '祖先': 'ancestors',
+  '后人': 'descendants',
+  '名人': 'notable figures',
+  '简介': 'Overview',
+  '详情': 'Details',
+  '说明': 'Notes',
+  '内容': 'Content',
+  '资料': 'records',
+  '数据': 'data',
+  '记录': 'records',
+  '来源': 'source',
+  '更新': 'update',
+  '加载': 'load',
+  '暂无': 'No',
+  '正在': 'Currently',
+  '请': 'Please ',
+  '输入': 'Enter',
+  '选择': 'Select',
+  '点击': 'Click',
+  '进入': 'Open',
+  '查看': 'View',
+  '显示': 'Show',
+  '隐藏': 'Hide',
+  '返回': 'Back',
+  '打开': 'Open',
+  '关闭': 'Close',
+  '继续': 'Continue',
+  '验证': 'Verify',
+  '错误': 'Error',
+  '成功': 'Success',
+  '失败': 'Failed',
+  '重试': 'Try again',
+  '刷新': 'Refresh',
+  '确定': 'Confirm',
+  '取消': 'Cancel',
+  '全部': 'All',
+  '成员': 'members',
+  '人员': 'people',
+  '人数': 'people',
+  '关系': 'relationship',
+  '父亲': 'father',
+  '祖父': 'grandfather',
+  '配偶': 'spouse',
+  '男': 'Male',
+  '女': 'Female',
+  '在世': 'Living',
+  '已故': 'Deceased',
+  '未标注': 'Not specified',
+  '家训': 'Family Instructions',
+  '族规': 'Clan Rules',
+  '卷轴': 'Scroll',
+  '大事记': 'Chronicle',
+  '家族 AI 咨询': 'Family AI Assistant',
+  'AI 咨询': 'AI Assistant',
+  'AI 问答': 'AI Q&A',
+  '您好呀，我是下枫槎谢氏的小管家，族谱、村史、世系想问什么都可以哦～': 'Hello, I am the Xiafengcha Xie family guide. Ask me about genealogy, village history or lineage anytime.',
+  '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。': 'Hello, I am the Xie family AI assistant 🤖\nAsk about public village history, genealogy and generation poems. Personal lineage and member information require identity verification first.',
+  '放大到整屏': 'Open fullscreen',
+  '语音朗读开关': 'Text-to-speech',
+  '暂停口播': 'Pause narration',
+  '清空咨询记录': 'Clear consultation history',
+  '手机端页面入口': 'Mobile page navigation',
+  '返回上一页': 'Back to previous page',
+  '快捷族谱查询': 'Quick genealogy search',
+  '输入族人姓名，如：伟中': 'Enter a member name, e.g. Weizhong',
+  '🌳 炎帝至此人': '🌳 Emperor Yan to this person',
+  '🔗 与此人最亲': '🔗 Closest relatives',
+  '输入村史、族谱、字辈等问题': 'Ask about village history, genealogy or generation poems',
+  '例如：谢氏家族是如何迁徙到宁海的？': 'Example: How did the Xie family migrate to Ninghai?',
+  '↓ 回到最新': '↓ Jump to latest',
+  '思考中…': 'Thinking…',
+  '思考中...': 'Thinking…',
+  '（无回答）': '(No answer)',
+  '📚 参考：': '📚 Sources: ',
+  '查看树状世系图': 'View lineage tree',
+  '全面展示出继 / 入继关系图': 'Show adoption and inheritance relationships',
+  '亲生父亲、继父及关系线同时呈现': 'Show the biological father, adoptive father and both relationship lines',
+  '查看出继 / 入继详情图': 'View adoption and inheritance details',
+  '亲生父系与承嗣父系同时呈现': 'Show both biological and adoptive paternal lines',
+  '已选择': 'Selected',
+  '正在查询…': 'Searching…',
+  '正在查询...': 'Searching…',
+  '正在生成完整的出继 / 入继关系图…': 'Generating the complete adoption and inheritance relationship graph…',
+  '当前选择': 'Selected',
+  '可左右滑动切换入口': 'Swipe left or right to switch entrances',
+  '请选择您要查询的哪一位': 'Choose the person you want to query',
+  '请选择要按亲生父系还是承嗣父系查询': 'Choose whether to query the biological or adoptive paternal line',
+  '父亲未详': 'Father not recorded',
+  '亲生父亲：': 'Biological father: ',
+  '继父：': 'Adoptive father: ',
+  '父亲：': 'Father: ',
+  '（本人）': '(self)',
+  '您的姓名': 'Your name',
+  '父亲名字': 'Father’s name',
+  '祖父名字（可留空）': 'Grandfather’s name (optional)',
+  '请填写姓名和父亲名字': 'Please enter the name and father’s name',
+  '验证身份': 'Verify identity',
+  '网络错误，请重试': 'Network error. Please try again.',
+  '信息不符，请核对': 'The information does not match. Please check it.',
+  '该问题涉及个人世系图谱，请先完成族人身份验证（与站内验证一致，填姓名、父亲、祖父）。': 'This question concerns a personal lineage chart. Please verify your identity first by entering your name, father and grandfather.',
+  '该问题涉及族人的个人信息（隐私），请先完成族人身份验证（与站内验证一致，填姓名、父亲、祖父）。': 'This question concerns private member information. Please verify your identity first by entering your name, father and grandfather.',
+  '✅ 身份验证通过，现在可以查询您的个人世系了。': '✅ Identity verified. You can now query your personal lineage.',
+  '请从炎帝神农氏开始，呈现我的世系图': 'Show my lineage starting with Emperor Yan, Shennong',
+  '请列出和我血缘最亲的人': 'List the relatives closest to me by blood',
+  '下枫槎谢氏的始祖是谁？族谱记载了哪些早期祖先？': 'Who founded the Xiafengcha Xie family? Which early ancestors are recorded in the genealogy?',
+  '谢氏家族是如何迁徙到宁海下枫槎村的？': 'How did the Xie family migrate to Xiafengcha Village, Ninghai?',
+  '我现在是第几代？和我同辈的族人有哪些？': 'Which generation am I in, and who are my fellow-generation relatives?',
+  '字辈排行诗是什么？各世对应哪个字？': 'What is the generation-name poem, and which character belongs to each generation?',
+  '一键查族谱': 'One-click Genealogy Search',
+  '只填姓名，不用提问': 'Enter a name only; no question needed',
+  '发送': 'Send',
+  '回到最新': 'Jump to latest',
+  '清空对话': 'Clear conversation',
+  '从炎帝神农氏开始': 'Starting with Emperor Yan, Shennong',
+  '请输入姓名和父亲名字': 'Enter the name and father’s name',
+  '未验证 · 仅公开问题': 'Not verified · Public questions only',
+  '已验证': 'Verified',
+  '仅公开问题': 'Public questions only',
+  '⛩ 返回石门': '⛩ Back to Entrance',
+  '返回石门': 'Back to Entrance',
+  '返回开启页': 'Back to Opening',
+  '返回导航页': 'Back to Navigation',
+  '返回首页': 'Back Home',
+  '← 返回首页': '← Back Home',
+  '← 返回': '← Back',
+  '返回': 'Back',
+  '首页': 'Home',
+  '家族历史': 'Family History',
+  '今日下枫槎': 'Xiafengcha Today',
+  '家族活动': 'Family Activities',
+  '消息发布': 'News',
+  '新闻报道': 'News Reports',
+  '影像记录': 'Media Archive',
+  '影像': 'Media',
+  '视频': 'Videos',
+  '名人事迹': 'Notable Figures',
+  '谢氏集萃': 'Xie Collection',
+  '族谱查询': 'Genealogy',
+  '功德卷轴': 'Merit Scroll',
+  '听下枫槎': 'Listen to Xiafengcha',
+  '联系我们': 'Contact Us',
+  '风物古迹': 'Landmarks',
+  '村荣誉': 'Village Honors',
+  '荣誉墙': 'Honor Wall',
+  '村组织架构': 'Village Committee',
+  '乡村物产': 'Local Products',
+  '枫槎留声机': 'Xiafengcha Music Player',
+  '栏目导航': 'Navigation',
+  '总导航': 'Navigation',
+  '进入主首页': 'Main Home',
+  '选择左侧栏目查看内容': 'Select a section on the left',
+  '快速查找栏目…': 'Search sections…',
+  '主题': 'Theme',
+  '浅色': 'Light',
+  '深色': 'Dark',
+  '语言': 'Language',
+  '简体中文': 'Chinese',
+  '英文': 'English',
+  '中英文切换': 'Switch language',
+  '切换语言': 'Switch language',
+  '打开手机导航': 'Open mobile navigation',
+  '收起导航栏': 'Hide navigation',
+  '展开导航栏': 'Show navigation',
+  '切换到黑夜模式': 'Switch to dark mode',
+  '切换到白天模式': 'Switch to light mode',
+  '黑夜': 'Dark',
+  '白天': 'Light',
+  '加载中...': 'Loading…',
+  '加载中…': 'Loading…',
+  '加载数据中...': 'Loading data…',
+  '加载数据中…': 'Loading data…',
+  '正在加载…': 'Loading…',
+  '正在整理主题': 'Preparing topics',
+  '暂未收录内容': 'No content has been added yet.',
+  '未命名': 'Untitled',
+  '未命名消息': 'Untitled news item',
+  '暂无活动数据': 'No activity data yet.',
+  '暂无音乐': 'No music available',
+  '请将音乐文件放到 music/ 目录下': 'Place music files in the music/ folder.',
+  '正在工作中': 'Working',
+  '回到顶部': 'Back to top',
+  '上一页': 'Previous',
+  '下一页': 'Next',
+  '清除': 'Clear',
+  '查询': 'Search',
+  '搜索': 'Search',
+  '全部': 'All',
+  '查看': 'View',
+  '查看更多 →': 'View more →',
+  '阅读全文': 'Read full story',
+  '展开全部': 'Expand all',
+  '全部展开': 'Expand all',
+  '全部收起': 'Collapse all',
+  '隐藏左栏': 'Hide sidebar',
+  '隐藏详情': 'Hide details',
+  '全屏浏览': 'Fullscreen',
+  '全屏播放': 'Play fullscreen',
+  '点击播放宣传片': 'Click to play the film',
+  '点击 ▶ 开始收听': 'Click ▶ to listen',
+  '点击进入全屏阅读': 'Open fullscreen reader',
+  '点击人物卡片查看完整详情': 'Click a person card for full details',
+  '数据来源：族谱管理后台最终数据（交付版基线）': 'Source: final genealogy management data (delivery baseline)',
+  '族谱数据管理请通过后台管理系统进行操作。': 'Manage genealogy data through the administration system.',
+  '族谱资料由管理后台统一维护。': 'Genealogy records are maintained through the administration system.',
+  '请选择上册或下册': 'Choose the upper or lower volume',
+  '上册': 'Upper Volume',
+  '下册': 'Lower Volume',
+  '电子族谱': 'Digital Genealogy',
+  '查世系图': 'Lineage Charts',
+  '查族人': 'Find a Person',
+  '查世代': 'Find a Generation',
+  '查关系': 'Find a Relationship',
+  '亲缘关系查询': 'Relationship Search',
+  '族谱统计': 'Genealogy Statistics',
+  '高级搜索': 'Advanced Search',
+  '出继入继一览表': 'Adoption and Inheritance Records',
+  '世代时间轴': 'Generation Timeline',
+  '支系筛选': 'Branch Filter',
+  '世代筛选': 'Generation Filter',
+  '全部支系': 'All branches',
+  '全部性别': 'All genders',
+  '全部状态': 'All statuses',
+  '男': 'Male',
+  '女': 'Female',
+  '未标注': 'Not specified',
+  '在世': 'Living',
+  '已故': 'Deceased',
+  '总人数': 'Total people',
+  '在世成员': 'Living members',
+  '全部成员': 'All members',
+  '访问人数': 'Visitors',
+  '背景音乐': 'Background music',
+  '播放/暂停': 'Play/Pause',
+  '音量+': 'Volume up',
+  '音量-': 'Volume down',
+  '放大': 'Zoom in',
+  '缩小': 'Zoom out',
+  '复位': 'Reset',
+  '全景': 'Overview',
+  '打印世系图': 'Print lineage chart',
+  '返回世系选择': 'Back to lineage selection',
+  '返回电子族谱': 'Back to digital genealogy',
+  '浏览各类世系图': 'Browse lineage charts',
+  '输入一个姓名，查看详情或寻根': 'Enter a name to view details or trace roots',
+  '按一世或连续世次查看人员列表': 'View people by one or more generations',
+  '查询两位族人的亲属称呼和关系路径': 'Find the kinship and relationship path between two people',
+  '信息更新中': 'Information is being updated',
+  '信息更新中，敬请期待': 'Information is being updated. Please check back soon.',
+  '正在建设中...': 'Under construction…',
+  '正在建设中…': 'Under construction…',
+  '提交留言': 'Submit message',
+  '意见反馈': 'Feedback',
+  '寻亲求助': 'Find relatives',
+  '投稿分享': 'Submit a story',
+  '活动报名': 'Register for an event',
+  '捐款咨询': 'Donation inquiry',
+  '其他': 'Other',
+  '姓名': 'Name',
+  '联系电话': 'Phone',
+  '联系方式': 'Contact details',
+  '电子邮箱': 'Email',
+  '在线留言': 'Message us',
+  '友情链接': 'Related links',
+  '捐款通道': 'Donations',
+  '支持家族文化建设': 'Support family heritage projects',
+  '宗祠修缮基金': 'Ancestral Hall Restoration Fund',
+  '教育基金': 'Education Fund',
+  '组织架构': 'Organization',
+  '党员风采': 'Party member profiles',
+  '大事记': 'Chronicle',
+  '产业振兴': 'Industry revitalization',
+  '村庄风貌': 'Village Landscape',
+  '村庄故事': 'Village Stories',
+  '家族故事': 'Family Stories',
+  '听·下枫槎': 'Listen · Xiafengcha',
+  '进入听下枫槎': 'Listen to Xiafengcha',
+  '进入谢氏集萃': 'Open Xie Collection',
+  '进入家族历史': 'Open Family History',
+  '寻根问祖': 'Find Your Roots',
+  '开始探索': 'Explore',
+  '左右滑动选择入口，点击进入': 'Swipe to choose an entrance, then tap to enter',
+  '已选择开始探索 · 点击进入': 'Explore selected · Tap to enter',
+  '已选择寻根问祖 · 点击进入': 'Find Your Roots selected · Tap to enter',
+  '一页族谱，': 'One genealogy,',
+  '一座村庄，一脉家风': 'one village, one family legacy',
+  '从这里开始，慢慢认识下枫槎谢氏。': 'Begin here and get to know the Xie family of Xiafengcha.',
+  'ONE VILLAGE · ONE FAMILY': 'ONE VILLAGE · ONE FAMILY',
+  '农历': 'Lunar ',
+  '农历四月初十': 'Lunar fourth month, tenth day',
+  '农历九月初九': 'Lunar ninth month, ninth day',
+  '重阳节': 'Double Ninth Festival',
+  '下枫槎村景': 'Xiafengcha village view',
+  '下枫槎风光': 'Xiafengcha landscape',
+  '宗祠全景': 'Ancestral Hall exterior',
+  '宗祠内景': 'Ancestral Hall interior',
+  '活动留影': 'Event photo',
+  '宗祠作品一': 'Ancestral Hall artwork 1',
+  '宗祠作品二': 'Ancestral Hall artwork 2',
+  '宗祠作品三': 'Ancestral Hall artwork 3',
+  '宗祠作品四': 'Ancestral Hall artwork 4',
+  '新闻原文': 'News Source',
+  '返回新闻报道': 'Back to News Reports',
+  '打开原网站 ↗': 'Open Original Website ↗',
+  '原文由来源网站提供；如页面未显示，请点击右上角“打开原网站”。': 'The source page is provided by the original website. If it does not load, click “Open Original Website” above.',
+  '序章 · 村庄印象': 'Prologue · Village Impressions',
+  '章节列表': 'Chapters',
+  '音乐库': 'Music Library',
+  '首': ' tracks',
+  '暂停': 'Pause',
+  '播放': 'Play',
+  '清空': 'Clear',
+  '管理员': 'Administrator',
+  '退出登录': 'Log out',
+  '验证身份': 'Verify identity',
+  '管理员身份验证': 'Administrator Verification',
+  '请输入管理员密码以进入后台管理': 'Enter the administrator password to access the dashboard',
+  '密码错误，请重试': 'Incorrect password. Please try again.',
+  '网站内容管理': 'Website Content Management',
+  '系统设置': 'System Settings',
+  '管理后台': 'Admin',
+  '成员管理': 'Members',
+  '族谱管理': 'Genealogy Management',
+  '活动管理': 'Activities',
+  '村荣誉管理': 'Village Honors',
+  '新闻报道管理': 'News Reports',
+  '照片管理': 'Photos',
+  '视频管理': 'Videos',
+  '留言管理': 'Messages',
+  '访客管理': 'Visitors',
+  '功德管理': 'Merit Records',
+  '背景音乐': 'Background Music',
+  '输入密码以查看族谱内容': 'Enter the password to view genealogy content',
+  '请输入密码': 'Enter password',
+  '← 返回新闻报道': '← Back to News Reports'
+};
+
+const EXTRA_TRANSLATION_ENTRIES = Object.keys(EXTRA_TRANSLATIONS).sort(function(a, b) {
+  return b.length - a.length;
+});
+
+function translateString(value, lang) {
+  if (lang !== 'en' || value === null || value === undefined) return value;
+  var input = String(value);
+  var trimmed = input.trim();
+  if (!trimmed) return input;
+
+  var exact = EXTRA_TRANSLATIONS[trimmed];
+  if (!exact) {
+    Object.keys(TRANSLATIONS).some(function(key) {
+      var item = TRANSLATIONS[key];
+      if (item && item.zh === trimmed && item.en) { exact = item.en; return true; }
+      return false;
+    });
+  }
+  if (exact) return input.replace(trimmed, exact);
+
+  var output = input;
+  EXTRA_TRANSLATION_ENTRIES.forEach(function(key) {
+    if (key.length > 1 && output.indexOf(key) !== -1) output = output.split(key).join(EXTRA_TRANSLATIONS[key]);
+  });
+  Object.keys(TRANSLATIONS).forEach(function(key) {
+    var item = TRANSLATIONS[key];
+    if (item && item.zh && item.en && item.zh.length > 1 && output.indexOf(item.zh) !== -1) {
+      output = output.split(item.zh).join(item.en);
+    }
+  });
+
+  // Common numeric labels used by genealogy, archive and pagination views.
+  output = output
+    .replace(/第\s*(\d+)\s*[世代]/g, 'Generation $1')
+    .replace(/第\s*(\d+)\s*页/g, 'Page $1')
+    .replace(/共\s*(\d+)\s*人/g, '$1 people')
+    .replace(/(\d+)\s*人/g, '$1 people')
+    .replace(/第\s*(\d+)\s*张/g, 'Image $1')
+    .replace(/(\d+)\s*条消息/g, '$1 messages')
+    .replace(/(\d+)\s*件/g, '$1 items')
+    .replace(/(\d+)\s*首/g, '$1 tracks')
+    .replace(/世代/g, 'generations')
+    .replace(/世系图/g, 'lineage chart')
+    .replace(/世系/g, 'lineage')
+    .replace(/支系/g, 'branch')
+    .replace(/第([一二三四五六七八九十百零〇]+)世/g, 'Generation $1');
+
+  // Strict English mode: no unmarked Chinese glyphs may remain on screen.
+  return output.replace(/[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]+/g, 'Family record');
+}
+
+function translateTextNode(node, lang) {
+  if (!node || !node.nodeValue) return;
+  var parent = node.parentElement;
+  if (!parent || /^(SCRIPT|STYLE|NOSCRIPT|TEMPLATE)$/i.test(parent.tagName)) return;
+  if (lang === 'en') {
+    if (node.__xieOriginalText === undefined) node.__xieOriginalText = node.nodeValue;
+    var next = translateString(node.__xieOriginalText, lang);
+    if (next !== node.nodeValue) node.nodeValue = next;
+  } else if (node.__xieOriginalText !== undefined) {
+    node.nodeValue = node.__xieOriginalText;
+    delete node.__xieOriginalText;
+  }
+}
+
+function translateElementAttributes(el, lang) {
+  if (!el || el.nodeType !== 1 || /^(SCRIPT|STYLE|NOSCRIPT|TEMPLATE)$/i.test(el.tagName)) return;
+  ['title', 'aria-label', 'placeholder', 'alt'].forEach(function(attr) {
+    if (!el.hasAttribute(attr)) return;
+    if (!el.__xieOriginalAttrs) el.__xieOriginalAttrs = {};
+    if (el.__xieOriginalAttrs[attr] === undefined) el.__xieOriginalAttrs[attr] = el.getAttribute(attr);
+    if (lang === 'en') el.setAttribute(attr, translateString(el.__xieOriginalAttrs[attr], lang));
+    else {
+      el.setAttribute(attr, el.__xieOriginalAttrs[attr]);
+      delete el.__xieOriginalAttrs[attr];
+    }
+  });
+}
+
+function translateUnmarkedDocument(lang) {
+  var walker = document.createTreeWalker(document.body || document.documentElement, NodeFilter.SHOW_TEXT);
+  var node;
+  while ((node = walker.nextNode())) translateTextNode(node, lang);
+  document.querySelectorAll('[title],[aria-label],[placeholder],[alt]').forEach(function(el) {
+    translateElementAttributes(el, lang);
+  });
+}
+
+var languageObserver = null;
+function startLanguageObserver() {
+  if (languageObserver || !window.MutationObserver) return;
+  languageObserver = new MutationObserver(function(records) {
+    if (getLang() !== 'en') return;
+    ensureLanguageToggle();
+    document.querySelectorAll('#lang-toggle, .language-toggle').forEach(function(toggle) {
+      toggle.textContent = '中';
+      toggle.classList.add('active');
+    });
+    records.forEach(function(record) {
+      Array.prototype.forEach.call(record.addedNodes || [], function(node) {
+        if (node.nodeType === 3) translateTextNode(node, 'en');
+        else if (node.nodeType === 1) {
+          var walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+          var child;
+          while ((child = walker.nextNode())) translateTextNode(child, 'en');
+          translateElementAttributes(node, 'en');
+          node.querySelectorAll('[title],[aria-label],[placeholder],[alt]').forEach(function(el) {
+            translateElementAttributes(el, 'en');
+          });
+        }
+      });
+    });
+  });
+  languageObserver.observe(document.body || document.documentElement, { childList: true, subtree: true });
+}
+
+function ensureLanguageToggle() {
+  if (!document.getElementById('xie-language-style')) {
+    var style = document.createElement('style');
+    style.id = 'xie-language-style';
+    style.textContent = '.site-language-toggle{position:fixed;top:14px;right:16px;z-index:2147483000;min-width:42px;height:32px;padding:0 10px;border:1px solid rgba(128,128,128,.35);border-radius:999px;background:rgba(255,255,255,.92);color:#26343c;font:600 12px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;cursor:pointer;box-shadow:0 5px 18px rgba(0,0,0,.12)}.site-language-toggle:hover,.site-language-toggle.active{color:#995b24;border-color:#995b24}[data-theme="dark"] .site-language-toggle{background:rgba(20,20,20,.94);color:#f2eee7}@media(max-width:768px){.site-language-toggle{top:10px;right:10px}}';
+    document.head.appendChild(style);
+  }
+  var toggles = document.querySelectorAll('#lang-toggle, .language-toggle');
+  var hasSidebarScript = Array.prototype.some.call(document.scripts || [], function(script) {
+    return /(?:^|\/)sidebar\.js(?:\?|$)/.test(script.getAttribute('src') || '');
+  });
+  if (!toggles.length && document.body && !document.querySelector('.navhub-page') && !hasSidebarScript) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'site-language-toggle';
+    btn.className = 'language-toggle site-language-toggle';
+    btn.textContent = 'EN';
+    btn.setAttribute('aria-label', 'Switch language');
+    btn.title = 'Switch language';
+    document.body.appendChild(btn);
+  }
+  document.querySelectorAll('#lang-toggle, .language-toggle').forEach(function(toggle) {
+    toggle.classList.add('language-toggle');
+    if (toggle.dataset.i18nBound === '1') return;
+    toggle.dataset.i18nBound = '1';
+    toggle.addEventListener('click', toggleLanguage);
+  });
+}
 
 function getLang() {
   return localStorage.getItem('xie_lang') || 'zh';
@@ -646,6 +1162,13 @@ function setLang(lang) {
 
 function applyLanguage(lang) {
   lang = lang || getLang();
+  document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
+  // Pages created before the keyed translation table may still have a plain
+  // Chinese <title>. Preserve it once so switching back to Chinese is lossless.
+  var titleRoot = document.documentElement;
+  if (titleRoot.__xieOriginalTitle === undefined) titleRoot.__xieOriginalTitle = document.title;
+  if (lang === 'en') document.title = translateString(titleRoot.__xieOriginalTitle, lang);
+  else document.title = titleRoot.__xieOriginalTitle;
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
     var key = el.getAttribute('data-i18n');
     var text = TRANSLATIONS[key];
@@ -680,12 +1203,20 @@ function applyLanguage(lang) {
     }
   });
 
-  // Update lang toggle button text
-  var toggle = document.getElementById('lang-toggle');
-  if (toggle) {
+  // Update every language control, including the compact mobile opening-page control.
+  ensureLanguageToggle();
+  document.querySelectorAll('#lang-toggle, .language-toggle').forEach(function(toggle) {
     toggle.textContent = lang === 'en' ? '中' : 'EN';
     toggle.classList.toggle('active', lang === 'en');
-  }
+    toggle.setAttribute('aria-label', lang === 'en' ? 'Switch to Chinese' : 'Switch to English');
+    toggle.title = lang === 'en' ? 'Switch to Chinese' : 'Switch to English';
+  });
+
+  // Translate legacy/unmarked DOM and refresh page-specific dynamic widgets.
+  translateUnmarkedDocument(lang);
+  if (lang === 'en' && window.syncOpeningPageLanguage) window.syncOpeningPageLanguage();
+  if (window.syncOpeningEntryLanguage) window.syncOpeningEntryLanguage();
+  window.dispatchEvent(new CustomEvent('xie-language-change', { detail: { lang: lang } }));
 
   // Update date display if present
   updateDateDisplay(lang);
@@ -701,25 +1232,27 @@ function toggleLanguage() {
   if (descEl) {
     var cache = localStorage.getItem('xie_weather_cache');
     if (cache) {
-      try { var c = JSON.parse(cache); descEl.textContent = c.condition; } catch(e) {}
+      try { var c = JSON.parse(cache); descEl.textContent = translateString(c.condition, next); } catch(e) {}
     }
   }
   // Refresh location text
   var locEl = document.getElementById('weather-location');
   if (locEl) locEl.textContent = TRANSLATIONS['weather.location'][next] || '宁波宁海';
+  if (window.syncOpeningPageLanguage) window.syncOpeningPageLanguage();
+  if (window.syncOpeningEntryLanguage) window.syncOpeningEntryLanguage();
 }
 
 function initLanguage() {
+  if (document.documentElement.dataset.i18nInitialized === '1') {
+    ensureLanguageToggle();
+    applyLanguage(getLang());
+    return;
+  }
+  document.documentElement.dataset.i18nInitialized = '1';
   var lang = getLang();
   applyLanguage(lang);
-
-  var toggle = document.getElementById('lang-toggle');
-  if (toggle) {
-    // Remove old listener by cloning
-    var newToggle = toggle.cloneNode(true);
-    toggle.parentNode.replaceChild(newToggle, toggle);
-    newToggle.addEventListener('click', toggleLanguage);
-  }
+  ensureLanguageToggle();
+  startLanguageObserver();
 }
 
 /* ===== Lunar Calendar (simplified) ===== */
@@ -824,7 +1357,21 @@ function updateDateDisplay(lang) {
   var zhWeekday = (TRANSLATIONS['weekday.' + w] || {}).zh || '';
   var enWeekday = enWeekdays[w] || '';
   var zhLunar = getLunarDate(y, m, d);
-  var enLunar = 'Lunar ' + (zhLunar.replace(/[^初二十廿卅一二三四五六七八九十]/g, '') || '');
+  var lunarMonths = {
+    '正月': 'the first lunar month', '二月': 'the second lunar month', '三月': 'the third lunar month',
+    '四月': 'the fourth lunar month', '五月': 'the fifth lunar month', '六月': 'the sixth lunar month',
+    '七月': 'the seventh lunar month', '八月': 'the eighth lunar month', '九月': 'the ninth lunar month',
+    '十月': 'the tenth lunar month', '冬月': 'the eleventh lunar month', '腊月': 'the twelfth lunar month'
+  };
+  var lunarDays = {
+    '初一': '1st', '初二': '2nd', '初三': '3rd', '初四': '4th', '初五': '5th', '初六': '6th', '初七': '7th', '初八': '8th', '初九': '9th', '初十': '10th',
+    '十一': '11th', '十二': '12th', '十三': '13th', '十四': '14th', '十五': '15th', '十六': '16th', '十七': '17th', '十八': '18th', '十九': '19th', '二十': '20th',
+    '廿一': '21st', '廿二': '22nd', '廿三': '23rd', '廿四': '24th', '廿五': '25th', '廿六': '26th', '廿七': '27th', '廿八': '28th', '廿九': '29th', '三十': '30th'
+  };
+  var lunarMatch = String(zhLunar || '').match(/^(正月|二月|三月|四月|五月|六月|七月|八月|九月|十月|冬月|腊月)(初一|初二|初三|初四|初五|初六|初七|初八|初九|初十|十一|十二|十三|十四|十五|十六|十七|十八|十九|二十|廿一|廿二|廿三|廿四|廿五|廿六|廿七|廿八|廿九|三十)$/);
+  var enLunar = lunarMatch
+    ? 'Lunar ' + lunarMonths[lunarMatch[1]] + ' ' + lunarDays[lunarMatch[2]]
+    : 'Lunar date';
 
   if (weekdayEl) {
     weekdayEl.textContent = lang === 'en' ? enWeekday : zhWeekday;
@@ -841,4 +1388,12 @@ function updateDateDisplay(lang) {
   if (locEl) {
     locEl.textContent = TRANSLATIONS['weather.location'][lang || 'zh'];
   }
+}
+
+// i18n is also used by legacy standalone pages that do not load main.js.
+// Initialize here so every public page gets the same language behavior.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initLanguage);
+} else {
+  initLanguage();
 }

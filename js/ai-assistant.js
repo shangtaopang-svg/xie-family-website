@@ -615,7 +615,14 @@
 
     // 快捷图形查询在电脑端使用一次性 JSON，避免部分浏览器或代理漏掉 SSE 的最后一个图形包。
     // 普通聊天仍使用流式响应，保留逐字输出体验。
-    var reqBody = { message: text, stream: !visualMode, visual: !!visualMode };
+    var reqBody = {
+      message: text,
+      stream: !visualMode,
+      visual: !!visualMode,
+      // The server uses this for LLM responses; the shared i18n observer still
+      // translates legacy UI and dynamically-created controls on the client.
+      lang: (window.getLang && getLang()) || (localStorage.getItem('xie_lang') === 'en' ? 'en' : 'zh')
+    };
     if (resolvedId) reqBody.resolvedId = resolvedId;
     var tok = getToken();
     if (tok) reqBody.token = tok;

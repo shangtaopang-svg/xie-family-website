@@ -80,7 +80,7 @@
         '<button id="musicSideBtn" onclick="toggleMusic()" title="播放/暂停">🔈</button>' +
         '<button id="musicNextBtn" onclick="nextTrack&&nextTrack()" title="下一首">⏭</button>' +
         '<span class="sep"></span>' +
-        '<button onclick="window.toggleLanguage&&toggleLanguage()" title="English/中文">EN</button>' +
+        '<button class="language-toggle" onclick="window.toggleLanguage&&toggleLanguage()" title="English/中文">EN</button>' +
       '</div>' +
       '<div class="s-toggle" id="themeToggle">' +
         '<span class="s-icon" id="themeIcon">☀️</span>' +

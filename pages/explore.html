@@ -79,6 +79,7 @@
       var currentLang = localStorage.getItem('xie_lang') === 'en' ? 'en' : 'zh';
       var sidebarCollapsed = localStorage.getItem('xie_navhub_collapsed') === '1';
       var marks = ['史','今','聚','告','闻','影','人','萃','谱','卷','听','联'];
+      var marksEn = ['H','T','A','N','R','M','F','C','G','M','L','C'];
       var english = [
         ['Family History','From the Xie family origin and migrations to the shared memory of Xiafengcha Village.','Learn where the family came from and how we arrived here today.'],
         ['Today at Xiafengcha','Explore today’s Xiafengcha through village views, daily life and recent changes.','The home village is not only history; it continues to grow every day.'],
@@ -114,7 +115,7 @@
         desc.textContent = value(link, 'desc');
         note.textContent = value(link, 'note');
         count.textContent = String(index + 1).padStart(2, '0') + ' / ' + String(links.length).padStart(2, '0');
-        mark.textContent = marks[index] || '谢';
+        mark.textContent = currentLang === 'en' ? (marksEn[index] || 'X') : (marks[index] || '谢');
         enter.href = link.getAttribute('href');
         enterText.textContent = ui[currentLang].enter + value(link, 'title');
       }
@@ -135,6 +136,7 @@
         var text = ui[currentLang];
         document.documentElement.lang = currentLang === 'en' ? 'en' : 'zh-CN';
         document.title = currentLang === 'en' ? 'Explore · Xie Family of Xiafengcha' : '探索栏目 · 下枫槎谢氏';
+        document.querySelector('.navhub-brand-mark').textContent = currentLang === 'en' ? 'X' : '谢';
         document.querySelector('.navhub-brand b').textContent = text.brand;
         document.querySelector('.navhub-brand small').textContent = text.sub;
         filter.placeholder = text.search;
