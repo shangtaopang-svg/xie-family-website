@@ -292,11 +292,12 @@ window.addEventListener('wheel',function(e){if(!isOpen&&!isAnim){if(e.deltaY<0)p
 
 !function tick(){
   cx=lerp(cx,rx,0.07);cy=lerp(cy,ry,0.07);
+  var isMobileViewport=window.innerWidth<768;
   if(!isAnim&&!isOpen){
     pt.style.transform='scale('+portalZoom+')';
-    w.style.transform='translate3d('+(cx*6)+'px,'+(cy*6)+'px,0)';
+    w.style.transform=isMobileViewport?'translate3d(0,0,0)':'translate3d('+(cx*6)+'px,'+(cy*6)+'px,0)';
   }
-  if(isOpen){v.style.transform='translate3d('+(cx*4)+'px,'+(cy*4)+'px,0)';}
+  if(isOpen){v.style.transform=isMobileViewport?'translate3d(0,0,0)':'translate3d('+(cx*4)+'px,'+(cy*4)+'px,0)';}
   requestAnimationFrame(tick);
 }();
 
