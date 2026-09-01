@@ -6436,6 +6436,9 @@ html[data-theme="dark"] .navhub-page-body {
 .navhub-nav a i { color: var(--navhub-muted); font-size: 17px; font-style: normal; line-height: 1; text-align: right; }
 .navhub-nav a.active i { color: var(--navhub-accent); }
 .navhub-nav a[hidden] { display: none; }
+.navhub-nav a > .navhub-nav-icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; color: var(--navhub-muted); font-size: 0; line-height: 1; }
+.navhub-nav a > .navhub-nav-icon svg { display: block; width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.navhub-nav a.active > .navhub-nav-icon { color: var(--navhub-accent); }
 .navhub-settings { display: grid; gap: 2px; margin-top: auto; padding-top: 13px; border-top: 1px solid var(--navhub-line); }
 .navhub-setting-row { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto 14px; align-items: center; gap: 7px; width: 100%; min-height: 36px; padding: 0 8px; border: 0; border-radius: 8px; background: transparent; color: var(--navhub-sub); cursor: pointer; font-family: var(--font-body); text-align: left; }
 .navhub-setting-row:hover { background: var(--navhub-surface-soft); color: var(--navhub-text); }
@@ -6482,6 +6485,8 @@ html[data-theme="dark"] .navhub-page-body {
   .navhub-nav { gap: 2px; }
   .navhub-nav a { grid-template-columns: 19px minmax(0, 1fr) 10px; gap: 4px; min-height: 34px; padding: 0 5px; border-radius: 6px; }
   .navhub-nav a > span { font-size: 8px; }
+  .navhub-nav a > .navhub-nav-icon { width: 19px; height: 19px; }
+  .navhub-nav a > .navhub-nav-icon svg { width: 16px; height: 16px; }
   .navhub-nav a b { font-size: var(--navhub-nav-size); }
   .navhub-nav a i { font-size: 14px; }
   .navhub-setting-row { grid-template-columns: 16px minmax(0, 1fr) 14px; gap: 4px; min-height: 34px; padding: 0 5px; }
