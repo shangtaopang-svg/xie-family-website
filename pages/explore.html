@@ -14,7 +14,7 @@
 </head>
 <body class="navhub-page-body">
   <div class="navhub-page">
-    <aside class="navhub-sidebar" aria-label="网站栏目导航">
+    <aside class="navhub-sidebar" id="navhubSidebar" aria-label="网站栏目导航">
       <div class="navhub-brand">
         <span class="navhub-brand-mark">谢</span>
         <span><b>下枫槎谢氏</b><small>家族网站</small></span>
@@ -40,6 +40,10 @@
         <button type="button" class="navhub-setting-row" id="navhubLanguageControl"><span class="navhub-setting-icon">文</span><span class="navhub-setting-label" id="navhubLanguageLabel">语言</span><span class="navhub-setting-value" id="navhubLanguageValue">简体中文</span><span class="navhub-setting-arrow">›</span></button>
       </div>
       <a class="navhub-back" href="../index.html"><span>←</span> <span id="navhubBackText">返回开启页</span></a>
+      <button type="button" class="navhub-collapse-control" id="navhubCollapseControl" aria-expanded="true" aria-controls="navhubSidebar" aria-label="收起导航栏" title="收起导航栏">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="M8.5 5v14"/></svg>
+        <span id="navhubCollapseText">收起导航栏</span>
+      </button>
     </aside>
 
     <main class="navhub-content">
@@ -70,7 +74,11 @@
       var enter = document.getElementById('navhubEnter');
       var enterText = document.getElementById('navhubEnterText');
       var filter = document.getElementById('navhubFilter');
+      var page = document.querySelector('.navhub-page');
+      var collapseControl = document.getElementById('navhubCollapseControl');
+      var collapseText = document.getElementById('navhubCollapseText');
       var currentLang = localStorage.getItem('xie_lang') === 'en' ? 'en' : 'zh';
+      var sidebarCollapsed = localStorage.getItem('xie_navhub_collapsed') === '1';
       var marks = ['史','今','聚','告','闻','影','人','萃','谱','卷','听','联'];
       var english = [
         ['Family History','From the Xie family origin and migrations to the shared memory of Xiafengcha Village.','Learn where the family came from and how we arrived here today.'],
@@ -134,6 +142,7 @@
         filter.setAttribute('aria-label', text.search);
         document.getElementById('navhubNavTitle').textContent = text.nav;
         document.getElementById('navhubBackText').textContent = text.back;
+        if (collapseText) collapseText.textContent = currentLang === 'en' ? (sidebarCollapsed ? 'Show navigation' : 'Hide navigation') : (sidebarCollapsed ? '展开导航栏' : '收起导航栏');
         document.getElementById('navhubTopBrand').textContent = text.top;
         document.getElementById('navhubHomeText').textContent = text.home;
         document.getElementById('navhubEyebrow').textContent = text.eyebrow;
@@ -171,9 +180,27 @@
         try { localStorage.setItem('xie_lang', currentLang); } catch (e) {}
         syncLanguage();
         syncTheme();
+        syncSidebar();
       });
+      function syncSidebar() {
+        if (!page || !collapseControl) return;
+        page.classList.toggle('is-sidebar-collapsed', sidebarCollapsed);
+        collapseControl.setAttribute('aria-expanded', sidebarCollapsed ? 'false' : 'true');
+        var label = currentLang === 'en' ? (sidebarCollapsed ? 'Show navigation' : 'Hide navigation') : (sidebarCollapsed ? '展开导航栏' : '收起导航栏');
+        collapseControl.setAttribute('aria-label', label);
+        collapseControl.setAttribute('title', label);
+        if (collapseText) collapseText.textContent = label;
+      }
+      if (collapseControl) {
+        collapseControl.addEventListener('click', function(){
+          sidebarCollapsed = !sidebarCollapsed;
+          try { localStorage.setItem('xie_navhub_collapsed', sidebarCollapsed ? '1' : '0'); } catch (e) {}
+          syncSidebar();
+        });
+      }
       syncLanguage();
       syncTheme();
+      syncSidebar();
     })();
   </script>
 </body>
