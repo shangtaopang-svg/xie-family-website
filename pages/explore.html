@@ -7,6 +7,7 @@
   <title>探索栏目 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../css/style.css?v=20260901-entry-switch-05">
+  <script defer src="../js/i18n.js?v=20260901-lang-05"></script>
   <script>
     try { sessionStorage.removeItem('pt_go'); } catch (e) {}
     try { if ((localStorage.getItem('xie_theme') || localStorage.getItem('theme')) === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {}
@@ -179,6 +180,13 @@
       languageControl.addEventListener('click', function(){
         currentLang = currentLang === 'en' ? 'zh' : 'en';
         try { localStorage.setItem('xie_lang', currentLang); } catch (e) {}
+        syncLanguage();
+        syncTheme();
+        syncSidebar();
+        if (window.applyLanguage) window.applyLanguage(currentLang);
+      });
+      window.addEventListener('xie-language-change', function(event){
+        currentLang = event && event.detail && event.detail.lang === 'en' ? 'en' : 'zh';
         syncLanguage();
         syncTheme();
         syncSidebar();

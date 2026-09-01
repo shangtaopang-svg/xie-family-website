@@ -3100,8 +3100,10 @@ var languageObserver = null;
 function startLanguageObserver() {
   if (languageObserver || !window.MutationObserver) return;
   languageObserver = new MutationObserver(function(records) {
-    if (getLang() !== 'en') return;
+    // 侧栏脚本可能在语言脚本之后异步注入旧按钮；无论当前语言是什么，
+    // 都要把它收拢到统一的顶部按钮，避免页面出现两个切换入口。
     ensureLanguageToggle();
+    if (getLang() !== 'en') return;
     document.querySelectorAll('#lang-toggle, .language-toggle').forEach(function(toggle) {
       toggle.textContent = '中';
       toggle.classList.add('active');
@@ -3128,14 +3130,17 @@ function ensureLanguageToggle() {
   if (!document.getElementById('xie-language-style')) {
     var style = document.createElement('style');
     style.id = 'xie-language-style';
-    style.textContent = '.site-language-toggle{position:fixed;top:14px;right:16px;z-index:2147483000;min-width:42px;height:32px;padding:0 10px;border:1px solid rgba(128,128,128,.35);border-radius:999px;background:rgba(255,255,255,.92);color:#26343c;font:600 12px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;cursor:pointer;box-shadow:0 5px 18px rgba(0,0,0,.12)}.site-language-toggle:hover,.site-language-toggle.active{color:#995b24;border-color:#995b24}[data-theme="dark"] .site-language-toggle{background:rgba(20,20,20,.94);color:#f2eee7}@media(max-width:768px){.site-language-toggle{top:10px;right:10px}}';
+    style.textContent = '.site-language-toggle{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:14px;z-index:2147483000;min-width:46px;height:34px;padding:0 11px;border:1px solid rgba(128,128,128,.35);border-radius:999px;background:rgba(255,255,255,.96);color:#26343c;font:700 12px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;cursor:pointer;box-shadow:0 5px 18px rgba(0,0,0,.14);-webkit-tap-highlight-color:transparent}.site-language-toggle:hover,.site-language-toggle.active{color:#995b24;border-color:#995b24}.site-language-toggle:focus-visible{outline:3px solid rgba(153,91,36,.22);outline-offset:2px}[data-theme="dark"] .site-language-toggle{background:rgba(20,20,20,.96);color:#f2eee7;border-color:rgba(232,201,122,.45)}.site-language-legacy{display:none!important}@media(max-width:768px){.site-language-toggle{top:calc(10px + env(safe-area-inset-top,0px));right:10px}}';
     document.head.appendChild(style);
   }
-  var toggles = document.querySelectorAll('#lang-toggle, .language-toggle');
-  var hasSidebarScript = Array.prototype.some.call(document.scripts || [], function(script) {
-    return /(?:^|\/)sidebar\.js(?:\?|$)/.test(script.getAttribute('src') || '');
-  });
-  if (!toggles.length && document.body && !document.querySelector('.navhub-page') && !hasSidebarScript) {
+  // 每个页面都保留一个固定在顶部的统一入口。开启页在手机端已有顶部按钮，
+  // 直接复用它；正式主首页或其他页面则创建统一的固定按钮。
+  var canonical = document.getElementById('site-language-toggle');
+  var isOpeningMobile = !!(document.querySelector('.mb-story-home') &&
+    !document.documentElement.classList.contains('mb-show-main') &&
+    window.matchMedia && window.matchMedia('(max-width: 768px)').matches);
+  if (!canonical && isOpeningMobile) canonical = document.getElementById('mbsLanguageToggle');
+  if (!canonical && document.body) {
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.id = 'site-language-toggle';
@@ -3144,9 +3149,11 @@ function ensureLanguageToggle() {
     btn.setAttribute('aria-label', 'Switch language');
     btn.title = 'Switch language';
     document.body.appendChild(btn);
+    canonical = btn;
   }
   document.querySelectorAll('#lang-toggle, .language-toggle').forEach(function(toggle) {
     toggle.classList.add('language-toggle');
+    if (toggle !== canonical) toggle.classList.add('site-language-legacy');
     if (toggle.dataset.i18nBound === '1') return;
     toggle.dataset.i18nBound = '1';
     toggle.addEventListener('click', toggleLanguage);
