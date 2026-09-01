@@ -7026,3 +7026,130 @@ html:not([data-theme="dark"]) .history-page-body .section-title h2 span {
     text-shadow: none !important;
   }
 }
+
+/* ===== 白天模式：金色文字统一改为深赭棕 =====
+   浅金色在白天背景上的对比度不足，尤其是手机和低亮度屏幕上容易发虚。
+   浅色表面使用深赭棕作为家族文化强调色；照片/深色蒙层上的文字保留暖白，
+   这样既保留原有气质，也不会牺牲可读性。所有规则都限定在白天模式，夜间不变。 */
+html:not([data-theme="dark"]) {
+  --accent-orange: #85501f;
+  --accent-orange-dim: rgba(133, 80, 31, .12);
+  --mb-brand: #85501f;
+  --mb-brand-strong: #85501f;
+}
+html:not([data-theme="dark"]) body .navhub-page-body {
+  --navhub-accent: #7a4a1d;
+  --navhub-accent-soft: rgba(122, 74, 29, .12);
+}
+
+/* 所有常规标题统一到深色强调色，覆盖旧的浅金色移动端规则。 */
+html:not([data-theme="dark"]) body h1,
+html:not([data-theme="dark"]) body h2,
+html:not([data-theme="dark"]) body h3,
+html:not([data-theme="dark"]) body h4,
+html:not([data-theme="dark"]) body h5,
+html:not([data-theme="dark"]) body h6 {
+  color: #7a4a1d !important;
+  text-shadow: none !important;
+}
+
+/* 页面标题、栏目标题、卡片标题和数字强调。 */
+html:not([data-theme="dark"]) body .page-title h2,
+html:not([data-theme="dark"]) body .section-title h2,
+html:not([data-theme="dark"]) body .media-item-title h2,
+html:not([data-theme="dark"]) body .news-page-title h2,
+html:not([data-theme="dark"]) body .news-feed-head h2,
+html:not([data-theme="dark"]) body .explore-intro h1,
+html:not([data-theme="dark"]) body .explore-section-head h2,
+html:not([data-theme="dark"]) body .hero-motto,
+html:not([data-theme="dark"]) body .hero-date-day,
+html:not([data-theme="dark"]) body .hero-stat-num,
+html:not([data-theme="dark"]) body .stat-card div:first-child,
+html:not([data-theme="dark"]) body .member-card .name,
+html:not([data-theme="dark"]) body #members-grid .name,
+html:not([data-theme="dark"]) body #members-grid .member-card div:first-child,
+html:not([data-theme="dark"]) body .activity-card h3,
+html:not([data-theme="dark"]) body .doc-card h3,
+html:not([data-theme="dark"]) body .committee-card h3,
+html:not([data-theme="dark"]) body .party-card h3,
+html:not([data-theme="dark"]) body .tl-item strong,
+html:not([data-theme="dark"]) body .ancestor-card .name,
+html:not([data-theme="dark"]) body .news-date .day,
+html:not([data-theme="dark"]) body .news-eyebrow,
+html:not([data-theme="dark"]) body .news-category,
+html:not([data-theme="dark"]) body .news-read-btn,
+html:not([data-theme="dark"]) body .article-card .read-more-link,
+html:not([data-theme="dark"]) body .celebrity-info .era,
+html:not([data-theme="dark"]) body .report-external-link,
+html:not([data-theme="dark"]) body .doc-card .num,
+html:not([data-theme="dark"]) body .doc-card .level,
+html:not([data-theme="dark"]) body .tl-year,
+html:not([data-theme="dark"]) body .tl-era-tag,
+html:not([data-theme="dark"]) body .explore-eyebrow,
+html:not([data-theme="dark"]) body .explore-icon,
+html:not([data-theme="dark"]) body .explore-arrow,
+html:not([data-theme="dark"]) body .explore-home-link span,
+html:not([data-theme="dark"]) body .mbs-story-label,
+html:not([data-theme="dark"]) body .mbs-scroll-note,
+html:not([data-theme="dark"]) body .mbs-theme-toggle span:first-child {
+  color: #85501f !important;
+  -webkit-text-fill-color: #85501f !important;
+  text-shadow: none !important;
+}
+
+/* 图片或深色蒙层上的金色标题改为暖白，避免把照片上的字改成低对比度棕色。 */
+html:not([data-theme="dark"]) body .hero-section.hero-photo-bg .hero-motto,
+html:not([data-theme="dark"]) body .hero-section.hero-photo-bg .hero-date-day,
+html:not([data-theme="dark"]) body .hero-section.hero-photo-bg .hero-stat-num,
+html:not([data-theme="dark"]) body .hero-section.hero-map-bg .hero-motto,
+html:not([data-theme="dark"]) body .hero-section.hero-map-bg .hero-date-day,
+html:not([data-theme="dark"]) body .hero-section.hero-map-bg .hero-stat-num,
+html:not([data-theme="dark"]) body .mbh-hero-caption,
+html:not([data-theme="dark"]) body .mbh-hero-kicker,
+html:not([data-theme="dark"]) body .mbh-hero-kicker::before,
+html:not([data-theme="dark"]) body .mbs-hero-copy h1,
+html:not([data-theme="dark"]) body .mbs-hero-copy p,
+html:not([data-theme="dark"]) body .mbs-scene-count,
+html:not([data-theme="dark"]) body .mbs-scene-count b {
+  color: #fff8ea !important;
+  -webkit-text-fill-color: #fff8ea !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, .72) !important;
+}
+
+/* 内联 color 也纳入统一规则，避免动态列表和旧页再次出现浅金字。 */
+html:not([data-theme="dark"]) body [style*="color:#c9a84c"],
+html:not([data-theme="dark"]) body [style*="color: #c9a84c"],
+html:not([data-theme="dark"]) body [style*="color:#e8c97a"],
+html:not([data-theme="dark"]) body [style*="color: #e8c97a"],
+html:not([data-theme="dark"]) body [style*="color:#d4af5a"],
+html:not([data-theme="dark"]) body [style*="color: #d4af5a"],
+html:not([data-theme="dark"]) body [style*="color:#d7bd70"],
+html:not([data-theme="dark"]) body [style*="color: #d7bd70"],
+html:not([data-theme="dark"]) body [style*="color:#f2d889"],
+html:not([data-theme="dark"]) body [style*="color: #f2d889"],
+html:not([data-theme="dark"]) body [style*="color:#d4a037"],
+html:not([data-theme="dark"]) body [style*="color: #d4a037"] {
+  color: #85501f !important;
+  -webkit-text-fill-color: #85501f !important;
+  text-shadow: none !important;
+}
+
+/* 探索目录中的导航与返回文字保持深色，和白天左侧导航一致。 */
+html:not([data-theme="dark"]) body .navhub-nav a,
+html:not([data-theme="dark"]) body .navhub-nav a b,
+html:not([data-theme="dark"]) body .navhub-back,
+html:not([data-theme="dark"]) body .navhub-back > span:last-child,
+html:not([data-theme="dark"]) body .navhub-content-top a,
+html:not([data-theme="dark"]) body .navhub-content-top a > span {
+  color: var(--navhub-sub) !important;
+}
+html:not([data-theme="dark"]) body .navhub-nav a.active > span,
+html:not([data-theme="dark"]) body .navhub-nav a.active i,
+html:not([data-theme="dark"]) body .navhub-nav a.active > .navhub-nav-icon,
+html:not([data-theme="dark"]) body .navhub-back > span:first-child,
+html:not([data-theme="dark"]) body .navhub-content-top a b,
+html:not([data-theme="dark"]) body .navhub-eyebrow,
+html:not([data-theme="dark"]) body .navhub-detail-mark {
+  color: var(--navhub-accent) !important;
+  -webkit-text-fill-color: var(--navhub-accent) !important;
+}
