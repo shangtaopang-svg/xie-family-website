@@ -251,6 +251,14 @@
       return String(text).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
+    function newsSourceHref(url) {
+      return 'news-source.html?from=news&url=' + encodeURIComponent(url);
+    }
+
+    function rememberNewsSourceReturn() {
+      try { sessionStorage.setItem('news_source_return', window.location.href); } catch (e) {}
+    }
+
     // ===== 阅读全文弹窗 =====
     function showFullArticle(index) {
       var item = window._newsData && window._newsData[index];
@@ -274,9 +282,8 @@
       if (item.url && item.url.trim()) {
         var sourceLink = document.createElement('a');
         sourceLink.className = 'article-modal-source';
-        sourceLink.href = item.url;
-        // 原文在当前窗口打开，保留浏览器历史，这样可以直接返回消息发布页。
-        sourceLink.target = '_self';
+        sourceLink.href = newsSourceHref(item.url);
+        sourceLink.addEventListener('click', rememberNewsSourceReturn);
         sourceLink.textContent = '查看来源原文 →';
         box.querySelector('.article-modal-actions').appendChild(sourceLink);
       }

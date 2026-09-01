@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f7f8" id="source-theme-color">
+  <title>原文查看 · 下枫槎谢氏</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <script>
+    try {
+      if ((localStorage.getItem('xie_theme') || localStorage.getItem('theme')) === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="../css/style.css?v=20260901-entry-switch-05">
+  <style>
+    html, body { min-height: 100%; }
+    body.news-source-page {
+      min-height: 100vh;
+      margin: 0;
+      padding: 0 !important;
+      overflow: hidden;
+      background: var(--bg-primary, #f6f7f8);
+      color: var(--text-primary, #23313a);
+    }
+    .news-source-shell { display: flex; flex-direction: column; height: 100vh; }
+    .news-source-toolbar {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-height: 68px;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--glass-border, rgba(35,49,58,.14));
+      background: var(--bg-card, #fff);
+      box-shadow: 0 3px 14px rgba(35,49,58,.08);
+    }
+    .news-source-back {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 16px;
+      border: 1px solid #b88754;
+      border-radius: 999px;
+      background: #fffaf4;
+      color: #5c351d;
+      font: 700 14px/1.2 var(--font-body, sans-serif);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .news-source-back:hover { background: #fff2e3; }
+    .news-source-title { min-width: 0; flex: 1; }
+    .news-source-title strong { display: block; color: #7d481d; font-size: 16px; line-height: 1.3; }
+    .news-source-title span { display: block; margin-top: 3px; color: #687780; font-size: 12px; }
+    .news-source-open {
+      flex: 0 0 auto;
+      color: #85501f;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .news-source-main { position: relative; display: flex; flex: 1 1 auto; min-height: 0; flex-direction: column; }
+    .news-source-notice {
+      flex: 0 0 auto;
+      padding: 9px 24px;
+      border-bottom: 1px solid rgba(35,49,58,.1);
+      background: #f9fbfc;
+      color: #687780;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .news-source-frame { display: block; flex: 1 1 auto; width: 100%; min-height: 0; border: 0; background: #fff; }
+    .news-source-empty { padding: 24px; color: #687780; font-size: 14px; text-align: center; }
+    [data-theme="dark"] body.news-source-page { background: #000; color: #f2f0ea; }
+    [data-theme="dark"] .news-source-toolbar { border-bottom-color: #2b2b2b; background: #101010; box-shadow: none; }
+    [data-theme="dark"] .news-source-back { border-color: #8d6b36; background: #191919; color: #e8c97a; }
+    [data-theme="dark"] .news-source-title strong { color: #e8c97a; }
+    [data-theme="dark"] .news-source-title span,
+    [data-theme="dark"] .news-source-notice,
+    [data-theme="dark"] .news-source-empty { color: #a5aaa0; }
+    [data-theme="dark"] .news-source-open { color: #e8c97a; }
+    [data-theme="dark"] .news-source-notice { border-bottom-color: #2b2b2b; background: #0b0b0b; }
+    @media (max-width: 768px) {
+      .news-source-toolbar { gap: 9px; min-height: 60px; padding: 9px 12px; }
+      .news-source-back { min-height: 36px; padding: 0 12px; font-size: 13px; }
+      .news-source-title strong { font-size: 14px; }
+      .news-source-title span { font-size: 11px; }
+      .news-source-open { font-size: 12px; }
+      .news-source-notice { padding: 7px 12px; font-size: 11px; }
+    }
+  </style>
+</head>
+<body class="news-source-page">
+  <div class="news-source-shell">
+    <header class="news-source-toolbar">
+      <button class="news-source-back" id="news-source-back" type="button">← 返回新闻报道</button>
+      <div class="news-source-title">
+        <strong>新闻原文</strong>
+        <span id="news-source-host">正在加载…</span>
+      </div>
+      <a class="news-source-open" id="news-source-open" href="#" target="_blank" rel="noopener noreferrer">打开原网站 ↗</a>
+    </header>
+    <main class="news-source-main">
+      <div class="news-source-notice">原文由来源网站提供；如页面未显示，请点击右上角“打开原网站”。</div>
+      <iframe class="news-source-frame" id="news-source-frame" title="新闻原文" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      <div class="news-source-empty" id="news-source-empty" hidden>没有找到有效的原文链接。</div>
+    </main>
+  </div>
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var sourceUrl = params.get('url') || '';
+      var from = params.get('from') === 'news' ? 'news.html' : 'reports.html';
+      var backBtn = document.getElementById('news-source-back');
+      var frame = document.getElementById('news-source-frame');
+      var openLink = document.getElementById('news-source-open');
+      var host = document.getElementById('news-source-host');
+      var empty = document.getElementById('news-source-empty');
+
+      function isHttpUrl(value) {
+        try {
+          var parsed = new URL(value);
+          return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+        } catch (e) { return false; }
+      }
+
+      function getReturnUrl() {
+        var saved = '';
+        try { saved = sessionStorage.getItem('news_source_return') || ''; } catch (e) {}
+        if (saved) {
+          try {
+            var parsed = new URL(saved, window.location.href);
+            if (parsed.origin === window.location.origin) return parsed.href;
+          } catch (e) {}
+        }
+        return new URL(from, window.location.href).href;
+      }
+
+      backBtn.addEventListener('click', function () {
+        var target = getReturnUrl();
+        try { sessionStorage.removeItem('news_source_return'); } catch (e) {}
+        window.location.replace(target);
+      });
+
+      if (!isHttpUrl(sourceUrl)) {
+        frame.hidden = true;
+        openLink.hidden = true;
+        empty.hidden = false;
+        host.textContent = '链接无效';
+        return;
+      }
+
+      var parsedSource = new URL(sourceUrl);
+      host.textContent = parsedSource.hostname;
+      frame.src = sourceUrl;
+      openLink.href = sourceUrl;
+      try {
+        var themeColor = document.getElementById('source-theme-color');
+        if (themeColor && document.documentElement.getAttribute('data-theme') === 'dark') themeColor.content = '#000000';
+      } catch (e) {}
+    }());
+  </script>
+</body>
+</html>

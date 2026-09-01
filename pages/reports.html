@@ -240,6 +240,14 @@
       return text.replace(/'/g, "\'").replace(/"/g, '&quot;');
     }
 
+    function newsSourceHref(url) {
+      return 'news-source.html?from=reports&url=' + encodeURIComponent(url);
+    }
+
+    function rememberNewsSourceReturn() {
+      try { sessionStorage.setItem('news_source_return', window.location.href); } catch (e) {}
+    }
+
     function showReportModal(item) {
       var overlay = document.createElement('div');
       overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
@@ -254,10 +262,12 @@
         + (item.source ? ' 来源：' + escapeHtml(item.source) : '')
         + '</div>'
         + '<div style="font-size:14px;color:var(--text-secondary);line-height:2;">' + escapeHtml(fullContent).replace(/\n/g, '<br>') + '</div>'
-        + (hasUrl ? '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--divider);"><a href="' + escapeAttr(item.url) + '" target="_self" style="color:#d4793a;color:var(--accent-orange);font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:2px;">\u67e5\u770b\u539f\u6587\u94fe\u63a5 \u2192</a></div>' : '');
+        + (hasUrl ? '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--divider);"><a href="' + escapeAttr(newsSourceHref(item.url)) + '" class="report-source-reader-link" style="color:#d4793a;color:var(--accent-orange);font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:2px;">\u67e5\u770b\u539f\u6587\u94fe\u63a5 \u2192</a></div>' : '');
       overlay.appendChild(box);
       overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
       document.body.appendChild(overlay);
+      var sourceReaderLink = box.querySelector('.report-source-reader-link');
+      if (sourceReaderLink) sourceReaderLink.addEventListener('click', rememberNewsSourceReturn);
     }
 
     function renderReports() {
@@ -298,7 +308,7 @@
           + '<span class="report-date">' + (item.date || '') + '</span>'
           + '<span class="report-title">' + escapeHtml(item.title) + '</span>'
           + '<span class="report-source">' + escapeHtml(item.source || '') + '</span>'
-          + (hasUrl ? '<a href="' + escapeAttr(item.url) + '" target="_self" class="report-external-link" onclick="event.stopPropagation()">原文 →</a>' : '')
+          + (hasUrl ? '<a href="' + escapeAttr(newsSourceHref(item.url)) + '" class="report-external-link">原文 →</a>' : '')
           + '</div>';
       });
       if (!html) {
@@ -310,6 +320,12 @@
         + '<button class="page-btn" onclick="goToPage(1)"' + (currentPage >= totalPages ? ' disabled' : '') + '>下一页</button>'
         + '</div>';
       document.getElementById('reports-list').innerHTML = html;
+      document.querySelectorAll('.report-external-link').forEach(function(link) {
+        link.addEventListener('click', function(event) {
+          event.stopPropagation();
+          rememberNewsSourceReturn();
+        });
+      });
 
     }
 
