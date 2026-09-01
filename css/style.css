@@ -7198,3 +7198,30 @@ html:not([data-theme="dark"]) body a.back-page-btn:focus-visible {
   background: #fff2e4 !important;
   border-color: #85501f !important;
 }
+
+/* ===== 白天模式：手机端页面入口统一高对比 =====
+   AI 注入的“返回 / 首页 / 族谱查询”入口原本沿用夜间白字，
+   在浅色页面上会接近消失；这里与全站返回按钮使用同一套清晰色阶。 */
+@media (max-width: 768px) {
+  html:not([data-theme="dark"]) body .mobile-page-actions .mobile-page-back {
+    border-color: #b88754 !important;
+    background: #fffaf4 !important;
+    color: #5c351d !important;
+    -webkit-text-fill-color: #5c351d !important;
+    text-shadow: none !important;
+  }
+  html:not([data-theme="dark"]) body .mobile-page-actions .mobile-page-home {
+    border-color: #b8c6bf !important;
+    background: #ffffff !important;
+    color: #2d5043 !important;
+    -webkit-text-fill-color: #2d5043 !important;
+    text-shadow: none !important;
+  }
+  html:not([data-theme="dark"]) body .mobile-page-actions .mobile-page-genealogy {
+    border-color: #d8ab63 !important;
+    background: #fff8eb !important;
+    color: #85501f !important;
+    -webkit-text-fill-color: #85501f !important;
+    text-shadow: none !important;
+  }
+}

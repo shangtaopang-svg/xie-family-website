@@ -370,7 +370,7 @@ function injectAiHtml(buf) {
     .replace(/(?:\.\.\/|\/)js\/public-access-gate\.js\?v=[^"'\s>]+/g, '/js/public-access-gate.js?v=' + PUBLIC_ACCESS_SCRIPT_VERSION)
     .replace(/(?:\.\.\/|\/)?css\/public-access-gate\.css(?:\?v=[^"'\s>]+)?/g, '/css/public-access-gate.css?v=' + PUBLIC_ACCESS_STYLE_VERSION)
     // CSS 使用 immutable 缓存；每次移动端公共样式调整都必须切换版本，避免手机继续使用旧导航布局。
-    .replace(/(?:\.\.\/|\/)?css\/style\.css(?:\?v=[^"'\s>]+)?/g, '/css/style.css?v=20260901-entry-switch-02')
+    .replace(/(?:\.\.\/|\/)?css\/style\.css(?:\?v=[^"'\s>]+)?/g, '/css/style.css?v=20260901-entry-switch-03')
     .replace(/(?:\.\.\/|\/)?css\/ai\.css(?:\?v=[^"'\s>]+)?/g, '/css/ai.css?v=20260830-mobile-nav-03');
   const m = html.search(/<\/body>/i);
   if (m === -1) return buf; // 无 body（HTML 片段）则跳过
