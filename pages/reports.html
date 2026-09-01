@@ -9,7 +9,7 @@
   <title data-i18n="page.reports.title">新闻报道 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="../css/style.css?v=20260901-mobile-contrast-01">
+  <link rel="stylesheet" href="../css/style.css?v=20260901-mobile-contrast-02">
   <script defer src="../js/i18n.js?v=6"></script>
   <script defer src="../js/file-store.js?v=3"></script>
   <script defer src="../js/supabase.js?v=3"></script>
@@ -75,7 +75,26 @@
       .report-title { font-size:15px; width:100%; order:-1; }
       .report-source { font-size:11px; }
     }
-  </style>  </style>
+    /* 白天模式下动态生成的标题必须保持清晰可见。 */
+    @media (max-width:768px) {
+      html:not([data-theme="dark"]) body #reports-list .report-item {
+        opacity:1 !important;
+      }
+      html:not([data-theme="dark"]) body #reports-list .report-item .report-title {
+        color:#26343c !important;
+        -webkit-text-fill-color:#26343c !important;
+        opacity:1 !important;
+        visibility:visible !important;
+      }
+      html:not([data-theme="dark"]) body #reports-list .report-item .report-source,
+      html:not([data-theme="dark"]) body #reports-list .report-item .report-date {
+        color:#64737b !important;
+        -webkit-text-fill-color:#64737b !important;
+        opacity:1 !important;
+        visibility:visible !important;
+      }
+    }
+  </style>
 
   <link rel="manifest" href="../manifest.json">
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js");</script>
