@@ -1,4 +1,4 @@
-const CACHE = 'xie-clan-v8';
+const CACHE = 'xie-clan-v9';
 const STATIC = [
   '/',
   '/index.html',
@@ -7,7 +7,7 @@ const STATIC = [
   '/css/style.css?v=20260830-mobile-nav-05',
   '/css/ai.css?v=20260830-mobile-nav-03',
   '/css/public-access-gate.css?v=20260830-access-mobile-01',
-  '/js/i18n.js?v=5',
+  '/js/i18n.js?v=20260901-lang-10',
   '/js/main.js?v=10',
   '/js/ai-assistant.js',
   '/js/public-access-gate.js?v=20260830-access-mobile-01',
