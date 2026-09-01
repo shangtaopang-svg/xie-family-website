@@ -1008,6 +1008,8 @@ const EXTRA_TRANSLATIONS = {
   '返回开启页': 'Back to Opening',
   '返回导航页': 'Back to Navigation',
   '返回首页': 'Back Home',
+  '返回栏目': 'Back to Sections',
+  '返回栏目导航': 'Back to Section Navigation',
   '关闭问候': 'Close greeting',
   '恢复小窗': 'Restore window',
   '全屏': 'Fullscreen',
