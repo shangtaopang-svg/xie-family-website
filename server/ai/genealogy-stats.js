@@ -15,8 +15,10 @@ const DEAD_TERMS = /已故|去世|死亡|逝世|亡故|卒|殁/;
 const UNKNOWN_STATUS_TERMS = /待核验|待确认|状态不明|未标注|未知/;
 const EXPLICIT_GLOBAL_TERMS = /炎帝|神农|统一世次|全族统一|全谱统一/;
 
-// 族谱页面同时使用“炎帝统一世次”和各支系本地世次。下枫槎用户说“31代”时，
-// 通常指本宗的枫槎第31世，而不是炎帝统一编号的第31世。
+// 族谱页面同时保存“炎帝统一世次”（generation_num）和各支系局部世次
+// （generation）。AI 咨询的默认口径必须与用户约定一致：用户只说“第N世/N世/N代”
+// 或“谢氏家族中第N代”时，一律按炎帝起算的全族统一世次；只有明确写出支系名称时，
+// 才按该支系的局部世次换算。
 const LOCAL_GENERATION_SCOPES = [
   { key: 'shenbo', label: '申伯', offset: 64, terms: /申伯/ },
   { key: 'dongshan', label: '始宁东山', offset: 98, terms: /始宁|东山/ },
@@ -88,19 +90,15 @@ function statusFilter(query) {
   return '';
 }
 
-function resolveLocalScope(query, hasExplicitGenerationPrefix) {
+function resolveLocalScope(query) {
   const q = text(query);
+  // 用户明确以炎帝/神农或“统一世次”提问时，即使句子中同时出现支系名称，
+  // 也必须保持全族统一世次，不再进行局部世次换算。
+  if (EXPLICIT_GLOBAL_TERMS.test(q)) return null;
   for (const scope of LOCAL_GENERATION_SCOPES) {
     if (scope.terms.test(q)) return scope;
   }
-  // “谢氏家族中31代”“目前在世的31代”均按本网站主题默认理解为下枫槎本宗的枫槎世次。
-  // 用户若明确说“炎帝第31世/统一第31世”，则走全族统一世次，不作本地世次换算。
-  if (!EXPLICIT_GLOBAL_TERMS.test(q) && !hasExplicitGenerationPrefix && /(?:代|世)/.test(q)) {
-    return LOCAL_GENERATION_SCOPES.find((scope) => scope.key === 'fengcha');
-  }
-  if (!EXPLICIT_GLOBAL_TERMS.test(q) && /谢氏|谢家|家族/.test(q) && /(?:代|世)/.test(q)) {
-    return LOCAL_GENERATION_SCOPES.find((scope) => scope.key === 'fengcha');
-  }
+  // 没有明确支系名称时返回 null，让调用方直接使用 generation_num。
   return null;
 }
 
@@ -154,7 +152,7 @@ function formatGeneration(stats, generation) {
   const official = stats.generations.get(generation) || 0;
   const legacy = stats.legacyGenerations.get(generation) || 0;
   const lines = [
-    `按${stats.source}的全族统一世次字段（generation_num）统计：第${generation}世共 ${official} 人。`
+    `按${stats.source}的全族统一世次字段（generation_num，从炎帝神农氏第1世起算）统计：第${generation}世共 ${official} 人。`
   ];
   if (legacy !== official) {
     lines.push(`补充说明：原始数据另有支系局部代数字段（generation）为“${generation}”的 ${legacy} 条记录；该字段不是全族统一世次，不能与第${generation}世混用。`);
@@ -173,8 +171,8 @@ function formatGeneration(stats, generation) {
 function formatGenerationStatus(stats, generation, scope, requestedStatus) {
   const bucket = stats.generationStats.get(generation) || emptyGenerationStats();
   const scopeLabel = scope
-    ? `${scope.label}第${scope.localGeneration}世（对应炎帝统一第${generation}世）`
-    : `全族统一第${generation}世`;
+    ? `${scope.label}第${scope.localGeneration}世（对应炎帝起算统一第${generation}世）`
+    : `炎帝起算统一第${generation}世`;
   const lines = [];
   if (requestedStatus === 'alive') {
     lines.push(`${scopeLabel}目前明确标记为“在世”的人数：${bucket.alive} 人。`);
@@ -223,7 +221,7 @@ function answer(query) {
   const stats = loadStats();
   const hasExplicitGenerationPrefix = /第\s*(?:\d{1,3}|[零〇一二两三四五六七八九十百]{1,6})\s*(?:世|代)/.test(q);
   const requestedStatus = statusFilter(q);
-  const localScope = generation !== null ? resolveLocalScope(q, hasExplicitGenerationPrefix) : null;
+  const localScope = generation !== null ? resolveLocalScope(q) : null;
   const isXieCumulative = generation !== null && !hasExplicitGenerationPrefix &&
     /谢氏|谢家|谢氏家族/.test(q) && /(?:连续|历经|从.*到)/.test(q);
   const localGeneration = localScope && generation !== null ? generation : null;
