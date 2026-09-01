@@ -680,14 +680,16 @@
     if (!people.length) return;
     var ch = people[0]&&people[0].generation;
     var gl = (ch&&ch!=='—')?'「'+ch+'」字辈·':'';
-    var title = gl+'第'+gen+'世 共'+people.length+'人';
+    var english = window.getLang && window.getLang() === 'en';
+    var title = english ? 'Generation ' + gen + ' · ' + people.length + ' people' : gl+'第'+gen+'\u4e16 \u5171'+people.length+'\u4eba';
     var overlay=document.createElement('div'); overlay.className='person-detail-modal' + (_tlFakeRotated ? ' tl-fs-rotated-detail' : ''); overlay.onclick=function(ev){if(ev.target===overlay)overlay.remove();};
     var box=document.createElement('div'); box.className='person-detail-box'; box.style.maxWidth='550px';
     var inner='<div style="padding:20px;max-height:70vh;overflow-y:auto;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><h3 style="margin:0;font-family:var(--font-title);color:var(--accent-orange);font-size:18px;font-weight:600;">'+title+'</h3></div><div style="display:grid;gap:8px;" id="tl-people-list">';
     people.sort(function(a,b){return(a.name||'').localeCompare(b.name||'');});
     people.forEach(function(p){
       var pBg = p.is_alive==='是'?'rgba(220,38,38,0.06)':'rgba(0,0,0,0.1)';
-inner += '<div onclick="showPersonDetail('+p.id+',getGenealogyData())" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:'+pBg+';border:1px solid '+(p.is_alive==='是'?'rgba(220,38,38,0.15)':'rgba(255,255,255,0.05)')+';border-radius:8px;cursor:pointer;"><div><span style="font-weight:600;color:var(--text-primary);">'+escapeHtml(p.name)+'</span><span style="font-size:12px;color:var(--text-tertiary);margin-left:8px;">'+(p.gender||'')+'</span></div><div style="font-size:12px;">'+(p.is_alive==='是'?'<span style="color:#ef4444;font-weight:600;">在世</span>':'<span style="color:var(--text-secondary);">已故</span>')+'<span style="margin-left:12px;color:var(--accent-orange);">→ 详情</span></div></div>';
+      var displayName = english && window.englishPersonName ? window.englishPersonName(p) : p.name;
+      inner += '<div onclick="showPersonDetail('+p.id+',getGenealogyData())" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:'+pBg+';border:1px solid '+(p.is_alive==='是'?'rgba(220,38,38,0.15)':'rgba(255,255,255,0.05)')+';border-radius:8px;cursor:pointer;"><div><span style="font-weight:600;color:var(--text-primary);">'+escapeHtml(displayName)+'</span><span style="font-size:12px;color:var(--text-tertiary);margin-left:8px;">'+(p.gender||'')+'</span></div><div style="font-size:12px;">'+(p.is_alive==='是'?'<span style="color:#ef4444;font-weight:600;">在世</span>':'<span style="color:var(--text-secondary);">已故</span>')+'<span style="margin-left:12px;color:var(--accent-orange);">→ 详情</span></div></div>';
     });
     inner += '</div></div>';
     box.innerHTML = inner;

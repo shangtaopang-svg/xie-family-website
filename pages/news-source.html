@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f6f7f8" id="source-theme-color">
   <title>原文查看 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-  <script defer src="../js/i18n.js?v=20260901-lang-03"></script>
+  <script defer src="../js/i18n.js?v=20260901-lang-04"></script>
   <script>
     try {
       if ((localStorage.getItem('xie_theme') || localStorage.getItem('theme')) === 'dark') {
@@ -69,6 +69,7 @@
       font-weight: 700;
       text-decoration: none;
       white-space: nowrap;
+      cursor: pointer;
     }
     .news-source-main { position: relative; display: flex; flex: 1 1 auto; min-height: 0; flex-direction: column; }
     .news-source-notice {
@@ -215,12 +216,17 @@
       var previewMeta = document.getElementById('news-source-preview-meta');
       var previewContent = document.getElementById('news-source-preview-content');
       var frameSection = document.querySelector('.news-source-frame-section');
+      var currentPreviewItem = null;
 
       function isHttpUrl(value) {
         try {
           var parsed = new URL(value);
           return parsed.protocol === 'http:' || parsed.protocol === 'https:';
         } catch (e) { return false; }
+      }
+
+      function isEnglish() {
+        return !!(window.getLang && window.getLang() === 'en');
       }
 
       function getReturnUrl() {
@@ -241,9 +247,44 @@
         window.location.replace(target);
       });
 
-      // 外部原文在新标签页打开，当前本站页面保持不变，用户可直接返回新闻报道。
-      openLink.addEventListener('click', function () {
+      function showExternalOpenFallback() {
+        if (document.getElementById('news-source-open-fallback')) return;
+        var english = isEnglish();
+        var overlay = document.createElement('div');
+        overlay.id = 'news-source-open-fallback';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(18,25,29,.46);';
+        var box = document.createElement('div');
+        box.style.cssText = 'width:min(460px,100%);padding:22px;border:1px solid var(--glass-border);border-radius:16px;background:var(--bg-card);box-shadow:0 18px 50px rgba(0,0,0,.24);color:var(--text-primary);';
+        var title = english ? 'The original website could not be opened in a new tab' : '原网站暂时无法新开标签页';
+        var detail = english ? 'The saved report remains on this page. Copy the source address if you still need to open it in your browser.' : '本站已保存的报道内容仍在本页。若仍需查看原网站，可以复制下方地址后在浏览器中打开。';
+        box.innerHTML = '<strong style="display:block;font-size:17px;margin-bottom:10px;">' + title + '</strong>' +
+          '<div style="font-size:13px;line-height:1.7;color:var(--text-secondary);margin-bottom:14px;">' + detail + '</div>' +
+          '<div style="padding:10px 12px;border-radius:10px;background:var(--bg-secondary);font-size:12px;line-height:1.5;word-break:break-all;user-select:text;">' + sourceUrl.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</div>' +
+          '<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">' +
+          '<button type="button" data-action="close" style="min-height:36px;padding:0 14px;border:1px solid var(--glass-border);border-radius:999px;background:transparent;color:var(--text-primary);cursor:pointer;">' + (english ? 'Close' : '关闭') + '</button>' +
+          '<button type="button" data-action="copy" style="min-height:36px;padding:0 14px;border:0;border-radius:999px;background:var(--accent-orange);color:#fff;cursor:pointer;">' + (english ? 'Copy address' : '复制地址') + '</button>' +
+          '</div>';
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        function close() { overlay.remove(); }
+        box.querySelector('[data-action="close"]').addEventListener('click', close);
+        overlay.addEventListener('click', function (event) { if (event.target === overlay) close(); });
+        box.querySelector('[data-action="copy"]').addEventListener('click', function () {
+          var button = this;
+          var done = function () { button.textContent = english ? 'Copied' : '已复制'; setTimeout(function () { if (button.isConnected) button.textContent = english ? 'Copy address' : '复制地址'; }, 1800); };
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(sourceUrl).then(done).catch(function () { done(); });
+          else { var input = document.createElement('textarea'); input.value = sourceUrl; document.body.appendChild(input); input.select(); try { document.execCommand('copy'); } catch (e) {} input.remove(); done(); }
+        });
+      }
+
+      // 不把本站页面替换成外部站点：移动端内置浏览器有时会忽略 target="_blank"，
+      // 所以必须拦截默认跳转，主动新开窗口；失败时只显示复制地址提示，避免用户丢失返回入口。
+      openLink.addEventListener('click', function (event) {
+        event.preventDefault();
         try { sessionStorage.setItem('news_source_return', getReturnUrl()); } catch (e) {}
+        var opened = null;
+        try { opened = window.open(sourceUrl, '_blank', 'noopener,noreferrer'); } catch (e) {}
+        if (!opened) showExternalOpenFallback();
       });
 
       function normalisePreview(item) {
@@ -268,11 +309,17 @@
       function renderPreview(item) {
         item = normalisePreview(item);
         if (!item || (!item.title && !item.content)) return false;
-        previewTitle.textContent = item.title || '新闻报道';
-        var meta = [item.date, item.source, item.author ? '发布人：' + item.author : ''].filter(Boolean);
+        currentPreviewItem = item;
+        var displayItem = window.getLocalizedRecord ? window.getLocalizedRecord(item, from === 'news.html' ? 'news' : 'reports') : item;
+        var isEnglish = window.getLang && getLang() === 'en';
+        previewTitle.textContent = displayItem.title || (isEnglish ? 'News report' : '新闻报道');
+        var meta = [item.date, displayItem.source, displayItem.author ? (isEnglish ? 'Published by: ' : '发布人：') + displayItem.author : ''].filter(Boolean);
         previewMeta.textContent = meta.join(' · ');
-        previewContent.textContent = item.content || '这篇报道暂未保存正文。';
+        previewContent.textContent = displayItem.content || (isEnglish ? 'The full report text has not been saved yet.' : '这篇报道暂未保存正文。');
         preview.hidden = false;
+        // 许多来源站点禁止 iframe 嵌入；有后台保存的正文时优先展示本站副本，
+        // 右上角仍可单独新开原网站，不让页面落成一整块空白。
+        if (frameSection) frameSection.hidden = true;
         return true;
       }
 
@@ -306,6 +353,9 @@
       frame.src = sourceUrl;
       openLink.href = sourceUrl;
       loadPreview();
+      window.addEventListener('xie-language-change', function () {
+        if (currentPreviewItem) renderPreview(currentPreviewItem);
+      });
       try {
         var themeColor = document.getElementById('source-theme-color');
         if (themeColor && document.documentElement.getAttribute('data-theme') === 'dark') themeColor.content = '#000000';

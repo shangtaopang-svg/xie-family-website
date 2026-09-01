@@ -9,7 +9,7 @@
   <title>视频 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../css/style.css?v=20260901-entry-switch-05">
-  <script defer src="../js/i18n.js?v=20260901-lang-02"></script>
+  <script defer src="../js/i18n.js?v=20260901-lang-04"></script>
   <link rel="manifest" href="../manifest.json">
     <style>
     .card2 { transition: all 0.3s ease-in-out; }
@@ -236,6 +236,13 @@
   var container = document.getElementById('videos-grid');
   if (!container) return;
 
+  function localizeVideoText(value, fallback) {
+    var text = value || fallback || '';
+    return window.getLang && window.getLang() === 'en' && window.translateString
+      ? window.translateString(text, 'en')
+      : text;
+  }
+
   var allVideos = [];
 
   function buildGrid(videos) {
@@ -253,7 +260,7 @@
     ].concat(videos);
 
     if (!allVids.length) {
-      container.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-muted)">暂无视频</div>';
+      container.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-muted)">' + localizeVideoText('暂无视频') + '</div>';
       return;
     }
 
@@ -284,17 +291,17 @@
 
       var titleEl = document.createElement('div');
       titleEl.className = 'card-title';
-      titleEl.textContent = v.title || '';
+      titleEl.textContent = localizeVideoText(v.title);
       panel1.appendChild(titleEl);
 
       var subEl = document.createElement('div');
       subEl.className = 'card-sub';
-      subEl.textContent = '下枫槎·谢氏';
+      subEl.textContent = localizeVideoText('下枫槎·谢氏');
       panel1.appendChild(subEl);
 
       var btn = document.createElement('div');
       btn.className = 'watch-btn';
-      btn.innerHTML = '▶ 观看视频';
+      btn.textContent = '▶ ' + localizeVideoText('观看视频');
       panel1.appendChild(btn);
 
       card.appendChild(panel1);
@@ -305,12 +312,12 @@
 
       var titleEl2 = document.createElement('div');
       titleEl2.className = 'card-title';
-      titleEl2.textContent = v.title || '';
+      titleEl2.textContent = localizeVideoText(v.title);
       panel2.appendChild(titleEl2);
 
       var descEl = document.createElement('div');
       descEl.className = 'pi2-desc';
-      descEl.textContent = v.desc || '下枫槎村影像记录';
+      descEl.textContent = localizeVideoText(v.desc, '下枫槎村影像记录');
       panel2.appendChild(descEl);
 
       card.appendChild(panel2);
@@ -466,12 +473,13 @@
   };
   xhr.onerror = function() {};
   xhr.send();
+  window.addEventListener('xie-language-change', function() { buildGrid(allVideos); });
 })();
 </script></script>
 
 <script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();try{var u=sessionStorage.getItem("back_to");if(u&&u!==window.location.href&&!u.includes(location.host+"/?")){location.href=u;return}}catch(ex){}if(window.history.length>1)window.history.go(-1);else location.href="../entrance.html"});</script>
 <link rel="stylesheet" href="/css/ai.css?v=96">
-<script src="/js/ai-assistant.js?v=98" defer></script>
+<script src="/js/ai-assistant.js?v=99" defer></script>
 <link rel="stylesheet" href="/css/public-access-gate.css?v=20260826-access-04">
 <script src="/js/public-access-gate.js?v=20260828-trusted-device-02" defer></script>
 </body>

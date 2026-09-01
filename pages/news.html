@@ -10,7 +10,7 @@
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 
   <link rel="stylesheet" href="../css/style.css?v=20260901-entry-switch-05">
-  <script defer src="../js/i18n.js?v=20260901-lang-02"></script>
+  <script defer src="../js/i18n.js?v=20260901-lang-04"></script>
   <script defer src="../js/file-store.js?v=3"></script>
   <script defer src="../js/supabase.js?v=3"></script>
   <link rel="manifest" href="../manifest.json">
@@ -180,21 +180,22 @@
       listHtml += '<div class="news-list">';
 
       data.forEach(function(item, index) {
-        var fullContent = item.content || '';
-        var category = item.category || '家族消息';
+        var displayItem = window.getLocalizedRecord ? window.getLocalizedRecord(item, 'news') : item;
+        var fullContent = displayItem.content || '';
+        var category = displayItem.category || '家族消息';
         var categoryKey = encodeURIComponent(category);
         var compactContent = fullContent.replace(/\s+/g, ' ').trim();
         var excerpt = compactContent.length > 96 ? compactContent.substring(0, 96) + '…' : compactContent;
         var dateParts = splitNewsDate(item.date || '');
-        var author = item.author || '家族理事会';
+        var author = displayItem.author || '家族理事会';
 
         listHtml += '<article class="news-item fade-in" data-category-key="' + categoryKey + '">';
         listHtml += '<div class="news-date-badge"><span>' + escapeHtml(dateParts.month) + '</span><b>' + escapeHtml(dateParts.day) + '</b><small>' + escapeHtml(dateParts.year) + '</small></div>';
         listHtml += '<div class="news-item-main">';
         listHtml += '<div class="news-item-top"><span class="news-category">' + escapeHtml(category) + '</span><time datetime="' + escapeAttr(item.date || '') + '">' + escapeHtml(item.date || '待定') + '</time></div>';
-        listHtml += '<h3>' + escapeHtml(item.title || '未命名消息') + '</h3>';
+        listHtml += '<h3>' + escapeHtml(displayItem.title || '未命名消息') + '</h3>';
         listHtml += '<p class="news-excerpt">' + escapeHtml(excerpt || '这条消息暂未添加摘要。') + '</p>';
-        listHtml += '<div class="news-item-foot"><span class="news-author">发布人：' + escapeHtml(author) + '</span><button type="button" class="news-read-btn" data-news-index="' + index + '">阅读全文 <span>→</span></button></div>';
+        listHtml += '<div class="news-item-foot"><span class="news-author">' + (window.getLang && getLang() === 'en' ? 'Published by: ' : '发布人：') + escapeHtml(author) + '</span><button type="button" class="news-read-btn" data-news-index="' + index + '">' + (window.getLang && getLang() === 'en' ? 'Read full story' : '阅读全文') + ' <span>→</span></button></div>';
         listHtml += '</div></article>';
       });
 
@@ -252,7 +253,7 @@
     }
 
     function newsSourceHref(url, id) {
-      var href = 'news-source.html?from=news&v=20260901-news-source-03&url=' + encodeURIComponent(url);
+      var href = 'news-source.html?from=news&v=20260901-news-source-04&url=' + encodeURIComponent(url);
       return id == null ? href : href + '&id=' + encodeURIComponent(id);
     }
 
@@ -277,9 +278,11 @@
     function showFullArticle(index) {
       var item = window._newsData && window._newsData[index];
       if (!item) return;
-      var content = item.content || '这条消息暂未添加正文。';
-      var title = item.title || '未命名消息';
-      var author = item.author || '家族理事会';
+      var displayItem = window.getLocalizedRecord ? window.getLocalizedRecord(item, 'news') : item;
+      var isEnglish = window.getLang && getLang() === 'en';
+      var content = displayItem.content || (isEnglish ? 'No full text has been added for this news item.' : '这条消息暂未添加正文。');
+      var title = displayItem.title || (isEnglish ? 'Untitled news item' : '未命名消息');
+      var author = displayItem.author || (isEnglish ? 'Family Council' : '家族理事会');
       var date = item.date || '';
       var overlay = document.createElement('div');
       overlay.className = 'article-modal-overlay';
@@ -291,14 +294,14 @@
       box.className = 'article-modal-box';
       box.innerHTML = '<button type="button" class="article-modal-close" aria-label="关闭全文">×</button><span class="article-modal-label">消息全文</span><h2></h2><div class="article-modal-meta"></div><div class="article-modal-content"></div><div class="article-modal-actions"></div>';
       box.querySelector('h2').textContent = title;
-      box.querySelector('.article-modal-meta').textContent = (date ? date : '日期待定') + ' · 发布人：' + author;
+      box.querySelector('.article-modal-meta').textContent = (date ? date : (isEnglish ? 'Date to be announced' : '日期待定')) + (isEnglish ? ' · Published by: ' : ' · 发布人：') + author;
       box.querySelector('.article-modal-content').textContent = content;
       if (item.url && item.url.trim()) {
         var sourceLink = document.createElement('a');
         sourceLink.className = 'article-modal-source';
         sourceLink.href = newsSourceHref(item.url, item.id);
         sourceLink.addEventListener('click', function() { rememberNewsSourceReturn(item); });
-        sourceLink.textContent = '查看来源原文 →';
+        sourceLink.textContent = isEnglish ? 'View original source →' : '查看来源原文 →';
         box.querySelector('.article-modal-actions').appendChild(sourceLink);
       }
 
@@ -318,6 +321,7 @@
     }
 
     renderNews();
+    window.addEventListener('xie-language-change', renderNews);
     // Fetch from server for up-to-date data
     var xhr = new XMLHttpRequest();
     xhr.open("GET", "/api/data/news", true);
@@ -339,7 +343,7 @@
 
 <script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();try{var u=sessionStorage.getItem("back_to");if(u&&u!==window.location.href&&!u.includes(location.host+"/?")){location.href=u;return}}catch(ex){}if(window.history.length>1)window.history.go(-1);else location.href="../entrance.html"});</script>
 <link rel="stylesheet" href="/css/ai.css?v=96">
-<script src="/js/ai-assistant.js?v=98" defer></script>
+<script src="/js/ai-assistant.js?v=99" defer></script>
 <script defer src="../js/sidebar.js?v=13"></script>
 <link rel="stylesheet" href="/css/public-access-gate.css?v=20260826-access-04">
 <script src="/js/public-access-gate.js?v=20260828-trusted-device-02" defer></script>

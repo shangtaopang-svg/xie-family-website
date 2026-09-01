@@ -384,7 +384,7 @@ const KINSHIP_DESCENDANT = [
  * forcedTargetId：前端同名确认后携带的明确目标 id（已确认查哪个同名者），
  * 提供时跳过人名解析直接定位目标。
  */
-function answerLineage(query, selfId, forcedTargetId) {
+function answerLineageZh(query, selfId, forcedTargetId) {
   ensureLoaded();
   const q = String(query || '').trim();
   const self = byId.get(Number(selfId));
@@ -500,7 +500,7 @@ function answerLineage(query, selfId, forcedTargetId) {
  * 返回 { text, tree, ownerIsSelf, targetName }：text 用于答案+朗读，tree 供前端画树。
  * 懒加载 historical-chain.js 以避免顶层循环 require。
  */
-function answerFullLineage(query, selfId, forcedTargetId) {
+function answerFullLineageZh(query, selfId, forcedTargetId) {
   ensureLoaded();
   const hc = require('./historical-chain.js');
   const q = String(query || '').trim();
@@ -716,10 +716,13 @@ function resolveNameCandidates(query, selfId) {
       id: Number(p.id),
       name: p.name,
       desc: describePerson(p),
+      fatherId: f ? Number(f.id) : null,
       fatherName: f ? f.name : null,
       brief: (p.biography || '').slice(0, 40),
       isSelf: Number(p.id) === Number(selfId),
       adoptionRole,
+      biologicalFatherId: biologicalFather ? Number(biologicalFather.id) : null,
+      adoptiveFatherId: adoptiveFather ? Number(adoptiveFather.id) : null,
       biologicalFatherName,
       adoptiveFatherName,
       relationSource,
@@ -759,7 +762,7 @@ function resolveClosestTarget(message, selfId, forcedTargetId) {
  * targetName：展示用名（本人传「您」，查他人传其姓名），决定答案文本与树的「本人」节点标注。
  * 返回 { text, list, tree }，tree.targetName 供前端标题/口播用。
  */
-function answerClosest(personId, limit, targetName) {
+function answerClosestZh(personId, limit, targetName) {
   ensureLoaded();
   limit = Math.max(3, Math.min(20, limit || 10));
   const self = byId.get(Number(personId));
@@ -813,6 +816,163 @@ function answerClosest(personId, limit, targetName) {
   tree.targetName = displayName;
   tree.adoptions = adoptionContextsFor(personId);
   return { text, list, tree };
+}
+
+/*
+ * Deterministic lineage answers are generated from canonical records, so they
+ * cannot be sent through the general LLM just to translate the UI response.
+ * This small presentation layer keeps the calculation untouched while
+ * rendering names as stable record labels (the dataset has no Latin-name
+ * field) and translating every relationship label used by the engine.
+ */
+const LINEAGE_CJK_RE = /[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]+/g;
+const LINEAGE_EN_REPLACEMENTS = [
+  ['未找到您的族谱记录，请重新验证身份。', 'Your genealogy record was not found. Please verify your identity again.'],
+  ['族谱中未找到您想查询的族人，请确认姓名是否正确', 'The requested member was not found in the genealogy. Please check the name'],
+  ['未找到该族人的族谱记录，请重新验证身份。', 'That member’s genealogy record was not found. Please verify your identity again.'],
+  ['未找到相关世系记录。', 'No relevant lineage records were found.'],
+  ['未找到与', 'No'],
+  ['请说明想查询与谁的关系，例如「我和谢XX是什么关系」。', 'Please specify whose relationship to query, for example: “What is the relationship between me and Member XX?”'],
+  ['远古世系', 'ancient lineage'],
+  ['炎帝世系', 'Emperor Yan lineage'],
+  ['申伯世系', 'Shenbo lineage'],
+  ['始宁东山', 'Shining Dongshan'],
+  ['临海下渡', 'Linhai Xiadu'],
+  ['石马（下谢）', 'Shima (Lower Xie)'],
+  ['直系世系', 'direct lineage'],
+  ['世系记录', 'lineage records'],
+  ['世系', 'lineage'],
+  ['代数未录入', 'generation is not recorded'],
+  ['世次未录入', 'generation is not recorded'],
+  ['比始祖早', 'before the founding ancestor'],
+  ['同一辈', 'the same generation'],
+  ['同辈', 'same-generation'],
+  ['辈分', 'generation'],
+  ['排行', 'rank'],
+  ['族人共', 'members, total'],
+  ['族人', 'members'],
+  ['后代记录', 'descendant records'],
+  ['后代', 'descendants'],
+  ['每代最多列前若干', 'up to the first several from each generation'],
+  ['示例：', 'Examples: '],
+  ['未查到共同祖先', 'no common ancestor was found'],
+  ['共同父系', 'common paternal line'],
+  ['共同父亲', 'common father'],
+  ['共同祖先', 'common ancestor'],
+  ['父系链距离', 'paternal-line distance'],
+  ['实际父系链相隔', 'actual paternal-line distance'],
+  ['同父兄弟/姐妹', 'siblings with the same father'],
+  ['彼此称兄弟或姐妹', 'are brothers or sisters to each other'],
+  ['叔伯/姑母辈', 'uncle/aunt generation'],
+  ['堂兄弟/堂姐妹', 'cousins'],
+  ['旁系亲属', 'collateral relatives'],
+  ['不能仅凭世次数字确定具体称谓', 'the exact kinship cannot be determined from generation numbers alone'],
+  ['父亲的姐妹', 'father’s sisters'],
+  ['父亲的兄弟', 'father’s brothers'],
+  ['亲生父亲', 'biological father'],
+  ['继父（承嗣父）', 'adoptive father'],
+  ['亲生父系', 'biological paternal line'],
+  ['承嗣父系', 'adoptive paternal line'],
+  ['关系线', 'relationship line'],
+  ['亲姐妹', 'sisters'],
+  ['亲兄弟', 'brothers'],
+  ['姑辈', 'aunt’s generation'],
+  ['叔伯辈', 'uncle’s generation'],
+  ['亲姑妈', 'paternal aunt'],
+  ['亲伯父 / 叔父', 'paternal uncle'],
+  ['女儿 / 儿子', 'daughters / sons'],
+  ['孙女 / 孙子', 'granddaughters / grandsons'],
+  ['亲侄女 / 亲侄子', 'nieces / nephews'],
+  ['高祖父', 'great-great-grandfather'],
+  ['曾祖父', 'great-grandfather'],
+  ['爷爷（祖父）', 'grandfather'],
+  ['太爷爷（曾祖父）', 'great-grandfather'],
+  ['高祖', 'great-great-grandfather'],
+  ['父亲', 'father'],
+  ['曾孙', 'great-grandchild'],
+  ['孙子', 'grandson'],
+  ['儿子', 'son'],
+  ['未在族谱中找到', 'not found in the genealogy'],
+  ['的直系', '’s direct'],
+  ['的direct lineage', '’s direct lineage'],
+  ['的descendants', '’s descendants'],
+  ['（共', '(total '],
+  ['的后代', '’s descendants'],
+  ['的', '’s'],
+  ['称', 'calls'],
+  ['您', 'you'],
+  ['人', 'people'],
+  ['位', 'people'],
+  ['层', 'levels'],
+  ['记录', 'records'],
+  ['是', 'is'],
+  ['为', 'are'],
+  ['未查到', 'not found'],
+  ['请重新验证身份', 'please verify your identity again'],
+  ['第', 'Generation '],
+  ['世', 'Generation'],
+];
+
+function englishNameFor(name) {
+  const source = String(name == null ? '' : name);
+  if (!LINEAGE_CJK_RE.test(source)) {
+    LINEAGE_CJK_RE.lastIndex = 0;
+    return source;
+  }
+  LINEAGE_CJK_RE.lastIndex = 0;
+  const candidates = byName.get(source) || [];
+  const first = candidates[0];
+  return first ? `Member ${Number(first.id)}` : 'Member';
+}
+
+function englishizeLineageText(value) {
+  let output = String(value == null ? '' : value);
+  output = output
+    .replace(/第\s*(\d+)\s*世/g, 'Generation $1')
+    .replace(/第\s*(\d+)\s*代/g, 'Generation $1')
+    .replace(/(\d+)\s*世/g, '$1 generations')
+    .replace(/(\d+)\s*位/g, '$1 people')
+    .replace(/(\d+)\s*人/g, '$1 people');
+  LINEAGE_EN_REPLACEMENTS.forEach(([from, to]) => {
+    output = output.split(from).join(to);
+  });
+  output = output.replace(/[（）]/g, (mark) => mark === '（' ? '(' : ')');
+  // Translate names after phrase replacements. Otherwise a one-character
+  // person name such as “直” can corrupt the word “直系” before it is read.
+  const names = Array.from(byName.keys()).filter(Boolean).sort((a, b) => b.length - a.length);
+  names.forEach((name) => {
+    if (name.length > 1 && output.indexOf(name) !== -1) output = output.split(name).join(englishNameFor(name));
+  });
+  names.filter((name) => name.length === 1).forEach((name) => {
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const boundary = new RegExp(`(^|[\\s\\n·：:（）()，,。；;])${escaped}(?=$|[\\s\\n·：:（）()，,。；;])`, 'g');
+    output = output.replace(boundary, (_, prefix) => prefix + englishNameFor(name));
+  });
+  return output.replace(LINEAGE_CJK_RE, 'Source text pending translation');
+}
+
+function englishizeLineageValue(value) {
+  if (typeof value === 'string') return englishizeLineageText(value);
+  if (Array.isArray(value)) return value.map(englishizeLineageValue);
+  if (!value || typeof value !== 'object') return value;
+  const out = {};
+  Object.keys(value).forEach((key) => { out[key] = englishizeLineageValue(value[key]); });
+  return out;
+}
+
+function answerLineage(query, selfId, forcedTargetId, language) {
+  const result = answerLineageZh(query, selfId, forcedTargetId);
+  return language === 'en' ? englishizeLineageText(result) : result;
+}
+
+function answerFullLineage(query, selfId, forcedTargetId, language) {
+  const result = answerFullLineageZh(query, selfId, forcedTargetId);
+  return language === 'en' ? englishizeLineageValue(result) : result;
+}
+
+function answerClosest(personId, limit, targetName, language) {
+  const result = answerClosestZh(personId, limit, targetName);
+  return language === 'en' ? englishizeLineageValue(result) : result;
 }
 
 module.exports = {

@@ -131,6 +131,29 @@ function formatPair(pair, index) {
   return `${index}. ${pair.out.name}（${generation}）：亲生父亲${biological}，出继给${adoptiveText}为嗣${note}`;
 }
 
+function englishPersonName(person, fallbackId) {
+  const name = text(person && person.name);
+  if (/^[\x00-\x7F]+$/.test(name)) return name;
+  const id = numberOrNull(person && person.id);
+  return `Member ${id || fallbackId || ''}`.trim();
+}
+
+function englishSource() {
+  return 'canonical genealogy data maintained by the genealogy administration system (data/genealogy.json)';
+}
+
+function formatPairEnglish(pair, index) {
+  const generation = pair.generation ? `Generation ${pair.generation}` : 'generation not recorded';
+  const biological = pair.biologicalParent ? englishPersonName(pair.biologicalParent) : 'biological father not recorded';
+  const adoptive = pair.adoptiveParent ? englishPersonName(pair.adoptiveParent) : 'adoptive father not recorded';
+  const sourceParent = pair.source.match(/给\s*([\u4e00-\u9fff]{1,8})为嗣/);
+  const sourceNote = sourceParent && sourceParent[1] !== (pair.adoptiveParent && pair.adoptiveParent.name)
+    ? ` (the source wording names a different adoptive father)` : '';
+  const special = pair.note.match(/兼祧|兼顶|双祧|兼继/);
+  const note = special ? `; note: special inheritance record` : '';
+  return `${index}. ${englishPersonName(pair.out, index)} (${generation}): biological father ${biological}; inherited by ${adoptive}${sourceNote}${note}`;
+}
+
 function adoptionSummary(facts, pairs, followFather, scopeLabel) {
   const selectedPairs = Array.isArray(pairs) ? pairs : facts.pairs;
   const selectedFollowFather = Array.isArray(followFather) ? followFather : facts.followFather;
@@ -141,6 +164,18 @@ function adoptionSummary(facts, pairs, followFather, scopeLabel) {
     `两端记录合计 ${selectedPairs.length * 2} 条，但每组对应同一位出继入嗣人物，不应把两端相加当作不同人物数。`,
     `另有“随父出继”说明 ${selectedFollowFather.length} 条，未计入独立的出继—入继双记录关系。`,
     `数据来源：${facts.source}。`
+  ].join('\n');
+}
+
+function adoptionSummaryEnglish(facts, pairs, followFather) {
+  const selectedPairs = Array.isArray(pairs) ? pairs : facts.pairs;
+  const selectedFollowFather = Array.isArray(followFather) ? followFather : facts.followFather;
+  return [
+    'Counting only adoption records with a valid out/in pair:',
+    `There are ${selectedPairs.length} biological-to-adoptive relationships; ${selectedPairs.length} outgoing records and ${selectedPairs.length} incoming records.`,
+    `The two sides contain ${selectedPairs.length * 2} records in total, but each pair represents one person and must not be counted as two different people.`,
+    `There are also ${selectedFollowFather.length} “follow father after adoption” notes; these are not counted as independent paired relationships.`,
+    `Source: ${englishSource()}.`
   ].join('\n');
 }
 
@@ -157,6 +192,19 @@ function adoptionNameList(facts) {
   ].join('\n');
 }
 
+function adoptionNameListEnglish(facts) {
+  const lines = facts.pairs.map((pair, index) => {
+    const generation = pair.generation ? `Generation ${pair.generation}` : 'generation not recorded';
+    return `${index + 1}. ${englishPersonName(pair.out, index + 1)} (${generation})`;
+  });
+  return [
+    `The canonical data currently contains ${facts.pairs.length} valid adoption/inheritance pairs; the following are the ${facts.pairs.length} corresponding members:`,
+    ...lines,
+    `Each listed member has one outgoing and one incoming record. There are also ${facts.followFather.length} “follow father after adoption” notes, excluded from these pairs.`,
+    `Source: ${englishSource()}.`
+  ].join('\n');
+}
+
 function hasAdoptionContext(history) {
   if (!Array.isArray(history)) return false;
   return history.slice(-12).some((item) => item && typeof item.content === 'string' && ADOPTION_TERMS.test(item.content));
@@ -170,6 +218,16 @@ function adoptionPersonAnswer(query, names, facts) {
   if (!matches.length) return `后台当前未记录与“${names.join('、')}”对应的出继／入继配对。`;
   const lines = matches.map((pair, index) => formatPair(pair, index + 1));
   return `后台当前核定的出继／入继记录（${matches.length}组）：\n${lines.join('\n')}\n数据来源：${facts.source}。`;
+}
+
+function adoptionPersonAnswerEnglish(query, names, facts) {
+  const matches = facts.pairs.filter((pair) => {
+    const namesInPair = pairPersonNames(pair);
+    return names.some((name) => namesInPair.has(name));
+  });
+  if (!matches.length) return 'The current canonical data contains no matching adoption/inheritance pair for the requested member.';
+  const lines = matches.map((pair, index) => formatPairEnglish(pair, index + 1));
+  return `Verified adoption/inheritance records (${matches.length} pair${matches.length === 1 ? '' : 's'}):\n${lines.join('\n')}\nSource: ${englishSource()}.`;
 }
 
 /**
@@ -195,19 +253,23 @@ function answerAdoption(query, options) {
     return {
       ok: true,
       factType: 'adoption-definition',
-      answer: '在本族谱的结构化记录中，“出继”指人物仍保留在亲生父亲记录下，同时记载其出继给另一承嗣父；“入继”是同一关系在承嗣父名下的对应记录。具体关系以后台已核定的出继／入继配对字段为准。',
-      sources: [facts.source]
+      answer: opts.language === 'en'
+        ? 'In the structured genealogy records, “outgoing adoption” keeps a person under the biological father while recording the adoptive father; “incoming adoption” is the corresponding record under the adoptive father. The verified adoption_pair fields in the administration data are authoritative.'
+        : '在本族谱的结构化记录中，“出继”指人物仍保留在亲生父亲记录下，同时记载其出继给另一承嗣父；“入继”是同一关系在承嗣父名下的对应记录。具体关系以后台已核定的出继／入继配对字段为准。',
+      sources: [opts.language === 'en' ? englishSource() : facts.source]
     };
   }
 
   // 指定姓名的统计属于具体族人关系，同样需要身份验证；统计范围只限于命中的配对，
   // 不能把“某人有几条”误答成全族总数。
   if (asksCount && names.length) {
-    if (!options || !options.identity) {
+    if (!opts.identity) {
       return {
         requiresIdentity: true,
         code: 'AUTH_REQUIRED',
-        message: '该问题涉及具体族人的出继／入继关系，需先完成族人身份验证。'
+        message: opts.language === 'en'
+          ? 'This question concerns a specific member’s adoption/inheritance record. Please verify your identity first.'
+          : '该问题涉及具体族人的出继／入继关系，需先完成族人身份验证。'
       };
     }
     const matches = facts.pairs.filter((pair) => Array.from(pairPersonNames(pair)).some((name) => names.includes(name)));
@@ -215,8 +277,10 @@ function answerAdoption(query, options) {
     return {
       ok: true,
       factType: 'adoption-scoped-summary',
-      answer: adoptionSummary(facts, matches, followMatches, names.join('、')),
-      sources: [facts.source]
+      answer: opts.language === 'en'
+        ? adoptionSummaryEnglish(facts, matches, followMatches)
+        : adoptionSummary(facts, matches, followMatches, names.join('、')),
+      sources: [opts.language === 'en' ? englishSource() : facts.source]
     };
   }
 
@@ -226,39 +290,46 @@ function answerAdoption(query, options) {
     return {
       ok: true,
       factType: 'adoption-public-list',
-      answer: adoptionNameList(facts),
-      sources: [facts.source]
+      answer: opts.language === 'en' ? adoptionNameListEnglish(facts) : adoptionNameList(facts),
+      sources: [opts.language === 'en' ? englishSource() : facts.source]
     };
   }
 
   if (asksPerson || asksList) {
-    if (!options || !options.identity) {
+    if (!opts.identity) {
       return {
         requiresIdentity: true,
         code: 'AUTH_REQUIRED',
-        message: '该问题涉及具体族人的出继／入继关系，需先完成族人身份验证。'
+        message: opts.language === 'en'
+          ? 'This question concerns a specific member’s adoption/inheritance record. Please verify your identity first.'
+          : '该问题涉及具体族人的出继／入继关系，需先完成族人身份验证。'
       };
     }
     return {
       ok: true,
       factType: 'adoption-person',
-      answer: names.length ? adoptionPersonAnswer(q, names, facts) :
-        `后台当前核定的出继／入继关系共 ${facts.pairs.length} 组：\n${facts.pairs.map((pair, index) => formatPair(pair, index + 1)).join('\n')}\n数据来源：${facts.source}。`,
-      sources: [facts.source]
+      answer: names.length
+        ? (opts.language === 'en' ? adoptionPersonAnswerEnglish(q, names, facts) : adoptionPersonAnswer(q, names, facts))
+        : (opts.language === 'en'
+          ? `The canonical data currently contains ${facts.pairs.length} verified adoption/inheritance pairs:\n${facts.pairs.map((pair, index) => formatPairEnglish(pair, index + 1)).join('\n')}\nSource: ${englishSource()}.`
+          : `后台当前核定的出继／入继关系共 ${facts.pairs.length} 组：\n${facts.pairs.map((pair, index) => formatPair(pair, index + 1)).join('\n')}\n数据来源：${facts.source}。`),
+      sources: [opts.language === 'en' ? englishSource() : facts.source]
     };
   }
 
   // 只要问题明确询问数量/统计，永远使用结构化统计；不经过 LLM。
   if (asksCount) {
-    return { ok: true, factType: 'adoption-summary', answer: adoptionSummary(facts), sources: [facts.source] };
+    return { ok: true, factType: 'adoption-summary', answer: opts.language === 'en' ? adoptionSummaryEnglish(facts) : adoptionSummary(facts), sources: [opts.language === 'en' ? englishSource() : facts.source] };
   }
   // 问题明确涉及出继／入继，但没有可安全识别的统计、名单或定义意图时，
   // 也不交给 LLM 自由发挥，避免把不完整资料拼成看似确定的答案。
   return {
     ok: true,
     factType: 'adoption-unresolved',
-    answer: '该问题包含出继／入继内容，但当前无法从已核定的结构化字段直接确认，暂不作推断。请改问“出继和入继各有多少条”或打开族谱查询页的出继／入继一览表核对原始记录。',
-    sources: [facts.source]
+    answer: opts.language === 'en'
+      ? 'The question concerns adoption/inheritance, but the verified structured fields do not directly confirm the requested detail. Ask for the counts, or check the adoption/inheritance table in the genealogy query page.'
+      : '该问题包含出继／入继内容，但当前无法从已核定的结构化字段直接确认，暂不作推断。请改问“出继和入继各有多少条”或打开族谱查询页的出继／入继一览表核对原始记录。',
+    sources: [opts.language === 'en' ? englishSource() : facts.source]
   };
 }
 

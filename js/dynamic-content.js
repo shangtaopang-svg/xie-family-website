@@ -5,6 +5,13 @@
    ============================================ */
 
 (function() {
+    function localizeMediaText(value, fallback) {
+      var text = value || fallback || '';
+      return window.getLang && window.getLang() === 'en' && window.translateString
+        ? window.translateString(text, 'en')
+        : text;
+    }
+
     // 1. 照片墙 - 从管理后台加载已上传图片
     function loadCarouselPhotos() {
       var grid = document.getElementById('gallery-grid');
@@ -51,7 +58,7 @@
             var caption = document.createElement('span');
             caption.className = 'gallery-caption';
             var t = (photo.title || '').replace(/—/g, '').trim();
-            caption.textContent = t || defaultLabels[idx % defaultLabels.length];
+            caption.textContent = localizeMediaText(t, defaultLabels[idx % defaultLabels.length]);
             item.appendChild(caption);
             grid.appendChild(item);
           });
@@ -91,7 +98,7 @@
         ].concat(videos);
 
         if (!allVids.length) {
-          container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)">暂无视频</div>';
+          container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)">' + localizeMediaText('暂无视频') + '</div>';
           return;
         }
 
@@ -131,7 +138,7 @@
           var info = document.createElement('div');
           info.style.cssText = 'padding:10px 12px 12px;';
           var titleEl = document.createElement('div');
-          titleEl.textContent = v.title || '';
+          titleEl.textContent = localizeMediaText(v.title);
           titleEl.style.cssText = 'font-size:13px;font-weight:500;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
           info.appendChild(titleEl);
           card.appendChild(info);
@@ -273,4 +280,8 @@ function loadVideosFromServer(callback) {
         loadAdminMusic();
       });
     }
+    window.addEventListener('xie-language-change', function() {
+      loadCarouselPhotos();
+      initVideoSection();
+    });
   })();

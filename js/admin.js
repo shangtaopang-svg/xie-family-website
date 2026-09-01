@@ -759,10 +759,10 @@ function renderMiniGenealogyTree(allData, nameList, accentColor) {
       if (p.name === '申伯' || idForName['申伯'] === p.id) label = '65';
 
       html += '<div style="display:inline-flex;flex-direction:column;align-items:center;min-width:70px;">';
-      html += '<div class="apt-mini-hover" style="position:relative;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:' + (isHighlight ? '600' : '400') + ';background:' + accentColor + '15;border:1px solid ' + accentColor + '30;color:var(--text-primary);cursor:pointer;" title="点击编辑" onclick="showEditForm(\'genealogy\',' + p.id + ')">' + p.name +
+      html += '<div class="apt-mini-hover" style="position:relative;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:' + (isHighlight ? '600' : '400') + ';background:' + accentColor + '15;border:1px solid ' + accentColor + '30;color:var(--text-primary);cursor:pointer;" title="点击编辑" onclick="showEditForm(\'genealogy\',' + p.id + ')">' + escapeHtml(displayPersonName(p)) +
         '<span style="position:absolute;top:1px;right:1px;display:inline-flex;gap:1px;">' +
         '<button class="apt-mini-btn apt-mini-add" title="添加下一代" onclick="event.stopPropagation();showAddChildForm(' + p.id + ')">+</button>' +
-        '<button class="apt-mini-btn apt-mini-del" title="删除此人" onclick="event.stopPropagation();if(confirm(\'确定删除 ' + escapeHtml(p.name) + ' 吗？\'))deleteItem(\'genealogy\',' + p.id + ')">−</button>' +
+        '<button class="apt-mini-btn apt-mini-del" title="删除此人" onclick="event.stopPropagation();if(confirm(\'确定删除 ' + escapeHtml(displayPersonName(p)) + ' 吗？\'))deleteItem(\'genealogy\',' + p.id + ')">−</button>' +
         '</span></div>';
       if (label) {
         html += '<span style="font-size:9px;color:var(--text-muted);margin-top:2px;opacity:0.5;">' + label + '世</span>';
@@ -779,6 +779,11 @@ function renderMiniGenealogyTree(allData, nameList, accentColor) {
 function buildAdminTreeHtml(data, opts) {
   if (!data || data.length === 0) return '<div style="padding:20px;text-align:center;color:var(--text-tertiary);font-size:13px;">暂无数据</div>';
   opts = opts || {};
+  function displayPersonName(person) {
+    return window.getLang && window.getLang() === 'en' && window.englishPersonName
+      ? window.englishPersonName(person)
+      : (person && person.name) || '未知';
+  }
 
   // —— 性能优化：一次性建立 id→person 与 id→children 索引。
   // 原实现 childrenOf/getPersonName/countDescendants 每次递归都 O(n) 全量遍历，
@@ -933,6 +938,7 @@ function buildAdminTreeHtml(data, opts) {
 
   // 渲染单张卡片（不含子女块，供卡片行使用）
   function renderAptCard(person) {
+    var displayName = displayPersonName(person);
     var isRuzhui = person.name.indexOf('入赘') >= 0 || person.name.indexOf('女婿') >= 0;
     var ruzhuiPartner = false;
     if (person.spouse_ids) {
@@ -989,7 +995,7 @@ function buildAdminTreeHtml(data, opts) {
     if (opts.cornerIds && opts.cornerIds[person.id]) html += '<span class="apt-corner-badge" title="后裔已收进右下角框，点击可缩放查看">后裔→右下角</span>';
     // 关键人物（彬/乾/文对）名字前加 ★ 徽标，醒目高亮
     if (opts.ancBox && keyIds[person.id]) html += '<span class="apt-key-badge">★</span>';
-    html += escapeHtml(person.name) + '</div>';
+    html += escapeHtml(displayName) + '</div>';
     if (!opts.hideGen) {
       var genText = (person.generation_num || '?') + '世';
       var genSuffix = '';
@@ -1047,22 +1053,30 @@ function buildAdminTreeHtml(data, opts) {
     }
     if (person.spouse_ids) {
       var sp = person.spouse_ids.toString().split(',').map(function(n) { return n.trim(); }).filter(function(n) { return n; });
-      if (sp.length > 0) html += '<div class="apt-spouse">配: ' + escapeHtml(sp.join('、')) + '</div>';
+      if (sp.length > 0) {
+        var displaySpouses = sp.map(function(name) {
+          for (var si2 = 0; si2 < data.length; si2++) if (data[si2].name === name) return displayPersonName(data[si2]);
+          return window.getLang && window.getLang() === 'en' && window.translateString ? window.translateString(name, 'en') : name;
+        });
+        html += '<div class="apt-spouse">配: ' + escapeHtml(displaySpouses.join('、')) + '</div>';
+      }
     }
     // 显示母亲（多妻情况下区分不同母亲所出）
     if (person.mother_id) {
       var _mo = personById[parseInt(person.mother_id)];
       var mn = _mo ? _mo.name : null;
-      if (mn) html += '<div class="apt-mother">母: ' + escapeHtml(mn) + '</div>';
+      if (mn) html += '<div class="apt-mother">母: ' + escapeHtml(displayPersonName(_mo)) + '</div>';
     }
     // 嗣子显示双 lineage：过继父 + 生父
     if (person.adopted && person.adopted !== '否' && person.adopted !== '出继') {
       if (person.bio_father_id) {
-        var bfn = getPersonName(parseInt(person.bio_father_id), data) || person.bio_father_id;
+        var _bioFather = personById[parseInt(person.bio_father_id)];
+        var bfn = _bioFather ? displayPersonName(_bioFather) : person.bio_father_id;
         if (bfn) html += '<div class="apt-bio-father" style="font-size:11px;color:#22d3ee;margin-top:2px;">🌱 生父: ' + escapeHtml(bfn) + '</div>';
       }
       if (person.bio_mother_id) {
-        var bmn = getPersonName(parseInt(person.bio_mother_id), data) || person.bio_mother_id;
+        var _bioMother = personById[parseInt(person.bio_mother_id)];
+        var bmn = _bioMother ? displayPersonName(_bioMother) : person.bio_mother_id;
         if (bmn) html += '<div class="apt-bio-mother" style="font-size:11px;color:#22d3ee;margin-top:1px;">🌱 生母: ' + escapeHtml(bmn) + '</div>';
       }
       html += '<div class="apt-dual-lineage" style="font-size:10px;color:var(--text-tertiary);margin-top:3px;padding:2px 4px;border:1px dashed rgba(34,211,238,0.2);border-radius:4px;">🔄 双 lineage：过继入本支 · 原生可查</div>';
@@ -1151,10 +1165,10 @@ function buildAdminTreeHtml(data, opts) {
         var isLast = (bci === bioChain.length - 1);
         html += '<div style="display:flex;align-items:center;gap:6px;padding:2px 0;' + (isLast ? '' : '') + '">';
         html += '<div style="width:24px;height:24px;border-radius:50%;background:' + (bp.gender === '女' ? 'rgba(244,114,182,0.2)' : 'rgba(34,211,238,0.15)') + ';display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">' + (bp.gender === '女' ? '👩' : '👤') + '</div>';
-        html += '<span style="font-size:12px;">' + escapeHtml(bp.name) + '</span>';
+        html += '<span style="font-size:12px;">' + escapeHtml(displayPersonName(bp)) + '</span>';
         html += '<span style="font-size:10px;color:var(--text-tertiary);">' + (bp.generation_num || '?') + '世</span>';
         if (!isLast) html += '<span style="color:var(--text-tertiary);font-size:10px;margin-left:auto;">⬇</span>';
-        else html += '<span style="color:#22d3ee;font-size:11px;margin-left:auto;font-weight:600;">→ ' + escapeHtml(person.name) + '（嗣子）</span>';
+        else html += '<span style="color:#22d3ee;font-size:11px;margin-left:auto;font-weight:600;">→ ' + escapeHtml(displayPersonName(person)) + '（嗣子）</span>';
         html += '</div>';
       }
       html += '</div>';

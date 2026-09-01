@@ -135,7 +135,8 @@ document.addEventListener('DOMContentLoaded', function() {
         news.forEach(function(n) { if (new Date(n.date||0).getTime() > lastVisit) count++; });
         var toast = document.createElement('div');
         toast.style.cssText = 'position:fixed;bottom:80px;right:20px;z-index:9999;background:var(--accent-orange);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,0.2);cursor:pointer;animation:slideIn 0.3s ease;max-width:300px;';
-        toast.innerHTML = '<div style="font-weight:700;">📢 有新消息</div><div style="font-size:12px;margin-top:4px;">' + count + ' 条新消息发布</div>';
+        var isEnglish = window.getLang && getLang() === 'en';
+        toast.innerHTML = '<div style="font-weight:700;">📢 ' + (isEnglish ? 'New Messages' : '有新消息') + '</div><div style="font-size:12px;margin-top:4px;">' + count + (isEnglish ? ' new message(s)' : ' 条新消息发布') + '</div>';
         toast.onclick = function() { window.location.href = 'pages/news.html'; };
         document.body.appendChild(toast);
         setTimeout(function() { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.5s'; setTimeout(function(){toast.remove();},500); }, 8000);
@@ -215,17 +216,17 @@ document.addEventListener('DOMContentLoaded', function() {
   var now = Date.now();
 
   if (cached && (now - cached.time < 3600000)) { // 1h cache
-    heroWeatherEl.textContent = cached.condition;
+    heroWeatherEl.textContent = (window.getLang && getLang() === 'en' && window.translateString) ? translateString(cached.condition, 'en') : cached.condition;
     if (heroTempEl) heroTempEl.textContent = cached.temp;
     return;
   }
 
   // Show cached or placeholder immediately, don't block UI
   if (cached) {
-    heroWeatherEl.textContent = cached.condition;
+    heroWeatherEl.textContent = (window.getLang && getLang() === 'en' && window.translateString) ? translateString(cached.condition, 'en') : cached.condition;
     if (heroTempEl) heroTempEl.textContent = cached.temp;
   } else {
-    heroWeatherEl.textContent = '宁海';
+    heroWeatherEl.textContent = (window.getLang && getLang() === 'en') ? 'Ninghai' : '宁海';
   }
 
   var xhr = new XMLHttpRequest();
@@ -246,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var sep = raw.indexOf('|');
       var condition = sep !== -1 ? raw.substring(0, sep).trim() : raw;
       var temp = sep !== -1 ? raw.substring(sep + 1).trim() : '—';
-      heroWeatherEl.textContent = condition;
+      heroWeatherEl.textContent = (window.getLang && getLang() === 'en' && window.translateString) ? translateString(condition, 'en') : condition;
       if (heroTempEl) heroTempEl.textContent = temp;
       localStorage.setItem('xie_weather_cache', JSON.stringify({condition: condition, temp: temp, time: Date.now()}));
     }
@@ -300,7 +301,10 @@ function initMusicPlayer() {
       musicAudio.src = src;
       musicAudio.load();
     }
-    if (trackName) trackName.textContent = track.title || '未知曲目';
+    if (trackName) {
+      var trackTitle = track.title || '未知曲目';
+      trackName.textContent = (window.getLang && getLang() === 'en' && window.translateString) ? translateString(trackTitle, 'en') : trackTitle;
+    }
     localStorage.setItem('xie_music_index', currentIndex);
   }
 

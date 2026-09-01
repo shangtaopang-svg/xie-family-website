@@ -141,6 +141,12 @@ function getPersonNameById(id, data) {
     }
     return null;
   }
+
+  function displayGenealogyName(person, fallback) {
+    if (window.getLang && window.getLang() === 'en' && window.englishPersonName) return window.englishPersonName(person, fallback);
+    return person && person.name ? person.name : (fallback || '未知');
+  }
+
   function calcAge(birth, death) {
     if (!birth || !death) return '';
     var by = parseInt(birth); if (isNaN(by)) { var m = birth.match(/(\d{3,4})年/); if (m) by = parseInt(m[1]); }
@@ -253,7 +259,7 @@ function buildCardSvg(person, data, hasChildren, descendantCount, childCount) {
   if (isHighlight) {
     card += '<text x="' + (CARD_W/2 - 8) + '" y="-' + (CARD_H/2 + 6) + '" fill="#ff6b00" font-size="14">⭐</text>';
   }
-  var nameText = escapeHtml(person.name || '未知');
+  var nameText = escapeHtml(displayGenealogyName(person));
   if (person.adopted && person.adopted !== '否') {
     var label = person.adopted === '出继' ? '出' : '嗣';
     card += '<text class="card-adopted-badge" x="-' + (CARD_W/2-12) + '" y="-' + (CARD_H/2+4) + '" text-anchor="middle">' + label + '</text>';
@@ -472,7 +478,7 @@ function renderSimpleTree(data) {
     h += "<div style=\"margin-bottom:12px;\"><div style=\"font-size:12px;color:var(--accent-orange);font-weight:600;margin-bottom:6px;padding:4px 8px;background:rgba(251,146,60,0.08);border-radius:4px;\">第" + g + "世 (" + gens[g].length + "人)</div><div style=\"display:flex;flex-wrap:wrap;gap:4px;\">";
     gens[g].forEach(function(p) {
       var hl = p.highlight === true || /^(炎帝|小四|文杲|攒|撰|彬|乾|文对|申伯|临魁)/.test(p.name);
-      h += "<span onclick=\"showPersonDetail(" + p.id + ", getGenealogyData())\" style=\"cursor:pointer;padding:4px 10px;border-radius:4px;font-size:12px;background:" + (hl ? "rgba(251,146,60,0.12)" : "var(--glass-bg)") + ";border:1px solid var(--glass-border);\">" + (hl ? "⭐" : "") + esc(p.name) + "</span>";
+      h += "<span onclick=\"showPersonDetail(" + p.id + ", getGenealogyData())\" style=\"cursor:pointer;padding:4px 10px;border-radius:4px;font-size:12px;background:" + (hl ? "rgba(251,146,60,0.12)" : "var(--glass-bg)") + ";border:1px solid var(--glass-border);\">" + (hl ? "⭐" : "") + esc(displayGenealogyName(p)) + "</span>";
     });
     h += "</div></div>";
   });
@@ -923,11 +929,12 @@ function mblMapDraw() {
     var sx = X(tp.x), sy = Y(tp.y);
     if (sx - lastSX < 30) continue;
     lastSX = sx;
-    var tw = ctx.measureText(ks[i2].name || '').width;
+    var displayKeyName = displayGenealogyName(ks[i2]);
+    var tw = ctx.measureText(displayKeyName || '').width;
     ctx.fillStyle = 'rgba(255,252,245,0.85)';
     ctx.fillRect(sx - tw / 2 - 3, sy - 8, tw + 6, 15);
     ctx.fillStyle = '#3a3226';
-    ctx.fillText(ks[i2].name || '', sx, sy + 1);
+    ctx.fillText(displayKeyName || '', sx, sy + 1);
   }
 }
 
@@ -1349,7 +1356,7 @@ function mblCreateCard(id) {
   }
   var nm = document.createElement('div');
   nm.className = 'card-name';
-  nm.textContent = person.name || '未知';
+  nm.textContent = displayGenealogyName(person);
   el.appendChild(nm);
   var meta = [];
   if (person.generation && person.generation !== '—') meta.push(person.generation + '字辈');
@@ -1608,7 +1615,7 @@ function renderTreeSVG(data) {
     if (isHidden) style += 'display:none;';
     html += '<div class="tree-html-card' + (isHighlight ? ' highlight' : '') + '" data-id="' + pid + '" onclick="onCardClick(' + pid + ', event)" style="' + style + '">';
     if (isHighlight) html += '<span class="star">⭐</span>';
-    html += '<div class="card-name">' + escapeHtml(person.name || '未知') + '</div>';
+    html += '<div class="card-name">' + escapeHtml(displayGenealogyName(person)) + '</div>';
     var meta = [];
     if (person.generation && person.generation !== '—') meta.push(person.generation + '字辈');
     if (person.generation_num) meta.push('第' + person.generation_num + '世');
@@ -1899,7 +1906,7 @@ function treeAutoLocate(personId) {
       }
       if (card) { card.style.transform = ''; card.style.transition = ''; }
     }, 6000);
-    if (statusEl) { statusEl.textContent = person.name; statusEl.style.background = '#cc0000'; statusEl.style.color = '#fff'; statusEl.style.padding = '2px 8px'; statusEl.style.borderRadius = '4px'; statusEl.style.fontWeight = '700'; setTimeout(function() { statusEl.textContent = ''; statusEl.style.background = ''; }, 4000); }
+    if (statusEl) { statusEl.textContent = displayGenealogyName(person); statusEl.style.background = '#cc0000'; statusEl.style.color = '#fff'; statusEl.style.padding = '2px 8px'; statusEl.style.borderRadius = '4px'; statusEl.style.fontWeight = '700'; setTimeout(function() { statusEl.textContent = ''; statusEl.style.background = ''; }, 4000); }
   }, 400);
 }
 
@@ -1983,7 +1990,7 @@ function exportFullData() {
     var gen = p.generation_num ? '第' + p.generation_num + '世' : '?';
     var status = p.is_alive === '是' ? '在世' : '已故';
     var branch = (p.branch && p.branch !== '—') ? ' [' + p.branch + ']' : '';
-    text += gen + ' ' + p.name + branch + ' ' + status + '\n';
+    text += gen + ' ' + displayGenealogyName(p) + branch + ' ' + status + '\n';
     if (p.spouse_ids) text += '  配: ' + p.spouse_ids + '\n';
     if (p.biography) text += '  简介: ' + p.biography.replace(/<[^>]+>/g,'') + '\n';
   });
@@ -2274,7 +2281,8 @@ function renderHorizontalTree(data) {
 
     svg += '<g class="h-tree-card" onclick="onHCardClick(' + p.id + ', event)" style="cursor:pointer;">';
     svg += '<rect class="h-card-bg' + (isHighlight ? ' highlight' : '') + '" x="' + x + '" y="' + (y - CARD_H/2) + '" width="' + CARD_W + '" height="' + CARD_H + '"/>';
-    svg += '<text class="h-card-name" x="' + (x + CARD_W/2) + '" y="' + (y + 4) + '">' + escapeHtml(p.name.length > 8 ? p.name.substring(0,8) : p.name) + '</text>';
+    var displayName = displayGenealogyName(p);
+    svg += '<text class="h-card-name" x="' + (x + CARD_W/2) + '" y="' + (y + 4) + '">' + escapeHtml(displayName.length > 18 ? displayName.substring(0,18) : displayName) + '</text>';
     svg += '<text class="h-card-gen" x="' + (x + CARD_W/2) + '" y="' + (y + CARD_H/2 - 4) + '">' + (p.generation_num ? '第' + p.generation_num + '世' : '') + '</text>';
 
     if (hasKids) {
@@ -2401,7 +2409,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     html += '<div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">';
     html += '<div style="font-size:40px;">' + (person.gender === '男' ? '👤' : '👩') + '</div>';
-    html += '<div><h2 style="font-family:var(--font-title);color:var(--text-primary);font-size:22px;font-weight:600;">' + escapeHtml(person.name) + '</h2>';
+    html += '<div><h2 style="font-family:var(--font-title);color:var(--text-primary);font-size:22px;font-weight:600;">' + escapeHtml(displayGenealogyName(person)) + '</h2>';
     html += '<div style="font-size:13px;color:var(--text-tertiary);">';
     if (person.generation && person.generation !== '—') html += person.generation + '字辈 ';
     if (person.generation_num) html += '第' + person.generation_num + '世 ';
@@ -2416,14 +2424,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (person.adopted && person.adopted !== '否') html += '<div>过继：' + person.adopted + '</div>';
     if (person.address) html += '<div>居住地：' + escapeHtml(person.address) + '</div>';
     if (person.father_id) {
-      var fn = getPersonNameById(parseInt(person.father_id), data);
-      if (fn) html += '<div>父亲：' + escapeHtml(fn) + '</div>';
+      var fp = findById(parseInt(person.father_id), data);
+      if (fp) html += '<div>父亲：' + escapeHtml(displayGenealogyName(fp)) + '</div>';
     }
     if (person.mother_id) {
-      var mn = getPersonNameById(parseInt(person.mother_id), data) || person.mother_id;
-      if (mn) html += '<div>母亲：' + escapeHtml(mn) + '</div>';
+      var mp = findById(parseInt(person.mother_id), data);
+      if (mp) html += '<div>母亲：' + escapeHtml(displayGenealogyName(mp)) + '</div>';
     }
-    var spNames = getSpouses(person.id, data).map(function(s) { return s.name; }).join('、');
+    var spNames = getSpouses(person.id, data).map(function(s) { return displayGenealogyName(s); }).join('、');
     if (spNames) html += '<div>配偶：' + escapeHtml(spNames) + '</div>';
     html += '</div>';
 
@@ -2516,7 +2524,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var rowBg = p.is_alive === '是' ? 'rgba(220,38,38,0.04)' : 'rgba(0,0,0,0.08)';
 html += '<tr style="border-bottom:1px solid var(--divider);background:' + rowBg + ';transition:background 0.15s;" class="genealogy-hover-row">';
       html += '<td style="padding:6px 8px;color:var(--text-secondary);">' + (p.generation_num || '—') + '</td>';
-      html += '<td style="padding:6px 8px;"><span style="cursor:pointer;font-weight:500;color:var(--text-primary);" onclick="showPersonDetail(' + p.id + ', getGenealogyData());locateInTree(' + p.id + ');">' + escapeHtml(p.name) + '</span>' + (p.adopted && p.adopted !== '否' ? (p.adopted === '出继' ? '<span style="font-size:10px;color:#22c55e;font-weight:600;margin-left:3px;">(出继)</span>' : '<span style="font-size:10px;color:var(--accent-orange);font-weight:600;margin-left:3px;">(入继)</span>') : '') + '</td>';
+      html += '<td style="padding:6px 8px;"><span style="cursor:pointer;font-weight:500;color:var(--text-primary);" onclick="showPersonDetail(' + p.id + ', getGenealogyData());locateInTree(' + p.id + ');">' + escapeHtml(displayGenealogyName(p)) + '</span>' + (p.adopted && p.adopted !== '否' ? (p.adopted === '出继' ? '<span style="font-size:10px;color:#22c55e;font-weight:600;margin-left:3px;">(出继)</span>' : '<span style="font-size:10px;color:var(--accent-orange);font-weight:600;margin-left:3px;">(入继)</span>') : '') + '</td>';
       html += '<td style="padding:6px 8px;text-align:center;">' + (p.gender === '男' ? '👤' : '👩') + '</td>';
       html += '<td style="padding:6px 8px;color:var(--text-secondary);font-size:12px;">' + (p.branch && p.branch !== '—' ? escapeHtml(p.branch) : '—') + '</td>';
       html += '<td style="padding:6px 8px;text-align:center;"><span style="font-size:10px;padding:1px 8px;border-radius:10px;background:' + (p.is_alive === '是' ? 'rgba(220,38,38,0.2)' : 'rgba(0,0,0,0.3)') + ';color:' + (p.is_alive === '是' ? '#ef4444' : 'rgba(255,255,255,0.5)') + ';border:1px solid ' + (p.is_alive === '是' ? 'rgba(220,38,38,0.3)' : 'rgba(255,255,255,0.08)') + ';">' + (p.is_alive === '是' ? '在世' : '已故') + '</span></td>';
@@ -2703,7 +2711,7 @@ function locateInTree(personId) {
       if (!isTarget && genDiff > 0) {
         h += '<div style="font-size:10px;color:var(--accent-orange);font-weight:600;background:var(--accent-orange-dim);border-radius:3px;padding:0 6px;display:inline-block;margin-bottom:2px;">' + relationTitle(genDiff) + '</div>';
       }
-      h += '<div class="ancestor-name">' + (isTarget ? '👉 ' : '') + escapeHtml(a.name) + '</div>';
+      h += '<div class="ancestor-name">' + (isTarget ? '👉 ' : '') + escapeHtml(displayGenealogyName(a)) + '</div>';
       if (extraLabel) h += extraLabel;
       if (a.gender) h += '<div class="ancestor-meta">' + (a.gender === '男' ? '👤' : '👩') + (a.branch && a.branch !== '—' ? ' · ' + escapeHtml(a.branch) : '') + '</div>';
       if (a.spouse_ids) {
@@ -2717,7 +2725,7 @@ function locateInTree(personId) {
     // Build HTML: render from oldest to youngest (ancestors at top, person at bottom)
     var html = '<div class="ancestor-tree-wrap" style="' + (hasBio ? 'max-width:650px;' : '') + '">';
     html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
-    html += '<h4 style="margin:0;font-size:15px;font-weight:500;color:var(--text-primary);">⬆ ' + escapeHtml(person.name) + ' 的上代直系</h4>';
+    html += '<h4 style="margin:0;font-size:15px;font-weight:500;color:var(--text-primary);">⬆ ' + escapeHtml(displayGenealogyName(person)) + ' 的上代直系</h4>';
     html += '<button class="btn btn-sm" onclick="this.closest(\'.ancestor-tree-wrap\').parentElement.parentElement.remove()">✕ 关闭</button>';
     html += '</div>';
 
@@ -2808,7 +2816,7 @@ function locateInTree(personId) {
         if (matchedBio) {
           html += '<div class="ancestor-card" style="border-color:rgba(34,211,238,0.3);min-width:100px;" onclick="showPersonDetail(' + matchedBio.id + ', getGenealogyData());">';
           html += '<div class="ancestor-gen" style="color:#22d3ee;">第' + matchedBio.generation_num + '世</div>';
-          html += '<div class="ancestor-name">' + escapeHtml(matchedBio.name) + '</div>';
+          html += '<div class="ancestor-name">' + escapeHtml(displayGenealogyName(matchedBio)) + '</div>';
           html += '<div class="ancestor-meta" style="font-size:10px;color:#22d3ee;">' + sideSideLabel + '</div>';
           if (matchedBio.gender) html += '<div class="ancestor-meta">👤' + (matchedBio.branch && matchedBio.branch !== '—' ? ' · ' + escapeHtml(matchedBio.branch) : '') + '</div>';
           if (matchedBio.spouse_ids) {
@@ -3054,7 +3062,7 @@ function locateInTree(personId) {
     html += escapeHtml(p1.name) + ' 与 ' + escapeHtml(p2.name);
     html += '</div>';
     html += '<div style="font-size:12px;color:var(--text-tertiary);margin-top:6px;">';
-    html += '共同祖先：' + escapeHtml(commonAncestor.name) + '（第' + commonAncestor.generation_num + '世）';
+    html += '共同祖先：' + escapeHtml(displayGenealogyName(commonAncestor)) + '（第' + commonAncestor.generation_num + '世）';
     html += '</div></div>';
     resultEl.innerHTML = html;
 
@@ -3085,8 +3093,8 @@ function locateInTree(personId) {
     }
     if (father || mother) {
       h += '<div style="margin-bottom:10px;"><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px;">\u2B06 父母</div><div style="display:flex;gap:8px;flex-wrap:wrap;">';
-      if (father) h += '<span class="locate-btn" onclick="showPersonDetail(' + father.id + ', curDetailData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC68 \u7236: ' + escapeHtml(father.name) + '</span>';
-      if (mother) h += '<span class="locate-btn" onclick="showPersonDetail(' + mother.id + ', curDetailData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC69 \u6BCD: ' + escapeHtml(mother.name) + '</span>';
+      if (father) h += '<span class="locate-btn" onclick="showPersonDetail(' + father.id + ', curDetailData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC68 \u7236: ' + escapeHtml(displayGenealogyName(father)) + '</span>';
+      if (mother) h += '<span class="locate-btn" onclick="showPersonDetail(' + mother.id + ', curDetailData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC69 \u6BCD: ' + escapeHtml(displayGenealogyName(mother)) + '</span>';
       h += '</div></div>';
     }
 
@@ -3094,7 +3102,7 @@ function locateInTree(personId) {
     if (spouses.length > 0) {
       h += '<div style="margin-bottom:10px;"><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px;">\uD83D\uDC91 配偶</div><div style="display:flex;gap:8px;flex-wrap:wrap;">';
       spouses.forEach(function(s) {
-        h += '<span class="locate-btn" onclick="showPersonDetail(' + s.id + ', curDetailData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC69 \u914D\u5076: ' + escapeHtml(s.name) + '</span>';
+        h += '<span class="locate-btn" onclick="showPersonDetail(' + s.id + ', curDetailData());" style="cursor:pointer;font-size:13px;padding:4px 12px;">\uD83D\uDC69 \u914D\u5076: ' + escapeHtml(displayGenealogyName(s)) + '</span>';
       });
       h += '</div></div>';
     }

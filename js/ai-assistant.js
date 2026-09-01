@@ -75,6 +75,20 @@
   function isMb() { return window.matchMedia('(max-width:768px)').matches; }
   function getToken() { try { return localStorage.getItem(LS_ADMIN_TOKEN) || localStorage.getItem(LS_TOKEN) || ''; } catch (e) { return ''; } }
   function getPerson() { try { return JSON.parse(localStorage.getItem(LS_PERSON) || 'null'); } catch (e) { return null; } }
+  function isEnglishUi() { return !!(window.getLang && getLang() === 'en'); }
+  function aiText(value, fallback) {
+    var text = value == null ? '' : String(value);
+    if (!isEnglishUi()) return text;
+    if (window.translateString) {
+      var translated = window.translateString(text, 'en');
+      if (translated && !/[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/.test(translated) && translated.indexOf('[Source text pending translation]') === -1) return translated;
+    }
+    return fallback || 'Genealogy record';
+  }
+  function aiPersonName(person) {
+    if (!person) return isEnglishUi() ? 'Family member' : '';
+    return isEnglishUi() ? (person.id != null ? 'Member ' + person.id : 'Family member') : (person.name || '');
+  }
 
   /* 手机端内容页入口：底部导航已移除，入口统一放在内容顶部，避免遮挡正文。 */
   function addMobilePageActions() {
@@ -372,12 +386,12 @@
     panel.style.width = ''; panel.style.height = '';
     if (fs) {
       maxBtn.textContent = '🗗';
-      maxBtn.title = '恢复小窗';
-      maxBtn.setAttribute('aria-label', '恢复小窗');
+      maxBtn.title = isEnglishUi() ? 'Restore window' : '恢复小窗';
+      maxBtn.setAttribute('aria-label', isEnglishUi() ? 'Restore window' : '恢复小窗');
     } else {
       maxBtn.textContent = '⛶';
-      maxBtn.title = '放大到整屏';
-      maxBtn.setAttribute('aria-label', '放大到整屏');
+      maxBtn.title = isEnglishUi() ? 'Open fullscreen' : '放大到整屏';
+      maxBtn.setAttribute('aria-label', isEnglishUi() ? 'Open fullscreen' : '放大到整屏');
     }
     diagLog('maximize', fs ? 'fullscreen' : 'window');
   }
@@ -497,9 +511,13 @@
       var tip = document.createElement('div');
       tip.className = 'ai-verify-tip';
       var hasAdoptionChoice = (j.candidates || []).some(function (c) { return !!c.adoptionRole; });
-      tip.textContent = hasAdoptionChoice
-        ? '🔗 「' + (j.name || '') + '」存在出继／入继关系。请选择要按亲生父系还是承嗣父系查询：'
-        : '⚠️ 族谱中有 ' + (j.candidates ? j.candidates.length : 0) + ' 位「' + (j.name || '') + '」，请选择您要查询的哪一位：';
+      tip.textContent = isEnglishUi()
+        ? (hasAdoptionChoice
+          ? '🔗 ' + (j.candidates ? j.candidates.length : 0) + ' genealogy records match this name. Choose the biological or adoptive paternal line:'
+          : '⚠️ ' + (j.candidates ? j.candidates.length : 0) + ' genealogy records match this name. Choose the person you want to query:')
+        : (hasAdoptionChoice
+          ? '🔗 「' + (j.name || '') + '」存在出继／入继关系。请选择要按亲生父系还是承嗣父系查询：'
+          : '⚠️ 族谱中有 ' + (j.candidates ? j.candidates.length : 0) + ' 位「' + (j.name || '') + '」，请选择您要查询的哪一位：');
       body.appendChild(tip);
       (j.candidates || []).forEach(function (c) {
         var btn = document.createElement('button');
@@ -513,10 +531,17 @@
         var parentInfo = c.adoptionRole
           ? '亲生父亲：' + (c.biologicalFatherName || '未详') + '；继父：' + (c.adoptiveFatherName || '未详')
           : (c.fatherName ? '父亲：' + c.fatherName : '父亲未详');
-        btn.innerHTML = (role ? '<b>' + esc(role) + '</b><br>' : '') + '<strong>' + esc(c.name) + '</strong> · ' + esc(c.desc || '') + '<br><small>' + esc(parentInfo) + (c.relationSource ? '；' + esc(c.relationSource) : '') + (c.brief ? ' · ' + esc(c.brief) : '') + (c.isSelf ? '（本人）' : '') + '</small>';
+        var displayRole = aiText(role, 'Paternal line');
+        var displayDesc = aiText(c.desc, 'Genealogy record');
+        var displayParentInfo = isEnglishUi()
+          ? (c.adoptionRole ? 'Biological father: ' + (c.biologicalFatherId != null ? 'Member ' + c.biologicalFatherId : 'Not recorded') + '; Adoptive father: ' + (c.adoptiveFatherId != null ? 'Member ' + c.adoptiveFatherId : 'Not recorded') : (c.fatherId != null ? 'Father: Member ' + c.fatherId : 'Father: Not recorded'))
+          : parentInfo;
+        btn.innerHTML = (displayRole ? '<b>' + esc(displayRole) + '</b><br>' : '') + '<strong>' + esc(aiPersonName(c)) + '</strong> · ' + esc(displayDesc) + '<br><small>' + esc(displayParentInfo) + (c.isSelf ? (isEnglishUi() ? ' (you)' : '（本人）') : '') + '</small>';
         btn.addEventListener('click', function () {
           panel.classList.remove('ai-selection-mode');
-          body.textContent = '已选择「' + c.name + '（' + c.desc + '）」，正在查询…';
+          body.textContent = isEnglishUi()
+            ? 'Selected ' + aiPersonName(c) + ' (' + aiText(c.desc, 'genealogy record') + '). Searching…'
+            : '已选择「' + c.name + '（' + c.desc + '）」，正在查询…';
           scrollBottom(true);
           var routeText = text;
           // 两个父系选项明确告诉服务端/结果区：按当前所选记录的父系直线上溯，
@@ -537,7 +562,7 @@
         fullBtn.innerHTML = '🔗 <b>全面展示出继 / 入继关系</b><small>同时显示亲生父亲、继父及两条世系关系线</small>';
         fullBtn.addEventListener('click', function () {
           panel.classList.remove('ai-selection-mode');
-          body.textContent = '正在生成完整的出继 / 入继关系图…';
+          body.textContent = isEnglishUi() ? 'Generating the complete adoption / inheritance relationship chart…' : '正在生成完整的出继 / 入继关系图…';
           scrollBottom(true);
           // 以任一同名记录作为目标即可；服务端会从双记录关系索引中补全另一条父系。
           var choice = (j.candidates || []).find(function (x) { return x.adoptionRole === 'biological'; }) || j.candidates[0];
@@ -564,7 +589,7 @@
       if (sources && sources.length) {
         var src = document.createElement('div');
         src.className = 'ai-src';
-        src.textContent = '📚 参考：' + sources.join('、');
+        src.textContent = (isEnglishUi() ? '📚 Sources: ' : '📚 参考：') + sources.map(function (source) { return aiText(source, 'Verified source record'); }).join(isEnglishUi() ? ', ' : '、');
         (body || botEl).appendChild(src); // 放入文本节点内，头像布局下不错位
       }
       // 树图不能只依赖“自动弹出”：在回答正文中保留永久入口，关闭弹层后仍可再次查看。
@@ -608,7 +633,9 @@
         showVerify(text, err.message);
         return;
       }
-      body.textContent = (err && err.message) || '出错了，请重试';
+      body.textContent = isEnglishUi()
+        ? ((err && err.message && !/[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/.test(err.message)) ? err.message : 'Something went wrong. Please try again.')
+        : ((err && err.message) || '出错了，请重试');
       done = true;
       scrollBottom(true);
     };
@@ -635,7 +662,7 @@
       body: JSON.stringify(reqBody)
     }).then(function (resp) {
       if (resp.status === 429) {
-        return resp.json().then(function (j) { fail({ message: '提问太频繁，请' + (j.retryAfter || 10) + '秒后再试' }); });
+        return resp.json().then(function (j) { fail({ message: isEnglishUi() ? 'Too many questions. Please try again in ' + (j.retryAfter || 10) + ' seconds.' : '提问太频繁，请' + (j.retryAfter || 10) + '秒后再试' }); });
       }
       var ct = resp.headers.get('content-type') || '';
       if (ct.indexOf('text/event-stream') === -1) {
@@ -855,11 +882,11 @@
     if (soundBtn) soundBtn.textContent = icon;
     if (treeOverlay) {
       var tb = treeOverlay.querySelector('.ai-tree-sound');
-      if (tb) { tb.textContent = icon; tb.title = ttsMuted ? '打开声音' : '静音'; tb.setAttribute('aria-label', ttsMuted ? '打开声音' : '静音'); }
+      if (tb) { tb.textContent = icon; tb.title = ttsMuted ? (isEnglishUi() ? 'Turn sound on' : '打开声音') : (isEnglishUi() ? 'Mute' : '静音'); tb.setAttribute('aria-label', tb.title); }
     }
     if (closestOverlay) { // 血缘关系图弹层的播音开关
       var cb = closestOverlay.querySelector('.ai-closest-sound');
-      if (cb) { cb.textContent = icon; cb.title = ttsMuted ? '打开声音' : '静音'; cb.setAttribute('aria-label', ttsMuted ? '打开声音' : '静音'); }
+      if (cb) { cb.textContent = icon; cb.title = ttsMuted ? (isEnglishUi() ? 'Turn sound on' : '打开声音') : (isEnglishUi() ? 'Mute' : '静音'); cb.setAttribute('aria-label', cb.title); }
     }
   }
   function initTts() {

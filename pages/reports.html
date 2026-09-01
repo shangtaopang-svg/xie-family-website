@@ -10,7 +10,7 @@
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 
   <link rel="stylesheet" href="../css/style.css?v=20260901-entry-switch-05">
-  <script defer src="../js/i18n.js?v=20260901-lang-02"></script>
+  <script defer src="../js/i18n.js?v=20260901-lang-04"></script>
   <script defer src="../js/file-store.js?v=3"></script>
   <script defer src="../js/supabase.js?v=3"></script>
 
@@ -241,7 +241,7 @@
     }
 
     function newsSourceHref(url, id) {
-      var href = 'news-source.html?from=reports&v=20260901-news-source-03&url=' + encodeURIComponent(url);
+      var href = 'news-source.html?from=reports&v=20260901-news-source-04&url=' + encodeURIComponent(url);
       return id == null ? href : href + '&id=' + encodeURIComponent(id);
     }
 
@@ -263,20 +263,22 @@
     }
 
     function showReportModal(item) {
+      var displayItem = window.getLocalizedRecord ? window.getLocalizedRecord(item, 'reports') : item;
+      var isEnglish = window.getLang && getLang() === 'en';
       var overlay = document.createElement('div');
       overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
       var box = document.createElement('div');
       box.style.cssText = 'background:var(--bg-primary);border:1px solid var(--glass-border);border-radius:12px;max-width:720px;width:100%;max-height:80vh;overflow-y:auto;padding:36px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
-      var fullContent = item.content || '';
+      var fullContent = displayItem.content || (isEnglish ? 'No full report text has been added.' : '暂无报道正文。');
       var hasUrl = item.url && item.url.trim() !== '';
       box.innerHTML = '<button onclick="this.parentElement.parentElement.remove()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-tertiary);">\u2715</button>'
-        + '<h2 style="font-family:var(--font-title);color:var(--text-primary);font-size:20px;font-weight:600;margin-bottom:12px;padding-right:30px;">' + escapeHtml(item.title) + '</h2>'
+        + '<h2 style="font-family:var(--font-title);color:var(--text-primary);font-size:20px;font-weight:600;margin-bottom:12px;padding-right:30px;">' + escapeHtml(displayItem.title || (isEnglish ? 'Untitled report' : '未命名报道')) + '</h2>'
         + '<div style="font-size:13px;color:var(--text-tertiary);margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--divider);">'
         + (item.date ? '<span>' + item.date + '</span>' : '')
-        + (item.source ? ' 来源：' + escapeHtml(item.source) : '')
+        + (displayItem.source ? (isEnglish ? ' · Source: ' : ' 来源：') + escapeHtml(displayItem.source) : '')
         + '</div>'
         + '<div style="font-size:14px;color:var(--text-secondary);line-height:2;">' + escapeHtml(fullContent).replace(/\n/g, '<br>') + '</div>'
-        + (hasUrl ? '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--divider);"><a href="' + escapeAttr(newsSourceHref(item.url, item.id)) + '" class="report-source-reader-link" style="color:#d4793a;color:var(--accent-orange);font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:2px;">\u67e5\u770b\u539f\u6587\u94fe\u63a5 \u2192</a></div>' : '');
+        + (hasUrl ? '<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--divider);"><a href="' + escapeAttr(newsSourceHref(item.url, item.id)) + '" class="report-source-reader-link" style="color:#d4793a;color:var(--accent-orange);font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:2px;">' + (isEnglish ? 'View original source →' : '查看原文链接 →') + '</a></div>' : '');
       overlay.appendChild(box);
       overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
       document.body.appendChild(overlay);
@@ -315,17 +317,19 @@
       if (currentPage > totalPages) currentPage = totalPages;
       var start = (currentPage - 1) * pageSize;
       var pageData = data.slice(start, start + pageSize);
+      var isEnglish = window.getLang && getLang() === 'en';
       var html = '';
       window._reportSourceItems = {};
       pageData.forEach(function(item, pageIndex) {
+        var displayItem = window.getLocalizedRecord ? window.getLocalizedRecord(item, 'reports') : item;
         var hasUrl = item.url && item.url.trim() !== '';
         var sourceKey = item.id != null ? String(item.id) : String(start + pageIndex);
         window._reportSourceItems[sourceKey] = item;
         html += '<div class="report-item" onclick="showReportModal(' + JSON.stringify(item).replace(/"/g, '&quot;') + ')">'
           + '<span class="report-date">' + (item.date || '') + '</span>'
-          + '<span class="report-title">' + escapeHtml(item.title) + '</span>'
-          + '<span class="report-source">' + escapeHtml(item.source || '') + '</span>'
-          + (hasUrl ? '<a href="' + escapeAttr(newsSourceHref(item.url, sourceKey)) + '" class="report-external-link" data-report-source-key="' + escapeAttr(sourceKey) + '">原文 →</a>' : '')
+          + '<span class="report-title">' + escapeHtml(displayItem.title || (isEnglish ? 'Untitled report' : '未命名报道')) + '</span>'
+          + '<span class="report-source">' + escapeHtml(displayItem.source || '') + '</span>'
+          + (hasUrl ? '<a href="' + escapeAttr(newsSourceHref(item.url, sourceKey)) + '" class="report-external-link" data-report-source-key="' + escapeAttr(sourceKey) + '">' + (isEnglish ? 'Original →' : '原文 →') + '</a>' : '')
           + '</div>';
       });
       if (!html) {
@@ -353,6 +357,7 @@
       document.getElementById('reports-list-wrap').scrollTop = 0;
     }
     renderReports();
+    window.addEventListener('xie-language-change', renderReports);
     // 从服务器API加载所有报道数据
     var xhr = new XMLHttpRequest();
     xhr.open('GET', '/api/data/reports', true);
@@ -383,7 +388,7 @@
 
 <script>document.getElementById("backBtn")&&document.getElementById("backBtn").addEventListener("click",function(e){e.preventDefault();try{var u=sessionStorage.getItem("back_to");if(u&&u!==window.location.href&&!u.includes(location.host+"/?")){location.href=u;return}}catch(ex){}if(window.history.length>1)window.history.go(-1);else location.href="../entrance.html"});</script>
 <link rel="stylesheet" href="/css/ai.css?v=96">
-<script src="/js/ai-assistant.js?v=98" defer></script>
+<script src="/js/ai-assistant.js?v=99" defer></script>
 <script defer src="../js/sidebar.js?v=13"></script>
 <link rel="stylesheet" href="/css/public-access-gate.css?v=20260826-access-04">
 <script src="/js/public-access-gate.js?v=20260828-trusted-device-02" defer></script>
