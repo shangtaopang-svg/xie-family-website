@@ -108,7 +108,7 @@
         <strong>新闻原文</strong>
         <span id="news-source-host">正在加载…</span>
       </div>
-      <a class="news-source-open" id="news-source-open" href="#" target="_blank" rel="noopener noreferrer">打开原网站 ↗</a>
+      <a class="news-source-open" id="news-source-open" href="#">打开原网站 ↗</a>
     </header>
     <main class="news-source-main">
       <div class="news-source-notice">原文由来源网站提供；如页面未显示，请点击右上角“打开原网站”。</div>
@@ -150,6 +150,12 @@
         var target = getReturnUrl();
         try { sessionStorage.removeItem('news_source_return'); } catch (e) {}
         window.location.replace(target);
+      });
+
+      // 外部原文在当前标签页打开，保留浏览器返回历史：
+      // 原文网站没有权限显示本站按钮，不能再用新标签页把用户带离本站返回链路。
+      openLink.addEventListener('click', function () {
+        try { sessionStorage.setItem('news_source_return', getReturnUrl()); } catch (e) {}
       });
 
       if (!isHttpUrl(sourceUrl)) {
