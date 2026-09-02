@@ -6761,10 +6761,137 @@ html:not([data-theme="dark"]) .history-page-body .section-title h2 span {
 }
 
 @media (max-width: 768px) {
-  html:not([data-theme="dark"]) .history-page-body,
-  html:not([data-theme="dark"]) .history-page-body .content {
+html:not([data-theme="dark"]) .history-page-body,
+html:not([data-theme="dark"]) .history-page-body .content {
     background: #f6f7f8 !important;
     color: #24313a !important;
+  }
+}
+
+/* ===== 音频页：白天模式高对比度 =====
+   音频页保留独立的播放器视觉，但不再让旧版白色文字落在浅色页面上。
+   仅作用于 audio-body，夜间模式完全沿用原来的深色样式。 */
+html:not([data-theme="dark"]) body.audio-body {
+  background: #f6f7f8 !important;
+  color: #24313a !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .audio-page,
+html:not([data-theme="dark"]) body.audio-body .audio-header,
+html:not([data-theme="dark"]) body.audio-body .section-title-audio,
+html:not([data-theme="dark"]) body.audio-body .chapter-list {
+  color: #24313a !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .audio-header .back {
+  color: #85501f !important;
+  font-weight: 650 !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .audio-header h1 {
+  color: #24313a !important;
+  text-shadow: none !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .player-card {
+  background: #ffffff !important;
+  border-color: #d6dee3 !important;
+  box-shadow: 0 8px 24px rgba(35, 49, 58, .08) !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .now-playing .np-title {
+  color: #24313a !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .now-playing .np-sub,
+html:not([data-theme="dark"]) body.audio-body .progress-time,
+html:not([data-theme="dark"]) body.audio-body .now-playing .np-status {
+  color: #62727b !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .progress-bar {
+  background: #dce4e7 !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .ctrl-btn {
+  background: #edf2f3 !important;
+  color: #24313a !important;
+  border: 1px solid #cbd6da !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .ctrl-btn.primary {
+  background: linear-gradient(135deg, #c9a84c, #e4c86f) !important;
+  color: #24313a !important;
+  border-color: #b38f32 !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body #subtitle-wrap {
+  background: #ffffff !important;
+  border-color: #d6dee3 !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body #subtitle-content {
+  color: #40515a !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .section-title-audio h2 {
+  color: #85501f !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .section-title-audio .bg-toggle {
+  color: #52616a !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .chapter {
+  background: #ffffff !important;
+  border-color: #d6dee3 !important;
+  color: #24313a !important;
+  box-shadow: 0 3px 12px rgba(35, 49, 58, .05) !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .chapter:hover {
+  background: #f7faf9 !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .chapter.active {
+  background: #fff8eb !important;
+  border-color: #d8ab63 !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .chapter.done {
+  opacity: 1 !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .chapter .ch-title {
+  color: #344b43 !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .chapter .ch-status.pending {
+  color: #7b8a91 !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .bg-indicator {
+  background: #fffaf3 !important;
+  border-color: #e2c78f !important;
+  color: #52616a !important;
+  box-shadow: 0 4px 14px rgba(35, 49, 58, .06) !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .bg-indicator .bg-label .bg-title {
+  color: #85501f !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .bg-indicator .bg-label .bg-desc {
+  color: #687780 !important;
+}
+
+html:not([data-theme="dark"]) body.audio-body .bg-indicator .bg-toggle-btn {
+  opacity: .72 !important;
+}
+
+@media (max-width: 560px) {
+  html:not([data-theme="dark"]) body.audio-body .audio-page {
+    padding-top: 24px !important;
   }
 }
 

@@ -4,7 +4,7 @@ const STATIC = [
   '/index.html',
   '/offline.html',
   '/manifest.json',
-  '/css/style.css?v=20260901-entry-switch-06',
+  '/css/style.css?v=20260901-entry-switch-07',
   '/css/ai.css?v=100',
   '/css/public-access-gate.css?v=20260830-access-mobile-01',
   '/js/i18n.js?v=20260901-lang-11',
