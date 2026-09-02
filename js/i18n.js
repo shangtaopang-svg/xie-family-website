@@ -1424,6 +1424,15 @@ const EXTRA_TRANSLATIONS = {
   '未命名': 'Untitled',
   '未命名消息': 'Untitled news item',
   '暂无活动数据': 'No activity data yet.',
+  '活动回顾': 'Review',
+  '活动预告': 'Upcoming',
+  '暂无已举办的活动': 'No held activities yet.',
+  '摄影公司全程拍摄 · 高清原片': 'Professional Photography · High-Resolution Originals',
+  '点击查看全部活动照片 >': 'View All Event Photos >',
+  '查看相册 →': 'View Album →',
+  '地点：': 'Location: ',
+  '宁海下枫槎谢氏宗祠': 'Ninghai Xiafengcha Xie Family Ancestral Hall',
+  '村文化大礼堂': 'Village Cultural Hall',
   '暂无音乐': 'No music available',
   '请将音乐文件放到 music/ 目录下': 'Place music files in the music/ folder.',
   '正在工作中': 'Working',
@@ -3322,8 +3331,10 @@ function translateString(value, lang) {
     .replace(/(\d+)\s*人/g, '$1 people')
     .replace(/第\s*(\d+)\s*张/g, 'Image $1')
     .replace(/(\d+)\s*条消息/g, '$1 messages')
+    .replace(/(\d+)\s*张/g, '$1 photos')
     .replace(/(\d+)\s*件/g, '$1 items')
     .replace(/(\d+)\s*首/g, '$1 tracks')
+    .replace(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/g, '$1-$2-$3')
     .replace(/(\d+)\s*月/g, '$1 month')
     .replace(/(\d+)\s*年/g, '$1')
     .replace(/世代/g, 'generations')
@@ -3385,6 +3396,20 @@ const RECORD_TRANSLATIONS = {
     '15': { title: 'Original New Work | “May We Live Long” and “Green Mountains, Blue Waters, Wangfu Fragrance”', source: 'Ninghai Community Culture', content: 'The square dance uses “May We Live Long,” a song expressing good wishes, as its music. Its lyrics come from Su Shi\'s ci poem “Prelude to Water Melody,” which conveys longing for family and home. The choreography combines the body forms and rhythm of Song-style dance with the poem\'s mood, creating an imaginative and visually enjoyable performance.' },
     '16': { title: 'The Founding Patriarch of Buddhism in Zhejiang: Do You Know the First Stop of Master Tanyou\'s Eastern Journey?', source: 'Wenzhou Ancient Trail', content: 'Master Tanyou was from Dunhuang during the Eastern Jin period and is regarded as a pioneer of Buddhism on Tiantai Mountain and an early founder of Buddhism in Zhejiang. According to the Gaoseng Zhuan, he ranked third among the twenty-one monks from Dunhuang. He crossed eastward by sea, landed at Baiqiao Harbor in Sanmen Bay, spread Buddhist teachings along the coast and eventually meditated at Chicheng Mountain in Tiantai, leaving behind many stories that have been told through the ages.' },
     '17': { title: 'Culture Ninghai | Chen Qusheng: Visiting Xiafengcha and Interviewing the Sunflowers', source: '—', content: 'A cultural feature on visiting Xiafengcha Village, meeting local people and recording the village\'s everyday vitality through the image of sunflowers.' }
+  },
+  activities: {
+    '1': {
+      title: 'Ninghai Xiafengcha Xie Family Genealogy Completion Ceremony',
+      status: 'Held',
+      content: 'The Ninghai Xiafengcha Xie Family held a grand genealogy completion ceremony, bringing relatives together to celebrate. The ceremony is one of the Xie family\'s most important cultural events and marks the successful completion of the genealogy compilation.',
+      location: 'Ninghai Xiafengcha Xie Family Ancestral Hall'
+    },
+    '2': {
+      title: '2027 Chinese New Year\'s Eve Dinner',
+      status: 'Preparing',
+      content: 'The event time will be announced by the village committee.',
+      location: 'Village Cultural Hall'
+    }
   },
   collection: {
     '2': { title: 'Swallows Once Flew Through Wang and Xie Halls: How Did the Two Eastern Jin Clans Rise?', category: 'Family Origins' },
@@ -3736,7 +3761,7 @@ function getLocalizedRecord(record, type) {
     translated = table['title:' + String(record.title)] || {};
   }
   Object.keys(translated).forEach(function (field) { source[field] = translated[field]; });
-  ['title', 'category', 'source', 'author', 'content', 'desc', 'cat'].forEach(function (field) {
+  ['title', 'category', 'source', 'author', 'content', 'desc', 'cat', 'status', 'location'].forEach(function (field) {
     if (!source[field]) return;
     if (translated[field]) return;
     var candidate = translateString(source[field], 'en');

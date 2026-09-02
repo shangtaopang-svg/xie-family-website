@@ -9,7 +9,7 @@
   <title data-i18n="page.activities.title">家族活动 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../css/style.css?v=20260901-entry-switch-07">
-  <script defer src="../js/i18n.js?v=20260901-lang-11"></script>
+  <script defer src="../js/i18n.js?v=20260901-lang-12"></script>
   <style>
     /* Activity card photo carousel */
     .ac-photo-wrap {
@@ -237,10 +237,46 @@
     // Store carousel timers for cleanup
     var carouselTimers = {};
 
+    function isEnglish() {
+      return !!(window.getLang && window.getLang() === 'en');
+    }
+
+    function label(zh, en) {
+      return isEnglish() ? en : zh;
+    }
+
+    function localizeActivity(record) {
+      var source = Object.assign({}, record || {});
+      var localized = window.getLocalizedRecord ? window.getLocalizedRecord(source, 'activities') : source;
+      localized = Object.assign({}, localized || source);
+      localized.__sourceStatus = record && record.status ? record.status : '';
+      return localized;
+    }
+
+    function readActivityData() {
+      try {
+        var raw = localStorage.getItem('xie_admin_activities') || '[]';
+        var parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function formatMonthLabel(monthKey) {
+      var parts = String(monthKey || '').split('-');
+      if (parts.length !== 2) return monthKey || '';
+      if (isEnglish()) {
+        var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        return parts[0] + ' · ' + (monthNames[parseInt(parts[1], 10) - 1] || parts[1]);
+      }
+      return parts[0] + '年' + parseInt(parts[1], 10) + '月';
+    }
+
     function renderCalendar() {
         var calEl = document.getElementById('activity-calendar');
         if (!calEl) return;
-        var data = JSON.parse(localStorage.getItem('xie_admin_activities') || '[]');
+        var data = readActivityData().map(localizeActivity);
         if (!data.length) { calEl.innerHTML = ''; return; }
         var months = {};
         data.forEach(function(a) {
@@ -250,14 +286,14 @@
           months[m].push(a);
         });
         var sorted = Object.keys(months).sort(function(a,b){return b.localeCompare(a);});
-        var html = '<div class="section-title"><h2>📅 活动日历</h2><div class="divider"></div></div><div style="max-height:400px;overflow-y:auto;padding-right:8px;">';
+        var html = '<div class="section-title"><h2>' + label('📅 活动日历', '📅 Activity Calendar') + '</h2><div class="divider"></div></div><div style="max-height:400px;overflow-y:auto;padding-right:8px;">';
         sorted.forEach(function(m) {
-          var label = m.split('-')[0] + '年' + parseInt(m.split('-')[1]) + '月';
-          html += '<div style="margin-bottom:16px;"><div style="font-size:14px;font-weight:600;color:var(--accent-orange);margin-bottom:6px;padding:4px 0;border-bottom:1px solid var(--accent-orange-dim);">' + label + '</div>';
+          var monthLabel = formatMonthLabel(m);
+          html += '<div style="margin-bottom:16px;"><div style="font-size:14px;font-weight:600;color:var(--accent-orange);margin-bottom:6px;padding:4px 0;border-bottom:1px solid var(--accent-orange-dim);">' + monthLabel + '</div>';
           months[m].forEach(function(a) {
             html += '<div style="display:flex;gap:8px;margin-bottom:6px;padding:4px 8px;border-radius:6px;background:var(--glass-bg);">';
-            html += '<span style="font-size:11px;color:var(--text-tertiary);white-space:nowrap;padding-top:2px;">' + (a.date || '') + '</span>';
-            html += '<span style="font-size:13px;">' + (a.title || '') + '</span>';
+            html += '<span style="font-size:11px;color:var(--text-tertiary);white-space:nowrap;padding-top:2px;">' + esc(formatDate(a.date)) + '</span>';
+            html += '<span style="font-size:13px;">' + esc(a.title || '') + '</span>';
             html += '</div>';
           });
           html += '</div>';
@@ -267,33 +303,34 @@
     }
 
     function renderActivities(data) {
-      if (!data || data.length === 0) {
-        container.innerHTML = '<section style="margin-bottom:50px;"><div class="section-title"><h2>活动回顾</h2><div class="divider"></div></div><p style="text-align:center;color:var(--text-tertiary);padding:40px 0;">暂无活动数据</p></section>';
+      var sourceData = Array.isArray(data) ? data : [];
+      if (sourceData.length === 0) {
+        container.innerHTML = '<section style="margin-bottom:50px;"><div class="section-title"><h2>' + label('活动回顾', 'Review') + '</h2><div class="divider"></div></div><p style="text-align:center;color:var(--text-tertiary);padding:40px 0;">' + label('暂无活动数据', 'No activity data yet.') + '</p></section>';
         return;
       }
 
-      data.sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
+      var displayData = sourceData.slice().sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); }).map(localizeActivity);
 
-      var pastActivities = data.filter(function(a) { return a.status === '已举办'; });
-      var upcomingActivities = data.filter(function(a) { return a.status !== '已举办'; });
+      var pastActivities = displayData.filter(function(a) { return a.__sourceStatus === '已举办'; });
+      var upcomingActivities = displayData.filter(function(a) { return a.__sourceStatus !== '已举办'; });
 
       var html = '';
 
       // === 活动回顾 ===
       html += '<section style="margin-bottom:50px;">';
-      html += '<div class="section-title"><h2>活动回顾</h2><div class="divider"></div></div>';
+      html += '<div class="section-title"><h2>' + label('活动回顾', 'Review') + '</h2><div class="divider"></div></div>';
       // Photo company album banner
       html += '<a href="https://m.alltuu.com/album/23b7ac3ea07ac557f1caab0d5e402ca9/?menu=hot" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:12px;padding:16px 22px;margin-bottom:24px;text-decoration:none;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform=\"translateY(-2px)\";this.style.boxShadow=\"0 8px 25px rgba(0,0,0,0.3)\"" onmouseout="this.style.transform=\"\";this.style.boxShadow=\"\"">';
       html += '<div style="width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#e94560,#ff6b6b);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">📷</div>';
       html += '<div style="flex:1;min-width:0;">';
-      html += '<div style="color:#fff;font-size:15px;font-weight:600;margin-bottom:2px;">摄影公司全程拍摄 · 高清原片</div>';
-      html += '<div style="color:rgba(255,255,255,0.6);font-size:12px;">点击查看全部活动照片 ></div>';
+      html += '<div style="color:#fff;font-size:15px;font-weight:600;margin-bottom:2px;">' + label('摄影公司全程拍摄 · 高清原片', 'Professional Photography · High-Resolution Originals') + '</div>';
+      html += '<div style="color:rgba(255,255,255,0.6);font-size:12px;">' + label('点击查看全部活动照片 >', 'View All Event Photos >') + '</div>';
       html += '</div>';
-      html += '<div style="color:#e94560;font-size:13px;white-space:nowrap;font-weight:500;">查看相册 →</div>';
+      html += '<div style="color:#e94560;font-size:13px;white-space:nowrap;font-weight:500;">' + label('查看相册 →', 'View Album →') + '</div>';
       html += '</a>';
 
       if (pastActivities.length === 0) {
-        html += '<p style="text-align:center;color:var(--text-tertiary);padding:20px 0;">暂无已举办的活动</p>';
+        html += '<p style="text-align:center;color:var(--text-tertiary);padding:20px 0;">' + label('暂无已举办的活动', 'No held activities yet.') + '</p>';
       } else {
         for (var i = 0; i < pastActivities.length; i++) {
           var a = pastActivities[i];
@@ -307,7 +344,7 @@
           // Left: photo carousel or icon fallback
           if (photos.length > 0) {
             html += '<div class="ac-photo-wrap" data-activity-idx="' + i + '">';
-            html += '<div class="ac-photo-count">' + photos.length + '张</div>';
+            html += '<div class="ac-photo-count">' + photos.length + (isEnglish() ? ' photos' : '张') + '</div>';
             for (var pi = 0; pi < photos.length; pi++) {
               html += '<div class="ac-photo-slide' + (pi === 0 ? ' active' : '') + '" data-pidx="' + pi + '">';
               html += '<img' + (pi === 0 ? ' src="' + photos[pi] + '"' : ' data-src="' + photos[pi] + '"') + ' src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" onclick="handleActivityPhotoClick(' + i + ',' + pi + ')" onerror="this.parentElement.innerHTML=\'\' + esc(a.icon || \'🎉\') + \'\'">';
@@ -341,21 +378,21 @@
       // === 活动预告 ===
       if (upcomingActivities.length > 0) {
         html += '<section id="upcoming" style="margin-bottom:50px;">';
-        html += '<div class="section-title"><h2>活动预告</h2><div class="divider"></div></div>';
+        html += '<div class="section-title"><h2>' + label('活动预告', 'Upcoming') + '</h2><div class="divider"></div></div>';
         html += '<div class="mobile-stack-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">';
         for (var ui = 0; ui < upcomingActivities.length; ui++) {
           var ua = upcomingActivities[ui];
-          var sc = ua.status === '即将举行' ? 'var(--accent-orange)' : 'var(--accent-orange-dim)';
-          var stc = ua.status === '即将举行' ? '#000' : 'var(--accent-orange)';
+          var sc = ua.__sourceStatus === '即将举行' ? 'var(--accent-orange)' : 'var(--accent-orange-dim)';
+          var stc = ua.__sourceStatus === '即将举行' ? '#000' : 'var(--accent-orange)';
           html += '<div class="glass-card" style="padding:24px;border-top:3px solid var(--accent-orange);">';
           html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
-          html += '<span style="background:' + sc + ';color:' + stc + ';padding:2px 10px;border-radius:3px;font-size:12px;font-weight:' + (ua.status !== '即将举行' ? '500' : '') + ';">' + esc(ua.status) + '</span>';
+          html += '<span style="background:' + sc + ';color:' + stc + ';padding:2px 10px;border-radius:3px;font-size:12px;font-weight:' + (ua.__sourceStatus !== '即将举行' ? '500' : '') + ';">' + esc(ua.status) + '</span>';
           html += '<span style="font-size:12px;color:var(--text-tertiary);">' + formatDate(ua.date) + '</span>';
           html += '</div>';
           html += '<h3 style="font-family:var(--font-title);color:var(--text-primary);font-size:17px;font-weight:500;">' + esc(ua.title) + '</h3>';
           html += '<p style="font-size:13px;color:var(--text-tertiary);margin:8px 0;">' + esc(ua.content) + '</p>';
           if (ua.location) {
-            html += '<p style="font-size:12px;color:var(--text-tertiary);">地点：' + esc(ua.location) + '</p>';
+            html += '<p style="font-size:12px;color:var(--text-tertiary);">' + label('地点：', 'Location: ') + esc(ua.location) + '</p>';
           }
           html += '</div>';
         }
@@ -448,8 +485,14 @@
 
     function formatDate(d) {
       if (!d) return '';
-      var parts = d.split('-');
-      if (parts.length === 3) return parts[0] + '年' + parseInt(parts[1]) + '月' + parseInt(parts[2]) + '日';
+      var parts = String(d).split('-');
+      if (parts.length === 3) {
+        if (isEnglish()) {
+          var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+          return (monthNames[parseInt(parts[1], 10) - 1] || parts[1]) + ' ' + parseInt(parts[2], 10) + ', ' + parts[0];
+        }
+        return parts[0] + '年' + parseInt(parts[1], 10) + '月' + parseInt(parts[2], 10) + '日';
+      }
       return d;
     }
 
@@ -490,6 +533,7 @@
             localStorage.setItem('xie_admin_activities', JSON.stringify(parsed));
             window._allActivities = parsed;
             try {
+              renderCalendar();
               renderActivities(parsed);
             } catch(e) { console.error('Activities render error:', e); }
           }
@@ -499,6 +543,13 @@
       xhr.ontimeout = function() {};
       xhr.send();
     }
+
+    window.addEventListener('xie-language-change', function() {
+      var data = window._allActivities;
+      if (!Array.isArray(data)) data = readActivityData();
+      renderCalendar();
+      renderActivities(data);
+    });
 
     loadActivities();
   })();
