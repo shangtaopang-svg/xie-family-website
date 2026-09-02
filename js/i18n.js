@@ -36,6 +36,30 @@ const TRANSLATIONS = {
     zh: '返回上一页',
     en: 'Back to previous page'
   },
+  'album.back': {
+    zh: '← 返回家族活动',
+    en: '← Back to Family Activities'
+  },
+  'album.title': {
+    zh: '活动相册',
+    en: 'Event Album'
+  },
+  'album.source': {
+    zh: '摄影公司活动照片',
+    en: 'Professional event photography'
+  },
+  'album.open': {
+    zh: '打开原相册 ↗',
+    en: 'Open Original Album ↗'
+  },
+  'album.note': {
+    zh: '相册在当前网站内展示；如未显示，请点击右侧“打开原相册”。',
+    en: 'The album is shown inside this website. If it does not load, use “Open Original Album” on the right.'
+  },
+  'album.frameTitle': {
+    zh: '活动照片相册',
+    en: 'Event photo album'
+  },
   'gallery.title': {
     zh: '影像记忆 · 下枫槎谢氏',
     en: 'Visual Memories · Xie Family of Xiafengcha'

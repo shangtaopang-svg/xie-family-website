@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f7f8" id="activity-album-theme-color">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title data-i18n="album.title">活动相册</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <script>
+    try {
+      if ((localStorage.getItem('xie_theme') || localStorage.getItem('theme')) === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="../css/style.css?v=20260901-entry-switch-07">
+  <script defer src="../js/i18n.js?v=20260902-activity-album-01"></script>
+  <style>
+    html,
+    body { min-height: 100%; }
+
+    body.activity-album-page {
+      min-height: 100vh;
+      margin: 0;
+      padding: 0 !important;
+      overflow: hidden;
+      background: var(--bg-primary, #f6f7f8);
+      color: var(--text-primary, #23313a);
+    }
+
+    .activity-album-shell {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      min-height: 100svh;
+    }
+
+    .activity-album-toolbar {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-height: 68px;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--glass-border, rgba(35, 49, 58, .14));
+      background: var(--bg-card, #fff);
+      box-shadow: 0 3px 14px rgba(35, 49, 58, .08);
+    }
+
+    .activity-album-back {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      min-height: 40px;
+      padding: 0 16px;
+      border: 1px solid #b88754;
+      border-radius: 999px;
+      background: #fffaf4 !important;
+      color: #5c351d !important;
+      font: 700 14px/1.2 var(--font-body, sans-serif);
+      text-decoration: none;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .activity-album-back:hover,
+    .activity-album-back:focus-visible { background: #fff2e3 !important; }
+
+    .activity-album-title {
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .activity-album-title strong {
+      display: block;
+      overflow: hidden;
+      color: #7d481d;
+      font-size: 16px;
+      line-height: 1.3;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .activity-album-title span {
+      display: block;
+      margin-top: 3px;
+      overflow: hidden;
+      color: #687780;
+      font-size: 12px;
+      line-height: 1.3;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .activity-album-open {
+      flex: 0 0 auto;
+      color: #85501f;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .activity-album-main {
+      display: flex;
+      flex: 1 1 auto;
+      min-height: 0;
+      flex-direction: column;
+    }
+
+    .activity-album-note {
+      flex: 0 0 auto;
+      margin: 0;
+      padding: 9px 24px;
+      border-bottom: 1px solid rgba(35, 49, 58, .1);
+      background: #f9fbfc;
+      color: #687780;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .activity-album-frame-wrap {
+      display: flex;
+      flex: 1 1 auto;
+      min-height: 0;
+      padding: 16px 24px 24px;
+    }
+
+    .activity-album-frame {
+      display: block;
+      width: 100%;
+      min-height: 280px;
+      flex: 1 1 auto;
+      border: 1px solid var(--glass-border, rgba(35, 49, 58, .14));
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    [data-theme="dark"] body.activity-album-page {
+      background: #000;
+      color: #f2f0ea;
+    }
+
+    [data-theme="dark"] .activity-album-toolbar {
+      border-bottom-color: #2b2b2b;
+      background: #101010;
+      box-shadow: none;
+    }
+
+    [data-theme="dark"] .activity-album-back {
+      border-color: #8d6b36;
+      background: #191919 !important;
+      color: #e8c97a !important;
+    }
+
+    [data-theme="dark"] .activity-album-title strong,
+    [data-theme="dark"] .activity-album-open { color: #e8c97a; }
+
+    [data-theme="dark"] .activity-album-title span,
+    [data-theme="dark"] .activity-album-note { color: #a5aaa0; }
+
+    [data-theme="dark"] .activity-album-note {
+      border-bottom-color: #2b2b2b;
+      background: #0b0b0b;
+    }
+
+    [data-theme="dark"] .activity-album-frame {
+      border-color: #3b3b3b;
+      background: #111;
+    }
+
+    @media (max-width: 768px) {
+      .activity-album-toolbar {
+        gap: 9px;
+        min-height: 60px;
+        padding: 9px 12px;
+      }
+
+      .activity-album-back {
+        min-height: 36px;
+        padding: 0 12px;
+        font-size: 13px;
+      }
+
+      .activity-album-title strong { font-size: 14px; }
+      .activity-album-title span { font-size: 11px; }
+      .activity-album-open { font-size: 12px; }
+      .activity-album-note { padding: 7px 12px; font-size: 11px; }
+      .activity-album-frame-wrap { padding: 12px 12px 18px; }
+      .activity-album-frame { min-height: 240px; border-radius: 10px; }
+    }
+
+    @media (max-width: 430px) {
+      .activity-album-toolbar { flex-wrap: wrap; }
+      .activity-album-title { order: 3; flex-basis: 100%; text-align: center; }
+      .activity-album-title strong,
+      .activity-album-title span { text-align: center; }
+    }
+  </style>
+</head>
+<body class="activity-album-page">
+  <div class="activity-album-shell">
+    <header class="activity-album-toolbar">
+      <a class="activity-album-back" href="activities.html" data-i18n="album.back">← 返回家族活动</a>
+      <div class="activity-album-title">
+        <strong data-i18n="album.title">活动相册</strong>
+        <span data-i18n="album.source">摄影公司活动照片</span>
+      </div>
+      <a class="activity-album-open" href="https://m.alltuu.com/album/23b7ac3ea07ac557f1caab0d5e402ca9/?menu=hot" target="_blank" rel="noopener noreferrer" data-i18n="album.open">打开原相册 ↗</a>
+    </header>
+    <main class="activity-album-main">
+      <p class="activity-album-note" data-i18n="album.note">相册在当前网站内展示；如未显示，请点击右侧“打开原相册”。</p>
+      <div class="activity-album-frame-wrap">
+        <iframe
+          class="activity-album-frame"
+          src="https://m.alltuu.com/album/23b7ac3ea07ac557f1caab0d5e402ca9/?menu=hot"
+          title="活动照片相册"
+          data-i18n-title="album.frameTitle"
+          loading="eager"
+          referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
