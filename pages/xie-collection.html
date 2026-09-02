@@ -9,7 +9,7 @@
 <title>谢氏集萃 · 下枫槎谢氏</title>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <script defer src="../js/i18n.js?v=20260901-lang-12"></script>
-  <link rel="stylesheet" href="../css/style.css?v=20260902-collection-video-02">
+  <link rel="stylesheet" href="../css/style.css?v=20260902-collection-video-03">
 <style>
 /* ===== Reset & Base ===== */
 *{margin:0;padding:0;box-sizing:border-box}
@@ -56,6 +56,21 @@ button.collect-card { width:100%; padding:0; border:0; color:inherit; font:inher
 .card-hover-wrap { position:relative; width:100%; aspect-ratio:16/9; overflow:hidden; background:#f0ede8; }
 .card-cover { width:100%; height:100%; display:flex; align-items:center; justify-content:center; position:relative; transition:opacity 0.3s; }
 .card-cover img { width:100%; height:100%; object-fit:cover; display:block; }
+
+/* 外部视频使用全幅主视觉，清除外层默认留白，并裁掉封面自带的空边。 */
+.collect-card:not(.local-video) .card-hover-wrap,
+.collect-card:not(.local-video) .card-cover,
+.collect-card:not(.local-video) .card-preview {
+  margin:0 !important; padding:0 !important; border:0 !important; outline:0 !important;
+  box-shadow:none !important; overflow:hidden !important;
+}
+.collect-card:not(.local-video) .card-cover img {
+  position:absolute !important; inset:0 !important;
+  width:100% !important; height:100% !important;
+  max-width:none !important; max-height:none !important;
+  object-fit:cover !important; object-position:center !important;
+  transform:scale(1.18); transform-origin:center center;
+}
 .card-cover .placeholder { font-size:42px; color:#d0ccc5; }
 
 /* Center play button overlay */
@@ -272,7 +287,9 @@ button.collect-card { width:100%; padding:0; border:0; color:inherit; font:inher
     aspect-ratio:4/5 !important;
   }
   .collect-card:not(.local-video) .card-cover img {
-    width:100%; height:100%; object-fit:cover; object-position:center;
+    width:100% !important; height:100% !important;
+    object-fit:cover !important; object-position:center !important;
+    transform:scale(1.2); transform-origin:center center;
   }
 
   .no-data-hint { margin-top:28px; padding:30px 20px; }
