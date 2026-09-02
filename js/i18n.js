@@ -469,6 +469,10 @@ const TRANSLATIONS = {
     zh: '获取天气中...',
     en: 'Fetching weather...'
   },
+  'weather.card': {
+    zh: '日期与天气',
+    en: 'Date and weather'
+  },
 
   // Mobile home / village introduction. These are full phrases rather than
   // word fragments so English mode never produces concatenated pseudo-English.
@@ -4034,13 +4038,13 @@ function toggleLanguage() {
   var next = current === 'zh' ? 'en' : 'zh';
   setLang(next);
   applyLanguage(next);
-  var descEl = document.getElementById('hero-weather-desc');
-  if (descEl) {
+  document.querySelectorAll('#hero-weather-desc, #mbs-weather-desc').forEach(function(descEl) {
     var cache = localStorage.getItem('xie_weather_cache');
     if (cache) { try { var c = JSON.parse(cache); descEl.textContent = translateString(c.condition, next); } catch (e) {} }
-  }
-  var locEl = document.getElementById('weather-location');
-  if (locEl) locEl.textContent = TRANSLATIONS['weather.location'][next] || (next === 'en' ? 'Ninghai' : '宁波宁海');
+  });
+  document.querySelectorAll('#weather-location, #mbs-weather-location').forEach(function(locEl) {
+    locEl.textContent = TRANSLATIONS['weather.location'][next] || (next === 'en' ? 'Ninghai' : '宁波宁海');
+  });
   if (window.syncOpeningPageLanguage) window.syncOpeningPageLanguage();
   if (window.syncOpeningEntryLanguage) window.syncOpeningEntryLanguage();
   return false;
@@ -4140,12 +4144,12 @@ function getLunarDate(year, month, day) {
 }
 
 function updateDateDisplay(lang) {
-  var dayEl = document.getElementById('hero-date-day');
-  var weekdayEl = document.getElementById('hero-date-weekday');
-  var monthEl = document.getElementById('hero-date-month');
-  var lunarEl = document.getElementById('hero-date-lunar');
-  var yearEl = document.getElementById('hero-date-year');
-  if (!dayEl) return;
+  var dayEls = [document.getElementById('hero-date-day'), document.getElementById('mbs-date-day')].filter(Boolean);
+  var weekdayEls = [document.getElementById('hero-date-weekday'), document.getElementById('mbs-date-weekday')].filter(Boolean);
+  var monthEls = [document.getElementById('hero-date-month'), document.getElementById('mbs-date-month')].filter(Boolean);
+  var lunarEls = [document.getElementById('hero-date-lunar'), document.getElementById('mbs-date-lunar')].filter(Boolean);
+  var yearEls = [document.getElementById('hero-date-year'), document.getElementById('mbs-date-year')].filter(Boolean);
+  if (!dayEls.length && !weekdayEls.length && !monthEls.length && !lunarEls.length && !yearEls.length) return;
 
   var now = new Date();
   var y = now.getFullYear();
@@ -4153,10 +4157,10 @@ function updateDateDisplay(lang) {
   var d = now.getDate();
   var w = now.getDay();
 
-  dayEl.textContent = d;
-  if (monthEl) {
-    monthEl.textContent = lang === 'en' ? ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1] : m + '月';
-  }
+  dayEls.forEach(function(el) { el.textContent = d; });
+  monthEls.forEach(function(el) {
+    el.textContent = lang === 'en' ? ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1] : m + '月';
+  });
   var enWeekdays = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var zhWeekday = (TRANSLATIONS['weekday.' + w] || {}).zh || '';
   var enWeekday = enWeekdays[w] || '';
@@ -4177,21 +4181,20 @@ function updateDateDisplay(lang) {
     ? 'Lunar ' + lunarMonths[lunarMatch[1]] + ' ' + lunarDays[lunarMatch[2]]
     : 'Lunar date';
 
-  if (weekdayEl) {
-    weekdayEl.textContent = lang === 'en' ? enWeekday : zhWeekday;
-  }
-  if (lunarEl) {
-    lunarEl.textContent = lang === 'en' ? enLunar : ('农历' + zhLunar);
-  }
-  if (yearEl) {
-    yearEl.textContent = lang === 'en' ? y.toString() : y + '年';
-  }
+  weekdayEls.forEach(function(el) {
+    el.textContent = lang === 'en' ? enWeekday : zhWeekday;
+  });
+  lunarEls.forEach(function(el) {
+    el.textContent = lang === 'en' ? enLunar : ('农历' + zhLunar);
+  });
+  yearEls.forEach(function(el) {
+    el.textContent = lang === 'en' ? y.toString() : y + '年';
+  });
 
   // Weather location text
-  var locEl = document.getElementById('weather-location');
-  if (locEl) {
+  document.querySelectorAll('#weather-location, #mbs-weather-location').forEach(function(locEl) {
     locEl.textContent = TRANSLATIONS['weather.location'][lang || 'zh'];
-  }
+  });
 }
 
 // i18n is also used by legacy standalone pages that do not load main.js.

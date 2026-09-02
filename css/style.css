@@ -6145,6 +6145,47 @@ li:has(> a[href*="admin.html"]) {
   }
   .mbs-location { color: var(--mb-sub, #a5aaa0); font-size: 10px; white-space: nowrap; }
   .mbs-stage-wrap { width: 100%; max-width: 520px; margin: 0 auto; }
+  .mbs-date-weather {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: calc(100% - 28px);
+    min-height: 78px;
+    margin: 0 auto 12px;
+    padding: 12px 16px;
+    box-sizing: border-box;
+    border: 1px solid var(--mb-border, #2a2a2a);
+    border-radius: 18px;
+    background: var(--mb-card, #101010);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .18);
+  }
+  .mbs-date,
+  .mbs-weather { display: flex; align-items: center; min-width: 0; }
+  .mbs-date { gap: 8px; }
+  .mbs-date-day {
+    flex: 0 0 auto;
+    color: #e8c97a;
+    font-family: Georgia, "Songti SC", serif;
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .mbs-date-detail,
+  .mbs-weather-info { display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+  .mbs-date-detail { gap: 2px; }
+  .mbs-date-month { color: #e8c97a; font-size: 11px; line-height: 1.1; }
+  .mbs-date-weekday { color: var(--mb-text, #f3f0e7); font-size: 10px; letter-spacing: 1px; line-height: 1.2; }
+  .mbs-date-lunar,
+  .mbs-date-year { color: var(--mb-sub, #a5aaa0); font-size: 9px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mbs-date-divider { flex: 0 0 auto; width: 1px; height: 36px; background: var(--mb-border, #2a2a2a); }
+  .mbs-weather { gap: 6px; }
+  .mbs-weather-icon { flex: 0 0 auto; font-size: 23px; line-height: 1; opacity: .88; }
+  .mbs-weather-info { gap: 2px; }
+  .mbs-weather-location,
+  .mbs-weather-desc { color: var(--mb-sub, #a5aaa0); font-size: 10px; line-height: 1.25; white-space: nowrap; }
+  .mbs-weather-desc { max-width: 92px; overflow: hidden; text-overflow: ellipsis; }
+  .mbs-weather-temp { flex: 0 0 auto; color: #e8c97a; font-size: 17px; font-weight: 650; line-height: 1; white-space: nowrap; }
   .mbs-hero {
     position: relative;
     height: clamp(286px, 51svh, 410px);
@@ -6229,6 +6270,13 @@ li:has(> a[href*="admin.html"]) {
 }
 @media (max-width: 380px) {
   .mbs-top { padding-left: 14px; padding-right: 14px; }
+  .mbs-date-weather { gap: 8px; padding-left: 12px; padding-right: 12px; }
+  .mbs-date { gap: 6px; }
+  .mbs-date-day { font-size: 27px; }
+  .mbs-weather { gap: 4px; }
+  .mbs-weather-icon { font-size: 20px; }
+  .mbs-weather-desc { max-width: 70px; }
+  .mbs-weather-temp { font-size: 16px; }
   .mbs-hero { margin-left: 12px; margin-right: 12px; min-height: 260px; }
   .mbs-story-copy { padding-left: 21px; padding-right: 21px; }
   .mbs-actions { padding-left: 18px; padding-right: 18px; }
@@ -7495,6 +7543,28 @@ html:not([data-theme="dark"]) body a.back-page-btn:focus-visible {
 
 /* 开启页墨绿色主题的最终覆盖：放在全站白天模式规则之后，确保棕色旧样式不再抢回优先级。 */
 @media (max-width: 768px) {
+  body:has(.mb-story-home) .mbs-date-weather {
+    background: linear-gradient(135deg, rgba(255,255,255,.98), rgba(239,247,243,.96)) !important;
+    border-color: rgba(50,115,91,.28) !important;
+    box-shadow: 0 8px 20px rgba(32,86,69,.1), inset 0 0 0 1px rgba(255,255,255,.7) !important;
+  }
+  body:has(.mb-story-home) .mbs-date-day,
+  body:has(.mb-story-home) .mbs-date-month,
+  body:has(.mb-story-home) .mbs-weather-temp {
+    color: #205645 !important;
+  }
+  body:has(.mb-story-home) .mbs-date-weekday {
+    color: #26343c !important;
+  }
+  body:has(.mb-story-home) .mbs-date-lunar,
+  body:has(.mb-story-home) .mbs-date-year,
+  body:has(.mb-story-home) .mbs-weather-location,
+  body:has(.mb-story-home) .mbs-weather-desc {
+    color: #536169 !important;
+  }
+  body:has(.mb-story-home) .mbs-date-divider {
+    background: #c9d8d1 !important;
+  }
   body:has(.mb-story-home) .mbs-mark {
     background: linear-gradient(145deg, #2f6d57, #1b493a) !important;
     border-color: #7da892 !important;

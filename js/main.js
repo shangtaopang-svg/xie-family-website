@@ -204,9 +204,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ===== 宁海天气 + 日期 =====
 (function() {
-  var heroWeatherEl = document.getElementById('hero-weather-desc');
-  var heroTempEl = document.getElementById('hero-weather-temp');
-  if (!heroWeatherEl) return;
+  var weatherDescEls = [
+    document.getElementById('hero-weather-desc'),
+    document.getElementById('mbs-weather-desc')
+  ].filter(Boolean);
+  var weatherTempEls = [
+    document.getElementById('hero-weather-temp'),
+    document.getElementById('mbs-weather-temp')
+  ].filter(Boolean);
+  if (!weatherDescEls.length) return;
 
   var cache = localStorage.getItem('xie_weather_cache');
   var cached = null;
@@ -215,18 +221,43 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   var now = Date.now();
 
+  function currentLanguage() {
+    return window.getLang ? window.getLang() : (localStorage.getItem('xie_lang') || 'zh');
+  }
+
+  function setText(elements, value) {
+    elements.forEach(function(el) { el.textContent = value || ''; });
+  }
+
+  function renderWeather(condition, temp) {
+    var lang = currentLanguage();
+    var displayCondition = lang === 'en' && window.translateString
+      ? window.translateString(condition, 'en')
+      : condition;
+    setText(weatherDescEls, displayCondition);
+    setText(weatherTempEls, temp);
+  }
+
+  function renderPlaceholder() {
+    setText(weatherDescEls, currentLanguage() === 'en' ? 'Ninghai' : '宁海');
+  }
+
+  // The language event also refreshes the weather text on the opening page.
+  window.addEventListener('xie-language-change', function() {
+    if (cached && cached.condition) renderWeather(cached.condition, cached.temp);
+    else renderPlaceholder();
+  });
+
   if (cached && (now - cached.time < 3600000)) { // 1h cache
-    heroWeatherEl.textContent = (window.getLang && getLang() === 'en' && window.translateString) ? translateString(cached.condition, 'en') : cached.condition;
-    if (heroTempEl) heroTempEl.textContent = cached.temp;
+    renderWeather(cached.condition, cached.temp);
     return;
   }
 
   // Show cached or placeholder immediately, don't block UI
   if (cached) {
-    heroWeatherEl.textContent = (window.getLang && getLang() === 'en' && window.translateString) ? translateString(cached.condition, 'en') : cached.condition;
-    if (heroTempEl) heroTempEl.textContent = cached.temp;
+    renderWeather(cached.condition, cached.temp);
   } else {
-    heroWeatherEl.textContent = (window.getLang && getLang() === 'en') ? 'Ninghai' : '宁海';
+    renderPlaceholder();
   }
 
   var xhr = new XMLHttpRequest();
@@ -247,8 +278,8 @@ document.addEventListener('DOMContentLoaded', function() {
       var sep = raw.indexOf('|');
       var condition = sep !== -1 ? raw.substring(0, sep).trim() : raw;
       var temp = sep !== -1 ? raw.substring(sep + 1).trim() : '—';
-      heroWeatherEl.textContent = (window.getLang && getLang() === 'en' && window.translateString) ? translateString(condition, 'en') : condition;
-      if (heroTempEl) heroTempEl.textContent = temp;
+      cached = { condition: condition, temp: temp, time: Date.now() };
+      renderWeather(condition, temp);
       localStorage.setItem('xie_weather_cache', JSON.stringify({condition: condition, temp: temp, time: Date.now()}));
     }
   };

@@ -9,7 +9,7 @@
   <title data-i18n="site.title">宁海下枫槎村 · 谢氏家族</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
-  <link rel="stylesheet" href="css/style.css?v=20260901-entry-switch-07">
+  <link rel="stylesheet" href="css/style.css?v=20260902-opening-weather-01">
   <style>
     /* Carousel mobile fix - ensure slides have height */
     .carousel-container { aspect-ratio: 21/9; overflow: hidden; }
@@ -45,7 +45,7 @@
       .mbh-pills .mbh-pill-active { position: relative; z-index: 10000002 !important; }
     }
   </style>
-  <script defer src="js/i18n.js?v=20260901-lang-12"></script>
+  <script defer src="js/i18n.js?v=20260902-opening-weather-01"></script>
   <script defer src="js/file-store.js?v=6"></script>
   <link rel="manifest" href="/manifest.json">
   <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");</script>
@@ -136,6 +136,27 @@
   </div>
 
   <main class="mbs-stage-wrap">
+    <section class="mbs-date-weather" data-i18n-aria="weather.card">
+      <div class="mbs-date">
+        <span class="mbs-date-day" id="mbs-date-day">2</span>
+        <div class="mbs-date-detail">
+          <span class="mbs-date-month" id="mbs-date-month">Sep</span>
+          <span class="mbs-date-weekday" id="mbs-date-weekday">星期三</span>
+          <span class="mbs-date-lunar" id="mbs-date-lunar">农历七月廿二</span>
+          <span class="mbs-date-year" id="mbs-date-year">2026年</span>
+        </div>
+      </div>
+      <span class="mbs-date-divider" aria-hidden="true"></span>
+      <div class="mbs-weather">
+        <span class="mbs-weather-icon" aria-hidden="true">🌤</span>
+        <div class="mbs-weather-info">
+          <span class="mbs-weather-location" id="mbs-weather-location" data-i18n="weather.location">宁波宁海</span>
+          <span class="mbs-weather-desc" id="mbs-weather-desc" data-i18n="weather.fetching">获取天气中...</span>
+        </div>
+        <span class="mbs-weather-temp" id="mbs-weather-temp"></span>
+      </div>
+    </section>
+
     <div class="mbs-hero" id="mbsHero" role="img" aria-label="下枫槎村谢氏家族真实村景">
       <div class="mbs-hero-copy">
         <span class="mbs-hero-kicker" id="mbsSceneKicker">历史线稿 · 今日村景</span>
@@ -663,7 +684,7 @@
 
   <audio id="bg-music" loop></audio>
 
-  <script defer src="js/main.js?v=20260826-transition-layer-03"></script>
+  <script defer src="js/main.js?v=20260902-opening-weather-01"></script>
 
   <!-- ===== 全屏查看 ===== -->
   <script defer src="js/lightbox-viewer.js?v=af0a9a"></script>
