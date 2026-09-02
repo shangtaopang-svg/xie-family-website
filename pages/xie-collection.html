@@ -9,7 +9,7 @@
 <title>谢氏集萃 · 下枫槎谢氏</title>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <script defer src="../js/i18n.js?v=20260901-lang-12"></script>
-  <link rel="stylesheet" href="../css/style.css?v=20260902-collection-video-03">
+  <link rel="stylesheet" href="../css/style.css?v=20260902-collection-video-04">
 <style>
 /* ===== Reset & Base ===== */
 *{margin:0;padding:0;box-sizing:border-box}
@@ -279,17 +279,20 @@ button.collect-card { width:100%; padding:0; border:0; color:inherit; font:inher
   }
   .mobile-video-fullscreen:active { transform:scale(.96); background:rgba(0,0,0,.84); }
 
-  /* B站视频封面多为竖向画面，减少上下留白，让视频成为卡片的主视觉。 */
+  /* 外部视频封面完整展示：按原图比例撑开，避免放大裁掉标题和画面内容。 */
   .collect-card:not(.local-video) .card-hover-wrap,
   .collect-card:not(.local-video) .card-cover,
   .collect-card:not(.local-video) .card-preview {
-    height:clamp(260px, 82vw, 460px); min-height:260px;
-    aspect-ratio:4/5 !important;
+    height:auto !important; min-height:0 !important;
+    aspect-ratio:auto !important;
   }
+  .collect-card:not(.local-video) .card-hover-wrap:not(.has-poster) { min-height:220px !important; }
   .collect-card:not(.local-video) .card-cover img {
-    width:100% !important; height:100% !important;
-    object-fit:cover !important; object-position:center !important;
-    transform:scale(1.2); transform-origin:center center;
+    position:static !important; inset:auto !important;
+    display:block !important; width:100% !important; height:auto !important;
+    min-height:0 !important; max-width:none !important; max-height:none !important;
+    object-fit:contain !important; object-position:center !important;
+    transform:none !important;
   }
 
   .no-data-hint { margin-top:28px; padding:30px 20px; }
@@ -478,6 +481,7 @@ function render(cat) {
     var source = collectionLocalized(displayItem.source || '其他', 'Other');
     var catLabel = displayItem.cat ? collectionLocalized(CAT_REV[item.cat]||displayItem.cat, 'Collection') : '';
     var hasPoster = item.poster && (item.poster.indexOf('/')>=0 || item.poster.indexOf('http')===0);
+    var posterClass = hasPoster ? ' has-poster' : '';
     var srcClass = SOURCE_CLASS[source] || 'other';
     var bvMatch = url.match(/bilibili\.com\/video\/(BV[a-zA-Z0-9]+)/i);
     var bvid = bvMatch ? bvMatch[1] : null;
@@ -486,7 +490,7 @@ function render(cat) {
       return '<div class="collect-card local-video" style="text-decoration:none;cursor:default"><div class="card-hover-wrap"><div class="card-cover" style="background:#1a1410;display:flex;align-items:center;justify-content:center;overflow:hidden"><video src="' + url + '" style="width:100%;height:100%;object-fit:cover" controls preload="none" playsinline webkit-playsinline' + (item.poster ? ' poster="' + item.poster + '"' : '') + '></video><button type="button" class="mobile-video-fullscreen" aria-label="' + collectionLocalized('全屏播放', 'Play Fullscreen') + '">⛶ ' + collectionLocalized('全屏', 'Fullscreen') + '</button></div></div><div class="info"><div class="title">' + title + '</div><div class="meta"><span class="tag video">📹 ' + collectionLocalized('本地视频', 'Local Video') + '</span></div></div></div>';
     }
     if (bvid) return '<button type="button" data-bvid="' + bvid + '" data-source-url="' + url + '" class="collect-card bilibili-card" aria-label="' + collectionLocalized('打开B站视频', 'Open Bilibili video') + '">' +
-      '<div class="card-hover-wrap">' +
+        '<div class="card-hover-wrap' + posterClass + '">' +
         '<div class="card-cover">' +
           (hasPoster ? '<img src="' + item.poster + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '<span style="font-size:42px;color:#d0ccc5">🎬</span>') +
           '<div class="play-overlay"><span class="play-circle">▶</span></div>' +
@@ -502,7 +506,7 @@ function render(cat) {
         '<div class="title">' + title + '</div>' +
       '</div></button>';
     return '<a href="' + url + '" target="_blank" rel="noopener" class="collect-card" style="text-decoration:none">' +
-      '<div class="card-hover-wrap">' +
+      '<div class="card-hover-wrap' + posterClass + '">' +
         '<div class="card-cover">' +
           (hasPoster ? '<img src="' + item.poster + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '<span style="font-size:42px;color:#d0ccc5">🎬</span>') +
           '<div class="play-overlay"><span class="play-circle">▶</span></div>' +
