@@ -9,7 +9,7 @@
 <title>谢氏集萃 · 下枫槎谢氏</title>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <script defer src="../js/i18n.js?v=20260901-lang-12"></script>
-  <link rel="stylesheet" href="../css/style.css?v=20260902-collection-video-01">
+  <link rel="stylesheet" href="../css/style.css?v=20260902-collection-video-02">
 <style>
 /* ===== Reset & Base ===== */
 *{margin:0;padding:0;box-sizing:border-box}
@@ -263,6 +263,17 @@ button.collect-card { width:100%; padding:0; border:0; color:inherit; font:inher
     -webkit-tap-highlight-color:transparent; cursor:pointer;
   }
   .mobile-video-fullscreen:active { transform:scale(.96); background:rgba(0,0,0,.84); }
+
+  /* B站视频封面多为竖向画面，减少上下留白，让视频成为卡片的主视觉。 */
+  .collect-card:not(.local-video) .card-hover-wrap,
+  .collect-card:not(.local-video) .card-cover,
+  .collect-card:not(.local-video) .card-preview {
+    height:clamp(260px, 82vw, 460px); min-height:260px;
+    aspect-ratio:4/5 !important;
+  }
+  .collect-card:not(.local-video) .card-cover img {
+    width:100%; height:100%; object-fit:cover; object-position:center;
+  }
 
   .no-data-hint { margin-top:28px; padding:30px 20px; }
 }
