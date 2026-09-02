@@ -6151,9 +6151,9 @@ li:has(> a[href*="admin.html"]) {
     justify-content: center;
     gap: 12px;
     width: calc(100% - 28px);
-    min-height: 78px;
-    margin: 0 auto 12px;
-    padding: 12px 16px;
+    min-height: 66px;
+    margin: 0 auto 10px;
+    padding: 10px 16px;
     box-sizing: border-box;
     border: 1px solid var(--mb-border, #2a2a2a);
     border-radius: 18px;
@@ -6188,8 +6188,8 @@ li:has(> a[href*="admin.html"]) {
   .mbs-weather-temp { flex: 0 0 auto; color: #e8c97a; font-size: 17px; font-weight: 650; line-height: 1; white-space: nowrap; }
   .mbs-hero {
     position: relative;
-    height: clamp(286px, 51svh, 410px);
-    min-height: 286px;
+    height: clamp(200px, 38svh, 400px);
+    min-height: 200px;
     margin: 0 14px;
     overflow: hidden;
     border: 1px solid rgba(232, 201, 122, .28);
@@ -6215,10 +6215,10 @@ li:has(> a[href*="admin.html"]) {
   .mbs-hero-copy p { margin: 0; color: rgba(255, 248, 233, .78); font-size: 11px; }
   .mbs-scene-count { position: absolute; z-index: 1; right: 19px; top: 18px; color: rgba(255, 248, 233, .72); font-size: 10px; letter-spacing: 1px; }
   .mbs-scene-count b { color: #f2d889; font-size: 15px; font-weight: 500; }
-  .mbs-story-copy { padding: 25px 25px 17px; }
+  .mbs-story-copy { padding: 20px 25px 14px; }
   .mbs-story-label { color: #d7bd70; font-size: 9px; letter-spacing: 2.5px; }
-  .mbs-story-copy h2 { margin: 10px 0 7px; color: #f3f0e7; font-family: Georgia, "Songti SC", serif; font-size: 25px; font-weight: 500; line-height: 1.45; letter-spacing: 2px; }
-  .mbs-story-copy p { margin: 0; color: var(--mb-sub, #a5aaa0); font-size: 12px; line-height: 1.7; }
+  .mbs-story-copy h2 { margin: 8px 0 6px; color: #f3f0e7; font-family: Georgia, "Songti SC", serif; font-size: 24px; font-weight: 500; line-height: 1.4; letter-spacing: 2px; }
+  .mbs-story-copy p { margin: 0; color: var(--mb-sub, #a5aaa0); font-size: 12px; line-height: 1.65; }
   .mbs-actions { padding: 0 22px; }
   .mbs-entry-switch {
     position: relative;
@@ -6246,8 +6246,8 @@ li:has(> a[href*="admin.html"]) {
   .mbs-entry-switch[data-choice="genealogy"] .mbs-entry-thumb { transform: translateX(100%); }
   .mbs-entry-thumb b { font-size: 14px; font-weight: 750; }
   .mbs-entry-thumb i { font-size: 18px; font-style: normal; line-height: 1; }
-  .mbs-entry-hint { display: block; margin-top: 8px; color: var(--mb-sub, #a5aaa0); font-size: 10px; line-height: 1.5; text-align: center; }
-  .mbs-dots { display: flex; justify-content: center; align-items: center; gap: 6px; padding: 18px 0 9px; }
+  .mbs-entry-hint { display: block; margin-top: 6px; color: var(--mb-sub, #a5aaa0); font-size: 10px; line-height: 1.5; text-align: center; }
+  .mbs-dots { display: flex; justify-content: center; align-items: center; gap: 6px; padding: 14px 0 8px; }
   .mbs-dots button { width: 6px; height: 6px; padding: 0; border: 0; border-radius: 999px; background: rgba(242, 234, 219, .28); cursor: pointer; transition: width .25s ease, background .25s ease; }
   .mbs-dots button.active { width: 22px; background: var(--mb-brand-strong, #c9a84c); }
   .mbs-scroll-note {
@@ -6277,7 +6277,7 @@ li:has(> a[href*="admin.html"]) {
   .mbs-weather-icon { font-size: 20px; }
   .mbs-weather-desc { max-width: 70px; }
   .mbs-weather-temp { font-size: 16px; }
-  .mbs-hero { margin-left: 12px; margin-right: 12px; min-height: 260px; }
+  .mbs-hero { margin-left: 12px; margin-right: 12px; min-height: 200px; }
   .mbs-story-copy { padding-left: 21px; padding-right: 21px; }
   .mbs-actions { padding-left: 18px; padding-right: 18px; }
 }
