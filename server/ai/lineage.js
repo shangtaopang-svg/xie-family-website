@@ -184,6 +184,16 @@ function adoptionContextsFor(personId) {
     const adoptiveParent = byId.get(rel.adoptiveParentId);
     if (!outPerson || !adoptedPerson || !adoptiveParent) continue;
 
+    // 关系图中的 target 只能表示承嗣节点的直接后代。
+    // 如果查询的是更远的后代，不能把整条 father_id 链折叠成
+    // “承嗣节点 → 查询目标”，否则会跳过真实中间父亲（如“世常 → 信科”，
+    // 实际应为“世常 → 伟中 → 信科”）。完整世系仍由主链逐级展示。
+    const targetPerson = byId.get(Number(personId));
+    const targetIsDirectDescendant = targetPerson && (
+      Number(targetPerson.father_id) === Number(adoptedPerson.id) ||
+      Number(targetPerson.mother_id) === Number(adoptedPerson.id)
+    );
+
     let biologicalParent = outPerson.father_id ? byId.get(Number(outPerson.father_id)) : null;
     const sourceFather = String(rel.source || '').match(/^(.+?)之(?:子|女)/);
     if (sourceFather) {
@@ -210,7 +220,7 @@ function adoptionContextsFor(personId) {
       biologicalParent: biologicalParent ? { id: Number(biologicalParent.id), name: biologicalParent.name, shi: Number(biologicalParent.generation_num) || '' } : null,
       adoptiveParent: { id: Number(adoptiveParent.id), name: adoptiveParent.name, shi: Number(adoptiveParent.generation_num) || '' },
       person: { id: Number(adoptedPerson.id), name: adoptedPerson.name, shi: Number(adoptedPerson.generation_num) || '', outId: rel.outId },
-      target: Number(adoptedPerson.id) === Number(personId) ? null : (byId.get(Number(personId)) ? { id: Number(personId), name: byId.get(Number(personId)).name, shi: Number(byId.get(Number(personId)).generation_num) || '' } : null)
+      target: targetIsDirectDescendant ? { id: Number(personId), name: targetPerson.name, shi: Number(targetPerson.generation_num) || '' } : null
     });
   }
   return contexts;
