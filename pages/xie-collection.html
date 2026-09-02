@@ -9,7 +9,7 @@
 <title>谢氏集萃 · 下枫槎谢氏</title>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <script defer src="../js/i18n.js?v=20260901-lang-12"></script>
-  <link rel="stylesheet" href="../css/style.css?v=20260902-collection-video-05">
+  <link rel="stylesheet" href="../css/style.css?v=20260902-collection-video-06">
 <style>
 /* ===== Reset & Base ===== */
 *{margin:0;padding:0;box-sizing:border-box}
@@ -316,6 +316,33 @@ button.collect-card { width:100%; padding:0; border:0; color:inherit; font:inher
   .card-grid .collect-card.local-video .card-cover video {
     display:block; width:100% !important; height:100% !important;
   }
+
+  /* ===== 高特异性修正 =====
+     style.css 手机端通用兜底 [class*="card"]:not(...) 会给 class 含 "card" 的每层元素
+     (.collect-card/.card-hover-wrap/.card-cover 等) 都加 padding:16px、radius:20px，
+     特异性 (0,4,0) 会压住本页 .collect-card{padding:0!important}，导致视频被逐层缩出留白。
+     这里以 #cardGrid(ID,特异性 1,0,0+) 只对本页提权压回，不影响全站与桌面端。 */
+  #cardGrid,
+  #cardGrid .collect-card,
+  #cardGrid .collect-card .card-hover-wrap,
+  #cardGrid .collect-card .card-cover,
+  #cardGrid .collect-card .card-preview {
+    padding:0 !important;
+    margin:0 !important;
+  }
+  #cardGrid .collect-card .card-hover-wrap,
+  #cardGrid .collect-card .card-cover,
+  #cardGrid .collect-card .card-preview {
+    border:0 !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+    background:#141414 !important;
+  }
+  #cardGrid .collect-card {
+    border:1px solid #2a2a2a !important; /* 压回 style.css 泛型浅色边框(mb-border)，保持页面深色细边 */
+    border-radius:16px !important;
+  }
+  #cardGrid .collect-card .info { padding:12px 13px 14px !important; }
 
   .no-data-hint { margin-top:28px; padding:30px 20px; }
 }
