@@ -6281,6 +6281,39 @@ li:has(> a[href*="admin.html"]) {
   .mbs-story-copy { padding-left: 21px; padding-right: 21px; }
   .mbs-actions { padding-left: 18px; padding-right: 18px; }
 }
+/* ===== 开启页锁定单屏：整页正好一屏不可滚动、村景大图 flex 吃掉多余空间、
+   文案+开始探索/寻根问祖+圆点整组钉在屏底（手机端仅此一屏，改动全在 768px 内） ===== */
+@media (max-width: 768px) {
+  .mb-story-home {
+    box-sizing: border-box;
+    height: 100svh;
+    min-height: 0;
+    overflow: hidden;
+    display: flex !important;
+    flex-direction: column;
+  }
+  html:not(.mb-show-main) .mb-home.mb-story-home {
+    padding: calc(8px + env(safe-area-inset-top, 0px)) 0 calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .mbs-top { flex: 0 0 auto; }
+  .mbs-stage-wrap {
+    display: flex !important;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .mbs-date-weather { flex: 0 0 auto; }
+  .mbs-hero {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 150px;
+  }
+  .mbs-story-copy,
+  .mbs-actions,
+  .mbs-dots { flex: 0 0 auto; }
+}
 @media (prefers-reduced-motion: reduce) {
   .mbs-hero, .mbs-dots button { transition: none; }
 }
