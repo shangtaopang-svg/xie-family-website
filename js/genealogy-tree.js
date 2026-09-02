@@ -260,8 +260,9 @@ function buildCardSvg(person, data, hasChildren, descendantCount, childCount) {
     card += '<text x="' + (CARD_W/2 - 8) + '" y="-' + (CARD_H/2 + 6) + '" fill="#ff6b00" font-size="14">⭐</text>';
   }
   var nameText = escapeHtml(displayGenealogyName(person));
-  if (person.adopted && person.adopted !== '否') {
-    var label = person.adopted === '出继' ? '出' : '嗣';
+  var adoptionStatus = String(person.adoption_status || '');
+  if (adoptionStatus === 'out' || adoptionStatus === 'in' || (person.adopted && person.adopted !== '否')) {
+    var label = adoptionStatus === 'out' ? '出' : (adoptionStatus === 'in' ? '嗣' : (person.adopted === '出继' ? '出' : '嗣'));
     card += '<text class="card-adopted-badge" x="-' + (CARD_W/2-12) + '" y="-' + (CARD_H/2+4) + '" text-anchor="middle">' + label + '</text>';
   }
   card += '<text class="card-name" x="0" y="0">' + nameText + '</text>';
@@ -2405,6 +2406,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (data[i].id === id) { person = data[i]; break; }
     }
     if (!person) return;
+
     // ★存弹窗数据源：弹窗内父亲/配偶/子女/祖先按钮 curDetailData() 复用同一份（本宗世系图 id60000+ 不在 getGenealogyData）
     window._detailData = data;
 
@@ -2431,7 +2433,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (person.birth_date) html += '<div>出生：' + person.birth_date + '</div>';
     if (person.death_date) html += '<div>逝世：' + person.death_date + '</div>';
     html += '<div>状态：' + (person.is_alive === '是' ? '在世' : '已故' + calcAge(person.birth_date, person.death_date)) + '</div>';
-    if (person.adopted && person.adopted !== '否') html += '<div>过继：' + person.adopted + '</div>';
+    var detailAdoptionStatus = String(person.adoption_status || '');
+    var detailAdoptionLabel = detailAdoptionStatus === 'out' ? '出继' : (detailAdoptionStatus === 'in' ? '入继' : person.adopted);
+    if (detailAdoptionLabel && detailAdoptionLabel !== '否') html += '<div>过继：' + detailAdoptionLabel + '</div>';
     if (person.address) html += '<div>居住地：' + escapeHtml(person.address) + '</div>';
     if (person.father_id) {
       var fp = findById(parseInt(person.father_id), data);
@@ -2494,13 +2498,16 @@ document.addEventListener('DOMContentLoaded', function() {
       return true;
     });
 
-    // Deduplicate by name (出继/入继 same person = one record)
-    var seenNames = {};
+    // 只合并同一 adoption_pair_id 的出继/入继双记录；不同族人即使同名也必须保留，
+    // 否则搜索会把同名同世次记录误合并，用户再点击时可能进入错误父系。
+    var seenRecords = {};
     var results = [];
     for (var ri = 0; ri < rawResults.length; ri++) {
       var rp = rawResults[ri];
-      if (!seenNames[rp.name]) {
-        seenNames[rp.name] = true;
+      var pairKey = rp.adoption_pair_id && (rp.adoption_status === 'out' || rp.adoption_status === 'in')
+        ? 'adoption:' + String(rp.adoption_pair_id) : 'person:' + String(rp.id);
+      if (!seenRecords[pairKey]) {
+        seenRecords[pairKey] = true;
         results.push(rp);
       }
     }
@@ -2534,7 +2541,9 @@ document.addEventListener('DOMContentLoaded', function() {
       var rowBg = p.is_alive === '是' ? 'rgba(220,38,38,0.04)' : 'rgba(0,0,0,0.08)';
 html += '<tr style="border-bottom:1px solid var(--divider);background:' + rowBg + ';transition:background 0.15s;" class="genealogy-hover-row">';
       html += '<td style="padding:6px 8px;color:var(--text-secondary);">' + (p.generation_num || '—') + '</td>';
-      html += '<td style="padding:6px 8px;"><span style="cursor:pointer;font-weight:500;color:var(--text-primary);" onclick="showPersonDetail(' + p.id + ', getGenealogyData());locateInTree(' + p.id + ');">' + escapeHtml(displayGenealogyName(p)) + '</span>' + (p.adopted && p.adopted !== '否' ? (p.adopted === '出继' ? '<span style="font-size:10px;color:#22c55e;font-weight:600;margin-left:3px;">(出继)</span>' : '<span style="font-size:10px;color:var(--accent-orange);font-weight:600;margin-left:3px;">(入继)</span>') : '') + '</td>';
+      var rowAdoptionStatus = String(p.adoption_status || '');
+      var rowAdoptionLabel = rowAdoptionStatus === 'out' ? '出继' : (rowAdoptionStatus === 'in' ? '入继' : p.adopted);
+      html += '<td style="padding:6px 8px;"><span style="cursor:pointer;font-weight:500;color:var(--text-primary);" onclick="showPersonDetail(' + p.id + ', getGenealogyData());locateInTree(' + p.id + ');">' + escapeHtml(displayGenealogyName(p)) + '</span>' + (rowAdoptionLabel && rowAdoptionLabel !== '否' ? (rowAdoptionLabel === '出继' ? '<span style="font-size:10px;color:#22c55e;font-weight:600;margin-left:3px;">(出继)</span>' : '<span style="font-size:10px;color:var(--accent-orange);font-weight:600;margin-left:3px;">(入继)</span>') : '') + '</td>';
       html += '<td style="padding:6px 8px;text-align:center;">' + (p.gender === '男' ? '👤' : '👩') + '</td>';
       html += '<td style="padding:6px 8px;color:var(--text-secondary);font-size:12px;">' + (p.branch && p.branch !== '—' ? escapeHtml(p.branch) : '—') + '</td>';
       html += '<td style="padding:6px 8px;text-align:center;"><span style="font-size:10px;padding:1px 8px;border-radius:10px;background:' + (p.is_alive === '是' ? 'rgba(220,38,38,0.2)' : 'rgba(0,0,0,0.3)') + ';color:' + (p.is_alive === '是' ? '#ef4444' : 'rgba(255,255,255,0.5)') + ';border:1px solid ' + (p.is_alive === '是' ? 'rgba(220,38,38,0.3)' : 'rgba(255,255,255,0.08)') + ';">' + (p.is_alive === '是' ? '在世' : '已故') + '</span></td>';
@@ -2622,6 +2631,18 @@ function locateInTree(personId) {
     }
     if (!person) return;
 
+    // canonical 数据用 adoption_pair_id + adoption_status 表示同一组出继/入继双记录。
+    // 先按唯一配对 ID 建索引；旧版 adopted/姓名匹配仅作为历史数据兜底，不能覆盖 canonical 关系。
+    var adoptionPairsById = {};
+    for (var api = 0; api < data.length; api++) {
+      var ap = data[api];
+      var apid = ap && ap.adoption_pair_id ? String(ap.adoption_pair_id) : '';
+      if (!apid) continue;
+      if (!adoptionPairsById[apid]) adoptionPairsById[apid] = { outId: null, inId: null };
+      if (String(ap.adoption_status || '') === 'out') adoptionPairsById[apid].outId = Number(ap.id);
+      if (String(ap.adoption_status || '') === 'in') adoptionPairsById[apid].inId = Number(ap.id);
+    }
+
     function findById(id) {
       for (var j = 0; j < data.length; j++) { if (data[j].id === id) return data[j]; }
       return null;
@@ -2651,9 +2672,10 @@ function locateInTree(personId) {
     var bioBranches = {};
     for (var ci = 0; ci < mainChain.length; ci++) {
       var anc = mainChain[ci];
-      var isAdopted = anc.adopted && anc.adopted !== '否';
+      var canonicalStatus = String(anc.adoption_status || '');
+      var isAdopted = canonicalStatus === 'out' || canonicalStatus === 'in' || (anc.adopted && anc.adopted !== '否');
       if (!isAdopted) continue;
-      var isOut = (anc.adopted === '出继');
+      var isOut = canonicalStatus ? canonicalStatus === 'out' : (anc.adopted === '出继');
       // Normalize name for matching: strip common suffixes like (出继) (入继) (德全又美） etc.
       function stripSuffix(n) {
         return n.replace(/[（(].*[）)]/g,'').replace(/[【\[].*[】\]]/g,'').trim();
@@ -2661,12 +2683,18 @@ function locateInTree(personId) {
       var ancBase = stripSuffix(anc.name);
       // Find the OTHER matching record (出继 ↔ 是(继子) pair)
       var otherRec = null;
-      var otherType = isOut ? '是(继子)' : '出继';
-      for (var di = 0; di < data.length; di++) {
-        if (data[di].id !== anc.id && data[di].generation_num === anc.generation_num && data[di].adopted === otherType && data[di].father_id) {
-          var otherBase = stripSuffix(data[di].name);
-          if (otherBase === ancBase || data[di].name.indexOf(ancBase) >= 0 || ancBase.indexOf(otherBase) >= 0) {
-            otherRec = data[di]; break;
+      var pairMeta = anc.adoption_pair_id ? adoptionPairsById[String(anc.adoption_pair_id)] : null;
+      if (pairMeta) {
+        var otherId = isOut ? pairMeta.inId : pairMeta.outId;
+        if (otherId !== null) otherRec = findById(otherId);
+      } else {
+        var otherType = isOut ? '是(继子)' : '出继';
+        for (var di = 0; di < data.length; di++) {
+          if (data[di].id !== anc.id && data[di].generation_num === anc.generation_num && data[di].adopted === otherType && data[di].father_id) {
+            var otherBase = stripSuffix(data[di].name);
+            if (otherBase === ancBase || data[di].name.indexOf(ancBase) >= 0 || ancBase.indexOf(otherBase) >= 0) {
+              otherRec = data[di]; break;
+            }
           }
         }
       }
@@ -2695,7 +2723,7 @@ function locateInTree(personId) {
         for (var bi = 0; bi < bioChain.length; bi++) {
           var ba = bioChain[bi];
           for (var mi = 0; mi < mainChain.length; mi++) {
-            if (mainChain[mi].name === ba.name && mainChain[mi].generation_num === ba.generation_num && mainChain[mi].id !== parseInt(ancId)) {
+            if (mainChain[mi].id === ba.id && mainChain[mi].id !== parseInt(ancId)) {
               mergeIdx = mi;
               break;
             }
@@ -2748,7 +2776,7 @@ function locateInTree(personId) {
     var splitId = hasSplit ? mainChain[splitIdx].id : null;
     // Determine split direction: 出继 => main=bio(生父), side=继 | is(继子) => main=继, side=bio(生父)
     var splitPerson = splitId ? findById(splitId) : null;
-    var splitIsOut = splitPerson && splitPerson.adopted === '出继';
+    var splitIsOut = splitPerson && (splitPerson.adoption_status ? splitPerson.adoption_status === 'out' : splitPerson.adopted === '出继');
     var mainSideLabel = splitIsOut ? '生父' : '继';
     var sideSideLabel = splitIsOut ? '继' : '生父';
 
@@ -2762,7 +2790,7 @@ function locateInTree(personId) {
         var anc = mainChain[si];
         var found = false;
         for (var bj = 0; bj < bioChain.length; bj++) {
-          if (bioChain[bj].name === anc.name && bioChain[bj].generation_num === anc.generation_num) {
+          if (bioChain[bj].id === anc.id) {
             found = true; break;
           }
         }
@@ -2860,7 +2888,7 @@ function locateInTree(personId) {
         // 世常 node
         html += '<div style="display:flex;flex-direction:column;align-items:center;">';
         if (nextA) html += '<div class="ancestor-connector" style="background:' + mainColor + ';"></div>';
-        html += renderNode(a, isTarget, mainColor, '<div class="ancestor-meta" style="color:var(--accent-orange);font-size:11px;">📌 入继</div>', k);
+        html += renderNode(a, isTarget, mainColor, '<div class="ancestor-meta" style="color:var(--accent-orange);font-size:11px;">📌 ' + (splitIsOut ? '出继' : '入继') + '</div>', k);
         html += '</div>';
         continue;
       }

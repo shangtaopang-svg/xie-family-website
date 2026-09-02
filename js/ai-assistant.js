@@ -1405,7 +1405,10 @@
   // 完整世系快捷项的出继/入继关系图：将服务端附在目标节点上的双亲资料
   // 转成与“最亲关系图”一致的双路线卡片，避免只在纵向世系卡片里显示一行文字。
   function showAdoptionRelationOverlay(nodes) {
-    var target = (nodes || []).find(function (n) { return n && n.adoptionDetail; });
+    var target = null;
+    for (var ti = (nodes || []).length - 1; ti >= 0; ti--) {
+      if (nodes[ti] && nodes[ti].adoptionDetail) { target = nodes[ti]; break; }
+    }
     if (!target || !target.adoptionDetail) return;
     var d = target.adoptionDetail;
     var ctx = d.context || {
@@ -1426,12 +1429,16 @@
     if (!nodes || !nodes.length) return;
     var en = isEnglishUi();
     showTreeOverlay(nodes, ownerIsSelf, false);
-    var target = nodes.find(function (n) { return n && n.adoptionDetail; });
+    var target = null;
+    for (var ti = nodes.length - 1; ti >= 0; ti--) {
+      if (nodes[ti] && nodes[ti].adoptionDetail) { target = nodes[ti]; break; }
+    }
     if (!target || !treeOverlay) return;
     var fullTitle = treeOverlay.querySelector('.ai-tree-title');
+    var lineageEnd = nodes[nodes.length - 1];
     if (fullTitle) fullTitle.textContent = en
-      ? '🌳 Lineage chart · Emperor Yan, Shennong → ' + aiPersonName(target) + ' (complete adoption / inheritance)'
-      : '🌳 世系图 · 从炎帝神农氏到' + target.name + '（完整出继 / 入继关系）';
+      ? '🌳 Lineage chart · Emperor Yan, Shennong → ' + aiPersonName(lineageEnd) + ' (complete adoption / inheritance)'
+      : '🌳 世系图 · 从炎帝神农氏到' + lineageEnd.name + '（完整出继 / 入继关系）';
     var d = target.adoptionDetail || {};
     var ctx = d.context || {
       person: { name: target.name, shi: target.shi },
@@ -1445,8 +1452,8 @@
     var map = document.createElement('section');
     map.className = 'ai-adoption-map ai-tree-full-adoption-map';
     var siblingNodes = (ctx.siblings || []).map(function (p) {
-      var cls = ctx.biologicalParent && p.name === ctx.biologicalParent.name ? ' biological' :
-        (ctx.adoptiveParent && p.name === ctx.adoptiveParent.name ? ' adoptive' : '');
+      var cls = ctx.biologicalParent && Number(p.id) === Number(ctx.biologicalParent.id) ? ' biological' :
+        (ctx.adoptiveParent && Number(p.id) === Number(ctx.adoptiveParent.id) ? ' adoptive' : '');
       return '<div class="ai-adopt-node' + cls + '"><small>' + esc(aiGeneration(p.shi)) + '</small><strong>' + esc(aiPersonName(p)) + '</strong>' +
         (cls === ' biological' ? '<em>' + (en ? 'Biological father · 50% blood relation' : '亲生父亲 · 血缘50%') + '</em>' : (cls === ' adoptive' ? '<em>' + (en ? 'Adoptive father · 0% blood relation' : '继父（承嗣父） · 血缘0%') + '</em>' : '')) + '</div>';
     }).join('');
@@ -1668,8 +1675,8 @@
         var card = document.createElement('section');
         card.className = 'ai-adoption-map';
         var siblingNodes = (ctx.siblings || []).map(function (p) {
-          var cls = ctx.biologicalParent && p.name === ctx.biologicalParent.name ? ' biological' :
-            (ctx.adoptiveParent && p.name === ctx.adoptiveParent.name ? ' adoptive' : '');
+          var cls = ctx.biologicalParent && Number(p.id) === Number(ctx.biologicalParent.id) ? ' biological' :
+            (ctx.adoptiveParent && Number(p.id) === Number(ctx.adoptiveParent.id) ? ' adoptive' : '');
           return '<div class="ai-adopt-node' + cls + '"><small>' + esc(aiGeneration(p.shi)) + '</small><strong>' + esc(aiPersonName(p)) + '</strong>' +
             (cls === ' biological' ? '<em>' + (en ? 'Biological father · 50% blood relation' : '亲生父亲 · 血缘50%') + '</em>' : (cls === ' adoptive' ? '<em>' + (en ? 'Adoptive father · 0% blood relation' : '继父（承嗣父） · 血缘0%') + '</em>' : '')) + '</div>';
         }).join('');

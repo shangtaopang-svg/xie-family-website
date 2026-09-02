@@ -191,18 +191,20 @@ function adoptionContextsFor(personId) {
     const targetPerson = byId.get(Number(personId));
     const targetIsDirectDescendant = targetPerson && (
       Number(targetPerson.father_id) === Number(adoptedPerson.id) ||
-      Number(targetPerson.mother_id) === Number(adoptedPerson.id)
+      Number(targetPerson.mother_id) === Number(adoptedPerson.id) ||
+      Number(targetPerson.father_id) === Number(outPerson.id) ||
+      Number(targetPerson.mother_id) === Number(outPerson.id)
     );
 
-    let biologicalParent = outPerson.father_id ? byId.get(Number(outPerson.father_id)) : null;
-    const sourceFather = String(rel.source || '').match(/^(.+?)之(?:子|女)/);
-    if (sourceFather) {
-      const candidates = byName.get(sourceFather[1]) || [];
-      biologicalParent = candidates.find(p => Number(p.generation_num) === Number(outPerson.generation_num) - 1) || candidates[0] || biologicalParent;
-    }
+    // 亲生父亲只认出继记录的结构化 father_id。
+    // 关系原文中的姓名只能作为来源说明，不能反向按姓名选父亲；同名的出继/入继记录
+    // 可能各自对应不同父亲（例如“昌信”），按姓名匹配会把亲生父亲和承嗣记录串线。
+    const biologicalParent = outPerson.father_id ? byId.get(Number(outPerson.father_id)) || null : null;
     const bpGrand = biologicalParent && biologicalParent.father_id ? byId.get(Number(biologicalParent.father_id)) : null;
     const apGrand = adoptiveParent.father_id ? byId.get(Number(adoptiveParent.father_id)) : null;
-    const commonAncestorName = bpGrand && apGrand && bpGrand.name === apGrand.name ? bpGrand.name : '';
+    // 共同上代也必须是同一条 ID 记录；同名人物不能被当成共同祖先。
+    const commonAncestor = bpGrand && apGrand && Number(bpGrand.id) === Number(apGrand.id) ? bpGrand : null;
+    const commonAncestorName = commonAncestor ? commonAncestor.name : '';
     const parentGen = Number(adoptiveParent.generation_num) || Number(biologicalParent && biologicalParent.generation_num) || 0;
     const siblings = [];
     if (commonAncestorName) {
@@ -210,12 +212,12 @@ function adoptionContextsFor(personId) {
       const grandIds = new Set(grandRecords.map(p => Number(p.id)));
       for (const p of byId.values()) {
         if (grandIds.has(Number(p.father_id)) && Number(p.generation_num) === parentGen &&
-            !siblings.some(x => x.name === p.name)) siblings.push({ id: Number(p.id), name: p.name, shi: Number(p.generation_num) || '' });
+            !siblings.some(x => Number(x.id) === Number(p.id))) siblings.push({ id: Number(p.id), name: p.name, shi: Number(p.generation_num) || '' });
       }
     }
     contexts.push({
       source: rel.source,
-      commonAncestor: commonAncestorName ? { name: commonAncestorName, shi: Number(bpGrand.generation_num) || Number(apGrand.generation_num) || '' } : null,
+      commonAncestor: commonAncestor ? { id: Number(commonAncestor.id), name: commonAncestor.name, shi: Number(commonAncestor.generation_num) || '' } : null,
       siblings,
       biologicalParent: biologicalParent ? { id: Number(biologicalParent.id), name: biologicalParent.name, shi: Number(biologicalParent.generation_num) || '' } : null,
       adoptiveParent: { id: Number(adoptiveParent.id), name: adoptiveParent.name, shi: Number(adoptiveParent.generation_num) || '' },
@@ -545,7 +547,11 @@ function answerFullLineageZh(query, selfId, forcedTargetId) {
   // 直接在对应节点附上亲生父亲、承嗣父亲和谱载原文，供前端在树中就地展开。
   const adoptionContexts = adoptionContextsFor(targetId);
   adoptionContexts.forEach((ctx) => {
-    const node = nodes.find(n => n.name === ctx.person.name && Number(n.shi) === Number(ctx.person.shi));
+    // 优先按配对记录 ID 挂载，避免同名同世次的不同记录互相覆盖；
+    // 目标走亲生记录时，再允许匹配出继端记录作为关系图挂载点。
+    const node = nodes.find(n => Number(n.id) === Number(ctx.person.id)) ||
+      nodes.find(n => Number(n.id) === Number(ctx.person.outId)) ||
+      nodes.find(n => n.name === ctx.person.name && Number(n.shi) === Number(ctx.person.shi));
     if (!node) return;
     node.adopt = ctx.source || '出继 / 入继';
     node.adoptionDetail = {

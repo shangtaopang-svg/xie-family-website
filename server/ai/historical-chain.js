@@ -152,6 +152,7 @@ function buildFullChain(personId) {
     const adopt = adoptionFromBio(p.biography) || (p.adopt_note ? '族谱载「' + String(p.adopt_note).trim() + '」' : '') || (p.branch === '入继' ? '过继入族' : '');
     const shi = Number.isFinite(Number(p.generation_num)) ? Number(p.generation_num) : String(p.generation || '').trim();
     return {
+      id: Number(p.id),
       name: p.name,
       shi,
       note: adopt,

@@ -61,8 +61,16 @@ function loadFacts() {
     const outId = numberOrNull(outRef);
     const inId = numberOrNull(inRef);
     const adoptiveParentId = numberOrNull(parentRef);
+    const outGeneration = numberOrNull(out && out.generation_num);
+    const incomingGeneration = numberOrNull(incoming && incoming.generation_num);
+    // 一组配对必须同时满足：两端引用回指各自真实记录、两端姓名/世次一致，
+    // 且出继端与入继端指向同一个承嗣父。否则宁可标记为无效，也不能把
+    // 不同人物或同名不同世次记录拼成一条关系。
     const complete = out && incoming && outId !== null && inId !== null && adoptiveParentId !== null &&
-      numberOrNull(outRef) === outId && numberOrNull(inRef) === inId &&
+      numberOrNull(out.id) === outId && numberOrNull(incoming.id) === inId &&
+      text(out.name) !== '' && text(out.name) === text(incoming.name) &&
+      outGeneration !== null && incomingGeneration !== null && outGeneration === incomingGeneration &&
+      numberOrNull(out.adoption_adoptive_parent_id) === adoptiveParentId &&
       numberOrNull(incoming.adoption_adoptive_parent_id) === adoptiveParentId &&
       byId.has(outId) && byId.has(inId) && byId.has(adoptiveParentId);
     if (!complete) {
