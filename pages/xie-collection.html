@@ -9,7 +9,7 @@
 <title>谢氏集萃 · 下枫槎谢氏</title>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <script defer src="../js/i18n.js?v=20260901-lang-12"></script>
-  <link rel="stylesheet" href="../css/style.css?v=20260902-collection-video-04">
+  <link rel="stylesheet" href="../css/style.css?v=20260902-collection-video-05">
 <style>
 /* ===== Reset & Base ===== */
 *{margin:0;padding:0;box-sizing:border-box}
@@ -293,6 +293,28 @@ button.collect-card { width:100%; padding:0; border:0; color:inherit; font:inher
     min-height:0 !important; max-width:none !important; max-height:none !important;
     object-fit:contain !important; object-position:center !important;
     transform:none !important;
+  }
+
+  /* 视频卡片占满页面可用宽度，只保留一层外卡片，移除视频周围重复的圈层。 */
+  .card-grid { margin-left:-14px; margin-right:-14px; }
+  .card-grid .collect-card,
+  .card-grid .collect-card:hover {
+    width:100%; min-width:0; border:0 !important; box-shadow:none !important;
+    border-radius:16px !important;
+  }
+  .card-grid .collect-card .card-hover-wrap,
+  .card-grid .collect-card .card-cover {
+    margin:0 !important; border:0 !important; border-radius:0 !important;
+  }
+  .card-grid .collect-card.local-video .card-hover-wrap {
+    width:100% !important; height:auto !important; min-height:0 !important;
+    aspect-ratio:16/9 !important;
+  }
+  .card-grid .collect-card.local-video .card-cover {
+    width:100% !important; height:100% !important; min-height:0 !important;
+  }
+  .card-grid .collect-card.local-video .card-cover video {
+    display:block; width:100% !important; height:100% !important;
   }
 
   .no-data-hint { margin-top:28px; padding:30px 20px; }
