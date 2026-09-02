@@ -52,7 +52,7 @@
   var LS_TTS_MUTED = 'ai_tts_muted';
   var LS_CLOSURE = 'ai_last_closure'; // 诊断：记录面板最近一次关闭来源
   var MAX_HIST = 50;
-  var APP_VERSION = 'v99'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
+  var APP_VERSION = 'v100'; // 与 scripts/inject-ai-html.js 的 VERSION 保持一致（面板状态栏显示，用于诊断缓存）
   var IS_MOBILE = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
   var WELCOME = '您好，我是下枫槎谢氏家族的 AI 助手 🤖\n可以问我村史、族谱、字辈等公开问题。涉及个人世系、族人个人信息的查询，需先完成族人身份验证。';
 
@@ -111,7 +111,18 @@
     if (!document.getElementById('mobile-page-actions-style')) {
       var style = document.createElement('style');
       style.id = 'mobile-page-actions-style';
-      style.textContent = '.mobile-page-actions{display:none}@media(max-width:768px){.mobile-page-actions{display:flex;align-items:center;gap:8px;width:100%;box-sizing:border-box;margin:0 0 4px;padding:10px 16px 2px;position:relative;z-index:2}.mobile-page-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 14px;border:1px solid rgba(212,255,58,.35);border-radius:999px;background:rgba(212,255,58,.08);color:#D4FF3A!important;font-size:13px;line-height:1;text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:transparent}.mobile-page-actions a:active{opacity:.72;transform:scale(.98)}.mobile-page-actions .mobile-page-back{border-color:rgba(255,255,255,.24);background:rgba(255,255,255,.07);color:#F2F2F2!important}.mobile-page-actions .mobile-page-genealogy{border-color:rgba(255,193,7,.4);background:rgba(255,193,7,.08);color:#FFC107!important}#app>.mobile-page-actions,body.focus-tree-page>.mobile-page-actions{padding-left:12px;padding-right:12px}}.has-mobile-page-actions a.back-page-btn{display:none!important}';
+      style.textContent = [
+        '.mobile-page-actions{display:none}',
+        '@media(max-width:768px){',
+        '.mobile-page-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center;gap:6px;width:100%;max-width:100%;min-width:0;box-sizing:border-box;overflow:hidden;margin:0 0 4px;padding:8px 10px 2px;position:relative;z-index:2}',
+        '.mobile-page-actions a{display:flex;align-items:center;justify-content:center;width:100%;max-width:100%;min-width:0;min-height:36px;box-sizing:border-box;padding:0 6px;border:1px solid rgba(168,184,154,.35);border-radius:999px;background:rgba(168,184,154,.08);color:#A8B89A!important;font-size:12px;line-height:1;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;-webkit-tap-highlight-color:transparent}',
+        '.mobile-page-actions a:active{opacity:.72;transform:scale(.98)}',
+        '.mobile-page-actions .mobile-page-back{border-color:rgba(255,255,255,.24);background:rgba(255,255,255,.07);color:#F2F2F2!important}',
+        '.mobile-page-actions .mobile-page-genealogy{border-color:rgba(168,184,154,.5);background:rgba(168,184,154,.12);color:#A8B89A!important}',
+        '#app>.mobile-page-actions,body.focus-tree-page>.mobile-page-actions{padding-left:10px;padding-right:10px}',
+        '}',
+        '.has-mobile-page-actions a.back-page-btn{display:none!important}'
+      ].join('');
       document.head.appendChild(style);
     }
 
@@ -120,12 +131,32 @@
     var genealogyHref = inPages ? 'genealogy.html?chooser=1' : 'pages/genealogy.html?chooser=1';
     var actions = document.createElement('div');
     actions.className = 'mobile-page-actions';
-    actions.setAttribute('aria-label', '手机端页面入口');
-    actions.innerHTML = '<a class="mobile-page-back" href="' + homeHref + '" aria-label="返回上一页">← 返回</a>' +
-      '<a class="mobile-page-home" href="' + homeHref + '">⌂ 首页</a>' +
-      '<a class="mobile-page-genealogy" href="' + genealogyHref + '">🌳 族谱查询</a>';
+    actions.innerHTML = '<a class="mobile-page-back" href="' + homeHref + '"></a>' +
+      '<a class="mobile-page-home" href="' + homeHref + '"></a>' +
+      '<a class="mobile-page-genealogy" href="' + genealogyHref + '"></a>';
+    var updateLabels = function () {
+      var english = isEnglishUi();
+      var backLink = actions.querySelector('.mobile-page-back');
+      var homeLink = actions.querySelector('.mobile-page-home');
+      var genealogyLink = actions.querySelector('.mobile-page-genealogy');
+      actions.setAttribute('aria-label', english ? 'Mobile page navigation' : '手机端页面入口');
+      if (backLink) {
+        backLink.textContent = english ? '← Back' : '← 返回';
+        backLink.setAttribute('aria-label', english ? 'Back to previous page' : '返回上一页');
+      }
+      if (homeLink) {
+        homeLink.textContent = english ? '⌂ Home' : '⌂ 首页';
+        homeLink.setAttribute('aria-label', english ? 'Home' : '首页');
+      }
+      if (genealogyLink) {
+        genealogyLink.textContent = english ? '🌳 Genealogy' : '🌳 族谱查询';
+        genealogyLink.setAttribute('aria-label', english ? 'Genealogy' : '族谱查询');
+      }
+    };
+    updateLabels();
     host.insertBefore(actions, host.firstChild);
     document.body.classList.add('has-mobile-page-actions');
+    window.addEventListener('xie-language-change', updateLabels);
 
     var back = actions.querySelector('.mobile-page-back');
     if (back) back.addEventListener('click', function (e) {

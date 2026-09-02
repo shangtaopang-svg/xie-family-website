@@ -5841,6 +5841,61 @@ li:has(> a[href*="admin.html"]) {
   }
 }
 
+/* ===== 手机端顶部控件防溢出封口 =====
+   英文按钮长度变化后，旧版 flex 行会把第三个入口推到屏幕右侧，
+   只能横向滑动才能看到。三项入口改为等宽网格，所有页面保持完整可见，
+   页面本身也禁止横向溢出；正文内部需要横向查看的区域仍由各自容器处理。 */
+@media (max-width: 768px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden !important;
+  }
+
+  .mobile-page-actions {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    padding: 8px 10px 2px !important;
+  }
+
+  .mobile-page-actions a {
+    display: flex !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .news-source-toolbar,
+  .news-source-title,
+  .navhub-content-top {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .news-source-title strong,
+  .news-source-title span,
+  .navhub-content-top > span,
+  .navhub-content-top a {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+}
+
 @keyframes mbsThumbSheen {
   0%, 22% { transform: translateX(-160%) skewX(-18deg); opacity: 0; }
   35% { opacity: .8; }

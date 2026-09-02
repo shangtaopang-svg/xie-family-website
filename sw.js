@@ -1,15 +1,15 @@
-const CACHE = 'xie-clan-v9';
+const CACHE = 'xie-clan-v10';
 const STATIC = [
   '/',
   '/index.html',
   '/offline.html',
   '/manifest.json',
-  '/css/style.css?v=20260830-mobile-nav-05',
-  '/css/ai.css?v=20260830-mobile-nav-03',
+  '/css/style.css?v=20260901-entry-switch-06',
+  '/css/ai.css?v=100',
   '/css/public-access-gate.css?v=20260830-access-mobile-01',
-  '/js/i18n.js?v=20260901-lang-10',
+  '/js/i18n.js?v=20260901-lang-11',
   '/js/main.js?v=10',
-  '/js/ai-assistant.js',
+  '/js/ai-assistant.js?v=100',
   '/js/public-access-gate.js?v=20260830-access-mobile-01',
   '/js/media-performance.js?v=20260830-media-01',
   '/favicon.svg',

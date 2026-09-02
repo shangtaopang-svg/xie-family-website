@@ -10,7 +10,7 @@ const TRANSLATIONS = {
   },
   'logo.title': {
     zh: '下枫槎谢氏',
-    en: 'Xie of Xiafengcha'
+    en: 'Xiafengcha Xie Family'
   },
   'logo.subtitle': {
     zh: '宁海 · 下枫槎村',
@@ -184,7 +184,7 @@ const TRANSLATIONS = {
   },
   'page.honors.title': {
     zh: '村荣誉 · 下枫槎谢氏',
-    en: 'Honors · Xie of Xiafengcha'
+    en: 'Honors · Xiafengcha Xie Family'
   },
   'page.reports': {
     zh: '媒体报道 · 新闻聚焦',
@@ -192,7 +192,7 @@ const TRANSLATIONS = {
   },
   'page.reports.title': {
     zh: '新闻报道 · 下枫槎谢氏',
-    en: 'News Reports · Xie of Xiafengcha'
+    en: 'News Reports · Xiafengcha Xie Family'
   },
   'page.genealogy': {
     zh: '追本溯源 · 知根知底',
@@ -204,15 +204,15 @@ const TRANSLATIONS = {
   },
   'page.admin.title': {
     zh: '管理后台 · 下枫槎谢氏',
-    en: 'Admin · Xie of Xiafengcha'
+    en: 'Admin · Xiafengcha Xie Family'
   },
   'page.history.title': {
     zh: '家族历史 · 下枫槎谢氏',
-    en: 'History · Xie of Xiafengcha'
+    en: 'History · Xiafengcha Xie Family'
   },
   'page.celebrities.title': {
     zh: '名人事迹 · 下枫槎谢氏',
-    en: 'Celebrities · Xie of Xiafengcha'
+    en: 'Celebrities · Xiafengcha Xie Family'
   },
   'page.committee': {
     zh: '村组织架构',
@@ -224,7 +224,7 @@ const TRANSLATIONS = {
   },
   'page.committee.title': {
     zh: '村组织架构 · 下枫槎谢氏',
-    en: 'Committee · Xie of Xiafengcha'
+    en: 'Committee · Xiafengcha Xie Family'
   },
   'page.products': {
     zh: '乡村物产',
@@ -236,7 +236,7 @@ const TRANSLATIONS = {
   },
   'page.products.title': {
     zh: '乡村物产 · 下枫槎谢氏',
-    en: 'Products · Xie of Xiafengcha'
+    en: 'Products · Xiafengcha Xie Family'
   },
   'nav.today': {
     zh: '今日下枫槎',
@@ -252,7 +252,7 @@ const TRANSLATIONS = {
   },
   'page.today.title': {
     zh: '今日下枫槎 · 下枫槎谢氏',
-    en: 'Today · Xie of Xiafengcha'
+    en: 'Today · Xiafengcha Xie Family'
   },
   'admin.password.placeholder': {
     zh: '请输入管理密码',
@@ -268,23 +268,23 @@ const TRANSLATIONS = {
   },
   'page.news.title': {
     zh: '消息发布 · 下枫槎谢氏',
-    en: 'News · Xie of Xiafengcha'
+    en: 'News · Xiafengcha Xie Family'
   },
   'page.members.title': {
     zh: '家族成员 · 下枫槎谢氏',
-    en: 'Members · Xie of Xiafengcha'
+    en: 'Members · Xiafengcha Xie Family'
   },
   'page.activities.title': {
     zh: '家族活动 · 下枫槎谢氏',
-    en: 'Activities · Xie of Xiafengcha'
+    en: 'Activities · Xiafengcha Xie Family'
   },
   'page.contact.title': {
     zh: '联系我们 · 下枫槎谢氏',
-    en: 'Contact · Xie of Xiafengcha'
+    en: 'Contact · Xiafengcha Xie Family'
   },
   'page.genealogy.title': {
     zh: '族谱查询 · 下枫槎谢氏',
-    en: 'Genealogy · Xie of Xiafengcha'
+    en: 'Genealogy · Xiafengcha Xie Family'
   },
   'genealogy.lock.desc2': {
     zh: '族谱为家族内部资料，请输入管理员密码以继续查询',
@@ -563,7 +563,7 @@ const TRANSLATIONS = {
   'celeb.3.desc': { zh: '东晋名将，谢安之侄。组建北府兵，在淝水之战中担任前锋，大破前秦苻坚百万大军。', en: 'Eastern Jin general, nephew of Xie An. Led the elite Beifu Army as vanguard in the Fei River Battle, crushing the Former Qin forces.' },
 
   // Footer sections
-  'footer.section1.title': { zh: '下枫槎谢氏', en: 'Xie of Xiafengcha' },
+  'footer.section1.title': { zh: '下枫槎谢氏', en: 'Xiafengcha Xie Family' },
   'footer.section2.title': { zh: '快捷链接', en: 'Quick Links' },
   'footer.link.genealogy': { zh: '族谱查询', en: 'Genealogy' },
   'footer.section3.title': { zh: '家族活动', en: 'Activities' },
@@ -911,7 +911,11 @@ const EXTRA_TRANSLATIONS = {
   '恢复竖屏': 'Return to portrait',
   '← 返回': '← Back',
   '⌂ 首页': '⌂ Home',
+  '⌂首页': '⌂ Home',
   '🌳 族谱查询': '🌳 Genealogy',
+  '🌳族谱查询': '🌳 Genealogy',
+  '今日 · 下枫槎谢氏': 'Today · Xiafengcha Xie Family',
+  '今日·下枫槎谢氏': 'Today · Xiafengcha Xie Family',
   '重置缩放': 'Reset zoom',
   '全屏观看': 'View fullscreen',
   '整树全貌 / 可读切换（手机端）': 'Whole-tree overview / readable mode (mobile)',
@@ -1800,7 +1804,7 @@ const EXTRA_TRANSLATIONS = {
 // hand-written shared vocabulary so long paragraphs are never split into
 // misleading fragments.
 const GENERATED_PAGE_TRANSLATIONS = {
-  "下枫槎·谢氏": "Xia Fengcha·Xie",
+  "下枫槎·谢氏": "Xiafengcha · Xie Family",
   "宁海 · 乌衣世泽 宝树家声": "Ninghai · Wuyi Shize Baoshu Jiasheng",
   "您是下枫槎村谢氏族人吗？": "Are you a member of the Xie clan in Xia Fengcha Village?",
   "暂时离线 · 下枫槎谢氏": "Temporarily offline · Xia Fengcha Xie",
@@ -1909,7 +1913,7 @@ const GENERATED_PAGE_TRANSLATIONS = {
   "协助书记工作": "Assist secretary in work",
   "村委会副主任（副村长）": "Deputy Director of the Village Committee (Deputy Village Chief)",
   "分管专项工作": "In charge of special work",
-  "组织委员": "Organization Committee",
+  "组织委员": "Organization Committee Member",
   "党建·组织": "Party Building·Organization",
   "宣传委员": "Publicity Committee",
   "宣传·文化": "Publicity·Culture",
@@ -2506,7 +2510,7 @@ const GENERATED_PAGE_TRANSLATIONS = {
   "湖北": "hubei",
   "壹仟貳": "One thousand two",
   "公元二〇二六年 · 下枫槎谢氏阖族敬立": "A.D. 2026 · Xia Fengcha’s Xie family members stood in honor of each other",
-  "荣誉 · 组织 · 物产": "Honor · Organization · Property",
+  "荣誉 · 组织 · 物产": "Honors · Organization · Local Products",
   "点击展开 · 荣耀时刻": "Click to expand · Moment of Glory",
   "荣誉〔2026〕第01号": "Honor [2026] No. 01",
   "★永久": "★Permanent",
@@ -2528,7 +2532,7 @@ const GENERATED_PAGE_TRANSLATIONS = {
   "荣誉〔2024〕第11号": "Honor [2024] No. 11",
   "2023年度返乡入乡合作创业考核，望府村被评为": "In the 2023 return to hometown cooperation and entrepreneurship assessment, Wangfu Village was rated",
   "荣誉〔2024〕第12号": "Honor [2024] No. 12",
-  "📜 下枫槎村大事记": "📜 Major events in Xia Fengcha Village",
+  "📜 下枫槎村大事记": "📜 Major Events in Xiafengcha Village",
   "跨越1600年 · 点击展开历代大事": "Spanning 1,600 years · Click to expand the major events of the past dynasties",
   "古代 · 晋至明": "Ancient times·Jin to Ming",
   "晋义熙元年，高僧昙猷自海上乘": "In the first year of Jin Yixi, the eminent monk Tan You took a ride from the sea.",
@@ -3262,6 +3266,12 @@ const EXTRA_TRANSLATION_ENTRIES = Object.keys(EXTRA_TRANSLATIONS).sort(function(
   return b.length - a.length;
 });
 
+function normalizeEnglishPlaceNames(value) {
+  return String(value)
+    .replace(/\bXia\s+Fengcha\b/g, 'Xiafengcha')
+    .replace(/\bXiafengcha\s+Xie\b/g, 'Xiafengcha Xie');
+}
+
 function translateString(value, lang) {
   if (lang !== 'en' || value === null || value === undefined) return value;
   var input = String(value);
@@ -3276,7 +3286,7 @@ function translateString(value, lang) {
       return false;
     });
   }
-  if (exact) return input.replace(trimmed, exact);
+  if (exact) return input.replace(trimmed, normalizeEnglishPlaceNames(exact));
 
   var output = input;
   EXTRA_TRANSLATION_ENTRIES.forEach(function(key) {
@@ -3327,7 +3337,7 @@ function translateString(value, lang) {
   // presented them as if they were translations. Pages with source prose must
   // add a real phrase entry; an explicit neutral marker is safer than false
   // information while an untranslated legacy record is being migrated.
-  return output.replace(/[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]+/g, '[Source text pending translation]');
+  return normalizeEnglishPlaceNames(output.replace(/[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]+/g, '[Source text pending translation]'));
 }
 
 /*
