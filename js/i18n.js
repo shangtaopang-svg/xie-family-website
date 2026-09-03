@@ -3941,7 +3941,18 @@ function ensureLanguageToggle() {
     var toolbar = document.querySelector('.news-source-toolbar');
     var offlineCard = document.querySelector('.offline-card');
     var entranceStage = document.getElementById('stage');
-    var content = document.querySelector('.content');
+    // A ".content" that lives inside a scroll/unfold component (功德卷轴 preface,
+    // 卷轴纸面、弹层…) is that component's inner box, not the page container.
+    // Inserting the dock there pushes the component's own children out of layout,
+    // so only accept a ".content" that is not nested in one of these wrappers.
+    var content = null;
+    document.querySelectorAll('.content').forEach(function(candidate) {
+      if (content) return;
+      if (candidate.closest && candidate.closest(
+        '.preface-scroll, .scroll-paper, .scroll-card, .scroll-wrap, .mw-modal, .modal, .drawer, .photo-viewer, .popup, .tooltip'
+      )) return;
+      content = candidate;
+    });
     var main = document.querySelector('main');
     var fullscreenStage = document.querySelector('.video-container');
     var appShell = document.querySelector('#app.app-shell');
