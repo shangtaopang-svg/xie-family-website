@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>行第对照 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../css/style.css?v=20260911-xingdi-02">
+  <link rel="stylesheet" href="../css/style.css?v=20260911-xingdi-03">
   <style>
     .xingdi-page-body { width: 100%; min-width: 0; margin: 0; overflow-x: hidden; background: #f5f2eb; }
     .xingdi-page-body .content { width: 100%; min-width: 0; margin: 0; padding: 0; }
@@ -64,6 +64,7 @@
     .xingdi-pdf-link:hover { color: #fff; background: #9d5c43; }
     .xingdi-note { margin-top: 22px; padding: 15px 18px; border: 1px dashed #cdb8a7; background: #fffaf3; color: #786f67; font-size: 12px; line-height: 1.8; }
     .xingdi-note strong { color: #9b5b42; }
+    .xingdi-mobile-topbar { display: none; }
     @media (max-width: 1100px) {
       .xingdi-page-body .page-wrap { padding: 20px 18px 48px; }
       .xingdi-intro { grid-template-columns: 1fr; padding: 20px; }
@@ -86,6 +87,11 @@
       .xingdi-zoom-controls { width: 100%; justify-content: flex-end; }
       .xingdi-viewer-foot { align-items: flex-start; flex-direction: column; padding: 11px 14px; }
       .xingdi-pdf-link { width: 100%; justify-content: center; box-sizing: border-box; }
+    }
+    @media (max-width: 900px) {
+      .xingdi-mobile-topbar { display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 10px 16px 0; }
+      .xingdi-mobile-back { display: inline-flex; align-items: center; min-height: 38px; padding: 0 12px; border: 1px solid #c9b19f; border-radius: 8px; background: #fff9f3; color: #8e503d; font-size: 12px; font-weight: 700; text-decoration: none; }
+      .xingdi-mobile-back:active { transform: scale(.97); }
     }
   </style>
 </head>
@@ -114,6 +120,10 @@
         </nav>
       </div>
     </header>
+
+    <div class="xingdi-mobile-topbar">
+      <a class="xingdi-mobile-back" href="genealogy.html" aria-label="返回上一级" onclick="if (document.referrer) { try { if (new URL(document.referrer).origin === location.origin) { event.preventDefault(); history.back(); } } catch (e) {} }">← 返回上一级</a>
+    </div>
 
     <main class="page-wrap">
       <div class="page-title">
