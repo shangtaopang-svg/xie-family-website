@@ -103,6 +103,8 @@ body[data-app-mode="admin"]:not(.admin-authenticated) #app { visibility: hidden;
 .fit-btn { padding: 0 9px; color: var(--primary-dark); font-size: 11px; }
 .layout-btn { padding: 0 8px; color: #6d7f8c; font-size: 10px; }
 .fit-btn:hover, .layout-btn:hover, .zoom-readout:hover, .icon-btn:hover { border-color: var(--primary); background: var(--surface-blue); }
+.query-reference-toolbar-link { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-height: 30px; padding: 0 9px; border-color: #b77859; background: #fff4ed; color: #8e4d39; font-weight: 700; text-decoration: none; }
+.query-reference-toolbar-link:hover, .query-reference-toolbar-link:focus-visible { border-color: #9c563e; background: #f6dfd2; color: #7f3f30; outline: none; }
 
 .global-nav-button { border-color: #b77a3c !important; background: #fff7ec !important; color: #8a511f !important; font-weight: 800; letter-spacing: .04em; }
 .global-nav-button:hover, .global-nav-button.is-active { border-color: #9b5b22 !important; background: #f4e2c9 !important; color: #653915 !important; }
@@ -2003,8 +2005,9 @@ body[data-app-mode="public"] .tree-viewport {
   color: #8e4d39 !important;
   font-weight: 700;
 }
-.tree-toolbar-actions > button,
-.rail-action,
+  .tree-toolbar-actions > button,
+  .query-reference-toolbar-link,
+  .rail-action,
 .icon-btn,
 .zoom-readout,
 .fit-btn,
