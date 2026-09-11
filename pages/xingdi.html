@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>行第对照 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../css/style.css?v=20260911-xingdi-03">
+  <link rel="stylesheet" href="../css/style.css?v=20260911-xingdi-04">
   <style>
     .xingdi-page-body { width: 100%; min-width: 0; margin: 0; overflow-x: hidden; background: #f5f2eb; }
     .xingdi-page-body .content { width: 100%; min-width: 0; margin: 0; padding: 0; }
-    .xingdi-page-body .page-wrap { width: 100%; max-width: 1220px; min-width: 0; margin: 0 auto; box-sizing: border-box; padding: 25px 28px 60px; }
+    .xingdi-page-body .page-wrap { width: 100%; max-width: 1220px; min-width: 0; margin: 0 auto; box-sizing: border-box; padding: 25px clamp(28px, 4vw, 54px) 60px; position: relative; left: 0; transform: none; }
     .xingdi-intro {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -25,7 +25,7 @@
     .xingdi-intro h3 { margin: 0 0 8px; color: #3e574b; font-family: var(--font-title); font-size: 22px; font-weight: 600; }
     .xingdi-intro p { margin: 0; color: #6f7d74; font-size: 13px; line-height: 1.8; }
     .xingdi-intro-mark { width: 92px; height: 92px; display: grid; place-items: center; border: 1px solid #cba990; border-radius: 50%; color: #9b5b42; font-family: var(--font-title); font-size: 40px; background: rgba(255,255,255,.62); }
-    .xingdi-grid { display: grid; grid-template-columns: minmax(280px, .78fr) minmax(0, 1.22fr); gap: 22px; align-items: start; }
+    .xingdi-grid { display: grid; grid-template-columns: minmax(280px, .78fr) minmax(0, 1.22fr); gap: 22px; align-items: start; width: 100%; }
     .xingdi-info-panel, .xingdi-viewer { min-width: 0; max-width: 100%; box-sizing: border-box; border: 1px solid #d9d3c9; background: #fbf9f3; box-shadow: 0 8px 24px rgba(63, 67, 59, .06); }
     .xingdi-grid > * { min-width: 0; }
     .xingdi-info-panel { padding: 22px; }
@@ -51,14 +51,10 @@
     .xingdi-viewer-head { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 17px 18px; border-bottom: 1px solid #ded8cf; background: #f5eee7; }
     .xingdi-viewer-head h2 { margin: 0; color: #3e574b; font-family: var(--font-title); font-size: 18px; font-weight: 600; }
     .xingdi-viewer-head p { margin: 4px 0 0; color: #7a827c; font-size: 11px; }
-    .xingdi-zoom-controls { display: flex; align-items: center; gap: 5px; }
-    .xingdi-zoom-controls button { min-width: 32px; height: 32px; border: 1px solid #cbb8aa; border-radius: 5px; background: #fffaf4; color: #8e503d; font-size: 17px; cursor: pointer; }
-    .xingdi-zoom-controls button:hover, .xingdi-zoom-controls button:focus-visible { border-color: #b76f4d; background: #f7e5da; outline: none; }
-    .xingdi-zoom-status { min-width: 45px; color: #765f52; font-size: 11px; text-align: center; }
-    .xingdi-viewer-viewport { height: min(72vh, 820px); min-height: 500px; overflow: hidden; padding: 20px; background: #e7e1d8; cursor: grab; touch-action: none; }
-    .xingdi-viewer-viewport.is-panning { cursor: grabbing; }
-    .xingdi-image-wrap { display: grid; place-items: center; width: max-content; min-width: 100%; min-height: 100%; transform-origin: center center; will-change: transform; }
-    .xingdi-image { display: block; width: auto; height: min(68vh, 760px); max-width: none; border: 1px solid #cfc6bb; background: #fff; box-shadow: 0 8px 20px rgba(65, 49, 39, .16); user-select: none; -webkit-user-drag: none; }
+    .xingdi-pdf-open { display: inline-flex; align-items: center; justify-content: center; min-height: 34px; padding: 0 12px; border: 1px solid #bd8064; border-radius: 5px; color: #8e503d; background: #fff8f1; font-size: 11px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+    .xingdi-pdf-open:hover, .xingdi-pdf-open:focus-visible { color: #fff; background: #9d5c43; outline: none; }
+    .xingdi-pdf-viewport { height: min(72vh, 820px); min-height: 500px; padding: 0; background: #e7e1d8; }
+    .xingdi-pdf-frame { display: block; width: 100%; height: 100%; min-height: inherit; border: 0; background: #fff; }
     .xingdi-viewer-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 18px; border-top: 1px solid #ded8cf; color: #7c827d; font-size: 11px; }
     .xingdi-pdf-link { display: inline-flex; align-items: center; min-height: 34px; padding: 0 12px; border: 1px solid #bd8064; border-radius: 5px; color: #8e503d; background: #fff8f1; font-weight: 700; text-decoration: none; }
     .xingdi-pdf-link:hover { color: #fff; background: #9d5c43; }
@@ -66,12 +62,11 @@
     .xingdi-note strong { color: #9b5b42; }
     .xingdi-mobile-topbar { display: none; }
     @media (max-width: 1100px) {
-      .xingdi-page-body .page-wrap { padding: 20px 18px 48px; }
+      .xingdi-page-body .page-wrap { padding: 20px 28px 48px; }
       .xingdi-intro { grid-template-columns: 1fr; padding: 20px; }
       .xingdi-intro-mark { display: none; }
       .xingdi-grid { grid-template-columns: 1fr; }
-      .xingdi-viewer-viewport { height: min(72vh, 720px); min-height: 420px; padding: 12px; }
-      .xingdi-image { height: min(68vh, 650px); }
+      .xingdi-pdf-viewport { height: min(72vh, 720px); min-height: 420px; }
     }
     @media (max-width: 560px) {
       .xingdi-page-body .page-wrap { padding: 14px 16px 38px; }
@@ -84,7 +79,7 @@
       .xingdi-anchor-card { grid-template-columns: minmax(0, 1fr); align-items: start; }
       .xingdi-anchor-card a { justify-self: start; }
       .xingdi-viewer-head { align-items: flex-start; flex-direction: column; padding: 14px; }
-      .xingdi-zoom-controls { width: 100%; justify-content: flex-end; }
+      .xingdi-pdf-open { width: 100%; box-sizing: border-box; }
       .xingdi-viewer-foot { align-items: flex-start; flex-direction: column; padding: 11px 14px; }
       .xingdi-pdf-link { width: 100%; justify-content: center; box-sizing: border-box; }
     }
@@ -171,21 +166,16 @@
 
         <div class="xingdi-viewer" aria-label="行第对照表原图查看器">
           <div class="xingdi-viewer-head">
-            <div><h2>原始 A4 对照表</h2><p>单页资料 · 可放大、缩小和拖动查看</p></div>
-            <div class="xingdi-zoom-controls" role="group" aria-label="对照表缩放">
-              <button type="button" id="xingdi-zoom-out" aria-label="缩小">−</button>
-              <span class="xingdi-zoom-status" id="xingdi-zoom-status" aria-live="polite">100%</span>
-              <button type="button" id="xingdi-zoom-in" aria-label="放大">＋</button>
-              <button type="button" id="xingdi-zoom-reset" aria-label="复位">复位</button>
-            </div>
+            <div><h2>原始 A4 对照表</h2><p>矢量 PDF · 放大后文字仍保持清晰</p></div>
+            <a class="xingdi-pdf-open" href="../assets/genealogy-books/xingdi-compare.pdf" target="_blank" rel="noopener noreferrer">打开矢量 PDF ↗</a>
           </div>
-          <div class="xingdi-viewer-viewport" id="xingdi-viewport">
-            <div class="xingdi-image-wrap" id="xingdi-image-wrap">
-              <img class="xingdi-image" src="../assets/genealogy-books/xingdi-compare-hd.png?v=20260911-01" alt="谢氏下枫槎与石马行第对照表原始 A4 页面" draggable="false">
-            </div>
+          <div class="xingdi-pdf-viewport">
+            <iframe class="xingdi-pdf-frame" src="../assets/genealogy-books/xingdi-compare.pdf#page=1&view=FitH" title="谢氏下枫槎与石马行第对照表矢量 PDF">
+              <p>当前浏览器不支持内嵌 PDF，请<a href="../assets/genealogy-books/xingdi-compare.pdf">打开原始 PDF</a>查看。</p>
+            </iframe>
           </div>
           <div class="xingdi-viewer-foot">
-            <span>提示：手机端可横向查看；放大后拖动表面查看细字。</span>
+            <span>提示：电脑端使用 PDF 阅读器底部或右上角的缩放按钮；手机端可打开 PDF 后放大查看。</span>
             <a class="xingdi-pdf-link" href="../assets/genealogy-books/xingdi-compare.pdf" target="_blank" rel="noopener noreferrer">打开原始 PDF ↗</a>
           </div>
         </div>
@@ -205,55 +195,6 @@
     <div class="footer-bottom"><p>© 2026 宁海下枫槎村谢氏家族 · 数字宗祠</p></div>
   </footer>
 
-  <script>
-    (function () {
-      var viewport = document.getElementById('xingdi-viewport');
-      var imageWrap = document.getElementById('xingdi-image-wrap');
-      var status = document.getElementById('xingdi-zoom-status');
-      if (!viewport || !imageWrap || !status) return;
-      var zoom = 1;
-      var panX = 0;
-      var panY = 0;
-      var drag = null;
-      function render() {
-        imageWrap.style.transform = 'translate3d(' + panX + 'px,' + panY + 'px,0) scale(' + zoom + ')';
-        status.textContent = Math.round(zoom * 100) + '%';
-      }
-      function setZoom(next) {
-        zoom = Math.max(.75, Math.min(3, next));
-        if (zoom <= 1) { panX = 0; panY = 0; }
-        render();
-      }
-      document.getElementById('xingdi-zoom-out').addEventListener('click', function () { setZoom(zoom - .25); });
-      document.getElementById('xingdi-zoom-in').addEventListener('click', function () { setZoom(zoom + .25); });
-      document.getElementById('xingdi-zoom-reset').addEventListener('click', function () { zoom = 1; panX = 0; panY = 0; render(); });
-      viewport.addEventListener('wheel', function (event) {
-        event.preventDefault();
-        setZoom(zoom + (event.deltaY < 0 ? .15 : -.15));
-      }, { passive: false });
-      viewport.addEventListener('pointerdown', function (event) {
-        if (zoom <= 1) return;
-        drag = { id: event.pointerId, x: event.clientX, y: event.clientY, panX: panX, panY: panY };
-        viewport.classList.add('is-panning');
-        viewport.setPointerCapture(event.pointerId);
-      });
-      viewport.addEventListener('pointermove', function (event) {
-        if (!drag || drag.id !== event.pointerId) return;
-        panX = drag.panX + event.clientX - drag.x;
-        panY = drag.panY + event.clientY - drag.y;
-        render();
-      });
-      function endDrag(event) {
-        if (!drag || drag.id !== event.pointerId) return;
-        drag = null;
-        viewport.classList.remove('is-panning');
-        if (viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
-      }
-      viewport.addEventListener('pointerup', endDrag);
-      viewport.addEventListener('pointercancel', endDrag);
-      render();
-    }());
-  </script>
   <script defer src="../js/main.js?v=20260812"></script>
 </body>
 </html>
