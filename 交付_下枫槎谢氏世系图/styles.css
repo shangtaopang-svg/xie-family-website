@@ -2102,13 +2102,14 @@ body[data-app-mode="public"] .tree-viewport {
   .person-card, .person-card[data-action="select-person"] { min-height: 70px; }
 }
 
-/* 手机端五项查询入口：统一在族谱查询页内切换，不拆出信息类页面。 */
+/* 手机端族谱查询入口：统一在族谱查询页内切换，并保留行第对照直达入口。 */
 .mobile-query-menu { display: none; }
 .mobile-query-menu[hidden] { display: none !important; }
 .mobile-query-switcher,
 .mobile-generation-actions,
 .mobile-query-launcher,
 .mobile-home-link,
+.mobile-xingdi-link,
 .mobile-header-actions { display: none; }
 
 @media (max-width: 760px) {
@@ -2424,6 +2425,7 @@ body[data-app-mode="public"] .tree-viewport {
     gap: 6px;
   }
   body[data-app-mode="public"] .mobile-header-actions .mobile-home-link,
+  body[data-app-mode="public"] .mobile-header-actions .mobile-xingdi-link,
   body[data-app-mode="public"] .mobile-header-actions .mobile-query-launcher {
     position: static;
     display: inline-flex;
@@ -2447,7 +2449,14 @@ body[data-app-mode="public"] .tree-viewport {
     white-space: nowrap;
     text-decoration: none;
   }
+  body[data-app-mode="public"] .mobile-header-actions .mobile-xingdi-link {
+    border-color: #d4b69e;
+    background: #fff8f1;
+    color: #8e503d;
+    font-size: 11px;
+  }
   body[data-app-mode="public"] .mobile-header-actions .mobile-home-link:active,
+  body[data-app-mode="public"] .mobile-header-actions .mobile-xingdi-link:active,
   body[data-app-mode="public"] .mobile-header-actions .mobile-query-launcher:active { transform: scale(.96); }
   body[data-app-mode="public"] #app.is-detail-only .mobile-header-actions .mobile-query-launcher { display: inline-flex !important; }
 }
