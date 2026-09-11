@@ -5,11 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>行第对照 · 下枫槎谢氏</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../css/style.css?v=20260911-xingdi-05">
+  <link rel="stylesheet" href="../css/style.css?v=20260911-xingdi-06">
   <style>
-    .xingdi-page-body { width: 100%; min-width: 0; margin: 0; overflow-x: hidden; background: #f5f2eb; }
-    .xingdi-page-body .content { width: 100%; min-width: 0; margin: 0; padding: 0; }
-    .xingdi-page-body .page-wrap { width: calc(100% - 72px); max-width: 1220px; min-width: 0; margin: 0 auto; box-sizing: border-box; padding: 25px 0 60px; position: relative; left: 0; transform: none; }
+    /* 行第对照是独立资料页，不使用全站左侧固定导航，避免窄屏时把内容裁掉。 */
+    html:has(.xingdi-page-body), .xingdi-page-body { width: 100%; min-width: 0; margin: 0; overflow-x: hidden; background: #f5f2eb; }
+    .xingdi-page-body .content { width: 100% !important; min-width: 0; margin: 0 !important; padding: 0; }
+    .xingdi-page-body .site-header { display: none !important; }
+    .xingdi-page-body .xingdi-page-nav { display: flex; align-items: center; justify-content: space-between; gap: 18px; width: calc(100% - 64px); max-width: 1220px; min-width: 0; margin: 0 auto; padding: 18px 0 0; box-sizing: border-box; }
+    .xingdi-page-nav-label { color: #8a8178; font-size: 12px; white-space: nowrap; }
+    .xingdi-mobile-topbar { display: none; }
+    .xingdi-page-body .page-wrap { width: calc(100% - 64px); max-width: 1220px; min-width: 0; margin: 0 auto; box-sizing: border-box; padding: 18px 0 60px; position: relative; left: auto; transform: none; }
+    .xingdi-page-body .page-title, .xingdi-page-body .xingdi-intro, .xingdi-page-body .xingdi-grid, .xingdi-page-body .xingdi-note { width: 100%; min-width: 0; margin-left: 0; margin-right: 0; box-sizing: border-box; }
     .xingdi-intro {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -60,18 +66,17 @@
     .xingdi-pdf-link:hover { color: #fff; background: #9d5c43; }
     .xingdi-note { margin-top: 22px; padding: 15px 18px; border: 1px dashed #cdb8a7; background: #fffaf3; color: #786f67; font-size: 12px; line-height: 1.8; }
     .xingdi-note strong { color: #9b5b42; }
-    .xingdi-mobile-topbar { display: none; }
     @media (max-width: 1100px) {
-      .xingdi-page-body .site-header { display: none !important; }
-      .xingdi-page-body .content { margin-left: 0 !important; }
-      .xingdi-page-body .page-wrap { width: calc(100% - 56px); padding: 20px 0 48px; }
+      .xingdi-page-body .xingdi-page-nav { width: calc(100% - 36px); padding-top: 12px; }
+      .xingdi-page-body .page-wrap { width: calc(100% - 36px); padding: 14px 0 48px; }
       .xingdi-intro { grid-template-columns: 1fr; padding: 20px; }
       .xingdi-intro-mark { display: none; }
       .xingdi-grid { grid-template-columns: 1fr; }
       .xingdi-pdf-viewport { height: min(72vh, 720px); min-height: 420px; }
     }
     @media (max-width: 560px) {
-      .xingdi-page-body .page-wrap { width: calc(100% - 32px); padding: 14px 0 38px; }
+      .xingdi-page-body .xingdi-page-nav { width: calc(100% - 24px); padding-top: 10px; }
+      .xingdi-page-body .page-wrap { width: calc(100% - 24px); padding: 12px 0 38px; }
       .xingdi-intro h3 { font-size: 19px; }
       .xingdi-intro { padding: 18px 16px; }
       .xingdi-info-panel { padding: 17px 14px; }
@@ -85,11 +90,8 @@
       .xingdi-viewer-foot { align-items: flex-start; flex-direction: column; padding: 11px 14px; }
       .xingdi-pdf-link { width: 100%; justify-content: center; box-sizing: border-box; }
     }
-    @media (max-width: 1100px) {
-      .xingdi-mobile-topbar { display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 10px 16px 0; }
-      .xingdi-mobile-back { display: inline-flex; align-items: center; min-height: 38px; padding: 0 12px; border: 1px solid #c9b19f; border-radius: 8px; background: #fff9f3; color: #8e503d; font-size: 12px; font-weight: 700; text-decoration: none; }
-      .xingdi-mobile-back:active { transform: scale(.97); }
-    }
+    .xingdi-mobile-back { display: inline-flex; align-items: center; min-height: 38px; padding: 0 12px; border: 1px solid #c9b19f; border-radius: 8px; background: #fff9f3; color: #8e503d; font-size: 12px; font-weight: 700; text-decoration: none; }
+    .xingdi-mobile-back:active { transform: scale(.97); }
   </style>
 </head>
 <body class="xingdi-page-body">
@@ -118,8 +120,9 @@
       </div>
     </header>
 
-    <div class="xingdi-mobile-topbar">
+    <div class="xingdi-page-nav">
       <a class="xingdi-mobile-back" href="genealogy.html" aria-label="返回上一级" onclick="if (document.referrer) { try { if (new URL(document.referrer).origin === location.origin) { event.preventDefault(); history.back(); } } catch (e) {} }">← 返回上一级</a>
+      <span class="xingdi-page-nav-label">族谱资料 / 行第对照</span>
     </div>
 
     <main class="page-wrap">
